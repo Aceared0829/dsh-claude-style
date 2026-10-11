@@ -107,7 +107,10 @@ body[data-dsh-claude-style] button[class*="_primary"],
 body[data-dsh-claude-style] [data-slot="sidebar.settings"] > :is(button, [role="button"]) {
   border-radius: 9999px;
   background: var(--dsw-alias-button-primary-fill);
-  color: #ffffff;
+  /* The label rides the fill's own foreground token, the pair the host's own
+     primary button states: a literal here would survive a palette that turns
+     the fill light and leave the words unreadable. */
+  color: var(--dsw-alias-label-primary-foreground, #faf9f5);
   font-weight: 500;
 }
 

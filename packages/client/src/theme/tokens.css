@@ -48,7 +48,7 @@ body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_brand"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_primary"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot="sidebar.settings"] > :is(button, [role="button"]) {
   background: var(--dsw-alias-button-primary-fill);
-  color: #ffffff;
+  color: var(--dsw-alias-label-primary-foreground, #faf9f5);
 }
 
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_brand"]:hover,

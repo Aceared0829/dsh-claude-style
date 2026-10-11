@@ -128,11 +128,23 @@ body[data-dsh-claude-style] .dsh-claude-model-option[data-brand='claude'] .dsh-c
    like #000 or #F1F0E8 would disappear. A vendor with no colour artwork carries
    both classes on its single layer, so it shows on either canvas. */
 body[data-dsh-claude-style] .dsh-claude-model-combine {
-  display: inline-block !important;
-  height: 0.72em !important;
-  height: 1cap !important;
-  margin-right: 0.25em !important;
-  vertical-align: baseline !important;
+  display: inline-block;
+  /* The label's own cap height sizes the mark, so the mark — which is taller —
+     paints outside the box, which is what the visible overflow is for. `cap` is
+     the unit that means "the cap height"; a browser without it takes the em
+     value here, and the rule below replaces it where the unit is understood.
+     The two heights sit in separate rules on purpose: two declarations of one
+     property in one rule are a rule the importance audit cannot judge. None of
+     the four carries a weight — the class is the skin's own and nothing else
+     styles it, which the audit confirmed by dropping each one (D51). */
+  height: 0.72em;
+  margin-right: 0.25em;
+  vertical-align: baseline;
+}
+@supports (height: 1cap) {
+  body[data-dsh-claude-style] .dsh-claude-model-combine {
+    height: 1cap;
+  }
 }
 body[data-dsh-claude-style] .dsh-claude-model-combine svg {
   display: block;

@@ -30,7 +30,7 @@ fish take it as their ink. The neutrals are the host's own cool family (its
 blue-black in dark. User bubbles take a blue tint as the host's own do, and
 inline code keeps the body ink as the host draws it. The skin's Claude marks
 (the account row's
-picture without an avatar, the turn status line's spark) become DeepSeek's
+picture without an avatar) become DeepSeek's
 whale (`packages/assets/src/brand/deepseek-mark.svg`, the host's `FISH_LOGO_PATH`); the
 violet top rung of the reasoning slider stays.
 
@@ -197,8 +197,14 @@ and scrolls to its end.
 
 ## Shapes
 
-- Radius: 4 / 8 / 16 px; pills for CTAs (`9999px`).
-- Borders: 1px warm hairline.
+- Radius: 4 / 8 / 16 px; 12px for a popover card and 6px for its rows (the
+  popover table below); pills for CTAs (`9999px`). A shape copied from a host
+  control keeps that control's own geometry rather than the scale above: the
+  composer card's 18px (the host's 22px less 4), the inline composer's 14px and
+  11px, the permission and workspace segments' 7px, the view tabs' 5px, the
+  peak-rate and file pills' 999px.
+- Borders: 1px warm hairline. The same host copies keep their own stroke: the
+  sidebar's 1.5px session-row ring, the inline composer's 1.6px stop square.
 - Spacing: 4 px rhythm.
 - Bottom edge: the transcript never fades behind the composer by shadow. The
   composer seat paints an opaque `var(--dsw-alias-bg-base)` bar across its own
@@ -430,18 +436,24 @@ pass that stamps it) which `features/hero-menu/hero-menu.css` reads with
 ## Search · 搜索
 
 **Sidebar box.** The box takes the brand's place in the logo row while the
-pointer is over the sidebar: 32px tall, 8px radius, a 1px `#E8E6DC` hairline on
+pointer is over the sidebar: 28px tall, 8px radius, a 1px `#E8E6DC` hairline on
 the ivory canvas fill (dark: `#2E2C29` on `#1E1E1D`), a 16px search glyph in the
 secondary label, the "Search" label in the tertiary label at 14px, and the
-host's search shortcut as 20px keycaps at the right end. It is a button like
-the New session and Plugins rows below it: the pointer cursor, and on hover the
-same plate those rows take (`--dsh-claude-hover-bg`, dark `rgba(255, 255, 255,
-0.08)`) laid over its opaque fill. Box and brand share one grid cell and
-cross-fade over 0.16s, the timing the workspace heading and its segmented
-control trade places with; the box is excluded from the window drag region. In
-the desktop titlebar mode the brand row rises 10px, since the sidebar column
-starts under the 40px titlebar — as far as it goes with the box still wholly
-below that edge, which clips the column.
+host's search shortcut as 20px keycaps at the right end. The New session row's
+own shortcut wears that same keycap: a 20px box with a 1px hairline, 4px radius
+and 12px secondary ink, and the `+` the host writes between the two keys goes,
+the way the box leaves it out. It is a button like the New session and Plugins
+rows below it: the pointer cursor, and on hover the same plate those rows take
+(`--dsh-claude-hover-bg`, dark `rgba(255, 255, 255, 0.08)`) laid over its
+opaque fill. Box and brand share one grid cell and cross-fade over 0.16s, the
+timing the workspace heading and its segmented control trade places with; the
+box is excluded from the window drag region. Standalone gives the box a row of
+its own under the brand row, shown without a hover; that row adds no inline
+padding, so the box's hairline stands on the two edges of the column's own
+inset and is exactly as wide as the New session plate below it. In the desktop
+titlebar mode the brand row rises 6px, since the sidebar column starts under
+the 40px titlebar — as far as it goes with the box still wholly below that
+edge, which clips the column.
 
 **Palette.** A modal card set 8vh from the top, 760px wide at most, 16px radius,
 on the same ivory fill (dark `#1E1E1D`) under the host's mask. From the top: a
@@ -459,20 +471,25 @@ and shows the Enter glyph; the others hide it. The card fades in and settles
 from 6px above at 98.5% scale over 0.18s; on close card and mask fade out
 together over 0.14s before the modal unmounts.
 
-## Turn status · 轮次状态行
+## The waiting line · 模型正在做什么的那一行
 
-A running, stopped or failed turn's status line sits after the turn's work (its
-footer and queued messages below it), 4px under the last row, with no rule under
-it: a 14px Claude spark in the brand clay (`--dsw-alias-brand-primary`,
-`#D97757`), 8px gap, then the text in the tertiary label at the host's secondary
-content size (13px, 24px line), one line with an ellipsis. Parts are joined by
-` · `: `elapsed · N tokens · action` while the turn runs, `Stopped` or `Failed`
-(the host's words) `· duration · N tokens` after; the token part is left out
-until a finished step has reported usage. While the turn runs the spark turns a
-full circle every 2.4s, breathing down to 78% at the half turn, in every
-animation setting, like the sidebar's background-work ring; a stopped or failed
-turn's spark stands still. A turn that finishes normally keeps the host's own
-control.
+The host's running row — its whale tail, its divider and its live region — stays
+as the host draws it; the host's own shimmering words step aside for the skin's
+line beside the whale: the wording in the secondary label at 14px on a 24px line,
+the turn's clock 8px later in the caption at 13px with tabular figures, and the
+"No response yet" badge 8px after that (11px on a 16px line, 0 6px padding, a 5px
+radius, the warning label over 16% of itself). The wording carries a highlight
+band swept across it over 2s, and a wording that changes runs the three-phase
+swap over 0.15s: the old one leaves upward with a 2px blur, the new one enters
+from 4px below; under Reduced motion the band is left out and the wording is
+written at once.
+
+While the conversation follows its tail the row is pinned at the place the
+follow's glide comes to rest — the composer's own height, the fade band above it
+and the host's 16px transcript padding — the canvas painted behind it, since the
+transcript's tail would otherwise show through. The pin stands only while the
+host reports the tail (or the stream glide holds the position) and steps aside
+for the reader's own scrolling.
 
 ## Home layouts · 首页版面
 
@@ -546,10 +563,10 @@ Claude Code's blue data ramp (`#3b6ecf` at 20/40/65/100 over the neutral empty
 cell); because the columns are fractions of the panel's own width, the newest
 week can never fall past the edge. Hovering a cell shows Claude Code's day tip at
 once: a solid pill in the label ink with the canvas tone for text (so it inverts
-with the theme), 13px medium, reading the day in the shell's language and its
-messages ("Sep 9 — 15,955"); over the three columns at either end the pill lines
-up with the cell's outer edge so it stays inside the panel. The session list's
-fallback has no per-day message count, and its tip names the day's tokens.
+with the theme), 13px medium, reading the day in the shell's language and the
+tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure the cell's heat
+is bucketed from; over the three columns at either end the pill lines
+up with the cell's outer edge so it stays inside the panel.
 Models is Claude Code's own shape: one column
 per day of the chart's thirty-day window, stacked from the axis up with each
 model's slice in its rank's colour (ranks past the ramp share its last, grey

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "chores",
+  "order": 1,
+  "external": false,
+  "zh": "模型标志的 `cap` 高度回退原先写在同一规则里的两条 `height`，端到端的 `!important` 审计因此整条跳过这条规则；现在两条高度分处两条规则，规则的每一处权重都受审计。",
+  "en": "The model mark's `cap`-height fallback was two `height` declarations in one rule, which made the end-to-end `!important` audit skip that rule whole; the two heights sit in two rules now, so every weight in them is audited."
+}

@@ -24,7 +24,7 @@ body[data-dsh-claude-style] button[data-dsh-section="claude-style"]::before {
 }
 
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-section="claude-style"]::before {
-  background-color: #141413;
+  background-color: var(--dsw-alias-label-primary);
 }
 
 /* ---------- Claude Code layout: settings page ---------- */
