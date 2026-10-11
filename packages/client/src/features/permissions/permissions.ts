@@ -2,7 +2,7 @@ import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
 import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS, SEGMENTS_CLASS, SEGMENT_CLASS } from './permission-copy'
 import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
-import { activeLocale } from '../../core/i18n'
+import { activeLocale, copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, buildPopoverItem, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
@@ -250,7 +250,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function buildSegments(onPick: (preset: string | null) => void, specs: { label: string, preset: string }[]) {
     const group = buildElement('div', SEGMENTS_CLASS)
     group.setAttribute('role', 'radiogroup')
-    group.setAttribute('aria-label', 'Permission')
+    group.setAttribute('aria-label', copyLabel('permissionGroupLabel', 'Permission'))
     group.setAttribute('data-composer-segments', '')
     for (let i = 0; i < specs.length; i++) {
       const spec = specs[i]
@@ -288,7 +288,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * natively — is left out so the rows stay consistent with each other.
    */
   function buildPermRow(preset: string) {
-    const built = buildPopoverItem({ role: 'menuitem', lines: 2, check: true })
+    const built = buildPopoverItem({ role: 'menuitemradio', lines: 2, check: true })
     const item = built.row
     item.setAttribute('data-preset', preset)
     built.text.textContent = presetLabel(preset)
@@ -444,6 +444,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       const check = it.querySelector<HTMLElement>('.dsh-claude-popover-check')
       if (check) check.hidden = !isCurrent
       it.toggleAttribute('data-active', isCurrent)
+      // One preset out of the list is current: the row says so itself, so the
+      // check mark is not the only thing carrying the choice.
+      setAttributeIfChanged(it, 'aria-checked', String(isCurrent))
     }
   }
 

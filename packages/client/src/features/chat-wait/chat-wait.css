@@ -6,7 +6,10 @@
    follows dsh-better-display's status line, and the wording's own change runs
    transitions.dev's "Text states swap" (MIT). */
 
-body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] > span > :not([aria-hidden="true"]) {
+/* The host's words step aside for the skin's line; the line itself is not
+   touched, so the wording, the elapsed clock and the wait badge stay the row's
+   readable text while the host's own live region keeps announcing the row. */
+body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] > span > :not([aria-hidden="true"]):not(.dsh-claude-chat-wait) {
   display: none;
 }
 

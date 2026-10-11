@@ -92,6 +92,16 @@ function figure(className: string) {
   return { wrap, group, tail }
 }
 
+/**
+ * One direction arrow: which way the tokens went is said by the figure it
+ * stands beside, so the glyph is decorative for a reader.
+ */
+function arrowSpan(glyph: string) {
+  const span = buildElement('span', 'dsh-claude-inline-arrow', glyph)
+  span.setAttribute('aria-hidden', 'true')
+  return span
+}
+
 /** Write a text node only when its words changed. */
 function writeText(node: Text, text: string) {
   if (node.data !== text) node.data = text
@@ -149,14 +159,14 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     const speedFigure = figure('dsh-claude-inline-speed')
     speed.wrap.appendChild(speedFigure.wrap)
     const input = segment()
-    input.wrap.append(buildElement('span', 'dsh-claude-inline-arrow', '↑'))
+    input.wrap.append(arrowSpan('↑'))
     const inputFigure = figure('dsh-claude-inline-input')
     input.wrap.appendChild(inputFigure.wrap)
 
     // The tokens written back, then — for the tightest step that still shows
     // figures — one total in their place, and the cache share.
     const output = segment()
-    output.wrap.append(buildElement('span', 'dsh-claude-inline-arrow', '↓'))
+    output.wrap.append(arrowSpan('↓'))
     const outputFigure = figure('dsh-claude-inline-output')
     output.wrap.appendChild(outputFigure.wrap)
     const total = segment()

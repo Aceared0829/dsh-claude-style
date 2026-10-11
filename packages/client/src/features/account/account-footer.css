@@ -106,19 +106,11 @@ body[data-dsh-claude-style] .dsh-claude-account-popover {
   flex-direction: column;
   gap: 6px;
   /* The drawer's rows are built and reconciled while it is closed (the mirror
-     sync only runs then), so the panel sits right above the account row with
-     its icons in it. opacity alone leaves that content in the paint and
-     hit-test tree; visibility takes it out of both, and the delayed transition
-     keeps the closing fade. Layout is untouched, so the closed drawer's box is
-     still measurable. */
-  visibility: hidden;
+     sync only runs then), so the panel takes the closed state the shared card
+     gives every card: out of the paint and the tab order, its box still
+     measurable for the placement. */
   transform: translateY(6px) scale(0.98);
   transform-origin: bottom left;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
-}
-body[data-dsh-claude-style] .dsh-claude-account-popover[data-open="true"] {
-  visibility: visible;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
 }
 /* Hover bridge between trigger and popover */
 body[data-dsh-claude-style] .dsh-claude-account-popover::after {

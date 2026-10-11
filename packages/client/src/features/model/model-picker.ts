@@ -161,7 +161,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function closeModelPopovers() {
     cancelCloseModel()
-    if (modelPop) setMenuPopoverOpen(modelPop, false)
+    if (modelPop) setMenuPopoverOpen(modelPop, false, modelBtn)
     if (modelSubPop) setMenuPopoverOpen(modelSubPop, false)
   }
 
@@ -187,7 +187,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     modelBodySig = ''
     renderModelBody()
     positionModelPopovers()
-    if (modelPop) setMenuPopoverOpen(modelPop, true)
+    if (modelPop) setMenuPopoverOpen(modelPop, true, modelBtn)
   }
 
   function openModelSub() {

@@ -1,4 +1,4 @@
-import { buildElement } from './dom'
+import { buildElement, setAttributeIfChanged } from './dom'
 
 export const POPOVER_MARGIN = 8
 
@@ -167,8 +167,13 @@ export function closeOtherPopovers(name: string) {
  * `[role="menu"]` as owning the foreground, and a card kept mounted for
  * measurement answers that query while merely hidden — so the role rides the
  * open state. Only a card that IS a menu goes through here.
+ *
+ * The trigger's own `aria-expanded` is written here too where the caller names
+ * one: the card and the control that opens it have to report the same state,
+ * and a card toggled without it leaves the reader told "collapsed" while the
+ * menu is up.
  */
-export function setMenuPopoverOpen(card: Element, open: boolean) {
+export function setMenuPopoverOpen(card: Element, open: boolean, trigger: Element | null = null) {
   if (open) {
     card.setAttribute('data-open', 'true')
     card.setAttribute('role', 'menu')
@@ -176,6 +181,7 @@ export function setMenuPopoverOpen(card: Element, open: boolean) {
     card.setAttribute('data-open', 'false')
     card.removeAttribute('role')
   }
+  if (trigger !== null) setAttributeIfChanged(trigger, 'aria-expanded', open ? 'true' : 'false')
 }
 
 /** The slots and classes one popover row asks for (buildPopoverItem). */

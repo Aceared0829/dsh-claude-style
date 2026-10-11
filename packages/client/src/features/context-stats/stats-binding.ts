@@ -1,6 +1,8 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
 import { observeSize } from '../../core/bus'
+import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
+import { setAttributeIfChanged } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent } from '../../shared/popover'
 import { CONTEXT_PANEL_ALIGNED_ATTR, CONTEXT_PANEL_ATTR, contextPanel, contextTrigger, findContextMeter } from './stats-panel'
 
@@ -111,11 +113,19 @@ export function createContextStatsBinding() {
     else openContextPanel()
   }
 
-  /** Say on the line what the host's trigger says, so the button follows the panel it drives. */
+  /**
+   * Say on the line what the host's trigger says, so the button follows the panel
+   * it drives.
+   *
+   * The line is a button made of figures and arrows, so it carries the name the
+   * reader needs to know what it opens; the name is written with the state, so a
+   * locale or copy change reaches it too.
+   */
   function syncContextLineState(line: Element) {
     const trigger = contextTrigger()
     const expanded = trigger !== null && trigger.getAttribute('aria-expanded') === 'true' ? 'true' : 'false'
     if (line.getAttribute('aria-expanded') !== expanded) line.setAttribute('aria-expanded', expanded)
+    setAttributeIfChanged(line, 'aria-label', copyLabel('statsLineLabel', 'Conversation statistics'))
   }
 
   /**

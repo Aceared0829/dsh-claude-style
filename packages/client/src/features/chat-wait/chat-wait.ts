@@ -14,7 +14,7 @@ import type manifest from './chat-wait.manifest'
 
 /**
  * The live turn's running row, after dsh-better-display's status line (MIT):
- * what the turn is doing now in the words of the status line
+ * what the turn is doing now in this line's own words
  * (shared/turn-activity.ts), the host's own 「深度求索中」 where no state can be
  * read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
  * once the model has been silent for ten seconds (wait-state.ts). The wording
@@ -55,8 +55,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (line !== undefined && line.isConnected) return line
     line = buildElement('span', 'dsh-claude-chat-wait')
     line.setAttribute(QUIET_ATTR, '')
-    // The host's own live region announces the row; this is its picture.
-    line.setAttribute('aria-hidden', 'true')
+    // The host's own words are hidden while this line stands in for them
+    // (chat-wait.css), so the line carries what a reader gets: the wording, the
+    // clock and the wait badge are ordinary text, and the host's live region
+    // still announces the row.
     line.append(
       buildElement('span', 'dsh-claude-chat-wait-label'),
       buildElement('span', 'dsh-claude-chat-wait-clock'),
@@ -134,7 +136,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const line = lineOf(row, words)
     const [label, clock, badge] = line.children as HTMLCollectionOf<HTMLElement>
     // What the turn is doing, and the host's own word for a turn whose state
-    // cannot be read (D23): the line says the model's work, never a guess.
+    // cannot be read (D58): the line says the model's work, never a guess.
     const activity = activityWords(snapshot, turn)
     const word = activity === null ? t('chat.deepDiving') : copyLabel(activity.key, activity.fallback)
     setLabel(label, word)

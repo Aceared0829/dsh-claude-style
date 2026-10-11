@@ -136,6 +136,29 @@ export function ClaudeStyleSegmentGroup(props: { role?: string, className?: stri
 }
 
 /**
+ * One on/off switch: a button carrying the switch role and nothing but its knob
+ * inside. The name comes from the row it sits in — `row()` hands it the row's
+ * title — because a switch with no text of its own is announced as an
+ * unlabelled switch.
+ */
+export function ClaudeStyleSwitch(props: { on: boolean, onPick(value: boolean): void, disabled?: boolean, label?: string }) {
+  return React.createElement(
+    'button',
+    {
+      type: 'button',
+      className: 'dsh-claude-settings-switch',
+      role: 'switch',
+      disabled: props.disabled === true,
+      'aria-checked': props.on ? 'true' : 'false',
+      'aria-label': props.label,
+      'data-on': props.on ? '' : undefined,
+      onClick() { props.onPick(!props.on) },
+    },
+    React.createElement('span', { className: 'dsh-claude-settings-switch-knob' }),
+  )
+}
+
+/**
  * The control builders. They hold no state of their own: every value and
  * every write arrives through the arguments, so one set serves every tab.
  * @returns { segment, toggle, row, subRow }.
@@ -167,21 +190,9 @@ export function createSettingsControls() {
     return React.createElement(ClaudeStyleSegmentGroup, null, buttons)
   }
 
-  /** An on/off switch. */
+  /** An on/off switch; `row()` names it after the row it lands in. */
   function toggle(on: boolean, onPick: (value: boolean) => void, disabled?: boolean) {
-    return React.createElement(
-      'button',
-      {
-        type: 'button',
-        className: 'dsh-claude-settings-switch',
-        role: 'switch',
-        disabled: disabled === true,
-        'aria-checked': on ? 'true' : 'false',
-        'data-on': on ? '' : undefined,
-        onClick() { onPick(!on) },
-      },
-      React.createElement('span', { className: 'dsh-claude-settings-switch-knob' }),
-    )
+    return React.createElement(ClaudeStyleSwitch, { on, onPick, disabled })
   }
 
   /**
@@ -195,6 +206,10 @@ export function createSettingsControls() {
     const classes = ['dsh-claude-settings-row']
     if (block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
+    // The switch has no text of its own; its name is this row's title.
+    const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
+      ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title })
+      : control
     return React.createElement(
       'div',
       { className: classes.join(' '), key },
@@ -204,7 +219,7 @@ export function createSettingsControls() {
         React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
         React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
       ),
-      control,
+      named,
     )
   }
 
@@ -214,6 +229,9 @@ export function createSettingsControls() {
    * with the same `disabled` flag, so it also refuses the keyboard.
    */
   function subRow(key: string, title: string, description: React.ReactNode, control: React.ReactNode, enabled: boolean) {
+    const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
+      ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title })
+      : control
     return React.createElement(
       'div',
       {
@@ -228,7 +246,7 @@ export function createSettingsControls() {
         React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
         React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
       ),
-      control,
+      named,
     )
   }
 

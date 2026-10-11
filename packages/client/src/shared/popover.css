@@ -22,12 +22,20 @@ body[data-dsh-claude-style] .dsh-claude-popover-card {
   padding: 6px;
   box-sizing: border-box;
   z-index: 99999;
+  /* Closed, the card keeps its layout box — the placement reads it — while
+     `visibility` takes it out of the paint, out of hit-testing and out of the
+     tab order: `opacity: 0` alone leaves every row's button reachable, and the
+     reader's focus then parks on something invisible. The delayed visibility
+     keeps the closing fade. */
+  visibility: hidden;
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px) scale(0.98);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
 }
 body[data-dsh-claude-style] .dsh-claude-popover-card[data-open="true"] {
+  visibility: visible;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);

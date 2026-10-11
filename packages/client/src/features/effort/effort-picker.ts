@@ -101,7 +101,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function closeEffortPopover() {
     effortHoverIntent.cancel()
-    if (effortPop !== null) setMenuPopoverOpen(effortPop, false)
+    if (effortPop !== null) setMenuPopoverOpen(effortPop, false, effortBtn)
   }
 
   function openEffortPopover() {
@@ -112,7 +112,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     closeOtherPopovers('effort')
     if (effortSlider !== null) effortSlider.update()
     positionEffortPopover()
-    if (effortPop !== null) setMenuPopoverOpen(effortPop, true)
+    if (effortPop !== null) setMenuPopoverOpen(effortPop, true, effortBtn)
   }
 
   function positionEffortPopover() {

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "fixes",
+  "order": 8,
+  "external": false,
+  "zh": "进行中那一行：皮肤把宿主自己的文字藏起来之后，画的替身又标着「装饰」，读屏在这一行上收不到「模型正在做什么」「暂未响应」和计时；现在替身是这一行的可读文字，宿主自己的实时区域照旧播报。",
+  "en": "On the live turn's running row, the skin hid the host's own words and marked its replacement decorative, so a screen reader received neither what the model is doing, nor the wait badge, nor the clock; the replacement is the row's readable text now, and the host's own live region still announces the row."
+}
