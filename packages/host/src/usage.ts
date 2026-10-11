@@ -83,6 +83,9 @@ export function createUsage(ctx: DshContext) {
         sessions.set(log.id, cached)
         continue
       }
+      // Each changed log is read by id. That read resolves the session through
+      // the host's listing-free observation (docs/decisions D53), so a pass
+      // costs one `stat` per log read and never walks the stored corpus.
       const events = await readEvents<UsageEvent>(ctx, log.id, 'the usage roll-up')
       if (events === null) {
         // The reader refused (no `sessionQuery` service, or a log it cannot

@@ -23,13 +23,21 @@ const { ROOT, HOST, SKIN_FIXTURE, same, check } = require('./shared.cjs')
  * @param options - `fenced` offers the host's own request check, `home` answers
  *   `dshHomePath` with a scratch harness home, and `live` names the sessions the
  *   fake `sessions` service reports as open, and `events` maps a session id to
- *   the durable events the fake `sessionQuery` reader answers for it (each read
- *   is pushed onto `reads`, when given); `stored` is the snapshot list the fake
+ *   the durable events the fake `sessionQuery` answers for it (each read is
+ *   pushed onto `reads`, when given); `stored` is the snapshot list the fake
  *   `sessionPersistence` answers; `registry` is the fake `workspaceRegistry`
  *   service object itself, whose `unarchived` list records every call.
+ *
+ *   The fake `sessionQuery` publishes the REAL contract, so a host-half change
+ *   that reads a field the host never returns fails here instead of passing:
+ *   `observeSession` hands back a lease carrying the whole log, `readSession` a
+ *   snapshot carrying it, and `readTitleSnapshots` only `{ session, title }` —
+ *   its projector is lossy and the events are gone (read off
+ *   `@deepseek-ai/dsh-session-query` 0.2.0-rc.2). `listCalls` collects every id
+ *   whose resolution would have walked the whole stored corpus.
  */
 function fakeHost(mod, options = {}) {
-  const { fenced, home, live = [], events, launch, stored, reads, registry, tails } = options
+  const { fenced, home, live = [], events, launch, stored, reads, listCalls, registry, tails } = options
   const routes = {}
   const settings = { configure: () => () => {} }
   // The harness's launch environment, as its own snapshot behaves: the canonical
@@ -80,7 +88,49 @@ function fakeHost(mod, options = {}) {
       if (name === 'launchEnvironment') return launchEnvironment
       if (name === 'sessionPersistence' && stored !== undefined) return { list: async () => stored }
       if (name === 'sessionQuery' && events !== undefined) {
-        return { readSession: async (id) => { if (reads !== undefined) reads.push(id); return { events: events[id] ?? [] } } }
+        // The host reads one log per id; the fake records the id and answers the
+        // same complete event array the real service hands back.
+        const log = (id) => {
+          if (reads !== undefined) reads.push(id)
+          return events[id] ?? []
+        }
+        // An id the real backend does not know is refused, and resolving one it
+        // does know means listing the whole stored corpus (every header opened).
+        // The host half is now expected to avoid that walk entirely, so `listCalls`
+        // records every id that would have cost it.
+        const known = (id) => stored === undefined || live.includes(id) || stored.some((entry) => entry.header.id === id)
+        const missing = (id) => Object.assign(new Error('session "' + id + '" not found'), { code: 'SESSION_QUERY_SESSION_NOT_FOUND' })
+        const listed = (id) => {
+          if (listCalls !== undefined) listCalls.push(id)
+          return stored?.find((entry) => entry.header.id === id)
+        }
+        return {
+          // The listing-free read the host half now uses: `persistence.stat(id)`
+          // and the restored log in a disposable lease (D53).
+          observeSession: async (id) => {
+            if (!known(id)) throw missing(id)
+            return { source: 'prepared', header: { id }, events: log(id), cursor: -1, revision: 'r', [Symbol.dispose]() {} }
+          },
+          // The fallback for a host publishing only this one. It resolves the id
+          // through a corpus listing, so the fake charges it that walk.
+          readSession: async (id) => {
+            const snapshot = listed(id)
+            if (!known(id)) throw missing(id)
+            return { session: snapshot?.header ?? { id }, events: log(id) }
+          },
+          // The service's REAL batch reader folds TITLES: its projector consumes
+          // `source.events` and discards them, so the value carries no events at
+          // all (measured on @deepseek-ai/dsh-session-query 0.2.0-rc.2). A caller
+          // that expects events from it is caught here rather than silently
+          // folding nothing.
+          readTitleSnapshots: async (sessionIds) => {
+            if (listCalls !== undefined) listCalls.push(...sessionIds)
+            return sessionIds.map((id) => {
+              if (!known(id)) return { status: 'rejected', sessionId: id, reason: missing(id) }
+              return { status: 'fulfilled', sessionId: id, value: { session: { id } } }
+            })
+          },
+        }
       }
       if (name === 'workspaceRegistry' && registry !== undefined) return registry
       return undefined
@@ -360,6 +410,65 @@ async function hostHalf() {
     JSON.stringify({ hours: value.hours, days: days.map((day) => [day.date, day.hours]) }))
   fs.rmSync(scratchHome, { recursive: true, force: true })
 
+  // The fold's own cost, which the fingerprint cache cannot remove: reading one
+  // changed log by id used to walk the whole stored corpus first (the service
+  // resolves the id from a listing that opens every header), so a pass over a
+  // corpus grew with the square of the changed sessions. The host's listing-free
+  // observation resolves each one from a `stat` instead, so the walk is gone
+  // (D53).
+  console.log('\nhost half — the usage fold reads logs without walking the stored corpus')
+  const foldHome = path.join(ROOT, '.debug', 'smoke-home-fold')
+  fs.rmSync(foldHome, { recursive: true, force: true })
+  const foldCwd = path.join(foldHome, 'sessions', '--D-smoke--')
+  const foldIds = ['fold-a', 'fold-b', 'fold-c']
+  const foldEvents = {}
+  for (const id of foldIds) {
+    fs.mkdirSync(path.join(foldCwd, id), { recursive: true })
+    fs.writeFileSync(path.join(foldCwd, id, 'session.v4.jsonl.zstd'), 'x')
+    foldEvents[id] = [settlement(at(0, 15), 1)]
+  }
+  /** Poll the usage route until the pass that is running has settled. */
+  const settledUsage = async (host) => {
+    let answer = { status: 0 }
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const reply = await request(host, USAGE, 'GET', '', browser)
+      answer = reply.status === 200 ? JSON.parse(reply.body) : { status: reply.status }
+      if (answer.value !== undefined && answer.value !== null && answer.computing !== true) break
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    }
+    return answer
+  }
+  const foldListings = []
+  const foldReads = []
+  const foldHost = fakeHost(mod, { fenced: true, home: foldHome, events: foldEvents, listCalls: foldListings, reads: foldReads })
+  const folded = await settledUsage(foldHost)
+  check('no changed log is read through a whole stored-corpus listing',
+    foldListings.length === 0,
+    JSON.stringify({ listings: foldListings, reads: foldReads }))
+  check('every changed log is still read, by id',
+    same(foldReads.slice().sort(), foldIds.slice().sort()),
+    JSON.stringify({ listings: foldListings, reads: foldReads }))
+  check('the fold reports every log it read, and every session it walked',
+    folded.value?.read === foldIds.length && folded.value?.sessions === foldIds.length && folded.value?.failed === 0,
+    JSON.stringify(folded.value && { read: folded.value.read, failed: folded.value.failed, sessions: folded.value.sessions }))
+  // The events must actually reach the fold. A read that resolves but hands back
+  // no events folds nothing and reports read > 0 with zero tokens — the silent
+  // failure this check exists for.
+  const foldedDay = (folded.value?.days ?? [])[0] ?? {}
+  check('the folded logs contribute real tokens to their day, not an empty fold',
+    folded.value?.totals?.input === 30 && folded.value?.totals?.output === 3 &&
+      Array.isArray(folded.value?.days) && folded.value.days.length === 1 && foldedDay.input === 30 && foldedDay.calls === 3,
+    JSON.stringify({ totals: folded.value?.totals, days: folded.value?.days }))
+  // A warm start is the case the size and modification time cache exists for:
+  // every fingerprint still matches, so the pass folds nothing and reads nothing.
+  const warmListings = []
+  const warmReads = []
+  const warmHost = fakeHost(mod, { fenced: true, home: foldHome, events: foldEvents, listCalls: warmListings, reads: warmReads })
+  const warm = await settledUsage(warmHost)
+  check('a warm start re-reads and re-lists nothing: the fingerprint cache still skips unchanged logs',
+    warm.value?.read === 0 && warm.value?.sessions === foldIds.length && warmReads.length === 0 && warmListings.length === 0,
+    JSON.stringify({ value: warm.value && { read: warm.value.read, sessions: warm.value.sessions }, reads: warmReads, listings: warmListings }))
+  fs.rmSync(foldHome, { recursive: true, force: true })
   // Message-content search over the query service's raw logs: a phrase inside
   // a Chinese sentence matches, case and runs of whitespace do not matter,
   // injected context, tool-call arguments and subagent children stay out, and a
@@ -390,7 +499,8 @@ async function hostHalf() {
   const reads = []
   // The corpus cache lives under the harness home, so the fake host gets the
   // scratch one: a real home would take this lane's sessions and leave files in it.
-  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads })
+  const searchListings = []
+  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads, listCalls: searchListings })
   const ask = async (query, headers = browser) => {
     const answer = await request(searchHost, `${SEARCH}?q=${encodeURIComponent(query)}`, 'GET', '', headers)
     return { status: answer.status, body: answer.status === 200 ? JSON.parse(answer.body) : null }
@@ -410,6 +520,11 @@ async function hostHalf() {
     JSON.stringify(english))
   check('each stored top-level session is read once while its revision holds',
     same(reads.slice().sort(), ['session-a', 'session-b']), JSON.stringify(reads))
+  // Each stale session is read by id, and that read no longer walks the stored
+  // corpus (D22, D53). The panel's own revision listing is a separate, throttled
+  // pass and is not counted here.
+  check('the catch-up folds its stale sessions without a stored-corpus listing',
+    same(searchListings, []), JSON.stringify(searchListings))
   stored[1] = { header: { id: 'session-b' }, revision: 'b2' }
   // The listing is throttled and the palette's own prewarm is what pays it; a
   // content query reads the corpus as it stands.
@@ -418,6 +533,8 @@ async function hostHalf() {
   await ask('search box')
   check('a moved revision is read again by the prewarm, and only it',
     same(reads.slice().sort(), ['session-a', 'session-b', 'session-b']), JSON.stringify(reads))
+  check('the prewarm reads the one moved session without a stored-corpus listing either',
+    same(searchListings, []), JSON.stringify(searchListings))
   // An open session is read again only when its log grows.
   const liveReads = []
   // An open session contributes its growth through the live log's own tail. Its
@@ -426,7 +543,8 @@ async function hostHalf() {
   fs.rmSync(liveHome, { recursive: true, force: true })
   const liveTails = []
   const liveEvents = { ...searchEvents, 'session-a': searchEvents['session-a'].slice() }
-  const liveSearch = fakeHost(mod, { fenced: true, home: liveHome, events: liveEvents, stored, reads: liveReads, live: ['session-a'], tails: liveTails })
+  const liveListings = []
+  const liveSearch = fakeHost(mod, { fenced: true, home: liveHome, events: liveEvents, stored, reads: liveReads, listCalls: liveListings, live: ['session-a'], tails: liveTails })
   const liveAsk = () => request(liveSearch, `${SEARCH}?q=${encodeURIComponent('搜索框')}`, 'GET', '', browser)
   await liveAsk()
   await liveAsk()

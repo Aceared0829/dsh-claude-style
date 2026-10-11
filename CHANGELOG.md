@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 会话很多时，用量汇总与内容搜索读日志会让宿主进程持续占住一个核心：它们经 `sessionQuery.readSession` 按 id 读，而这一版会为了定位一个 id 先把整份会话存档列一遍（列一次要打开并解压每个存档的头部帧），改动过的会话越多就越慢，首次运行或任何一次会话变动都按变更个数叠加。现在两处都改走宿主的观察接口 `sessionQuery.observeSession`，它只观察这一份存档、不先列档，读 N 个会话就是 N 次观察、零次列档；按大小与修改时间的增量缓存不变，没有变动的会话照旧跳过，用量数字与负载结构不变。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- With many sessions the usage roll-up and the content search pinned a core while reading logs: they read by id through `sessionQuery.readSession`, which locates that id by listing the WHOLE stored corpus first (a listing opens and decompresses every stored session's header), so the pass grew with the number of changed logs on a first run and after any session change. Both now read through the host's observation entry point `sessionQuery.observeSession`, which resolves the one session without listing the corpus: N sessions cost N observations and no listings. The size and modification time cache is unchanged, unchanged logs are still skipped, and the usage figures and payload shape are untouched.
+
 ## [0.13.1] - 2026-10-10
 
 [中文](#cn-0.13.1) | [English](#en-0.13.1)

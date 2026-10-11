@@ -19,6 +19,7 @@
     "features": "node scripts/features.mjs",
     "features:check": "node scripts/features.mjs --check",
     "probe": "node scripts/probe.cjs",
+    "probe:usage": "node packages/testing/usage-real-engine.cjs",
     "smoke": "node scripts/smoke.cjs",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
