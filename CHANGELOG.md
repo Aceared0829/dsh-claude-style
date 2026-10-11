@@ -4,6 +4,82 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 同一个文件在一段过程里被改了几次，聊天区就并排列出几行，改动越密集越难看出这个文件一共改了多少。现在同一个文件在同一个过程组里的多次编辑与写入读成一行：这一行是这一组里最早的那一次改动，行尾的 `+n -m` 是这些改动的累计值，每到达一次改动就滚动一次，展开这一行读到的是全部改动；只改动过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
+- 「模型正在做什么的那一行」在跟随末尾时停在输入框上方：这一行的固定此前挂在「轮次状态行」这一个开关上，而它属于运行中的这一行本身。现在它随「聊天区动画效果」这一开关，与这一行的说法、扫光同一处；读者自己接管滚动，或跟随的滑行正持有位置时，它照旧让开，回到文档位置随内容走。
+- 首页用量面板的用量热力图，格子悬停提示原本写的是那天的消息条数，现在改成那天的 Token 用量（「9月9日 — 15.9k Token」），与格子深浅取自同一个数字；两份数据来源都带每天的 Token 合计，提示不再随来源换口径。
+- 用量汇总与内容检索读会话日志时，原先每读一个会话都要把整个会话库重新列举一遍，于是整轮耗时会随会话条数近似平方增长；现在每个会话只读它自己的日志，会话库每轮只列举一次，整轮耗时随条数线性增长。本地实测 80 个会话、29.2 MB 日志，一轮冷启动折算（改动前 10898 / 8583 毫秒，改动后 2184 / 2363 毫秒）。
+- 侧栏搜索框选「独立在品牌行下方」时，那一行自己还留着 8 像素的左右内边距，盒子因此比下面的「新会话」等行窄 16 像素；现在这一行不再留内边距，盒子的左右边框与下面各行的宽度落在同两条边上。
+- 侧栏「新会话」一行右侧的快捷键提示原本是等宽字体的普通文字（Ctrl + N），现在与搜索框的按键同一套样式：每个键一个 20 像素圆角键帽、1 像素描边、12 像素次级文字，两个键之间的「+」不再出现。
+- 样式表里写死的颜色改读令牌：强调色按钮上的文字取填充自己的前景令牌（原先写死纯白，换成浅色填充后对比度没有保障），设置页里插件图标的底色取主文字令牌（原先写死十六进制）。docs/STYLE.md 的形状一节补上实际使用的圆角与描边，并写明它们来自被复制的那枚宿主控件。
+
+### 问题修复
+
+- 删除会话的请求体超过上限时，客户端原先只看到连接被重置；现在先答 400，这条应答送出之后再结束连接。
+- 成本计量账本里出现不是真实日期的键时，合并原先按字符串把它当成最新的一天，本地折算出的所有日子与它们的会话一起消失，首页模型图表还会读到一个非法日期而报错；现在这类键在读取时被跳过，其余日子照常合并。
+- 机器上没有成本计量插件时，用量汇总的来源原先报成 cost-meter+local；现在报 local，与「哪个来源作答」的定义一致。
+- 峰谷目录的 24 小时定时器原先在页面问过一次之后一直拉取到进程退出，设置里关掉峰谷功能也停不下来；现在连续 48 小时没有请求就自己停下，下一次请求再启动。
+- 宿主没有网页服务器服务时，插件原先静默地一条路由也没注册，卸载时又按每一条记一次失败；现在报告一次缺少的服务，路由的撤销表里只留真正的撤销函数。
+- 会话内容检索里，整份列举取代在途的尾扫时，旧的一轮结束会把新一轮的状态一起清掉，于是可以再起第三轮并发地读同一批会话；现在只有仍然是最新的一轮才清状态。
+- 关闭状态的弹层卡片原先只把不透明度降到 0，卡片里的按钮仍然留在 Tab 顺序里，键盘读者会停在完全看不见的行上；现在关闭的卡片同时移出绘制、命中与焦点顺序，开关的淡入淡出照旧。
+- 进行中那一行：皮肤把宿主自己的文字藏起来之后，画的替身又标着「装饰」，读屏在这一行上收不到「模型正在做什么」「暂未响应」和计时；现在替身是这一行的可读文字，宿主自己的实时区域照旧播报。
+- 把「动画效果」设为减弱之后，工作强度滑杆顶档的点阵仍按运行时写下的动画时长闪一次；现在这一档不写动画的周期与相位，点阵静止。
+- 几个控件对读屏说不出自己是什么：会话统计那一行只有数字与箭头，工作强度与模型触发器从不报告菜单是否展开，设置页的开关没有名字，权限弹层的当前档位只有勾号，输入输出箭标进了名称。现在统计行有自己的名称、两个触发器跟着菜单报告展开状态、开关取所在行的标题为名、权限弹层的当前档位写 aria-checked、箭标对读屏隐藏。
+
+### 安全
+
+- 宿主没有 connection 服务时，私有路由的回退栅栏原先只看请求方自己写的 Host 头，局域网连接谎报 localhost 即通过；现在先看连接的对端地址，回环地址之外一律拒绝。冒烟的宿主半边新增一条检查：局域网连接加回环 Host 必须被拒。
+- 删除会话时「目录留在会话根目录内」的判定改为比较解析符号链接之后的路径：会话根目录下有指向别处的项目目录链接时，删除不再跟着链接走到根目录之外。
+
+### 移除
+
+- 「轮次状态行」整体移除：这一项把宿主的过程控件搬到自己那一轮工作的末尾，并为进行中、已停止与失败的轮次换上插件自己画的火花与文字（用时、输出 tokens、当前动作）。宿主早已把运行中的状态做成对话末尾自己的一行（小鲸鱼、说法与计时），过程控件只在轮次结束之后出现，于是这条状态条只剩停止与失败两种情形还在渲染，画法又与那一行不同。现在宿主自己的控件留在它原来的位置与写法上：已停止与失败的轮次显示宿主自己的「已停止」「处理失败」，用时与输出 tokens 不再显示；设置页「对话」页的「轮次状态行」一行随之消失，早先存下的取值不再被读取。
+
+### 其他变更
+
+- 模型标志的 `cap` 高度回退原先写在同一规则里的两条 `height`，端到端的 `!important` 审计因此整条跳过这条规则；现在两条高度分处两条规则，规则的每一处权重都受审计。
+- 两处内部记录的清理：滚动主人记「哪个来源在滑这一格」的表改用弱引用键，弹簧自己走完之后不再把已经分离的对话子树留在内存里；页脚接管挂在宿主自己的账号行与菜单上的监听随功能的拆卸一并摘下，反复开关不再叠加。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- A file changed several times in one piece of work was listed as one row per change, so a dense stretch of edits made it hard to see how much the file had changed in total. The edits and writes of one file inside one process group now stand as a single row: the earliest of them carries the total of those changes in its `+n -m` tail, rolls once per change as each one lands, and opens onto every change. A file changed once is drawn as before, and a failed or interrupted row keeps its own verdict.
+- The line saying what the model is doing now holds its place above the composer while the conversation follows its tail: that hold used to hang on the Turn status line switch, a switch for a line of its own. It rides the Chat-area animations switch now, together with the line's wording and sweep, and it still steps aside — keeping its document place — while the reader owns the scroll or the follow's glide holds the position.
+- On the home page's usage panel, the heat map's cell tip used to name the day's messages; it now names the tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure the cell's shade is bucketed from. Both sources behind the grid carry a per-day token total, so the tip no longer changes its reading with the source.
+- The usage roll-up and content search used to list the whole session corpus again for every session they read, so a pass grew with roughly the square of the number of sessions; each session now reads its own log and a pass lists the corpus once, which grows linearly. Measured locally over 80 sessions and 29.2 MB of logs, folding all of them from a cold cache: 10898 / 8583 ms before, 2184 / 2363 ms after.
+- With the sidebar search box on Standalone, its own row still carried 8px of inline padding, which made the box 16px narrower than the New session row under it; the row adds no padding now, so the box's two edges stand where the rows under it stand.
+- The shortcut hint at the right of the sidebar's New session row was plain monospace text (Ctrl + N); it now wears the search box's own key caps — one 20px cap per key with a 1px hairline and 12px secondary text — and the `+` between the two keys is gone.
+- Literals in the stylesheets read tokens: the label on a filled accent button takes the fill's own foreground token (it was a hard-coded white, which promised nothing once a palette turns the fill light), and the settings page's plugin mark takes the primary label token (it was a hard-coded hex). The shape section of docs/STYLE.md records the radii and strokes actually in use, with the host control each copy came from.
+
+### Bug Fixes
+
+- A session deletion whose body went past the limit left the client with a reset connection; the 400 is answered first now, and the connection is ended once that answer has gone out.
+- A key in the cost meter's ledger that is not a real date used to become the newest day by string comparison, which dropped every day the local fold contributed, along with its sessions, and left the home page's model chart formatting an invalid date; such a key is skipped as the ledger is read now, and the rest of the days merge as before.
+- With no cost-meter plugin on the machine, the usage roll-up reported its source as cost-meter+local; it reports local now, which is what "which source answered" means.
+- The peak-rate catalog's daily timer kept reaching the source until the process exited once a page had asked, and switching the peak-rate feature off did not stop it; it stands down after 48 hours with no request now, and the next request starts it again.
+- A host without a web server service registered no route in silence and then logged one failure per route as it unloaded; the missing service is reported once now, and the route disposers hold the real disposals alone.
+- In session content search, when a full listing replaced a tail-only pass in flight, the older pass's end cleared the newer pass's state, which let a third pass read the same sessions alongside it; only the pass that is still current clears the state now.
+- A closed popover card only dropped its opacity, so the buttons inside stayed in the tab order and a keyboard reader landed on rows nothing was drawing; a closed card leaves the paint, hit-testing and the tab order together now, and the open and close fades are unchanged.
+- On the live turn's running row, the skin hid the host's own words and marked its replacement decorative, so a screen reader received neither what the model is doing, nor the wait badge, nor the clock; the replacement is the row's readable text now, and the host's own live region still announces the row.
+- With Animation set to Reduced, the reasoning-effort slider's top-rung matrix still flashed once per block on the duration written at run time; that duration and phase are not written in this setting now, and the matrix stands still.
+- Several controls could not say what they were: the conversation-statistics line held only figures and arrows, the effort and model triggers never reported whether their menu was open, the settings page's switches had no name, the permission popover marked its current tier with a check mark alone, and the input and output arrows joined a name. The line carries its own name now, both triggers report the open state with their menu, a switch takes its row's title as its name, the permission popover's current tier writes aria-checked, and the arrows are hidden from a reader.
+
+### Security
+
+- With no `connection` service on the host, the private routes' fallback fence read only the Host header the requester writes, so a LAN client claiming `localhost` passed. The peer address of the connection is checked first now, and anything outside loopback is refused. The host half's smoke run carries the check: a LAN connection claiming a loopback Host is refused.
+- The session deletion's "directory stays inside the sessions root" check compares resolved paths now: with a project directory inside the root linked elsewhere, the removal no longer follows the link out of the root.
+
+### Removals
+
+- The Turn status line feature is removed: it moved the host's process control to the end of the turn's work and drew the plugin's own spark and text — elapsed time, output tokens, what the model was doing — for a running, stopped or failed turn. The host has long since drawn the running status as its own row at the end of the conversation (whale, wording and clock), and its process control appears only once the turn has closed, so the plugin's line was left rendering the stopped and failed cases alone, in a look of its own. The host's control now stays where the host puts it and reads as the host writes it: a stopped or failed turn shows the host's own Stopped / Failed with no elapsed time or output tokens, and the Turn status line row leaves the Conversation tab of the settings page, with any stored value no longer read.
+
+### Chores
+
+- The model mark's `cap`-height fallback was two `height` declarations in one rule, which made the end-to-end `!important` audit skip that rule whole; the two heights sit in two rules now, so every weight in them is audited.
+- Two internal records are released properly: the scroll owner's table of which source is easing a container uses weak keys now, so a spring that arrives on its own no longer keeps a detached conversation subtree in memory, and the footer takeover's listeners on the host's own account row and menu come off with the feature's teardown instead of stacking on every switch.
+
 ## [0.13.1] - 2026-10-10
 
 [中文](#cn-0.13.1) | [English](#en-0.13.1)

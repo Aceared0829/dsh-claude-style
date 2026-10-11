@@ -84,18 +84,9 @@ dsh plugin --profile web add dsh-claude-style                  # npm 包（推�
 
 同一时刻建议只启用一个主题。安装后推荐重启 `DeepSeek Harness`以获得完整能力。
 
-## 功能与设置
-
-本插件的功能与设置说明都在文档里：[功能一览](docs/FEATURES.md)、[设置说明](docs/SETTINGS.md)。
-
 ## 字体
 
-> **重要：Anthropic 字体不随 npm 包分发，仅在仓库供下载学习研究**。
-
-| 字体 | 用途 | 文件 |
-|---|---|---|
-| Anthropic Sans Web Text | 界面 / UI | [`packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/main/packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf) |
-| Anthropic Serif Web Text | 对话正文 / Markdown | [`packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/main/packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf) |
+> **重要：Anthropic 没有对其字体进行公开发行，[`点击此处可以查看`](https://github.com/Nwflower/dsh-claude-style/raw/main/packages/assets/src/fonts)，请自行下载，仅供学习或研究用途**。
 
 Anthropic 字体启用（二选一）：
 
@@ -111,6 +102,8 @@ Anthropic 字体启用（二选一）：
 | [架构决策](docs/decisions/README.md) | 每条决策一个文件：构建与源码、宿主边界、运行时与各个功能的取舍，以及正在进行的架构迁移 |
 | [更新日志](CHANGELOG.md) | 版本历史 |
 | [贡献指南](CONTRIBUTING.md) | 如何从 `packages/client/src/` 构建、提交规范与截图/回归工具（英文） |
+| [功能一览](docs/FEATURES.md) | 每一项功能做什么、在设置页哪里开关 |
+| [设置说明](docs/SETTINGS.md) | 五个分页（通用、外观、输入区、侧栏、对话）的设置项与各档效果 |
 
 ## 鸣谢
 

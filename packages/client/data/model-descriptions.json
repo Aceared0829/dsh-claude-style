@@ -50,13 +50,10 @@
     "searchActionShortcuts": { "zh": "键盘快捷键", "en": "Keyboard shortcuts" },
     "searchLoading": { "zh": "正在搜索…", "en": "Searching…" },
     "searchEmpty": { "zh": "没有匹配的结果", "en": "No results" },
-    "turnStatusTokens": { "zh": "{count} tokens", "en": "{count} tokens" },
-    "turnStatusWaiting": { "zh": "等待模型…", "en": "Waiting for the model…" },
-    "turnStatusThinking": { "zh": "正在思考", "en": "Thinking…" },
-    "turnStatusThought": { "zh": "思考了 {duration}", "en": "Thought for {duration}" },
-    "turnStatusWriting": { "zh": "正在写回答", "en": "Writing…" },
-    "turnStatusToolCall": { "zh": "正在准备工具调用", "en": "Preparing a tool call…" },
-    "turnStatusTools": { "zh": "正在调用工具", "en": "Running tools…" },
+    "chatWaitThinking": { "zh": "正在思考", "en": "Thinking…" },
+    "chatWaitWriting": { "zh": "正在写回答", "en": "Writing…" },
+    "chatWaitToolCall": { "zh": "正在准备工具调用", "en": "Preparing a tool call…" },
+    "chatWaitTools": { "zh": "正在调用工具", "en": "Running tools…" },
     "homeTabOverview": { "zh": "概览", "en": "Overview" },
     "homeTabModels": { "zh": "模型", "en": "Models" },
     "homeRangeAll": { "zh": "全部", "en": "All" },
@@ -155,7 +152,12 @@
     "processSummaryFullRecordOne": { "zh": "记录 {count} 条", "en": "{count} record" },
     "processSummaryFullRecordOther": { "zh": "记录 {count} 条", "en": "{count} records" },
     "processSummaryFullSeparator": { "zh": "，", "en": ", " },
-    "chatWaitOvertime": { "zh": "暂未响应", "en": "No response yet" }
+    "chatWaitOvertime": { "zh": "暂未响应", "en": "No response yet" },
+    "fileRowMergedChanges": { "zh": "同一文件的 {count} 次改动合并为这一行", "en": "{count} changes to the same file are merged into this row" },
+    "accountNameFallback": { "zh": "用户", "en": "User" },
+    "accountSettingsRow": { "zh": "设置", "en": "Settings" },
+    "footerPluginRow": { "zh": "插件", "en": "Plugin" },
+    "permissionGroupLabel": { "zh": "权限", "en": "Permission" }
   },
   "settings": {
     "title": { "zh": "Claude Style", "en": "Claude Style" },
@@ -296,11 +298,6 @@
       "zh": "右侧栏停靠的面板画成悬浮卡片：四周留 8px、16px 圆角、1px 描边与投影；关闭后铺满整列、贴住四边，分栏时每栏铺满各自那一栏。",
       "en": "Draw the right sidebar's docked panels as floating cards: 8px inside the column, a 16px radius, a hairline and an elevation. Off fills the column and hugs its edges; a split gives each pane its own column."
     },
-    "turnStatusTitle": { "zh": "轮次状态行", "en": "Turn status line" },
-    "turnStatusDesc": {
-      "zh": "把轮次状态从开头移到轮次末尾。",
-      "en": "Move the status of a running, stopped or failed turn to the end of the turn's work, with the elapsed time, the output tokens and what the model is doing. Off restores the host's turn status."
-    },
     "turnNavTitle": { "zh": "对话导航", "en": "Conversation navigator" },
     "turnNavDesc": {
       "zh": "重绘对话导航区域。",
@@ -312,6 +309,7 @@
       "en": "The conversation area's motion: the follow, the automatic folding with its rolling door, the text fade, the file change rows, the send flight, the counted figures on each process group's header and the line saying what the model is doing. On plays this plugin's set; off hands the conversation back to the host, its own words included. With Animation set to Reduced it all stands still."
     },
     "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
+    "statsLineLabel": { "zh": "对话统计信息", "en": "Conversation statistics" },
     "statsPositionDesc": { "zh": "选择对话统计信息的展示位置。", "en": "Choose where the conversation statistics show." },
     "statsPositionContext": { "zh": "收进上下文", "en": "Inside the context popover" },
     "statsPositionInline": { "zh": "独立成行", "en": "On its own line" },
