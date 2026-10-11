@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "improvements",
+  "order": 0,
+  "external": false,
+  "zh": "「模型正在做什么的那一行」在跟随末尾时停在输入框上方：这一行的固定此前挂在「轮次状态行」这一个开关上，而它属于运行中的这一行本身。现在它随「聊天区动画效果」这一开关，与这一行的说法、扫光同一处；读者自己接管滚动，或跟随的滑行正持有位置时，它照旧让开，回到文档位置随内容走。",
+  "en": "The line saying what the model is doing now holds its place above the composer while the conversation follows its tail: that hold used to hang on the Turn status line switch, a switch for a line of its own. It rides the Chat-area animations switch now, together with the line's wording and sweep, and it still steps aside — keeping its document place — while the reader owns the scroll or the follow's glide holds the position."
+}

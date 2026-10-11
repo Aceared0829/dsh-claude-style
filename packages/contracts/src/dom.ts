@@ -139,9 +139,8 @@ export const TURN_RAIL_CURRENT_SELECTOR = 'button[data-index][aria-current="true
  */
 export const TURN_RAIL_PITCH = 10
 export const TURN_RAIL_INSET = 6
-/** A process group's header control, and the turn's own process control the status line moves. */
+/** A process group's header control. */
 export const PROCESS_ACTIVITY_SELECTOR = 'button[data-process-activity]'
-export const TURN_PROCESS_SELECTOR = 'button[data-turn-process]'
 /** A fold: the host's DisclosureRow, and every other control that opens and closes something. */
 export const DISCLOSURE_ROW_SELECTOR = '[data-disclosure-row]'
 /**

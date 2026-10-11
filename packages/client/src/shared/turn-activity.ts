@@ -2,10 +2,10 @@ import { readTurnActivity } from '../core/host'
 import type { HostChatSnapshot, HostTurn } from '@dsh-claude-style/contracts/services'
 
 /**
- * What an open turn is doing now, in words (D23, D32): the states the turn
- * status line and the live waiting line both say, so the two cannot drift.
+ * What an open turn is doing now, in words (D32, D63): the states the waiting
+ * line says, the one line that speaks for a running turn.
  *
- * The words are the copy document's own (`turnStatus*`, model-descriptions.json);
+ * The words are the copy document's own (`chatWait*`, model-descriptions.json);
  * a line that cannot read a state falls back to its own wording.
  */
 
@@ -16,13 +16,13 @@ export interface ActivityWords {
 }
 
 /** The model is thinking. */
-export const ACTIVITY_THINKING: ActivityWords = { key: 'turnStatusThinking', fallback: 'Thinking…' }
+export const ACTIVITY_THINKING: ActivityWords = { key: 'chatWaitThinking', fallback: 'Thinking…' }
 /** The model is writing its answer. */
-export const ACTIVITY_WRITING: ActivityWords = { key: 'turnStatusWriting', fallback: 'Writing…' }
+export const ACTIVITY_WRITING: ActivityWords = { key: 'chatWaitWriting', fallback: 'Writing…' }
 /** The model is drawing up a tool call. */
-export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'turnStatusToolCall', fallback: 'Preparing a tool call…' }
+export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', fallback: 'Preparing a tool call…' }
 /** The turn's tool calls are running. */
-export const ACTIVITY_TOOLS: ActivityWords = { key: 'turnStatusTools', fallback: 'Running tools…' }
+export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: 'Running tools…' }
 
 /**
  * The words for what the turn is doing, or null where there is nothing to say:

@@ -1,7 +1,8 @@
 /**
- * The chat fixture the turn-status case reads: one bound session whose snapshot
- * has a failed first turn and a running second one, the wording the host's own
- * pills use, and the command log the permission control's pick is read from.
+ * The chat fixture the waiting line's case reads: one bound session whose
+ * snapshot has a failed first turn and a running second one, the wording the
+ * host's own pills use, and the command log the permission control's pick is
+ * read from.
  */
 (function () {
   var host = window.__dshSmokeHost
@@ -12,14 +13,14 @@
   // session instead: the control reads the running preset from its projection
   // and switches through the host permission command; the case asserts both.
   var permissionCommands = []
-  /** The cases that carry the turn-status chat fixture: the turn-status case, the waiting line's case, and the two feature-switch cases. */
-  var turnFixtureCase = CASE === 'turn-status' || CASE === 'chat-wait' || CASE === 'switches' || CASE === 'switches-off'
-  // The turn-status case: one bound session whose chat snapshot (ui-chat's
+  /** The cases that carry this chat fixture: the waiting line's case and the two feature-switch cases. */
+  var waitFixtureCase = CASE === 'chat-wait' || CASE === 'switches' || CASE === 'switches-off'
+  // The waiting line's case: one bound session whose chat snapshot (ui-chat's
   // `chat` target of uiConversation) has a failed first turn that ran 12s and
   // reported 300 output tokens, then a running turn — a settled first step
   // that reported its usage, and a second step streaming its reasoning — and
   // the host's chat wording (English).
-  var turnStatusChat = turnFixtureCase ? (function () {
+  var waitChat = waitFixtureCase ? (function () {
     function stepData(value) { return { get: function (kind) { return kind === 'assistant-step' ? value : undefined } } }
     var failed = {
       turn: 1,
@@ -50,6 +51,6 @@
     }
   })() : undefined
   host.permissionCommands = permissionCommands
-  host.turnFixtureCase = turnFixtureCase
-  host.turnStatusChat = turnStatusChat
+  host.waitFixtureCase = waitFixtureCase
+  host.waitChat = waitChat
 })()

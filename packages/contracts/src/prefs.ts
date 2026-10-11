@@ -26,7 +26,6 @@ export const PREFS_DEFAULT = Object.freeze({
   dockCards: true,
   sidebarSearch: true,
   searchStyle: 'overlay',
-  turnStatus: true,
   turnNav: true,
   viewTabs: true,
   headerBand: true,

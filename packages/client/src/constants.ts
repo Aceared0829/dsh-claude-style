@@ -192,7 +192,6 @@ export const FEATURE_PREF_DEFAULTS = {
   statsPosition: STATS_POSITION_CONTEXT,
   workspaceView: true,
   sidebarSearch: true,
-  turnStatus: true,
   turnNav: true,
   viewTabs: true,
   headerBand: true,
@@ -223,15 +222,15 @@ export const STREAM_GLIDE_ATTR = 'data-dsh-claude-stream-glide'
  * (packages/client/src/features/chat-follow/chat-follow.ts) holds the position
  * for the reader. A position held short of the end reads to the host as a
  * reader who left the tail, and it takes its own data-chat-following-tail away
- * (D44) — the gate the live status line's pin waits for
- * (packages/client/src/features/turn-status/turn-status.css). This mark stands
+ * (D44) — the gate the waiting line's pin waits for
+ * (packages/client/src/features/chat-wait/chat-wait.css). This mark stands
  * for that gate while the glide is the one moving the position.
  */
 export const FOLLOW_HOLD_ATTR = 'data-dsh-claude-follow-hold'
 /**
  * On a container the reader has taken over with his own scrolling
- * (packages/client/src/shared/scroll-owner.ts), until he comes back to its end. The live
- * status line's pin (packages/client/src/features/turn-status/turn-status.css) reads it: a
+ * (packages/client/src/shared/scroll-owner.ts), until he comes back to its end. The
+ * waiting line's pin (packages/client/src/features/chat-wait/chat-wait.css) reads it: a
  * pin stands only while the skin's own follow is the one moving the position,
  * never over content the reader scrolled back to.
  */
@@ -467,7 +466,6 @@ export interface Prefs {
   dockCards: boolean
   sidebarSearch: boolean
   searchStyle: string
-  turnStatus: boolean
   turnNav: boolean
   viewTabs: boolean
   headerBand: boolean

@@ -11,11 +11,11 @@
   var turnNav = host.turnNav
   var statsCase = host.statsCase
   var statsFixtureCase = host.statsFixtureCase
-  var turnFixtureCase = host.turnFixtureCase
+  var waitFixtureCase = host.waitFixtureCase
   var permissionFixture = host.permissionFixture
   var permissionCommands = host.permissionCommands
 
-  var sessions = deepy !== undefined ? deepy.sessions : turnNav !== undefined ? turnNav.sessions : statsFixtureCase ? statsCase.sessions : turnFixtureCase ? {
+  var sessions = deepy !== undefined ? deepy.sessions : turnNav !== undefined ? turnNav.sessions : statsFixtureCase ? statsCase.sessions : waitFixtureCase ? {
     list: {
       getSnapshot: function () { return { current: undefined, phase: 'ready', ids: [], byId: {}, projectionsBySession: {} } },
       subscribe: function () { return function () {} },

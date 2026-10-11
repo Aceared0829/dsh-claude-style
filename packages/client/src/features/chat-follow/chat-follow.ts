@@ -194,8 +194,8 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   /**
    * Put the hold mark on the column the glide holds. Held short of the end,
    * the position reads to the host as a reader who left the tail, so the host
-   * takes data-chat-following-tail away; the live status line's pin waits for
-   * that attribute (features/turn-status/turn-status.css), and this mark keeps
+   * takes data-chat-following-tail away; the waiting line's pin waits for
+   * that attribute (features/chat-wait/chat-wait.css), and this mark keeps
    * the pin standing while the glide is the one moving the position.
    */
   const markHold = (column: HTMLElement) => {

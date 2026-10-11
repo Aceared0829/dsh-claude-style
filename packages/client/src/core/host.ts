@@ -1,5 +1,5 @@
 import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
-import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR, TURN_PROCESS_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
 import { closestFrom } from '../shared/dom'
@@ -115,11 +115,6 @@ export function findConversationScroller() {
 /** The chat columns on the page: the root every chat-area behaviour scopes to. */
 export function findChatFlows() {
   return document.querySelectorAll<HTMLElement>(CHAT_FLOW_SELECTOR)
-}
-
-/** The turn-process control inside one flow row, which the status line moves. */
-export function findTurnProcess(row: ParentNode) {
-  return row.querySelector<HTMLElement>(TURN_PROCESS_SELECTOR)
 }
 
 /** The shown conversation: the element carrying its session id, and the id itself. */

@@ -7,7 +7,7 @@
 (function () {
   var host = window.__dshSmokeHost
   var CASE = host.CASE
-  var turnFixtureCase = host.turnFixtureCase
+  var waitFixtureCase = host.waitFixtureCase
 
   var chatTemplates = {
     'duration.compactSeconds': '{seconds}s',
@@ -45,7 +45,7 @@
   var statsFixtureCase = CASE === 'context-stats' || CASE === 'stats-compact' || CASE === 'stats-inline'
   /** The case that switches the interface language while the page runs. */
   var localeSwitchCase = CASE === 'permissions-locale'
-  var localeServed = turnFixtureCase || statsFixtureCase || CASE === 'turn-nav' || localeSwitchCase
+  var localeServed = waitFixtureCase || statsFixtureCase || CASE === 'turn-nav' || localeSwitchCase
   /** The active locale id; the language cases start in the language they assert. */
   var active = localeSwitchCase ? 'zh' : 'en'
   var listeners = []
@@ -72,8 +72,6 @@
         'duration.secondUnit': 's',
         'duration.minuteUnit': 'm ',
         'duration.hourUnit': 'h ',
-        'message.stopped': 'Stopped',
-        'message.turnProcess.failed': 'Failed',
       }, chatTemplates)
       return function (key, params) {
         var template = templates[key] || key

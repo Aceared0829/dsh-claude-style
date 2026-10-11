@@ -231,25 +231,6 @@ module.exports = {
     check('no feature reported a failure', r.errors.length === 0, r.errors.join(' | '))
     commonChecks(r)
   },
-  'turn-status'(r) {
-    basicChecks(r)
-    const status = r.turnStatus || {}
-    const failed = status.failed || {}
-    const live = status.live || {}
-    check('each status line moves below its turn\'s work: the failed turn\'s above its footer, the running turn\'s above the queued message',
-      JSON.stringify(status.seen) === JSON.stringify(['first question', 'first work', 'error', 'Failed', 'footer',
-        'second question', 'second work', 'Deep diving for 1m 5s', 'queued']),
-      JSON.stringify(status.seen))
-    check('the running line reads elapsed time · output tokens · what the model is doing, with a turning spark, in place of the host label',
-      live.state === 'live' && /^1m [5-9]s · 1\.2k tokens · \S/.test(live.text || '') &&
-        live.drawn === JSON.stringify(live.text) && live.label === 'none' && live.turning === 'dsh-claude-turn-spark',
-      JSON.stringify(live))
-    check('the failed line reads the host\'s word · how long it ran · output tokens, with a still spark',
-      failed.state === 'failed' && failed.text === 'Failed · 12s · 300 tokens' &&
-        failed.drawn === JSON.stringify(failed.text) && failed.label === 'none' && failed.turning === 'none',
-      JSON.stringify(failed))
-    commonChecks(r)
-  },
   'turn-nav'(r) {
     basicChecks(r)
     const nav = r.turnNav || {}

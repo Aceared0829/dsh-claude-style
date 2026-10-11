@@ -40,7 +40,6 @@
             (document.body.hasAttribute('data-dsh-claude-permissions') ? 1 : 0),
           workspaceView: document.querySelectorAll('.dsh-claude-ws-segments').length,
           sidebarSearch: document.querySelectorAll('[data-dsh-claude-search-row], .dsh-claude-search-trigger').length,
-          turnStatus: document.querySelectorAll('[data-dsh-claude-turn-status], [style*="--dsh-claude-turn-order"]').length,
           viewTabs: document.querySelectorAll('[data-dsh-view-tabs]').length,
         }
       }
@@ -50,7 +49,7 @@
         await sleep(300)
         return switchMarks()
       }
-      var switchKeys = ['permissionsControl', 'workspaceView', 'sidebarSearch', 'turnStatus', 'viewTabs']
+      var switchKeys = ['permissionsControl', 'workspaceView', 'sidebarSearch', 'viewTabs']
       // The sixth switched feature, the file change rows, takes seat keys over
       // rather than drawing marks on the page, so its switch is driven and
       // checked in its own case ('chat-files': offSeats/backSeats). The header

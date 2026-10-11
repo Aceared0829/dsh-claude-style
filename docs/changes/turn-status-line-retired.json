@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "removals",
+  "order": 0,
+  "external": true,
+  "zh": "「轮次状态行」整体移除：这一项把宿主的过程控件搬到自己那一轮工作的末尾，并为进行中、已停止与失败的轮次换上插件自己画的火花与文字（用时、输出 tokens、当前动作）。宿主早已把运行中的状态做成对话末尾自己的一行（小鲸鱼、说法与计时），过程控件只在轮次结束之后出现，于是这条状态条只剩停止与失败两种情形还在渲染，画法又与那一行不同。现在宿主自己的控件留在它原来的位置与写法上：已停止与失败的轮次显示宿主自己的「已停止」「处理失败」，用时与输出 tokens 不再显示；设置页「对话」页的「轮次状态行」一行随之消失，早先存下的取值不再被读取。",
+  "en": "The Turn status line feature is removed: it moved the host's process control to the end of the turn's work and drew the plugin's own spark and text — elapsed time, output tokens, what the model was doing — for a running, stopped or failed turn. The host has long since drawn the running status as its own row at the end of the conversation (whale, wording and clock), and its process control appears only once the turn has closed, so the plugin's line was left rendering the stopped and failed cases alone, in a look of its own. The host's control now stays where the host puts it and reads as the host writes it: a stopped or failed turn shows the host's own Stopped / Failed with no elapsed time or output tokens, and the Turn status line row leaves the Conversation tab of the settings page, with any stored value no longer read."
+}

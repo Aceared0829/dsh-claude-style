@@ -106,7 +106,7 @@ function processSummaryScenario({ check }) {
       const headers = notes.headers ?? []
       // The page's own language, read off the line the skin wrote: the same two
       // languages the copy document carries.
-      const lang = working.label === COPY.turnStatusThinking.zh ? 'zh' : 'en'
+      const lang = working.label === COPY.chatWaitThinking.zh ? 'zh' : 'en'
       const sentence = (parts) => parts.join(COPY.processSummaryFullSeparator[lang])
       const expected = [
         sentence([fill(COPY.processSummaryFullThoughtOther[lang], 2), fill(COPY.processSummaryFullToolOne[lang], 1)]),
@@ -121,7 +121,7 @@ function processSummaryScenario({ check }) {
         check('past ten seconds of silence the line says the model has not answered', overtime.badge === COPY.chatWaitOvertime[lang], JSON.stringify(overtime)),
         check('the badge leaves once the model writes', working.line === true && working.badge === null, JSON.stringify(working)),
         check('the line says what the model is doing once it writes',
-          [COPY.turnStatusThinking[lang], COPY.turnStatusWriting[lang], COPY.turnStatusToolCall[lang], COPY.turnStatusTools[lang]].includes(working.label ?? ''),
+          [COPY.chatWaitThinking[lang], COPY.chatWaitWriting[lang], COPY.chatWaitToolCall[lang], COPY.chatWaitTools[lang]].includes(working.label ?? ''),
           JSON.stringify({ label: working.label, lang })),
         check('every process group\'s header says what it holds, the host\'s words out of sight',
           headers.length === 2 && headers.every((header) => header.summaryDisplay !== 'none' && header.wordsDisplay === 'none'),

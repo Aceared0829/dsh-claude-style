@@ -53,7 +53,7 @@ export function createSessionStats(ctx: HostContext) {
   /**
    * The shown conversation's host session id.
    *
-   * Read off the active conversation's own column (features/turn-status
+   * Read off the active conversation's own column (features/chat-wait
    * does the same): the id names the conversation on screen, which is the
    * composer whose meter opened the popover.
    */

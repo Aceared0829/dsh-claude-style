@@ -67,7 +67,6 @@ export interface Handles {
   themeFlip: FeatureHandle
   workspace: FeatureHandle
   search: FeatureHandle
-  turnStatus: FeatureHandle
   turnNav: FeatureHandle
   chatFollow: FeatureHandle
   chatFold: ChatFoldHandle

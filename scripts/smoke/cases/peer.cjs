@@ -40,7 +40,7 @@ module.exports = {
     check('the accent line names dsh-chat-ux',
       (settings.texts || []).some(text => text.includes('dsh-chat-ux')), JSON.stringify(settings.texts))
     check('the rows the other plugin does not own keep answering',
-      (settings.refusing || []).includes('turnStatus') === false && (settings.refusing || []).includes('viewTabs') === false,
+      (settings.refusing || []).includes('turnNav') === false && (settings.refusing || []).includes('viewTabs') === false,
       JSON.stringify(settings.refusing))
     commonChecks(r)
   },

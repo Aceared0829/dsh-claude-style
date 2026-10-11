@@ -29,7 +29,7 @@ export const PERMISSION_SEGMENTS = [
 
 /**
  * The host's own tier names, keyed by preset id: its `permission.access`
- * dictionary (D23) holds the original Chinese names a Chinese interface shows
+ * dictionary holds the original Chinese names a Chinese interface shows
  * instead of a translation of Claude's own (D17).
  */
 export const PERMISSION_ACCESS_NAMESPACE = 'permission.access'

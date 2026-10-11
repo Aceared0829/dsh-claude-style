@@ -55,7 +55,6 @@ const PROBE_PARTS = [
   'account-reads.js',
   'shell-studio.js',
   'agent-permissions.js',
-  'agent-turns.js',
   'shell-switches.js',
   'agent-turn-nav.js',
   'shell-palette.js',

@@ -1,4 +1,34 @@
 /* ---------- chat wait: the live turn's running row ---------- */
+/* The host draws the live turn's own row — the whale tail and "deep diving",
+   with its ticking clock — as the chat flow's LAST row, so it rides the bottom
+   of the content: while an answer streams in, every burst pushes it down and the
+   follow's glide pulls it back, and the reader watching the tail sees it jump.
+   The row is pinned instead at the place it already comes to rest when the glide
+   has caught up: the composer's own height, the fade band above it, and the
+   host's 16px transcript padding (`.scroll`'s `padding: 16px 32px`). A burst
+   then costs the row nothing — the glide and the pin land on the same spot — and
+   scrolled away from the tail the row keeps its document place, so it never
+   floats over what the reader went back to read.
+
+   The gates say whose scroll this is: the host's own attribute and the stream
+   glide's hold mark (FOLLOW_HOLD_ATTR, features/chat-follow/chat-follow.ts) for
+   "the tail is being followed" — the mark is what a position held short of the
+   end needs, because that is exactly what makes the host take its attribute away
+   mid-stream — and the reader's takeover (READER_HOLD_ATTR,
+   shared/scroll-owner.ts) for "the reader is the one scrolling", which drops the
+   pin even where the host still reports its follow. */
+body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running],
+body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running] {
+  position: sticky;
+  bottom: calc(var(--dsh-composer-height, 0px) + var(--dsh-composer-fade-h, 40px) + 16px);
+  z-index: 1;
+  /* Pinned, the row floats over the tail of the transcript, and the words there
+     would show through it. The canvas it already stands on paints the band, the
+     way the composer seat paints its own: at rest the two are the same colour
+     and nothing changes. */
+  background: var(--dsh-claude-canvas, var(--dsw-alias-bg-base, #FCFCFB));
+}
+
 /* The host's running row keeps its whale and its live region; its words — the
    one child of the content span it does not mark decorative — step aside for
    the skin's line (chat-wait.ts): what the turn is doing right now, the turn's

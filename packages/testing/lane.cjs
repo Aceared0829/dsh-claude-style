@@ -16,7 +16,7 @@ const HOST = {
   userRow: '[data-chat-flow-kind="user"]', // FLOW_KIND_ATTRIBUTE with the host's user kind
   flow: '[data-chat-flow]', // CHAT_FLOW_SELECTOR
   streaming: '[data-streaming]', // STREAMING_SELECTOR
-  turnProcess: 'button[data-turn-process]', // TURN_PROCESS_SELECTOR
+  turnProcess: 'button[data-turn-process]', // the host's own process control, which the skin leaves alone
   scroller: '[data-conversation-scroll]', // CONVERSATION_SCROLL_SELECTOR
   followingTail: '[data-chat-following-tail]', // FOLLOWING_TAIL_SELECTOR
   echo: '[data-submission-echo]', // SUBMISSION_ECHO_SELECTOR

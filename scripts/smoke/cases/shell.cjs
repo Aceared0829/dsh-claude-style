@@ -429,7 +429,7 @@ module.exports = {
       appearance: ['palette', 'typeface', 'mascot', 'mascotScope'],
       composer: ['composerScope', 'homeLayout', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards'],
-      conversation: ['turnStatus', 'turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],
+      conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],
     }
     const pages = settings.pages || {}
     for (const tab of Object.keys(expected)) {
@@ -487,7 +487,7 @@ module.exports = {
     const sw = r.switches || {}
     const keys = Object.keys(sw.start || {})
     const present = (marks, key) => !!marks && marks[key] > 0
-    check('every switched feature is on by default', keys.length === 5 && keys.every((key) => present(sw.start, key)), JSON.stringify(sw.start))
+    check('every switched feature is on by default', keys.length === 4 && keys.every((key) => present(sw.start, key)), JSON.stringify(sw.start))
     for (const step of sw.steps || []) {
       check(`switching ${step.key} off leaves none of its marks and keeps the others`,
         !present(step.off, step.key) && keys.filter((key) => key !== step.key).every((key) => present(step.off, key)),
@@ -505,7 +505,7 @@ module.exports = {
     const sw = r.switches || {}
     const keys = Object.keys(sw.start || {})
     check('a feature switched off before the page loads never installs',
-      keys.length === 5 && keys.every((key) => sw.start[key] === 0), JSON.stringify(sw.start))
+      keys.length === 4 && keys.every((key) => sw.start[key] === 0), JSON.stringify(sw.start))
     check('switching them on installs every one, live',
       !!sw.allOn && keys.every((key) => sw.allOn[key] > 0), JSON.stringify(sw.allOn))
     commonChecks(r)
