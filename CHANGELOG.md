@@ -4,13 +4,15 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.13.1] - 2026-10-10
 
-<h3 id="cn-unreleased">问题修复</h3>
+[中文](#cn-0.13.1) | [English](#en-0.13.1)
+
+<h3 id="cn-0.13.1">问题修复</h3>
 
 - 装了 0.12.3 或 0.13.0 之后 DSH 起不来（「The application could not start or stopped unexpectedly」），禁用本插件也一样，只有退回 0.12.2 才能启动：这两版把宿主本体 `@deepseek-ai/dsh` 写成了运行时依赖，安装本插件时把宿主的整份运行时闭包拉进 profile 的 node_modules（282 个 `@deepseek-ai/*` 包、lockfile 从 2,522 行长到 11,466 行），与宿主自己那份并存；其他插件按名字导入宿主包时落到这一份新副本上，版本或导出对不上就在冷启动时抛出。现在这条声明去掉了，装本插件不再多装任何宿主包，其他插件照旧从宿主那份解析；本插件运行时要用的宿主包（设置表单的 schema 工厂、加载器递过来的部件与 React）声明在 peerDependencies 里，另有一份 devDependency 供类型检查与测试使用。构建新增一条拒绝：`package.json` 的 `dependencies` 里出现 `@deepseek-ai/*` 即失败。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-0.13.1">Bug Fixes</h3>
 
 - DSH would not start after installing 0.12.3 or 0.13.0 ("The application could not start or stopped unexpectedly"); disabling this plugin did not help either, and only going back to 0.12.2 did. Those two versions declared the host itself, `@deepseek-ai/dsh`, as a runtime dependency, so installing the plugin pulled the host's whole runtime closure into the profile's node_modules (282 `@deepseek-ai/*` packages; the lockfile grew from 2,522 to 11,466 lines) beside the host's own copy. Another plugin importing a host package by name landed on that new copy, and a version or export that did not line up threw during a cold start. That declaration is gone: installing this plugin adds no host package, and other plugins resolve against the host's copy as before. The host packages this plugin does use at runtime — the schema factory behind the settings form, the parts the loader hands over, and React — are declared in peerDependencies, with a devDependency copy for the type check and the tests. The build now refuses `@deepseek-ai/*` in `dependencies`.
 
