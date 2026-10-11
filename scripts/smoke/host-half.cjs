@@ -23,15 +23,18 @@ const { ROOT, HOST, SKIN_FIXTURE, same, check } = require('./shared.cjs')
  * @param options - `fenced` offers the host's own request check, `home` answers
  *   `dshHomePath` with a scratch harness home, and `live` names the sessions the
  *   fake `sessions` service reports as open, and `events` maps a session id to
- *   the durable events the fake `sessionQuery` observation answers for it (each
- *   read is pushed onto `reads` and each lease release onto `releases`, when
- *   given); `stored` is the snapshot list the fake `sessionPersistence` answers
- *   (each listing is pushed onto `lists`); `registry` is the fake
+ *   the durable events the fake `sessionQuery` answers for it. That service
+ *   carries the host's three shapes: the per-id read, the point observation
+ *   (each read is pushed onto `reads`, each lease release onto `releases`) and
+ *   the batch reader (a corpus listing per call, its size pushed onto
+ *   `listCalls`); `stored` is the snapshot list the fake `sessionPersistence`
+ *   answers (each listing is pushed onto `lists`); `registry` is the fake
  *   `workspaceRegistry` service object itself, whose `unarchived` list records
  *   every call.
  */
 function fakeHost(mod, options = {}) {
-  const { fenced, home, live = [], events, launch, stored, reads, releases, lists, registry, tails } = options
+  const { fenced, home, live = [], events, launch, stored, reads, releases, lists, listCalls, registry, tails, queryShapes } = options
+  const shapes = queryShapes ?? ['readSession', 'observeSession', 'readTitleSnapshots']
   const routes = {}
   const settings = { configure: () => () => {} }
   // The harness's launch environment, as its own snapshot behaves: the canonical
@@ -84,18 +87,60 @@ function fakeHost(mod, options = {}) {
         return { list: async () => { if (lists !== undefined) lists.push(stored.length); return stored } }
       }
       if (name === 'sessionQuery' && events !== undefined) {
-        // The host's own observation: a lease over one log, released through
-        // `Symbol.dispose` as the host's lease is. `readSession` is left off, so
-        // a reader that went back to the corpus-listing read would find no
-        // reader at all here.
+        // The host reads one log per id; the fake records the id and answers the
+        // same complete event array the real service hands back.
+        const log = (id) => {
+          if (reads !== undefined) reads.push(id)
+          return events[id] ?? []
+        }
+        // An id the real backend does not know is refused, and resolving one it
+        // does know through `readSession` means listing the whole stored corpus
+        // (every header opened). The host half is expected to avoid that walk
+        // entirely, so `listCalls` records every id that would have cost it.
+        const known = (id) => stored === undefined || live.includes(id) || stored.some((entry) => entry.header.id === id)
+        const missing = (id) => Object.assign(new Error(`session "${id}" not found`), { code: 'SESSION_QUERY_SESSION_NOT_FOUND' })
+        const listed = (id) => {
+          if (listCalls !== undefined) listCalls.push(id)
+          return stored?.find((entry) => entry.header.id === id)
+        }
         return {
-          observeSession: async (id) => {
-            if (reads !== undefined) reads.push(id)
-            return {
-              events: events[id] ?? [],
-              [Symbol.dispose]() { if (releases !== undefined) releases.push(id) },
-            }
-          },
+          ...(shapes.includes('observeSession') ? {
+            // The listing-free read: a `stat` by id and the restored log in a
+            // disposable lease (D53), released through `Symbol.dispose`.
+            observeSession: async (id) => {
+              if (!known(id)) throw missing(id)
+              return {
+                source: 'prepared',
+                header: { id },
+                events: log(id),
+                cursor: -1,
+                revision: 'r',
+                [Symbol.dispose]() { if (releases !== undefined) releases.push(id) },
+              }
+            },
+          } : {}),
+          ...(shapes.includes('readSession') ? {
+            // The fallback for a host publishing only this one: it resolves the
+            // id through a corpus listing, so the fake charges it that walk.
+            readSession: async (id) => {
+              const snapshot = listed(id)
+              if (!known(id)) throw missing(id)
+              return { session: snapshot?.header ?? { id }, events: log(id) }
+            },
+          } : {}),
+          ...(shapes.includes('readTitleSnapshots') ? {
+            // The service's REAL batch reader folds TITLES: its projector
+            // consumes `source.events` and discards them, so the value carries no
+            // events at all. A caller that expects a log from it is caught here
+            // rather than silently folding nothing.
+            readTitleSnapshots: async (sessionIds) => {
+              if (listCalls !== undefined) listCalls.push(...sessionIds)
+              return sessionIds.map((id) => {
+                if (!known(id)) return { status: 'rejected', sessionId: id, reason: missing(id) }
+                return { status: 'fulfilled', sessionId: id, value: { session: { id } } }
+              })
+            },
+          } : {}),
         }
       }
       if (name === 'workspaceRegistry' && registry !== undefined) return registry
@@ -345,13 +390,26 @@ async function hostHalf() {
     time: date.getTime(),
     data: { turn, step: 0, usage: { inputTokens: 10, outputTokens: 1 }, message: { source: { model: 'model-b' } } },
   })
+  /** Poll the usage route until the pass that is running has settled. */
+  const settledUsage = async (host) => {
+    let answer = { status: 0 }
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const reply = await request(host, USAGE, 'GET', '', browser)
+      answer = reply.status === 200 ? JSON.parse(reply.body) : { status: reply.status }
+      if (answer.value !== undefined && answer.value !== null && answer.computing !== true) break
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    }
+    return answer
+  }
   const usageReads = []
+  const usageListings = []
   const usageReleases = []
   const usageHost = fakeHost(mod, {
     fenced: true,
     home: scratchHome,
     events: { s1: [settlement(at(-1, 9), 1), settlement(at(0, 15), 2)] },
     reads: usageReads,
+    listCalls: usageListings,
     releases: usageReleases,
   })
   let usage = null
@@ -363,7 +421,12 @@ async function hostHalf() {
   }
   const value = usage?.value ?? {}
   const days = Array.isArray(value.days) ? value.days : []
-  check("the observation the roll-up reads is released once it has the events",
+  // Reading one changed log by id used to walk the whole stored corpus first, so
+  // a pass over a corpus grew with the square of the changed sessions; the
+  // listing-free observation resolves each one from a `stat` instead (D53).
+  check('no changed log is read through a whole stored-corpus listing',
+    usageListings.length === 0, JSON.stringify({ usageListings, usageReads }))
+  check('every changed log is still read, by id, and its lease released',
     same(usageReads, ['s1']) && same(usageReleases, ['s1']), JSON.stringify({ usageReads, usageReleases }))
   check('the ledger and the fold merge by date, the sessions are their union',
     value.source === 'cost-meter+local' && value.totals?.sessions === 3 && value.totals?.activeDays === 3 &&
@@ -390,7 +453,57 @@ async function hostHalf() {
       days[0]?.hours === undefined && days[1]?.hours === undefined &&
       hourOf(days[2]?.hours) === 15 && sum(days[2].hours) === 1,
     JSON.stringify({ hours: value.hours, days: days.map((day) => [day.date, day.hours]) }))
+  // A warm start is the case the size and modification time cache exists for:
+  // every fingerprint still matches, so the pass folds nothing and pays no
+  // corpus listing at all.
+  const warmListings = []
+  const warmReads = []
+  const warmHost = fakeHost(mod, {
+    fenced: true,
+    home: scratchHome,
+    events: { s1: [settlement(at(-1, 9), 1), settlement(at(0, 15), 2)] },
+    reads: warmReads,
+    listCalls: warmListings,
+  })
+  let warm = null
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const answer = await request(warmHost, USAGE, 'GET', '', browser)
+    warm = answer.status === 200 ? JSON.parse(answer.body) : { status: answer.status }
+    if (warm.value !== undefined && warm.value !== null && warm.computing !== true) break
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+  check('a warm start re-reads and re-lists nothing: the fingerprint cache still skips unchanged logs',
+    warm.value?.read === 0 && warm.value?.sessions === 1 && warmReads.length === 0 && warmListings.length === 0,
+    JSON.stringify({ value: warm.value && { read: warm.value.read, sessions: warm.value.sessions }, warmReads, warmListings }))
   fs.rmSync(scratchHome, { recursive: true, force: true })
+
+  // The fallback a host keeps when it publishes only the per-id read: the fold
+  // still answers, reading each session through a corpus listing — the shape
+  // this half had before the observation existed (D12).
+  console.log('\nhost half — the log reader a host without the observation still answers')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-readsession')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    fs.mkdirSync(path.join(cwd, 'f1'), { recursive: true })
+    fs.writeFileSync(path.join(cwd, 'f1', 'session.v4.jsonl.zstd'), 'x')
+    const readIds = []
+    const listings = []
+    const host = fakeHost(mod, {
+      fenced: true,
+      home,
+      events: { f1: [settlement(at(0, 15), 1)] },
+      reads: readIds,
+      listCalls: listings,
+      queryShapes: ['readSession'],
+    })
+    const answer = await settledUsage(host)
+    check('a host offering only the per-id read still folds its sessions, through its own listing',
+      same(readIds, ['f1']) && same(listings, ['f1']) && answer.value?.read === 1 &&
+        answer.value?.failed === 0 && answer.value?.unavailable !== true,
+      JSON.stringify({ readIds, listings, value: answer.value && { read: answer.value.read, failed: answer.value.failed } }))
+    fs.rmSync(home, { recursive: true, force: true })
+  }
 
   // Message-content search over the query service's raw logs: a phrase inside
   // a Chinese sentence matches, case and runs of whitespace do not matter,
@@ -421,10 +534,11 @@ async function hostHalf() {
   ]
   const reads = []
   const lists = []
+  const listings = []
   const releases = []
   // The corpus cache lives under the harness home, so the fake host gets the
   // scratch one: a real home would take this lane's sessions and leave files in it.
-  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads, lists, releases })
+  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads, lists, listCalls: listings, releases })
   const ask = async (query, headers = browser) => {
     const answer = await request(searchHost, `${SEARCH}?q=${encodeURIComponent(query)}`, 'GET', '', headers)
     return { status: answer.status, body: answer.status === 200 ? JSON.parse(answer.body) : null }
@@ -452,13 +566,15 @@ async function hostHalf() {
   await ask('search box')
   check('a moved revision is read again by the prewarm, and only it',
     same(reads.slice().sort(), ['session-a', 'session-b', 'session-b']), JSON.stringify(reads))
-  // Each stored log is read through an observation, so folding the whole corpus
-  // never lists the store once per session: the only listings are the two the
-  // prewarm's own refresh pays.
-  check('folding the corpus never preflights a session with a store listing',
-    same(lists, [3, 3]), JSON.stringify(lists))
+  // Each stale session is read by id, and that read no longer walks the stored
+  // corpus (D22, D53). The panel's own revision listing is a separate, throttled
+  // pass and is not counted here.
+  check('the catch-up folds its stale sessions without a stored-corpus listing',
+    same(listings, []), JSON.stringify(listings))
   check('every log the corpus search reads releases its observation',
     same(releases.slice().sort(), reads.slice().sort()), JSON.stringify({ reads, releases }))
+  check('folding the corpus never preflights a session with a store listing',
+    same(lists, [3, 3]), JSON.stringify(lists))
   // An open session is read again only when its log grows.
   const liveReads = []
   const liveLists = []

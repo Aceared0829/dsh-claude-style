@@ -12,7 +12,7 @@
 - 数据读宿主的客户端服务：`sessions.list` 与 `workspaces.list`（去掉已归档、子代理与空白占位）、`remote.pluginInventory` 与 `remote.pluginManager`、当前会话的 `remote.skills`、`shortcuts.catalog`。远程命名空间在面板打开时用 `ctx.get('remote.<名字>')` 读（在根上下文直接读 `remote` 的子属性会被 cordis 以「没有 inject」拒绝）。
 - 导航用宿主自己的：`uiWorkspace.openSession` / `startSession`、`pluginNavigation.openBundle`、`layout.selectPanel`；Skill 经会话输入的 `setDraft` 与 `focus`；设置页与快捷键列表经它们在插槽登记里声明的 store（`slots.entries(key)` 条目上的 `store.create()`）打开。快捷键行打开快捷键列表，不代为执行命令（宿主的快捷键命令没有公开的执行入口）。内容命中还要落到那条消息所在的一轮：面板开完会话，等这一轮进了窗口再按命中消息的事件序号定位（按 `turnOutline` 找轮次，跳转本身走 D34 那一套，按宿主的刻度跳）。
 - 匹配沿用宿主侧栏搜索的子串规则，排序为：标题开头、标题中的词开头、标题其他位置、第二个键（路径、包名、描述、别名）。
-- 消息内容由宿主半边的 `/session-search` 路由搜（`packages/host/src/search.ts`）：日志经共享的 `session-events.ts` 读，只收人类发出的 `user/message`（按 `data.source.kind === 'user'` 排除注入的环境快照、Skill 目录、AGENTS.md 与压缩检查点）与助手消息里的 text 块，`reasoning`、`tool-call`、`tool/result` 都不进语料；匹配照搬 `sessionQuery` 的 `text` 过滤（字面、不分大小写、空白可伸缩）。每个会话的语料落一份 `$DSH_HOME/cache/dsh-claude-style/search/<会话 id>.json`（走共享的 `cache-file.ts`，与峰谷目录、用量缓存同目录）：热启动读这些文件，只重读修订号变了的存档会话；宿主开着的会话按 `seq` 只读新增的那一段。存档会话的清单每 3 秒列一次（列一次要开每个日志的头部帧，是这条路上最贵的一步）；面板打开时先发一次不带查询的请求预热；每个会话只回最新的一处命中，附摘录与命中位置。
+- 消息内容由宿主半边的 `/session-search` 路由搜（`packages/host/src/search.ts`）：日志经共享的 `session-events.ts` 读（宿主的观察接口，按 id 读起，不先列整份存档），只收人类发出的 `user/message`（按 `data.source.kind === 'user'` 排除注入的环境快照、Skill 目录、AGENTS.md 与压缩检查点）与助手消息里的 text 块，`reasoning`、`tool-call`、`tool/result` 都不进语料；匹配照搬 `sessionQuery` 的 `text` 过滤（字面、不分大小写、空白可伸缩）。每个会话的语料落一份 `$DSH_HOME/cache/dsh-claude-style/search/<会话 id>.json`（走共享的 `cache-file.ts`，与峰谷目录、用量缓存同目录）：热启动读这些文件，只重读修订号变了的存档会话；宿主开着的会话按 `seq` 只读新增的那一段。存档会话的清单每 3 秒列一次（列一次要开每个日志的头部帧，是这条路上最贵的一步）；面板打开时先发一次不带查询的请求预热；每个会话只回最新的一处命中，附摘录与命中位置。
 
 ## 理由
 

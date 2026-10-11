@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-11",
-  "group": "improvements",
-  "order": 1,
-  "external": false,
-  "zh": "用量汇总与内容检索读会话日志时，原先每读一个会话都要把整个会话库重新列举一遍，于是整轮耗时会随会话条数近似平方增长；现在每个会话只读它自己的日志，会话库每轮只列举一次，整轮耗时随条数线性增长。本地实测 80 个会话、29.2 MB 日志，一轮冷启动折算（改动前 10898 / 8583 毫秒，改动后 2184 / 2363 毫秒）。",
-  "en": "The usage roll-up and content search used to list the whole session corpus again for every session they read, so a pass grew with roughly the square of the number of sessions; each session now reads its own log and a pass lists the corpus once, which grows linearly. Measured locally over 80 sessions and 29.2 MB of logs, folding all of them from a cold cache: 10898 / 8583 ms before, 2184 / 2363 ms after."
-}

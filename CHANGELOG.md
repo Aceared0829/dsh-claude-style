@@ -11,13 +11,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 同一个文件在一段过程里被改了几次，聊天区就并排列出几行，改动越密集越难看出这个文件一共改了多少。现在同一个文件在同一个过程组里的多次编辑与写入读成一行：这一行是这一组里最早的那一次改动，行尾的 `+n -m` 是这些改动的累计值，每到达一次改动就滚动一次，展开这一行读到的是全部改动；只改动过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
 - 「模型正在做什么的那一行」在跟随末尾时停在输入框上方：这一行的固定此前挂在「轮次状态行」这一个开关上，而它属于运行中的这一行本身。现在它随「聊天区动画效果」这一开关，与这一行的说法、扫光同一处；读者自己接管滚动，或跟随的滑行正持有位置时，它照旧让开，回到文档位置随内容走。
 - 首页用量面板的用量热力图，格子悬停提示原本写的是那天的消息条数，现在改成那天的 Token 用量（「9月9日 — 15.9k Token」），与格子深浅取自同一个数字；两份数据来源都带每天的 Token 合计，提示不再随来源换口径。
-- 用量汇总与内容检索读会话日志时，原先每读一个会话都要把整个会话库重新列举一遍，于是整轮耗时会随会话条数近似平方增长；现在每个会话只读它自己的日志，会话库每轮只列举一次，整轮耗时随条数线性增长。本地实测 80 个会话、29.2 MB 日志，一轮冷启动折算（改动前 10898 / 8583 毫秒，改动后 2184 / 2363 毫秒）。
 - 侧栏搜索框选「独立在品牌行下方」时，那一行自己还留着 8 像素的左右内边距，盒子因此比下面的「新会话」等行窄 16 像素；现在这一行不再留内边距，盒子的左右边框与下面各行的宽度落在同两条边上。
 - 侧栏「新会话」一行右侧的快捷键提示原本是等宽字体的普通文字（Ctrl + N），现在与搜索框的按键同一套样式：每个键一个 20 像素圆角键帽、1 像素描边、12 像素次级文字，两个键之间的「+」不再出现。
 - 样式表里写死的颜色改读令牌：强调色按钮上的文字取填充自己的前景令牌（原先写死纯白，换成浅色填充后对比度没有保障），设置页里插件图标的底色取主文字令牌（原先写死十六进制）。docs/STYLE.md 的形状一节补上实际使用的圆角与描边，并写明它们来自被复制的那枚宿主控件。
 
 ### 问题修复
 
+- 会话很多时，用量汇总与内容搜索读日志会让宿主进程持续占住一个核心：它们经 `sessionQuery.readSession` 按 id 读，而这一版会为了定位一个 id 先把整份会话存档列一遍（列一次要打开并解压每个存档的头部帧），改动过的会话越多就越慢，首次运行或任何一次会话变动都按变更个数叠加。现在两处都改走宿主的观察接口 `sessionQuery.observeSession`，它只观察这一份存档、不先列档，读 N 个会话就是 N 次观察、零次列档（观察的租约在事件到手后立即释放）；只发布 `readSession` 的宿主退回按 id 读，仍然照常工作。按大小与修改时间的增量缓存不变，没有变动的会话照旧跳过，用量数字与负载结构不变。
 - 删除会话的请求体超过上限时，客户端原先只看到连接被重置；现在先答 400，这条应答送出之后再结束连接。
 - 成本计量账本里出现不是真实日期的键时，合并原先按字符串把它当成最新的一天，本地折算出的所有日子与它们的会话一起消失，首页模型图表还会读到一个非法日期而报错；现在这类键在读取时被跳过，其余日子照常合并。
 - 机器上没有成本计量插件时，用量汇总的来源原先报成 cost-meter+local；现在报 local，与「哪个来源作答」的定义一致。
@@ -48,13 +48,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - A file changed several times in one piece of work was listed as one row per change, so a dense stretch of edits made it hard to see how much the file had changed in total. The edits and writes of one file inside one process group now stand as a single row: the earliest of them carries the total of those changes in its `+n -m` tail, rolls once per change as each one lands, and opens onto every change. A file changed once is drawn as before, and a failed or interrupted row keeps its own verdict.
 - The line saying what the model is doing now holds its place above the composer while the conversation follows its tail: that hold used to hang on the Turn status line switch, a switch for a line of its own. It rides the Chat-area animations switch now, together with the line's wording and sweep, and it still steps aside — keeping its document place — while the reader owns the scroll or the follow's glide holds the position.
 - On the home page's usage panel, the heat map's cell tip used to name the day's messages; it now names the tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure the cell's shade is bucketed from. Both sources behind the grid carry a per-day token total, so the tip no longer changes its reading with the source.
-- The usage roll-up and content search used to list the whole session corpus again for every session they read, so a pass grew with roughly the square of the number of sessions; each session now reads its own log and a pass lists the corpus once, which grows linearly. Measured locally over 80 sessions and 29.2 MB of logs, folding all of them from a cold cache: 10898 / 8583 ms before, 2184 / 2363 ms after.
 - With the sidebar search box on Standalone, its own row still carried 8px of inline padding, which made the box 16px narrower than the New session row under it; the row adds no padding now, so the box's two edges stand where the rows under it stand.
 - The shortcut hint at the right of the sidebar's New session row was plain monospace text (Ctrl + N); it now wears the search box's own key caps — one 20px cap per key with a 1px hairline and 12px secondary text — and the `+` between the two keys is gone.
 - Literals in the stylesheets read tokens: the label on a filled accent button takes the fill's own foreground token (it was a hard-coded white, which promised nothing once a palette turns the fill light), and the settings page's plugin mark takes the primary label token (it was a hard-coded hex). The shape section of docs/STYLE.md records the radii and strokes actually in use, with the host control each copy came from.
 
 ### Bug Fixes
 
+- With many sessions the usage roll-up and the content search pinned a core while reading logs: they read by id through `sessionQuery.readSession`, which locates that id by listing the WHOLE stored corpus first (a listing opens and decompresses every stored session's header), so the pass grew with the number of changed logs on a first run and after any session change. Both now read through the host's observation entry point `sessionQuery.observeSession`, which resolves the one session without listing the corpus: N sessions cost N observations and no listings, each lease released as soon as its events are in hand. A host publishing only `readSession` falls back to the per-id read and keeps working. The size and modification time cache is unchanged, unchanged logs are still skipped, and the usage figures and payload shape are untouched.
 - A session deletion whose body went past the limit left the client with a reset connection; the 400 is answered first now, and the connection is ended once that answer has gone out.
 - A key in the cost meter's ledger that is not a real date used to become the newest day by string comparison, which dropped every day the local fold contributed, along with its sessions, and left the home page's model chart formatting an invalid date; such a key is skipped as the ledger is read now, and the rest of the days merge as before.
 - With no cost-meter plugin on the machine, the usage roll-up reported its source as cost-meter+local; it reports local now, which is what "which source answered" means.

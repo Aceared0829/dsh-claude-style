@@ -1,16 +1,29 @@
 /**
- * Reading one session's raw log through the host's own reader.
+ * Reading raw session logs through the host's own reader.
  *
- * Both host-half readers (the usage roll-up and the search corpus) go through
- * this one call: the `sessionQuery` service is the only path to a log that may
- * be live, stored, or both. The read is an observation, which answers one log
- * directly; `readSession` preflights each read with a listing of the whole
- * corpus, so a pass over every stored log would pay that listing once per log.
- * The host ships no type for the events, so the caller names the shape it reads.
+ * Both host-half readers (the usage roll-up and the content search) go through
+ * this one call, and which `sessionQuery` entry point it uses is a performance
+ * decision as much as a correctness one:
  *
- * D12 tolerates the two codes that mean "this session has nothing to give right
- * now": a corrupt record and an id the store no longer holds. A storage failure
- * is not one of them and propagates.
+ *   - `readSession` resolves one session by id, but the service finds that id by
+ *     listing the WHOLE stored corpus first, and a listing opens and
+ *     decompresses every stored session's header. A pass that reads every log
+ *     this way pays that walk once per session, which is what made a fold over a
+ *     whole corpus quadratic (docs/decisions D22, D53).
+ *   - `observeSession` resolves one session from its own `stat` alone: no corpus
+ *     listing, and it hands back a disposable lease over the same complete,
+ *     detached log. N sessions therefore cost N observations and no listings.
+ *     The service's batch reader is NOT a substitute: `readTitleSnapshots`
+ *     projects titles and discards the events, so a caller that expects a log
+ *     from it folds nothing while still reporting successful reads.
+ *
+ * `observeSession` is what this module reads through, and `readSession` stays as
+ * the fallback for a host that publishes only it.
+ *
+ * Either way the same two codes mean "this session has nothing to give right
+ * now" (docs/decisions D12): an unreadable or vanished log is one session left
+ * out, reported once, and every other failure propagates. The host ships no type
+ * for the events, so the caller names the shape it reads.
  *
  * @param ctx - host plugin context, for the `sessionQuery` service.
  * @param sessionId - the session whose log is read.
@@ -19,9 +32,34 @@
  */
 import type { DshContext, DshSessionObservation } from './dsh.js'
 
-/** The `sessionQuery` service, in the one member this module reads. */
-interface ObservationReader {
-  observeSession(sessionId: string, options?: { projectionMode?: 'all' | 'none' }): Promise<DshSessionObservation>
+/** The `sessionQuery` service, in the members this module reads. */
+interface QueryReader {
+  observeSession?(sessionId: string, options?: { projectionMode?: 'all' | 'none' }): Promise<DshSessionObservation>
+  readSession?(sessionId: string): Promise<{ events?: unknown } | null | undefined>
+}
+
+/** The caller's events out of whatever the host hands back, or null when it is not a log. */
+function eventsOf<T>(events: unknown): T[] | null {
+  return Array.isArray(events) ? events as T[] : null
+}
+
+/**
+ * The refusal the two tolerated codes stand for: the service read no log for
+ * this session, and the next pass may do better.
+ *
+ * @param error - what the reader threw.
+ * @returns the failure, or null when it is a failure the caller must handle itself.
+ */
+function unreadableLog(error: unknown): { message?: string } | null {
+  const failure = error as { code?: string, message?: string } | null
+  return failure?.code === 'SESSION_QUERY_CORRUPT_SESSION' || failure?.code === 'SESSION_QUERY_SESSION_NOT_FOUND'
+    ? failure
+    : null
+}
+
+/** Report one session the reader refused, naming the pass it was left out of. */
+function reportUnreadable(ctx: DshContext, error: unknown, sessionId: string, label: string) {
+  ctx.logger?.warn?.(`dsh-claude-style: session ${sessionId} left out of ${label}: ${unreadableLog(error)?.message}`)
 }
 
 /**
@@ -30,30 +68,33 @@ interface ObservationReader {
  * The host's lease exposes its release as `Symbol.dispose`; a named `dispose` is
  * what a host that publishes one carries instead.
  */
-function release(observation: DshSessionObservation) {
-  const release = (observation as { dispose?: () => void }).dispose
-  if (typeof release === 'function') release.call(observation)
+function releaseObservation(observation: DshSessionObservation) {
+  const named = (observation as { dispose?: () => void }).dispose
+  if (typeof named === 'function') named.call(observation)
   else if (Symbol.dispose in observation) (observation as unknown as { [Symbol.dispose](): void })[Symbol.dispose]()
 }
 
 export async function readEvents<T>(ctx: DshContext, sessionId: string, label: string): Promise<T[] | null> {
-  const query = ctx.get('sessionQuery') as ObservationReader | null | undefined
-  if (query === null || query === undefined || typeof query.observeSession !== 'function') return null
-  let observation: DshSessionObservation
+  const query = ctx.get('sessionQuery') as QueryReader | null | undefined
+  if (query === null || query === undefined) return null
   try {
-    // `projectionMode: 'none'` keeps the host's own projection computation off a
-    // read that only wants the events.
-    observation = await query.observeSession(sessionId, { projectionMode: 'none' })
+    if (typeof query.observeSession === 'function') {
+      // `projectionMode: 'none'` keeps the host's own projection computation off
+      // a read that only wants the events; the lease is released as soon as they
+      // are in hand.
+      const observation = await query.observeSession(sessionId, { projectionMode: 'none' })
+      try {
+        return eventsOf<T>(observation.events)
+      } finally {
+        releaseObservation(observation)
+      }
+    }
+    if (typeof query.readSession !== 'function') return null
+    const snapshot = await query.readSession(sessionId)
+    return eventsOf<T>(snapshot?.events)
   } catch (error) {
-    const failure = error as { code?: string, message?: string }
-    if (failure?.code !== 'SESSION_QUERY_CORRUPT_SESSION' && failure?.code !== 'SESSION_QUERY_SESSION_NOT_FOUND') throw error
-    ctx.logger?.warn?.(`dsh-claude-style: session ${sessionId} left out of ${label}: ${failure.message}`)
+    if (unreadableLog(error) === null) throw error
+    reportUnreadable(ctx, error, sessionId, label)
     return null
-  }
-  try {
-    const events = observation.events
-    return Array.isArray(events) ? events as T[] : null
-  } finally {
-    release(observation)
   }
 }
