@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 设置页「侧栏」多了一行「左侧栏布局」：「宽松」是现在的样子，「紧凑」把左侧栏的间距收小——上侧各行（新会话、插件、自动化任务，以及搜索框独立成行时的那一行）到工作区之间的空隙、工作区标题自身的上下留白、对话行的高度与行间距、两个分区之间的间隔，以及账号区的内边距与它那一行的上下边距。控件的形状、字号、图标与配色不变。新增一项偏好 `sidebarLayout`（默认 `relaxed`），把它解析到 `<body data-dsh-claude-sidebar-layout>`；宿主半边由共享的偏好表生成，因此该键也会出现在 DSH 的设置文档里。
+
+### 体验优化
 
 - 同一个文件在一段过程里被改了几次，聊天区就并排列出几行，改动越密集越难看出这个文件一共改了多少。现在同一个文件在同一个过程组里的多次编辑与写入读成一行：这一行是这一组里最早的那一次改动，行尾的 `+n -m` 是这些改动的累计值，每到达一次改动就滚动一次，展开这一行读到的是全部改动；只改动过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
 - 「模型正在做什么的那一行」在跟随末尾时停在输入框上方：这一行的固定此前挂在「轮次状态行」这一个开关上，而它属于运行中的这一行本身。现在它随「聊天区动画效果」这一开关，与这一行的说法、扫光同一处；读者自己接管滚动，或跟随的滑行正持有位置时，它照旧让开，回到文档位置随内容走。
@@ -43,7 +47,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 模型标志的 `cap` 高度回退原先写在同一规则里的两条 `height`，端到端的 `!important` 审计因此整条跳过这条规则；现在两条高度分处两条规则，规则的每一处权重都受审计。
 - 两处内部记录的清理：滚动主人记「哪个来源在滑这一格」的表改用弱引用键，弹簧自己走完之后不再把已经分离的对话子树留在内存里；页脚接管挂在宿主自己的账号行与菜单上的监听随功能的拆卸一并摘下，反复开关不再叠加。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- The settings page's Sidebar tab gains a Sidebar layout row: Relaxed is how the sidebar looks now, and Compact takes its spacing down — the gap between the top rows (New session, Plugins, Automation tasks, and the search box's own row when it stands alone) and the workspace, the workspace heading's own margins, the conversation rows' height and spacing, the distance between two sections, and the account area's padding and row margins. Control shapes, type sizes, icons and colours are unchanged. A new preference, `sidebarLayout` (default `relaxed`), resolves onto `<body data-dsh-claude-sidebar-layout>`; the host half is generated from the shared preference table, so the key appears in DSH's own settings document too.
+
+### Improvements
 
 - A file changed several times in one piece of work was listed as one row per change, so a dense stretch of edits made it hard to see how much the file had changed in total. The edits and writes of one file inside one process group now stand as a single row: the earliest of them carries the total of those changes in its `+n -m` tail, rolls once per change as each one lands, and opens onto every change. A file changed once is drawn as before, and a failed or interrupted row keeps its own verdict.
 - The line saying what the model is doing now holds its place above the composer while the conversation follows its tail: that hold used to hang on the Turn status line switch, a switch for a line of its own. It rides the Chat-area animations switch now, together with the line's wording and sweep, and it still steps aside — keeping its document place — while the reader owns the scroll or the follow's glide holds the position.

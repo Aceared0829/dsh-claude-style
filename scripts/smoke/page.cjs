@@ -64,6 +64,7 @@ const PROBE_PARTS = [
   'chat-send.js',
   'chat-wait.js',
   'dock-cards.js',
+  'sidebar-layout.js',
   'model-meter.js',
   'peer.js',
   'teardown.js',

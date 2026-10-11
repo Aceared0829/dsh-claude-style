@@ -89,6 +89,11 @@ body[data-dsh-claude-style][data-dsh-claude-search-style="standalone"] .dsh-clau
   visibility: visible;
   pointer-events: auto;
 }
+/* The sidebar's own layout choice takes that foot down with the rows below it
+   (theme/sidebar.css), so the search row keeps the same rhythm as them. */
+body[data-dsh-claude-style][data-dsh-claude-search-style="standalone"][data-dsh-claude-sidebar-layout="compact"] .dsh-claude-search-bar {
+  margin-bottom: 2px;
+}
 /* The Windows desktop shell's sidebar column starts under its 40px titlebar,
    which left the brand a titlebar's height lower than on the web; the row rises
    to that edge. It rises 6px and not the 10px this rule carried while the box

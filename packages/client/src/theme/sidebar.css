@@ -306,6 +306,47 @@ body[data-dsh-claude-style] :is([class*="projectRow"], [class*="sessionRow"]) [c
   height: 16px;
 }
 
+/* ---------- the sidebar-layout choice: the compact scale ---------- */
+/* Every rule here restates one above with less air, so the reader's own choice
+   (the Sidebar tab's row, SIDEBAR_LAYOUT_ATTR) only ever takes space away: the
+   foot under the top block's rows, the panel list's own foot — which is what
+   separates that block from the workspace region — the workspace heading, the
+   conversation rows' height and the gap between two groups, and the footer's
+   own padding. The relaxed value is the stylesheet as written. */
+/* The New session plate states its foot in the frame-scoped selector above, so
+   the tightening restates that whole selector; the panel rows are matched
+   directly. */
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="_frame"]:not([data-sidebar-collapsed]) > [class*="_sidebarCol"] button[class*="newSession"],
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] button[class*="panelRow"] {
+  margin-bottom: 2px;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] nav[class*="panelList"] {
+  margin-bottom: 2px;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="sectionHeader"] {
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="projectRow"],
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="sessionRow"] {
+  height: 24px;
+  min-height: 24px;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="groupSection"] > * + * {
+  margin-top: 0;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="groupSection"] + [class*="groupSection"] {
+  margin-top: 2px !important;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="footArea"] {
+  padding-top: 4px;
+  padding-bottom: 3px;
+}
+body[data-dsh-claude-style][data-dsh-claude-sidebar-layout="compact"] [class*="footArea"] [class*="triggerRow"] {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
 /* Hover and active plates belong to session rows alone: a folder row is a heading,
    so its cue is the label darkening below. This also cancels the shipped
    .projectRow:hover background. */

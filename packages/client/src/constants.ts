@@ -148,6 +148,20 @@ export const SEARCH_STYLES = [SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_ST
 export const SEARCH_STYLE_ATTR = 'data-dsh-claude-search-style'
 
 /**
+ * How much air the sidebar keeps around its own rows: `relaxed` is the
+ * stylesheet as written, `compact` takes the same declarations down — the foot
+ * under the top block's rows, the gap between the workspace and the rows, the
+ * conversation rows' own height and the footer's padding
+ * (packages/client/src/theme/sidebar.css). The choice belongs to no feature, so
+ * the Sidebar tab writes the row itself, like the dock cards. It rides <body> as
+ * SIDEBAR_LAYOUT_ATTR, so every rule that tightens a value is gated on it.
+ */
+export const SIDEBAR_LAYOUT_RELAXED = 'relaxed'
+export const SIDEBAR_LAYOUT_COMPACT = 'compact'
+export const SIDEBAR_LAYOUTS = [SIDEBAR_LAYOUT_RELAXED, SIDEBAR_LAYOUT_COMPACT]
+export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
+
+/**
  * The chat area's animation switch: on plays the ported set
  * (packages/client/src/features/chat-*), off leaves the area to the host. The
  * features share the one switch, each naming it as its `pref` (D42); a value an
@@ -466,6 +480,7 @@ export interface Prefs {
   dockCards: boolean
   sidebarSearch: boolean
   searchStyle: string
+  sidebarLayout: string
   turnNav: boolean
   viewTabs: boolean
   headerBand: boolean
@@ -486,6 +501,7 @@ export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
   mascot: MASCOTS,
   mascotScope: MASCOT_SCOPES,
   searchStyle: SEARCH_STYLES,
+  sidebarLayout: SIDEBAR_LAYOUTS,
   caretMotion: CARET_MOTIONS,
   statsPosition: STATS_POSITIONS,
 }

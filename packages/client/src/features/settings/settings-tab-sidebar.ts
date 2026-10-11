@@ -1,13 +1,14 @@
-import { SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE } from '../../constants'
+import { SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE, SIDEBAR_LAYOUT_COMPACT, SIDEBAR_LAYOUT_RELAXED } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { SettingsRow, SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's Sidebar tab: the footer takeover, the search box and
  * the In progress / Archived view — three feature switches placed here by
- * their manifests (D42) — and the right sidebar's docked panels, whose look
- * belongs to no feature (packages/client/src/theme/chrome.css), so the tab
- * writes that one row itself.
+ * their manifests (D42) — and the right sidebar's docked panels and the
+ * sidebar's own spacing, whose looks belong to no feature
+ * (packages/client/src/theme/sidebar.css, theme/chrome.css), so the tab writes
+ * those two rows itself.
  *
  * The search box's own style row belongs to the search feature too, and
  * follows its switch as a sub-row: a manifest carries one row, so the row
@@ -23,6 +24,10 @@ export function createSettingsSidebarTab(): SettingsTab {
       { value: SEARCH_STYLE_ICON, label: settingsCopy('searchStyleIcon', 'Icon') },
       { value: SEARCH_STYLE_OVERLAY, label: settingsCopy('searchStyleOverlay', 'Cover the brand') },
       { value: SEARCH_STYLE_STANDALONE, label: settingsCopy('searchStyleStandalone', 'Standalone') },
+    ]
+    const layoutOptions = [
+      { value: SIDEBAR_LAYOUT_RELAXED, label: settingsCopy('sidebarLayoutRelaxed', 'Relaxed') },
+      { value: SIDEBAR_LAYOUT_COMPACT, label: settingsCopy('sidebarLayoutCompact', 'Compact') },
     ]
     return [
       {
@@ -42,6 +47,15 @@ export function createSettingsSidebarTab(): SettingsTab {
           settingsCopy('dockCardsTitle', 'Float docked panels'),
           settingsCopy('dockCardsDesc', 'Draw the right sidebar\'s docked panels as floating cards: 8px inside the column, a 16px radius, a hairline and an elevation. Off fills the column and hugs its edges; a split gives each pane its own column.'),
           view.controls.toggle(view.prefs.dockCards !== false, value => { view.write({ dockCards: value }) }),
+        ),
+      },
+      {
+        rank: 50,
+        node: controls.row(
+          'sidebarLayout',
+          settingsCopy('sidebarLayoutTitle', 'Sidebar layout'),
+          settingsCopy('sidebarLayoutDesc', 'Adjust how tight the sidebar is'),
+          controls.segment(layoutOptions, prefs.sidebarLayout, value => { write({ sidebarLayout: value }) }),
         ),
       },
     ]

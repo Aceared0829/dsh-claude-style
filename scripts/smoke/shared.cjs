@@ -105,7 +105,7 @@ function deferredWanted(values) {
  * one each. A case named in no page here is a page of its own.
  */
 const PAGES = {
-    shell: ['brand', 'hero', 'view-tabs', 'composer', 'search', 'account', 'permissions', 'header-band'],
+    shell: ['brand', 'hero', 'view-tabs', 'composer', 'search', 'account', 'permissions', 'header-band', 'sidebar-layout'],
 }
 
 /**

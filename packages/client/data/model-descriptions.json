@@ -298,6 +298,13 @@
       "zh": "右侧栏停靠的面板画成悬浮卡片：四周留 8px、16px 圆角、1px 描边与投影；关闭后铺满整列、贴住四边，分栏时每栏铺满各自那一栏。",
       "en": "Draw the right sidebar's docked panels as floating cards: 8px inside the column, a 16px radius, a hairline and an elevation. Off fills the column and hugs its edges; a split gives each pane its own column."
     },
+    "sidebarLayoutTitle": { "zh": "左侧栏布局", "en": "Sidebar layout" },
+    "sidebarLayoutDesc": {
+      "zh": "调整左侧栏的紧凑程度。「宽松」是现在的样子；「紧凑」缩短上侧各行到工作区之间的间隙、压低对话行的高度与行间距、收紧账号区的内边距。",
+      "en": "Adjust how tight the sidebar is. Relaxed is how it looks now; Compact shortens the gap between the sidebar's top rows and the workspace, takes the conversation rows' height and spacing down, and trims the account area's padding."
+    },
+    "sidebarLayoutRelaxed": { "zh": "宽松", "en": "Relaxed" },
+    "sidebarLayoutCompact": { "zh": "紧凑", "en": "Compact" },
     "turnNavTitle": { "zh": "对话导航", "en": "Conversation navigator" },
     "turnNavDesc": {
       "zh": "重绘对话导航区域。",

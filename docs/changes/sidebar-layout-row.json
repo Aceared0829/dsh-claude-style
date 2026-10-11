@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-11",
+  "group": "new",
+  "order": 0,
+  "external": true,
+  "zh": "设置页「侧栏」多了一行「左侧栏布局」：「宽松」是现在的样子，「紧凑」把左侧栏的间距收小——上侧各行（新会话、插件、自动化任务，以及搜索框独立成行时的那一行）到工作区之间的空隙、工作区标题自身的上下留白、对话行的高度与行间距、两个分区之间的间隔，以及账号区的内边距与它那一行的上下边距。控件的形状、字号、图标与配色不变。新增一项偏好 `sidebarLayout`（默认 `relaxed`），把它解析到 `<body data-dsh-claude-sidebar-layout>`；宿主半边由共享的偏好表生成，因此该键也会出现在 DSH 的设置文档里。",
+  "en": "The settings page's Sidebar tab gains a Sidebar layout row: Relaxed is how the sidebar looks now, and Compact takes its spacing down — the gap between the top rows (New session, Plugins, Automation tasks, and the search box's own row when it stands alone) and the workspace, the workspace heading's own margins, the conversation rows' height and spacing, the distance between two sections, and the account area's padding and row margins. Control shapes, type sizes, icons and colours are unchanged. A new preference, `sidebarLayout` (default `relaxed`), resolves onto `<body data-dsh-claude-sidebar-layout>`; the host half is generated from the shared preference table, so the key appears in DSH's own settings document too."
+}

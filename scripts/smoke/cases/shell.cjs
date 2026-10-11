@@ -448,7 +448,7 @@ module.exports = {
       general: ['brand', 'username', 'motion', 'autoPopover', 'banLocale'],
       appearance: ['palette', 'typeface', 'mascot', 'mascotScope'],
       composer: ['composerScope', 'homeLayout', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
-      sidebar: ['collapseFooter', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards'],
+      sidebar: ['collapseFooter', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],
     }
     const pages = settings.pages || {}
@@ -500,6 +500,23 @@ module.exports = {
       flush.divider === 'rgb(0, 0, 255)', JSON.stringify(flush.divider))
     check('switching them back on brings the cards back without a reload',
       back.look === 'card' && same(back, card), JSON.stringify(back))
+    commonChecks(r)
+  },
+  'sidebar-layout'(r) {
+    basicChecks(r)
+    const layout = r.sidebarLayout || {}
+    const relaxed = layout.relaxed || {}
+    const compact = layout.compact || {}
+    const back = layout.back || {}
+    check('the sidebar-layout choice resolves onto the document, relaxed by default',
+      relaxed.attr === 'relaxed' && relaxed.rowHeight === 28 && relaxed.footPadding === '8px 6px',
+      JSON.stringify(relaxed))
+    check('Compact takes the conversation rows\' height and the footer\'s padding down',
+      compact.attr === 'compact' && compact.rowHeight === 24 && compact.rowMin === '24px' &&
+        compact.footPadding === '4px 3px',
+      JSON.stringify(compact))
+    check('switching back to Relaxed restores every value without a reload',
+      back.attr === 'relaxed' && same(back, relaxed), JSON.stringify(back))
     commonChecks(r)
   },
   switches(r) {
