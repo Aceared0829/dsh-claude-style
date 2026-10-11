@@ -235,6 +235,9 @@ module.exports = {
     check('it keeps the host\'s IN/OUT card, with no output row',
       escalated.io !== null && escalated.texts.indexOf('t:row.output') === -1, JSON.stringify(escalated.texts))
     check('it keeps the input row', escalated.texts.includes('t:row.input'), JSON.stringify(escalated.texts))
+    check('a file touched once draws no merge mark: its own row stands alone',
+      (collapsed.root || {}).merge === null && (running.root || {}).merge === null,
+      JSON.stringify({ collapsed: (collapsed.root || {}).merge, running: (running.root || {}).merge }))
     check('switching the file rows off hands both seat keys back', files.offSeats === 0, JSON.stringify(files.offSeats))
     check('switching them back takes both again, without a reload', files.backSeats === 2, JSON.stringify(files.backSeats))
     // The other plugin coming and going mid-session (packages/client/src/shared/peer-plugin.ts):

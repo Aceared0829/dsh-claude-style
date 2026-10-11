@@ -33,6 +33,10 @@
     useCallback: function (fn) { return fn },
     useRef: function (v) { return { current: v } },
     useLayoutEffect: function () {},
+    // The file-change row reads its file's other rows through a registry the
+    // probe never fills: one read of the snapshot is what a page that does not
+    // re-render would do, so the row draws its own call alone.
+    useSyncExternalStore: function (subscribe, getSnapshot) { return getSnapshot() },
   }
   window.__react = react
   // The host's ui-primitives, as far as the skin uses them: the components its

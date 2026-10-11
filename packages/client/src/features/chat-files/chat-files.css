@@ -88,6 +88,55 @@ body[data-dsh-claude-style] .dsh-claude-file-del {
   color: var(--dsh-claude-diff-deleted);
 }
 
+/* A row another row stands for comes off the page whole: the carrier is the
+   host's own call row, so the host row's spacing goes with it and the file's
+   calls leave one line behind (chat-files.ts, D62). */
+body[data-dsh-claude-style] [data-dsh-claude-file-merge="gone"] {
+  display: none;
+}
+
+/* A figure of the tail rolls in place: the number that was there leaves upward
+   as the new one rises in behind it, the same 160 ms and curve the process
+   header's counted figures roll with (dsh-better-display's fold figures,
+   THIRD_PARTY_NOTICES.md). The classes land on the TextShimmer the figure is
+   drawn through — its root is already the positioned, max-content box the two
+   numbers share — and the figure in flow is the new number, so the box takes
+   its width from the first frame. */
+body[data-dsh-claude-style] .dsh-claude-file-roll {
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-dsh-claude-style] .dsh-claude-file-roll-out {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dsh-claude-file-roll-out 160ms cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+body[data-dsh-claude-style] .dsh-claude-file-roll-in {
+  animation: dsh-claude-file-roll-in 160ms cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes dsh-claude-file-roll-out {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes dsh-claude-file-roll-in {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* The animation choice reaches these figures through <body> (D26): reduced
+   draws no travel at all, and the number is written in place. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-file-roll-out,
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-file-roll-in {
+  animation: none;
+}
+
 /* Hovering the row lifts it, but the two numbers do not follow: they are this
    row's conclusion, their colour is the information, and turning them into body
    colour would rub the conclusion out. */

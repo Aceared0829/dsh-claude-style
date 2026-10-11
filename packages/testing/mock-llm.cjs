@@ -143,6 +143,60 @@ const SCRIPTS = {
     ],
     auxiliary: { text: ['Scripted long answer'] },
   },
+  /**
+   * One file changed four times by one program, and another file written once
+   * (packages/testing/file-merge.cjs): the file-change rows of the first file
+   * have to stand as one row whose tail is the total of those four changes, and
+   * the second file's single row has to stay its own. The calls are dispatched
+   * from inside `run_code`, which is the shape the rows are read together in:
+   * the host keeps one row per call, and a program's calls are the ones that
+   * stand side by side under the program's own row. The file is read first —
+   * the host refuses an edit of a file it has not seen — and every replacement
+   * chains onto the one before it. `{{workspace}}` is filled in by the lane,
+   * which is the side that knows the scratch home, and `{{workspaceCode}}` is
+   * the same path with its backslashes doubled: inside a program's own source a
+   * single backslash is an escape.
+   */
+  fileEdits: {
+    conversation: [
+      {
+        thinking: ['一个程序里把这个文件改四处，再写另一个文件。'],
+        tool: {
+          name: 'run_code',
+          input: {
+            description: 'Change one file four times and write another',
+            code: [
+              "const { setTimeout: delay } = await import('node:timers/promises')",
+              "await tools.read({ file_path: '{{workspaceCode}}/app.js' })",
+              "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const first = 1', new_string: 'const first = 2' })",
+              "await delay(300)",
+              "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const second = 1', new_string: 'const second = 2' })",
+              "await delay(300)",
+              "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const third = 1', new_string: 'const third = 2' })",
+              "await delay(300)",
+              "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const fourth = 1', new_string: 'const fourth = 2' })",
+              "await tools.write({ file_path: '{{workspaceCode}}/notes.md', content: '# Notes\\n\\n- one\\n- two\\n' })",
+              "return 'four changes to app.js, one write to notes.md'",
+            ].join('\n'),
+          },
+        },
+      },
+      { thinking: ['改完了，说明一下。'], text: ['四个文件改动都落好了。\n'] },
+    ],
+    auxiliary: { text: ['Scripted file edits'] },
+  },
+}
+
+/** The `{{name}}` slots of a scripted value, filled from the lane's own values. */
+function fillVars(value, vars) {
+  if (typeof value === 'string') return value.replace(/\{\{(\w+)\}\}/g, (match, name) => vars[name] ?? match)
+  if (Array.isArray(value)) return value.map((item) => fillVars(item, vars))
+  if (value !== null && typeof value === 'object') {
+    const out = {}
+    for (const [key, item] of Object.entries(value)) out[key] = fillVars(item, vars)
+    return out
+  }
+  return value
 }
 
 /** One SSE frame; the event name repeats the payload's own `type`, as the route checks both. */
@@ -162,8 +216,9 @@ const tokensOf = (text) => Math.max(1, Math.round(text.length / 4))
  * @param res - the response.
  * @param reply - one script reply (SCRIPTS).
  * @param delayMs - the pause between pieces.
+ * @param vars - the values a script's `{{name}}` slots are filled from.
  */
-async function streamReply(res, reply, delayMs) {
+async function streamReply(res, reply, delayMs, vars) {
   // A reply that hesitates keeps the model silent before its first event, the
   // stretch the host shows as waiting for the model.
   if (reply.holdMs !== undefined) await pause(reply.holdMs)
@@ -214,7 +269,7 @@ async function streamReply(res, reply, delayMs) {
     send(res, { type: 'content_block_start', index, content_block: { type: 'tool_use', id, name: reply.tool.name, input: {} } })
     await pause(delayMs)
     // The real API opens a call with empty input and streams the arguments as JSON text.
-    const json = JSON.stringify(reply.tool.input)
+    const json = JSON.stringify(fillVars(reply.tool.input, vars))
     send(res, { type: 'content_block_delta', index, delta: { type: 'input_json_delta', partial_json: json } })
     outputTokens += tokensOf(json)
     send(res, { type: 'content_block_stop', index })
@@ -249,6 +304,8 @@ function replyFor(script, request, state) {
  * @param options.log - where requests are written (created when absent).
  * @param options.script - the script's name (SCRIPTS).
  * @param options.delayMs - the pause between streamed pieces.
+ * @param options.vars - the values a script's `{{name}}` slots are filled from:
+ *     the lane's scratch home is only known at run time (packages/testing/e2e.cjs).
  * @returns `{ url, port, log, requests, stop }`; `url` is the value to configure
  *     the host's route with.
  */
@@ -258,6 +315,7 @@ async function startMockLlm(options = {}) {
   const script = SCRIPTS[name]
   if (script === undefined) throw new Error(`mock-llm: no script named "${name}"`)
   const delayMs = options.delayMs ?? 50
+  const vars = options.vars ?? {}
   fs.mkdirSync(log, { recursive: true })
   /** Every request the host made, in order. */
   const requests = []
@@ -279,7 +337,7 @@ async function startMockLlm(options = {}) {
         return
       }
       const request = JSON.parse(body)
-      streamReply(res, replyFor(script, request, state), delayMs).catch((error) => {
+      streamReply(res, replyFor(script, request, state), delayMs, vars).catch((error) => {
         res.destroy(error)
       })
     })

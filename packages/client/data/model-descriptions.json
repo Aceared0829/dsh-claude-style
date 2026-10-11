@@ -155,7 +155,8 @@
     "processSummaryFullRecordOne": { "zh": "记录 {count} 条", "en": "{count} record" },
     "processSummaryFullRecordOther": { "zh": "记录 {count} 条", "en": "{count} records" },
     "processSummaryFullSeparator": { "zh": "，", "en": ", " },
-    "chatWaitOvertime": { "zh": "暂未响应", "en": "No response yet" }
+    "chatWaitOvertime": { "zh": "暂未响应", "en": "No response yet" },
+    "fileRowMergedChanges": { "zh": "同一文件的 {count} 次改动合并为这一行", "en": "{count} changes to the same file are merged into this row" }
   },
   "settings": {
     "title": { "zh": "Claude Style", "en": "Claude Style" },

@@ -18,6 +18,7 @@ const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { importanceScenario } = require('./importance.cjs')
 const { readerScrollScenario } = require('./reader-scroll.cjs')
 const { processSummaryScenario } = require('./process-summary.cjs')
+const { fileMergeScenario } = require('./file-merge.cjs')
 const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
 const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
@@ -303,6 +304,8 @@ const SCENARIOS = {
   sidebarRail: sidebarRailScenario({ check }),
   /** The waiting line and the counted process headers (process-summary.cjs, D32). */
   processSummary: processSummaryScenario({ check }),
+  /** The file-change rows of one file read as one row (file-merge.cjs, D62). */
+  fileMerge: fileMergeScenario({ check }),
   /** The reasoning's streamed window while the model thinks (reasoning-stream.cjs, D32). */
   reasoningStream: reasoningStreamScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D51). */

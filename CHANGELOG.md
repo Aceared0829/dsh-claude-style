@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 同一个文件在一段过程里被改了几次，聊天区就并排列出几行，改动越密集越难看出这个文件一共改了多少。现在同一个文件在同一个过程组里的多次编辑与写入读成一行：这一行是这一组里最早的那一次改动，行尾的 `+n -m` 是这些改动的累计值，每到达一次改动就滚动一次，展开这一行读到的是全部改动；只改动过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- A file changed several times in one piece of work was listed as one row per change, so a dense stretch of edits made it hard to see how much the file had changed in total. The edits and writes of one file inside one process group now stand as a single row: the earliest of them carries the total of those changes in its `+n -m` tail, rolls once per change as each one lands, and opens onto every change. A file changed once is drawn as before, and a failed or interrupted row keeps its own verdict.
+
 ## [0.13.1] - 2026-10-10
 
 [中文](#cn-0.13.1) | [English](#en-0.13.1)
