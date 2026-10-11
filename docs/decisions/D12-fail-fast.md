@@ -12,7 +12,7 @@
 - 需要隔离、但错误必须可见的地方用 `reportError`：`notifyAll` 逐个通知监听函数，观察总线逐个通知订阅、帧管线逐个运行任务（D40），某个出错就报告、其余照常；卸载时单个功能失败报告后继续；功能开关（D29）关闭某个功能时它的 teardown 抛错，同样报告，这个功能在本代内不再装回。
 - 浏览器半边允许的 catch，每处写明原因：
   - 上述隔离。
-  - 宿主以抛错表达的预期状态：设置表单的 `set()` 拒绝不属于该配置的字段；`modelDirectories.directoryFor` 对还没建立的会话抛错，下一轮重试；`sessionQuery.readSession` 以 `SESSION_QUERY_CORRUPT_SESSION` / `SESSION_QUERY_SESSION_NOT_FOUND` 表示某个存档读不了或已被删，内容搜索与用量汇总把这一个会话记为空并记一条警告。
+  - 宿主以抛错表达的预期状态：设置表单的 `set()` 拒绝不属于该配置的字段；`modelDirectories.directoryFor` 对还没建立的会话抛错，下一轮重试；`sessionQuery.observeSession` 以 `SESSION_QUERY_CORRUPT_SESSION` / `SESSION_QUERY_SESSION_NOT_FOUND` 表示某个存档读不了或已被删，内容搜索与用量汇总把这一个会话记为空并记一条警告。
   - 文件变更行解析流式工具的原始参数：参数逐块到达，半截 JSON 是正常的中途状态，解析不了就交回宿主的输入 / 输出卡片（`features/chat-files/file-row-model.ts`）。
   - Promise 上表示「宿主半边没有应答」或「宿主自己会提示」的失败回调。
 - 宿主半边允许的 catch，每处写明原因：

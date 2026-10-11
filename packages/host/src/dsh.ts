@@ -32,6 +32,23 @@ export interface DshScope extends DshContext {
   effect(run: () => void, name?: string): void
 }
 
+/**
+ * One host session observation, as the half reads it.
+ *
+ * The host's `sessionQuery.observeSession` answers a live or stored log without
+ * the corpus listing its `readSession` preflights, which is what a per-session
+ * read over the whole history can afford. The value is a lease released through
+ * the well-known symbol: until it is released a stored log stays pinned in the
+ * host's prepared-session cache, whose entries an unreleased observation keeps
+ * out of eviction. `events` is the host's own frozen array, read in place and
+ * never written to.
+ */
+export interface DshSessionObservation {
+  readonly events: readonly unknown[]
+  /** Release the lease (`Symbol.dispose`). */
+  dispose(): void
+}
+
 /** The host's settings domain, as the half configures it. */
 interface DshSettings {
   configure(options: { auto?: boolean }, fiber?: unknown): unknown

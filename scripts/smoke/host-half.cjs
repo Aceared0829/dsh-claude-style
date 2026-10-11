@@ -23,13 +23,15 @@ const { ROOT, HOST, SKIN_FIXTURE, same, check } = require('./shared.cjs')
  * @param options - `fenced` offers the host's own request check, `home` answers
  *   `dshHomePath` with a scratch harness home, and `live` names the sessions the
  *   fake `sessions` service reports as open, and `events` maps a session id to
- *   the durable events the fake `sessionQuery` reader answers for it (each read
- *   is pushed onto `reads`, when given); `stored` is the snapshot list the fake
- *   `sessionPersistence` answers; `registry` is the fake `workspaceRegistry`
- *   service object itself, whose `unarchived` list records every call.
+ *   the durable events the fake `sessionQuery` observation answers for it (each
+ *   read is pushed onto `reads` and each lease release onto `releases`, when
+ *   given); `stored` is the snapshot list the fake `sessionPersistence` answers
+ *   (each listing is pushed onto `lists`); `registry` is the fake
+ *   `workspaceRegistry` service object itself, whose `unarchived` list records
+ *   every call.
  */
 function fakeHost(mod, options = {}) {
-  const { fenced, home, live = [], events, launch, stored, reads, registry, tails } = options
+  const { fenced, home, live = [], events, launch, stored, reads, releases, lists, registry, tails } = options
   const routes = {}
   const settings = { configure: () => () => {} }
   // The harness's launch environment, as its own snapshot behaves: the canonical
@@ -78,9 +80,23 @@ function fakeHost(mod, options = {}) {
         })),
       }
       if (name === 'launchEnvironment') return launchEnvironment
-      if (name === 'sessionPersistence' && stored !== undefined) return { list: async () => stored }
+      if (name === 'sessionPersistence' && stored !== undefined) {
+        return { list: async () => { if (lists !== undefined) lists.push(stored.length); return stored } }
+      }
       if (name === 'sessionQuery' && events !== undefined) {
-        return { readSession: async (id) => { if (reads !== undefined) reads.push(id); return { events: events[id] ?? [] } } }
+        // The host's own observation: a lease over one log, released through
+        // `Symbol.dispose` as the host's lease is. `readSession` is left off, so
+        // a reader that went back to the corpus-listing read would find no
+        // reader at all here.
+        return {
+          observeSession: async (id) => {
+            if (reads !== undefined) reads.push(id)
+            return {
+              events: events[id] ?? [],
+              [Symbol.dispose]() { if (releases !== undefined) releases.push(id) },
+            }
+          },
+        }
       }
       if (name === 'workspaceRegistry' && registry !== undefined) return registry
       return undefined
@@ -329,10 +345,14 @@ async function hostHalf() {
     time: date.getTime(),
     data: { turn, step: 0, usage: { inputTokens: 10, outputTokens: 1 }, message: { source: { model: 'model-b' } } },
   })
+  const usageReads = []
+  const usageReleases = []
   const usageHost = fakeHost(mod, {
     fenced: true,
     home: scratchHome,
     events: { s1: [settlement(at(-1, 9), 1), settlement(at(0, 15), 2)] },
+    reads: usageReads,
+    releases: usageReleases,
   })
   let usage = null
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -343,6 +363,8 @@ async function hostHalf() {
   }
   const value = usage?.value ?? {}
   const days = Array.isArray(value.days) ? value.days : []
+  check("the observation the roll-up reads is released once it has the events",
+    same(usageReads, ['s1']) && same(usageReleases, ['s1']), JSON.stringify({ usageReads, usageReleases }))
   check('the ledger and the fold merge by date, the sessions are their union',
     value.source === 'cost-meter+local' && value.totals?.sessions === 3 && value.totals?.activeDays === 3 &&
       value.totals?.input === 810 && value.totals?.output === 81,
@@ -398,9 +420,11 @@ async function hostHalf() {
     { header: { id: 'session-child', origin: 'subagent' }, revision: 'c1' },
   ]
   const reads = []
+  const lists = []
+  const releases = []
   // The corpus cache lives under the harness home, so the fake host gets the
   // scratch one: a real home would take this lane's sessions and leave files in it.
-  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads })
+  const searchHost = fakeHost(mod, { fenced: true, home: scratchHome, events: searchEvents, stored, reads, lists, releases })
   const ask = async (query, headers = browser) => {
     const answer = await request(searchHost, `${SEARCH}?q=${encodeURIComponent(query)}`, 'GET', '', headers)
     return { status: answer.status, body: answer.status === 200 ? JSON.parse(answer.body) : null }
@@ -428,15 +452,23 @@ async function hostHalf() {
   await ask('search box')
   check('a moved revision is read again by the prewarm, and only it',
     same(reads.slice().sort(), ['session-a', 'session-b', 'session-b']), JSON.stringify(reads))
+  // Each stored log is read through an observation, so folding the whole corpus
+  // never lists the store once per session: the only listings are the two the
+  // prewarm's own refresh pays.
+  check('folding the corpus never preflights a session with a store listing',
+    same(lists, [3, 3]), JSON.stringify(lists))
+  check('every log the corpus search reads releases its observation',
+    same(releases.slice().sort(), reads.slice().sort()), JSON.stringify({ reads, releases }))
   // An open session is read again only when its log grows.
   const liveReads = []
+  const liveLists = []
   // An open session contributes its growth through the live log's own tail. Its
   // own home, so the corpus is built here rather than read back from the pass above.
   const liveHome = path.join(ROOT, '.debug', 'smoke-home-live')
   fs.rmSync(liveHome, { recursive: true, force: true })
   const liveTails = []
   const liveEvents = { ...searchEvents, 'session-a': searchEvents['session-a'].slice() }
-  const liveSearch = fakeHost(mod, { fenced: true, home: liveHome, events: liveEvents, stored, reads: liveReads, live: ['session-a'], tails: liveTails })
+  const liveSearch = fakeHost(mod, { fenced: true, home: liveHome, events: liveEvents, stored, reads: liveReads, lists: liveLists, live: ['session-a'], tails: liveTails })
   const liveAsk = () => request(liveSearch, `${SEARCH}?q=${encodeURIComponent('搜索框')}`, 'GET', '', browser)
   await liveAsk()
   await liveAsk()
@@ -448,6 +480,8 @@ async function hostHalf() {
       liveTails.length === 1 && liveTails[0][0] === 'session-a' && liveTails[0][1] === 3 &&
       grown.sessions[0]?.seq === 3 && grown.sessions[0]?.snippet === '再看一次搜索框',
     JSON.stringify({ liveReads, liveTails, grown }))
+  check("reading an open session's log costs the store one listing, the prewarm's own",
+    same(liveLists, [3]), JSON.stringify(liveLists))
   fs.rmSync(liveHome, { recursive: true, force: true })
 
   // The peak rate catalog: the route answers the copy the package ships with
