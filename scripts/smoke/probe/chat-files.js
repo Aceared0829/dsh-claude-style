@@ -52,7 +52,7 @@
           if (typeof props.className === 'string') {
             out.classes.push(props.className)
             if (props.className.indexOf('dsh-claude-file-root') >= 0) {
-              out.root = { variant: props['data-variant'], tool: props['data-tool'], state: props['data-state'] }
+              out.root = { variant: props['data-variant'], tool: props['data-tool'], state: props['data-state'], merge: props['data-dsh-claude-file-merge'] || null }
             }
             if (props.className.indexOf('dsh-claude-file-summary') >= 0 || props.className.indexOf('dsh-claude-file-link') >= 0) out.summary = props.className
             if (props.className.indexOf('dsh-claude-file-diff') >= 0) out.diff = props

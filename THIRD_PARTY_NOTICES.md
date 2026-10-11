@@ -4,7 +4,7 @@ This package includes material from the projects below. Each keeps its own licen
 
 ## dsh-better-display
 
-The counted figures on a process group's header (`packages/client/src/features/chat-fold/process-summary.ts` and the `dsh-claude-process-summary-*` rules in its stylesheet) and the line while the model works (`packages/client/src/features/chat-wait/`, its stylesheet): their roll timing and curve, the shimmer sweep over the figures, the clock's type and colour and the overtime badge follow dsh-better-display's fold summary and live status line. The source files name it in their headers.
+The counted figures on a process group's header (`packages/client/src/features/chat-fold/process-summary.ts` and the `dsh-claude-process-summary-*` rules in its stylesheet), the merged figures on a file-change row (`packages/client/src/features/chat-files/` and the `dsh-claude-file-roll-*` rules in its stylesheet) and the line while the model works (`packages/client/src/features/chat-wait/`, its stylesheet): their roll timing and curve, the shimmer sweep over the figures, the clock's type and colour and the overtime badge follow dsh-better-display's fold summary and live status line. The source files name it in their headers.
 
 Source: <https://github.com/aa2246740/dsh-better-display>
 

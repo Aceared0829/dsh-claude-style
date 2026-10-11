@@ -59,6 +59,23 @@ export const CHAT_FILE_STAT_CLASS = 'dsh-claude-file-stat'
 export const CHAT_FILE_ADD_CLASS = 'dsh-claude-file-add'
 /** The removed count. */
 export const CHAT_FILE_DEL_CLASS = 'dsh-claude-file-del'
+/** One figure of the tail while its number rolls in place. */
+export const CHAT_FILE_ROLL_CLASS = 'dsh-claude-file-roll'
+/** The number leaving upward. */
+export const CHAT_FILE_ROLL_OUT_CLASS = 'dsh-claude-file-roll-out'
+/** The number rising in behind it. */
+export const CHAT_FILE_ROLL_IN_CLASS = 'dsh-claude-file-roll-in'
+/**
+ * On the row while its file's calls are read together: `head` on the row that
+ * stands for the file, `member` on the rows it stands for, `gone` on a merged
+ * row's carrier — the host's own call row — whose box comes off the page (D62).
+ */
+export const CHAT_FILE_MERGE_ATTR = 'data-dsh-claude-file-merge'
+export const CHAT_FILE_MERGE_HEAD = 'head'
+export const CHAT_FILE_MERGE_MEMBER = 'member'
+export const CHAT_FILE_MERGE_GONE = 'gone'
+/** The merged row's screen-reader sentence: the calls its file's other rows held. */
+export const CHAT_FILE_MERGED_COPY = 'fileRowMergedChanges'
 /** The expanded body. */
 export const CHAT_FILE_BODY_CLASS = 'dsh-claude-file-body'
 /** The diff card inside an expanded body. */

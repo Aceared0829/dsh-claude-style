@@ -21,13 +21,13 @@
  * writes can reach another.
  *
  * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--headed] [--out <dir>] [--delay <ms>]
- *        scenarios: conversation, narrow, tool, scroll, readerScroll, send, processSummary, reasoningStream, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
+ *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, send, processSummary, reasoningStream, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
  *        (default: every scenario but statsPosition and statsOverlay)
  */
 'use strict'
 const fs = require('node:fs')
 const path = require('node:path')
-const { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText } = require('./dsh-web.cjs')
+const { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, DEFAULT_HOME } = require('./dsh-web.cjs')
 const { MARKS } = require('./lane.cjs')
 const { SCENARIOS } = require('./scenarios.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
@@ -151,7 +151,18 @@ async function startTrace(page) {
 async function runScenario(name, options) {
   const scenario = SCENARIOS[name]
   if (scenario === undefined) throw new Error(`no scenario named "${name}" (${Object.keys(SCENARIOS).join(', ')})`)
-  const mock = await startMockLlm({ script: scenario.script, delayMs: scenario.delayMs ?? options.delayMs })
+  // The scratch home is known before the host boots, and a scripted tool call
+  // needs it: the model service fills the script's `{{workspace}}` slots with it
+  // (packages/testing/mock-llm.cjs), and the scenario writes files beside them.
+  // A program-dispatched call carries the path inside the program's own source,
+  // where a backslash is an escape, so that slot carries the doubled form.
+  const home = path.resolve(options.home ?? DEFAULT_HOME)
+  const workspace = path.join(home, 'workspace')
+  const mock = await startMockLlm({
+    script: scenario.script,
+    delayMs: scenario.delayMs ?? options.delayMs,
+    vars: { workspace, workspaceCode: workspace.replaceAll('\\', '\\\\') },
+  })
   const patch = ['- id: llm-deepseek', '  config:', `    baseURL: ${mock.url}`, '    apiKeyEnv: DSH_E2E_MOCK_KEY', ...scenario.patch ?? []].join('\n')
   const host = await start({ patch, args: scenario.hostArgs, env: { DSH_E2E_MOCK_KEY: 'mock' }, home: options.home, resetState: true })
   process.stdout.write(`\n== ${name} ==  mock ${mock.url}  host ${host.url}\n`)
@@ -171,7 +182,7 @@ async function runScenario(name, options) {
         const left = await firstRunOverlayText(page)
         throw new Error(`the shell left a first-run overlay open${left === '' ? '' : `: ${left}`}`)
       }
-      const context = { page, session, url: host.url, trace: [], notes: {}, out: options.out }
+      const context = { page, session, url: host.url, home, trace: [], notes: {}, out: options.out }
       if (scenario.beforeSend !== undefined) await scenario.beforeSend(context)
       step('sending the prompt')
       await startTrace(page)
@@ -230,7 +241,7 @@ async function main() {
       + `${unknown.length > 0 ? `; named there but missing here: ${unknown.join(', ')}` : ''}`
       + `${unnamed.length > 0 ? `; run here but unnamed there: ${unnamed.join(', ')}` : ''}`)
   }
-  const names = (argOf('scenario') ?? 'conversation,narrow,tool,send,scroll,readerScroll,processSummary,reasoningStream,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
+  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,processSummary,reasoningStream,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
   const options = {
     headed: args.includes('--headed'),
