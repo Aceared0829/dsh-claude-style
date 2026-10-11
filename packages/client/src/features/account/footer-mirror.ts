@@ -1,5 +1,6 @@
 import { FOOTER_ACTIONS_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea } from '../../core/host'
+import { copyLabel } from '../../core/i18n'
 import { buildPopoverItem } from '../../shared/popover'
 
 export function createFooterMirror(options: {
@@ -398,7 +399,7 @@ export function createFooterMirror(options: {
         const activator = trigger!
         let item = body.querySelector<HTMLElement>(`[data-action-index="${idx}"]`)
         const iconEl = (trigger && trigger.querySelector('svg')) || entry.querySelector('svg')
-        const text = activator.getAttribute('aria-label') || (activator.textContent || '').trim() || '插件'
+        const text = activator.getAttribute('aria-label') || (activator.textContent || '').trim() || copyLabel('footerPluginRow', 'Plugin')
         const badge = activator.getAttribute('data-cordis-badge') || entry.getAttribute('data-cordis-badge') || ''
 
         if (!item) {

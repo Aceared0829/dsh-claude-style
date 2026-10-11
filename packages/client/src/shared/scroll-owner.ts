@@ -100,8 +100,15 @@ const FOLLOW_LOOK_INTERVAL_MS = 100
 const INTENT_TYPES = ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown', 'beforematch']
 const MOVING_INTENT_TYPES = new Set(['wheel', 'touchstart', 'pointerdown', 'keydown'])
 
-/** The source of the ease running on each container; stale once the spring has let go of it. */
-const easeSources = new Map<Element, ScrollSource>()
+/**
+ * The source of the ease running on each container; stale once the spring has let go of it.
+ *
+ * A WeakMap on purpose: an entry is dropped when the container is asked about
+ * again, but a spring that arrives on its own never asks, and a Map would hold
+ * that container — and the conversation subtree hanging off it — for the life of
+ * the page. Nothing iterates the table, so weak keys cost nothing.
+ */
+const easeSources = new WeakMap<Element, ScrollSource>()
 /** The containers the reader holds: an intent was seen there and he has not come back to the end. A Set, so leaving the owner can take every mark off again. */
 const held = new Set<Element>()
 /** The held containers the reader has since moved toward the end of: his own way back to it. */
@@ -124,7 +131,7 @@ let stopSubmissionWatch: (() => void) | null = null
 
 /**
  * Put a container's hold down or take it up, with the mark the page can read:
- * the live status line's pin hangs on it (turn-status.css). Every change of
+ * the waiting line's pin hangs on it (chat-wait.css). Every change of
  * `held` goes through here, so the two cannot say different things.
  */
 function setHeld(container: Element, holding: boolean) {

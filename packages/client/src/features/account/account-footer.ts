@@ -359,6 +359,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
+   * The host row's bindings as this generation installed them, so the teardown
+   * can take them off again. The token alone keeps a generation from binding the
+   * same node twice; a node the host keeps across generations (its own account
+   * row) would otherwise collect one set of listeners per switch.
+   */
+  const hostRowBindings = new Map<HTMLElement, { enter: () => void, leave: () => void, press: () => void }>()
+  /** The host's menu bindings this generation installed, taken off with it. */
+  const hostMenuBindings = new Map<HTMLElement, { enter: () => void, leave: () => void }>()
+
+  /**
    * Bind the hover preference on the host's account row. The host renders
    * that row, so its listeners are bound in place and guarded per element:
    * a host re-render that replaces the row must not stack a second pair.
@@ -366,19 +376,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function bindHostRowHover(row: HTMLElement) {
     if (row.__dshHostRowToken === hostRowBindingToken) return
     row.__dshHostRowToken = hostRowBindingToken
-    row.addEventListener('mouseenter', () => {
+    const enter = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.scheduleOpen()
-    })
-    row.addEventListener('mouseleave', () => {
+    }
+    const leave = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.scheduleClose()
-    })
+    }
     // The row's own click opens the menu too (autoPopover off, or a press
     // before the hover delay elapsed). A listener on the row runs in the
     // target phase, ahead of the host's own delegated onClick, so the armed
     // marker is in place before the host mounts the card.
-    row.addEventListener('click', () => {
+    const press = () => {
       armAccountMenu()
-    })
+    }
+    row.addEventListener('mouseenter', enter)
+    row.addEventListener('mouseleave', leave)
+    row.addEventListener('click', press)
+    hostRowBindings.set(row, { enter, leave, press })
   }
 
   /**
@@ -391,14 +405,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       disarmAccountMenu()
       return
     }
-    if (menu.__dshHostHoverBound) return
-    menu.__dshHostHoverBound = true
-    menu.addEventListener('mouseenter', () => {
+    if (menu.__dshHostHoverToken === hostRowBindingToken) return
+    menu.__dshHostHoverToken = hostRowBindingToken
+    const enter = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.cancel()
-    })
-    menu.addEventListener('mouseleave', () => {
+    }
+    const leave = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.scheduleClose()
-    })
+    }
+    menu.addEventListener('mouseenter', enter)
+    menu.addEventListener('mouseleave', leave)
+    hostMenuBindings.set(menu, { enter, leave })
   }
 
   function onSurfaceMode(mode: AccountSurfaceMode) {
@@ -438,6 +455,21 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (let i = 0; i < injected.length; i++) injected[i].remove()
     const marked = document.querySelectorAll(`[${HOST_ROW_ATTR}]`)
     for (let m = 0; m < marked.length; m++) marked[m].removeAttribute(HOST_ROW_ATTR)
+    // The host's row outlives this generation, so its listeners come off here:
+    // a switch off and on again must not leave a second set behind.
+    for (const [row, bindings] of hostRowBindings) {
+      row.removeEventListener('mouseenter', bindings.enter)
+      row.removeEventListener('mouseleave', bindings.leave)
+      row.removeEventListener('click', bindings.press)
+      delete row.__dshHostRowToken
+    }
+    hostRowBindings.clear()
+    for (const [menu, bindings] of hostMenuBindings) {
+      menu.removeEventListener('mouseenter', bindings.enter)
+      menu.removeEventListener('mouseleave', bindings.leave)
+      delete menu.__dshHostHoverToken
+    }
+    hostMenuBindings.clear()
     if (footArea) mirror.clear(footArea)
   }
 

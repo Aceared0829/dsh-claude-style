@@ -1,5 +1,6 @@
 import { HDSL_SKIN_ROUTE } from '../../constants'
 import { resolveAvatarUrl, resolveDisplayName } from '../../core/host'
+import { copyLabel } from '../../core/i18n'
 import { buildElement } from '../../shared/dom'
 import type { HostAccountMenu } from './host-menu'
 
@@ -212,7 +213,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
       const label = (hostRow.textContent || '').trim()
       if (label) return label
     }
-    return 'User'
+    return copyLabel('accountNameFallback', 'User')
   }
 
   /**
@@ -280,7 +281,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
    */
   function syncSettingsItem(settingsItem: Element | null) {
     if (settingsItem === null) return
-    let labelText = '设置'
+    let labelText = copyLabel('accountSettingsRow', 'Settings')
     const trigger = hostMenu.settingsTrigger()
     if (trigger) {
       let txt = (trigger.textContent || '').trim()
