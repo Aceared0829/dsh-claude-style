@@ -32,6 +32,14 @@ export const PEAKRATE_CATALOG_URL = 'https://offpeakclock.com/pricing.json'
 /** How long a fetched catalog counts as current. */
 export const PEAKRATE_REFRESH_MS = 24 * 60 * 60 * 1000
 
+/**
+ * How long after the last request the timer stands down: the page that asked is
+ * gone, and a host nobody is reading does not keep reaching the source (D54).
+ * The browser half asks at least once a day while the meter is on, so only a
+ * host whose reader has turned the feature off (or left the page) goes idle.
+ */
+export const PEAKRATE_IDLE_MS = 48 * 60 * 60 * 1000
+
 /** A source that accepts the connection and then says nothing is not worth the wait. */
 const FETCH_TIMEOUT_MS = 10_000
 
@@ -78,6 +86,8 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
   let fetchedAt = 0
   let loaded = false
   let timer: ReturnType<typeof setInterval> | undefined
+  /** When the route last asked: what tells a reader-driven timer from an idle one. */
+  let lastAskedAt = 0
   const warn = (message: string) => ctx.logger?.warn?.(message)
 
   /** The copy shipped in the package, which is what a machine with no reach has to judge by. */
@@ -173,9 +183,26 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
   /** Keep a long-running host current: the timer starts with the first request. */
   function ensure(): void {
     load()
+    lastAskedAt = Date.now()
     if (timer !== undefined) return
-    timer = setInterval(() => { void refresh() }, PEAKRATE_REFRESH_MS)
+    timer = setInterval(() => {
+      // Nothing has asked for two days: the meter is off or the page is gone,
+      // and the source is no longer reached on its behalf (D54). The next
+      // request starts the timer again.
+      if (Date.now() - lastAskedAt > PEAKRATE_IDLE_MS) {
+        stopTimer()
+        return
+      }
+      void refresh()
+    }, PEAKRATE_REFRESH_MS)
     timer.unref?.()
+  }
+
+  /** Stand the refresh timer down; a later request re-arms it. */
+  function stopTimer(): void {
+    if (timer === undefined) return
+    clearInterval(timer)
+    timer = undefined
   }
 
   function payload(): PeakRatePayload {
@@ -193,10 +220,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     refresh,
     payload,
     dispose() {
-      if (timer !== undefined) {
-        clearInterval(timer)
-        timer = undefined
-      }
+      stopTimer()
     },
   }
 }

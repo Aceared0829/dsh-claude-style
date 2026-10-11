@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "fixes",
+  "order": 4,
+  "external": false,
+  "zh": "峰谷目录的 24 小时定时器原先在页面问过一次之后一直拉取到进程退出，设置里关掉峰谷功能也停不下来；现在连续 48 小时没有请求就自己停下，下一次请求再启动。",
+  "en": "The peak-rate catalog's daily timer kept reaching the source until the process exited once a page had asked, and switching the peak-rate feature off did not stop it; it stands down after 48 hours with no request now, and the next request starts it again."
+}
