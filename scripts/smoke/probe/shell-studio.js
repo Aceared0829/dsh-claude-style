@@ -43,16 +43,18 @@
         try {
           var classes = []
           var texts = []
+          var tips = []
           ;(function collect(node) {
             if (typeof node === 'string') { if (node) texts.push(node); return }
             if (node === null || typeof node !== 'object') return
             if (Array.isArray(node)) { node.forEach(collect); return }
             if (node.props && typeof node.props.className === 'string') classes.push(node.props.className)
+            if (node.props && typeof node.props['data-tip'] === 'string') tips.push(node.props['data-tip'])
             if (node.props) collect(node.props.children)
           })(window.__slotComponents['claude-style-usage']({}))
-          r.panelRenders[tab] = { error: null, classes: classes, texts: texts }
+          r.panelRenders[tab] = { error: null, classes: classes, texts: texts, tips: tips }
         } catch (e) {
-          r.panelRenders[tab] = { error: String((e && e.stack) || e), classes: [], texts: [] }
+          r.panelRenders[tab] = { error: String((e && e.stack) || e), classes: [], texts: [], tips: [] }
         } finally {
           react.rendering = false
           react.states = null

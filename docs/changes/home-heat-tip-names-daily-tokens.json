@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "zh": "首页用量面板的用量热力图，格子悬停提示原本写的是那天的消息条数，现在改成那天的 Token 用量（「9月9日 — 15.9k Token」），与格子深浅取自同一个数字；两份数据来源都带每天的 Token 合计，提示不再随来源换口径。",
+  "en": "On the home page's usage panel, the heat map's cell tip used to name the day's messages; it now names the tokens that day spent (\"Sep 9 — 15.9k tokens\"), the same figure the cell's shade is bucketed from. Both sources behind the grid carry a per-day token total, so the tip no longer changes its reading with the source."
+}

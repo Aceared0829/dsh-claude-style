@@ -314,6 +314,12 @@ module.exports = {
     check('the usage panel renders its Overview tab: stat cells and heat grid',
       drew('overview', 'dsh-claude-home-stat') && drew('overview', 'dsh-claude-home-heat'),
       JSON.stringify(renders.overview))
+    // The heat grid's cells: 26 weeks of days, every one of them naming its
+    // own day's tokens, whichever source the panel drew from.
+    const tips = (renders.overview && renders.overview.tips) || []
+    check('every heat cell names the day\'s tokens',
+      tips.length > 150 && tips.every((tip) => / — [\d.]+[kMB]? tokens$/.test(tip)),
+      `${tips.length} tips: ${JSON.stringify(tips.slice(0, 3))}`)
     const said = (tab, pattern) => renders[tab] !== undefined && renders[tab].texts.some((text) => pattern.test(text))
     check('all time: the peak hour and the book line read the whole history (500k steps down to The Brothers Karamazov)',
       said('overview', /^3 AM$/) && said('overview', /^You've used ~1× the tokens in The Brothers Karamazov\.$/),
