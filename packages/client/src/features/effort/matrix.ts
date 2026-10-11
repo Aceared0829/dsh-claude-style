@@ -1,3 +1,4 @@
+import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 
 /**
@@ -87,6 +88,15 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
    */
   function paintParticle(sq: HTMLElement, r: number, c: number) {
     sq.setAttribute('data-tone', String(Math.floor(cellUnit(r, c, 1) * 8) % 8))
+    // Standing still, the cycle and the phase are not written at all: an inline
+    // `!important` duration outranks the reduced-motion rule, and a plume that
+    // flashes once per block after a scattered delay is motion like any other
+    // (D26). Without them the stylesheet's own duration answers the rule.
+    if (motionReduced()) {
+      sq.style.removeProperty('animation-delay')
+      sq.style.removeProperty('animation-duration')
+      return
+    }
     sq.style.setProperty('animation-delay', `${(cellUnit(r, c, 2) * 1.38 + 0.3).toFixed(3)}s`, 'important')
     sq.style.setProperty('animation-duration', `${(1.45 * (0.92 + cellUnit(r, c, 3) * 0.16)).toFixed(3)}s`, 'important')
   }
@@ -102,7 +112,7 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
     const w = track.clientWidth
     if (!w) return false
     const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1
-    const sig = `${Math.round(w * dpr)}@${dpr}`
+    const sig = `${Math.round(w * dpr)}@${dpr}${motionReduced() ? '@still' : ''}`
     if (sig === matrixSig) return true
     const lay = solveMatrix(Math.round(w * dpr), dpr)
     while (matrix.firstChild) matrix.removeChild(matrix.firstChild)
@@ -118,8 +128,9 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
            for — with a whisper of scatter so it does not read as a wipe.
            !important inline: the stylesheet's animation shorthand is
            !important (it resets delay/duration), so a plain assignment
-           would silently lose. */
-        cell.style.setProperty('animation-delay', `${(((1 - fx) * 0.45) + cellUnit(r, c, 4) * 0.08).toFixed(3)}s`, 'important')
+           would silently lose. Standing still it is left off, for the same
+           reason paintParticle leaves the cycle off (D26). */
+        if (!motionReduced()) cell.style.setProperty('animation-delay', `${(((1 - fx) * 0.45) + cellUnit(r, c, 4) * 0.08).toFixed(3)}s`, 'important')
         const sq = buildElement('div', 'dsh-claude-effort-matrix-sq')
         /* The plume shape is a STATIC per-block opacity: the flash animates
            the colour through it, so the two never fight. */
