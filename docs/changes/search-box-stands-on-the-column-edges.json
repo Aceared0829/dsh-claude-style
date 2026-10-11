@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "improvements",
-  "order": 2,
-  "external": false,
-  "zh": "侧栏搜索框选「独立在品牌行下方」时，那一行自己还留着 8 像素的左右内边距，盒子因此比下面的「新会话」等行窄 16 像素；现在这一行不再留内边距，盒子的左右边框与下面各行的宽度落在同两条边上。",
-  "en": "With the sidebar search box on Standalone, its own row still carried 8px of inline padding, which made the box 16px narrower than the New session row under it; the row adds no padding now, so the box's two edges stand where the rows under it stand."
-}

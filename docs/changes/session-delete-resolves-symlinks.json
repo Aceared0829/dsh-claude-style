@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "security",
-  "order": 2,
-  "external": false,
-  "zh": "删除会话时「目录留在会话根目录内」的判定改为比较解析符号链接之后的路径：会话根目录下有指向别处的项目目录链接时，删除不再跟着链接走到根目录之外。",
-  "en": "The session deletion's \"directory stays inside the sessions root\" check compares resolved paths now: with a project directory inside the root linked elsewhere, the removal no longer follows the link out of the root."
-}

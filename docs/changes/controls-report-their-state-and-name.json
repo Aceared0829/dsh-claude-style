@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 10,
-  "external": false,
-  "zh": "几个控件对读屏说不出自己是什么：会话统计那一行只有数字与箭头，工作强度与模型触发器从不报告菜单是否展开，设置页的开关没有名字，权限弹层的当前档位只有勾号，输入输出箭标进了名称。现在统计行有自己的名称、两个触发器跟着菜单报告展开状态、开关取所在行的标题为名、权限弹层的当前档位写 aria-checked、箭标对读屏隐藏。",
-  "en": "Several controls could not say what they were: the conversation-statistics line held only figures and arrows, the effort and model triggers never reported whether their menu was open, the settings page's switches had no name, the permission popover marked its current tier with a check mark alone, and the input and output arrows joined a name. The line carries its own name now, both triggers report the open state with their menu, a switch takes its row's title as its name, the permission popover's current tier writes aria-checked, and the arrows are hidden from a reader."
-}

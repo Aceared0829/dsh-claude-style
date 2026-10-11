@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "zh": "删除会话的请求体超过上限时，客户端原先只看到连接被重置；现在先答 400，这条应答送出之后再结束连接。",
-  "en": "A session deletion whose body went past the limit left the client with a reset connection; the 400 is answered first now, and the connection is ended once that answer has gone out."
-}

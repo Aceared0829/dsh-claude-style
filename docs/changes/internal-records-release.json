@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "chores",
-  "order": 2,
-  "external": false,
-  "zh": "两处内部记录的清理：滚动主人记「哪个来源在滑这一格」的表改用弱引用键，弹簧自己走完之后不再把已经分离的对话子树留在内存里；页脚接管挂在宿主自己的账号行与菜单上的监听随功能的拆卸一并摘下，反复开关不再叠加。",
-  "en": "Two internal records are released properly: the scroll owner's table of which source is easing a container uses weak keys now, so a spring that arrives on its own no longer keeps a detached conversation subtree in memory, and the footer takeover's listeners on the host's own account row and menu come off with the feature's teardown instead of stacking on every switch."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "improvements",
-  "order": 4,
-  "external": false,
-  "zh": "样式表里写死的颜色改读令牌：强调色按钮上的文字取填充自己的前景令牌（原先写死纯白，换成浅色填充后对比度没有保障），设置页里插件图标的底色取主文字令牌（原先写死十六进制）。docs/STYLE.md 的形状一节补上实际使用的圆角与描边，并写明它们来自被复制的那枚宿主控件。",
-  "en": "Literals in the stylesheets read tokens: the label on a filled accent button takes the fill's own foreground token (it was a hard-coded white, which promised nothing once a palette turns the fill light), and the settings page's plugin mark takes the primary label token (it was a hard-coded hex). The shape section of docs/STYLE.md records the radii and strokes actually in use, with the host control each copy came from."
-}

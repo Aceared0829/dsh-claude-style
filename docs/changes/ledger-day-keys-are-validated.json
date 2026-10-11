@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 2,
-  "external": false,
-  "zh": "成本计量账本里出现不是真实日期的键时，合并原先按字符串把它当成最新的一天，本地折算出的所有日子与它们的会话一起消失，首页模型图表还会读到一个非法日期而报错；现在这类键在读取时被跳过，其余日子照常合并。",
-  "en": "A key in the cost meter's ledger that is not a real date used to become the newest day by string comparison, which dropped every day the local fold contributed, along with its sessions, and left the home page's model chart formatting an invalid date; such a key is skipped as the ledger is read now, and the rest of the days merge as before."
-}

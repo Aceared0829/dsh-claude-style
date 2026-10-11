@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "improvements",
-  "order": 3,
-  "external": false,
-  "zh": "侧栏「新会话」一行右侧的快捷键提示原本是等宽字体的普通文字（Ctrl + N），现在与搜索框的按键同一套样式：每个键一个 20 像素圆角键帽、1 像素描边、12 像素次级文字，两个键之间的「+」不再出现。",
-  "en": "The shortcut hint at the right of the sidebar's New session row was plain monospace text (Ctrl + N); it now wears the search box's own key caps — one 20px cap per key with a 1px hairline and 12px secondary text — and the `+` between the two keys is gone."
-}

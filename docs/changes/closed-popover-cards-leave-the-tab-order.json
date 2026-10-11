@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 7,
-  "external": false,
-  "zh": "关闭状态的弹层卡片原先只把不透明度降到 0，卡片里的按钮仍然留在 Tab 顺序里，键盘读者会停在完全看不见的行上；现在关闭的卡片同时移出绘制、命中与焦点顺序，开关的淡入淡出照旧。",
-  "en": "A closed popover card only dropped its opacity, so the buttons inside stayed in the tab order and a keyboard reader landed on rows nothing was drawing; a closed card leaves the paint, hit-testing and the tab order together now, and the open and close fades are unchanged."
-}

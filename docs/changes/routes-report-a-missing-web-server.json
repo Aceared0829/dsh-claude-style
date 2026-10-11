@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 5,
-  "external": false,
-  "zh": "宿主没有网页服务器服务时，插件原先静默地一条路由也没注册，卸载时又按每一条记一次失败；现在报告一次缺少的服务，路由的撤销表里只留真正的撤销函数。",
-  "en": "A host without a web server service registered no route in silence and then logged one failure per route as it unloaded; the missing service is reported once now, and the route disposers hold the real disposals alone."
-}

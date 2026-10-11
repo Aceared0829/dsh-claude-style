@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.13.2] - 2026-10-11
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.13.2) | [English](#en-0.13.2)
+
+<h3 id="cn-0.13.2">新增功能</h3>
 
 - 设置页「侧栏」多了一行「左侧栏布局」：「宽松」是现在的样子，「紧凑」把左侧栏的间距收小——上侧各行（新会话、插件、自动化任务，以及搜索框独立成行时的那一行）到工作区之间的空隙、工作区标题自身的上下留白、对话行的高度与行间距、两个分区之间的间隔，以及账号区的内边距与它那一行的上下边距。控件的形状、字号、图标与配色不变。新增一项偏好 `sidebarLayout`（默认 `relaxed`），把它解析到 `<body data-dsh-claude-sidebar-layout>`；宿主半边由共享的偏好表生成，因此该键也会出现在 DSH 的设置文档里。
 
@@ -48,7 +50,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 模型标志的 `cap` 高度回退原先写在同一规则里的两条 `height`，端到端的 `!important` 审计因此整条跳过这条规则；现在两条高度分处两条规则，规则的每一处权重都受审计。
 - 两处内部记录的清理：滚动主人记「哪个来源在滑这一格」的表改用弱引用键，弹簧自己走完之后不再把已经分离的对话子树留在内存里；页脚接管挂在宿主自己的账号行与菜单上的监听随功能的拆卸一并摘下，反复开关不再叠加。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.13.2">New Features</h3>
 
 - The settings page's Sidebar tab gains a Sidebar layout row: Relaxed is how the sidebar looks now, and Compact takes its spacing down — the gap between the top rows (New session, Plugins, Automation tasks, and the search box's own row when it stands alone) and the workspace, the workspace heading's own margins, the conversation rows' height and spacing, the distance between two sections, and the account area's padding and row margins. Control shapes, type sizes, icons and colours are unchanged. A new preference, `sidebarLayout` (default `relaxed`), resolves onto `<body data-dsh-claude-sidebar-layout>`; the host half is generated from the shared preference table, so the key appears in DSH's own settings document too.
 

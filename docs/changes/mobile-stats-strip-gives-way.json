@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-11",
-  "group": "fixes",
-  "order": 11,
-  "external": false,
-  "zh": "手机宽度下输入卡片下方那一行与手机插件自己画的度量条落在同一条 28 像素带里，两行文字叠在一起（权限标签上压了 52 像素、模型标签上压了 21 像素）；现在输入区会量出那条度量条的高度，把这一行连同上下文圆环整体抬起同样的距离，度量条出现与消失时分别抬起与落回。",
-  "en": "At phone width the line under the composer card and the statistics strip a mobile plugin draws of its own shared one 28px band, so the two rows of text printed over each other (52px of glyph-on-glyph on the permission label, 21px on the model label); the composer now measures that strip and lifts the line, the context ring with it, by the strip's own height, taking it up and letting it back down as the strip comes and goes."
-}

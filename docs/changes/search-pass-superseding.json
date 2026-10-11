@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 6,
-  "external": false,
-  "zh": "会话内容检索里，整份列举取代在途的尾扫时，旧的一轮结束会把新一轮的状态一起清掉，于是可以再起第三轮并发地读同一批会话；现在只有仍然是最新的一轮才清状态。",
-  "en": "In session content search, when a full listing replaced a tail-only pass in flight, the older pass's end cleared the newer pass's state, which let a third pass read the same sessions alongside it; only the pass that is still current clears the state now."
-}

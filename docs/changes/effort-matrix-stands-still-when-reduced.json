@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 9,
-  "external": false,
-  "zh": "把「动画效果」设为减弱之后，工作强度滑杆顶档的点阵仍按运行时写下的动画时长闪一次；现在这一档不写动画的周期与相位，点阵静止。",
-  "en": "With Animation set to Reduced, the reasoning-effort slider's top-rung matrix still flashed once per block on the duration written at run time; that duration and phase are not written in this setting now, and the matrix stands still."
-}

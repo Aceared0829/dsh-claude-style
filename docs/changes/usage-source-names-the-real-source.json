@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-10",
-  "group": "fixes",
-  "order": 3,
-  "external": false,
-  "zh": "机器上没有成本计量插件时，用量汇总的来源原先报成 cost-meter+local；现在报 local，与「哪个来源作答」的定义一致。",
-  "en": "With no cost-meter plugin on the machine, the usage roll-up reported its source as cost-meter+local; it reports local now, which is what \"which source answered\" means."
-}
