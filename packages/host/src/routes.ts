@@ -12,7 +12,7 @@
  * D46): the browser half addresses the same names.
  */
 import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, ROUTE_PREFIX, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
-import { existsSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'
 import { userInfo } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
@@ -83,8 +83,10 @@ const DELETE_BODY_MAX = 4096
  * request that carries the session cookie; the desktop shell passes it because
  * it forwards to a loopback Host, drops the page's Origin and attaches the
  * cookie itself. A host without that service cannot authenticate anyone, so the
- * stand-in below serves loopback only: a loopback Host (which also defeats DNS
- * rebinding), no cross-site marker, and an Origin, when sent, naming that Host.
+ * stand-in below serves loopback only: a peer on the loopback interface, a
+ * loopback Host (which also defeats DNS rebinding), no cross-site marker, and an
+ * Origin, when sent, naming that Host. The peer address is the part of the
+ * request the caller cannot write, so it is the one that has to hold.
  *
  * @param ctx - host plugin context.
  * @param req - node request.
@@ -93,6 +95,7 @@ const DELETE_BODY_MAX = 4096
 function refusalOf(ctx: DshContext, req: DshRequest) {
   const connection = ctx.get('connection')
   if (typeof connection?.requestRejection === 'function') return connection.requestRejection(req)
+  if (!isLoopbackPeer(req.socket.remoteAddress)) return 403
   const host = req.headers.host
   if (host !== undefined) {
     // A Host header that is no host name at all is refused.
@@ -106,6 +109,16 @@ function refusalOf(ctx: DshContext, req: DshRequest) {
   if (origin === undefined) return undefined
   if (!URL.canParse(origin)) return 403
   return new URL(origin).host === host ? undefined : 403
+}
+
+/**
+ * Whether a socket address is this machine: IPv4 `127/8`, IPv6 `::1`, or the
+ * IPv4-mapped spelling Node reports for a v4 peer on a dual-stack socket.
+ */
+function isLoopbackPeer(address: string | undefined) {
+  if (address === undefined) return false
+  const plain = address.startsWith('::ffff:') ? address.slice('::ffff:'.length) : address
+  return plain === '::1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(plain)
 }
 
 /** Send one JSON response. */
@@ -145,22 +158,30 @@ function sessionIsLive(ctx: DshContext, sessionId: string): boolean {
   return true
 }
 
-/** One bounded request body, or null when it is oversized or unreadable. */
+/**
+ * One bounded request body, or null when it is oversized or unreadable.
+ *
+ * Over the limit the rest of the body is dropped and the promise answers null:
+ * the answer (400) still has to reach the client, so the socket is not cut here
+ * — `deleteSession` ends it once the answer has gone out.
+ */
 function readRequestBody(req: DshRequest, limit: number): Promise<string | null> {
   return new Promise<string | null>((settle) => {
     const chunks: Buffer[] = []
     let size = 0
+    let over = false
     req.on('data', (chunk: Buffer | string) => {
+      if (over) return
       size += chunk.length
       if (size > limit) {
+        over = true
         settle(null)
-        req.destroy()
         return
       }
       chunks.push(Buffer.from(chunk))
     })
-    req.on('end', () => settle(Buffer.concat(chunks).toString('utf8')))
-    req.on('error', () => settle(null))
+    req.on('end', () => { if (!over) settle(Buffer.concat(chunks).toString('utf8')) })
+    req.on('error', () => { if (!over) settle(null) })
   })
 }
 
@@ -203,6 +224,11 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
     return
   }
   const raw = await readRequestBody(req, DELETE_BODY_MAX)
+  if (raw === null) {
+    // An oversized body leaves its remainder unread: the socket is ended once
+    // this request's answer is out, never before it.
+    res.once('finish', () => req.destroy())
+  }
   let request = null
   try {
     request = raw === null ? null : JSON.parse(raw)
@@ -236,7 +262,11 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
     sendJson(res, 200, { ok: true, ghost: true })
     return
   }
-  if (!resolve(dir).startsWith(root + sep)) {
+  // The comparison has to be between resolved paths: an entry inside the root
+  // that is itself a symlink carries a recursive removal out of it, and
+  // `resolve` only normalizes the spelling (D11).
+  const realRoot = realpathSync(root)
+  if (!realpathSync(dir).startsWith(realRoot + sep)) {
     sendJson(res, 403, { ok: false, error: 'session directory outside the sessions root' })
     return
   }
@@ -382,20 +412,33 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
   scope.effect(() => {
     const disposers: (() => void)[] = []
     const report = (message: string, error: unknown) => ctx.logger?.warn?.(`dsh-claude-style: ${message}: ${(error as { message?: string } | null)?.message ?? String(error)}`)
-    const usage = createUsage(ctx)
-    const hdsl = createHdslAccount(ctx)
-    const sessionSearch = createSessionSearch(ctx)
-    const peakrate = createPeakRate(ctx)
 
     /**
      * Register one route. The web server refuses a path another plugin already
      * holds by throwing; that refusal is reported and the other routes still
      * register, because a throw here would fail this fiber and drop the client
      * bundle — the whole skin — with it (docs/decisions D12).
+     *
+     * A host that serves no web server at all registers nothing: that is said
+     * once here, and nothing below is built, so the teardown is left with the
+     * real disposers alone.
      */
+    const server = scope.webServer
+    if (server === undefined || server === null) {
+      report('web server unavailable', new Error('the host carries no webServer service, so no route of this plugin is registered'))
+      return
+    }
+    const usage = createUsage(ctx)
+    const hdsl = createHdslAccount(ctx)
+    const sessionSearch = createSessionSearch(ctx)
+    const peakrate = createPeakRate(ctx)
+
     const register = (label: string, route: DshRoute) => {
       try {
-        disposers.push(scope.webServer?.register(route) as () => void)
+        const dispose = server.register(route)
+        // A register that answers nothing has nothing to dispose; a rejection
+        // is what the catch below reports.
+        if (typeof dispose === 'function') disposers.push(dispose as () => void)
       } catch (error) {
         report(`${label} route unavailable`, error)
       }

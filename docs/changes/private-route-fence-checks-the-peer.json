@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10",
+  "group": "security",
+  "order": 1,
+  "external": false,
+  "zh": "宿主没有 connection 服务时，私有路由的回退栅栏原先只看请求方自己写的 Host 头，局域网连接谎报 localhost 即通过；现在先看连接的对端地址，回环地址之外一律拒绝。冒烟的宿主半边新增一条检查：局域网连接加回环 Host 必须被拒。",
+  "en": "With no `connection` service on the host, the private routes' fallback fence read only the Host header the requester writes, so a LAN client claiming `localhost` passed. The peer address of the connection is checked first now, and anything outside loopback is refused. The host half's smoke run carries the check: a LAN connection claiming a loopback Host is refused."
+}

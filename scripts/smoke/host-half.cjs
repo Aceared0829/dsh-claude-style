@@ -100,10 +100,14 @@ function fakeHost(mod, options = {}) {
 /**
  * One request through a registered route; resolves with `{ status, body }`, and
  * with the answer's bytes as `raw` (the skin route answers with a picture).
+ *
+ * `peer` is the socket address the route sees. The local stand-in reads it, so a
+ * request made from this machine carries this machine's address (D11) unless a
+ * check asks for another.
  */
-function request(host, route, method, body, headers) {
+function request(host, route, method, body, headers, peer = '127.0.0.1') {
   const req = Readable.from(body ? [Buffer.from(body)] : [])
-  Object.assign(req, { method, url: route, headers })
+  Object.assign(req, { method, url: route, headers, socket: { remoteAddress: peer } })
   return new Promise((resolve) => {
     const res = {
       status: 0,
@@ -160,6 +164,12 @@ async function hostHalf() {
     for (const [label, headers] of [['cross-site page', crossSite], ['LAN peer', lanPeer], ['DNS-rebound page', rebound]]) {
       const r = await request(host, USER, 'GET', '', headers)
       check(`${label}: username read refused`, r.status === 401 || r.status === 403, `HTTP ${r.status}`)
+    }
+    if (!fenced) {
+      // The stand-in's own fence on the request the Host header cannot decide:
+      // the headers claim a loopback page, the connection comes from the LAN.
+      const spoofed = await request(host, USER, 'GET', '', browser, '192.168.1.23')
+      check('LAN connection claiming a loopback Host: username read refused', spoofed.status === 403, `HTTP ${spoofed.status}`)
     }
     const r = await request(host, USER, 'GET', '', browser)
     check('browser username read answered', r.status === 200 && JSON.parse(r.body).ok === true, `HTTP ${r.status}`)
