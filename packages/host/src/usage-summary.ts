@@ -23,8 +23,8 @@ export interface UsageSummary {
   source: string
   /** Set when the figures could not be read at all this pass. */
   unavailable?: boolean
-  /** Set when only part of the sessions could be folded. */
-  read?: boolean
+  /** How many session logs this pass folded afresh, against the ones the cache answered. */
+  read?: number
   computedAt: number
   days: Record<string, unknown>[]
   models: Record<string, unknown>[]
@@ -173,28 +173,30 @@ export interface LedgerMerge {
  * which is also where its hour histograms, the one dimension the ledger has no
  * column for, are worth keeping.
  *
- * @param ledgerDays - the ledger's day map, empty when there is no ledger.
+ * @param ledgerDays - the ledger's day map, or null when there is no ledger at
+ *     all: a null is what tells the caller the answer is the fold's alone, which
+ *     an empty map cannot say.
  * @param sessions - the per-session folds, keyed by session id.
  * @param logs - the session logs those folds came from, for their last-write day.
  */
 export function mergeLedgerFold(
-  ledgerDays: ReadonlyMap<string, DayBuckets>,
+  ledgerDays: ReadonlyMap<string, DayBuckets> | null,
   sessions: ReadonlyMap<string, CacheSession>,
   logs: ReadonlyArray<SessionLog>,
 ): LedgerMerge {
   const days = new Map<string, DayBuckets>()
   const sessionIds = new Set<string>()
-  let lastLedgerDay = ''
-  for (const [date, buckets] of ledgerDays) {
+  let lastLedgerDay: string | null = null
+  for (const [date, buckets] of ledgerDays ?? []) {
     days.set(date, buckets)
-    if (date > lastLedgerDay) lastLedgerDay = date
+    if (lastLedgerDay === null || date > lastLedgerDay) lastLedgerDay = date
     for (const id of buckets.sessionIds ?? []) sessionIds.add(id)
   }
   // An uncovered day is the fold's whole day: its model split, the sessions
   // that settled on it and its hour histogram, as the fold alone would answer.
   let folded = false
   for (const [date, buckets] of mergeSessions(sessions).days) {
-    if (date <= lastLedgerDay) continue
+    if (lastLedgerDay !== null && date <= lastLedgerDay) continue
     days.set(date, buckets)
     folded = true
   }
@@ -203,7 +205,7 @@ export function mergeLedgerFold(
   // and the ledger already counts the session those days belong to.
   for (const log of logs) {
     const date = dayKey(log.mtimeMs)
-    if (date !== null && date > lastLedgerDay) sessionIds.add(log.id)
+    if (date !== null && (lastLedgerDay === null || date > lastLedgerDay)) sessionIds.add(log.id)
   }
   return { days, sessionIds, folded }
 }

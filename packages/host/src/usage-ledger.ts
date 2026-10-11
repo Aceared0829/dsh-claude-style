@@ -22,6 +22,25 @@ import { join } from 'node:path'
 
 /** The ledger's document version this reader understands; anything else is ignored. */
 const LEDGER_VERSION = 1
+
+/**
+ * Whether a `days` key is a day this half can read: `YYYY-MM-DD` and a real
+ * calendar day.
+ *
+ * The ledger is another plugin's document, so its keys are checked like its
+ * values. A key that is not a day is dropped rather than kept: the merge
+ * compares day keys as strings, and one sorting past every real day would take
+ * the newest-day mark with it and hide the days the fold itself contributed
+ * (D53).
+ */
+function isDayKey(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const [year, month, day] = value.split('-').map(Number)
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false
+  const date = new Date(Date.UTC(year, month - 1, day))
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+}
+
 /** Buckets are disjoint; reasoning tokens ride inside output. */
 export const BUCKET_KEYS: (keyof Buckets)[] = ['input', 'output', 'cacheRead', 'cacheWrite']
 
@@ -92,6 +111,7 @@ export function readLedger(home: string): Map<string, DayBuckets> | null {
   if (rawDays === null || typeof rawDays !== 'object' || Array.isArray(rawDays)) return null
   const days = new Map<string, DayBuckets>()
   for (const [day, value] of Object.entries(rawDays as Record<string, unknown>)) {
+    if (!isDayKey(day)) continue
     if (value === null || typeof value !== 'object') continue
     const bucket = value as Partial<Buckets> & { sessions?: unknown, byProviderModel?: unknown }
     const clean: DayBuckets = emptyBuckets()

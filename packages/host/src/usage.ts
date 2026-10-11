@@ -72,7 +72,7 @@ export function createUsage(ctx: DshContext) {
   let disposed = false
 
   /** Fold every session whose log changed since the cache was written. */
-  async function computeLocal(logs: SessionLog[], ledgerDays: ReadonlyMap<string, DayBuckets>) {
+  async function computeLocal(logs: SessionLog[], ledgerDays: ReadonlyMap<string, DayBuckets> | null) {
     const cache = readCache(ctx)
     const sessions = new Map<string, CacheSession>()
     let read = 0
@@ -98,10 +98,16 @@ export function createUsage(ctx: DshContext) {
     }
     writeCache(ctx, sessions)
     const merge = mergeLedgerFold(ledgerDays, sessions, logs)
+    // The source names what answered: with no ledger at all the fold is the
+    // whole account, and saying `cost-meter+local` there would credit a plugin
+    // that is not installed (D53).
+    const source = ledgerDays === null
+      ? LOCAL_SOURCE
+      : merge.folded ? `${LEDGER_SOURCE}+${LOCAL_SOURCE}` : LEDGER_SOURCE
     const summary = summarize(
       merge.days,
       merge.sessionIds.size,
-      merge.folded ? `${LEDGER_SOURCE}+${LOCAL_SOURCE}` : LEDGER_SOURCE,
+      source,
       merge.days.size === 0 ? undefined : hoursOf(merge.days),
       { sessionIds: merge.sessionIds },
     )
@@ -132,7 +138,7 @@ export function createUsage(ctx: DshContext) {
       }
       publish({ ...summarize(ledgerDays, sessionIds.size, LEDGER_SOURCE), sessions: logs.length })
     }
-    return await computeLocal(logs, ledgerDays ?? new Map()) as UsageSummary
+    return await computeLocal(logs, ledgerDays) as UsageSummary
   }
 
   function refresh(): Promise<UsageSummary | null> {
