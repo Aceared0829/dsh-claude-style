@@ -1,5 +1,5 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, STATS_POSITION_CONTEXT } from '../../constants'
-import { DIALOG_TRIGGER_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { DIALOG_TRIGGER_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '../../core/bus'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerCards, findComposerPlaceholder, findComposerSeat, findConversationScroller } from '../../core/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
@@ -181,6 +181,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The custom properties the dock overlay reads to copy the toolbar row's own box. */
   const METER_ROW_OFFSET = '--dsh-claude-meter-row-offset'
   const METER_ROW_HEIGHT = '--dsh-claude-meter-row-height'
+  /** How far the dock's own line stands above the band a mobile plugin's statistics strip took. */
+  const MOBILE_STATS_LIFT = '--dsh-claude-mobile-stats-lift'
+  /** The band-carrying spacer the dock's line is lifted by. */
+  const MOBILE_STATS_ATTR = 'data-dsh-claude-mobile-stats'
+  let mobileStatsLift = ''
   /** The room the meter takes at the toolbar row's right end, as the row carries it. */
   let meterRoom = ''
   /** The meter node the room was measured from, and the reading and scope it had then. */
@@ -211,6 +216,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       ? null
       : card.querySelector('[class*="_trailing"]')?.parentElement ?? null
     const stack = row === null ? null : closestFrom(row, COMPOSER_STACK)
+    // The band a mobile plugin's strip took is measured on every pass: the strip
+    // appears and leaves without any size of this row changing, so the row's own
+    // cached reading says nothing about it.
+    liftDockLine(card)
     if (row === null || stack === null) {
       if (meterRow === '' && meterRowBox === null) return
       meterRow = ''
@@ -244,6 +253,63 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const [offset, height] = meterRow.split(' ')
     document.body.style.setProperty(METER_ROW_OFFSET, `${offset}px`)
     document.body.style.setProperty(METER_ROW_HEIGHT, `${height}px`)
+  }
+
+  /**
+   * Park the dock's own line above the band a mobile plugin's statistics strip
+   * took.
+   *
+   * dsh-pocket draws its strip inside the host's dock — the box this overlay
+   * re-places — as its own absolutely positioned child, so the strip keeps the
+   * band the dock's line is pinned to and the two rows of text print over each
+   * other (issue #47). The strip carries no host mark, and a stylesheet cannot
+   * ask for a child and style its parent, so nothing in the sheet can see it: it
+   * is measured here and the dock is handed a spacer of the strip's own height
+   * plus a bottom offset of the same size (inline-bar.css). The spacer re-enters
+   * the flex flow to push the dock's children above the band — the strip being out
+   * of flow cannot do that for itself — and the offset moves the whole overlay up
+   * by the same amount, so the line lands in the band the spacer took. The
+   * strip's own height is the whole lift because that height is what the band
+   * costs, whatever box the strip is positioned against.
+   *
+   * The lift stands only while the strip really shares the band: a plugin that
+   * renders its strip somewhere else on the page leaves the geometry alone. A host
+   * without the plugin measures nothing and every rule reads its fallback.
+   */
+  function liftDockLine(card: HTMLElement | undefined) {
+    const dock = card?.nextElementSibling ?? null
+    const strip = dock === null || !dock.matches('[class*="_dock"]') ? null : dock.querySelector(MOBILE_STATS_SELECTOR)
+    if (dock === null || strip === null) {
+      releaseMobileStats()
+      return
+    }
+    const stripBox = strip.getBoundingClientRect()
+    const dockBox = dock.getBoundingClientRect()
+    const sharesBand = stripBox.height > 0 && stripBox.top < dockBox.bottom && stripBox.bottom > dockBox.top
+    const lift = sharesBand ? Math.round(stripBox.height * 100) / 100 : 0
+    const next = lift <= 0 ? '' : `${lift}px`
+    if (next === mobileStatsLift) return
+    mobileStatsLift = next
+    if (next === '') {
+      releaseMobileStats()
+      return
+    }
+    const host = dock as HTMLElement
+    const spacer = dock.querySelector<HTMLElement>(`[${MOBILE_STATS_ATTR}]`) ?? document.createElement('div')
+    if (spacer.parentElement !== host || spacer.previousElementSibling !== null) host.insertBefore(spacer, host.firstChild)
+    spacer.setAttribute(MOBILE_STATS_ATTR, '')
+    spacer.style.height = next
+    document.body.style.setProperty(MOBILE_STATS_LIFT, next)
+    // The dock's own line moved, and its box is where the row's height was read.
+    meterRow = ''
+  }
+
+  /** Take the lift and its spacer back: the strip is gone, or the line left the dock. */
+  function releaseMobileStats() {
+    if (mobileStatsLift === '') return
+    mobileStatsLift = ''
+    document.body.style.removeProperty(MOBILE_STATS_LIFT)
+    for (const spacer of document.querySelectorAll(`[${MOBILE_STATS_ATTR}]`)) spacer.remove()
   }
 
   /**
@@ -428,6 +494,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     meterRowStack = null
     document.body.style.removeProperty(METER_ROW_OFFSET)
     document.body.style.removeProperty(METER_ROW_HEIGHT)
+    releaseMobileStats()
     meterNode = null
     meterReading = ''
     meterMeasuredActive = false

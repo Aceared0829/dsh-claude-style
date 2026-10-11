@@ -25,6 +25,11 @@
       statsPhase.appendChild(statsColumn)
       statsColumn.appendChild(statsCard)
       statsColumn.appendChild(statsDock)
+      // The dock owns the strip's band: the plugin draws its strip inside the
+      // dock's own box, so the pass's reading of the two is the real one. The
+      // host's own placement is what the stats-inline case asserts, so the dock's
+      // computed position stays the host's.
+      statsDock.style.position = 'relative'
       await sleep(300)
       var statsMeter = document.querySelector('[data-dsh-claude-context-meter]')
       if (statsMeter !== null) statsMeter.dispatchEvent(new MouseEvent('mouseenter'))
@@ -106,6 +111,45 @@
       statsCard.appendChild(document.createElement('span'))
       await sleep(400)
       r.context.roomAfter = document.body.style.getPropertyValue('--dsh-claude-meter-room')
+
+      // Another plugin's statistics strip shares the dock's band with the skin's
+      // overlay (issue #47). The strip's height is what the line above it has to
+      // give up, and the skin lifts the whole overlay by exactly that much once
+      // the strip is gone again.
+      var readBand = function () {
+        var strip = statsDock.querySelector('[data-mobile-nav="stats"]')
+        var lift = document.body.style.getPropertyValue('--dsh-claude-mobile-stats-lift')
+        if (strip === null) return { lift: lift, gone: true }
+        var stripBox = strip.getBoundingClientRect()
+        var lowest = null
+        for (var o = 0; o < statsDock.children.length; o++) {
+          var child = statsDock.children[o]
+          if (child === strip || child.getAttribute('data-dsh-claude-mobile-stats') !== null) continue
+          var box = child.getBoundingClientRect()
+          if (box.width <= 0 || box.height <= 0) continue
+          lowest = lowest === null ? box.bottom : Math.max(lowest, box.bottom)
+        }
+        return {
+          lift: lift,
+          stripHeight: Math.round(stripBox.height),
+          stripBottom: Math.round(stripBox.bottom),
+          lowestLine: lowest === null ? null : Math.round(lowest),
+        }
+      }
+      r.context.bandWith = readBand()
+      var bandStrip = statsDock.querySelector('[data-mobile-nav="stats"]')
+      if (bandStrip !== null) statsDock.removeChild(bandStrip)
+      statsCard.appendChild(document.createElement('span'))
+      await sleep(400)
+      r.context.bandRemoved = readBand()
+      // The strip arriving on a page already showing the numbers is the reported
+      // order: what this plugin's own sheet is doing under the skin.
+      if (bandStrip !== null) {
+        statsDock.appendChild(bandStrip)
+        statsCard.appendChild(document.createElement('span'))
+        await sleep(400)
+      }
+      r.context.bandRestored = readBand()
     })
   })
 

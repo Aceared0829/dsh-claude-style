@@ -225,6 +225,19 @@ module.exports = {
     check('the meter\'s room survives a reading taken with no box',
       r.context.roomBefore !== '' && /^\d+px$/.test(r.context.roomAfter || ''),
       JSON.stringify({ before: r.context.roomBefore, after: r.context.roomAfter }))
+    // A mobile plugin's statistics strip takes the dock's own band; the overlay's
+    // line gives that band up, and only that band (issue #47).
+    const withStrip = r.context.bandWith || {}
+    const removed = r.context.bandRemoved || {}
+    const restored = r.context.bandRestored || {}
+    check('a mobile plugin\'s statistics strip is measured, and the dock\'s line is lifted by its height alone',
+      withStrip.stripHeight > 0 && withStrip.lift === `${withStrip.stripHeight}px` &&
+        withStrip.lowestLine !== null && withStrip.lowestLine <= withStrip.stripBottom,
+      JSON.stringify(withStrip))
+    check('the strip leaving takes the lift with it, and the band comes back with it',
+      removed.gone === true && removed.lift === '' &&
+        restored.stripHeight === withStrip.stripHeight && restored.lift === withStrip.lift,
+      JSON.stringify({ removed: removed.lift, restored: restored.lift }))
     commonChecks(r)
   },
   'stats-compact'(r) {

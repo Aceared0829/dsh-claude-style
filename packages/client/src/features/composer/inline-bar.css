@@ -85,10 +85,15 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
 }
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] {
   position: absolute;
-  bottom: var(--dsh-claude-meter-row-offset, 4px);
+  /* The line sits in the band the dock's height and offset measure out, and the
+     lift a mobile plugin's statistics strip cost moves it up by exactly that
+     much: the offset raises the box, the height grows with it so the band inside
+     stays the row's own 28px, and the spacer the composer pass parks in the dock
+     is what carries the band (features/composer/composer.ts liftDockLine). */
+  bottom: calc(var(--dsh-claude-meter-row-offset, 4px) + var(--dsh-claude-mobile-stats-lift, 0px));
   left: var(--dsh-composer-side-clearance, 0px);
   right: var(--dsh-composer-side-clearance, 0px);
-  height: var(--dsh-claude-meter-row-height, 28px);
+  height: calc(var(--dsh-claude-meter-row-height, 28px) + var(--dsh-claude-mobile-stats-lift, 0px));
   margin: 0 auto;
   padding: 0 calc(160px + var(--dsh-claude-meter-room, 0px)) 0 140px;
   display: flex;
@@ -99,6 +104,12 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
   z-index: 3;
   max-width: var(--dsh-composer-card-max-width, 100%);
   box-sizing: border-box;
+}
+/* The band the lift cost, as the flex child that re-enters the flow to hold it:
+   the strip itself is out of flow, so only a box in the flow moves the line. */
+body[data-dsh-claude-style] [data-dsh-claude-mobile-stats] {
+  flex: 0 0 auto;
+  pointer-events: none;
 }
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] > * {
   pointer-events: auto;

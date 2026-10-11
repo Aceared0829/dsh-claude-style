@@ -171,6 +171,13 @@ export const COMPOSER_PLACEHOLDER_SELECTOR = '[data-composer-placeholder]'
 export const COMPOSER_STATS_SELECTOR = '[data-composer-stats]'
 export const COMPOSER_STAT_SELECTOR = '[data-composer-stat]'
 /**
+ * The statistics strip a mobile plugin draws in the same band as the host's dock
+ * (dsh-pocket marks its own strip `data-mobile-nav="stats"`). It is not the
+ * host's, so no rule in this package hides it: the composer pass measures it and
+ * lifts the dock's line above the band it took.
+ */
+export const MOBILE_STATS_SELECTOR = '[data-mobile-nav="stats"]'
+/**
  * The filled arc of the context meter: the circle the host gives a dash array
  * (its track circle carries none). The skin paints it with the colour the
  * occupancy fell on (D27).

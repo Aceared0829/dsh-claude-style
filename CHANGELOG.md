@@ -32,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 进行中那一行：皮肤把宿主自己的文字藏起来之后，画的替身又标着「装饰」，读屏在这一行上收不到「模型正在做什么」「暂未响应」和计时；现在替身是这一行的可读文字，宿主自己的实时区域照旧播报。
 - 把「动画效果」设为减弱之后，工作强度滑杆顶档的点阵仍按运行时写下的动画时长闪一次；现在这一档不写动画的周期与相位，点阵静止。
 - 几个控件对读屏说不出自己是什么：会话统计那一行只有数字与箭头，工作强度与模型触发器从不报告菜单是否展开，设置页的开关没有名字，权限弹层的当前档位只有勾号，输入输出箭标进了名称。现在统计行有自己的名称、两个触发器跟着菜单报告展开状态、开关取所在行的标题为名、权限弹层的当前档位写 aria-checked、箭标对读屏隐藏。
+- 手机宽度下输入卡片下方那一行与手机插件自己画的度量条落在同一条 28 像素带里，两行文字叠在一起（权限标签上压了 52 像素、模型标签上压了 21 像素）；现在输入区会量出那条度量条的高度，把这一行连同上下文圆环整体抬起同样的距离，度量条出现与消失时分别抬起与落回。
 
 ### 安全
 
@@ -73,6 +74,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - On the live turn's running row, the skin hid the host's own words and marked its replacement decorative, so a screen reader received neither what the model is doing, nor the wait badge, nor the clock; the replacement is the row's readable text now, and the host's own live region still announces the row.
 - With Animation set to Reduced, the reasoning-effort slider's top-rung matrix still flashed once per block on the duration written at run time; that duration and phase are not written in this setting now, and the matrix stands still.
 - Several controls could not say what they were: the conversation-statistics line held only figures and arrows, the effort and model triggers never reported whether their menu was open, the settings page's switches had no name, the permission popover marked its current tier with a check mark alone, and the input and output arrows joined a name. The line carries its own name now, both triggers report the open state with their menu, a switch takes its row's title as its name, the permission popover's current tier writes aria-checked, and the arrows are hidden from a reader.
+- At phone width the line under the composer card and the statistics strip a mobile plugin draws of its own shared one 28px band, so the two rows of text printed over each other (52px of glyph-on-glyph on the permission label, 21px on the model label); the composer now measures that strip and lifts the line, the context ring with it, by the strip's own height, taking it up and letting it back down as the strip comes and goes.
 
 ### Security
 

@@ -119,7 +119,15 @@ function page(name, tier, cases) {
   // ContextMeter), whose trigger draws a ring of two circles beside the
   // occupancy reading — that ring is what identifies the meter
   // (features/composer/composer.ts); the stats pills draw none.
-  var dock = '<div class="_x_dock_1">' + stats +
+  // Where the position is the context popover's, another plugin's statistics
+  // strip rides in the same dock: dsh-pocket marks its own strip
+  // `data-mobile-nav="stats"`, sizes it 28px and pins it to the dock's bottom,
+  // which is the band the skin's overlay is pinned to as well (issue #47). The
+  // composer pass measures it and lifts the overlay's line above it.
+  var mobileStats = name === 'context-stats' || name === 'stats-compact'
+    ? '<span class="_q_mobileStats_1" data-mobile-nav="stats"><span>12 轮</span><span>34 步</span><span>56 tok/s</span></span>'
+    : ''
+  var dock = '<div class="_x_dock_1">' + stats + mobileStats +
       '<span class="_m_meter_1"><button type="button" id="context-meter" class="_m_trigger_1" aria-haspopup="dialog" aria-expanded="false" aria-label="Context used 42%">' +
         // The host gives the filled arc a dash array and leaves its track bare
         // (packages/contracts/src/dom.ts, composer.meter-fill), which is how the skin
@@ -152,6 +160,10 @@ function page(name, tier, cases) {
   var hostControls = '<style>' +
       'body { --dsw-alias-label-primary-foreground: #ffffff; }' +
       'body[data-ds-dark-theme] { --dsw-alias-label-primary-foreground: #0f1115; }' +
+      // The plugin's own strip: absolutely positioned in the dock's band, its
+      // height fixed, as dsh-pocket's own sheet pins it.
+      '._q_mobileStats_1 { position: absolute; left: 0; right: 0; bottom: 0; height: 28px;' +
+        ' display: flex; align-items: center; gap: 8px; font-size: 12px; }' +
       '._h_older_1 button { border: none; border-radius: 4px; padding: 4px 12px; font-size: 12px;' +
         ' color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-interactive-bg-hover-solid); }' +
       '._h_linkButton_1 { color: var(--dsw-alias-label-primary); background: transparent; }' +
