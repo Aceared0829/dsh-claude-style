@@ -119,6 +119,33 @@ body[data-dsh-claude-style] button[class*="newSession"] svg {
 body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionContent"] {
   justify-content: flex-start;
 }
+/* The row's shortcut hint is the host's own key caps: one `kbd` per key with a
+   `+` between them. It takes the look the search box gives the same host
+   markup (features/search/search.css) — the box drops that separator too, so
+   the two hints read as the same pair of caps. */
+body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary, #787672);
+  font-family: var(--dsw-font-family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+}
+body[data-dsh-claude-style][data-ds-dark-theme] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+  border-color: var(--dsw-alias-border-l3);
+}
+body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd[class*="_separator"] {
+  display: none;
+}
 /* The chip paints BOTH the circular fill and the plus. A mask cannot: it clips the
    element to the glyph and takes the fill with it, so the plus is a background
    image, which costs the currentColor adaptivity and buys a theme pair below. */

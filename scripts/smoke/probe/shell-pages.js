@@ -124,6 +124,14 @@
       sidebarSlot.innerHTML = '<div class="_n_root_1"><div class="_n_logoRow_1" data-window-drag="true">' +
         '<button type="button" class="_n_brand_1 _n_wide_1" aria-label="New session">brand</button>' +
         '<button type="button" class="_n_iconButton_1 _n_toggle_1" aria-label="Collapse sidebar">toggle</button></div>' +
+        // The row under the brand row, with the host's own shortcut markup: one
+        // `kbd` per key and a `+` between them.
+        '<button type="button" class="_n_newSession_1" aria-keyshortcuts="Control+N">' +
+        '<span class="_n_newSessionLabelMask_1"><span class="_n_newSessionContent_1">' +
+        '<span class="_n_newSessionLabel_1 _n_wide_1">New session</span></span></span>' +
+        '<span class="_n_newSessionShortcut_1"><span class="_n_keys_1">' +
+        '<kbd class="_n_key_1">Ctrl</kbd><kbd class="_n_separator_1">+</kbd><kbd class="_n_key_1">K</kbd>' +
+        '</span></span></button>' +
         '<div class="_n_sectionHeader_1"><span class="_n_sectionLabel_1">Workspaces</span>' +
         '<div class="_n_searchSlot_1"><button type="button" class="_n_searchButton_1" aria-label="Search sessions">search</button>' +
         '<input class="_n_searchInput_1" type="text" tabindex="-1"></div></div></div>'
@@ -152,6 +160,8 @@
           triggerVisibility: box ? getComputedStyle(box).visibility : null,
           hostSlotPosition: getComputedStyle(slot).position,
           hostSlotWidth: Math.round(slot.getBoundingClientRect().width),
+          barWidth: ownRow === null ? null : Math.round(ownRow.getBoundingClientRect().width),
+          boxWidth: box === null ? null : Math.round(box.getBoundingClientRect().width),
         }
       }
       r.search = {
@@ -174,6 +184,31 @@
       sidebarSlot.removeEventListener('click', countHost)
       r.search.icon.hostClicksReachingHost = reachedHost
       r.search.back = await styleOf('overlay')
+      // The New session row's shortcut hint and the search box's own caps are
+      // the same host markup. The box's caps are built from the host's shortcut
+      // catalog, which this stand-in does not carry, so the comparison reads a
+      // sample of the search sheet's own cap class instead, and takes both
+      // field by field — the two looks cannot then drift apart.
+      var capStyle = function (element) {
+        var style = getComputedStyle(element)
+        return {
+          display: style.display, alignItems: style.alignItems, justifyContent: style.justifyContent,
+          minWidth: style.minWidth, height: style.height, padding: style.padding, boxSizing: style.boxSizing,
+          border: style.border, radius: style.borderRadius, background: style.backgroundColor,
+          color: style.color, font: style.font, fontWeight: style.fontWeight, lineHeight: style.lineHeight,
+        }
+      }
+      var sample = document.createElement('kbd')
+      sample.className = 'dsh-claude-search-key'
+      sample.textContent = 'Ctrl'
+      sidebarSlot.appendChild(sample)
+      var shortcutCaps = [].slice.call(sidebarSlot.querySelectorAll('[class*="newSessionShortcut"] kbd'))
+      r.search.keycaps = {
+        shortcut: shortcutCaps.filter(function (cap) { return !/separator/.test(cap.className) }).map(capStyle),
+        separators: shortcutCaps.filter(function (cap) { return /separator/.test(cap.className) }).map(function (cap) { return getComputedStyle(cap).display }),
+        search: [capStyle(sample)],
+      }
+      sample.remove()
     })
   })
 })()

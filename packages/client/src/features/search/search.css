@@ -74,10 +74,13 @@ body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"]:has
 /* Standalone: the box keeps a row of its own under the brand row and shows
    whether or not the pointer is over the sidebar. The row takes the same 28px
    and the same 6px foot as the rows below it, so the box lands on the sidebar
-   list's rhythm rather than on the brand row's own 4px. */
+   list's rhythm rather than on the brand row's own 4px. The row carries no
+   inline padding of its own: the column's own inset is what the New session
+   plate under it starts from, so the box's border stands on that plate's two
+   edges and the box is exactly as wide as the rows it sits among. */
 body[data-dsh-claude-style][data-dsh-claude-search-style="standalone"] .dsh-claude-search-bar {
   display: flex;
-  padding: 0 8px;
+  padding: 0;
   margin: 0 0 6px 0;
 }
 body[data-dsh-claude-style][data-dsh-claude-search-style="standalone"] .dsh-claude-search-trigger {

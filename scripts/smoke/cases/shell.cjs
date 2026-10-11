@@ -131,6 +131,11 @@ module.exports = {
       standalone.barAfterRow === true && standalone.triggerInBar === true && standalone.triggerVisibility === 'visible' &&
         standalone.rowMarked === false && standalone.hostSlotPosition === 'absolute',
       JSON.stringify(standalone))
+    // The rows under it span the column's own padding, so the box's border has
+    // to stand on those two edges: its row may add no inline padding of its own.
+    check('the Standalone box is exactly as wide as the rows under it',
+      standalone.boxWidth !== null && standalone.boxWidth === standalone.barWidth && standalone.boxWidth > 0,
+      JSON.stringify({ boxWidth: standalone.boxWidth, barWidth: standalone.barWidth }))
     const icon = search.icon || {}
     check('the Icon style draws no box of the skin\'s, puts the host\'s own search slot back in the header, and takes its click over',
       icon.triggerInRow === false && icon.rowMarked === false && icon.barAfterRow === false &&
@@ -140,6 +145,15 @@ module.exports = {
     check('switching the style back to Cover the brand seats the box in the brand row again, live',
       back.triggerInRow === true && back.rowMarked === true && back.triggerVisibility === 'hidden' && back.hostSlotPosition === 'absolute',
       JSON.stringify(back))
+    // The New session row carries the same host markup the box's own caps are
+    // cut for; both are read field by field, so the hints cannot drift apart.
+    const caps = search.keycaps || {}
+    const cap = Array.isArray(caps.search) && caps.search.length === 1 ? caps.search[0] : null
+    check('the New session row wears the search box\'s own key caps, and the `+` between them is gone',
+      cap !== null && Array.isArray(caps.shortcut) && caps.shortcut.length === 2 &&
+        caps.shortcut.every((entry) => same(entry, cap)) &&
+        caps.separators.length === 1 && caps.separators.every((display) => display === 'none'),
+      JSON.stringify(caps))
     check('teardown takes the search box, its row mark and its root away',
       search.left === 0 && search.rootUnmounted === true, JSON.stringify(search))
     commonChecks(r)
