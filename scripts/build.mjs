@@ -53,7 +53,7 @@ import { PNG } from 'pngjs'
 import { buildHostHalf } from '../packages/host/build.mjs'
 import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, planAssets, routeText, vectorizeSheet, writeAssets } from '../packages/assets/assets.mjs'
 import { openBuildCache } from './build-cache.mjs'
-import { checkContracts, checkCycles, checkListed, checkManifests, checkScrollOwner, checkTypes } from './build-checks.mjs'
+import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkScrollOwner, checkTypes } from './build-checks.mjs'
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
 import { TOKEN_SHEET, buildStylesheet, loadTokens, writeTokenTable } from './css.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
@@ -327,6 +327,7 @@ async function main() {
   const manifests = manifestReader.readManifests()
   checkManifests(manifests)
   checkContracts(manifests)
+  checkDependencies()
   const sheets = styleFiles(manifests)
 
   // Every image, its content hash and its address (D38). Nothing is written

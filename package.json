@@ -81,8 +81,15 @@
   "bugs": {
     "url": "https://github.com/Nwflower/dsh-claude-style/issues"
   },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-ui-primitives": ">=0.1.5-rc.1",
+    "@deepseek-ai/schemastery": ">=3.18.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "devDependencies": {
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-alpha.1",
+    "@deepseek-ai/schemastery": "3.18.4",
     "@types/node": "^26.6.4",
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
@@ -96,8 +103,5 @@
     "postcss-selector-parser": "7.1.6",
     "typescript": "7.0.2",
     "vitest": "5.0.3"
-  },
-  "dependencies": {
-    "@deepseek-ai/dsh": "^0.2.0-rc.2"
   }
 }

@@ -48,6 +48,25 @@ export function checkListed(bundled, sheets) {
 }
 
 /**
+ * Refuse a host package in `dependencies` (D36): both halves reach the host at
+ * runtime — the client half through the loader's own `require`, the host half
+ * through the harness beside its bin — so nothing here is imported from the
+ * package's own tree. An entry on `@deepseek-ai/*` makes an installer pull that
+ * package's whole closure into the profile, where it stands beside the copy
+ * every other plugin resolves its host imports from; the two copies disagree and
+ * the app stops starting (issue #39). A package that has to share the host's
+ * instance is declared in `peerDependencies` (and in `devDependencies`, for the
+ * type check and the tests), which installs nothing.
+ */
+export function checkDependencies() {
+  const { dependencies } = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  const host = Object.keys(dependencies ?? {}).filter((name) => name.startsWith('@deepseek-ai/'))
+  if (host.length > 0) {
+    throw new Error(`build: package.json declares ${host.join(', ')} in "dependencies"; the host's packages come from the host at runtime (D36) — declare them in peerDependencies and devDependencies instead`)
+  }
+}
+
+/**
  * Hold the manifests to the rest of the repository: every feature directory
  * carries at least one manifest, and a `pref` names a key of the shared
  * preference table (packages/contracts/src/prefs.ts, D46), the table the
