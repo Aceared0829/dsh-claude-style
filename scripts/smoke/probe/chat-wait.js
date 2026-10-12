@@ -46,12 +46,14 @@
       }
       // The wording swaps with transitions.dev's three phases: the old one leaves
       // upward with a blur, the text changes once it has gone, and the new one
-      // enters from below. Sampled across the swap, rather than once at the end.
+      // enters from below. Sampled across the swap, rather than once at the end:
+      // the leave lasts 150ms, so the grid has to be far finer than it for the
+      // last leave frame to read as gone.
       var watchSwap = async function () {
         var frames = []
-        for (var round = 0; round < 16; round += 1) {
+        for (var round = 0; round < 40; round += 1) {
           frames.push(lineOf())
-          await sleep(30)
+          await sleep(10)
         }
         // One settled frame after the window: the swap can land late in it, and
         // the last reading is what "at rest" is judged on.
