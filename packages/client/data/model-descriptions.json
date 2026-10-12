@@ -219,6 +219,42 @@
     "usernamePlaceholder": { "zh": "自动获取", "en": "Auto-detect account or host user" },
     "brandDeepseek": { "zh": "DeepSeek", "en": "DeepSeek" },
     "brandClaude": { "zh": "Claude", "en": "Claude" },
+    "brandNameTitle": { "zh": "品牌名称", "en": "Brand name" },
+    "brandNameDesc": {
+      "zh": "替换侧栏顶部的品牌文字；留空时显示所选品牌自己的文字标志。",
+      "en": "Replaces the brand text at the top of the sidebar. Leave empty to keep the chosen brand's own wordmark."
+    },
+    "brandNamePlaceholder": { "zh": "所选品牌", "en": "The chosen brand" },
+    "brandMarkTitle": { "zh": "标志图片", "en": "Brand mark" },
+    "brandMarkDesc": {
+      "zh": "替换侧栏顶部、折叠栏、新会话页与账号行兜底头像上的品牌标志。PNG、SVG 或 WebP，不超过 2 MB。",
+      "en": "Replaces the brand mark at the top of the sidebar, on the collapsed rail, on the new-conversation page and as the account row's fallback picture. PNG, SVG or WebP, up to 2 MB."
+    },
+    "brandWordmarkTitle": { "zh": "文字标志", "en": "Wordmark" },
+    "brandWordmarkDesc": {
+      "zh": "替换标志旁的品牌名称，宽度按图片比例随高度换算，优先于品牌名称。PNG、SVG 或 WebP，不超过 2 MB。",
+      "en": "Replaces the brand name beside the mark; its width follows the image's proportions at the row's height, and it takes precedence over the brand name. PNG, SVG or WebP, up to 2 MB."
+    },
+    "brandImageUpload": { "zh": "上传", "en": "Upload" },
+    "brandImageReplace": { "zh": "更换", "en": "Replace" },
+    "brandImageRemove": { "zh": "移除", "en": "Remove" },
+    "brandImageType": { "zh": "只接受 PNG、SVG 或 WebP 图片。", "en": "Only PNG, SVG or WebP images are accepted." },
+    "brandImageSize": { "zh": "图片超过 2 MB。", "en": "The image is larger than 2 MB." },
+    "brandImageFailed": { "zh": "保存失败：{detail}", "en": "Saving failed: {detail}" },
+    "brandInkTitle": { "zh": "图片颜色", "en": "Image colours" },
+    "brandInkDesc": {
+      "zh": "「原色」保留图片自己的颜色；「文字色」把图片当作形状，按所在位置的文字颜色上色，亮色暗色下都看得清。",
+      "en": "Original keeps the images' own colours; Text colour uses each image as a shape filled with the text colour where it stands, so it reads in both light and dark."
+    },
+    "brandInkOriginal": { "zh": "原色", "en": "Original" },
+    "brandInkText": { "zh": "文字色", "en": "Text colour" },
+    "brandAccentTitle": { "zh": "主色", "en": "Accent colour" },
+    "brandAccentDesc": {
+      "zh": "按钮、选中标记、链接与焦点环使用的颜色；未指定时沿用所选品牌的主色。配色选「跟随宿主」时不生效。",
+      "en": "The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand's own accent stays. It has no effect while Colours is set to Follow the host."
+    },
+    "brandAccentUnset": { "zh": "跟随品牌", "en": "Brand's own" },
+    "brandAccentReset": { "zh": "恢复品牌主色", "en": "Use the brand's accent" },
     "motionTitle": { "zh": "动画效果", "en": "Animation" },
     "motionDesc": {
       "zh": "「随系统」跟随系统的动画设置；「减弱」把动画停在代表帧；「总是」始终播放。",

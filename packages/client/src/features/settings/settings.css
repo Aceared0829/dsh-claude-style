@@ -409,6 +409,110 @@ body[data-dsh-claude-style] .dsh-claude-settings-picker[aria-expanded="true"] {
   border-color: var(--dsw-alias-brand-primary, #d97757);
 }
 
+/* The custom brand rows' buttons (settings-brand.ts) are plates of the same
+   family as the input and the picker trigger, sized to their label. */
+body[data-dsh-claude-style] .dsh-claude-settings-button {
+  flex: none;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+body[data-dsh-claude-style] .dsh-claude-settings-button:hover:not(:disabled) {
+  border-color: var(--dsw-alias-border-l2);
+}
+body[data-dsh-claude-style] .dsh-claude-settings-button:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
+  outline-offset: 1px;
+}
+body[data-dsh-claude-style] .dsh-claude-settings-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* One brand image: a preview tile, whose transparent parts show the row's
+   canvas, then its buttons; a refusal is written under them in the page's
+   error colour. */
+body[data-dsh-claude-style] .dsh-claude-brand-image {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 55%;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-image-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  max-width: 128px;
+  box-sizing: border-box;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 8px;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-image-preview[data-empty] {
+  border-style: dashed;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-image-preview > img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-image-error {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary, #c0392b);
+  text-align: right;
+}
+
+/* The accent colour: the native colour well, trimmed to a swatch with the
+   inputs' corner, beside either the note that the brand's own accent stands
+   or the button that hands it back. */
+body[data-dsh-claude-style] .dsh-claude-brand-accent {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body[data-dsh-claude-style] .dsh-claude-settings-color {
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
+  cursor: pointer;
+}
+body[data-dsh-claude-style] .dsh-claude-settings-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+body[data-dsh-claude-style] .dsh-claude-settings-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+body[data-dsh-claude-style] .dsh-claude-brand-accent-note {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
 /* The quick-provider picker's card (packages/client/src/features/settings/quick-providers.ts):
    the shared popover card, anchored above the trigger and right-aligned with it
    (positionAnchoredPopover), so it grows from the corner nearest the trigger —

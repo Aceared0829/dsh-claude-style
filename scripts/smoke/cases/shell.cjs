@@ -17,6 +17,40 @@ module.exports = {
       JSON.stringify(palette))
     commonChecks(r)
   },
+  // The custom brand over the Claude brand (D64): both images painted where the
+  // brand's art stood, the text-colour ink and the accent once the preferences
+  // ask for them, and the brand's own accent back once it is cleared.
+  'custom-brand'(r) {
+    basicChecks(r)
+    const brand = r.customBrand || {}
+    const images = brand.images || {}
+    const markUrl = '/dsh-claude-style/brand/mark?v=1-1'
+    const wordUrl = '/dsh-claude-style/brand/wordmark?v=1-1'
+    check('the mark the host half holds replaces the brand\'s art in the sidebar, on the hero and as the account row\'s fallback picture',
+      images.markAttr === '' && images.hostArt === 'none' &&
+        images.mark.image.includes(markUrl) && images.mark.mask === 'none' && images.mark.width === '18px' &&
+        images.hero.image.includes(markUrl) && images.hero.width === '42.5px' &&
+        typeof images.avatar === 'string' && images.avatar.includes(markUrl),
+      JSON.stringify(images))
+    check('the wordmark replaces the brand name at the 18px cap height, its width read from the image\'s 4:1 proportions',
+      images.wordAttr === 'image' && images.hostWord === 'none' &&
+        images.word.image.includes(wordUrl) && images.word.width === '72px' && images.word.height === '18px',
+      JSON.stringify(images.word))
+    const tinted = brand.tinted || {}
+    check('the text-colour choice paints the mark as a shape in the label colour, and the wordmark still outranks a brand name',
+      tinted.tintAttr === '' && tinted.mark.image === 'none' && tinted.mark.mask.includes(markUrl) &&
+        tinted.mark.fill !== 'rgba(0, 0, 0, 0)' && tinted.wordAttr === 'image',
+      JSON.stringify(tinted))
+    check('a custom accent takes the accent tokens, with the light ink on a dark fill',
+      tinted.accent === '#1a7f5a' && tinted.accentInk === '#faf9f5', JSON.stringify({ accent: tinted.accent, ink: tinted.accentInk }))
+    const cleared = brand.cleared || {}
+    check('clearing the accent hands the brand\'s own accent back, and the images return to their own colours',
+      cleared.accent === '#d97757' && cleared.tintAttr === null && cleared.mark.image.includes(markUrl),
+      JSON.stringify(cleared))
+    check('teardown takes the custom brand\'s values off <body>',
+      Array.isArray(r.leftBrandProperties) && r.leftBrandProperties.length === 0, JSON.stringify(r.leftBrandProperties))
+    commonChecks(r)
+  },
   // The classic hero: the welcome is drawn on arrival and held between passes,
   // and the crab stands on that page's card too.
   hero(r) {
@@ -459,7 +493,7 @@ module.exports = {
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
       general: ['brand', 'username', 'motion', 'autoPopover', 'banLocale'],
-      appearance: ['palette', 'typeface', 'mascot', 'mascotScope'],
+      appearance: ['palette', 'typeface', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk', 'brandAccent'],
       composer: ['composerScope', 'homeLayout', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],

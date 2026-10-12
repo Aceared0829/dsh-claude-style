@@ -51,6 +51,7 @@ export interface FeatureHandle {
  */
 export interface Handles {
   selection: FeatureHandle
+  brand: FeatureHandle
   composer: ComposerHandle
   homeLayout: FeatureHandle
   mascot: FeatureHandle

@@ -71,6 +71,28 @@ export const BRAND_DEEPSEEK_LEGACY = 'off'
 export const BRAND_ATTR = 'data-dsh-claude-brand'
 
 /**
+ * The custom brand layer over either brand (D64,
+ * packages/client/src/features/brand/brand.ts). Each part stands only while
+ * the reader has supplied it: CUSTOM_MARK_ATTR while a mark image is in place,
+ * CUSTOM_WORD_ATTR as `image` while a wordmark image is and as `text` while
+ * only a brand name is, CUSTOM_TINT_ATTR while the images take the text colour
+ * (`brandInk` set to `text`), and ACCENT_ATTR while a custom accent colour is
+ * set. The images, the name and the colour ride <body> as custom properties.
+ */
+export const CUSTOM_MARK_ATTR = 'data-dsh-claude-custom-mark'
+export const CUSTOM_WORD_ATTR = 'data-dsh-claude-custom-word'
+export const CUSTOM_WORD_IMAGE = 'image'
+export const CUSTOM_WORD_TEXT = 'text'
+export const CUSTOM_TINT_ATTR = 'data-dsh-claude-custom-tint'
+export const ACCENT_ATTR = 'data-dsh-claude-accent'
+/** How the custom images are painted: in their own colours, or as a shape in the text colour. */
+export const BRAND_INK_ORIGINAL = 'original'
+export const BRAND_INK_TEXT = 'text'
+export const BRAND_INKS = [BRAND_INK_ORIGINAL, BRAND_INK_TEXT]
+/** Longest accepted brand name; core/prefs.ts trims the stored value to it. */
+export const BRAND_NAME_MAX = 40
+
+/**
  * The animation choice, and the document attribute it resolves onto.
  *
  * Three values in the settings page, two on the document: `system` follows
@@ -422,6 +444,9 @@ export const DOCK_LOOK_ATTR = 'data-dsh-claude-dock-look'
  * for both halves.
  */
 export {
+  BRAND_MARK_PATH as BRAND_MARK_ROUTE,
+  BRAND_PATH as BRAND_ROUTE,
+  BRAND_WORDMARK_PATH as BRAND_WORDMARK_ROUTE,
   HDSL_PATH as HDSL_ROUTE,
   HDSL_SKIN_PATH as HDSL_SKIN_ROUTE,
   PEAKRATE_PATH as PEAKRATE_ROUTE,
@@ -459,6 +484,9 @@ export const AUTO_POPOVER_SCOPES = [AUTO_POPOVER_OFF, AUTO_POPOVER_ACCOUNT, AUTO
  */
 export interface Prefs {
   brand: string
+  brandName: string
+  brandInk: string
+  brandAccent: string
   motion: string
   collapseFooter: boolean
   autoPopover: string
@@ -492,6 +520,7 @@ export const PREF_DEFAULTS: Prefs = PREFS_DEFAULT
 
 /** The preferences whose value is one of a fixed set; any other stored value reads as the default. */
 export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
+  brandInk: BRAND_INKS,
   motion: MOTION_MODES,
   composerScope: COMPOSER_SCOPES,
   banLocale: BAN_LOCALES,

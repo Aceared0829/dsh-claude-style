@@ -1,4 +1,4 @@
-import { AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, AUTO_POPOVER_SCOPES, BRAND_ATTR, BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, CHAT_ANIMATIONS_OFF, COMPOSER_ATTR, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, PACKAGE_NAME, PALETTE_ATTR, PREF_CHOICES, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, TYPEFACE_ATTR, USERNAME_MAX } from '../constants'
+import { AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, AUTO_POPOVER_SCOPES, BRAND_ATTR, BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, COMPOSER_ATTR, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, PACKAGE_NAME, PALETTE_ATTR, PREF_CHOICES, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, TYPEFACE_ATTR, USERNAME_MAX } from '../constants'
 import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
 import type { Prefs } from '../constants'
 import type { HostContext } from './host'
@@ -331,6 +331,11 @@ function normalizeBrand(value: unknown) {
   return value === BRAND_DEEPSEEK_LEGACY ? BRAND_DEEPSEEK : BRAND_CLAUDE
 }
 
+/** Clamp the custom accent: a `#rrggbb` colour, lower-cased, or empty for the brand's own. */
+function normalizeAccent(value: unknown) {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : ''
+}
+
 /** The mascot actually on the page: `brand` resolves through the brand. */
 export function resolveMascot(current: Prefs) {
   if (current.mascot !== MASCOT_BRAND) return current.mascot
@@ -351,7 +356,7 @@ function normalizeChatAnimations(value: unknown) {
 /**
  * Clamp one host value into the preference shape, field by field off
  * PREF_DEFAULTS: a boolean stays on unless stored as `false`, a choice outside
- * its set reads as its default, and the five fields with a shape of their own
+ * its set reads as its default, and the seven fields with a shape of their own
  * have their own clamps.
  */
 export function normalizePrefs(value: unknown): Prefs {
@@ -368,8 +373,10 @@ export function normalizePrefs(value: unknown): Prefs {
   out.chatAnimations = normalizeChatAnimations(section.chatAnimations)
   out.quickProviders = normalizeQuickProviders(section.quickProviders)
   out.username = typeof section.username === 'string' ? section.username.trim().slice(0, USERNAME_MAX) : ''
+  out.brandName = typeof section.brandName === 'string' ? section.brandName.trim().slice(0, BRAND_NAME_MAX) : ''
+  out.brandAccent = normalizeAccent(section.brandAccent)
   // Every key of PREF_DEFAULTS is set above: the booleans and the choices in
-  // the loop, the five shaped fields after it.
+  // the loop, the seven shaped fields after it.
   return out as unknown as Prefs
 }
 

@@ -1,0 +1,138 @@
+/* ---------- Custom brand: sidebar mark ---------- */
+/* The reader's own mark over either brand (D64): the host's whale, or the
+   Claude mark theme/sidebar.css draws, gives way, and the image is painted in
+   its own colours — or, under the tint choice, as a shape in the label colour.
+   This sheet comes after theme/sidebar.css and theme/hero.css, so where a rule
+   here meets the Claude brand's at the same specificity, this one wins. */
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"]) > * {
+  display: none !important;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background: var(--dsh-claude-custom-mark) center / contain no-repeat;
+  -webkit-mask: none;
+  mask: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([class*="brandMark"], [class*="railMark"])::before {
+  background: currentColor;
+  -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
+  mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
+}
+
+/* ---------- Custom brand: sidebar wordmark ---------- */
+/* The wordmark image keeps the 18px cap height of the Claude wordmark, its
+   width read through the proportions brand.ts measured; with no image, the
+   brand name is set in the brand face. */
+body[data-dsh-claude-style][data-dsh-claude-custom-word] [class*="brandIdentity"] > [class*="brandName"] > * {
+  display: none !important;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"] [class*="brandIdentity"] > [class*="brandName"]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: calc(18px * var(--dsh-claude-custom-word-ratio));
+  max-width: 100%;
+  height: 18px;
+  background: var(--dsh-claude-custom-word) left center / contain no-repeat;
+  -webkit-mask: none;
+  mask: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"][data-dsh-claude-custom-tint] [class*="brandIdentity"] > [class*="brandName"]::before {
+  background: currentColor;
+  -webkit-mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
+  mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-word="text"] [class*="brandIdentity"] > [class*="brandName"]::before {
+  content: var(--dsh-claude-custom-name);
+  display: block;
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  font-family: var(--dsh-claude-font-brand);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: normal;
+}
+
+/* ---------- Custom brand: hero mark ---------- */
+/* The new-conversation hero takes the same mark at the size the Claude mark
+   stands there (theme/hero.css); React keeps owning the hitbox's children. */
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"] > * {
+  display: none !important;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::before {
+  content: "";
+  flex: none;
+  width: 42.5px;
+  height: 42.5px;
+  background: var(--dsh-claude-custom-mark) center / contain no-repeat;
+  -webkit-mask: none;
+  mask: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [class*="fishHitbox"]::before {
+  background: currentColor;
+  -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
+  mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
+}
+
+/* ---------- Custom brand: accent colour ---------- */
+/* Every accent token the palette blocks state (tokens.json) is rewritten from
+   the one colour: the fill steps as the colour itself, the hover and link step
+   mixed toward the theme's ink so it moves the way Claude's clay does, the
+   active plate at the palette's 30%, and the ink on a fill the canvas colour
+   brand.ts picked for contrast. These blocks weigh the same as the DeepSeek
+   brand's and come after them, so the custom colour holds under either brand;
+   under "follow the host" none of them apply (D30). */
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent]:not([data-ds-dark-theme]) {
+  --dsw-alias-brand-primary: var(--dsh-claude-custom-accent);
+  --dsw-alias-brand-primary-new-colorprimary-new-color: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-primary-fill: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-info-fill: var(--dsh-claude-custom-accent);
+  --dsw-alias-state-business-primary: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+  --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--dsh-claude-custom-accent) 30%, transparent);
+  --dsw-alias-brand-text: var(--dsh-claude-custom-accent-ink);
+  --dsw-alias-label-primary-foreground: var(--dsh-claude-custom-accent-ink);
+}
+
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent][data-ds-dark-theme] {
+  --dsw-alias-brand-primary: var(--dsh-claude-custom-accent);
+  --dsw-alias-brand-primary-new-colorprimary-new-color: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-primary-fill: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-info-fill: var(--dsh-claude-custom-accent);
+  --dsw-alias-state-business-primary: var(--dsh-claude-custom-accent);
+  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
+  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
+  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
+  --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--dsh-claude-custom-accent) 30%, transparent);
+  --dsw-alias-brand-text: var(--dsh-claude-custom-accent-ink);
+  --dsw-alias-label-primary-foreground: var(--dsh-claude-custom-accent-ink);
+}
+
+/* The DeepSeek brand inks its whale and wordmark in the brand colour; a custom
+   accent takes that place too. */
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-brand="deepseek"][data-dsh-claude-accent] {
+  --dsh-claude-logo-ink: var(--dsh-claude-custom-accent);
+}

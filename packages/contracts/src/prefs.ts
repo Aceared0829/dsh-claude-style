@@ -6,6 +6,9 @@
  */
 export const PREFS_DEFAULT = Object.freeze({
   brand: 'claude',
+  brandName: '',
+  brandInk: 'original',
+  brandAccent: '',
   motion: 'system',
   collapseFooter: true,
   autoPopover: 'all',

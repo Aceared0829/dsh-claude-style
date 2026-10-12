@@ -61,7 +61,7 @@ const fs = require('fs')
 const http = require('http')
 const path = require('path')
 const { findChrome, launchChrome, connectTab } = require('./shared/chrome.cjs')
-const { ROOT, CLIENT, SKIN_FIXTURE, SKIN_CASES, sleep, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
+const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, sleep, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
 const { hostHalf } = require('./smoke/host-half.cjs')
 const { page } = require('./smoke/page.cjs')
 const { CASES } = require('./smoke/cases.cjs')
@@ -209,6 +209,22 @@ async function browserHalf(planned) {
       }
       res.writeHead(200, { 'content-type': 'image/png' })
       res.end(fs.readFileSync(SKIN_FIXTURE))
+    } else if (name === 'dsh-claude-style/brand/mark' || name === 'dsh-claude-style/brand/wordmark') {
+      // The custom-brand case's images, loaded outside `fetch` like the
+      // launcher's atlas: a one-pixel mark, and a wordmark whose only size is
+      // a 4:1 viewBox, so the measured proportions are observable.
+      if (current !== 'custom-brand') {
+        res.writeHead(404, { 'cache-control': 'no-store' })
+        res.end()
+        return
+      }
+      if (name.endsWith('/mark')) {
+        res.writeHead(200, { 'content-type': 'image/png' })
+        res.end(Buffer.from(PNG_1PX, 'base64'))
+        return
+      }
+      res.writeHead(200, { 'content-type': 'image/svg+xml' })
+      res.end('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"><rect width="400" height="100"/></svg>')
     } else if (name.startsWith('dsh-claude-style/assets/')) {
       // The routed assets, from the build output the host half serves them from
       // (D38). The manifest is the same gate here: a name the build did not

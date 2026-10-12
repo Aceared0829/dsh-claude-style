@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, USERNAME_MAX } from '../constants'
+import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, USERNAME_MAX } from '../constants'
 import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
 import { normalizePrefs, resolveMascot } from './prefs'
 
@@ -55,6 +55,25 @@ test('the username is trimmed and cut to its limit', () => {
   expect(normalizePrefs({ username: '  Ada  ' }).username).toBe('Ada')
   expect(normalizePrefs({ username: 'y'.repeat(USERNAME_MAX + 10) }).username).toHaveLength(USERNAME_MAX)
   expect(normalizePrefs({ username: 42 }).username).toBe('')
+})
+
+test('the brand name is trimmed and cut to its limit', () => {
+  expect(normalizePrefs({ brandName: '  Acme  ' }).brandName).toBe('Acme')
+  expect(normalizePrefs({ brandName: 'n'.repeat(BRAND_NAME_MAX + 10) }).brandName).toHaveLength(BRAND_NAME_MAX)
+  expect(normalizePrefs({ brandName: false }).brandName).toBe('')
+})
+
+test('the custom accent keeps a #rrggbb colour, lower-cased, and reads anything else as unset', () => {
+  expect(normalizePrefs({ brandAccent: '#1A7F5A' }).brandAccent).toBe('#1a7f5a')
+  expect(normalizePrefs({ brandAccent: '#abc' }).brandAccent).toBe('')
+  expect(normalizePrefs({ brandAccent: 'red' }).brandAccent).toBe('')
+  expect(normalizePrefs({}).brandAccent).toBe('')
+})
+
+test('the custom images keep their own colours unless the text colour is chosen', () => {
+  expect(normalizePrefs({}).brandInk).toBe(BRAND_INK_ORIGINAL)
+  expect(normalizePrefs({ brandInk: BRAND_INK_TEXT }).brandInk).toBe(BRAND_INK_TEXT)
+  expect(normalizePrefs({ brandInk: 'mono' }).brandInk).toBe(BRAND_INK_ORIGINAL)
 })
 
 test('"follow the brand" puts the crab under Claude and Deepy under DeepSeek; a fixed choice stands', () => {
