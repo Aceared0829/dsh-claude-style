@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-12",
-  "group": "new",
-  "order": 0,
-  "external": true,
-  "zh": "选完 Claude 或 DeepSeek 主题风格后，侧栏顶部、新会话页与账号行的兜底头像只能挂这两家的标志；设置页「外观」里现在可以填自己的品牌名称、上传标志图片与文字标志（PNG / SVG / WebP，不超过 2 MB），选择图片保留原色或按文字颜色着色，并指定一个主色替换按钮、选中标记、链接与焦点环的颜色。图片存在 DSH 主目录的 `dsh-claude-style/brand/` 下，由宿主半边新增的 `/dsh-claude-style/brand`、`/brand/mark`、`/brand/wordmark` 三条私有路由读写；设置项新增 `brandName`、`brandInk`、`brandAccent`。",
-  "en": "With the Claude or DeepSeek theme style chosen, the top of the sidebar, the new-conversation page and the account row's fallback picture could only carry those two brands' marks; the Appearance tab now takes your own brand name, a mark and a wordmark image (PNG / SVG / WebP, up to 2 MB), a choice between the images' own colours and the text colour, and an accent colour for buttons, selected marks, links and focus rings. The images live under `dsh-claude-style/brand/` in the DSH home directory, read and written through three new private routes of the host half — `/dsh-claude-style/brand`, `/brand/mark` and `/brand/wordmark`; the settings gain `brandName`, `brandInk` and `brandAccent`."
-}

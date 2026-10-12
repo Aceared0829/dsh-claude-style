@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-12",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "等待行曾连带隐藏 dsh-status-rotator 等插件插入的状态行；现在只隐藏宿主文案，第三方状态行保持可见。",
-  "en": "The waiting line hid status lines inserted by plugins such as dsh-status-rotator; it now hides only the host wording and leaves third-party status lines visible."
-}
