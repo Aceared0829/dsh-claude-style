@@ -23,6 +23,7 @@ const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
 const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
+const { customBrandScenario } = require('./custom-brand.cjs')
 const { CANVAS } = require('../../scripts/shoot.cjs')
 const { sanitizePage } = require('../../scripts/shared/privacy.cjs')
 
@@ -312,6 +313,8 @@ const SCENARIOS = {
   importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
   /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D60). */
   remoteSettings: remoteSettingsScenario({ check }),
+  /** The reader's own brand images through the host half's routes and on the real shell (packages/testing/custom-brand.cjs, D64). */
+  customBrand: customBrandScenario({ check }),
   /** Both palettes captured to the run's out directory and swept for personal data. */
   shots: {
     script: 'greeting',
