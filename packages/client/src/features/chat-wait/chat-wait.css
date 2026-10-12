@@ -29,17 +29,16 @@ body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-
   background: var(--dsh-claude-canvas, var(--dsw-alias-bg-base, #FCFCFB));
 }
 
-/* The host's running row keeps its whale and its live region; its words — the
-   one child of the content span it does not mark decorative — step aside for
-   the skin's line (chat-wait.ts): what the turn is doing right now, the turn's
-   elapsed time as a quiet clock beside it, and the overtime badge. The look
+/* The host's running row keeps its whale and its live region; its words,
+   marked by chat-wait.ts, step aside for the skin's line: the turn's current
+   activity, elapsed time as a quiet clock, and the overtime badge. The look
    follows dsh-better-display's status line, and the wording's own change runs
    transitions.dev's "Text states swap" (MIT). */
 
 /* The host's words step aside for the skin's line; the line itself is not
    touched, so the wording, the elapsed clock and the wait badge stay the row's
    readable text while the host's own live region keeps announcing the row. */
-body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] > span > :not([aria-hidden="true"]):not(.dsh-claude-chat-wait) {
+body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] [data-dsh-claude-wait-words] {
   display: none;
 }
 

@@ -113,10 +113,12 @@ export const CHAT_GROUP_PART_REASONING = 'reasoning'
  */
 export const PROCESS_HEADER_LABEL_SELECTOR = ':scope > :not([aria-hidden="true"])'
 /**
- * The words of the live turn's running row: the child of its content span that
- * is not the decorative whale; the row's other spans hold no elements.
+ * The words of the live turn's running row: the shimmered child of its content
+ * span. Reading it as the child that is not decorative would name whichever of
+ * the span's children comes first, and the skin's waiting line and the lines
+ * third-party plugins insert stand in that same span beside the host's whale.
  */
-export const CHAT_RUNNING_TEXT_SELECTOR = ':scope > span > :not([aria-hidden="true"])'
+export const CHAT_RUNNING_TEXT_SELECTOR = `:scope > span > [${SHIMMER_ATTRIBUTE}], :scope > span > [${SHIMMER_LEGACY_ATTRIBUTE}]`
 /**
  * The turn rail (ui-chat's TurnNavigator): a nav at the conversation's
  * right edge with one mark per turn, absent below two turns and hidden
