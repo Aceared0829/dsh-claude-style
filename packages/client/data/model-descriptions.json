@@ -153,7 +153,7 @@
     "processSummaryFullRecordOther": { "zh": "记录 {count} 条", "en": "{count} records" },
     "processSummaryFullSeparator": { "zh": "，", "en": ", " },
     "chatWaitOvertime": { "zh": "暂未响应", "en": "No response yet" },
-    "fileRowMergedChanges": { "zh": "同一文件的 {count} 次改动合并为这一行", "en": "{count} changes to the same file are merged into this row" },
+    "fileRowMergedOperations": { "zh": "同一文件的 {count} 次操作合并为这一行", "en": "{count} calls on the same file are merged into this row" },
     "accountNameFallback": { "zh": "用户", "en": "User" },
     "accountSettingsRow": { "zh": "设置", "en": "Settings" },
     "footerPluginRow": { "zh": "插件", "en": "Plugin" },

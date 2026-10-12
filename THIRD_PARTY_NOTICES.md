@@ -4,7 +4,7 @@ This package includes material from the projects below. Each keeps its own licen
 
 ## dsh-better-display
 
-The counted figures on a process group's header (`packages/client/src/features/chat-fold/process-summary.ts` and the `dsh-claude-process-summary-*` rules in its stylesheet), the merged figures on a file-change row (`packages/client/src/features/chat-files/` and the `dsh-claude-file-roll-*` rules in its stylesheet) and the line while the model works (`packages/client/src/features/chat-wait/`, its stylesheet): their roll timing and curve, the shimmer sweep over the figures, the clock's type and colour and the overtime badge follow dsh-better-display's fold summary and live status line. The source files name it in their headers.
+The counted figures on a process group's header (`packages/client/src/features/chat-fold/process-summary.ts` and the `dsh-claude-process-summary-*` rules in its stylesheet) and the line while the model works (`packages/client/src/features/chat-wait/`, its stylesheet): their roll timing and curve, the shimmer sweep over the figures, the clock's type and colour and the overtime badge follow dsh-better-display's fold summary and live status line. The source files name it in their headers.
 
 Source: <https://github.com/aa2246740/dsh-better-display>
 
@@ -36,7 +36,7 @@ SOFTWARE.
 
 The Number pop-in transition (`packages/client/src/features/context-stats/stats-digits.ts` and the `dsh-claude-digit-*` rules in `packages/client/src/features/composer/inline-bar.css`) is ported from transitions.dev's "Number pop-in": its keyframes, its distance, blur, stagger and easing tokens, and one span per character with the last two delayed behind the rest — renamed into this package's own classes and tokens.
 
-The "Text states swap" transition (`packages/client/src/features/chat-wait/chat-wait.ts` and the `dsh-claude-chat-wait-label` rules in its stylesheet) is ported the same way: its three-phase sequence (leave upward with a blur, change the text out of sight, enter from below), its duration, shift, blur and easing tokens as this package's own custom properties, and the reflow that releases the entry pose. The snippet's `prefers-reduced-motion` guard is answered by the animation choice this skin resolves onto `<body>` (D26), which already folds the system setting in.
+The "Text states swap" transition (`packages/client/src/features/chat-wait/chat-wait.ts` and the `dsh-claude-chat-wait-label` rules in its stylesheet, and the operation label of a shared file row in `packages/client/src/features/chat-files/` with the `dsh-claude-file-op-*` rules in its stylesheet) is ported the same way: its three-phase sequence (leave upward with a blur, change the text out of sight, enter from below), its duration, shift, blur and easing tokens as this package's own custom properties, and the reflow that releases the entry pose. The snippet's `prefers-reduced-motion` guard is answered by the animation choice this skin resolves onto `<body>` (D26), which already folds the system setting in.
 
 The "Reasoning stream" transition (`packages/client/src/features/chat-fold/reasoning-stream.ts` and the `data-dsh-claude-reason-window` rules in that feature's `fold-motion.css`) is ported as well: its window (a few lines tall with a mask at each edge rather than painted gradients), its hold, step, lines, fade and easing tokens, and the stepping clock — read as live text, so there is no copy and no wrap and the steps stop at the newest line.
 
@@ -69,3 +69,11 @@ transitions in your products, not as a product of their own.
 
 Full terms: https://transitions.dev/terms.html
 ```
+
+## zai-org/ZCode
+
+The figures on a file-change row (`packages/client/src/features/chat-files/` and the `dsh-claude-file-roll-*` rules in its stylesheet) turn the way ZCode's metric flip does (its UI package's `flip-metric-value.tsx`): one short turn per update, only the characters whose own digit changed, a fixed-width slot per character with the perspective on the slot, 160 ms, and an animation choice that writes the value in place instead of turning it.
+
+Source: <https://github.com/zai-org/ZCode> · <https://github.com/zai-org/ZCode/blob/main/packages/ui/src/components/ui/flip-metric-value.tsx>
+
+License: Apache-2.0 — the full text is at the source above.

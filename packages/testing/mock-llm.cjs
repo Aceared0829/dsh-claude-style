@@ -144,27 +144,27 @@ const SCRIPTS = {
     auxiliary: { text: ['Scripted long answer'] },
   },
   /**
-   * One file changed four times by one program, and another file written once
-   * (packages/testing/file-merge.cjs): the file-change rows of the first file
-   * have to stand as one row whose tail is the total of those four changes, and
-   * the second file's single row has to stay its own. The calls are dispatched
-   * from inside `run_code`, which is the shape the rows are read together in:
-   * the host keeps one row per call, and a program's calls are the ones that
-   * stand side by side under the program's own row. The file is read first —
-   * the host refuses an edit of a file it has not seen — and every replacement
-   * chains onto the one before it. `{{workspace}}` is filled in by the lane,
-   * which is the side that knows the scratch home, and `{{workspaceCode}}` is
-   * the same path with its backslashes doubled: inside a program's own source a
-   * single backslash is an escape.
+   * One `run_code` program touching four files, for the file rows: `app.js` is
+   * read, changed four times and read again; `notes.md` is written and then
+   * read; `only.md` is written once; `plain.md` is read twice and never
+   * changed. Every call is dispatched from the one program, which is the shape
+   * the rows are read together in: the host keeps one row per call, and a
+   * program's calls are the ones that stand side by side under the program's
+   * own row. `app.js` is read before it is edited — the host refuses an edit of
+   * a file it has not seen — and every replacement chains onto the one before
+   * it. `{{workspace}}` is filled in by the lane, which is the side that knows
+   * the scratch home, and `{{workspaceCode}}` is the same path with its
+   * backslashes doubled: inside a program's own source a single backslash is an
+   * escape.
    */
   fileEdits: {
     conversation: [
       {
-        thinking: ['一个程序里把这个文件改四处，再写另一个文件。'],
+        thinking: ['一个程序里改这个文件、读它、再碰另外三个文件。'],
         tool: {
           name: 'run_code',
           input: {
-            description: 'Change one file four times and write another',
+            description: 'Read, change and read one file, and touch three others',
             code: [
               "const { setTimeout: delay } = await import('node:timers/promises')",
               "await tools.read({ file_path: '{{workspaceCode}}/app.js' })",
@@ -175,13 +175,19 @@ const SCRIPTS = {
               "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const third = 1', new_string: 'const third = 2' })",
               "await delay(300)",
               "await tools.edit({ file_path: '{{workspaceCode}}/app.js', old_string: 'const fourth = 1', new_string: 'const fourth = 2' })",
+              "await tools.read({ file_path: '{{workspaceCode}}/app.js' })",
               "await tools.write({ file_path: '{{workspaceCode}}/notes.md', content: '# Notes\\n\\n- one\\n- two\\n' })",
-              "return 'four changes to app.js, one write to notes.md'",
+              "await tools.read({ file_path: '{{workspaceCode}}/notes.md' })",
+              "await tools.write({ file_path: '{{workspaceCode}}/only.md', content: '# Only\\n' })",
+              "await tools.read({ file_path: '{{workspaceCode}}/plain.md' })",
+              "await delay(200)",
+              "await tools.read({ file_path: '{{workspaceCode}}/plain.md' })",
+              "return 'four changes to app.js, a write and a read of notes.md, one write to only.md, two reads of plain.md'",
             ].join('\n'),
           },
         },
       },
-      { thinking: ['改完了，说明一下。'], text: ['四个文件改动都落好了。\n'] },
+      { thinking: ['做完了，说明一下。'], text: ['四个文件的调用都落好了。\n'] },
     ],
     auxiliary: { text: ['Scripted file edits'] },
   },

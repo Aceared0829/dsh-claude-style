@@ -1,32 +1,44 @@
 import { CHAT_CALL_SELECTOR, PROCESS_CONTENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { notifyAll } from '../../shared/notify'
-import type { FileHunk, FileRowState } from './file-row-model'
+import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
 
 /**
- * The file-change row's read-across-calls half (D62): the edits and writes of
- * one file inside one process group stand as a single row.
+ * The file row's read-across-calls half (D62): the calls that touched one file
+ * inside one process group stand as a single row.
  *
  * The host renders one row per call and hands each of them only its own block,
  * so a row that has to know what the others did reads it here: every row
- * registers the file it touched and what its own call changed, and the row the
- * registry names as the group's head draws the whole file's tail and its whole
- * diff card. A file touched once is drawn exactly as it was before this module
+ * registers the file it touched, the operation it performed and what its own
+ * call changed, and the row the registry names as the group's head draws the
+ * whole file's tail, its whole diff card and the operation the file's work last
+ * reached. A file touched once is drawn exactly as it was before this module
  * existed.
  *
  * A group is one process group's content layer (D44), so two pieces of work in
  * one turn are never read together, and the head is the group's earliest call
  * in document order: a number that grows stays where the file was first
- * touched. The calls a program dispatched are the case with several rows of one
- * file on the page at once: the host renders them side by side under the
- * program's own row, inside the same content layer.
+ * touched, and the operation it wears moves on in place. The calls a program
+ * dispatched are the case with several rows of one file on the page at once:
+ * the host renders them side by side under the program's own row, inside the
+ * same content layer.
  */
 
-/** One file-change row as the registry knows it: its element, its file, what its own call changed. */
+/** One file row as the registry knows it: its element, its call, its file, what its own call did. */
 export interface FileMergeRow {
   element: HTMLElement
+  /**
+   * The host's own id for this call. The host draws one row element per call
+   * step and hands it to the file's next call, so on one element this id is what
+   * tells the calls apart: a new one adds to the file's tail, the same one
+   * replaces what it registered before.
+   */
+  callId: string
   path: string
+  operation: FileRowOperation
   hunks: readonly FileHunk[]
   state: FileRowState
+  /** The window it read, for a read call that has one. */
+  read: FileReadCard | null
 }
 
 /** What one row draws once its file's calls are read together. */
@@ -39,6 +51,10 @@ export interface FileMergeView {
   hunks: FileHunk[]
   /** Whether any call of the file is still running. */
   running: boolean
+  /** The operation the file's work last reached: the row wears its icon and title. */
+  operation: FileRowOperation
+  /** The file's last read, for a group whose calls changed nothing. */
+  read: FileReadCard | null
 }
 
 /** The content layer a row sits in, or null when it is in no process group. */
@@ -93,9 +109,19 @@ export function mergeViews(rows: readonly FileMergeRow[]) {
       // so the numbers can never disagree with the card.
       const hunks = ordered.flatMap((member) => [...member.hunks])
       const running = ordered.some((member) => member.state === 'running')
-      ordered.forEach((member, at) => {
-        views.set(member.element, { head: at === 0, count: ordered.length, hunks, running })
-      })
+      // The last call in document order is the one whose work the file's row is
+      // in the middle of, and the last call that read the file is the window a
+      // group with no changes draws.
+      const last = ordered[ordered.length - 1]
+      let read: FileReadCard | null = null
+      for (let at = ordered.length - 1; at >= 0 && read === null; at -= 1) read = ordered[at].read
+      // The element the file was first touched in draws the group. Every call the
+      // host ran through that one element is that element's own, so a row kept
+      // across the file's calls carries the whole group.
+      const head = ordered[0].element
+      for (const member of ordered) {
+        views.set(member.element, { head: member.element === head, count: ordered.length, hunks, running, operation: last.operation, read })
+      }
     }
   }
   return views
@@ -106,14 +132,22 @@ export function mergeViews(rows: readonly FileMergeRow[]) {
  * back out. The views are rebuilt whole on every change and each one stands
  * until the next change, which is the stable snapshot a React subscriber reads
  * between renders.
+ *
+ * One row element holds the calls the host ran through it: the host gives a
+ * direct call the content layer's own row and then hands that element to the
+ * file's next call, so the element carries the file's tail across a read that
+ * changed nothing. An element that moves to another file or another group starts
+ * its own record.
  */
 export function createFileMerge() {
-  const rows = new Map<HTMLElement, FileMergeRow>()
+  const rows = new Map<HTMLElement, { container: Element, path: string, calls: Map<string, FileMergeRow> }>()
+  /** Rows whose unregister is waiting to see whether the host moves them on. */
+  const leaving = new Set<HTMLElement>()
   const listeners: (() => void)[] = []
   let views = new Map<HTMLElement, FileMergeView>()
 
   const rebuild = () => {
-    views = mergeViews([...rows.values()])
+    views = mergeViews([...rows.values()].flatMap((held) => [...held.calls.values()]))
     notifyAll(listeners)
   }
 
@@ -123,16 +157,36 @@ export function createFileMerge() {
       return element === null ? null : views.get(element) ?? null
     },
     /**
-     * Register one row, replacing what the same element registered before.
-     * @returns the unregister: it takes this row out while the element still holds it.
+     * Register one call on one row element, replacing what the same call
+     * registered before.
+     * @returns the unregister, which takes the element out when the host has
+     * moved it on to the file's next call and no row landed in its place.
      */
     put(row: FileMergeRow) {
-      rows.set(row.element, row)
+      const element = row.element
+      const container = rowContainer(element)
+      leaving.delete(element)
+      if (container === null) {
+        rows.delete(element)
+      } else {
+        const held = rows.get(element)
+        if (held === undefined || held.container !== container || held.path !== row.path) {
+          rows.set(element, { container, path: row.path, calls: new Map([[row.callId, row]]) })
+        } else {
+          held.calls.set(row.callId, row)
+        }
+      }
       rebuild()
       return () => {
-        if (rows.get(row.element) !== row) return
-        rows.delete(row.element)
-        rebuild()
+        // The row that lands next puts itself in during the same flush, before
+        // this microtask runs, and clears the mark.
+        leaving.add(element)
+        queueMicrotask(() => {
+          if (!leaving.has(element)) return
+          leaving.delete(element)
+          rows.delete(element)
+          rebuild()
+        })
       }
     },
     /** Hear about every change; returns the unsubscriber. */
