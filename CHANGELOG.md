@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 等待行曾连带隐藏 dsh-status-rotator 等插件插入的状态行；现在只隐藏宿主文案，第三方状态行保持可见。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- The waiting line hid status lines inserted by plugins such as dsh-status-rotator; it now hides only the host wording and leaves third-party status lines visible.
+
 ## [0.13.2] - 2026-10-11
 
 [中文](#cn-0.13.2) | [English](#en-0.13.2)

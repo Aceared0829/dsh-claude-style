@@ -32,6 +32,8 @@ import type manifest from './chat-wait.manifest'
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** On the host's running row while the line stands in for its words. */
   const WAIT_ATTR = 'data-dsh-claude-wait'
+  /** On the host's words alone, leaving sibling plugin lines visible. */
+  const WORDS_ATTR = 'data-dsh-claude-wait-words'
   /** On the wording while it swaps: `exit` for the wording leaving, `enter` for the one taking its place. */
   const SWAP_ATTR = 'data-dsh-claude-wait-swap'
   /** The clock's step: the host's own row ticks once a second, and a quarter keeps the two in step. */
@@ -40,6 +42,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const SWAP_FALLBACK_MS = 150
   /** Each running row with the line drawn into it. */
   const lines = new Map<HTMLElement, HTMLElement>()
+  const hostWords = new Map<HTMLElement, Element>()
   /** The wording a leaving one hands over to, by label. */
   const swapping = new Map<HTMLElement, string>()
   /** The exit a label is in the middle of, by label. */
@@ -51,6 +54,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** The line inside one row, built the first time beside the host's words. */
   function lineOf(row: HTMLElement, words: Element) {
+    const previous = hostWords.get(row)
+    if (previous !== words) {
+      previous?.removeAttribute(WORDS_ATTR)
+      words.setAttribute(WORDS_ATTR, '')
+      hostWords.set(row, words)
+    }
     let line = lines.get(row)
     if (line !== undefined && line.isConnected) return line
     line = buildElement('span', 'dsh-claude-chat-wait')
@@ -167,6 +176,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       line.remove()
     }
     lines.delete(row)
+    hostWords.get(row)?.removeAttribute(WORDS_ATTR)
+    hostWords.delete(row)
     row.removeAttribute(WAIT_ATTR)
   }
 

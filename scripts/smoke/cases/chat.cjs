@@ -257,6 +257,9 @@ module.exports = {
     const working = wait.working || {}
     check('the running row takes the skin\'s line beside the host\'s words, which step aside',
       working.marked === true && working.besideWords === true && working.wordsShown === false, JSON.stringify(working))
+    check('only the host words are marked and a third-party line stays visible before or after the waiting line mounts',
+      working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
+      JSON.stringify({ working, after: wait.foreignAfter }))
     check('the line says what the turn is doing, sweeping, with the turn\'s clock in the host\'s units',
       working.label === 'Thinking…' && working.sweep === 'dsh-claude-wait-shimmer' && /^1m [5-9]s$/.test(working.clock || ''),
       JSON.stringify(working))
@@ -285,7 +288,13 @@ module.exports = {
       reduced.label === 'Deep diving' && reduced.swap === null, JSON.stringify(reduced))
     const off = wait.off || {}
     check('switching the chat-area animations off takes the line down and gives the host\'s words back',
-      off.line === false && off.marked === false && off.wordsShown === true, JSON.stringify(off))
+      off.line === false && off.marked === false && off.wordsShown === true && off.wordsMarked === false && off.foreignShown === true,
+      JSON.stringify(off))
+    const replaced = wait.replaced || {}
+    check('replacing the host words transfers their hiding marker without hiding the third-party line',
+      replaced.previousMarked === false && replaced.current?.wordsMarked === true && replaced.current?.wordsShown === false &&
+        replaced.current?.foreignShown === true, JSON.stringify(replaced))
+    check('a running row leaving removes its host words marker', wait.removed?.wordsMarked === false, JSON.stringify(wait.removed))
   },
   'chat-send'(r) {
     basicChecks(r)

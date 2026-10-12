@@ -22,6 +22,9 @@
       document.body.appendChild(waitSession)
       var row = waitSession.querySelector('[data-chat-running]')
       var words = document.getElementById('debugRunningWords')
+      var foreignLine = document.createElement('div')
+      foreignLine.textContent = 'Third-party status'
+      words.parentElement.appendChild(foreignLine)
       var lineOf = function () {
         var line = row.querySelector('.dsh-claude-chat-wait')
         if (line === null) return null
@@ -37,6 +40,8 @@
           clock: parts[1].hidden ? null : parts[1].textContent,
           badge: parts[2].hidden ? null : parts[2].textContent,
           wordsShown: getComputedStyle(words).display !== 'none',
+          wordsMarked: words.hasAttribute('data-dsh-claude-wait-words'),
+          foreignShown: getComputedStyle(foreignLine).display !== 'none',
         }
       }
       // The wording swaps with transitions.dev's three phases: the old one leaves
@@ -56,6 +61,10 @@
       }
       await sleep(400)
       r.wait = { working: lineOf() }
+      foreignLine.remove()
+      words.parentElement.appendChild(foreignLine)
+      await sleep(300)
+      r.wait.foreignAfter = lineOf()
       // The model goes silent: the running turn has written nothing, so the
       // line falls back to the host's own word for a wait.
       window.__dshSmokeHost.turnFixtureRunning.steps = []
@@ -74,16 +83,30 @@
       r.wait.reduced = lineOf()
       window.__pushForm({ motion: 'system' })
       await sleep(200)
+      var previousWords = words
+      words = document.createElement('span')
+      words.setAttribute('data-shimmer', 'true')
+      words.textContent = previousWords.textContent
+      previousWords.replaceWith(words)
+      await sleep(400)
+      r.wait.replaced = {
+        previousMarked: previousWords.hasAttribute('data-dsh-claude-wait-words'),
+        current: lineOf(),
+      }
       window.__pushForm({ chatAnimations: false })
       await sleep(300)
       r.wait.off = {
         line: row.querySelector('.dsh-claude-chat-wait') !== null,
         marked: row.hasAttribute('data-dsh-claude-wait'),
         wordsShown: getComputedStyle(words).display !== 'none',
+        wordsMarked: words.hasAttribute('data-dsh-claude-wait-words'),
+        foreignShown: getComputedStyle(foreignLine).display !== 'none',
       }
       window.__pushForm({ chatAnimations: true })
       await sleep(300)
       waitSession.remove()
+      await sleep(300)
+      r.wait.removed = { wordsMarked: words.hasAttribute('data-dsh-claude-wait-words') }
     })
   })
 })()
