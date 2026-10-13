@@ -73,7 +73,7 @@ interface HostDomEntry {
 }
 
 export const HOST_DOM: HostDomEntry[] = [
-  { id: 'chat.flow-block', value: FLOW_BLOCK_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'a new flow block: this piece of the stream moved on' },
+  { id: 'chat.flow-block', value: FLOW_BLOCK_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'a flow block: a new one is this piece of the stream moving on, and a direct call\u2019s own block is the box its row takes in the list' },
   { id: 'chat.flow', value: CHAT_FLOW_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'the chat column: the root every chat-area behaviour scopes to' },
   { id: 'chat.call', value: CHAT_CALL_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'one tool call row: structure the follow watches for' },
   { id: 'chat.think-row', value: THINK_ROW_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'one thinking row, folded and quoted by its phase' },

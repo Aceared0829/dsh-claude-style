@@ -207,7 +207,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }, [block, own])
 
     // A row the head stands for takes its box off the page: the carrier is the
-    // host's call row, so the host row's own spacing goes with it.
+    // box the host gave this call in its list, so the spacing around it goes too.
     const hidden = merged && !merge.head
     const carrier = React.useMemo(() => createStamp(CHAT_FILE_MERGE_ATTR), [])
     React.useLayoutEffect(() => {

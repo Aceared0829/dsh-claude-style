@@ -1,4 +1,4 @@
-import { CHAT_CALL_SELECTOR, PROCESS_CONTENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_CALL_SELECTOR, FLOW_BLOCK_SELECTOR, PROCESS_CONTENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { notifyAll } from '../../shared/notify'
 import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
 
@@ -63,16 +63,25 @@ export function rowContainer(element: HTMLElement) {
 }
 
 /**
- * The element whose box a row takes in its list: the host's call row for this
- * call. For a directly called tool that row is the content layer's own child;
- * for a call a program dispatched it is the sub-call's own row, and the
- * program's row around them must stay. Hiding this one takes the host row's
- * spacing with it; hiding the row inside it would leave the box behind.
+ * The element whose box a row takes in its list. A directly called tool can
+ * stand in a flow block of its own, which one host version spaces with margins
+ * of its own: hiding the call row inside would leave those margins behind, so
+ * the block is the carrier. A call a program dispatched shares the program's
+ * block with the program's own call, and the carrier is the sub-call's row; the
+ * program's row around it must stay. Where the host draws the call row with no
+ * block of its own, the call row is the carrier.
  *
  * @returns the carrier, or null for a row the host drew outside a call row.
  */
 export function rowCarrier(element: HTMLElement) {
-  return element.closest(CHAT_CALL_SELECTOR)
+  const call = element.closest(CHAT_CALL_SELECTOR)
+  if (call === null) return null
+  // The process group itself is a flow block too: only a block inside the
+  // content layer can be the call's own.
+  const layer = rowContainer(element)
+  const block = call.parentElement === null ? null : call.parentElement.closest(FLOW_BLOCK_SELECTOR)
+  if (layer === null || block === null || block === layer || !layer.contains(block)) return call
+  return block.querySelectorAll(CHAT_CALL_SELECTOR).length === 1 ? block : call
 }
 
 /** The earlier of two rows first, by document order. */
