@@ -144,6 +144,39 @@ const SCRIPTS = {
     auxiliary: { text: ['Scripted long answer'] },
   },
   /**
+   * A screenful of answer, then a process group that reasons at the tail: the
+   * first reply fills the column past the viewport and calls a tool, and the
+   * second reasons in pieces long enough to add a line or two each, for a few
+   * seconds, inside the group the tool call opened. The reasoning keeps the turn
+   * streaming while the lane rolls a door over that group.
+   */
+  tailReasoning: {
+    conversation: [
+      {
+        thinking: ['Fill the screen before the work starts.'],
+        text: ['# Long answer\n\n', ...LONG_PIECES],
+        tool: { name: 'glob', input: { pattern: '*.json' } },
+      },
+      {
+        thinking: [
+          '列举的结果回来了，先看清这些文件各自管什么，再决定从哪一个开始读，顺序上先宽后窄。\n\n',
+          '入口文件引用了两个模块，其中一个只在启动时读一次配置，另一个在每次请求里都会被调用。\n\n',
+          '每次请求都调用的那个更值得先看，它的改动会直接落到读者能看到的地方，风险也更高。\n\n',
+          '配置那一边只要确认默认值和旧版本存下来的值都还能读，就可以先放一放，留到最后一起核对。\n\n',
+          '接下来把要改的地方按文件排好，每个文件写清楚改什么、为什么改、改完之后用什么办法验证。\n\n',
+          '验证要挑有信息量的例子：空输入、边界值、两个东西同时变化的情形，重复验证同一件事的不算。\n\n',
+          '跑完测试还要在页面上按读者的顺序走一遍，看文字有没有跳动、开合之后高度有没有变化。\n\n',
+          '最后把临时的脚本和调试用的标记清干净，再把结论整理成一句话写在答案的开头。\n\n',
+          '想到这里已经够了，可以开始回答。\n\n',
+          '回答之前再确认一遍文件名都写对了。\n\n',
+        ],
+        tool: { name: 'glob', input: { pattern: '*.md' } },
+      },
+      { thinking: ['Both listings are in.'], text: ['The files are listed above.\n'] },
+    ],
+    auxiliary: { text: ['Scripted tail reasoning'] },
+  },
+  /**
    * One `run_code` program touching four files, for the file rows: `app.js` is
    * read, changed four times and read again; `notes.md` is written and then
    * read; `only.md` is written once; `plain.md` is read twice and never
@@ -190,6 +223,23 @@ const SCRIPTS = {
       { thinking: ['做完了，说明一下。'], text: ['四个文件的调用都落好了。\n'] },
     ],
     auxiliary: { text: ['Scripted file edits'] },
+  },
+  /**
+   * The waiting line's own words: the model reasons in an English clause it is
+   * on ("I am checking the file is true"), then reads a file, so the line has to
+   * say the model's clause while it reasons and the file's name while the call
+   * runs. Each piece is short and the pause between them is the lane's own, so
+   * every state stands long enough for the scenario to sample it.
+   */
+  waitLine: {
+    conversation: [
+      {
+        thinking: ['Let me look at the file. ', 'I am checking the file is true. '],
+        tool: { name: 'read', input: { file_path: '{{workspaceCode}}/app.js' } },
+      },
+      { thinking: ['The read came back, so I can answer. '], text: ['看过了，答案如下。\n'] },
+    ],
+    auxiliary: { text: ['Scripted waiting line'] },
   },
 }
 

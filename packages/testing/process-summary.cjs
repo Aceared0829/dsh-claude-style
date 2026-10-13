@@ -34,7 +34,12 @@ const readWait = (page) => page.evaluate(() => {
   return {
     row: true,
     line: true,
-    label: label.textContent,
+    // The wording this line is on: the label holds a hidden sizer and, while a
+    // wording swaps, two copies of the words, so its raw text joins them.
+    // `data-text` names the wording the line committed to, which is what a state
+    // is judged on (shared/swapping-text.ts).
+    label: label.dataset.text ?? '',
+    labelText: label.textContent,
     clock: clock.checkVisibility() ? clock.textContent : null,
     badge: badge.checkVisibility() ? badge.textContent : null,
     words: words === null ? null : words.textContent,
@@ -105,8 +110,10 @@ function processSummaryScenario({ check }) {
       const working = notes.waitWorking ?? {}
       const headers = notes.headers ?? []
       // The page's own language, read off the line the skin wrote: the same two
-      // languages the copy document carries.
-      const lang = working.label === COPY.chatWaitThinking.zh ? 'zh' : 'en'
+      // languages the copy document carries. Any of the states answers it, since
+      // the reading may be taken while the line is on any of them.
+      const stateWords = [COPY.chatWaitThinking, COPY.chatWaitWriting, COPY.chatWaitToolCall, COPY.chatWaitTools]
+      const lang = stateWords.some((word) => word.zh === working.label) ? 'zh' : 'en'
       const sentence = (parts) => parts.join(COPY.processSummaryFullSeparator[lang])
       const expected = [
         sentence([fill(COPY.processSummaryFullThoughtOther[lang], 2), fill(COPY.processSummaryFullToolOne[lang], 1)]),
@@ -122,7 +129,7 @@ function processSummaryScenario({ check }) {
         check('the badge leaves once the model writes', working.line === true && working.badge === null, JSON.stringify(working)),
         check('the line says what the model is doing once it writes',
           [COPY.chatWaitThinking[lang], COPY.chatWaitWriting[lang], COPY.chatWaitToolCall[lang], COPY.chatWaitTools[lang]].includes(working.label ?? ''),
-          JSON.stringify({ label: working.label, lang })),
+          JSON.stringify({ label: working.label, labelText: working.labelText, lang })),
         check('every process group\'s header says what it holds, the host\'s words out of sight',
           headers.length === 2 && headers.every((header) => header.summaryDisplay !== 'none' && header.wordsDisplay === 'none'),
           JSON.stringify(headers)),

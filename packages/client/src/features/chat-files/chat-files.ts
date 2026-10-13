@@ -1,7 +1,8 @@
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as React from 'react'
-import { CHAT_DIFF_MAX_LINES, CHAT_FILE_ADD_CLASS, CHAT_FILE_BODY_CLASS, CHAT_FILE_CHEVRON_CLASS, CHAT_FILE_DEL_CLASS, CHAT_FILE_DIFF_CLASS, CHAT_FILE_HIDDEN_CLASS, CHAT_FILE_INSPECT_CLASS, CHAT_FILE_IO_CLASS, CHAT_FILE_IO_DIVIDER_CLASS, CHAT_FILE_IO_LABEL_CLASS, CHAT_FILE_IO_SECTION_CLASS, CHAT_FILE_IO_TEXT_CLASS, CHAT_FILE_LEADING_CLASS, CHAT_FILE_LINK_CLASS, CHAT_FILE_MERGED_COPY, CHAT_FILE_MERGE_ATTR, CHAT_FILE_MERGE_GONE, CHAT_FILE_MERGE_HEAD, CHAT_FILE_MERGE_MEMBER, CHAT_FILE_OP_ATTR, CHAT_FILE_OP_CLASS, CHAT_FILE_OP_IN_CLASS, CHAT_FILE_OP_OUT_CLASS, CHAT_FILE_OP_SWAPPING_CLASS, CHAT_FILE_READ_CLASS, CHAT_FILE_ROLL_CLASS, CHAT_FILE_ROLL_DIGIT_CLASS, CHAT_FILE_ROLL_IN_CLASS, CHAT_FILE_ROLL_MOVING_CLASS, CHAT_FILE_ROLL_OUT_CLASS, CHAT_FILE_ROW_CLASS, CHAT_FILE_ROW_LINE_CLASS, CHAT_FILE_SEAT, CHAT_FILE_SEP_CLASS, CHAT_FILE_STAT_CLASS, CHAT_FILE_SUFFIX_CLASS, CHAT_FILE_TITLE_CLASS, CHAT_FILE_TITLE_SLOT_CLASS, CHAT_READ_MAX_LINES, chatFileCallHead, chatFileCallId, chatFileDiffBlockLabels, chatFileDiffHunks, chatFileOperation, chatFileOperationTitle, chatFileParseArgs, chatFileReadBlockLabels, chatFileReadCard, chatFileRowModel, chatFileShortenPath, chatFileStateLabel, chatFileSummaryClassName } from './file-row-model'
+import { CHAT_DIFF_MAX_LINES, CHAT_FILE_ADD_CLASS, CHAT_FILE_BODY_CLASS, CHAT_FILE_CHEVRON_CLASS, CHAT_FILE_DEL_CLASS, CHAT_FILE_DIFF_CLASS, CHAT_FILE_HIDDEN_CLASS, CHAT_FILE_INSPECT_CLASS, CHAT_FILE_IO_CLASS, CHAT_FILE_IO_DIVIDER_CLASS, CHAT_FILE_IO_LABEL_CLASS, CHAT_FILE_IO_SECTION_CLASS, CHAT_FILE_IO_TEXT_CLASS, CHAT_FILE_LEADING_CLASS, CHAT_FILE_LINK_CLASS, CHAT_FILE_MERGED_COPY, CHAT_FILE_MERGE_ATTR, CHAT_FILE_MERGE_GONE, CHAT_FILE_MERGE_HEAD, CHAT_FILE_MERGE_MEMBER, CHAT_FILE_OP_ATTR, CHAT_FILE_OP_CLASS, CHAT_FILE_OP_IN_CLASS, CHAT_FILE_OP_OUT_CLASS, CHAT_FILE_OP_SWAPPING_CLASS, CHAT_FILE_READ_CLASS, CHAT_FILE_ROLL_CLASS, CHAT_FILE_ROLL_DIGIT_CLASS, CHAT_FILE_ROLL_IN_CLASS, CHAT_FILE_ROLL_MOVING_CLASS, CHAT_FILE_ROLL_OUT_CLASS, CHAT_FILE_ROW_CLASS, CHAT_FILE_ROW_LINE_CLASS, CHAT_FILE_SEAT, CHAT_FILE_SEP_CLASS, CHAT_FILE_STAT_CLASS, CHAT_FILE_SUFFIX_CLASS, CHAT_FILE_TITLE_CLASS, CHAT_FILE_TITLE_SLOT_CLASS, CHAT_READ_MAX_LINES, chatFileCallHead, chatFileCallId, chatFileDiffBlockLabels, chatFileDiffHunks, chatFileOperation, chatFileOperationTitle, chatFileReadBlockLabels, chatFileReadCard, chatFileRowModel, chatFileShortenPath, chatFileStateLabel, chatFileSummaryClassName } from './file-row-model'
 import { createFileMerge, rowCarrier } from './file-row-merge'
+import { callArgsOf } from '../../shared/call-args'
 import { copyLabel } from '../../core/i18n'
 import { motionReduced } from '../../core/prefs'
 import { createStamp } from '../../shared/dom'
@@ -135,7 +136,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const rootRef = React.useRef<HTMLDivElement | null>(null)
     const args = React.useMemo(() => {
       const head = chatFileCallHead(block)
-      return head === null ? null : chatFileParseArgs(head.argsRaw)
+      return head === null ? null : callArgsOf(head.argsRaw)
     }, [block])
     const model = React.useMemo(() => chatFileRowModel(toolName, block, args, cwd, home), [args, block, cwd, home, toolName])
     const hunks = React.useMemo(() => chatFileDiffHunks(block, args), [args, block])

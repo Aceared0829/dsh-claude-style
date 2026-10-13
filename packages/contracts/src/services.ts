@@ -401,17 +401,31 @@ interface HostStep {
   data: { get(kind: string): HostAssistantStep | undefined }
 }
 
+/**
+ * One block of a running or settled assistant step: its kind, and the text the
+ * two kinds the host streams text into carry as it arrives.
+ */
+export interface HostStepBlock {
+  kind: string
+  /** The block's text so far, on a reasoning or an answer block. */
+  text?: string
+}
+
 /** A running or settled assistant step: its status, its number in the turn, its blocks and its usage. */
 export interface HostAssistantStep {
   status?: string
   step?: number
-  blocks: { kind: string }[]
+  blocks: HostStepBlock[]
   /** The step's own token usage, once the host reports it. */
   usage?: { outputTokens?: number, [field: string]: unknown }
 }
 
-/** A tool call the host reports as running, with the turn it belongs to. */
-interface HostRunningCall {
+/**
+ * A tool call the host reports as running, with the turn it belongs to: the
+ * call's own block, carrying the name and the arguments it has received so far
+ * (the waiting line names the file a call works on from it).
+ */
+export interface HostRunningCall extends HostChatBlock {
   turn: number
 }
 

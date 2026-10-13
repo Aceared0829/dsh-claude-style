@@ -315,9 +315,24 @@ module.exports = {
     const tools = wait.tools || {}
     check('a tool call in flight is named as such',
       tools.word === 'Running tools…' && tools.badge === null, JSON.stringify(tools))
+    const fileCall = wait.fileCall || {}
+    check('a call that has its arguments names the file it works on',
+      fileCall.word === 'Reading app.js', JSON.stringify(fileCall))
+    const arriving = wait.arriving || {}
+    check('a call whose arguments are still arriving keeps the plain tool state',
+      arriving.word === 'Running tools…', JSON.stringify(arriving))
+    const phrase = wait.phrase || {}
+    check('reasoning the line can take words from says the model\'s own clause',
+      phrase.word === 'Checking the file is true' && phrase.copies === 1, JSON.stringify(phrase))
+    const narrow = wait.narrow || {}
+    check('a wording with no room is cut where the row ends, and the clock stays on the row',
+      narrow.box?.clipped === true && narrow.box.labelRight <= narrow.box.lineRight + 1 &&
+        narrow.box.clockLeft < narrow.box.rowRight &&
+        narrow.word === 'Checking whether the whole row model sti…',
+      JSON.stringify({ word: narrow.word, box: narrow.box }))
     const reduced = wait.reduced || {}
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
-      reduced.word === 'Deep diving' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Deep diving',
+      reduced.word === 'Thinking…' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Thinking…',
       JSON.stringify(reduced))
     check('words that settle shorter take the box down with them, so the clock sits right after them',
       reduced.box?.sizer?.text === reduced.word && reduced.box.width === reduced.box.sizer.width &&

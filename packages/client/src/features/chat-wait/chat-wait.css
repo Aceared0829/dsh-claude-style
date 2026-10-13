@@ -67,7 +67,12 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
    (D26) is the gate: core/prefs.ts resolves the setting and the system
    preference onto the body attribute, and the helper reads it at each swap, so
    the recipe's own media query is not repeated. */
+/* The label's words can be a clause the model wrote, longer than any state
+   word, so it is the label that gives way when the row is narrow: the clock and
+   the badge keep their places and the words are cut with an ellipsis inside the
+   box (shared/swapping-text.css). */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-label {
+  min-width: 0;
   color: var(--dsw-alias-label-secondary);
 }
 

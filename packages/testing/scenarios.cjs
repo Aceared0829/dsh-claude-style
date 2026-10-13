@@ -20,6 +20,7 @@ const { readerScrollScenario } = require('./reader-scroll.cjs')
 const { processSummaryScenario } = require('./process-summary.cjs')
 const { fileMergeScenario } = require('./file-merge.cjs')
 const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
+const { waitLineScenario } = require('./wait-line.cjs')
 const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
@@ -309,6 +310,8 @@ const SCENARIOS = {
   fileMerge: fileMergeScenario({ check }),
   /** The reasoning's streamed window while the model thinks (reasoning-stream.cjs, D32). */
   reasoningStream: reasoningStreamScenario({ check }),
+  /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D58). */
+  waitLine: waitLineScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D51). */
   importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
   /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D60). */

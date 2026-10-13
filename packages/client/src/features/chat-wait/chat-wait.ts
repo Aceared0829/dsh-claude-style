@@ -7,7 +7,9 @@ import { formatHostDuration } from '../../shared/format'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { activityWords } from '../../shared/turn-activity'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { WAIT_OVERTIME_MS, openTurn, waitStart } from './wait-state'
+import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
+import type { RowWords } from './wait-state'
+import type { HostChatTarget } from '@dsh-claude-style/contracts/services'
 import type { HostContext, HostText } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-wait.manifest'
@@ -17,10 +19,14 @@ import type manifest from './chat-wait.manifest'
  * what the turn is doing now in this line's own words
  * (shared/turn-activity.ts), the host's own 「深度求索中」 where no state can be
  * read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
- * once the model has been silent for ten seconds (wait-state.ts). The wording
- * swaps in place after transitions.dev's "Thinking states" (MIT): a sweeping
- * highlight while a word stands, and a two-copy swap when it changes
- * (shared/swapping-text.ts).
+ * once the model has been silent for ten seconds (wait-state.ts). Two of those
+ * states name more than a state: a call in flight says the file it works on
+ * (「正在读取 app.js」) and reasoning says the clause the model itself is on
+ * (「Checking the file is true」); a wording written stands a whole second
+ * (wordForPass), so a turn that moves through several states that fast reads as
+ * one line rather than as flicker. The wording swaps in place after
+ * transitions.dev's "Thinking states" (MIT): a sweeping highlight while a word
+ * stands, and a two-copy swap when it changes (shared/swapping-text.ts).
  *
  * The host keeps its row, its whale and its live region: the line is a span of
  * the skin's own beside the whale, marked quiet so its ticking wakes no pass,
@@ -43,8 +49,47 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const hostWords = new Map<HTMLElement, Element>()
   /** When each turn's current wait began, by `session:turn`; absent while the model is at work. */
   const waits = new Map<string, number>()
+  /** The wording standing on each row, its lock, and the call words waiting for it (wordForPass). */
+  const wording = new Map<HTMLElement, RowWords>()
+  /** Each row's follow of its own session's snapshot, and the session it follows. */
+  const follows = new Map<HTMLElement, { sessionId: string, stop: () => void }>()
   let timer: number | null = null
   let cancelTick: (() => void) | null = null
+  let queued: Promise<void> | null = null
+
+  /**
+   * One pass per task, for the publishes the host makes: a step that streams
+   * publishes several times inside one task, while a tool call is its own task
+   * — the file it names is on the line only if that call is read between the
+   * publish that starts it and the one that settles it.
+   */
+  function scheduleSync() {
+    if (queued !== null) return
+    queued = Promise.resolve().then(() => {
+      queued = null
+      sync()
+    })
+  }
+
+  /**
+   * Follow the session's own snapshot while its row stands. The host publishes
+   * the moment a call starts and again the moment it finishes, and a tick a
+   * quarter of a second later steps over a call that had already settled, so
+   * the call's own words would never reach the line.
+   */
+  function followRow(row: HTMLElement, sessionId: string | null, target: HostChatTarget | null) {
+    const followed = follows.get(row)
+    if (sessionId === null || target === null || typeof target.subscribe !== 'function') {
+      if (followed !== undefined) {
+        followed.stop()
+        follows.delete(row)
+      }
+      return
+    }
+    if (followed !== undefined && followed.sessionId === sessionId) return
+    followed?.stop()
+    follows.set(row, { sessionId, stop: target.subscribe(scheduleSync) })
+  }
 
   /** The line inside one row, built the first time beside the host's words. */
   function lineOf(row: HTMLElement, words: Element) {
@@ -82,15 +127,30 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (words === null) return
     const sessionId = conversationSessionId(closestConversationSession(row))
     const target = sessionId === null ? null : findChatTarget(ctx, sessionId)
+    followRow(row, sessionId, target)
     const snapshot = target === null ? null : target.getSnapshot() ?? null
     const turn = snapshot === null ? undefined : openTurn(snapshot)
     const line = lineOf(row, words)
     const [label, clock, badge] = line.children as HTMLCollectionOf<HTMLElement>
     // What the turn is doing, and the host's own word for a turn whose state
-    // cannot be read (D58): the line says the model's work, never a guess.
+    // cannot be read (D58): the line says the model's work, never a guess. Two
+    // states carry words of their own — the file a call works on, and the clause
+    // the model's reasoning says it is on — and those are written as they are.
+    // A wording written is locked for a second (wordForPass): a turn passes
+    // through several states that fast, and only the newest one after the lock
+    // is worth showing; a call's own words are the one thing that waits for it.
     const activity = activityWords(snapshot, turn)
-    const word = activity === null ? t('chat.deepDiving') : copyLabel(activity.key, activity.fallback)
-    setSwappingText(label, word, true)
+    const said = activity === null
+      ? null
+      : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
+    const pass = wordForPass({
+      word: said,
+      file: activity !== null && activity.aboutCall === 'file' ? said : null,
+      onCall: activity !== null && activity.aboutCall === 'tools',
+      host: t('chat.deepDiving'),
+    }, wording.get(row), now)
+    wording.set(row, pass.row)
+    setSwappingText(label, pass.word, true)
     clock.hidden = turn === undefined || turn.start === undefined
     if (turn !== undefined && turn.start !== undefined) writeText(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false
@@ -120,6 +180,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     lines.delete(row)
     hostWords.get(row)?.removeAttribute(WORDS_ATTR)
     hostWords.delete(row)
+    wording.delete(row)
+    follows.get(row)?.stop()
+    follows.delete(row)
     row.removeAttribute(WAIT_ATTR)
   }
 
@@ -158,6 +221,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const row of [...lines.keys()]) release(row)
     for (const row of document.querySelectorAll(`[${WAIT_ATTR}]`)) row.removeAttribute(WAIT_ATTR)
     waits.clear()
+    wording.clear()
+    // A follow whose row left the page without a pass: release() is what stops
+    // the ones still standing.
+    for (const followed of [...follows.values()]) followed.stop()
+    follows.clear()
     delete ui.chatWait
   }
 }

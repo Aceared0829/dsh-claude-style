@@ -1,6 +1,6 @@
 import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
+import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
 import { closestFrom } from '../shared/dom'
 import { createHostResource } from '../shared/resource'
@@ -182,8 +182,9 @@ export function findChatTarget(ctx: HostContext, sessionId: string): HostChatTar
 /**
  * What an open turn is doing, read off the host's chat snapshot: its newest
  * step's assistant output while that streams (`newest` is the kind of its
- * newest block, null before the first), else `{ kind: 'tools' }` while one of
- * the turn's tool calls runs, else null — the turn waits on the model.
+ * newest block, null before the first), else `{ kind: 'tools', call }` with the
+ * call the host reports in flight — its block carries the tool's name and the
+ * arguments it has received — else null: the turn waits on the model.
  */
 export function readTurnActivity(snapshot: HostChatSnapshot, turn: HostTurn): TurnActivity | null {
   const step = turn.steps.length === 0 ? undefined : turn.steps[turn.steps.length - 1]
@@ -192,15 +193,18 @@ export function readTurnActivity(snapshot: HostChatSnapshot, turn: HostTurn): Tu
     const blocks = assistant.blocks
     return { kind: 'assistant', assistant, newest: blocks.length === 0 ? null : blocks[blocks.length - 1].kind }
   }
+  // The host orders the calls in flight by where they stand in the turn, so the
+  // last of this turn's is the one the model is on now.
   const calls = snapshot.legacy?.runningCalls ?? []
+  let running: HostRunningCall | undefined
   for (let i = 0; i < calls.length; i++) {
-    if (calls[i].turn === turn.turn) return { kind: 'tools' }
+    if (calls[i].turn === turn.turn) running = calls[i]
   }
-  return null
+  return running === undefined ? null : { kind: 'tools', call: running }
 }
 
 /** What an open turn is doing (readTurnActivity). */
-export type TurnActivity = { kind: 'assistant', assistant: HostAssistantStep, newest: string | null } | { kind: 'tools' }
+export type TurnActivity = { kind: 'assistant', assistant: HostAssistantStep, newest: string | null } | { kind: 'tools', call: HostRunningCall }
 
 export function currentPreset(session: HostSession): string | null {
   const snapshot = session.projections?.faceOf('permissions').getSnapshot()

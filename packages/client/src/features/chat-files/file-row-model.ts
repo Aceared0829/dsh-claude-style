@@ -1,3 +1,5 @@
+import { callString } from '../../shared/call-args'
+import type { CallArgs } from '../../shared/call-args'
 import type { HostText } from '../../core/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 
@@ -70,9 +72,6 @@ export function chatFileOperationTitle(operation: FileRowOperation) {
 export function chatFileCallId(block: HostChatBlock) {
   return typeof block.callId === 'string' ? block.callId : ''
 }
-
-/** A call's parsed arguments. */
-export type CallArgs = Record<string, unknown>
 
 /** The row root. */
 export const CHAT_FILE_ROW_CLASS = 'dsh-claude-file-root'
@@ -174,27 +173,6 @@ export function chatFileCallHead(block: HostChatBlock): { name: string, argsRaw:
   return { name: block.name ?? '', argsRaw: block.argsRaw ?? '' }
 }
 
-/** Parse the raw argument JSON; null when it is cut off mid-stream or is not an object. */
-export function chatFileParseArgs(argsRaw: string): CallArgs | null {
-  let value: unknown
-  try {
-    value = JSON.parse(argsRaw)
-  } catch {
-    return null
-  }
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
-  return value as CallArgs
-}
-
-/** The first non-empty string field, in the order given. */
-export function chatFilePickString(args: CallArgs, keys: string[]) {
-  for (const key of keys) {
-    const value = args[key]
-    if (typeof value === 'string' && value !== '') return value
-  }
-  return undefined
-}
-
 /**
  * The optional sandbox escalation pair: a file-writing row draws its diff
  * only while the two are together and valid, and otherwise falls back to the
@@ -236,7 +214,7 @@ export function chatFileFirstLine(text: string) {
  */
 export function chatFileIntendedHunks(name: string, args: CallArgs | null): FileHunk[] | null {
   if (args === null) return null
-  const path = chatFilePickString(args, ['path', 'file_path'])
+  const path = callString(args, ['path', 'file_path'])
   if (path === undefined) return null
   if (!chatFileValidEscalation(args)) return null
   if (name === 'write') {
@@ -305,7 +283,7 @@ export function chatFileRowModel(toolName: string, block: HostChatBlock, args: C
   const state: FileRowState = !done
     ? block.phase === 'preparing' ? 'preparing' : 'running'
     : block.error?.code === 'interrupted' ? 'stopped' : block.isError ? 'error' : 'ok'
-  const path = args === null ? undefined : chatFilePickString(args, ['path', 'file_path'])
+  const path = args === null ? undefined : callString(args, ['path', 'file_path'])
   const output = done ? chatFileResultText(block) || null : null
   return {
     operation,

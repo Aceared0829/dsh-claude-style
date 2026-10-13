@@ -16,8 +16,8 @@
       var waitSession = document.createElement('div')
       waitSession.setAttribute('data-conversation-session', 'smoke-session')
       waitSession.innerHTML = '<div data-chat-flow="">' +
-        '<div data-chat-running="true"><span role="status">Deep diving</span><span aria-hidden="true"></span>' +
-        '<span><span aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
+        '<div data-chat-running="true" style="display:flex"><span role="status">Deep diving</span><span aria-hidden="true"></span>' +
+        '<span style="display:flex;min-width:0"><span aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
         '</div>'
       document.body.appendChild(waitSession)
       var row = waitSession.querySelector('[data-chat-running]')
@@ -75,6 +75,16 @@
             clockLeft: Math.round(parts[1].getBoundingClientRect().left),
             lineLeft: Math.round(line.getBoundingClientRect().left),
             lineWidth: Math.round(line.getBoundingClientRect().width),
+            lineRight: Math.round(line.getBoundingClientRect().right),
+            rowRight: Math.round(row.getBoundingClientRect().right),
+            labelRight: Math.round(label.getBoundingClientRect().right),
+            // A wording longer than the label's box: the box clips it and the
+            // copy draws an ellipsis (shared/swapping-text.css).
+            clipped: (function () {
+              var copy = label.querySelector('.dsh-claude-swap-copy')
+              if (copy === null) return null
+              return copy.scrollWidth > copy.clientWidth && getComputedStyle(copy).textOverflow === 'ellipsis'
+            })(),
             sizer: (function () {
               var sizer = label.querySelector('.dsh-claude-swap-sizer')
               return sizer === null ? null : { text: sizer.textContent, width: Math.round(sizer.getBoundingClientRect().width) }
@@ -93,9 +103,9 @@
       // last leave frame to read as gone.
       var watchSwap = async function () {
         var frames = []
-        for (var round = 0; round < 40; round += 1) {
+        for (var round = 0; round < 48; round += 1) {
           frames.push(lineOf())
-          await sleep(10)
+          await sleep(25)
         }
         // One settled frame after the window: the swap can land late in it, and
         // the last reading is what "at rest" is judged on.
@@ -103,8 +113,21 @@
         frames.push(lineOf())
         return frames
       }
-      await sleep(400)
-      r.wait = { working: lineOf() }
+      // A wording written stands a whole second (WORD_LOCK_MS), so a reading of
+      // a state the fixture has just moved to waits for the line to reach it
+      // rather than sleeping a fixed stretch: the lock, the swap after it and
+      // the state before it all land at different moments. The deadline is the
+      // bound, and a reading that never arrives answers with what stood.
+      var awaitWord = async function (want) {
+        var deadline = Date.now() + 4000
+        for (;;) {
+          var reading = lineOf()
+          if (reading !== null && want(reading)) return reading
+          if (Date.now() > deadline) return reading
+          await sleep(50)
+        }
+      }
+      r.wait = { working: await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 }) }
       // The silence that triggers the swap, with the entry's own frames sampled
       // by the browser rather than by a polling loop: the window between the
       // incoming copy's rest pose and its release is shorter than a 10 ms poll
@@ -143,16 +166,31 @@
       r.wait.silent = await watchSwap()
       // A tool call in flight is a state of its own, with no block streaming.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
-      window.__dshSmokeHost.turnFixtureCalls.push({ turn: 2 })
-      await sleep(400)
-      r.wait.tools = lineOf()
-      window.__dshSmokeHost.turnFixtureCalls.length = 0
+      var calls = window.__dshSmokeHost.turnFixtureCalls
+      calls.push({ turn: 2 })
+      r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
+      // A call that has its arguments names the file it works on; one whose
+      // arguments are still arriving names nothing yet.
+      calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
+      r.wait.fileCall = await awaitWord(function (reading) { return reading.word === 'Reading app.js' && reading.copies === 1 })
+      calls[0] = { turn: 2, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"C:\\\\work\\\\app' }
+      r.wait.arriving = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
+      calls.length = 0
+      // Reasoning the line can take words from: the model's own clause, the
+      // participle first, up to the sentence's end.
+      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }] } : undefined } } }]
+      r.wait.phrase = await awaitWord(function (reading) { return reading.word === 'Checking the file is true' && reading.copies === 1 })
+      // The same kind of wording in a row with no room for it: the label gives
+      // way and the words are cut, so the clock keeps its place on the row.
+      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'I am checking whether the whole row model still reads the same arguments. ' }] } : undefined } } }]
+      waitSession.style.maxWidth = '240px'
+      r.wait.narrow = await awaitWord(function (reading) { return reading.word === 'Checking whether the whole row model sti…' && reading.copies === 1 })
+      waitSession.style.maxWidth = ''
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })
       await sleep(200)
-      window.__dshSmokeHost.turnFixtureRunning.steps = []
-      await sleep(100)
-      r.wait.reduced = lineOf()
+      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: '先看清工作区。' }] } : undefined } } }]
+      r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
       window.__pushForm({ motion: 'system' })
       await sleep(200)
       r.wait.enterFrames = await waitForEnter
