@@ -7,7 +7,7 @@ import { createAccountProfile } from './profile'
 import { createAccountRows } from './rows'
 import { createAccountSurface } from './surface'
 import type { AccountSurfaceMode } from './surface'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, registerPopover, removeStrayNodes, unregisterPopover } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '../../core/host'
 import type { CloseReason, FeatureHandle } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -176,6 +176,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // The account area takes part in the shared popover rule (shared/popover.ts):
   // ONE entry for both surfaces, since a given host has only one of them.
   registerPopover('account', closeAccountSurfaces)
+
+  /**
+   * Whether this press must leave the account surface open
+   * (shared/popover.ts::pressKeepsPopoverOpen). Which surface is up decides
+   * what "open" is: the host owns its menu and unmounts it on close, the
+   * self-built drawer says so on its own node. The account scope is the one
+   * scope that keeps hover when the preference is `account` rather than `all`.
+   */
+  function pressKeepsAccountOpen() {
+    const open = surface.mode() === 'host' ? hostMenu.findMenu() !== null : isPopoverOpen()
+    return pressKeepsPopoverOpen(readPrefs().autoPopover !== AUTO_POPOVER_OFF, open)
+  }
+
   /** The entry row's width, as last written to the stylesheet. */
   let accountWidth = 0
   /** The self-built drawer's distance from the footer's edges, as last written. */
@@ -224,6 +237,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       })
       accountBtn.addEventListener('click', e => {
         e.stopPropagation()
+        if (pressKeepsAccountOpen()) return
         togglePopover()
       })
       footArea.appendChild(accountBtn)
@@ -369,7 +383,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * same node twice; a node the host keeps across generations (its own account
    * row) would otherwise collect one set of listeners per switch.
    */
-  const hostRowBindings = new Map<HTMLElement, { enter: () => void, leave: () => void, press: () => void }>()
+  const hostRowBindings = new Map<HTMLElement, { catch: (e: Event) => void, enter: () => void, leave: () => void, press: () => void }>()
   /** The host's menu bindings this generation installed, taken off with it. */
   const hostMenuBindings = new Map<HTMLElement, { enter: () => void, leave: () => void }>()
 
@@ -387,6 +401,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const leave = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.scheduleClose()
     }
+    // A press that keeps the surface open is stopped before the host's own
+    // toggle sees it: the host closes the menu on a press of its trigger, and
+    // that handler is delegated from the document, so only the capture phase
+    // can keep the press away from it.
+    const stop = (e: Event) => {
+      if (!pressKeepsAccountOpen()) return
+      e.stopPropagation()
+    }
     // The row's own click opens the menu too (autoPopover off, or a press
     // before the hover delay elapsed). A listener on the row runs in the
     // target phase, ahead of the host's own delegated onClick, so the armed
@@ -394,10 +416,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const press = () => {
       armAccountMenu()
     }
+    row.addEventListener('click', stop, true)
     row.addEventListener('mouseenter', enter)
     row.addEventListener('mouseleave', leave)
     row.addEventListener('click', press)
-    hostRowBindings.set(row, { enter, leave, press })
+    hostRowBindings.set(row, { catch: stop, enter, leave, press })
   }
 
   /**
@@ -463,6 +486,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The host's row outlives this generation, so its listeners come off here:
     // a switch off and on again must not leave a second set behind.
     for (const [row, bindings] of hostRowBindings) {
+      row.removeEventListener('click', bindings.catch, true)
       row.removeEventListener('mouseenter', bindings.enter)
       row.removeEventListener('mouseleave', bindings.leave)
       row.removeEventListener('click', bindings.press)

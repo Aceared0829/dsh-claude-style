@@ -80,6 +80,50 @@ export const POPOVER_OPEN_DELAY = 100
 export const POPOVER_CLOSE_DELAY = 100
 
 /**
+ * Whether a press on a popover's trigger leaves it open.
+ *
+ * Under a hover preference the trigger unfolded its card on the dwell, and the
+ * pointer is on the trigger that just opened it: the press is the reader's hand
+ * already there, not a second decision, so it does not fold the card — leaving
+ * the trigger and the card is what closes it. With hover off the press is the
+ * only way in and therefore the only way out, and the answer is false.
+ *
+ * The caller owns `hovered` because the preference's scope is its own: the
+ * account row answers to the `account` scope and every other picker to `all`.
+ * It is read at press time, so a preference changed while the card is up
+ * reaches the next press.
+ */
+export function pressKeepsPopoverOpen(hovered: boolean, open: boolean) {
+  return hovered && open
+}
+
+/**
+ * A press this skin makes itself, on a trigger whose press a guard would
+ * otherwise hold back (pressKeepsPopoverOpen).
+ *
+ * Closing a HOST-owned menu means pressing its trigger, and that press is
+ * indistinguishable from the reader's at the trigger. Depth, not a boolean:
+ * one close can fold a sibling, and the inner press must not clear the outer
+ * one's mark.
+ */
+let programmaticPressDepth = 0
+
+/** True while this skin is the one pressing a trigger. */
+export function isProgrammaticPress() {
+  return programmaticPressDepth > 0
+}
+
+/** Press a host trigger on this skin's own behalf (a close), marked as such. */
+export function programmaticPress(trigger: HTMLElement) {
+  programmaticPressDepth += 1
+  try {
+    trigger.click()
+  } finally {
+    programmaticPressDepth -= 1
+  }
+}
+
+/**
  * Hover-intent helper shared by every skin popover. BOTH sides are scheduled:
  * `scheduleOpen` waits out the dwell, `scheduleClose` the grace, and `cancel`
  * clears whichever is pending (a leave needs only the one call, since

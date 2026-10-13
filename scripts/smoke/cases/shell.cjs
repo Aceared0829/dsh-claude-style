@@ -246,6 +246,9 @@ module.exports = {
         same(r.context.sections, ['Session statistics', 'Token usage']) &&
         same(r.context.labels, ['LLM time', 'Tool call time', 'Avg time to first token (TTFT)', 'Tokens per second (TPS)', 'Cache hit', 'Uncached input', 'Cached input', 'Output']),
       JSON.stringify({ opened: r.context.opened, hostRows: r.context.hostRows, gone: r.context.skeletonGone, sections: r.context.sections, labels: r.context.labels }))
+    check('with the hover preference on, a press on the open panel\'s ring leaves the panel up',
+      r.meterPanelAfterPress === true && r.meterExpandedAfterPress === 'true',
+      JSON.stringify({ panel: r.meterPanelAfterPress, expanded: r.meterExpandedAfterPress }))
     check('the rows carry the host\'s own formatting: compact durations, exact token counts, a cache-hit share',
       same(r.context.values, ['1.2s', '0.4s', '0.8s', '105 tok/s', '90%', '1,000 tok', '9,000 tok', '105 tok']),
       JSON.stringify(r.context.values))
@@ -454,12 +457,20 @@ module.exports = {
     check('opening the account drawer folds the permission card',
       r.drawerUp === 1 && r.permFoldedByDrawer === 0,
       JSON.stringify({ drawer: r.drawerUp, permission: r.permFoldedByDrawer }))
+    check('with the hover preference on, a press on the open drawer keeps it open',
+      r.drawerAfterPress === 1 && r.drawerOpenAttrAfterPress === 'true',
+      JSON.stringify({ open: r.drawerAfterPress, marker: r.drawerOpenAttrAfterPress }))
     check("opening the hero row's host menu folds the drawer",
       r.heroUp === true && r.drawerFoldedByHero === 0,
       JSON.stringify({ hero: r.heroUp, drawer: r.drawerFoldedByHero }))
     check('opening the permission card folds the hero menu',
       r.permReopened === 1 && r.heroFoldedByPerm === false,
       JSON.stringify({ permission: r.permReopened, hero: r.heroFoldedByPerm }))
+    check('with the hover preference on, a press on the open permission card keeps it up',
+      r.permUpAfterPress === 1, JSON.stringify(r.permUpAfterPress))
+    check('with the hover preference on, a press on the open hero menu keeps it up and the leave closes it',
+      r.heroUpBeforePress === true && r.heroUpAfterPress === true && r.heroLeftAfterPress === 0,
+      JSON.stringify({ before: r.heroUpBeforePress, after: r.heroUpAfterPress, left: r.heroLeftAfterPress }))
     check("the row's other picker opens over the permission card and folds it",
       r.presetUp === true && r.permFoldedByPreset === 0,
       JSON.stringify({ preset: r.presetUp, permission: r.permFoldedByPreset }))

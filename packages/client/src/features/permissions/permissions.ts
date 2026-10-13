@@ -5,7 +5,7 @@ import { currentPreset, currentSession, findAccessTrigger } from '../../core/hos
 import { activeLocale, copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, buildPopoverItem, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, buildPopoverItem, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { HostContext, HostFiber } from '../../core/host'
 import type { HostPermissionCatalogAnswer, HostPermissionOption } from '@dsh-claude-style/contracts/services'
@@ -273,6 +273,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let permDocPointerListener: ((e: PointerEvent) => void) | null = null
   let permResizeListener: (() => void) | null = null
 
+  /** Whether the hover preference covers this picker: the `all` scope alone. */
+  function permHoverOn() {
+    return readPrefs().autoPopover === AUTO_POPOVER_ALL
+  }
+
+  /**
+   * Whether this press leaves the tier card alone
+   * (shared/popover.ts::pressKeepsPopoverOpen): the dwell opened it, the
+   * pointer is on the trigger, so the press is not a second decision.
+   */
+  function pressKeepsPermOpen() {
+    return pressKeepsPopoverOpen(permHoverOn(), permBtn !== null && permBtn.getAttribute('data-open') === 'true')
+  }
+
   /** Every dismiss route (item pick, outside pointer, resize/scroll, Escape) closes the menu through this one path. */
   function closePermMenu() {
     if (permBtn === null || permPopover === null) return
@@ -369,10 +383,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     // The listeners read the intent in force when they fire: a rebuild replaces it.
     btn.addEventListener('mouseenter', () => {
-      if (readPrefs().autoPopover === AUTO_POPOVER_ALL) permHoverIntent!.scheduleOpen()
+      if (permHoverOn()) permHoverIntent!.scheduleOpen()
     })
     btn.addEventListener('mouseleave', () => {
-      if (readPrefs().autoPopover === AUTO_POPOVER_ALL) permHoverIntent!.scheduleClose()
+      if (permHoverOn()) permHoverIntent!.scheduleClose()
     })
     popover.addEventListener('mouseenter', () => {
       permHoverIntent!.cancel()
@@ -383,8 +397,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     btn.addEventListener('click', e => {
       e.stopPropagation()
-      const isOpen = btn.getAttribute('data-open') === 'true'
-      if (isOpen) {
+      if (btn.getAttribute('data-open') === 'true') {
+        // A press on the card the dwell just opened leaves it up: the reader's
+        // hand is already on the trigger, and it is the leave that closes.
+        if (pressKeepsPermOpen()) return
         closePermMenu()
       } else {
         openPerm()
@@ -394,7 +410,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (!permDocPointerListener) {
       permDocPointerListener = e => {
         if (permPopover && permBtn && permPopover.getAttribute('data-open') === 'true') {
-          if (!permBtn.contains(e.target as Node) && !permPopover.contains(e.target as Node)) closePermMenu()
+          // A SECOND button of the mouse must not fold the card either: the
+          // pointer never left the trigger, so this is not the reader's way out.
+          if (permBtn.contains(e.target as Node)) {
+            if (!pressKeepsPermOpen()) closePermMenu()
+            return
+          }
+          if (!permPopover.contains(e.target as Node)) closePermMenu()
         }
       }
       document.addEventListener('pointerdown', permDocPointerListener)

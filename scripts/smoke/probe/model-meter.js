@@ -65,6 +65,23 @@
       if (trigger !== null) trigger.click()
       await sleep(400)
       var levelOne = readRows(document.querySelector('.dsh-claude-model-popover:not(.dsh-claude-model-popover-sub)'))
+      // The dwell opens the card on the real page, and the reader's hand then
+      // presses the trigger: the card stays up
+      // (shared/popover.ts::pressKeepsPopoverOpen). The pointer is dispatched
+      // before the press, the way a real one arrives.
+      var triggerOpen = false
+      if (trigger !== null) {
+        trigger.dispatchEvent(new MouseEvent('mouseleave'))
+        trigger.dispatchEvent(new MouseEvent('mouseenter'))
+        await sleep(250)
+        triggerOpen = document.querySelector('.dsh-claude-model-popover[data-open="true"]') !== null
+        trigger.click()
+        await sleep(150)
+      }
+      r.modelPress = {
+        opened: triggerOpen,
+        kept: document.querySelector('.dsh-claude-model-popover:not(.dsh-claude-model-popover-sub)[data-open="true"]') !== null,
+      }
 
       // The More-models cell opens the second level, beside the first.
       var cell = document.querySelector('.dsh-claude-model-cell')

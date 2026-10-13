@@ -69,6 +69,18 @@
       if (hostRow) hostRow.dispatchEvent(new MouseEvent('mouseleave'))
       await sleep(350)
       r.hoverClosedMenu = !accountMenuOpen()
+      // The reader is on the row, the dwell opens the menu, and their hand
+      // presses the trigger while it is already up: the menu stays up. The
+      // leave is still the way out.
+      if (hostRow) hostRow.dispatchEvent(new MouseEvent('mouseenter'))
+      await sleep(250)
+      r.pressOnOpenMenu = accountMenuOpen()
+      if (hostRow) hostRow.click()
+      await sleep(150)
+      r.pressKeepsMenu = accountMenuOpen()
+      if (hostRow) hostRow.dispatchEvent(new MouseEvent('mouseleave'))
+      await sleep(350)
+      r.pressLeaveClosesMenu = !accountMenuOpen()
       // Read through the CSSOM: the sheet's text is minified, and the parsed
       // rules are what the page applies.
       var styleEl = document.getElementById('dsh-claude-style-style')

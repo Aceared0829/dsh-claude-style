@@ -199,6 +199,9 @@ module.exports = {
     check('hovering the host account row opens the host menu; leaving it closes',
       r.hoverOpenedMenu === true && r.hoverClosedMenu === true,
       JSON.stringify({ opened: r.hoverOpenedMenu, closed: r.hoverClosedMenu }))
+    check('with the hover preference on, a press on the open menu keeps it open and the leave still closes it',
+      r.pressOnOpenMenu === true && r.pressKeepsMenu === true && r.pressLeaveClosesMenu === true,
+      JSON.stringify({ open: r.pressOnOpenMenu, kept: r.pressKeepsMenu, closed: r.pressLeaveClosesMenu }))
     check('the host account menu carries the skin entry animation',
       r.menuEntryKeyframes === true && r.menuEntryAnimation === true,
       JSON.stringify({ keyframes: r.menuEntryKeyframes, animation: r.menuEntryAnimation }), 'timing')

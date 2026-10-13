@@ -9,7 +9,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './effort-picker.manifest'
 import type { ModelCatalog } from '../model/catalog'
 import { setAttributeIfChanged } from '../../shared/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 
 /**
  * The reasoning-effort picker: its own seat trigger and its own card.
@@ -97,6 +97,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function cancelCloseEffort() {
     effortHoverIntent.cancel()
+  }
+
+  /** Whether the hover preference covers this picker: the `all` scope alone. */
+  function effortHoverOn() {
+    return readPrefs().autoPopover === AUTO_POPOVER_ALL
   }
 
   function closeEffortPopover() {
@@ -305,14 +310,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Same contract as the model trigger: hover under the "All" scope,
       // click-only otherwise.
       effortBtn.addEventListener('mouseenter', () => {
-        if (readPrefs().autoPopover === AUTO_POPOVER_ALL) effortHoverIntent.scheduleOpen()
+        if (effortHoverOn()) effortHoverIntent.scheduleOpen()
       })
       effortBtn.addEventListener('mouseleave', () => {
-        if (readPrefs().autoPopover === AUTO_POPOVER_ALL) effortHoverIntent.scheduleClose()
+        if (effortHoverOn()) effortHoverIntent.scheduleClose()
       })
       effortBtn.addEventListener('click', e => {
         e.stopPropagation()
-        if (effortPop !== null && effortPop.getAttribute('data-open') === 'true') closeEffortPopover()
+        // A press on the card the dwell just opened keeps it up
+        // (shared/popover.ts::pressKeepsPopoverOpen); the leave closes it.
+        const open = effortPop !== null && effortPop.getAttribute('data-open') === 'true'
+        if (pressKeepsPopoverOpen(effortHoverOn(), open)) return
+        if (open) closeEffortPopover()
         else openEffortPopover()
       })
       // NOT inside the seat slot: that subtree is React-managed, and no foreign

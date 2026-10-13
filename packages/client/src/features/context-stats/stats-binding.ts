@@ -3,7 +3,7 @@ import { observeSize } from '../../core/bus'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { setAttributeIfChanged } from '../../shared/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress } from '../../shared/popover'
 import { CONTEXT_PANEL_ALIGNED_ATTR, CONTEXT_PANEL_ATTR, contextPanel, contextTrigger, findContextMeter } from './stats-panel'
 
 /**
@@ -51,7 +51,7 @@ export function createContextStatsBinding() {
     if (trigger === null || trigger.getAttribute('aria-expanded') !== 'true') return
     const panel = contextPanel()
     if (panel !== null && panel.matches(':hover')) return
-    trigger.click()
+    programmaticPress(trigger)
   }
 
   const hoverIntent = createHoverIntent(openContextPanel, closeContextPanel, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
@@ -70,6 +70,20 @@ export function createContextStatsBinding() {
     meter.addEventListener('mouseleave', () => {
       if (hoverEnabled()) hoverIntent.scheduleClose()
     })
+    // The host's own trigger toggles the panel on a press, and its onClick is
+    // delegated from the document, so a press on the ring the dwell just
+    // opened is stopped on its way there: the pointer is on the trigger it
+    // opened from, and the leave is the way out
+    // (shared/popover.ts::pressKeepsPopoverOpen). The line of figures keeps
+    // its own press behaviour: it is not a hover trigger (D27).
+    meter.addEventListener('click', (event) => {
+      if (isProgrammaticPress()) return
+      const trigger = contextTrigger()
+      const target = event.target
+      if (trigger === null || !(target instanceof Node) || !trigger.contains(target)) return
+      if (!pressKeepsPopoverOpen(hoverEnabled(), trigger.getAttribute('aria-expanded') === 'true')) return
+      event.stopPropagation()
+    }, true)
   }
 
   /**

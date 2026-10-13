@@ -51,5 +51,9 @@ module.exports = {
         two['GLM-5.3'].meter.period === 'campaign' && two['GLM-5.3'].meter.value === '0.5×' &&
         two['GLM-5.3'].meter.beforeCheck === true,
       JSON.stringify(two['GLM-5.3'] === undefined ? null : two['GLM-5.3'].meter))
+    const press = r.modelPress || {}
+    check('with the hover preference on, a press on the open model menu keeps it up',
+      press.opened === true && press.kept === true,
+      JSON.stringify({ opened: press.opened, kept: press.kept }))
   },
 }

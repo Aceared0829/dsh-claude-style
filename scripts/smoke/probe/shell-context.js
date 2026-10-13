@@ -62,6 +62,14 @@
         !foreignPopover.hasAttribute('data-dsh-claude-context-panel') &&
         !foreignPopover.hasAttribute('data-dsh-claude-context-aligned')
       r.context.expanded = statsMeter === null ? null : statsMeter.querySelector('button').getAttribute('aria-expanded')
+      // A press on the ring whose panel the dwell opened leaves the panel up:
+      // the host's trigger toggles on a click, and the skin stops that press on
+      // its way to the host (shared/popover.ts::pressKeepsPopoverOpen).
+      var meterTrigger = statsMeter === null ? null : statsMeter.querySelector('button')
+      if (meterTrigger !== null) meterTrigger.click()
+      await sleep(150)
+      r.meterPanelAfterPress = statsPanel !== null && statsPanel.isConnected
+      r.meterExpandedAfterPress = meterTrigger === null ? null : meterTrigger.getAttribute('aria-expanded')
       r.context.hostRows = statsPanel === null ? 0 : statsPanel.querySelectorAll('dl dt').length
       // The panel is the host's and it places from the anchor's left edge; the
       // skin hands over the left value that puts the panel's right edge on the

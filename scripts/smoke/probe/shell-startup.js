@@ -57,6 +57,12 @@
       await sleep(250)
       r.drawerUp = drawerUp()
       r.permFoldedByDrawer = permUp()
+      // The reader's hand presses the trigger the dwell just opened: the
+      // drawer stays up, since the pointer is still on the row it opened from.
+      drawerTrigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      await sleep(150)
+      r.drawerAfterPress = drawerUp()
+      r.drawerOpenAttrAfterPress = drawerTrigger.getAttribute('data-open')
       // The hero row's host menu opens on the same dwell, over the drawer.
       heroTrigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
       await sleep(250)
@@ -67,6 +73,24 @@
       await sleep(250)
       r.permReopened = permUp()
       r.heroFoldedByPerm = window.__heroMenuOpen('hero-workspace')
+      // A press on a trigger whose card the dwell opened leaves the card up:
+      // the pointer is on the trigger it opened from, so the leave is the
+      // reader's way out (shared/popover.ts::pressKeepsPopoverOpen).
+      permTrigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      await sleep(150)
+      r.permUpAfterPress = permUp()
+      heroTrigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+      await sleep(250)
+      r.heroUpBeforePress = window.__heroMenuOpen('hero-workspace')
+      heroTrigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      await sleep(150)
+      r.heroUpAfterPress = window.__heroMenuOpen('hero-workspace')
+      heroTrigger.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }))
+      await sleep(300)
+      r.heroLeftAfterPress = window.__heroMenusOpen()
+      permTrigger.dispatchEvent(new MouseEvent('mouseenter'))
+      await sleep(250)
+      r.permUpForLeave = permUp()
       // The row's two pickers are two host menus: crossing from the preset seat
       // straight to the workspace chip must fold the first, not leave both cards
       // up (with two cards up the skin stamps and places neither, and the pair

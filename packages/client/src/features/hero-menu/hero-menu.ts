@@ -2,7 +2,7 @@ import { AUTO_POPOVER_ALL, HERO_MENU_ATTR } from '../../constants'
 import { MENU_ROLE_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { readPrefs } from '../../core/prefs'
 import { closestFrom, createStamp } from '../../shared/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './hero-menu.manifest'
@@ -114,7 +114,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     openedByHover = false
     hoverTrigger = null
     const open = openTriggers()
-    for (let i = 0; i < open.length; i++) open[i].click()
+    for (let i = 0; i < open.length; i++) programmaticPress(open[i])
   }
 
   /** Close what hover opened; a click-opened menu is left alone. */
@@ -124,7 +124,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     openedByHover = false
     hoverTrigger = null
     if (trigger === null || trigger.getAttribute('aria-expanded') !== 'true') return
-    trigger.click()
+    programmaticPress(trigger)
   }
 
   /**
@@ -135,7 +135,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function closeSiblingHeroMenus(trigger: HTMLElement) {
     const open = openTriggers()
     for (let i = 0; i < open.length; i++) {
-      if (open[i] !== trigger) open[i].click()
+      if (open[i] !== trigger) programmaticPress(open[i])
     }
   }
 
@@ -175,6 +175,27 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   document.addEventListener('mouseover', onHeroPointerOver, true)
   document.addEventListener('mouseout', onHeroPointerOut, true)
+
+  /**
+   * A press on a trigger whose card the dwell already opened keeps the card
+   * up. The host's own onClick toggles its menu and is delegated from the
+   * document, so the press is stopped on its way there — the same interception
+   * the account row makes (features/account/account-footer.ts), for the same
+   * reason: without it the reader's hand on the trigger folds the card it just
+   * opened, and the hover's own leave never gets to be the way out.
+   */
+  function onHeroPressCapture(e: MouseEvent) {
+    if (isProgrammaticPress()) return
+    const hovered = hoverEnabled()
+    if (!hovered) return
+    const target = e.target
+    if (closestFrom(target, CARD_SELECTOR) !== null) return
+    const trigger = closestFrom(target, TRIGGER_SELECTOR)
+    if (trigger === null) return
+    if (pressKeepsPopoverOpen(hovered, trigger.getAttribute('aria-expanded') === 'true')) e.stopPropagation()
+  }
+
+  document.addEventListener('click', onHeroPressCapture, true)
 
   /**
    * Which picker a trigger opens, written as the stamp's value so the
@@ -299,6 +320,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     unregisterPopover('hero')
     document.removeEventListener('mouseover', onHeroPointerOver, true)
     document.removeEventListener('mouseout', onHeroPointerOut, true)
+    document.removeEventListener('click', onHeroPressCapture, true)
     delete ui.heroMenu
   }
 }

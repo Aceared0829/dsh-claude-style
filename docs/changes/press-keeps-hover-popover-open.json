@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "打开「悬停自动展开弹层」后，鼠标停在入口上让弹层展开，再按这个入口会把刚展开的弹层收起，想点进去的条目反而被自己合上。现在悬停态下按同一个入口不再收起弹层，覆盖侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器，以及输入框右侧的上下文圆环：弹层保持展开，退出方式交给鼠标离开入口与卡片（关掉这个偏好时按下仍是唯一的开关）。",
+  "en": "With \"Open popovers on hover\" on, a pointer resting on a trigger opened its popover, and a press on that same trigger then folded the popover the pointer had just opened. Under hover a press on the trigger no longer folds it — on the sidebar account entry, the permission picker, the model picker, the effort picker, the home row's two pickers and the context ring beside the composer: the popover stays up, and leaving the trigger and its card is what closes it. With the preference off, a press remains the only way in and out."
+}

@@ -6,7 +6,7 @@ import { readPrefs } from '../../core/prefs'
 import { createModelCatalog } from './catalog'
 import { byModelId, createModelRows } from './rows'
 import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
-import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '../../core/host'
 import type { FeatureHandle } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -105,6 +105,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       clearTimeout(subFoldTimer)
       subFoldTimer = null
     }
+  }
+
+  /** Whether the hover preference covers this picker: the `all` scope alone. */
+  function modelHoverOn() {
+    return readPrefs().autoPopover === AUTO_POPOVER_ALL
   }
 
   function scheduleCloseModel() {
@@ -521,14 +526,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Same contract as the account trigger: hover under the "All" scope,
       // click-only otherwise.
       modelBtn.addEventListener('mouseenter', () => {
-        if (readPrefs().autoPopover === AUTO_POPOVER_ALL) modelHoverIntent.scheduleOpen()
+        if (modelHoverOn()) modelHoverIntent.scheduleOpen()
       })
       modelBtn.addEventListener('mouseleave', () => {
-        if (readPrefs().autoPopover === AUTO_POPOVER_ALL) scheduleCloseModel()
+        if (modelHoverOn()) scheduleCloseModel()
       })
       modelBtn.addEventListener('click', e => {
         e.stopPropagation()
-        if (modelPop && modelPop.getAttribute('data-open') === 'true') closeModelPopovers()
+        // Is the card up because the dwell opened it, with the pointer still
+        // on this trigger? Then the press keeps it up
+        // (shared/popover.ts::pressKeepsPopoverOpen) and the leave closes it.
+        const open = modelPop !== null && modelPop.getAttribute('data-open') === 'true'
+        if (pressKeepsPopoverOpen(modelHoverOn(), open)) return
+        if (open) closeModelPopovers()
         else openModelPopover()
       })
       slot.appendChild(modelBtn)
