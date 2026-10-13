@@ -49,13 +49,16 @@
     IconUnarchiveOutlineRegular: primitive('IconUnarchiveOutlineRegular'),
     IconTrashOutlineRegular: primitive('IconTrashOutlineRegular'),
     IconWarningOutlineRegular: primitive('IconWarningOutlineRegular'),
-    // The file-change row's own share (features/chat-files/): the disclosure row,
-    // the shimmer, the diff card and its two icons are the host's primitives, and
-    // the totals helper counts one added and one removed line per hunk.
+    // The file row's own share (features/chat-files/): the disclosure row, the
+    // shimmer, the diff card, the read card and the icons are the host's
+    // primitives, and the totals helper counts one added and one removed line per
+    // hunk.
     DisclosureRow: primitive('DisclosureRow'),
     TextShimmer: primitive('TextShimmer'),
     DiffBlock: primitive('DiffBlock'),
+    ReadBlock: primitive('ReadBlock'),
     IconEditOutlineRegular: primitive('IconEditOutlineRegular'),
+    IconBrowseOutlineRegular: primitive('IconBrowseOutlineRegular'),
     IconInspectOutlineRegular: primitive('IconInspectOutlineRegular'),
     diffTotals: function (hunks) {
       var added = 0

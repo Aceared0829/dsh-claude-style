@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { byDocumentOrder, createFileMerge, mergeViews, rowCarrier } from './file-row-merge'
-import type { FileHunk, FileRowState } from './file-row-model'
+import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
 import type { FileMergeRow } from './file-row-merge'
 
 /** One change of the shape the row model derives: the path, what it replaced and what it wrote. */
@@ -12,6 +12,11 @@ function hunk(path: string, added: number, removed: number): FileHunk {
   }
 }
 
+/** One read window of the shape a read call derives. */
+function readCard(path: string): FileReadCard {
+  return { path, lines: [{ number: 1, text: 'const first = 1' }], totalLines: 4 }
+}
+
 /** One process group's content layer, detached: the registry only walks ancestors and document order. */
 function content() {
   const layer = document.createElement('div')
@@ -20,23 +25,31 @@ function content() {
 }
 
 /** One file row inside a content layer: the host's call row holding the row's root, as the host nests them. */
-function row(layer: Element, path: string, hunks: FileHunk[], state: FileRowState = 'ok'): FileMergeRow {
+function row(layer: Element, path: string, hunks: FileHunk[], state: FileRowState = 'ok', operation: FileRowOperation = 'edit', read: FileReadCard | null = null, callId = `call-${Math.round(Math.random() * 1e9)}`): FileMergeRow {
   const carrier = document.createElement('div')
-  carrier.setAttribute('data-chat-call-id', `call-${Math.round(Math.random() * 1e9)}`)
+  carrier.setAttribute('data-chat-call-id', callId)
   const element = document.createElement('div')
   element.className = 'dsh-claude-file-root'
   carrier.appendChild(element)
   layer.appendChild(carrier)
-  return { element, path, hunks, state }
+  return { element, callId, path, operation, hunks, state, read }
 }
+
+/** One call the host runs through a row element it keeps for the file's next call. */
+function call(element: HTMLElement, callId: string, operation: FileRowOperation, hunks: FileHunk[], read: FileReadCard | null = null): FileMergeRow {
+  return { element, callId, path: 'app.js', operation, hunks, state: 'ok', read }
+}
+
+/** Let the registry's deferred unregister run. */
+const flushed = () => new Promise((resolve) => { queueMicrotask(() => resolve(null)) })
 
 test('the rows of one file in one content layer read as one group, the earliest of them standing for it', () => {
   const layer = content()
   const first = row(layer, 'app.js', [hunk('app.js', 2, 1)])
   const second = row(layer, 'app.js', [hunk('app.js', 3, 0)])
   const views = mergeViews([second, first])
-  expect(views.get(first.element)).toEqual({ head: true, count: 2, hunks: [...first.hunks, ...second.hunks], running: false })
-  expect(views.get(second.element)).toEqual({ head: false, count: 2, hunks: [...first.hunks, ...second.hunks], running: false })
+  expect(views.get(first.element)).toEqual({ head: true, count: 2, hunks: [...first.hunks, ...second.hunks], running: false, operation: 'edit', read: null })
+  expect(views.get(second.element)).toEqual({ head: false, count: 2, hunks: [...first.hunks, ...second.hunks], running: false, operation: 'edit', read: null })
 })
 
 test('the head is the earliest row in document order, whichever order the rows registered in', () => {
@@ -54,8 +67,8 @@ test('two content layers are never read together: two pieces of work keep their 
   const early = row(one, 'app.js', [hunk('app.js', 1, 0)])
   const late = row(other, 'app.js', [hunk('app.js', 1, 0)])
   const views = mergeViews([early, late])
-  expect(views.get(early.element)).toEqual({ head: true, count: 1, hunks: early.hunks, running: false })
-  expect(views.get(late.element)).toEqual({ head: true, count: 1, hunks: late.hunks, running: false })
+  expect(views.get(early.element)).toEqual({ head: true, count: 1, hunks: early.hunks, running: false, operation: 'edit', read: null })
+  expect(views.get(late.element)).toEqual({ head: true, count: 1, hunks: late.hunks, running: false, operation: 'edit', read: null })
 })
 
 test('two files in one content layer stay two rows', () => {
@@ -80,7 +93,7 @@ test('a row in no content layer is left alone', () => {
   const loose = document.createElement('div')
   const element = document.createElement('div')
   loose.appendChild(element)
-  expect(mergeViews([{ element, path: 'app.js', hunks: [hunk('app.js', 1, 0)], state: 'ok' }]).size).toBe(0)
+  expect(mergeViews([{ element, callId: 'c1', path: 'app.js', hunks: [hunk('app.js', 1, 0)], state: 'ok', operation: 'edit', read: null }]).size).toBe(0)
 })
 
 test('the carrier is the host\'s call row, whether the call stands in the content layer or under a program\'s call', () => {
@@ -100,7 +113,44 @@ test('the carrier is the host\'s call row, whether the call stands in the conten
   expect(rowCarrier(document.createElement('div'))).toBe(null)
 })
 
-test('the registry reads a row back out, and the view stands until the next change', () => {
+test('the row wears the operation the file\'s work last reached, whichever order the rows registered in', () => {
+  const layer = content()
+  const read = row(layer, 'app.js', [], 'ok', 'read', readCard('app.js'))
+  const edit = row(layer, 'app.js', [hunk('app.js', 2, 1)])
+  const views = mergeViews([edit, read])
+  expect(views.get(read.element)?.operation).toBe('edit')
+  expect(views.get(edit.element)?.operation).toBe('edit')
+})
+
+test('a read after a change wears the read while the numbers keep counting the changes', () => {
+  const layer = content()
+  const edit = row(layer, 'app.js', [hunk('app.js', 2, 1)])
+  const read = row(layer, 'app.js', [], 'ok', 'read', readCard('app.js'))
+  const view = mergeViews([edit, read]).get(edit.element)
+  expect(view?.operation).toBe('read')
+  expect(view?.hunks).toEqual(edit.hunks)
+})
+
+test('a group that only read its file draws no hunks and carries the file\'s last read', () => {
+  const layer = content()
+  const first = row(layer, 'app.js', [], 'ok', 'read', readCard('app.js'))
+  const second = row(layer, 'app.js', [], 'ok', 'read', { ...readCard('app.js'), totalLines: 9 })
+  const views = mergeViews([first, second])
+  expect(views.get(first.element)?.hunks).toEqual([])
+  expect(views.get(first.element)?.read?.totalLines).toBe(9)
+  expect(views.get(second.element)?.read?.totalLines).toBe(9)
+})
+
+test('a group that wrote its file keeps the last read beside its changes', () => {
+  const layer = content()
+  const read = row(layer, 'app.js', [], 'ok', 'read', readCard('app.js'))
+  const write = row(layer, 'app.js', [hunk('app.js', 3, 0)], 'ok', 'write')
+  const view = mergeViews([read, write]).get(read.element)
+  expect(view?.operation).toBe('write')
+  expect(view?.read?.path).toBe('app.js')
+})
+
+test('the registry reads a row back out, and the view stands until the next change', async () => {
   const layer = content()
   const merge = createFileMerge()
   const first = row(layer, 'app.js', [hunk('app.js', 1, 0)])
@@ -108,14 +158,15 @@ test('the registry reads a row back out, and the view stands until the next chan
   const dropFirst = merge.put(first)
   merge.put(second)
   const before = merge.viewFor(first.element)
-  expect(before).toEqual({ head: true, count: 2, hunks: [...first.hunks, ...second.hunks], running: false })
+  expect(before).toEqual({ head: true, count: 2, hunks: [...first.hunks, ...second.hunks], running: false, operation: 'edit', read: null })
   expect(merge.viewFor(first.element)).toBe(before)
   dropFirst()
+  await flushed()
   expect(merge.viewFor(first.element)).toBe(null)
   expect(merge.viewFor(second.element)?.count).toBe(1)
 })
 
-test('a listener hears every change, and stops hearing once it unsubscribes', () => {
+test('a listener hears every change, and stops hearing once it unsubscribes', async () => {
   const layer = content()
   const merge = createFileMerge()
   let heard = 0
@@ -124,10 +175,33 @@ test('a listener hears every change, and stops hearing once it unsubscribes', ()
   const drop = merge.put(first)
   expect(heard).toBe(1)
   drop()
+  await flushed()
   expect(heard).toBe(2)
   stop()
   merge.put(first)
   expect(heard).toBe(2)
+})
+
+test('one row element the host moves on to the file\'s next call keeps the calls it carried', () => {
+  const layer = content()
+  const carrier = document.createElement('div')
+  carrier.setAttribute('data-chat-call-id', 'direct')
+  const element = document.createElement('div')
+  element.className = 'dsh-claude-file-root'
+  carrier.appendChild(element)
+  layer.appendChild(carrier)
+  const merge = createFileMerge()
+  merge.put(call(element, 'c1', 'read', [], readCard('app.js')))
+  merge.put(call(element, 'c2', 'edit', [hunk('app.js', 1, 1)]))
+  expect(merge.viewFor(element)?.count).toBe(2)
+  // The read that lands after the edit must keep the edit's figures: the host
+  // hands this element to the file's next call rather than drawing a new row.
+  merge.put(call(element, 'c3', 'read', [], readCard('app.js')))
+  const view = merge.viewFor(element)
+  expect(view?.operation).toBe('read')
+  expect(view?.count).toBe(3)
+  expect(view?.head).toBe(true)
+  expect(view?.hunks).toEqual([hunk('app.js', 1, 1)])
 })
 
 test('a row put twice leaves the registry once, on the latest registration', () => {

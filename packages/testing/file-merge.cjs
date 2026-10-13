@@ -1,23 +1,31 @@
 #!/usr/bin/env node
 /**
- * file-merge.cjs — the file-change rows of one file read as one row (D62, D45).
+ * file-merge.cjs — the calls on one file read as one row (D62, D45).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
- * The `fileEdits` script (packages/testing/mock-llm.cjs) changes one file four
- * times from inside one program and writes a second file once. The host renders
- * one row per call, and a program's calls stand side by side under the
- * program's own row, so the four rows of the first file are on the page
- * together; the program waits between its changes, so the number can be watched
- * growing. They have to stand as one: the earliest of them stays visible with
- * the total of the four changes in its tail, rolling as each change lands, and
- * the other three leave the page whole. The second file's single row stays its
- * own. The row that stands opens onto every change of the file.
+ * The `fileEdits` script (packages/testing/mock-llm.cjs) works on four files
+ * from inside one program: it reads `app.js`, changes it four times and reads it
+ * again; writes `notes.md` and reads it; writes `only.md` once; and reads
+ * `plain.md` twice without changing it. The host renders one row per call, and a
+ * program's calls stand side by side under the program's own row, so every
+ * file's calls are on the page together; the program waits between its changes,
+ * so the tail can be watched growing.
+ *
+ * They have to stand as one: one row stays visible per file, wearing the
+ * operation its file's work last reached — `app.js` starts as a read, moves to
+ * the edit as the first change lands and ends as a read — while the tail counts
+ * the changes it took and turns character by character as each one lands, and the
+ * calls it stands for leave the page whole. `plain.md`, whose two calls changed nothing, shows no
+ * tail at all and opens onto the window it was read at. `only.md`, touched once,
+ * is drawn as it was before any of this existed. The row that stands for
+ * `app.js` opens onto every change of the file.
  *
  * The calls have to be dispatched from a program: the host's `run_code` is the
  * only model-facing tool of the `ptc` agent preset, which this scenario selects
- * in the lane's patch layer — a direct call would leave one row at a time on the
- * page, and there would be nothing to read together.
+ * in the lane's patch layer — a direct call would be rejected before the page
+ * ever saw a row. The calls that share one row element across a step are covered
+ * by the registry's unit tests (packages/client/src/features/chat-files/).
  */
 'use strict'
 const fs = require('node:fs')
@@ -25,8 +33,12 @@ const path = require('node:path')
 
 /** What the four scripted edits replace: the file the scenario writes before the turn. */
 const APP = 'const first = 1\nconst second = 1\nconst third = 1\nconst fourth = 1\n'
+/** What the two scripted reads of the unchanged file open onto. */
+const PLAIN = '# Plain\n\n- read twice\n'
 /** How many changes the script makes to that file, and how many lines each one adds and removes. */
 const CHANGES = 4
+/** How many calls the script makes on that file: the four changes and a read on either side of them. */
+const CALLS = CHANGES + 2
 /** The text each change leaves behind, so the merged card can be read for all of them. */
 const NEW_LINES = ['const first = 2', 'const second = 2', 'const third = 2', 'const fourth = 2']
 
@@ -42,12 +54,31 @@ const readRows = (page) => page.evaluate(() => {
     if (figure === null) return null
     return [...figure.querySelectorAll('.dsh-claude-file-roll-in')].map((span) => span.textContent).join('')
   })
+  const centreOf = (element) => {
+    if (element === null) return null
+    const box = element.getBoundingClientRect()
+    return Math.round((box.y + box.height / 2) * 10) / 10
+  }
   return [...document.querySelectorAll('.dsh-claude-file-root')].map((root) => {
     const box = root.closest('[data-chat-call-id]')
     const figures = figuresOf(root)
+    // Where the operation's label sits against the row's own path, and whether
+    // the host's now-empty title slot takes any room.
+    const label = root.querySelector('.dsh-claude-file-title')
+    const summary = root.querySelector('.dsh-claude-file-link, .dsh-claude-file-summary')
+    const slot = root.querySelector('.dsh-claude-file-title-slot')
     return {
       merge: root.getAttribute('data-dsh-claude-file-merge'),
-      path: root.querySelector('.dsh-claude-file-link, .dsh-claude-file-summary')?.textContent ?? null,
+      op: root.getAttribute('data-dsh-claude-file-op'),
+      label: root.querySelector('.dsh-claude-file-title .dsh-claude-file-op-in')?.textContent ?? null,
+      path: summary?.textContent ?? null,
+      labelCentre: centreOf(label),
+      labelSize: label === null ? null : getComputedStyle(label).fontSize,
+      pathCentre: centreOf(summary),
+      pathSize: summary === null ? null : getComputedStyle(summary).fontSize,
+      labelX: label === null ? null : Math.round(label.getBoundingClientRect().x),
+      pathX: summary === null ? null : Math.round(summary.getBoundingClientRect().x),
+      titleSlotHidden: slot === null ? null : getComputedStyle(slot).display === 'none',
       add: figures[0] ?? null,
       del: figures[1] ?? null,
       visible: root.checkVisibility(),
@@ -58,10 +89,11 @@ const readRows = (page) => page.evaluate(() => {
 })
 
 /**
- * The row that stands for the changed file, sampled once: its figures, whether a
- * character is leaving and a character rising, and how many rows of that file the
- * reader can see. A figure's number is the digits in flow of its own characters,
- * read in order.
+ * The row that stands for the changed file, sampled once: its figures, the
+ * operation it wears, whether a character is leaving and a character rising,
+ * whether a label swap is in flight, and how many rows of that file the reader
+ * can see. A figure's number is the digits in flow of its own characters, read
+ * in order.
  */
 const readHead = (page, file) => page.evaluate((suffix) => {
   const figuresOf = (root) => ['.dsh-claude-file-add', '.dsh-claude-file-del'].map((selector) => {
@@ -87,9 +119,25 @@ const readHead = (page, file) => page.evaluate((suffix) => {
   return {
     add: figures[0] ?? null,
     del: figures[1] ?? null,
+    op: head.getAttribute('data-dsh-claude-file-op'),
+    label: head.querySelector('.dsh-claude-file-title .dsh-claude-file-op-in')?.textContent ?? null,
     leaving,
     rising,
     rolling: leaving && rising,
+    // The operation swapping: the label taking its place is animating in, and
+    // both states stand in the block's own cell.
+    swapping: running('.dsh-claude-file-title .dsh-claude-file-op-in'),
+    swapNames: [...new Set([...head.querySelectorAll('.dsh-claude-file-title .dsh-claude-file-op-in')]
+      .flatMap((span) => span.getAnimations().filter((animation) => animation.playState === 'running').map((animation) => animation.animationName ?? '?')))],
+    labelBoxes: [...head.querySelectorAll('.dsh-claude-file-title .dsh-claude-file-op-out, .dsh-claude-file-title .dsh-claude-file-op-in')]
+      .map((span) => ({ x: Math.round(span.getBoundingClientRect().x), of: (span.parentElement?.className ?? '?').split(' ')[0] })),
+    // The host renders the collapsed head a second time inside its own highlight
+    // container, an inert copy with no text of its own; the reader sees the one
+    // label the row draws.
+    labels: head.querySelectorAll('.dsh-claude-file-title').length,
+    labelsTexted: [...head.querySelectorAll('.dsh-claude-file-title')].filter((label) => (label.textContent ?? '') !== '').length,
+    iconBoxes: [...head.querySelectorAll('.dsh-claude-file-leading .dsh-claude-file-op-out, .dsh-claude-file-leading .dsh-claude-file-op-in')]
+      .map((span) => Math.round(span.getBoundingClientRect().x)),
     visible: roots.filter((root) => ofFile(root) && root.checkVisibility()).length,
   }
 }, file)
@@ -109,12 +157,14 @@ function fileMergeScenario({ check }) {
       '  config:',
       '    default: ptc',
     ],
-    /** The workspace the scratch host opens its session in, with the file the scripted edits chain onto. */
+    /** The workspace the scratch host opens its session in, with the files the scripted calls chain onto. */
     async beforeSend(context) {
       const workspace = path.join(context.home, 'workspace')
       fs.mkdirSync(workspace, { recursive: true })
       fs.writeFileSync(path.join(workspace, 'app.js'), APP)
-      fs.rmSync(path.join(workspace, 'notes.md'), { force: true })
+      // The file the script only reads, and the leftovers of an earlier run.
+      fs.writeFileSync(path.join(workspace, 'plain.md'), PLAIN)
+      for (const name of ['notes.md', 'only.md']) fs.rmSync(path.join(workspace, name), { force: true })
     },
     /** Follow the row that stands while the changes land, and what the reader can see of that file's rows. */
     async duringTurn(context) {
@@ -150,12 +200,20 @@ function fileMergeScenario({ check }) {
       if (await fold.count() > 0) await fold.first().click()
       await page.waitForTimeout(300)
       context.notes.card = await head.evaluate((root) => root.querySelector('.dsh-claude-file-diff')?.textContent ?? null)
+      // The file that was only read: the row that stands for it opens onto the
+      // window its calls read, and carries no change card at all.
+      const readOnly = page.locator('.dsh-claude-file-root').filter({ hasText: 'plain.md' }).first()
+      await readOnly.locator('.dsh-claude-file-title').click()
+      await page.waitForTimeout(300)
+      context.notes.readCard = await readOnly.evaluate((root) => root.querySelector('.dsh-claude-file-read')?.textContent ?? null)
     },
     async assert({ session, notes }) {
       const rows = notes.rows ?? []
       const samples = notes.samples ?? []
       const app = rows.filter((row) => (row.path ?? '').endsWith('app.js'))
       const notesRows = rows.filter((row) => (row.path ?? '').endsWith('notes.md'))
+      const only = rows.filter((row) => (row.path ?? '').endsWith('only.md'))
+      const plain = rows.filter((row) => (row.path ?? '').endsWith('plain.md'))
       const head = app.find((row) => row.merge === 'head') ?? {}
       const members = app.filter((row) => row.merge === 'member')
       const adds = samples.map((sample) => count(sample.add))
@@ -164,15 +222,21 @@ function fileMergeScenario({ check }) {
       const leaving = samples.filter((sample) => sample.leaving).length
       const rising = samples.filter((sample) => sample.rising).length
       const rolling = samples.filter((sample) => sample.rolling).length
+      const swapping = samples.filter((sample) => sample.swapping).length
+      const ops = samples.map((sample) => sample.op)
+      const swaps = samples.filter((sample) => sample.swapping)
+      // The two operations' own words, whatever language the host is answering in.
+      const labelOf = (op) => samples.find((sample) => sample.op === op)?.label ?? null
       const card = notes.card ?? ''
+      const readCard = notes.readCard ?? ''
       return [
-        check('同一个文件的四次改动在页面上只留一行可见',
-          app.length === CHANGES && app.filter((row) => row.visible).length === 1,
+        check('同一个文件的六次调用在页面上只留一行可见',
+          app.length === CALLS && app.filter((row) => row.visible).length === 1,
           JSON.stringify(app)),
         check('可见的那一行是这一组里最早的一行，带着代表行的标记',
           head.merge === 'head' && head.visible === true, JSON.stringify(head)),
-        check('其余三行整行离开页面，不占高度',
-          members.length === CHANGES - 1 && members.every((row) => row.carrierDisplay === 'none' && row.carrierHeight === 0),
+        check('其余五行整行离开页面，不占高度',
+          members.length === CALLS - 1 && members.every((row) => row.carrierDisplay === 'none' && row.carrierHeight === 0),
           JSON.stringify(members)),
         check('代表行的行尾是这些改动的累计值',
           count(head.add) === CHANGES && count(head.del) === CHANGES,
@@ -180,13 +244,47 @@ function fileMergeScenario({ check }) {
         check('轮次进行中数字随每次改动长大，这个文件始终不多于一行可见',
           changes >= CHANGES - 1 && adds.length > 0 && adds[adds.length - 1] === CHANGES && shown.every((count) => count <= 1),
           `${changes} changes over ${adds.length} samples: adds=${JSON.stringify(adds)} shown=${JSON.stringify(shown)}`),
-        check('数字变化时旧数字向上离开、新数字自下升入',
+        check('数字变化时旧数字向下转出、新数字自上方转入',
           rolling >= 1,
           `frames leaving=${leaving}, rising=${rising}, together=${rolling} of ${samples.length}`),
-        check('另一个文件只写一次，单独成行，没有被卷进这一次合并',
-          notesRows.length === 1 && notesRows[0].merge === null, JSON.stringify(notesRows)),
+        check('行首的操作跟着最后一次调用走：改动时是编辑，最后一次读取后回到读取',
+          ops.length > 0 && ops.includes('read') && ops.includes('edit') && ops[ops.length - 1] === 'read' &&
+          labelOf('read') !== null && labelOf('edit') !== null && labelOf('read') !== labelOf('edit'),
+          `operations over ${ops.length} samples: ${JSON.stringify([...new Set(ops)])}; read=${labelOf('read')} edit=${labelOf('edit')}`),
+        check('操作换新时旧标题离开、新标题进入',
+          swapping >= 1,
+          `frames with a label swapping=${swapping} of ${samples.length}; running=${JSON.stringify([...new Set(samples.flatMap((sample) => sample.swapNames ?? []))])}`),
+        check('换新时旧标题与新标题叠在同一格，旁边的路径不动',
+          swaps.length > 0 && swaps.every((sample) => (sample.labelBoxes ?? []).length >= 2 &&
+            new Set(sample.labelBoxes.map((box) => box.x)).size === 1),
+          `swap frames=${JSON.stringify(swaps.map((sample) => sample.labelBoxes))}`),
+        check('一行只画一个写着字的操作标题',
+          samples.length > 0 && samples.every((sample) => sample.labelsTexted === 1),
+          `labels with text per sample=${JSON.stringify([...new Set(samples.map((sample) => sample.labelsTexted))])}; all labels=${JSON.stringify([...new Set(samples.map((sample) => sample.labels))])}`),
+        check('换新时两个图标也叠在同一格',
+          swaps.length > 0 && swaps.every((sample) => (sample.iconBoxes ?? []).length === 2 && sample.iconBoxes[0] === sample.iconBoxes[1]),
+          `swap frames=${JSON.stringify(swaps.map((sample) => sample.iconBoxes))}`),
+        check('行首的操作标题与同一行的路径同字号、同一条基线，空的标题槽不占位',
+          head.labelCentre !== null && head.pathCentre !== null &&
+          head.labelSize === head.pathSize &&
+          Math.abs(head.labelCentre - head.pathCentre) <= 1.5 &&
+          head.labelX !== null && head.pathX !== null && head.labelX < head.pathX &&
+          head.titleSlotHidden === true,
+          JSON.stringify({ size: [head.labelSize, head.pathSize], centre: [head.labelCentre, head.pathCentre], x: [head.labelX, head.pathX], slotHidden: head.titleSlotHidden })),
+        check('写入后再读一次的文件也只剩一行，行尾仍是它的改动',
+          notesRows.length === 2 && notesRows.filter((row) => row.visible).length === 1 &&
+          notesRows.find((row) => row.visible)?.op === 'read' && count(notesRows.find((row) => row.visible)?.add) >= 1,
+          JSON.stringify(notesRows)),
+        check('只被写一次的文件单独成行，没有被卷进合并',
+          only.length === 1 && only[0].merge === null && only[0].op === 'write', JSON.stringify(only)),
+        check('只被读取的文件两行合一，行尾没有数字',
+          plain.length === 2 && plain.filter((row) => row.visible).length === 1 &&
+          plain.every((row) => row.add === null && row.del === null) && plain.find((row) => row.visible)?.op === 'read',
+          JSON.stringify(plain)),
         check('展开代表行读到的是全部改动',
           NEW_LINES.every((text) => card.includes(text)), JSON.stringify(card.slice(0, 240))),
+        check('展开只被读取的那一行读到这一次读取的窗口',
+          readCard.includes('# Plain') && readCard.includes('- read twice'), JSON.stringify(readCard.slice(0, 240))),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

@@ -46,7 +46,7 @@
         } finally {
           react.rendering = false
         }
-        var out = { classes: [], texts: [], figures: [], root: null, diff: null, io: null, hidden: null, hiddenText: null }
+        var out = { classes: [], texts: [], figures: [], root: null, diff: null, read: null, io: null, hidden: null, hiddenText: null }
         walkTree(tree, function (node) {
           var props = node.props || {}
           if (typeof props.className === 'string') {
@@ -74,6 +74,7 @@
           }
           if (node.type === 'DisclosureRow') out.disclosure = props
           if (node.type === 'DiffBlock') out.diff = props
+          if (node.type === 'ReadBlock') out.read = props
           if (node.type === '#text') out.texts.push(String(props.children))
         })
         return out
@@ -110,9 +111,26 @@
         argsRaw: JSON.stringify({ file_path: 'C:\\work\\note.md', content: 'hello', justification: 'why' }),
       }
       r.files.escalated = renderRow('write', escalated, { expanded: true })
-      // The switch comes down whole: this feature takes the host's two seat keys
-      // over, and a key cannot be handed back by reading a preference, so off
-      // has to unregister them (D29/D32).
+      // A read of a file: the third key, drawn in the same chrome, and its
+      // expanded body is the file's own window. A sub-call persists no
+      // metadata, so the window is read back out of the result's envelope.
+      var readText = '<path>app.js</path>\n<type>file</type>\n<content>\n1: const a = 1\n2: const a = 2\n\n(End of file - total 2 lines)\n</content>'
+      var read = {
+        kind: 'tool-result', callId: 'c5',
+        call: { name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) },
+        content: [{ type: 'text', text: readText }],
+        isError: false,
+      }
+      r.files.read = renderRow('read', read, { expanded: true })
+      // A running read has nothing to show yet: the row carries the call alone.
+      var reading = {
+        phase: 'start', callId: 'c6', name: 'read',
+        argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js', offset: 40 }),
+      }
+      r.files.reading = renderRow('read', reading, {})
+      // The switch comes down whole: this feature takes the host's three seat
+      // keys over, and a key cannot be handed back by reading a preference, so
+      // off has to unregister them (D29/D32).
       window.__pushForm({ chatAnimations: false })
       await sleep(150)
       r.files.offSeats = (window.__slots || []).filter(function (entry) { return entry.key === 'tool.call.toolview' }).length

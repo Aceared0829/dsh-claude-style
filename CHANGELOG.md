@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 同一个文件的读取、编辑与写入各占一行时，行数越多越难看出这个文件一共经历了什么。现在同一个文件在同一个过程组里的多次调用读成一行：行首的图标与标题跟着这个文件最后一次操作换新（读取、编辑、写入，旧标题向上离开、新标题自下升入），行尾的 `+n -m` 仍是这些改动的累计值、随每次改动到达逐位翻页，展开这一行读到全部改动；只被读取过的文件不显示改动数字，展开读到这一次读取的窗口。只被操作过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- A file read, edited and written was listed as one row per call, so the more of it there was, the harder it became to see what the file had been through. The calls on one file inside one process group now stand as a single row: its icon and title move on with the file's last operation — read, edit or write, the old title leaving upward as the new one rises in behind it — its `+n -m` tail still counts those changes and turns character by character as each one lands, and opening the row reads every change. A file that was only read shows no change figures and opens onto the window it was read at. A file touched once is drawn as before, and a failed or interrupted row keeps its own verdict.
+
 ## [0.13.3] - 2026-10-12
 
 [中文](#cn-0.13.3) | [English](#en-0.13.3)

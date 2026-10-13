@@ -212,6 +212,12 @@ export interface HostChatBlock {
   phase?: string
   name?: string
   argsRaw?: string
+  /**
+   * The host's own id for this call, on both stages. The host draws one row
+   * element per call and hands it to the next call on the same file, so the id
+   * is what tells the file's calls apart on one element (D62).
+   */
+  callId?: string
   /** The call a settled node reports: its tool name and the raw arguments. */
   call?: { name: string, argsRaw: string }
   /** Whether the call failed. */

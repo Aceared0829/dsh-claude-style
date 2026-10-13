@@ -28,6 +28,49 @@ export interface FileHunk {
 /** Where a file row's call stands. */
 export type FileRowState = 'preparing' | 'running' | 'ok' | 'error' | 'stopped'
 
+/**
+ * What one row did to its file (D62): a read of it, or one of the two changes
+ * to it. The names are the host's own tool-view keys and its variant names.
+ */
+export type FileRowOperation = 'read' | 'edit' | 'write'
+
+/** One line of a read card: its file line number and its text, without its newline. */
+export interface FileReadLine {
+  number: number
+  text: string
+}
+
+/** The read window a read row draws, in the shape the read card primitive takes. */
+export interface FileReadCard {
+  path: string
+  lines: FileReadLine[]
+  totalLines: number
+  lang?: string
+}
+
+/** The operation a tool name stands for, or null for a tool that is not a file operation. */
+export function chatFileOperation(toolName: string): FileRowOperation | null {
+  if (toolName === 'read') return 'read'
+  if (toolName === 'edit') return 'edit'
+  if (toolName === 'write') return 'write'
+  return null
+}
+
+/** The host's title key for one operation. */
+export function chatFileOperationTitle(operation: FileRowOperation) {
+  if (operation === 'read') return 'tool.title.read'
+  return operation === 'write' ? 'tool.title.write' : 'tool.title.edit'
+}
+
+/**
+ * The host's own id for one call, which tells a file's calls apart on a row
+ * element the host keeps across them (D62). A block that carries none stands for
+ * a call nothing can tell from the next, and its element then holds one call.
+ */
+export function chatFileCallId(block: HostChatBlock) {
+  return typeof block.callId === 'string' ? block.callId : ''
+}
+
 /** A call's parsed arguments. */
 export type CallArgs = Record<string, unknown>
 
@@ -79,7 +122,7 @@ export const CHAT_FILE_MERGE_HEAD = 'head'
 export const CHAT_FILE_MERGE_MEMBER = 'member'
 export const CHAT_FILE_MERGE_GONE = 'gone'
 /** The merged row's screen-reader sentence: the calls its file's other rows held. */
-export const CHAT_FILE_MERGED_COPY = 'fileRowMergedChanges'
+export const CHAT_FILE_MERGED_COPY = 'fileRowMergedOperations'
 /** The expanded body. */
 export const CHAT_FILE_BODY_CLASS = 'dsh-claude-file-body'
 /** The diff card inside an expanded body. */
@@ -96,6 +139,20 @@ export const CHAT_FILE_IO_LABEL_CLASS = 'dsh-claude-file-io-label'
 export const CHAT_FILE_IO_TEXT_CLASS = 'dsh-claude-file-io-text'
 /** The trajectory entrance pill. */
 export const CHAT_FILE_INSPECT_CLASS = 'dsh-claude-file-inspect'
+/** The operation block: the file's icon and title, which swap when its work moves on. */
+export const CHAT_FILE_OP_CLASS = 'dsh-claude-file-op'
+/** On that block while a swap is in flight. */
+export const CHAT_FILE_OP_SWAPPING_CLASS = 'dsh-claude-file-op-swapping'
+/** The operation leaving: it holds the block's own cell while the new one rises in. */
+export const CHAT_FILE_OP_OUT_CLASS = 'dsh-claude-file-op-out'
+/** The operation in flow. */
+export const CHAT_FILE_OP_IN_CLASS = 'dsh-claude-file-op-in'
+/** The operation this row wears, for the stylesheet and for tests. */
+export const CHAT_FILE_OP_ATTR = 'data-dsh-claude-file-op'
+/** The disclosure row's own title slot: it stays empty, so the label stands beside it. */
+export const CHAT_FILE_TITLE_SLOT_CLASS = 'dsh-claude-file-title-slot'
+/** The read card inside an expanded body. */
+export const CHAT_FILE_READ_CLASS = 'dsh-claude-file-read'
 /** The running state label only a screen reader reads. */
 export const CHAT_FILE_HIDDEN_CLASS = 'dsh-claude-file-hidden'
 /** The seat both file tools render through; the host's own rows sit at priority 0 and a keyed seat renders the lowest. */
@@ -103,6 +160,9 @@ export const CHAT_FILE_SEAT = 'tool.call.toolview'
 
 /** A chat row shows this many lines before a diff card folds its middle; the host's own CHAT_DIFF_MAX_LINES. */
 export const CHAT_DIFF_MAX_LINES = 9
+
+/** A read card shows this many lines before it folds its middle; the host's own read row cap. */
+export const CHAT_READ_MAX_LINES = 8
 
 /**
  * This row's call head: a settled call reads the one its result node brought
@@ -241,14 +301,16 @@ export function chatFileDiffHunks(block: HostChatBlock, args: CallArgs | null) {
 export function chatFileRowModel(toolName: string, block: HostChatBlock, args: CallArgs | null, cwd: string | undefined, home: string | undefined) {
   const done = 'kind' in block
   const head = chatFileCallHead(block)
+  const operation = chatFileOperation(toolName) ?? 'edit'
   const state: FileRowState = !done
     ? block.phase === 'preparing' ? 'preparing' : 'running'
     : block.error?.code === 'interrupted' ? 'stopped' : block.isError ? 'error' : 'ok'
   const path = args === null ? undefined : chatFilePickString(args, ['path', 'file_path'])
   const output = done ? chatFileResultText(block) || null : null
   return {
-    titleKey: toolName === 'write' ? 'tool.title.write' : 'tool.title.edit',
-    variant: toolName === 'write' ? 'write' : 'edit',
+    operation,
+    titleKey: chatFileOperationTitle(operation),
+    variant: operation,
     summary: path === undefined ? '' : chatFileShortenPath(path, cwd, home),
     filePath: path,
     bodyRaw: head === null || head.argsRaw === '' ? null : head.argsRaw,
@@ -273,6 +335,117 @@ export function chatFileResultText(node: HostChatBlock) {
   }
   if (parts.length === 0 && node.error !== undefined) parts.push(`${node.error.name ?? ''}: ${node.error.code ?? ''}`)
   return parts.join('\n')
+}
+
+/**
+ * The one text block a first-party card is derived from. The host's own read
+ * card takes its material from exactly one, and a result laid out any other way
+ * has no window to draw.
+ */
+function chatFileSingleResultText(node: HostChatBlock) {
+  if (node.content?.length !== 1) return null
+  const only = node.content[0]
+  return only.type === 'text' && typeof only.text === 'string' ? only.text : null
+}
+
+/**
+ * The read window a settled call's own metadata describes. The shape and the
+ * range checks are the host's own (dsh-client-ui-tool's read-card model): a
+ * window that misnumbers or overcounts its lines declines here rather than
+ * reaching the card.
+ */
+export function chatFileReadMeta(meta: unknown): FileReadCard | null {
+  if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) return null
+  const { path, offset, lines, totalLines, lang } = meta as { path?: unknown, offset?: unknown, lines?: unknown, totalLines?: unknown, lang?: unknown }
+  if (typeof path !== 'string' || typeof offset !== 'number' || !Number.isInteger(offset) || offset < 1) return null
+  if (typeof totalLines !== 'number' || !Number.isInteger(totalLines) || totalLines < 0 || !Array.isArray(lines)) return null
+  if (lang !== undefined && typeof lang !== 'string') return null
+  const window: FileReadLine[] = []
+  let previous = offset - 1
+  for (const line of lines) {
+    if (typeof line !== 'object' || line === null || Array.isArray(line)) return null
+    const { number, text } = line as { number?: unknown, text?: unknown }
+    if (typeof number !== 'number' || !Number.isInteger(number) || number <= previous) return null
+    if (number > totalLines || typeof text !== 'string') return null
+    previous = number
+    window.push({ number, text })
+  }
+  return lang === undefined ? { path, lines: window, totalLines } : { path, lines: window, totalLines, lang }
+}
+
+/** One numbered line of the read tool's model-facing envelope: `<number>: <text>`. */
+const READ_LINE = /^(\d+): (.*)$/u
+
+/** The envelope's end-of-file footer: `(End of file - total N lines)`. */
+const READ_FOOTER_END = /^\(End of file - total (\d+) lines?\)$/u
+/** The envelope's window footer: `(Showing lines A-B of N. Use offset=B+1 to continue.)`. */
+const READ_FOOTER_WINDOW = /^\(Showing lines \d+-\d+ of (\d+)\. Use offset=\d+ to continue\.\)$/u
+/** The envelope's byte-capped footer, which names the window and no total. */
+const READ_FOOTER_CAPPED = /^\(Output capped\. Showing lines \d+-\d+\. Use offset=\d+ to continue\.\)$/u
+
+/**
+ * The file's total line count as the envelope's own footer names it, or null for
+ * the byte-capped footer: it reports its window and stops there.
+ */
+function readFooterTotal(footer: string) {
+  const total = READ_FOOTER_END.exec(footer)?.[1] ?? READ_FOOTER_WINDOW.exec(footer)?.[1]
+  if (total === undefined) return null
+  const value = Number(total)
+  return Number.isInteger(value) && value >= 0 ? value : null
+}
+
+/**
+ * The read window a call's result text describes. A sub-call persists no
+ * presentation metadata, so its window is read back out of the model-facing
+ * envelope the read tool writes (dsh-tool-fs's formatReadOutput): numbered
+ * lines, a blank line, then a footer naming the file's total. Without a total
+ * the last line number stands in, which is what the card needs to leave its
+ * "showing N of M" note out.
+ *
+ * @param text - the settled result's own text.
+ * @param path - the file the call read, for a card whose envelope is unusable.
+ * @returns the card, or null when this text is not a read envelope.
+ */
+export function chatFileReadEnvelope(text: string, path: string): FileReadCard | null {
+  const body = /^<path>[^\n]*<\/path>\n<type>file<\/type>\n<content>\n([\s\S]*)\n<\/content>$/u.exec(text)?.[1]
+  if (body === undefined) return null
+  const lines: FileReadLine[] = []
+  let footer: string | null = null
+  for (const row of body.split('\n')) {
+    if (footer !== null) {
+      // The footer is the envelope's last line: anything else after it is not
+      // this shape, and a card drawn from it would show a footer as file text.
+      if (row !== '') return null
+      continue
+    }
+    if (row === '') continue
+    const numbered = READ_LINE.exec(row)
+    if (numbered === null) {
+      // Every content line is numbered, so the first other line is the footer —
+      // and only one of the three the read tool writes, or this is not an
+      // envelope whose window can be read back.
+      if (READ_FOOTER_END.exec(row) === null && READ_FOOTER_WINDOW.exec(row) === null && READ_FOOTER_CAPPED.exec(row) === null) return null
+      footer = row
+      continue
+    }
+    lines.push({ number: Number(numbered[1]), text: numbered[2] })
+  }
+  const endLine = lines.length === 0 ? 0 : lines[lines.length - 1].number
+  return { path, lines, totalLines: (footer === null ? null : readFooterTotal(footer)) ?? endLine }
+}
+
+/**
+ * The read card a read row draws: the call's own metadata where it has any (a
+ * root call), else the result text's envelope (a sub-call), else null so the
+ * row falls back to its IN/OUT card instead of drawing a bare envelope.
+ */
+export function chatFileReadCard(block: HostChatBlock, path: string | undefined): FileReadCard | null {
+  if (!('kind' in block) || block.isError) return null
+  const own = chatFileReadMeta(block.meta)
+  if (own !== null) return own
+  if (path === undefined) return null
+  const text = chatFileSingleResultText(block)
+  return text === null ? null : chatFileReadEnvelope(text, path)
 }
 
 /** The summary's class names: a failure and an interruption each carry their own state colour. */
@@ -306,5 +479,24 @@ export function chatFileDiffBlockLabels(t: HostText) {
     expandAria: (hidden: number) => t('diff.expandAria', { count: hidden }),
     collapse: t('collapse'),
     expand: (hidden: number) => t('diff.expandRest', { count: hidden }),
+  }
+}
+
+/**
+ * Assemble the read card's own chrome copy, on the keys the host's own read card
+ * reads, so the skin's card says the same things in the same words.
+ */
+export function chatFileReadBlockLabels(t: HostText) {
+  return {
+    codeLabel: t('codeBlock.title'),
+    wrapLabel: t('codeBlock.wrap'),
+    unwrapLabel: t('codeBlock.unwrap'),
+    copy: t('copy'),
+    copied: t('copied'),
+    collapseAria: t('read.collapseAria'),
+    expandAria: (hidden: number) => t('read.expandAria', { count: hidden }),
+    collapse: t('collapse'),
+    expand: (hidden: number) => t('read.expandRest', { count: hidden }),
+    window: (shown: number, total: number) => t('read.window', { shown, total }),
   }
 }

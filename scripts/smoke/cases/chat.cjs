@@ -197,10 +197,13 @@ module.exports = {
     const failed = files.failed || {}
     const running = files.running || {}
     const escalated = files.escalated || {}
-    check('both file tools are claimed from the tool view seat',
-      seats.length === 2, JSON.stringify(seats))
+    const readRow = files.read || {}
+    const reading = files.reading || {}
+    check('the three file operations are claimed from the tool view seat',
+      seats.length === 3, JSON.stringify(seats))
     check('the edit seat comes first, at priority -1', (seats[0] || {}).seat === 'edit' && (seats[0] || {}).priority === -1, JSON.stringify(seats[0]))
     check('the write seat follows', (seats[1] || {}).seat === 'write', JSON.stringify(seats[1]))
+    check('the read seat follows, at the same priority', (seats[2] || {}).seat === 'read' && (seats[2] || {}).priority === -1, JSON.stringify(seats[2]))
     check('a settled edit reads as a row of the edit variant in the ok state',
       (collapsed.root || {}).variant === 'edit' && (collapsed.root || {}).state === 'ok', JSON.stringify(collapsed.root))
     check('the settled row names the shortened path and the +n -m tail',
@@ -209,8 +212,9 @@ module.exports = {
     check('the settled row\'s summary carries the file link',
       typeof collapsed.summary === 'string' && collapsed.summary.includes('dsh-claude-file-link'),
       JSON.stringify(collapsed.summary))
-    check('the row\'s title comes from the seat copy',
-      (collapsed.disclosure || {}).title === 't:tool.title.edit', JSON.stringify(collapsed.disclosure))
+    check('the row\'s title comes from the seat copy and stands in the collapsed content',
+      (collapsed.disclosure || {}).title === '' && collapsed.texts.includes('t:tool.title.edit'),
+      JSON.stringify({ title: (collapsed.disclosure || {}).title, texts: collapsed.texts }))
     check('the row itself opens and closes, keeping its content while open',
       (collapsed.disclosure || {}).expandOnRowClick === true && (collapsed.disclosure || {}).keepContentWhenOpen === true,
       JSON.stringify(collapsed.disclosure))
@@ -238,8 +242,21 @@ module.exports = {
     check('a file touched once draws no merge mark: its own row stands alone',
       (collapsed.root || {}).merge === null && (running.root || {}).merge === null,
       JSON.stringify({ collapsed: (collapsed.root || {}).merge, running: (running.root || {}).merge }))
-    check('switching the file rows off hands both seat keys back', files.offSeats === 0, JSON.stringify(files.offSeats))
-    check('switching them back takes both again, without a reload', files.backSeats === 2, JSON.stringify(files.backSeats))
+    check('a read reads as a row of the read variant with the host\'s own title',
+      (readRow.root || {}).variant === 'read' && (readRow.root || {}).tool === 'read' &&
+        readRow.texts.includes('t:tool.title.read') && readRow.texts.includes('app.js'),
+      JSON.stringify({ root: readRow.root, texts: readRow.texts }))
+    check('a read draws no +n -m tail: it changed nothing',
+      (readRow.figures || []).length === 0, JSON.stringify(readRow.figures))
+    check('expanded, a read shows the file\'s own window, read back out of its result',
+      ((readRow.read || {}).lines || []).length === 2 && (readRow.read || {}).totalLines === 2 &&
+        (readRow.read || {}).className === 'dsh-claude-file-read',
+      JSON.stringify(readRow.read))
+    check('a read that is still running shows the call alone and no window',
+      (reading.root || {}).state === 'running' && reading.read === null && reading.texts.includes('t:row.running'),
+      JSON.stringify({ root: reading.root, read: reading.read }))
+    check('switching the file rows off hands all three seat keys back', files.offSeats === 0, JSON.stringify(files.offSeats))
+    check('switching them back takes all three again, without a reload', files.backSeats === 3, JSON.stringify(files.backSeats))
     // The other plugin coming and going mid-session (packages/client/src/shared/peer-plugin.ts):
     // the decision is re-taken, not frozen at install.
     const peerOn = files.peerOn || {}
@@ -248,7 +265,7 @@ module.exports = {
       peerOn.seats === 0, JSON.stringify(peerOn))
     check('it takes the ported fold and reveal marks down with them',
       peerOn.foldMark === false && peerOn.revealMark === false, JSON.stringify(peerOn))
-    check('the other plugin leaving hands the seat keys back', peerOff.seats === 2, JSON.stringify(peerOff))
+    check('the other plugin leaving hands the seat keys back', peerOff.seats === 3, JSON.stringify(peerOff))
     check('leaving brings the fold mark back', peerOff.foldMark === true, JSON.stringify(peerOff))
   },
   'chat-wait'(r) {
