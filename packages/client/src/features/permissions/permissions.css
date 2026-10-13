@@ -37,7 +37,7 @@ body[data-dsh-claude-style] .dsh-claude-segment {
   line-height: 18px;
   padding: 3px 12px;
   border-radius: 7px;
-  transition: background-color .1s, color .1s;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-segment:hover:not([data-active]) {
@@ -98,7 +98,7 @@ body[data-dsh-claude-style] .dsh-claude-perm-btn {
   font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-perm-label {
   min-width: 0;

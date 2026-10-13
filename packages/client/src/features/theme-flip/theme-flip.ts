@@ -1,6 +1,7 @@
 import { DARK_THEME_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { subscribeMutations } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
+import { motionMs } from '../../shared/motion'
 
 /**
  * The skin's own 0.12s border/box-shadow transitions (composer card, input
@@ -31,7 +32,7 @@ import { requestFrame } from '../../core/frame'
  * aria-label/aria-selected (D9), and this flag must not feed it.
  */
 export const THEME_FLIP_ATTR = 'data-dsh-theme-transitioning'
-export const THEME_FLIP_MS = 300
+export const THEME_FLIP_MS = motionMs('--dsh-claude-duration-fade')
 // Paint properties a theme flip changes; cancelling their transitions
 // snaps them to the new theme's values in one frame.
 export const THEME_FLIP_PROPS: Record<string, boolean> = {

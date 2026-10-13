@@ -1,5 +1,9 @@
 import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
+import { motionMs } from '../../shared/motion'
+
+/** One flash of a particle, in seconds: the period token the stylesheet's own shorthand runs (D65). */
+const FLASH_S = motionMs('--dsh-claude-period-flash') / 1000
 
 /**
  * The dot matrix the reasoning-effort slider (effort/control.ts) shows on
@@ -97,8 +101,8 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
       sq.style.removeProperty('animation-duration')
       return
     }
-    sq.style.setProperty('animation-delay', `${(cellUnit(r, c, 2) * 1.38 + 0.3).toFixed(3)}s`, 'important')
-    sq.style.setProperty('animation-duration', `${(1.45 * (0.92 + cellUnit(r, c, 3) * 0.16)).toFixed(3)}s`, 'important')
+    sq.style.setProperty('animation-delay', `${(cellUnit(r, c, 2) * FLASH_S * 0.95 + FLASH_S * 0.21).toFixed(3)}s`, 'important')
+    sq.style.setProperty('animation-duration', `${(FLASH_S * (0.92 + cellUnit(r, c, 3) * 0.16)).toFixed(3)}s`, 'important')
   }
 
 
@@ -130,7 +134,7 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
            !important (it resets delay/duration), so a plain assignment
            would silently lose. Standing still it is left off, for the same
            reason paintParticle leaves the cycle off (D26). */
-        if (!motionReduced()) cell.style.setProperty('animation-delay', `${(((1 - fx) * 0.45) + cellUnit(r, c, 4) * 0.08).toFixed(3)}s`, 'important')
+        if (!motionReduced()) cell.style.setProperty('animation-delay', `${((1 - fx) * FLASH_S * 0.31 + cellUnit(r, c, 4) * FLASH_S * 0.055).toFixed(3)}s`, 'important')
         const sq = buildElement('div', 'dsh-claude-effort-matrix-sq')
         /* The plume shape is a STATIC per-block opacity: the flash animates
            the colour through it, so the two never fight. */

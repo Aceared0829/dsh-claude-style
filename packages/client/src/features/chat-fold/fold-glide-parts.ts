@@ -2,6 +2,7 @@ import { requestFrame } from '../../core/frame'
 import { CHAT_ROLLING_ATTR } from '../../constants'
 import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { handBackFollow, readerMovedSince } from '../../shared/scroll-owner'
+import { motionMs } from '../../shared/motion'
 
 /**
  * The measuring and bookkeeping half of the fold glide (fold-glide.ts): what
@@ -12,8 +13,8 @@ import { handBackFollow, readerMovedSince } from '../../shared/scroll-owner'
  * The glide itself — the click it takes over, the intent it remembers, the
  * two directions it rolls — lives in fold-glide.ts.
  */
-/** The door's duration, the same tier as the sidebar's AnimatedRows. */
-export const FOLD_ROLL_MS = 200
+/** The door's duration: the movement token, which the sliding highlight shares (D65). */
+export const FOLD_ROLL_MS = motionMs('--dsh-claude-duration-move')
 /**
  * The share of that duration the visible stretch gets; the rest is left for
  * the height outside the viewport.

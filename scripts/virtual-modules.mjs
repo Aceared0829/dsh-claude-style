@@ -68,11 +68,22 @@ export function chunkModulesModule(ids) {
 }
 
 /**
+ * The generated module's source: everything the build produces for the browser
+ * half, as named exports. The build serves it to the bundle and the unit tests'
+ * config writes it out, so both hand a module under test the same values.
+ *
+ * @param values - export name → value.
+ */
+export function generatedSource(values) {
+  return Object.entries(values).map(([name, value]) => `export const ${name} = ${JSON.stringify(value)}`).join('\n')
+}
+
+/**
  * The generated module (packages/client/src/generated.d.ts) as an esbuild plugin: everything the
  * build produces for the browser half, as named exports.
  */
 export function generatedModule(values) {
-  const contents = Object.entries(values).map(([name, value]) => `export const ${name} = ${JSON.stringify(value)}`).join('\n')
+  const contents = generatedSource(values)
   return {
     name: 'generated',
     setup(build) {

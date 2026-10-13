@@ -85,10 +85,14 @@
       // rules are what the page applies.
       var styleEl = document.getElementById('dsh-claude-style-style')
       var sheetRules = styleEl && styleEl.sheet ? Array.prototype.slice.call(styleEl.sheet.cssRules) : []
-      r.menuEntryKeyframes = sheetRules.some(function (rule) { return rule instanceof CSSKeyframesRule && rule.name === 'dsh-claude-account-menu-in' })
+      // The entrance is the shared preset (shared/motion.css, D65): the host menu's
+      // own rule plays dsh-claude-surface-in, which the stylesheet carries. The
+      // rule is read as written, since the shorthand names the timing token and a
+      // shorthand holding var() leaves the longhands of `style` empty.
+      r.menuEntryKeyframes = sheetRules.some(function (rule) { return rule instanceof CSSKeyframesRule && rule.name === 'dsh-claude-surface-in' })
       r.menuEntryAnimation = sheetRules.some(function (rule) {
-        return rule instanceof CSSStyleRule && rule.style.animationName === 'dsh-claude-account-menu-in' &&
-          rule.style.animationDuration === '0.15s' && rule.style.animationTimingFunction === 'ease'
+        return rule instanceof CSSStyleRule && rule.selectorText.indexOf('data-dsh-claude-account-ready') !== -1 &&
+          rule.cssText.indexOf('dsh-claude-surface-in') !== -1
       })
       // Open the host's own menu: the card mounts with the host's rows, the skin
       // injects ours a frame later, and the host re-places the card a frame after

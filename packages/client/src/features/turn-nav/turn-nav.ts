@@ -8,6 +8,7 @@ import { CHAT_TURN_ATTRIBUTE, FOREGROUND_SELECTOR, PEER_SHEET_SELECTOR, TURN_RAI
 import { buildElement, closestFrom } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, closeOtherPopovers, createHoverIntent, registerPopover, unregisterPopover } from '../../shared/popover'
 import { easeScrollFor, holdReader, scrollPositionFor, writeScroll } from '../../shared/scroll-owner'
+import { motionMs } from '../../shared/motion'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './turn-nav.manifest'
@@ -59,8 +60,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * gliding the whole way kept the reader waiting most of a second.
    */
   const TURN_NAV_GLIDE_LEAD_PX = 480
-  /** How long the landing line stays: its animation (turn-nav.css) plus a frame. */
-  const LANDED_MS = 1500
+  /** How long the landing line stays: its animation (turn-nav.css) at its own period (D65). */
+  const LANDED_MS = motionMs('--dsh-claude-period-landed')
   /** How long a jump to a turn outside the loaded window may take to bring its rows in. */
   const LANDING_WAIT_MS = 10000
   /**

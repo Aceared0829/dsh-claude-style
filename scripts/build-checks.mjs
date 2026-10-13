@@ -230,3 +230,29 @@ export function checkScrollOwner(metafile) {
     }
   }
 }
+
+/**
+ * Refuse an easing curve written as a literal in the browser half (D65): a curve
+ * is a token, so a Web Animations call names one through
+ * packages/client/src/shared/motion.ts and a curve changed in the token table reaches
+ * every animation. `linear` and the step functions are mechanical timing and
+ * stay; the check reads the `easing` option of a keyframe or of an animation.
+ *
+ * @param srcDir - packages/client/src.
+ */
+export function checkMotionSources(srcDir) {
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) return walk(full)
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [full] : []
+  })
+  for (const file of walk(srcDir)) {
+    const text = fs.readFileSync(file, 'utf8')
+    for (const match of text.matchAll(/easing:\s*'([^']*)'/g)) {
+      const value = match[1]
+      if (value === 'linear' || /^steps\(/.test(value)) continue
+      const line = text.slice(0, match.index).split('\n').length
+      throw new Error(`build: ${path.relative(ROOT, file).replaceAll('\\', '/')}:${line} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
+    }
+  }
+}

@@ -29,14 +29,14 @@ body[data-dsh-claude-style] [data-dsh-claude-search-row] > :is([class*="_brand"]
   grid-area: 1 / 1;
 }
 body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"] {
-  transition: opacity 0.16s ease, visibility 0.16s ease;
+  transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard), visibility var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
 body[data-dsh-claude-style] .dsh-claude-search-trigger {
   display: flex;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.16s ease, visibility 0.16s ease;
+  transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard), visibility var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
   min-width: 0;
   height: 28px;
   margin: 0;
@@ -187,7 +187,10 @@ body[data-dsh-claude-style] .dsh-claude-search-trigger-label {
    skin's own rows inside. It fades and settles in; on close search.ts marks
    the overlay and keeps it mounted while card and mask fade out together. */
 body[data-dsh-claude-style] .dsh-claude-search-dialog {
-  animation: dsh-claude-search-in 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* The card is set high in the window, so it settles down into place; the
+     shared entrance preset travels that way with a negative start (D65). */
+  --dsh-claude-surface-from: calc(-1 * var(--dsh-claude-distance-nudge));
+  animation: dsh-claude-surface-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-glide);
   width: min(760px, 100%);
   max-height: 100%;
   margin: 8vh 0 auto;
@@ -199,25 +202,13 @@ body[data-dsh-claude-style] .dsh-claude-search-dialog {
   box-shadow: 0 16px 48px rgba(20, 20, 19, 0.14), 0 2px 8px rgba(20, 20, 19, 0.06);
 }
 body[data-dsh-claude-style] [data-dsh-claude-search-closing] > .dsh-claude-search-dialog {
-  animation: dsh-claude-search-out 0.14s ease forwards !important;
+  animation: dsh-claude-surface-out var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard) forwards !important;
 }
 body[data-dsh-claude-style] [data-dsh-claude-search-closing] > [class*="_mask"] {
-  animation: dsh-claude-search-mask-out 0.14s ease forwards !important;
+  animation: dsh-claude-fade-out var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard) forwards !important;
 }
 body[data-dsh-claude-style] [data-dsh-claude-search-closing] {
   pointer-events: none !important;
-}
-@keyframes dsh-claude-search-in {
-  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes dsh-claude-search-out {
-  from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translateY(-4px) scale(0.985); }
-}
-@keyframes dsh-claude-search-mask-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-dialog {
   border-color: var(--dsw-alias-border-l2) !important;
@@ -301,7 +292,7 @@ body[data-dsh-claude-style] .dsh-claude-search-filter {
   font-size: 14px;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.12s ease;
+  transition: color var(--dsh-claude-timing-feedback);
   user-select: none;
   -webkit-user-select: none;
 }

@@ -1,0 +1,59 @@
+/* ---------- The shared motion presets, and the motion tokens they read ---------- */
+/* The effects more than one feature needs, in one place (D65). Every value is a
+   token from packages/client/src/theme/tokens.json, generated into the token sheet; a
+   feature that wants a different distance sets the preset's own custom property
+   where it uses it, and keeps its own keyframes only when the effect is its own.
+   The reduced-animation choice is answered once, for every skin animation, in
+   theme/chrome.css (D26, D65); the presets end where the element rests, so a
+   duration of one instant leaves no half state behind. */
+
+body[data-dsh-claude-style] {
+  /* The wording swap's own values: shared/swapping-text.css lays the box out
+     with the distance, and both swap presets below travel it. */
+  --dsh-claude-swap-distance: var(--dsh-claude-distance-travel);
+  --dsh-claude-swap-blur: var(--dsh-claude-blur-soft);
+  --dsh-claude-swap-duration: var(--dsh-claude-duration-swap);
+  --dsh-claude-swap-gap: var(--dsh-claude-duration-swap-gap);
+  --dsh-claude-swap-ease: var(--dsh-claude-ease-in-out);
+}
+
+/* A surface arriving and leaving: it rises into place from
+   --dsh-claude-surface-from (a negative value is a surface that drops in) while
+   it grows from --dsh-claude-surface-scale. Menus, popovers, panels, dialogs and
+   toasts all wear it, so every surface the skin opens arrives the same way. */
+@keyframes dsh-claude-surface-in {
+  from { opacity: 0; transform: translateY(var(--dsh-claude-surface-from, var(--dsh-claude-distance-nudge))) scale(var(--dsh-claude-surface-scale, var(--dsh-claude-scale-surface))); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes dsh-claude-surface-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(var(--dsh-claude-surface-to, calc(-1 * var(--dsh-claude-distance-nudge)))) scale(var(--dsh-claude-surface-scale, var(--dsh-claude-scale-surface))); }
+}
+
+/* A plain fade, where nothing travels. */
+@keyframes dsh-claude-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dsh-claude-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* One half of a wording swap, for a swap driven by mounting rather than by
+   shared/swapping-text.ts: the old words leave upward through the blur, the new
+   ones rise from below, both over the same distance. */
+@keyframes dsh-claude-swap-out {
+  from { opacity: 1; filter: blur(0); transform: translateY(0); }
+  to { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(calc(-1 * var(--dsh-claude-swap-distance))); }
+}
+@keyframes dsh-claude-swap-in {
+  from { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(var(--dsh-claude-swap-distance)); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+/* A placeholder breathing while its content is computed. */
+@keyframes dsh-claude-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}

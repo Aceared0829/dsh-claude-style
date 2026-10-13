@@ -223,6 +223,72 @@ and scrolls to its end.
   follows the same hairline so the two tiers stay one outline. Accent is never
   used for focus strokes.
 
+## Motion
+
+Every duration, curve, distance, blur and scale the skin uses is a token here,
+and a stylesheet or a Web Animations call reads the token rather than writing the
+value (D65). One value per role, so a faster feedback or a calmer swap is one
+edit; the build refuses a time or a curve written anywhere else.
+
+- Feedback: a control answering hover, press or focus.
+- Reveal: content entering the chat area at the host's own 120 ms.
+- Surface: an entrance — a menu, a popover, a panel, a dialog, a toast.
+- Exit: a dismissal, deliberately quicker than the entrance.
+- Travel: something moving along its own track (a fold's door, the reasoning
+  slider).
+- The swap, its gap and the roll of a figure's digits come from the transitions
+  this skin ports; `THIRD_PARTY_NOTICES.md` names each one.
+- Loop periods are separate from durations: a sweep, a pulse, a blink, a spin.
+- The presets these tokens feed live in `packages/client/src/shared/motion.css`:
+  a surface arriving or leaving, a plain fade, one half of a wording swap, and
+  the placeholder pulse. A feature that needs its own effect reads the tokens
+  and keeps its own keyframes.
+
+The table below is generated from `packages/client/src/theme/tokens.json` by `npm run build`;
+edit the JSON, not the table.
+
+<!-- generated:motion (packages/client/src/theme/tokens.json) -->
+| Token | Value | Use |
+|---|---|---|
+| `--dsh-claude-duration-instant` | `80ms` | the composer caret following the insertion point |
+| `--dsh-claude-duration-feedback` | `120ms` | a control answering hover, press or focus: its colour, background, border, shadow, or a small turn or slide of its own parts |
+| `--dsh-claude-duration-reveal` | `120ms` | content entering the chat area: an opened row's body, and each streamed piece of the answer |
+| `--dsh-claude-duration-surface` | `150ms` | a floating surface or a group of controls appearing: popover cards, menus, panels, the search dialog, a toast, a strip fading in |
+| `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal |
+| `--dsh-claude-duration-swap` | `150ms` | each half of a wording swap: the old words leaving, the new ones arriving |
+| `--dsh-claude-duration-swap-gap` | `50ms` | the pause between the two halves of a wording swap |
+| `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
+| `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
+| `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight (D20), and a sidebar icon's quarter turn |
+| `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow |
+| `--dsh-claude-duration-flight` | `400ms` | the sent message flying from the composer to its row |
+| `--dsh-claude-duration-step` | `500ms` | one step of the reasoning window's text rising two lines |
+| `--dsh-claude-duration-pop` | `500ms` | a changed digit of the session numbers popping in |
+| `--dsh-claude-duration-stagger` | `70ms` | how far behind the rest the last two popping digits start |
+| `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
+| `--dsh-claude-period-sweep` | `2000ms` | one pass of the highlight band across the waiting line's words |
+| `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the band across a running process group's header |
+| `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |
+| `--dsh-claude-period-flash` | `1450ms` | one flash of the reasoning slider's top-rung matrix |
+| `--dsh-claude-period-blink` | `1000ms` | one blink of the composer caret |
+| `--dsh-claude-period-spin` | `850ms` | one turn of the background-work ring in the sidebar |
+| `--dsh-claude-period-landed` | `1400ms` | the mark on the turn the conversation navigator landed on |
+| `--dsh-claude-period-hold` | `840ms` | how long the reasoning window's text stands between two steps |
+| `--dsh-claude-ease-standard` | `ease` | feedback and surfaces: the default curve |
+| `--dsh-claude-ease-out` | `ease-out` | something arriving and settling: a fold's door, content entering the chat area, the landing mark |
+| `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
+| `--dsh-claude-ease-glide` | `cubic-bezier(0.22, 0.61, 0.36, 1)` | travel along a track: the sliding highlight, the reasoning slider, the search dialog's entrance, the reasoning window's step |
+| `--dsh-claude-ease-roll` | `cubic-bezier(0.4, 0, 0.2, 1)` | digits rolling over: the file rows' tail and the process group header's counts |
+| `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the session numbers' digits popping in |
+| `--dsh-claude-ease-host-sweep` | `cubic-bezier(0.33, 0, 0.67, 1)` | the band across a running process group's header |
+| `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, and a small row's wording swap travels |
+| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, and the distance a popping digit comes from |
+| `--dsh-claude-blur-soft` | `2px` | the blur words and digits pass through while they swap or pop in |
+| `--dsh-claude-scale-surface` | `0.98` | the scale a surface grows from as it rises |
+| `--dsh-claude-timing-feedback` | `var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard)` | shorthand: a control's state change, written after the property in a transition |
+| `--dsh-claude-timing-surface` | `var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard)` | shorthand: a surface appearing, written after the property or the keyframes' name |
+<!-- /generated:motion -->
+
 ## Text selection
 
 Selection is the one surface that leaves the palette on purpose — it is a

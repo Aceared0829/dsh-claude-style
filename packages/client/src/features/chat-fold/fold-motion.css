@@ -46,10 +46,11 @@
 }
 
 /* The entrance: 2px up and a fade, at the 120 ms the chat area already uses
-   (MessageItem and the TurnNavigator preview match it). It rides the folding
-   switch with the rest of the feature: off leaves the host's own insertion. */
+   (MessageItem and the TurnNavigator preview match it), which is the reveal
+   token (D65). It rides the folding switch with the rest of the feature: off
+   leaves the host's own insertion. */
 body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] [data-disclosure-row] ~ *:not([data-turn-process-member] *, [data-turn-trigger] *) {
-  transition: opacity 120ms ease-out, translate 120ms ease-out;
+  transition: opacity var(--dsh-claude-duration-reveal) var(--dsh-claude-ease-out), translate var(--dsh-claude-duration-reveal) var(--dsh-claude-ease-out);
 }
 
 /* The reader's animation choice, resolved onto <body> (packages/client/src/core/prefs.ts, D26):
@@ -90,12 +91,13 @@ body[data-dsh-claude-style] [data-dsh-claude-rolling] > * {
    window is exactly as tall as the text and nothing is faded. */
 
 body[data-dsh-claude-style] [data-dsh-claude-reason-window] {
-  --dsh-claude-reason-hold: 840ms;
+  --dsh-claude-reason-hold: var(--dsh-claude-period-hold);
   --dsh-claude-reason-lines: 2;
   --dsh-claude-reason-window-lines: 4;
   --dsh-claude-reason-window-cap: 400px;
   --dsh-claude-reason-fade: 28px;
-  --dsh-claude-reason-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dsh-claude-reason-ease: var(--dsh-claude-ease-glide);
+  --dsh-claude-reason-step: var(--dsh-claude-duration-step);
   overflow: hidden;
   height: var(--dsh-claude-reason-window-height, auto);
 }
@@ -107,7 +109,7 @@ body[data-dsh-claude-style] [data-dsh-claude-reason-window][data-dsh-claude-reas
 
 body[data-dsh-claude-style] [data-dsh-claude-reason-window] > [data-markdown-variant] {
   transform: translateY(0);
-  transition: transform var(--dsh-claude-reason-step, 500ms) var(--dsh-claude-reason-ease);
+  transition: transform var(--dsh-claude-reason-step) var(--dsh-claude-reason-ease);
   will-change: transform;
 }
 

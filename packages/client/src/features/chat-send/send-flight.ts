@@ -6,6 +6,7 @@ import { startMorph } from './send-morph'
 import { CHAT_FLIGHT_MS, CHAT_LANDING_MS } from './send-shape'
 import { chatSendAlpha, snapshotComposer } from './send-snapshot'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, FLOW_KIND_ATTRIBUTE, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { motionEase } from '../../shared/motion'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './send-flight.manifest'
@@ -207,7 +208,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     activeFlight.landedRow = row
     const fade = activeFlight.morph.wrapper.animate([{ opacity: 1 }, { opacity: 0 }], {
       duration: CHAT_LANDING_MS,
-      easing: 'ease-out',
+      easing: motionEase('--dsh-claude-ease-out'),
       fill: 'forwards',
     })
     activeFlight.morph.animations.push(fade)

@@ -56,12 +56,19 @@ body[data-dsh-claude-style] .dsh-claude-effort-value {
   font-size: 13px;
   line-height: 16px;
   color: var(--dsw-alias-label-primary, #141413);
-  transition: color 0.18s ease;
-  animation: dshClaudeEffortValueIn 0.28s ease;
+  transition: color var(--dsh-claude-timing-feedback);
+  animation: dsh-claude-swap-in var(--dsh-claude-duration-swap) var(--dsh-claude-swap-ease);
 }
 /* The outgoing name. It sits exactly where the value sat (the override writes
    its left offset), takes no layout space, and ends at opacity 0 — so it never
    needs removing, only re-arming. */
+/* The two halves of the name's swap are siblings, so both are told the travel:
+   the shared preset over the short distance, this line being 16px tall
+   (shared/motion.css, D65). */
+body[data-dsh-claude-style] .dsh-claude-effort-value,
+body[data-dsh-claude-style] .dsh-claude-effort-value-ghost {
+  --dsh-claude-swap-distance: var(--dsh-claude-distance-nudge);
+}
 body[data-dsh-claude-style] .dsh-claude-effort-value-ghost {
   position: absolute;
   left: 0;
@@ -72,15 +79,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-value-ghost {
   line-height: 16px;
   color: var(--dsw-alias-label-primary, #141413);
   opacity: 0;
-  animation: dshClaudeEffortValueOut 0.28s ease forwards;
-}
-@keyframes dshClaudeEffortValueIn {
-  from { filter: blur(4px); opacity: 0; transform: translateY(5px); }
-  to { filter: blur(0); opacity: 1; transform: translateY(0); }
-}
-@keyframes dshClaudeEffortValueOut {
-  from { filter: blur(0); opacity: 1; transform: translateY(0); }
-  to { filter: blur(4px); opacity: 0; transform: translateY(-5px); }
+  animation: dsh-claude-swap-out var(--dsh-claude-duration-swap) var(--dsh-claude-swap-ease) forwards;
 }
 /* The ends name the axis: a scale, not a value, so they keep the caption colour
    and take their words from the copy table (更快 / 更强 in Chinese). */
@@ -141,7 +140,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-fill {
   border-radius: 8px 0 0 8px;
   corner-shape: round;
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 26%, transparent);
-  transition: width 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.18s ease;
+  transition: width var(--dsh-claude-duration-move) var(--dsh-claude-ease-glide), opacity var(--dsh-claude-duration-move) var(--dsh-claude-ease-standard);
   pointer-events: none;
 }
 /* One tick per stop, centred on the stop's resting position (the override
@@ -150,7 +149,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-fill {
 body[data-dsh-claude-style] .dsh-claude-effort-ticks {
   position: absolute;
   inset: 0;
-  transition: opacity 0.18s ease;
+  transition: opacity var(--dsh-claude-duration-move) var(--dsh-claude-ease-standard);
   pointer-events: none;
 }
 body[data-dsh-claude-style] .dsh-claude-effort-tick {
@@ -195,11 +194,7 @@ body[data-dsh-claude-style] .dsh-claude-effort[data-apex] .dsh-claude-effort-mat
    the cascade and freeze the cell at 0. fill-mode both covers the pre-delay
    (from) and the rest (to), so the keyframes own the whole life cycle. */
 body[data-dsh-claude-style] .dsh-claude-effort-matrix-cell {
-  animation: dshClaudeEffortCellIn 0.15s ease both !important;
-}
-@keyframes dshClaudeEffortCellIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  animation: dsh-claude-fade-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard) both !important;
 }
 body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
   width: 100% !important;
@@ -219,7 +214,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
   /* One flash cycle: hold violet 250ms, jump to the block's lighter peak 480ms,
      ease back over 720ms. var() in keyframes resolves against the animated
      block, so one keyframes rule serves every block's own peak colour. */
-  animation: dshClaudeEffortFlash 1.45s infinite ease-in-out !important;
+  animation: dshClaudeEffortFlash var(--dsh-claude-period-flash) infinite var(--dsh-claude-ease-in-out) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="0"] {
   --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 62%, var(--dsh-claude-apex-flash, #d9d2f5));
@@ -293,7 +288,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-knob {
      the fill. The explicit 1 also gives the release a numeric target to ease
      back to (an unset value is `none`, which does not interpolate). */
   scale: 1;
-  transition: translate 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), scale 0.12s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: translate var(--dsh-claude-duration-move) var(--dsh-claude-ease-glide), scale var(--dsh-claude-timing-feedback), background-color var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard), box-shadow var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard);
   will-change: translate, scale;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-effort-knob {
@@ -309,7 +304,7 @@ body[data-dsh-claude-style] .dsh-claude-effort[data-dragging] .dsh-claude-effort
   scale: 1.1 !important;
   /* `translate` is dropped from the transition (the drag writes it every
      frame); the lift itself still eases in and back out. */
-  transition: scale 0.12s ease, background-color 0.3s ease, box-shadow 0.3s ease !important;
+  transition: scale var(--dsh-claude-timing-feedback), background-color var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard), box-shadow var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-effort[data-dragging] .dsh-claude-effort-fill {
   transition: none !important;
@@ -360,7 +355,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn {
      under the opaque card. Page-level surfaces sit at 1000 and above, and the
      trigger goes with the seat when the composer does. */
   z-index: 10;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-effort-btn:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));

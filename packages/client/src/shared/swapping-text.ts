@@ -1,4 +1,5 @@
 import { motionReduced } from '../core/prefs'
+import { motionMs, motionValue } from './motion'
 
 /**
  * One line of words that swaps in place, after transitions.dev's "Text states
@@ -45,22 +46,13 @@ function stateOf(element: HTMLElement) {
   return state
 }
 
-/** A duration written in a CSS token, in milliseconds. */
-function milliseconds(element: HTMLElement, token: string, fallback: number) {
-  const value = getComputedStyle(element).getPropertyValue(token)
-  const parsed = /^\s*([\d.]+)\s*(ms|s)?\s*$/.exec(value)
-  if (parsed === null) return fallback
-  const amount = Number(parsed[1])
-  return Number.isFinite(amount) ? (parsed[2] === 's' ? amount * 1000 : amount) : fallback
-}
-
-/** The distance a swap travels, as written in the token, or the recipe's own. */
+/** The distance a swap travels, as written in the token, or the shared travel. */
 function distanceOf(element: HTMLElement) {
   const value = getComputedStyle(element).getPropertyValue('--dsh-claude-swap-distance').trim()
   const parsed = /^(-?[\d.]+)\s*(px|rem)?$/.exec(value)
-  if (parsed === null) return '8px'
+  if (parsed === null) return motionValue('--dsh-claude-distance-travel')
   const amount = Number(parsed[1])
-  if (!Number.isFinite(amount)) return '8px'
+  if (!Number.isFinite(amount)) return motionValue('--dsh-claude-distance-travel')
   return parsed[2] === 'rem' ? `${amount}rem` : `${amount}px`
 }
 
@@ -199,8 +191,8 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   element.appendChild(leaving)
   void leaving.offsetWidth
   leaving.classList.add('is-exit')
-  const swap = milliseconds(element, '--dsh-claude-swap-duration', 150)
-  const gap = milliseconds(element, '--dsh-claude-swap-gap', 50)
+  const swap = motionMs('--dsh-claude-duration-swap')
+  const gap = motionMs('--dsh-claude-duration-swap-gap')
   state.timer = window.setTimeout(() => {
     state.timer = null
     const next = state.pending

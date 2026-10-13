@@ -45,7 +45,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-rail[data-fade-top][data-fade-botto
 }
 body[data-dsh-claude-style] .dsh-claude-turn-rail-track {
   position: relative;
-  transition: transform 0.15s ease, opacity 0.12s ease;
+  transition: transform var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard), opacity var(--dsh-claude-timing-feedback);
 }
 /* The card covers the rail while it is open; the marks step back under it. */
 body[data-dsh-claude-style] .dsh-claude-turn-rail[data-dsh-claude-turn-nav-open] .dsh-claude-turn-rail-track {
@@ -69,7 +69,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav-dash {
   background: var(--dsw-alias-border-l4);
   transform: scaleX(0.6);
   transform-origin: 100% 50%;
-  transition: transform 0.14s ease, background-color 0.14s ease;
+  transition: transform var(--dsh-claude-timing-feedback), background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-turn-rail-mark::before {
   content: "";
@@ -105,7 +105,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav[data-open="true"] {
   width: 288px;
   max-width: calc(100vw - 16px);
   transform: none;
-  transition: opacity 0.12s ease;
+  transition: opacity var(--dsh-claude-timing-feedback);
 }
 /* The rows scroll in step with the rail's track; the wheel never reaches the page. */
 body[data-dsh-claude-style] .dsh-claude-turn-nav-list {
@@ -137,7 +137,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav-row {
   line-height: 24px;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-turn-nav-row:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
@@ -185,7 +185,7 @@ body[data-dsh-claude-style] [data-dsh-claude-turn-nav-landed]::after {
   border-radius: 1px !important;
   background: var(--dsw-alias-brand-primary, #D97757) !important;
   pointer-events: none !important;
-  animation: dsh-claude-turn-nav-landed 1.4s ease-out forwards !important;
+  animation: dsh-claude-turn-nav-landed var(--dsh-claude-period-landed) var(--dsh-claude-ease-out) forwards !important;
 }
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-turn-nav-landed]::after {
   animation: none !important;

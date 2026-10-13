@@ -36,7 +36,7 @@ body[data-dsh-claude-style] [data-dsh-view-tabs] {
      进行中 / 已归档 control. Opacity, not display, so the header keeps its height
      and the actions beside it never move. */
   opacity: 0;
-  transition: opacity 0.16s ease;
+  transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
 /* `centerCol` is the pane holding the header AND the transcript, so hovering the
    strip itself keeps it up, while the right sidebar — which sits outside it —
@@ -62,7 +62,7 @@ body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"] {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  transition: color 0.2s ease;
+  transition: color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"]:hover {
   color: var(--dsw-alias-label-primary, #141413);
@@ -131,7 +131,7 @@ body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
      up must not blank it: its own hover keeps it up, and the longer fade covers
      the 40px crossing between the pane and the titlebar. */
   opacity: 0 !important;
-  transition: opacity 0.3s ease !important;
+  transition: opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard) !important;
 }
 body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs]:hover {
   opacity: 1 !important;

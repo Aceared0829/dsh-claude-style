@@ -6,14 +6,10 @@
    placement, its width limits, the corner it grows from — and comes later in
    the cascade, so it wins where the two overlap. */
 
-/* The same short rise as a one-shot animation, for a surface that MOUNTS
-   instead of toggling `data-open` (the host's own panels, which the skin opens
-   but does not build). Same distance, same duration, same curve as the card
-   transition above, so every surface the skin opens arrives the same way. */
-@keyframes dsh-claude-popover-in {
-  from { opacity: 0; transform: translateY(4px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
+/* Its own entrance, the card's own rise written as a transition on
+   `data-open`; a surface that MOUNTS instead (the host's own panels, which the
+   skin opens but does not build) plays the shared dsh-claude-surface-in preset
+   with the same distance, duration and curve (shared/motion.css, D65). */
 body[data-dsh-claude-style] .dsh-claude-popover-card {
   background: var(--dsw-alias-bg-overlay, #ffffff);
   border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
@@ -31,11 +27,11 @@ body[data-dsh-claude-style] .dsh-claude-popover-card {
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px) scale(0.98);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
+  transition: opacity var(--dsh-claude-timing-surface), transform var(--dsh-claude-timing-surface), visibility 0s linear var(--dsh-claude-duration-surface);
 }
 body[data-dsh-claude-style] .dsh-claude-popover-card[data-open="true"] {
   visibility: visible;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+  transition: opacity var(--dsh-claude-timing-surface), transform var(--dsh-claude-timing-surface), visibility 0s;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);
@@ -85,7 +81,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-item {
   box-shadow: none;
   cursor: pointer;
   font-family: var(--dsw-font-family);
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
   box-sizing: border-box;
 }
 body[data-dsh-claude-style] .dsh-claude-popover-item:hover {

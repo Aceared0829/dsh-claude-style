@@ -3,16 +3,17 @@
  * the constants, one fading segment, one container's snapshot, and the state
  * the factory owns.
  */
+import { motionMs } from '../../shared/motion'
 
 export const CHAT_REVEAL_STEPS = 24
 /** The faintest step: a fifth faint, which still reads as text arriving in both themes. */
 export const CHAT_REVEAL_MIN_OPACITY = 0.2
 /**
- * How long a character takes to become fully opaque. Not a preference: a longer
- * fade would spread the step rules into visible steps, a shorter one crosses
- * in a single frame. Moving it means moving the step count and its rules too.
+ * How long a character takes to become fully opaque: the reveal token, the same
+ * pace the chat area's own entrances run at (D65). Moving it means moving the
+ * step count and its rules too.
  */
-export const CHAT_REVEAL_MS = 120
+export const CHAT_REVEAL_MS = motionMs('--dsh-claude-duration-reveal')
 /** The prefix of every highlight name this engine registers (reveal-rules.css carries the same names by hand). */
 export const CHAT_REVEAL_HIGHLIGHT_PREFIX = 'dsh-claude-tok-'
 /** The custom property an element publishes its own colour to; the step rules read it inside ::highlight(). */

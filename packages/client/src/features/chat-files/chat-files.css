@@ -41,7 +41,7 @@ body[data-dsh-claude-style] .dsh-claude-file-title {
   line-height: calc(24px + var(--dsh-content-font-delta, 0px));
   color: var(--dsw-alias-label-secondary);
   font-weight: 400;
-  transition: color 100ms ease;
+  transition: color var(--dsh-claude-timing-feedback);
 }
 
 /* The host's own title slot stays empty: the operation's label stands in the
@@ -54,10 +54,9 @@ body[data-dsh-claude-style] .dsh-claude-file-title-slot {
    one grid cell, so the block is as wide as the wider of the two and the path
    beside it does not move sideways while they swap. */
 body[data-dsh-claude-style] .dsh-claude-file-op {
-  --dsh-claude-file-swap-duration: 150ms;
-  --dsh-claude-file-swap-shift: 4px;
-  --dsh-claude-file-swap-blur: 2px;
-  --dsh-claude-file-swap-ease: ease-in-out;
+  /* The block is one grid cell with two states in it, and its title sits on its
+     own line, so the swap travels the short distance (shared/motion.css, D65). */
+  --dsh-claude-swap-distance: var(--dsh-claude-distance-nudge);
   display: inline-grid;
   grid-template-areas: 'op';
   align-items: center;
@@ -69,25 +68,15 @@ body[data-dsh-claude-style] .dsh-claude-file-op > * {
 }
 
 /* The file's work moving on: transitions.dev's "Text states swap" (MIT), the
-   same snippet the running line swaps its words with (chat-wait.css). The state
-   leaving rises with a blur while the one taking its place rises in from below;
-   its tokens keep the snippet's names. */
+   snippet the running line swaps its words with, as one shared preset
+   (shared/motion.css, D65). The state leaving rises with a blur while the one
+   taking its place rises in from below. */
 body[data-dsh-claude-style] .dsh-claude-file-op-swapping .dsh-claude-file-op-out {
-  animation: dsh-claude-file-op-out var(--dsh-claude-file-swap-duration) var(--dsh-claude-file-swap-ease) forwards;
+  animation: dsh-claude-swap-out var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease) forwards;
 }
 
 body[data-dsh-claude-style] .dsh-claude-file-op-swapping .dsh-claude-file-op-in {
-  animation: dsh-claude-file-op-in var(--dsh-claude-file-swap-duration) var(--dsh-claude-file-swap-ease);
-}
-
-@keyframes dsh-claude-file-op-out {
-  from { opacity: 1; filter: blur(0); transform: translateY(0); }
-  to { opacity: 0; filter: blur(var(--dsh-claude-file-swap-blur)); transform: translateY(calc(-1 * var(--dsh-claude-file-swap-shift))); }
-}
-
-@keyframes dsh-claude-file-op-in {
-  from { opacity: 0; filter: blur(var(--dsh-claude-file-swap-blur)); transform: translateY(var(--dsh-claude-file-swap-shift)); }
-  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  animation: dsh-claude-swap-in var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease);
 }
 
 /* The animation choice reaches this swap through <body> (D26): reduced draws no
@@ -117,7 +106,7 @@ body[data-dsh-claude-style] .dsh-claude-file-summary {
   font-size: var(--dsh-content-font-size-secondary, 13px);
   line-height: calc(24px + var(--dsh-content-font-delta, 0px));
   color: var(--dsw-alias-label-tertiary);
-  transition: color 100ms ease;
+  transition: color var(--dsh-claude-timing-feedback);
 }
 
 /* The tail: it sits outside the summary's ellipsis, so it carries the same type
@@ -150,8 +139,9 @@ body[data-dsh-claude-style] .dsh-claude-file-del {
 }
 
 /* A row another row stands for comes off the page whole: the carrier is the
-   host's own call row, so the host row's spacing goes with it and the file's
-   calls leave one line behind (chat-files.ts, D62). */
+   box the host gave that call in its list (rowCarrier, file-row-merge.ts), so
+   the host's spacing around it goes with it and the file's calls leave one line
+   behind (chat-files.ts, D62). */
 body[data-dsh-claude-style] [data-dsh-claude-file-merge="gone"] {
   display: none;
 }
@@ -187,14 +177,14 @@ body[data-dsh-claude-style] .dsh-claude-file-roll-out {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: dsh-claude-file-roll-out 160ms cubic-bezier(.4, 0, .2, 1) forwards;
+  animation: dsh-claude-file-roll-out var(--dsh-claude-duration-roll) var(--dsh-claude-ease-roll) forwards;
 }
 
 /* The turn is classed on the character whose own digit changed: the characters
    of the row's first number stand still where they appeared, and only what a
    change really moved turns after it. */
 body[data-dsh-claude-style] .dsh-claude-file-roll-moving .dsh-claude-file-roll-in {
-  animation: dsh-claude-file-roll-in 160ms cubic-bezier(.4, 0, .2, 1);
+  animation: dsh-claude-file-roll-in var(--dsh-claude-duration-roll) var(--dsh-claude-ease-roll);
 }
 
 @keyframes dsh-claude-file-roll-out {
@@ -247,7 +237,7 @@ body[data-dsh-claude-style] .dsh-claude-file-link {
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   cursor: pointer;
-  transition: color 100ms ease;
+  transition: color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-file-row:hover .dsh-claude-file-link,
@@ -340,7 +330,7 @@ body[data-dsh-claude-style] .dsh-claude-file-inspect {
   line-height: 16px;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 100ms ease;
+  transition: opacity var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-file-root:hover .dsh-claude-file-inspect,

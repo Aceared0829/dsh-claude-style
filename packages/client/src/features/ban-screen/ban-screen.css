@@ -135,7 +135,7 @@ body[data-dsh-claude-style] .dsh-claude-ban-signout {
   line-height: 18px;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(20, 20, 19, 0.05);
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-signout:hover {
@@ -158,7 +158,7 @@ body[data-dsh-claude-style] .dsh-claude-ban-win {
   padding: 6px;
   cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-win:hover {
@@ -242,12 +242,10 @@ body[data-dsh-claude-style] .dsh-claude-ban-toast {
   line-height: 18px;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(20, 20, 19, 0.08);
-  animation: dsh-claude-ban-toast-in 0.22s ease both;
-}
-
-@keyframes dsh-claude-ban-toast-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: none; }
+  /* The toast drops in from above, so the shared entrance travels the other way
+     round (shared/motion.css, D65). */
+  --dsh-claude-surface-from: calc(-1 * var(--dsh-claude-distance-nudge));
+  animation: dsh-claude-surface-in var(--dsh-claude-timing-surface) both;
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-toast-icon {
@@ -407,7 +405,7 @@ body[data-dsh-claude-style] .dsh-claude-ban-primary {
   font-weight: 500;
   line-height: 20px;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-primary:hover {
@@ -432,7 +430,7 @@ body[data-dsh-claude-style] .dsh-claude-ban-action {
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-action + .dsh-claude-ban-action {

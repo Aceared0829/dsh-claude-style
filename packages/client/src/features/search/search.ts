@@ -10,6 +10,7 @@ import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
 import type { ContentHit, SearchFilter, SearchRow } from './sources'
 import { buildElement, createStamp, setAttributeIfChanged } from '../../shared/dom'
+import { motionMs } from '../../shared/motion'
 import { closeOtherPopovers, registerPopover, unregisterPopover } from '../../shared/popover'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import { createTurnNavHost } from '../turn-nav/turn-nav-host'
@@ -95,8 +96,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let closing = false
   let closeTimer = 0
   let pendingRun: (() => void) | null = null
-  /** The fade-out's length (search.css `dsh-claude-search-out`). */
-  const CLOSE_MS = 140
+  /** The fade-out's length, the exit token the closing animations run (D65). */
+  const CLOSE_MS = motionMs('--dsh-claude-duration-exit')
   /** The modal's overlay root, marked while it fades out. */
   const closingStamp = createStamp('data-dsh-claude-search-closing')
   /** The host's own sidebar search, which the palette stands in for. */

@@ -13,14 +13,23 @@
    words standing once it settles (shared/swapping-text.ts), so the clock beside
    the line sits right after them at rest. */
 
+/* The words are the caller's: they can be a clause the model itself wrote,
+   longer than any state word and longer than the box may take. The box clips
+   what it cannot hold and the copies draw an ellipsis (below), so the wording
+   gives way rather than running over what stands beside it. The padding and its
+   own negative margin give the clip box room for the swap's travel — the copies
+   move one distance each way — while the label's layout stays exactly as it
+   was. */
+/* The values the swap travels — its distance, blur, duration, its gap and its
+   curve — are the shared ones from shared/motion.css (D65), as motion tokens;
+   the box and the copies read them, and a caller that wants a shorter travel
+   sets --dsh-claude-swap-distance where it uses the label. */
 body[data-dsh-claude-style] .dsh-claude-swap-label {
-  --dsh-claude-swap-duration: 150ms;
-  --dsh-claude-swap-gap: 50ms;
-  --dsh-claude-swap-distance: 8px;
-  --dsh-claude-swap-blur: 2px;
-  --dsh-claude-swap-ease: ease-in-out;
   position: relative;
   display: inline-block;
+  overflow: hidden;
+  padding: var(--dsh-claude-swap-distance) 0;
+  margin: calc(var(--dsh-claude-swap-distance) * -1) 0;
 }
 
 /* The sizer paints nothing and is never read out; it is the box. */
@@ -31,31 +40,35 @@ body[data-dsh-claude-style] .dsh-claude-swap-sizer {
 }
 
 /* Every copy lies over the sizer, so the box keeps its size whatever is
-   moving inside it. */
+   moving inside it. It sits inside the label's padding, which is what the label
+   added for the travel: its own box is the one the words are laid out in. */
 body[data-dsh-claude-style] .dsh-claude-swap-copy {
   position: absolute;
-  inset: 0;
+  inset: var(--dsh-claude-swap-distance) 0;
   display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   transform: translateY(0);
   filter: blur(0);
   opacity: 1;
   transition:
-    transform var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out),
-    filter var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out),
-    opacity var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out);
+    transform var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease),
+    filter var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease),
+    opacity var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease);
   will-change: transform, filter, opacity;
 }
 
 body[data-dsh-claude-style] .dsh-claude-swap-copy.is-exit {
-  transform: translateY(calc(var(--dsh-claude-swap-distance, 8px) * -1));
-  filter: blur(var(--dsh-claude-swap-blur, 2px));
+  transform: translateY(calc(var(--dsh-claude-swap-distance) * -1));
+  filter: blur(var(--dsh-claude-swap-blur));
   opacity: 0;
 }
 
 body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start {
   transition: none;
-  transform: translateY(var(--dsh-claude-swap-distance, 8px));
-  filter: blur(var(--dsh-claude-swap-blur, 2px));
+  transform: translateY(var(--dsh-claude-swap-distance));
+  filter: blur(var(--dsh-claude-swap-blur));
   opacity: 0;
 }
 

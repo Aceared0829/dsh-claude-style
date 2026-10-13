@@ -179,7 +179,7 @@ body[data-dsh-claude-style][data-dsh-claude-session-stats] [role="dialog"]:has([
    its own. The feature stamps the panel, and it takes the cards' own short
    rise (the shared keyframe), so hovering either control opens the same way. */
 body[data-dsh-claude-style] [data-dsh-claude-context-panel] {
-  animation: dsh-claude-popover-in 0.15s ease;
+  animation: dsh-claude-surface-in var(--dsh-claude-timing-surface);
 }
 /* The host places the panel from the anchor's LEFT edge and only then clamps it
    into the viewport, which at the end of the composer row parks it against the
@@ -326,11 +326,11 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
   100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
 }
 body[data-dsh-claude-style] {
-  --dsh-claude-digit-dur: 500ms;
-  --dsh-claude-digit-distance: 8px;
-  --dsh-claude-digit-stagger: 70ms;
-  --dsh-claude-digit-blur: 2px;
-  --dsh-claude-digit-ease: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --dsh-claude-digit-dur: var(--dsh-claude-duration-pop);
+  --dsh-claude-digit-distance: var(--dsh-claude-distance-travel);
+  --dsh-claude-digit-stagger: var(--dsh-claude-duration-stagger);
+  --dsh-claude-digit-blur: var(--dsh-claude-blur-soft);
+  --dsh-claude-digit-ease: var(--dsh-claude-ease-spring);
   --dsh-claude-digit-dir-x: 0;
   --dsh-claude-digit-dir-y: 1;
 }
@@ -457,7 +457,7 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
   display: block !important;
   border-radius: 3px !important;
   background: var(--dsw-alias-interactive-bg-hover-solid, rgba(0, 0, 0, 0.06)) !important;
-  animation: dsh-claude-context-stats-pulse 1.6s ease-in-out infinite !important;
+  animation: dsh-claude-pulse var(--dsh-claude-period-pulse) var(--dsh-claude-ease-in-out) infinite !important;
 }
 body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-label {
   width: 68% !important;
@@ -466,10 +466,6 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-label {
 body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
   width: 46% !important;
   height: 14px !important;
-}
-@keyframes dsh-claude-context-stats-pulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
 }
 
 /* ---------- a phone-width composer ---------- */

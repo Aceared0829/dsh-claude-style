@@ -41,11 +41,11 @@ body[data-dsh-claude-style] [data-dsh-claude-caret-layer][data-dsh-claude-caret-
   /* Read off the native caret at the moment of taking over; before that, the
      host's own colour for the composer input. */
   background: var(--dsh-claude-caret-color, var(--dsw-alias-state-business-primary, currentColor));
-  transition: transform 80ms ease;
+  transition: transform var(--dsh-claude-duration-instant) var(--dsh-claude-ease-standard);
   will-change: transform;
   /* The native caret's own cycle: 500 ms lit, 500 ms dark. The script restarts
      it by name (CARET_BLINK_NAME), so the two spellings stay the same. */
-  animation: dsh-claude-caret-blink 1s step-end infinite;
+  animation: dsh-claude-caret-blink var(--dsh-claude-period-blink) step-end infinite;
 }
 
 body[data-dsh-claude-style] [data-dsh-claude-caret-layer][data-dsh-claude-caret-layer][data-dsh-claude-caret-visible] {

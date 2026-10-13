@@ -69,7 +69,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-repo {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  transition: background-color .12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-repo::before {
@@ -79,7 +79,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-repo::before {
   background-color: var(--dsw-alias-label-secondary);
   -webkit-mask: var(--dsh-claude-image-github-mark) center / contain no-repeat;
   mask: var(--dsh-claude-image-github-mark) center / contain no-repeat;
-  transition: background-color .12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-repo:hover {
@@ -250,7 +250,7 @@ body[data-dsh-claude-style] .dsh-claude-brand-card {
   color: var(--dsw-alias-label-primary);
   font: inherit;
   cursor: pointer;
-  transition: border-color .12s ease;
+  transition: border-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-brand-card:hover {
@@ -341,7 +341,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-switch {
   box-sizing: border-box;
   border-radius: 10px;
   background: var(--dsw-specific-selector);
-  transition: background-color .12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) .dsh-claude-settings-switch {
@@ -361,7 +361,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-switch-knob {
   corner-shape: round;
   background: var(--dsw-alias-bg-overlay, #ffffff);
   box-shadow: 0 1px 2px rgba(20, 20, 19, 0.18);
-  transition: transform .12s ease;
+  transition: transform var(--dsh-claude-timing-feedback);
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-switch[data-on] .dsh-claude-settings-switch-knob {

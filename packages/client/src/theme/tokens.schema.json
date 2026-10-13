@@ -3,7 +3,7 @@
   "title": "dsh-claude-style design tokens",
   "description": "The skin's custom properties: the build generates the token stylesheet and the docs/STYLE.md token table from this document (D51).",
   "type": "object",
-  "required": ["typeface", "apex", "palette"],
+  "required": ["typeface", "apex", "palette", "motion"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
@@ -52,6 +52,21 @@
           "deepseek": { "$ref": "#/$defs/themes" },
           "host": { "$ref": "#/$defs/value" },
           "use": { "description": "What the token paints, for the docs/STYLE.md table.", "type": "string", "minLength": 1 },
+          "note": { "$ref": "#/$defs/note" }
+        }
+      }
+    },
+    "motion": {
+      "description": "Motion tokens (D65): durations, loop periods, easing curves, distances, blur and scale, and the two duration-and-curve shorthands. One value under every palette and typeface; the only place a stylesheet may write a time or a curve.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["token", "value", "use"],
+        "additionalProperties": false,
+        "properties": {
+          "token": { "type": "string", "pattern": "^--dsh-claude-(duration|period|ease|distance|blur|scale|timing)-[a-z0-9-]+$" },
+          "value": { "$ref": "#/$defs/value" },
+          "use": { "description": "The role the token plays, for the docs/STYLE.md motion table.", "type": "string", "minLength": 1 },
           "note": { "$ref": "#/$defs/note" }
         }
       }

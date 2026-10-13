@@ -39,7 +39,7 @@ body[data-dsh-claude-style] .dsh-claude-ws-segments {
   transform: translateY(-50%);
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.16s ease, visibility 0.16s ease;
+  transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard), visibility var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
 body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] .dsh-claude-ws-segments {
   opacity: 0;
@@ -59,7 +59,7 @@ body[data-dsh-claude-style] [class*="sectionLabel"][data-dsh-claude-ws-label] {
   user-select: none;
   -webkit-user-select: none;
   opacity: 0;
-  transition: opacity 0.16s ease;
+  transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
 body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] [class*="sectionLabel"][data-dsh-claude-ws-label] {
   opacity: 1;
@@ -84,7 +84,7 @@ body[data-dsh-claude-style] .dsh-claude-ws-segment {
   height: 20px;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment:hover {
   color: var(--dsw-alias-label-primary, #141413) !important;
@@ -168,7 +168,7 @@ body[data-dsh-claude-style] .dsh-claude-archive-row {
   font-family: var(--dsw-font-family) !important;
   font-size: 13px !important;
   font-weight: 400 !important;
-  transition: background-color 0.12s ease, color 0.12s ease !important;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback) !important;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-archive-row {
   color: var(--dsh-claude-session-ink) !important;
@@ -242,7 +242,7 @@ body[data-dsh-claude-style] .dsh-claude-archive-restore {
   background: transparent !important;
   color: var(--dsw-alias-label-caption, #a6a094) !important;
   cursor: pointer !important;
-  transition: background-color 0.12s ease, color 0.12s ease !important;
+  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-restore:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;

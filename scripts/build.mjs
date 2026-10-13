@@ -53,9 +53,10 @@ import { PNG } from 'pngjs'
 import { buildHostHalf } from '../packages/host/build.mjs'
 import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, planAssets, routeText, vectorizeSheet, writeAssets } from '../packages/assets/assets.mjs'
 import { openBuildCache } from './build-cache.mjs'
-import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkScrollOwner, checkTypes } from './build-checks.mjs'
+import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkMotionSources, checkScrollOwner, checkTypes } from './build-checks.mjs'
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
-import { TOKEN_SHEET, buildStylesheet, loadTokens, writeTokenTable } from './css.mjs'
+import { TOKEN_SHEET, buildStylesheet, loadTokens, writeMotionTable, writeTokenTable } from './css.mjs'
+import { motionValues } from './shared/motion-tokens.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import manifestReader from './shared/read-manifests.cjs'
@@ -111,6 +112,7 @@ const THEME_SHEETS = [
   { file: 'theme/typography.css', rank: 20 },
   // Shared parts before every feature: a feature's own rule comes later and
   // wins where the two meet at the same specificity.
+  { file: 'shared/motion.css', rank: 25 },
   { file: 'shared/popover.css', rank: 30 },
   { file: 'shared/swapping-text.css', rank: 35 },
   { file: 'shared/sliding-pill.css', rank: 40 },
@@ -329,6 +331,7 @@ async function main() {
   checkManifests(manifests)
   checkContracts(manifests)
   checkDependencies()
+  checkMotionSources(SRC)
   const sheets = styleFiles(manifests)
 
   // Every image, its content hash and its address (D38). Nothing is written
@@ -373,6 +376,7 @@ async function main() {
   const tokenDoc = loadTokens(SRC)
   const cssText = buildStylesheet({ sheets, srcDir: SRC, tokenDoc, gates: CONSTANTS.gates, images })
   if (writeTokenTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md token table from packages/client/src/theme/tokens.json')
+  if (writeMotionTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md motion table from packages/client/src/theme/tokens.json')
 
   // The build-time values, for the bundle and for the chunks alike: each
   // carries the ones its own modules read.
@@ -392,6 +396,10 @@ async function main() {
     CLIENT_VERSION: PACKAGE.version,
     CRAB_SHEET_URLS: crab,
     DEEPY_SHEET_URLS: deepyUrls,
+    // The motion tokens, by name: the browser half reads the same table the
+    // generated token stylesheet carries, so a duration cannot be 200 ms in the
+    // CSS and 250 ms in a Web Animations call (D65).
+    MOTION: motionValues(tokenDoc),
   })
 
   /**

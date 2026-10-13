@@ -5,6 +5,7 @@ import type { FoldWatch } from './fold-glide-parts'
 import { isChatFoldToggle } from './fold-toggle'
 import { CHAT_FLOW_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { joinScrollOwner } from '../../shared/scroll-owner'
+import { motionEase } from '../../shared/motion'
 
 /** Margin past the roll's own duration for the backstop that unlocks the click. */
 const FOLD_ROLL_BACKSTOP_MS = 200
@@ -128,11 +129,11 @@ export function installChatFoldGlide() {
       travel >= height
         ? [{ height: String(from) + 'px' }, { height: String(height) + 'px' }]
         : [
-            { height: String(from) + 'px', offset: 0, easing: 'ease-out' },
+            { height: String(from) + 'px', offset: 0, easing: motionEase('--dsh-claude-ease-out') },
             { height: String(travel) + 'px', offset: FOLD_VISIBLE_SHARE, easing: 'linear' },
             { height: String(height) + 'px', offset: 1 },
           ],
-      { duration: FOLD_ROLL_MS, easing: 'ease-out' },
+      { duration: FOLD_ROLL_MS, easing: motionEase('--dsh-claude-ease-out') },
     )
     foldHoldThroughStalls(growing)
     growing.onfinish = () => {
@@ -179,10 +180,10 @@ export function installChatFoldGlide() {
         ? [{ height: String(height) + 'px' }, { height: String(fold.floor) + 'px' }]
         : [
             { height: String(height) + 'px', offset: 0, easing: 'linear' },
-            { height: String(travel) + 'px', offset: 1 - FOLD_VISIBLE_SHARE, easing: 'ease-out' },
+            { height: String(travel) + 'px', offset: 1 - FOLD_VISIBLE_SHARE, easing: motionEase('--dsh-claude-ease-out') },
             { height: String(fold.floor) + 'px', offset: 1 },
           ],
-      { duration: FOLD_ROLL_MS, easing: 'ease-out', fill: 'forwards' },
+      { duration: FOLD_ROLL_MS, easing: motionEase('--dsh-claude-ease-out'), fill: 'forwards' },
     )
     foldHoldThroughStalls(shrinking)
     shrinking.onfinish = () => {

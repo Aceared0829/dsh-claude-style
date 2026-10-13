@@ -86,7 +86,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-label {
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
   background-image: linear-gradient(90deg, transparent 0%, transparent 40%, var(--dsw-alias-label-primary) 50%, transparent 60%, transparent 100%);
-  animation: dsh-claude-wait-shimmer 2000ms linear infinite;
+  animation: dsh-claude-wait-shimmer var(--dsh-claude-period-sweep) linear infinite;
 }
 
 @keyframes dsh-claude-wait-shimmer {

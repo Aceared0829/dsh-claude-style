@@ -120,7 +120,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
      the rail needs no canvas-coloured shadow of its own to add to it. */
   box-shadow: none;
   position: relative;
-  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  transition: border-color var(--dsh-claude-timing-feedback), box-shadow var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-composer-card][data-composer-variant="inline"][data-has-attachments="true"] [class*="_rail"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card][data-has-attachments="true"] [class*="_rail"] {
@@ -211,7 +211,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   z-index: 2;
   cursor: text;
   box-shadow: 0 1px 3px rgba(20, 20, 19, 0.03);
-  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  transition: border-color var(--dsh-claude-timing-feedback), box-shadow var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"][data-has-attachments="true"] [data-input-scroll],
 body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card][data-has-attachments="true"] [data-input-scroll] {
@@ -248,7 +248,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   border-color: var(--dsw-alias-border-l4) !important;
   box-shadow: none !important;
   cursor: pointer !important;
-  transition: border-color 100ms ease !important;
+  transition: border-color var(--dsh-claude-timing-feedback) !important;
 }
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"][class*="_cardWorkspaceTrigger"]:hover [data-input-scroll],
 body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card][class*="_cardWorkspaceTrigger"]:hover [data-input-scroll] {
@@ -342,7 +342,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   color: var(--dsw-alias-label-caption);
   border: none !important;
   cursor: pointer;
-  transition: color 0.12s ease, background-color 0.12s ease;
+  transition: color var(--dsh-claude-timing-feedback), background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="send"] :is(svg, [class*="_chevron"], span) {
   display: none;

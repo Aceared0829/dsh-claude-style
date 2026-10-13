@@ -70,11 +70,11 @@ body[data-dsh-claude-style] .dsh-claude-process-summary-digit {
 }
 
 body[data-dsh-claude-style] .dsh-claude-process-summary-digit[data-dsh-claude-roll="exit"] {
-  animation: dsh-claude-summary-roll-out 160ms cubic-bezier(.16, 1, .3, 1) forwards;
+  animation: dsh-claude-summary-roll-out var(--dsh-claude-duration-roll) var(--dsh-claude-ease-roll) forwards;
 }
 
 body[data-dsh-claude-style] .dsh-claude-process-summary-digit[data-dsh-claude-roll="enter"] {
-  animation: dsh-claude-summary-roll-in 160ms cubic-bezier(.16, 1, .3, 1) forwards;
+  animation: dsh-claude-summary-roll-in var(--dsh-claude-duration-roll) var(--dsh-claude-ease-roll) forwards;
 }
 
 @keyframes dsh-claude-summary-roll-out {
@@ -102,7 +102,7 @@ body[data-dsh-claude-style] .dsh-claude-process-summary[data-dsh-claude-summary-
   mask-position: 100% center;
   mask-repeat: no-repeat;
   mask-size: 250% 100%;
-  animation: dsh-claude-summary-shimmer 1.5s cubic-bezier(0.33, 0, 0.67, 1) infinite;
+  animation: dsh-claude-summary-shimmer var(--dsh-claude-period-host-sweep) var(--dsh-claude-ease-host-sweep) infinite;
 }
 
 /* The reader's animation choice, resolved onto <body> by core/prefs.ts (D26):

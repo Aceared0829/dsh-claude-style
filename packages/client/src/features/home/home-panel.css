@@ -233,12 +233,7 @@ body[data-dsh-claude-style] .dsh-claude-home-panel-side {
 body[data-dsh-claude-style] .dsh-claude-home-panel[data-computing] .dsh-claude-home-stat[data-skeleton] .dsh-claude-home-stat-value,
 body[data-dsh-claude-style] .dsh-claude-home-panel[data-computing] .dsh-claude-home-models[data-skeleton] .dsh-claude-home-model-swatch,
 body[data-dsh-claude-style] .dsh-claude-home-heat[data-skeleton] .dsh-claude-home-heat-cell {
-  animation: dsh-claude-home-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes dsh-claude-home-pulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
+  animation: dsh-claude-pulse var(--dsh-claude-period-pulse) var(--dsh-claude-ease-in-out) infinite;
 }
 
 /* The skeleton pulse stands down with the rest of the skin's motion when the

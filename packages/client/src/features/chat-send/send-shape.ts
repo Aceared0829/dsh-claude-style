@@ -1,5 +1,6 @@
 import { QUIET_ATTR } from '../../constants'
 import { chatSendScrub } from './send-snapshot'
+import { motionMs } from '../../shared/motion'
 
 /** The shape at one moment of the flight (chatSendSamples in send-morph.ts). */
 export interface ShapeSample {
@@ -47,15 +48,15 @@ export interface TextWindow {
  * of time too: line breaks only change at a discrete series of widths, so each
  * width is laid out once and the breaks are grouped into steps.
  */
-/** The whole flight's duration in milliseconds. Not a preference: this effect keeps one switch, and a second knob is not worth it. */
-export const CHAT_FLIGHT_MS = 400
+/** The whole flight's duration, from the token table. Not a preference: this effect keeps one switch, and a second knob is not worth it. */
+export const CHAT_FLIGHT_MS = motionMs('--dsh-claude-duration-flight')
 
 /**
  * How long the stand-in fades out over the real bubble once it has landed.
  * Long enough for the words to read as sharpening rather than switching,
  * short enough that two copies of the same bubble are never noticed.
  */
-export const CHAT_LANDING_MS = 160
+export const CHAT_LANDING_MS = motionMs('--dsh-claude-duration-surface')
 
 /**
  * The angular frequency the displacement and the shape share. One progress

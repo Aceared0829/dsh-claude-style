@@ -87,7 +87,7 @@ body[data-dsh-claude-style] [class*="_frame"]:not([data-sidebar-collapsed]) > [c
   gap: 6px;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] [class*="_frame"]:not([data-sidebar-collapsed]) > [class*="_sidebarCol"] button[class*="newSession"]:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
@@ -206,7 +206,7 @@ body[data-dsh-claude-style] button[class*="panelRow"] {
   gap: 6px;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] button[class*="panelRow"]:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
@@ -230,7 +230,7 @@ body[data-dsh-claude-style] button[class*="panelRow"] svg {
    transition turns it back when the pointer leaves. */
 body[data-dsh-claude-style] button[class*="newSession"]::before,
 body[data-dsh-claude-style] button[class*="panelRow"] svg {
-  transition: transform 0.25s ease;
+  transition: transform var(--dsh-claude-duration-slide) var(--dsh-claude-ease-standard);
   transform-origin: center;
 }
 body[data-dsh-claude-style] button[class*="newSession"]:hover::before,
@@ -253,7 +253,7 @@ body[data-dsh-claude-style] [class*="sessionRow"] [class*="title"] {
   line-height: 18px;
   letter-spacing: normal;
   color: var(--dsw-alias-label-secondary, #787672);
-  transition: color 0.12s ease;
+  transition: color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style][data-ds-dark-theme] [class*="sessionRow"] [class*="title"] {
   color: var(--dsh-claude-session-ink);
@@ -420,7 +420,7 @@ body[data-dsh-claude-style] [class*="projectRow"] [class*="_chevron"]::after {
   background: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 6l4 4 4-4%27/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27none%27 stroke=%27black%27 stroke-width=%271.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M4 6l4 4 4-4%27/%3E%3C/svg%3E") center / contain no-repeat;
-  transition: transform 0.15s var(--ds-ease-in-out, ease);
+  transition: transform var(--dsh-claude-duration-surface) var(--dsh-claude-ease-in-out);
 }
 body[data-dsh-claude-style] [class*="projectRow"][aria-expanded="false"] [class*="_chevron"]::after {
   transform: rotate(-90deg);
@@ -465,7 +465,7 @@ body[data-dsh-claude-style] svg[data-state="ongoing"] {
   corner-shape: round;
   border: 1.5px solid rgba(255, 255, 255, 0.18);
   border-top-color: var(--dsw-alias-label-primary);
-  animation: 0.85s linear infinite dsh-claude-win11-spin;
+  animation: var(--dsh-claude-period-spin) linear infinite dsh-claude-win11-spin;
   transform-origin: center center;
   display: inline-block;
   flex: none;
@@ -489,7 +489,7 @@ body[data-dsh-claude-style] svg[data-state="ongoing"] * {
    own choice governs it. */
 @media (prefers-reduced-motion: reduce) {
   body[data-dsh-claude-style] svg[data-state="ongoing"] {
-    animation: 0.85s linear infinite dsh-claude-win11-spin !important;
+    animation: var(--dsh-claude-period-spin) linear infinite dsh-claude-win11-spin !important;
     animation-play-state: running !important;
   }
 }

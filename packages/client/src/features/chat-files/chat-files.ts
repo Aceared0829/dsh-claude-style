@@ -6,6 +6,7 @@ import { callArgsOf } from '../../shared/call-args'
 import { copyLabel } from '../../core/i18n'
 import { motionReduced } from '../../core/prefs'
 import { createStamp } from '../../shared/dom'
+import { motionMs } from '../../shared/motion'
 import type { FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
 import type { HostContext, HostFiber, HostText } from '../../core/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
@@ -24,19 +25,11 @@ interface ChatFileRowProps {
   useDisclosure: () => { expanded: boolean, toggle: () => void }
 }
 
-/** How long a swap takes when the stylesheet's own token cannot be read. */
-const SWAP_FALLBACK_MS = 150
+/** How long one figure's turn takes: the roll the stylesheet's own animations run (D62, D65). */
+const ROLL_MS = motionMs('--dsh-claude-duration-roll')
 
-/** How long one figure's turn takes: the 160 ms the stylesheet runs its roll with (D62). */
-const ROLL_MS = 160
-
-/** How long one operation swap takes, as the token the block's own classes carry says. */
-function swapDuration(element: HTMLElement | null) {
-  const parsed = element === null ? null : /^([\d.]+)(ms|s)$/u.exec(getComputedStyle(element).getPropertyValue('--dsh-claude-file-swap-duration').trim())
-  if (parsed === null) return SWAP_FALLBACK_MS
-  const amount = Number(parsed[1])
-  return Number.isFinite(amount) ? (parsed[2] === 's' ? amount * 1000 : amount) : SWAP_FALLBACK_MS
-}
+/** How long one operation swap takes: the shared swap the block's classes play (shared/motion.css, D65). */
+const SWAP_MS = motionMs('--dsh-claude-duration-swap')
 
 /**
  * The file row: a read, an edit or a write rendered as the host's own file row,
@@ -186,7 +179,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // stacked behind the new one.
     React.useEffect(() => {
       if (swapFrom === null) return
-      const timer = window.setTimeout(() => setSwapFrom(null), swapDuration(labelRef.current))
+      const timer = window.setTimeout(() => setSwapFrom(null), SWAP_MS)
       return () => window.clearTimeout(timer)
     }, [swapFrom])
 

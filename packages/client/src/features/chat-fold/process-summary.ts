@@ -4,6 +4,7 @@ import { requestFrame } from '../../core/frame'
 import { copyLabel } from '../../core/i18n'
 import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
+import { motionMs } from '../../shared/motion'
 import { ASSISTANT_STEP_KIND, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_REASONING, FLOW_KIND_ATTRIBUTE, PROCESS_ACTIVITY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_GROUP_SELECTOR, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, TOOL_CALL_KIND } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -78,8 +79,8 @@ export const PROCESS_SUMMARY_RUNNING_ATTR = 'data-dsh-claude-summary-running'
 export const PROCESS_SUMMARY_FORM_ATTR = 'data-dsh-claude-summary-form'
 /** On a rolling digit: `enter` rises into place, `exit` leaves upward, `settled` stands. */
 const ROLL_ATTR = 'data-dsh-claude-roll'
-/** How long a digit takes to roll, as the stylesheet's animations run it. */
-const ROLL_MS = 160
+/** How long a digit takes to roll, as the stylesheet's animations run it (D65). */
+const ROLL_MS = motionMs('--dsh-claude-duration-roll')
 const SUMMARY_CLASS = 'dsh-claude-process-summary'
 /** The hidden span holding the sentence, whose natural width tells whether the header has room for it. */
 const FIT_CLASS = 'dsh-claude-process-summary-fit'
