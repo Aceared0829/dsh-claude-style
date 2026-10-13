@@ -54,73 +54,31 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
 /* The words sweep under a highlight band: a copy of them laid over the words
    and clipped to their glyphs, so the words themselves keep their own colour.
 
-   The wording swaps in place when the turn moves on, and the swap is
-   transitions.dev's "Text states swap": the old wording leaves upward with a
-   blur, the new one enters from below. Its tokens keep the snippet's names as
-   this skin's own custom properties, and the states are the attribute
-   chat-wait.ts writes. The reader's animation choice (D26) is the gate —
-   core/prefs.ts resolves the setting and the system preference into that
-   attribute, so the snippet's own media query would answer the same question
-   a second time. */
+   The wording swaps in place when the turn moves on: the motion itself is
+   shared/swapping-text.css, transitions.dev's "Text states swap" composed the
+   way its "Thinking states" recipe does it. This sheet adds what only the
+   status line carries — the band's own colours and its cadence.
+
+   The band rides the box that holds the words, not a child of it: the label
+   while the line is at rest and the copy while a swap runs, so the band is in
+   the paint on every frame and its sweep never restarts mid-swap. The helper
+   writes the class on whichever of the two holds the words and keeps their
+   `data-text` in step (shared/swapping-text.ts). The reader's animation choice
+   (D26) is the gate: core/prefs.ts resolves the setting and the system
+   preference onto the body attribute, and the helper reads it at each swap, so
+   the recipe's own media query is not repeated. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-label {
-  --dsh-claude-wait-swap-duration: 150ms;
-  --dsh-claude-wait-swap-shift: 4px;
-  --dsh-claude-wait-swap-blur: 2px;
-  --dsh-claude-wait-swap-ease: ease-in-out;
-  position: relative;
-  display: inline-block;
   color: var(--dsw-alias-label-secondary);
-  transform: translateY(0);
-  filter: blur(0);
-  opacity: 1;
-  transition:
-    transform var(--dsh-claude-wait-swap-duration) var(--dsh-claude-wait-swap-ease),
-    filter var(--dsh-claude-wait-swap-duration) var(--dsh-claude-wait-swap-ease),
-    opacity var(--dsh-claude-wait-swap-duration) var(--dsh-claude-wait-swap-ease);
-  will-change: transform, filter, opacity;
 }
 
-body[data-dsh-claude-style] .dsh-claude-chat-wait-label[data-dsh-claude-wait-swap="exit"] {
-  transform: translateY(calc(var(--dsh-claude-wait-swap-shift) * -1));
-  filter: blur(var(--dsh-claude-wait-swap-blur));
-  opacity: 0;
-}
-
-body[data-dsh-claude-style] .dsh-claude-chat-wait-label[data-dsh-claude-wait-swap="enter"] {
-  transform: translateY(var(--dsh-claude-wait-swap-shift));
-  filter: blur(var(--dsh-claude-wait-swap-blur));
-  opacity: 0;
-  transition: none;
-}
-
-body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-wait-label {
-  transition: none;
-}
-
-body[data-dsh-claude-style] .dsh-claude-chat-wait-label::before {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+body[data-dsh-claude-style] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
   background-image: linear-gradient(90deg, transparent 0%, transparent 40%, var(--dsw-alias-label-primary) 50%, transparent 60%, transparent 100%);
-  background-size: 400% 100%;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
   animation: dsh-claude-wait-shimmer 2000ms linear infinite;
 }
 
 @keyframes dsh-claude-wait-shimmer {
   from { background-position: 100% 0; }
   to { background-position: 0% 0; }
-}
-
-/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D26):
-   reduced leaves the words without the band. */
-body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-wait-label::before {
-  content: none;
 }
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-clock {

@@ -112,6 +112,7 @@ const THEME_SHEETS = [
   // Shared parts before every feature: a feature's own rule comes later and
   // wins where the two meet at the same specificity.
   { file: 'shared/popover.css', rank: 30 },
+  { file: 'shared/swapping-text.css', rank: 35 },
   { file: 'shared/sliding-pill.css', rank: 40 },
   { file: 'theme/chrome.css', rank: 50 },
   { file: 'theme/hero.css', rank: 70 },

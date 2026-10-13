@@ -2,9 +2,9 @@ import { QUIET_ATTR } from '../../constants'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
-import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { formatHostDuration } from '../../shared/format'
+import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { activityWords } from '../../shared/turn-activity'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart } from './wait-state'
@@ -18,7 +18,9 @@ import type manifest from './chat-wait.manifest'
  * (shared/turn-activity.ts), the host's own 「深度求索中」 where no state can be
  * read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
  * once the model has been silent for ten seconds (wait-state.ts). The wording
- * swaps in place with transitions.dev's "Text states swap" (MIT).
+ * swaps in place after transitions.dev's "Thinking states" (MIT): a sweeping
+ * highlight while a word stands, and a two-copy swap when it changes
+ * (shared/swapping-text.ts).
  *
  * The host keeps its row, its whale and its live region: the line is a span of
  * the skin's own beside the whale, marked quiet so its ticking wakes no pass,
@@ -34,19 +36,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const WAIT_ATTR = 'data-dsh-claude-wait'
   /** On the host's words alone, leaving sibling plugin lines visible. */
   const WORDS_ATTR = 'data-dsh-claude-wait-words'
-  /** On the wording while it swaps: `exit` for the wording leaving, `enter` for the one taking its place. */
-  const SWAP_ATTR = 'data-dsh-claude-wait-swap'
   /** The clock's step: the host's own row ticks once a second, and a quarter keeps the two in step. */
   const TICK_MS = 250
-  /** How long the wording takes to leave when the stylesheet's own token cannot be read. */
-  const SWAP_FALLBACK_MS = 150
   /** Each running row with the line drawn into it. */
   const lines = new Map<HTMLElement, HTMLElement>()
   const hostWords = new Map<HTMLElement, Element>()
-  /** The wording a leaving one hands over to, by label. */
-  const swapping = new Map<HTMLElement, string>()
-  /** The exit a label is in the middle of, by label. */
-  const exits = new Map<HTMLElement, number>()
   /** When each turn's current wait began, by `session:turn`; absent while the model is at work. */
   const waits = new Map<string, number>()
   let timer: number | null = null
@@ -82,58 +76,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (element.textContent !== text) element.textContent = text
   }
 
-  /** A duration written in a CSS token, in milliseconds. */
-  function milliseconds(value: string) {
-    const parsed = /^\s*([\d.]+)\s*(ms|s)?\s*$/.exec(value)
-    if (parsed === null) return SWAP_FALLBACK_MS
-    const amount = Number(parsed[1])
-    return Number.isFinite(amount) ? (parsed[2] === 's' ? amount * 1000 : amount) : SWAP_FALLBACK_MS
-  }
-
-  /** Write one wording into the label, the swap's second half: it enters from below at its rest pose. */
-  function enter(label: HTMLElement, word: string) {
-    label.textContent = word
-    label.dataset.text = word
-    label.setAttribute(SWAP_ATTR, 'enter')
-    // The entry pose has to be committed before the transition is released: the
-    // snippet's own reflow, and what keeps the new wording from starting at rest.
-    void label.offsetHeight
-    label.removeAttribute(SWAP_ATTR)
-  }
-
-  /**
-   * Put one wording into the label, running transitions.dev's three-phase swap
-   * when it differs from the one standing: the old wording leaves upward with a
-   * blur, the text is written once it has gone, and the new one enters from
-   * below. A wording arriving during an exit is the one that exit hands over to.
-   */
-  function setLabel(label: HTMLElement, word: string) {
-    if (label.dataset.text === word) return
-    if (label.dataset.text === undefined || motionReduced()) {
-      label.textContent = word
-      label.dataset.text = word
-      return
-    }
-    swapping.set(label, word)
-    if (exits.has(label)) return
-    label.setAttribute(SWAP_ATTR, 'exit')
-    const duration = milliseconds(getComputedStyle(label).getPropertyValue('--dsh-claude-wait-swap-duration'))
-    exits.set(label, window.setTimeout(() => {
-      exits.delete(label)
-      const next = swapping.get(label)
-      swapping.delete(label)
-      if (label.isConnected && next !== undefined) enter(label, next)
-    }, duration))
-  }
-
-  /** Drop a label's swap: a row leaving the page takes no timer with it. */
-  function settleSwap(label: HTMLElement) {
-    const exit = exits.get(label)
-    if (exit !== undefined) window.clearTimeout(exit)
-    exits.delete(label)
-    swapping.delete(label)
-  }
-
   /** Bring one row's line to what the host's snapshot says now. */
   function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>) {
     const words = row.querySelector(CHAT_RUNNING_TEXT_SELECTOR)
@@ -148,7 +90,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // cannot be read (D58): the line says the model's work, never a guess.
     const activity = activityWords(snapshot, turn)
     const word = activity === null ? t('chat.deepDiving') : copyLabel(activity.key, activity.fallback)
-    setLabel(label, word)
+    setSwappingText(label, word, true)
     clock.hidden = turn === undefined || turn.start === undefined
     if (turn !== undefined && turn.start !== undefined) writeText(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false
@@ -172,7 +114,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const line = lines.get(row)
     if (line !== null && line !== undefined) {
       const label = line.firstElementChild
-      if (label instanceof HTMLElement) settleSwap(label)
+      if (label instanceof HTMLElement) releaseSwappingText(label)
       line.remove()
     }
     lines.delete(row)
@@ -215,9 +157,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     cancelTick = null
     for (const row of [...lines.keys()]) release(row)
     for (const row of document.querySelectorAll(`[${WAIT_ATTR}]`)) row.removeAttribute(WAIT_ATTR)
-    for (const exit of exits.values()) window.clearTimeout(exit)
-    exits.clear()
-    swapping.clear()
     waits.clear()
     delete ui.chatWait
   }

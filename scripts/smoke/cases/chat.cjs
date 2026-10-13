@@ -278,31 +278,51 @@ module.exports = {
       working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
       JSON.stringify({ working, after: wait.foreignAfter }))
     check('the line says what the turn is doing, sweeping, with the turn\'s clock in the host\'s units',
-      working.label === 'Thinking…' && working.sweep === 'dsh-claude-wait-shimmer' && /^1m [5-9]s$/.test(working.clock || ''),
+      working.word === 'Thinking…' && working.sweep === 'dsh-claude-wait-shimmer' && /^1m [5-9]s$/.test(working.clock || ''),
       JSON.stringify(working))
     check('a model at work shows no overtime badge', working.badge === null, JSON.stringify(working))
     const silent = wait.silent || []
     const blurOf = (frame) => Number((/blur\(([\d.]+)px\)/.exec(frame.filter || '') || [])[1] || 0)
-    const leaving = silent.filter((frame) => frame.swap === 'exit')
-    const arrived = silent.filter((frame) => frame.swap === null && frame.label === 'Deep diving')
+    const leaving = silent.filter((frame) => frame.phase === 'exit')
     const last = silent[silent.length - 1] || {}
     check('the old wording leaves upward with a blur: the leave pose is set, its opacity falls and its glyphs blur',
-      leaving.length > 2 && leaving.every((frame) => frame.label === 'Thinking…') &&
+      leaving.length > 2 && leaving.every((frame) => frame.displayed === 'Thinking…') &&
         Number(leaving[0].opacity) > 0.5 && Number(leaving[leaving.length - 1].opacity) < 0.1 &&
         leaving.some((frame) => blurOf(frame) > 0.5),
       JSON.stringify({ frames: silent.length, leaving: leaving.map((frame) => [frame.opacity, frame.filter]) }))
-    check('the new wording takes over once the old one has gone and enters from below',
-      arrived.length > 0 && silent[0].label === 'Thinking…' &&
-        Number(arrived[0].opacity) < 1 && Number(last.opacity) === 1 &&
-        arrived.every((frame, at) => at === 0 || Number(frame.opacity) >= Number(arrived[at - 1].opacity) - 0.01),
-      JSON.stringify({ arrived: arrived.map((frame) => frame.opacity), rest: [last.opacity, last.filter] }))
+    check('the two halves overlap: both copies are in the box while the swap runs, and the band keeps sweeping throughout',
+      silent.filter((frame) => frame.copies > 1).length > 2 &&
+        silent.every((frame) => frame.sweep === 'dsh-claude-wait-shimmer'),
+      JSON.stringify({ overlapping: silent.filter((frame) => frame.copies > 1).length, sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-wait-shimmer').length }))
+    const enter = wait.enterFrames || []
+    check('the wording arriving rises from below through a blur, its opacity climbing to rest',
+      enter.length > 3 && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&
+        Number(enter[enter.length - 1].opacity) > 0.9 && blurOf(enter[enter.length - 1]) < 0.5 &&
+        enter.every((frame, at) => at === 0 || frame.opacity >= enter[at - 1].opacity - 0.01),
+      JSON.stringify(enter))
+    const boxes = silent.map((frame) => frame.box)
+    check('the box the swap runs in never reads as empty, holds its height, and moves the clock only where the words themselves grew',
+      boxes.length > 4 &&
+        boxes.every((box) => box.width > 0 && box.height === boxes[0].height) &&
+        boxes.every((box, at) => at === 0 || (box.width >= boxes[at - 1].width && box.clockLeft >= boxes[at - 1].clockLeft)) &&
+        boxes[boxes.length - 1].clockLeft - boxes[0].clockLeft === boxes[boxes.length - 1].width - boxes[0].width,
+      JSON.stringify({ first: boxes[0], last: boxes[boxes.length - 1], widths: boxes.map((box) => box.width), heights: boxes.map((box) => box.height), clockLefts: boxes.map((box) => box.clockLeft) }))
+    check('the new wording is the one left standing once the copy that left is taken down',
+      silent[0].displayed === 'Thinking…' && silent[0].copies === 1 && silent[0].phase === null &&
+        Number(last.opacity) === 1 && last.copies === 1 && last.word === 'Deep diving',
+      JSON.stringify({ first: [silent[0].displayed, silent[0].copies, silent[0].phase], rest: [last.opacity, last.filter, last.copies, last.word] }))
     check('a model silent past ten seconds shows the overtime badge', last.badge === 'No response yet', JSON.stringify(last))
     const tools = wait.tools || {}
     check('a tool call in flight is named as such',
-      tools.label === 'Running tools…' && tools.badge === null, JSON.stringify(tools))
+      tools.word === 'Running tools…' && tools.badge === null, JSON.stringify(tools))
     const reduced = wait.reduced || {}
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
-      reduced.label === 'Deep diving' && reduced.swap === null, JSON.stringify(reduced))
+      reduced.word === 'Deep diving' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Deep diving',
+      JSON.stringify(reduced))
+    check('words that settle shorter take the box down with them, so the clock sits right after them',
+      reduced.box?.sizer?.text === reduced.word && reduced.box.width === reduced.box.sizer.width &&
+        reduced.box.clockLeft - reduced.box.lineLeft - reduced.box.width <= 10,
+      JSON.stringify({ word: reduced.word, box: reduced.box }))
     const off = wait.off || {}
     check('switching the chat-area animations off takes the line down and gives the host\'s words back',
       off.line === false && off.marked === false && off.wordsShown === true && off.wordsMarked === false && off.foreignShown === true,

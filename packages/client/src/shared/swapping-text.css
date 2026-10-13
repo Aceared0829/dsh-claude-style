@@ -1,0 +1,87 @@
+/* ---------- A line of words that swaps in place ---------- */
+/* transitions.dev's "Text states swap" (MIT), composed the way its "Thinking
+   states" recipe does it: the outgoing copy leaves upward through a blur while
+   the incoming copy rises from below, both in the box at once, and the outgoing
+   copy is taken down once the incoming one has settled (shared/swapping-text.ts).
+
+   The box's width and height belong to the hidden sizer, which is the recipe's
+   own arrangement: the copies are out of the flow, so a box holding only them
+   would read as empty for the length of the swap and throw every neighbour to
+   the left edge and back, and the entering copy rising from below would make
+   the box taller while it is still off its mark. The sizer carries the widest
+   of the words a swap puts in the box while it runs and comes down onto the
+   words standing once it settles (shared/swapping-text.ts), so the clock beside
+   the line sits right after them at rest. */
+
+body[data-dsh-claude-style] .dsh-claude-swap-label {
+  --dsh-claude-swap-duration: 150ms;
+  --dsh-claude-swap-gap: 50ms;
+  --dsh-claude-swap-distance: 8px;
+  --dsh-claude-swap-blur: 2px;
+  --dsh-claude-swap-ease: ease-in-out;
+  position: relative;
+  display: inline-block;
+}
+
+/* The sizer paints nothing and is never read out; it is the box. */
+body[data-dsh-claude-style] .dsh-claude-swap-sizer {
+  display: block;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+/* Every copy lies over the sizer, so the box keeps its size whatever is
+   moving inside it. */
+body[data-dsh-claude-style] .dsh-claude-swap-copy {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform: translateY(0);
+  filter: blur(0);
+  opacity: 1;
+  transition:
+    transform var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out),
+    filter var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out),
+    opacity var(--dsh-claude-swap-duration, 150ms) var(--dsh-claude-swap-ease, ease-in-out);
+  will-change: transform, filter, opacity;
+}
+
+body[data-dsh-claude-style] .dsh-claude-swap-copy.is-exit {
+  transform: translateY(calc(var(--dsh-claude-swap-distance, 8px) * -1));
+  filter: blur(var(--dsh-claude-swap-blur, 2px));
+  opacity: 0;
+}
+
+body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start {
+  transition: none;
+  transform: translateY(var(--dsh-claude-swap-distance, 8px));
+  filter: blur(var(--dsh-claude-swap-blur, 2px));
+  opacity: 0;
+}
+
+/* The masked highlight: a copy of the words clipped to their glyphs, painted
+   over a gradient that sweeps. The box carrying the class owns the whole
+   pseudo-element — `attr(data-text)` and `inset: 0` are read off it — so the
+   class sits on whichever copy is showing the words, and on the label while
+   nothing is moving. Only the gradient and its cadence are the caller's. */
+body[data-dsh-claude-style] .dsh-claude-swap-shimmer::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D26).
+   The helper writes the words without a swap on that setting, so this is the
+   second net for a swap already in flight when the choice changes. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-swap-copy {
+  transition: none;
+  transform: none;
+  filter: none;
+}
