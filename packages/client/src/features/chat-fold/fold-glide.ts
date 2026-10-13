@@ -2,7 +2,7 @@ import { subscribeMutations } from '../../core/bus'
 import { motionReduced } from '../../core/prefs'
 import { FOLD_DISCLOSURE_SELECTOR, FOLD_INTENT_TTL_MS, FOLD_POPUP_SELECTOR, FOLD_ROLL_MS, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_TOGGLE_SELECTOR, FOLD_VISIBLE_SHARE, foldBeginHeightClip, foldConfirmCollapsed, foldControlAtBottom, foldExpandedBody, foldHoldThroughStalls, foldProcessBody, foldSettleAfter, foldVisibleReach, foldWatchReader, markChatFoldBusy } from './fold-glide-parts'
 import type { FoldWatch } from './fold-glide-parts'
-import { isChatFoldToggle } from './fold-toggle'
+import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { CHAT_FLOW_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { joinScrollOwner } from '../../shared/scroll-owner'
 
@@ -89,13 +89,23 @@ export function installChatFoldGlide() {
   // reduced motion.
   const reduceMotion = () => motionReduced()
 
-  /** Hand the intercepted click back to React as it was. No intercepting during the replay, and no collapse started. */
-  const replay = (control: HTMLElement) => {
+  /**
+   * Hand the intercepted click back to React as it was. No intercepting during
+   * the replay, and no collapse started.
+   *
+   * A press this feature made itself is replayed as one (fold-toggle.ts): the
+   * replay lands after the door, outside the press that declared it, and the
+   * reader-intent guards — the token reveal's among them — would otherwise
+   * read it as the reader's.
+   */
+  const replay = (control: HTMLElement, own: boolean) => {
     glideShutting = false
     glideReplaying = true
+    if (own) beginChatFoldToggle()
     try {
       control.click()
     } finally {
+      if (own) endChatFoldToggle()
       glideReplaying = false
     }
   }
@@ -156,10 +166,10 @@ export function installChatFoldGlide() {
    * part outside the viewport goes first and the visible stretch rolls up over
    * FOLD_VISIBLE_SHARE of the duration.
    *
-   * @param fold - the element to press, the end height, and the test for
-   *     "React has collapsed it".
+   * @param fold - the element to press, the end height, the test for "React
+   *     has collapsed it", and whether this feature made the press.
    */
-  const rollShut = (fold: { target: HTMLElement, floor: number, collapsed: () => boolean, control: HTMLElement, watch: FoldWatch }) => {
+  const rollShut = (fold: { target: HTMLElement, floor: number, collapsed: () => boolean, control: HTMLElement, own: boolean, watch: FoldWatch }) => {
     markChatFoldBusy()
     const height = fold.target.getBoundingClientRect().height
     // A backstop: if onfinish never arrives for any reason, the click must not stay locked.
@@ -168,7 +178,7 @@ export function installChatFoldGlide() {
     }, FOLD_ROLL_MS + FOLD_ROLL_BACKSTOP_MS)
     if (height <= fold.floor) {
       window.clearTimeout(release)
-      replay(fold.control)
+      replay(fold.control, fold.own)
       foldSettleAfter(fold.watch)
       return
     }
@@ -187,7 +197,7 @@ export function installChatFoldGlide() {
     foldHoldThroughStalls(shrinking)
     shrinking.onfinish = () => {
       window.clearTimeout(release)
-      replay(fold.control)
+      replay(fold.control, fold.own)
       // The DOM should have collapsed by now; if it has not, the animation
       // cannot be withdrawn — see foldConfirmCollapsed.
       foldConfirmCollapsed(fold.collapsed, () => {
@@ -298,6 +308,7 @@ export function installChatFoldGlide() {
         : Math.max(0, groupRoot.getBoundingClientRect().height - body.getBoundingClientRect().height),
       collapsed,
       control,
+      own: isChatFoldToggle(),
       watch,
     })
   }

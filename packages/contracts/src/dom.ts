@@ -146,6 +146,12 @@ export const PROCESS_ACTIVITY_SELECTOR = 'button[data-process-activity]'
 /** A fold: the host's DisclosureRow, and every other control that opens and closes something. */
 export const DISCLOSURE_ROW_SELECTOR = '[data-disclosure-row]'
 /**
+ * The header a newer host build wraps around a DisclosureRow's own row and its
+ * accessory: the body then stands beside this wrapper. An older build writes
+ * no wrapper and sets the body beside the row itself.
+ */
+export const DISCLOSURE_HEADER_SELECTOR = '[data-disclosure-header]'
+/**
  * On a row the host lets the reader open and fold: present while it stands
  * open. A thinking row is folded when this is absent.
  */
