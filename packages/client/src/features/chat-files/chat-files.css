@@ -1,12 +1,12 @@
-/* ---------- chat files: the file-change row ---------- */
-/* The file-change row belongs to this skin: it takes over the host's two keyed
-   seat rows for the write and edit tools (chat-files.ts), and what the host's own
-   ToolRow.module.css draws for them has build-time hashed names — not reachable,
-   and not an interface. So the rules are drawn again here, with the sizes, tokens
-   and rhythm of the host's own row. The line height and the leading icon are the
-   shared DisclosureRow's job; what it does not draw is added here: the separator
-   dot, the summary, the statistics tail, the path link, the IN/OUT card and the
-   trajectory entrance. */
+/* ---------- chat files: the file-operation row ---------- */
+/* The file-operation row belongs to this skin: it takes over the host's three keyed
+   seat rows for the read, write and edit tools (chat-files.ts), and what the host's
+   own ToolRow.module.css draws for them has build-time hashed names — not
+   reachable, and not an interface. So the rules are drawn again here, with the
+   sizes, tokens and rhythm of the host's own row. The line height and the leading
+   icon are the shared DisclosureRow's job; what it does not draw is added here:
+   the separator dot, the summary, the statistics tail, the path link, the IN/OUT
+   card and the trajectory entrance. */
 
 /* The added and removed colours read the host's own file-diff marker pair rather
    than the diff body's success and error tokens: the body pair has one green in

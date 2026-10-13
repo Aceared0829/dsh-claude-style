@@ -2,7 +2,7 @@ import type { HostText } from '../../core/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 
 /**
- * The file-change row's derivations, kept apart from its React component
+ * The file-operation row's derivations, kept apart from its React component
  * (chat-files.ts): what a write or edit call is, which diff it shows, and how
  * a path or a failure reads.
  *
@@ -82,7 +82,7 @@ export const CHAT_FILE_ROW_LINE_CLASS = 'dsh-claude-file-row'
 export const CHAT_FILE_LEADING_CLASS = 'dsh-claude-file-leading'
 /** The open and close chevron. */
 export const CHAT_FILE_CHEVRON_CLASS = 'dsh-claude-file-chevron'
-/** The title (edit or write). */
+/** The title (read, edit or write). */
 export const CHAT_FILE_TITLE_CLASS = 'dsh-claude-file-title'
 /** The dot between the title and the summary. */
 export const CHAT_FILE_SEP_CLASS = 'dsh-claude-file-sep'
@@ -155,7 +155,7 @@ export const CHAT_FILE_TITLE_SLOT_CLASS = 'dsh-claude-file-title-slot'
 export const CHAT_FILE_READ_CLASS = 'dsh-claude-file-read'
 /** The running state label only a screen reader reads. */
 export const CHAT_FILE_HIDDEN_CLASS = 'dsh-claude-file-hidden'
-/** The seat both file tools render through; the host's own rows sit at priority 0 and a keyed seat renders the lowest. */
+/** The seat the read, write and edit rows render through; the host's own rows sit at priority 0 and a keyed seat renders the lowest. */
 export const CHAT_FILE_SEAT = 'tool.call.toolview'
 
 /** A chat row shows this many lines before a diff card folds its middle; the host's own CHAT_DIFF_MAX_LINES. */

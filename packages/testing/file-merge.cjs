@@ -192,19 +192,26 @@ function fileMergeScenario({ check }) {
       await page.waitForTimeout(500)
       context.notes.rows = await readRows(page)
       // Opening the row that stands has to read every change of the file: the
-      // card caps its lines, so its own fold control is pressed first.
+      // card caps its lines, so its own fold control is pressed first. The press
+      // goes to the row's leading icon — the row opens from anywhere on its line
+      // except the path button, which opens the file instead (chat-files.ts).
       const head = page.locator('.dsh-claude-file-root[data-dsh-claude-file-merge="head"]').first()
-      await head.locator('.dsh-claude-file-title').click()
+      await head.locator('.dsh-claude-file-leading').click()
       await page.waitForTimeout(300)
       const fold = head.locator('[data-diff] button[aria-expanded="false"]')
       if (await fold.count() > 0) await fold.first().click()
       await page.waitForTimeout(300)
       context.notes.card = await head.evaluate((root) => root.querySelector('.dsh-claude-file-diff')?.textContent ?? null)
       // The file that was only read: the row that stands for it opens onto the
-      // window its calls read, and carries no change card at all.
-      const readOnly = page.locator('.dsh-claude-file-root').filter({ hasText: 'plain.md' }).first()
-      await readOnly.locator('.dsh-claude-file-title').click()
-      await page.waitForTimeout(300)
+      // window its calls read, and carries no change card at all. A press landing
+      // while the row is still settling is pressed again, the way a reader who
+      // saw nothing happen would; one that did open it is left open.
+      const readOnly = page.locator('.dsh-claude-file-root[data-dsh-claude-file-merge="head"]').filter({ hasText: 'plain.md' }).first()
+      const closedLine = readOnly.locator('[data-disclosure-row][aria-expanded="false"]')
+      for (let press = 0; press < 4 && await closedLine.count() > 0; press += 1) {
+        await readOnly.locator('.dsh-claude-file-leading').click()
+        await page.waitForTimeout(400)
+      }
       context.notes.readCard = await readOnly.evaluate((root) => root.querySelector('.dsh-claude-file-read')?.textContent ?? null)
     },
     async assert({ session, notes }) {
@@ -284,7 +291,7 @@ function fileMergeScenario({ check }) {
         check('展开代表行读到的是全部改动',
           NEW_LINES.every((text) => card.includes(text)), JSON.stringify(card.slice(0, 240))),
         check('展开只被读取的那一行读到这一次读取的窗口',
-          readCard.includes('# Plain') && readCard.includes('- read twice'), JSON.stringify(readCard.slice(0, 240))),
+          typeof readCard === 'string' && readCard.includes('# Plain') && readCard.includes('- read twice'), JSON.stringify(readCard)),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

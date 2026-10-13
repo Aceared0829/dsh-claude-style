@@ -26,6 +26,9 @@ interface ChatFileRowProps {
 /** How long a swap takes when the stylesheet's own token cannot be read. */
 const SWAP_FALLBACK_MS = 150
 
+/** How long one figure's turn takes: the 160 ms the stylesheet runs its roll with (D62). */
+const ROLL_MS = 160
+
 /** How long one operation swap takes, as the token the block's own classes carry says. */
 function swapDuration(element: HTMLElement | null) {
   const parsed = element === null ? null : /^([\d.]+)(ms|s)$/u.exec(getComputedStyle(element).getPropertyValue('--dsh-claude-file-swap-duration').trim())
@@ -72,13 +75,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const fileMerge = createFileMerge()
 
   /**
-   * One figure of the row's tail. Every character whose own digit changed rolls
-   * in its own box — the digit that was there leaves upward as the new one rises
-   * in behind it, the same 160 ms and curve the process header's counted figures
-   * roll with (dsh-better-display's fold figures, THIRD_PARTY_NOTICES.md) —
-   * while the characters that hold keep their place, so a growing number reads
-   * as an odometer rather than as a whole new number. The animation choice
-   * decides whether a leaving digit is drawn at all (D26).
+   * One figure of the row's tail. Every character whose own digit changed turns
+   * over its own middle in its own box — the digit that was there swings down and
+   * away as the new one swings in from above, the 160 ms the stylesheet's own
+   * roll runs (zai-org/ZCode's metric flip, THIRD_PARTY_NOTICES.md) — while the
+   * characters that hold keep their place, so a growing number reads as one
+   * figure turning rather than as a whole new number. The animation choice
+   * decides whether a digit on its way out is drawn at all (D26).
    */
   const RollingStat = (props: { className: string, text: string, running: boolean }) => {
     const [leaving, setLeaving] = React.useState<string | null>(null)
@@ -89,6 +92,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       shown.current = props.text
       setLeaving(motionReduced() ? null : before)
     }, [props.text])
+    // The digit on its way out goes when its turn is over. The turn's own end
+    // event would say the same, but it never arrives when the stylesheet's
+    // animation does not run, and the digit would then stay in the box that the
+    // digit taking its place already fills.
+    React.useEffect(() => {
+      if (leaving === null) return
+      const timer = window.setTimeout(() => setLeaving(null), ROLL_MS)
+      return () => window.clearTimeout(timer)
+    }, [leaving])
     return h(primitives.TextShimmer, {
       className: props.className + ' ' + CHAT_FILE_ROLL_CLASS,
       active: props.running,
@@ -105,7 +117,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
             key: 'out',
             className: CHAT_FILE_ROLL_OUT_CLASS,
             'aria-hidden': true,
-            onAnimationEnd: () => setLeaving(null),
           }, before) : null,
           h('span', { key: 'in', className: CHAT_FILE_ROLL_IN_CLASS }, char),
         ])
