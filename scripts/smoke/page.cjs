@@ -226,7 +226,11 @@ function page(name, tier, cases) {
   // script: the row's control flips data-expanded, a group's header flips its
   // body's hidden. A header is the host's: a decorative icon span, then its words.
   // A thinking row carries its reasoning body the way the pinned host renders it:
-  // a wrapper with the Markdown inside, no slot of its own.
+  // a wrapper with the Markdown inside, no slot of its own. The chat flow holds a
+  // DisclosureRow in both of the host's shapes: the row with its body beside it,
+  // and — first in the flow, so the other's body stays the flow's last child —
+  // the row wrapped in a header beside its accessory, the expanded content inside
+  // that same wrapper.
   var foldReasoning = ''
   for (var line = 1; line <= 12; line += 1) foldReasoning += '思考第 ' + line + ' 行。' + (line < 12 ? '<br>' : '')
   // The reasoning's window takes the text's height up to the cap reasoning may
@@ -255,6 +259,13 @@ function page(name, tier, cases) {
         '</div></div>' +
       '</div>' +
       '<div data-chat-flow id="debugFlow">' +
+        '<div id="debugWrapped" data-open>' +
+          '<div data-disclosure-header>' +
+            '<div data-disclosure-row role="button" tabindex="0" aria-expanded="true" id="debugWrappedRow">Wrapped row</div>' +
+            '<span id="debugWrappedAccessory">accessory</span>' +
+          '</div>' +
+          '<div id="debugWrappedBody" style="height:120px">wrapped body</div>' +
+        '</div>' +
         '<button type="button" data-disclosure-row id="debugDisclosure">Row</button>' +
         '<div id="debugDisclosureBody" style="height:600px">row body</div>' +
       '</div>' +
@@ -290,6 +301,20 @@ function page(name, tier, cases) {
       '    restored.style.height = "600px";' +
       '    restored.textContent = "row body";' +
       '    flow.appendChild(restored);' +
+      '  });' +
+      '  window.__wrappedClicks = 0;' +
+      '  var wrapped = document.getElementById("debugWrapped");' +
+      '  var wrappedRow = document.getElementById("debugWrappedRow");' +
+      '  wrappedRow.addEventListener("click", function () {' +
+      '    window.__wrappedClicks += 1;' +
+      '    var current = document.getElementById("debugWrappedBody");' +
+      '    wrappedRow.setAttribute("aria-expanded", current === null ? "true" : "false");' +
+      '    if (current !== null) { current.remove(); return; }' +
+      '    var restored = document.createElement("div");' +
+      '    restored.id = "debugWrappedBody";' +
+      '    restored.style.height = "120px";' +
+      '    restored.textContent = "wrapped body";' +
+      '    wrapped.appendChild(restored);' +
       '  });' +
       '  var expandedBody = document.getElementById("debugExpandedBody");' +
       '  document.getElementById("debugExpandedHeader").addEventListener("click", function () {' +
