@@ -361,6 +361,18 @@ module.exports = {
       replaced.previousMarked === false && replaced.current?.wordsMarked === true && replaced.current?.wordsShown === false &&
         replaced.current?.foreignShown === true, JSON.stringify(replaced))
     check('a running row leaving removes its host words marker', wait.removed?.wordsMarked === false, JSON.stringify(wait.removed))
+    for (const name of ['takeover', 'visibleReplacement', 'existingOwner']) {
+      const owner = wait[name] || {}
+      check(`a visible replacement owns the waiting words (${name}) without disabling the other chat animations`,
+        owner.line === false && owner.marked === false && owner.wordsMarked === false &&
+          owner.externalHiding === 'none' && owner.foreignShown === true && owner.follow === true,
+        JSON.stringify(owner))
+    }
+    for (const name of ['hiddenReplacement', 'hostRestored', 'ownerRemoved']) {
+      const owner = wait[name] || {}
+      check(`the waiting line returns when the replacement stops owning the words (${name})`,
+        owner.line === true && owner.marked === true && owner.wordsMarked === true, JSON.stringify(owner))
+    }
   },
   'chat-send'(r) {
     basicChecks(r)

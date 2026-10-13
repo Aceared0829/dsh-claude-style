@@ -210,6 +210,39 @@
         previousMarked: previousWords.hasAttribute('data-dsh-claude-wait-words'),
         current: lineOf(),
       }
+      var ownership = function () {
+        return {
+          line: row.querySelector('.dsh-claude-chat-wait') !== null,
+          marked: row.hasAttribute('data-dsh-claude-wait'),
+          wordsMarked: words.hasAttribute('data-dsh-claude-wait-words'),
+          externalHiding: words.style.display,
+          foreignShown: foreignLine.checkVisibility(),
+          follow: document.body.hasAttribute('data-dsh-claude-chat-follow'),
+        }
+      }
+      words.style.display = 'none'
+      await sleep(400)
+      r.wait.takeover = ownership()
+      foreignLine.hidden = true
+      await sleep(400)
+      r.wait.hiddenReplacement = ownership()
+      foreignLine.hidden = false
+      await sleep(400)
+      r.wait.visibleReplacement = ownership()
+      words.style.removeProperty('display')
+      await sleep(400)
+      r.wait.hostRestored = ownership()
+      window.__pushForm({ chatAnimations: false })
+      await sleep(300)
+      words.style.display = 'none'
+      window.__pushForm({ chatAnimations: true })
+      await sleep(400)
+      r.wait.existingOwner = ownership()
+      foreignLine.remove()
+      words.style.removeProperty('display')
+      await sleep(400)
+      r.wait.ownerRemoved = ownership()
+      words.parentElement.appendChild(foreignLine)
       window.__pushForm({ chatAnimations: false })
       await sleep(300)
       r.wait.off = {

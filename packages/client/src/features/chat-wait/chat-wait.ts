@@ -8,6 +8,7 @@ import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text
 import { activityWords } from '../../shared/turn-activity'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
+import { foreignRunningLineOwns } from './running-owner'
 import type { RowWords } from './wait-state'
 import type { HostChatTarget } from '@dsh-claude-style/contracts/services'
 import type { HostContext, HostText } from '../../core/host'
@@ -123,8 +124,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Bring one row's line to what the host's snapshot says now. */
   function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>) {
-    const words = row.querySelector(CHAT_RUNNING_TEXT_SELECTOR)
-    if (words === null) return
+    const words = row.querySelector<HTMLElement>(CHAT_RUNNING_TEXT_SELECTOR)
+    if (words === null || foreignRunningLineOwns(words, lines.get(row), WORDS_ATTR)) {
+      release(row)
+      return
+    }
     const sessionId = conversationSessionId(closestConversationSession(row))
     const target = sessionId === null ? null : findChatTarget(ctx, sessionId)
     followRow(row, sessionId, target)
@@ -199,13 +203,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const key of [...waits.keys()]) {
       if (!seen.has(key)) waits.delete(key)
     }
-    // The clock ticks only while a row is on the page.
-    if (lines.size > 0 && timer === null) {
+    // Yielded rows stay watched: style-only ownership changes must restore the line.
+    if (rows.length > 0 && timer === null) {
       timer = window.setInterval(() => {
         if (cancelTick !== null) return
         cancelTick = requestFrame({ write() { cancelTick = null; sync() } })
       }, TICK_MS)
-    } else if (lines.size === 0 && timer !== null) {
+    } else if (rows.length === 0 && timer !== null) {
       window.clearInterval(timer)
       timer = null
     }
