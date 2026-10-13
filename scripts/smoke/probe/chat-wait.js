@@ -151,7 +151,13 @@
           if (copy === null) { requestAnimationFrame(read); return }
           var style = getComputedStyle(copy)
           frames.push({ opacity: Number(style.opacity), filter: style.filter, transform: style.transform })
-          if (frames.length >= 14) { done(); return }
+          // The bound is the swap's own length, not a frame count: the stand-in's
+          // frames arrive faster than a display's, and a count that covers the
+          // whole swap on one machine reads only its beginning on another. A few
+          // frames of the climb are kept either way, and the timeout above is the
+          // outer bound.
+          if (frames.length >= 6 && Number(style.opacity) >= 0.999) { done(); return }
+          if (frames.length >= 240) { done(); return }
           requestAnimationFrame(read)
         }
         requestAnimationFrame(read)
