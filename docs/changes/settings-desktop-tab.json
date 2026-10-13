@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 3,
+  "external": false,
+  "zh": "设置页分成六页：新增的「桌面端」页放「标题进入顶栏」，在浏览器或 macOS 窗口里打开时，这一页开头说明它的设置只作用于 Windows 桌面端的窗口，以前这一行混在「对话」页里，在不起作用的页面上也看不出来；「首页版面」从「输入区」挪到「外观」；「封号彩蛋」从「通用」挪到「侧栏」，挂在打开它的账号弹层那一行下面。「搜索框样式」与「对话统计信息位置」的说明以前只重复标题，现在写出每个选项的效果。",
+  "en": "The settings page has six tabs: the new Desktop tab carries Header in the title bar and, opened in a browser or in the macOS window, starts with a line saying its settings act on the Windows desktop window only, where the row used to sit on the Conversation tab with nothing to say it did nothing on those pages; Home layout moves from Composer to Appearance; the Account-hold easter egg moves from General to Sidebar, under the row of the account popover it opens from. The descriptions of Search box style and Conversation statistics position used to repeat their titles, and now say what each choice does."
+}

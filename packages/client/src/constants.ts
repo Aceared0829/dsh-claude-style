@@ -472,8 +472,11 @@ export const HOME_LAYOUT_CLASSIC = 'classic'
 export const HOME_LAYOUT_STUDIO = 'studio'
 export const HOME_LAYOUTS = [HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO]
 /** Composer surfaces the restyle may cover, in settings order. */
+export const COMPOSER_SCOPE_OFF = 'off'
+export const COMPOSER_SCOPE_HERO = 'hero'
+export const COMPOSER_SCOPE_CONVERSATION = 'conversation'
 export const COMPOSER_SCOPE_ALL = 'all'
-export const COMPOSER_SCOPES = ['off', 'hero', 'conversation', COMPOSER_SCOPE_ALL]
+export const COMPOSER_SCOPES = [COMPOSER_SCOPE_OFF, COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL]
 /**
  * How eagerly the skin's popovers open on hover: `off` is click-only,
  * `account` auto-opens the sidebar account popover alone, and `all` adds the

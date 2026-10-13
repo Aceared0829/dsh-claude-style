@@ -73,7 +73,7 @@
         var found = false
         peerWalk(node, function (child) {
           var className = (child.props || {}).className
-          if (typeof className === 'string' && className.split(' ').indexOf('dsh-claude-settings-row-managed') >= 0) found = true
+          if (typeof className === 'string' && className.split(' ').indexOf('dsh-claude-settings-row-note') >= 0) found = true
         })
         return found
       }

@@ -48,27 +48,38 @@ export interface SettingsRow {
   node: React.ReactNode
 }
 
-/** One tab of the settings page: its id, its strip label and the rows it writes itself. */
+/**
+ * One tab of the settings page: its id, its strip label, the rows it writes
+ * itself and, when the page it is open on calls for one, the line it opens
+ * with.
+ */
 export interface SettingsTab {
   id: SettingsTabId
   label(): string
   rows(view: SettingsView): SettingsRow[]
+  notice?(): string | null
 }
 
 /**
- * The tab's whole row list: its own rows and the switch rows of the features
- * whose manifests place one here, in rank order.
+ * The tab's whole row list: its notice, then its own rows and the switch rows
+ * of the features whose manifests place one here, in rank order.
  */
 export function tabRows(tab: SettingsTab, view: SettingsView) {
   const rows = [...tab.rows(view), ...switchRows(tab.id, view)]
-  return rows.sort((a, b) => a.rank - b.rank).map(row => row.node)
+  const nodes = rows.sort((a, b) => a.rank - b.rank).map(row => row.node)
+  const notice = tab.notice === undefined ? null : tab.notice()
+  if (notice === null) return nodes
+  return [React.createElement('div', { key: 'notice', className: 'dsh-claude-settings-notice dsh-claude-settings-tab-notice', role: 'note' }, notice), ...nodes]
 }
 
 /**
  * The on/off and choice rows the manifests declare for a tab: without
  * `choices` the row carries a switch, with them a segmented control. A
  * preference a feature yields for (dsh-chat-ux on the page) keeps the reader's
- * value on show and refuses input, saying who manages it (managedDesc).
+ * value on show and refuses input, saying who manages it (managedDesc); so
+ * does a row whose feature only works under another preference's values
+ * (`requires`, D29) while that preference holds none of them, saying what it
+ * waits for.
  */
 function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
   const controls = view.controls
@@ -76,40 +87,47 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     const pref = feature.pref
     const row = feature.switchRow
     const yielded = prefYielded(pref)
+    const requires = row.requires
+    const waits = requires !== undefined && !requires.values.includes(String(view.prefs[requires.pref]))
+      ? settingsCopy(requires.note.key, requires.note.fallback)
+      : null
+    const unmet = waits !== null
     const stored = view.prefs[pref]
     const write = (value: string | boolean) => { view.write({ [pref]: value }) }
     const control = row.choices === undefined
-      ? controls.toggle(stored !== false, write, yielded)
+      ? controls.toggle(stored !== false, write, yielded || unmet)
       : controls.segment(
         row.choices.map(choice => ({ value: choice.value, label: settingsCopy(choice.label.key, choice.label.fallback) })),
         String(stored),
         write,
-        yielded,
+        yielded || unmet,
       )
+    const text = settingsCopy(row.desc.key, row.desc.fallback)
     return {
       rank: row.rank,
       node: controls.row(
         pref,
         settingsCopy(row.title.key, row.title.fallback),
-        managedDesc(settingsCopy(row.desc.key, row.desc.fallback), yielded),
+        yielded ? managedDesc(text, true) : noteDesc(text, waits),
         control,
+        { disabled: unmet },
       ),
     }
   })
 }
 
-/**
- * A row's description, with the line naming the plugin that manages it
- * added below in the accent colour while it does, so a row that refuses
- * input says why where the eye already is.
- */
+/** A row's description, with the line naming the plugin that manages it while one does. */
 export function managedDesc(text: string, managed: boolean): React.ReactNode {
-  if (!managed) return text
-  return [
-    text,
-    React.createElement('span', { key: 'managed', className: 'dsh-claude-settings-row-managed' },
-      settingsCopy('chatUxManaged', 'Managed by dsh-chat-ux')),
-  ]
+  return noteDesc(text, managed ? settingsCopy('chatUxManaged', 'Managed by dsh-chat-ux') : null)
+}
+
+/**
+ * A row's description, with `note` added below in the accent colour, so a row
+ * that refuses input says why where the eye already is.
+ */
+export function noteDesc(text: string, note: string | null): React.ReactNode {
+  if (note === null) return text
+  return [text, React.createElement('span', { key: 'note', className: 'dsh-claude-settings-row-note' }, note)]
 }
 /**
  * One segmented control on the page, carrying the shared sliding highlight
@@ -200,19 +218,22 @@ export function createSettingsControls() {
    * A block row stacks its control under the text across the row's full
    * width. A row carrying a segmented control is marked as such: that control
    * is wide, and the stylesheet keeps it on the right while it fits and gives it
-   * the next line when it does not (settings.css).
+   * the next line when it does not (settings.css). A disabled row is announced
+   * as such; its control is built disabled by the caller and its description
+   * says why.
    */
-  function row(key: string, title: string, description: React.ReactNode, control: React.ReactNode, block?: boolean) {
+  function row(key: string, title: string, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean }) {
     const classes = ['dsh-claude-settings-row']
-    if (block) classes.push('dsh-claude-settings-row-block')
+    if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
     // The switch has no text of its own; its name is this row's title.
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
       ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title })
       : control
+    const disabled = options?.disabled === true
     return React.createElement(
       'div',
-      { className: classes.join(' '), key },
+      { className: classes.join(' '), key, 'aria-disabled': disabled ? 'true' : undefined, 'data-disabled': disabled ? '' : undefined },
       React.createElement(
         'div',
         { className: 'dsh-claude-settings-row-text' },

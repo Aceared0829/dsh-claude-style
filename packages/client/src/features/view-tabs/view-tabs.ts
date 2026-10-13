@@ -1,4 +1,4 @@
-import { WINDOWS_TITLEBAR_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { windowsDesktop } from '../../core/desktop-band'
 import { createStamp } from '../../shared/dom'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { HostContext } from '../../core/host'
@@ -82,7 +82,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * nothing.
    */
   function syncTitlebar() {
-    const next = document.documentElement.hasAttribute(WINDOWS_TITLEBAR_ATTRIBUTE)
+    const next = windowsDesktop()
     if (next === titlebar) return
     titlebar = next
     if (next) document.body.setAttribute(TITLEBAR_ATTR, '')

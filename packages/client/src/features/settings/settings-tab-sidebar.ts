@@ -52,7 +52,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.subRow(
           'searchStyle',
           settingsCopy('searchStyleTitle', 'Search box style'),
-          settingsCopy('searchStyleDesc', 'Choose the search box style'),
+          settingsCopy('searchStyleDesc', 'Cover the brand puts the box in the brand row, standing over the brand while the pointer is on the sidebar; Standalone gives it a row of its own under the brand; Icon keeps the host\'s own search button and opens this panel from it.'),
           controls.segment(searchStyleOptions, prefs.searchStyle, value => { write({ searchStyle: value }) }, !searchOn),
           searchOn,
         ),

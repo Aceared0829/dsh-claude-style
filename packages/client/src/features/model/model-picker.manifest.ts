@@ -1,3 +1,4 @@
+import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -12,6 +13,12 @@ export default {
     rank: 30,
     title: { key: 'pickerTitle', fallback: 'Redraw the model picker' },
     desc: { key: 'pickerDesc', fallback: 'Replace the composer\'s model menu with the two-level Claude-style menu. Off restores the host\'s model menu.' },
+    // The menu is drawn into the restyled composer.
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: { key: 'composerRequired', fallback: 'No effect while Composer restyle is Off.' },
+    },
   },
   cases: ['brand', 'composer', 'settings', 'sync-fault', 'model-meter'],
   description: {

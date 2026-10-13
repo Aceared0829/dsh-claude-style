@@ -493,25 +493,46 @@ module.exports = {
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
       general: ['brand', 'username', 'motion', 'autoPopover'],
-      appearance: ['palette', 'typeface', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk', 'brandAccent'],
-      composer: ['composerScope', 'homeLayout', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
+      appearance: ['palette', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk', 'brandAccent'],
+      composer: ['composerScope', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],
+      conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs'],
+      desktop: ['headerBand'],
     }
     const pages = settings.pages || {}
     for (const tab of Object.keys(expected)) {
       const page = pages[tab] || {}
-      check(`the ${tab} tab is selected in the five-tab strip and carries its rows, every sub-row enabled`,
+      check(`the ${tab} tab is selected in the six-tab strip and carries its rows, every row enabled and none waiting`,
         JSON.stringify(page.tabs) === JSON.stringify(Object.keys(expected)) && page.selected === tab &&
-          JSON.stringify(page.rows) === JSON.stringify(expected[tab]) && Array.isArray(page.disabled) && page.disabled.length === 0,
+          JSON.stringify(page.rows) === JSON.stringify(expected[tab]) && Array.isArray(page.disabled) && page.disabled.length === 0 &&
+          Array.isArray(page.notes) && page.notes.length === 0,
         JSON.stringify(page))
     }
+    const desktop = pages.desktop || {}
+    const onWindows = settings.desktopOnWindows || {}
+    check('the Desktop tab opens with a line saying its settings act on the Windows window, on a page that is not that window, and without it on that window',
+      typeof desktop.notice === 'string' && desktop.notice.length > 0 && onWindows.notice === null &&
+        JSON.stringify(onWindows.rows) === '["headerBand"]' && JSON.stringify(onWindows.disabled) === '[]',
+      JSON.stringify({ desktop, onWindows }))
     const off = settings.parentsOff || {}
     check('a sub-row greys out while its parent is off: the mascot\'s place with the mascot off, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&
         !!off.composer && JSON.stringify(off.composer.disabled) === '["quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))
+    const unmet = settings.requirementsOff || {}
+    check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
+      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","quickProviders","peakrate","permissionsControl"]' &&
+        JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
+        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition"]' &&
+        JSON.stringify(unmet.conversation.notes) === '["statsPosition"]' &&
+        !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
+      JSON.stringify(unmet))
+    const hero = settings.heroOnly || {}
+    check('with the restyle on the home page alone, the picker and the permission control take input and the statistics\' position still waits for a conversation',
+      !!hero.composer && JSON.stringify(hero.composer.disabled) === '[]' &&
+        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition"]',
+      JSON.stringify(hero))
     const link = settings.link || {}
     const mark = settings.mark || {}
     check('the heading carries the plugin\'s repository link, opening in a new tab with an accessible name',

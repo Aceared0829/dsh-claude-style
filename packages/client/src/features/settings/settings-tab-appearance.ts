@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, MASCOT_SCOPE_ALL, MASCOT_SCOPE_HOME, PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_CLAUDE, TYPEFACE_HOST } from '../../constants'
+import { HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, MASCOT_SCOPE_ALL, MASCOT_SCOPE_HOME, PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_CLAUDE, TYPEFACE_HOST } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import { resolveMascot } from '../../core/prefs'
 import { brandRows } from './settings-brand'
@@ -7,8 +7,8 @@ import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's Appearance tab: who paints the colours and sets the
- * type, the mascot with where it stands, and the custom brand rows
- * (settings-brand.ts).
+ * type, how the new-conversation page is laid out, the mascot with where it
+ * stands, and the custom brand rows (settings-brand.ts).
  */
 export function createSettingsAppearanceTab(): SettingsTab {
   function rows(view: SettingsView) {
@@ -22,6 +22,10 @@ export function createSettingsAppearanceTab(): SettingsTab {
     const typefaceOptions = [
       { value: TYPEFACE_CLAUDE, label: settingsCopy('typefaceClaude', 'Claude') },
       { value: TYPEFACE_HOST, label: settingsCopy('typefaceHost', 'Follow the host') },
+    ]
+    const homeLayoutOptions = [
+      { value: HOME_LAYOUT_CLASSIC, label: settingsCopy('homeClassic', 'Classic') },
+      { value: HOME_LAYOUT_STUDIO, label: settingsCopy('homeStudio', 'Studio') },
     ]
     const mascotOptions = [
       { value: MASCOT_BRAND, label: settingsCopy('mascotBrand', 'Follow the brand') },
@@ -51,6 +55,15 @@ export function createSettingsAppearanceTab(): SettingsTab {
           settingsCopy('typefaceTitle', 'Typefaces'),
           settingsCopy('typefaceDesc', 'Claude uses the Anthropic faces (or the lookalike Inter and Noto Serif when they are missing) and JetBrains Mono for code; Follow the host keeps the fonts DSH or another plugin sets.'),
           controls.segment(typefaceOptions, prefs.typeface, value => { write({ typeface: value }) }),
+        ),
+      },
+      {
+        rank: 25,
+        node: controls.row(
+          'homeLayout',
+          settingsCopy('homeTitle', 'Home layout'),
+          settingsCopy('homeDesc', 'The new-conversation page layout. Classic is the centered hero with the input card; Studio moves the greeting to the top left, pins the composer to the bottom and shows usage in between.'),
+          controls.segment(homeLayoutOptions, prefs.homeLayout, value => { write({ homeLayout: value }) }),
         ),
       },
       {

@@ -28,6 +28,16 @@ function bandHeight(fallback: number) {
 }
 
 /**
+ * Whether this page is the Windows desktop window: the shell's preload marks
+ * `<html>` with `data-windows-titlebar` there and nowhere else. It says which
+ * page this is, fullscreen or not; where the caption strip stands right now is
+ * desktopBand's answer.
+ */
+export function windowsDesktop() {
+  return document.documentElement.hasAttribute(WINDOWS_TITLEBAR_ATTRIBUTE)
+}
+
+/**
  * The desktop shell's native caption strip, resolved in one place.
  *
  * Both desktop platforms hand the top of the window to a native layer, and
@@ -58,7 +68,7 @@ function bandHeight(fallback: number) {
  */
 export function desktopBand() {
   const root = document.documentElement
-  if (root.hasAttribute(WINDOWS_TITLEBAR_ATTRIBUTE)) {
+  if (windowsDesktop()) {
     const overlay = navigator.windowControlsOverlay
     if (!overlay || overlay.visible !== true) return null
     const rect = typeof overlay.getTitlebarAreaRect === 'function' ? overlay.getTitlebarAreaRect() : null

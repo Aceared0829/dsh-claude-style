@@ -1,14 +1,17 @@
 import * as React from 'react'
-import { HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO } from '../../constants'
+import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_OFF } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
- * The settings page's Composer tab: the composer restyle's scope, the home
- * layout, the model picker with its quick providers and the peak rate meter,
- * and the permission control. The effort slider rides the model picker: the
- * host keeps its own effort choice inside its own model menu, so the two go
- * together.
+ * The settings page's Composer tab: the composer restyle's scope, the model
+ * picker with its quick providers and the peak rate meter, and the permission
+ * control. The effort slider rides the model picker: the host keeps its own
+ * effort choice inside its own model menu, so the two go together.
+ *
+ * The picker and the permission control are drawn into the restyled composer,
+ * so their rows wait for the restyle (their manifests' `requires`), and the
+ * picker's two sub-rows wait for it as well as for the picker.
  */
 export function createSettingsComposerTab(): SettingsTab {
   /** What the quick-provider trigger reads: how many, or nothing chosen. */
@@ -22,15 +25,12 @@ export function createSettingsComposerTab(): SettingsTab {
     const write = view.write
     const controls = view.controls
     const scopeOptions = [
-      { value: 'off', label: settingsCopy('scopeOff', 'Off') },
-      { value: 'hero', label: settingsCopy('scopeHero', 'Home only') },
-      { value: 'conversation', label: settingsCopy('scopeConversation', 'Conversation only') },
-      { value: 'all', label: settingsCopy('scopeAll', 'All') },
+      { value: COMPOSER_SCOPE_OFF, label: settingsCopy('scopeOff', 'Off') },
+      { value: COMPOSER_SCOPE_HERO, label: settingsCopy('scopeHero', 'Home only') },
+      { value: COMPOSER_SCOPE_CONVERSATION, label: settingsCopy('scopeConversation', 'Conversation only') },
+      { value: COMPOSER_SCOPE_ALL, label: settingsCopy('scopeAll', 'All') },
     ]
-    const homeLayoutOptions = [
-      { value: HOME_LAYOUT_CLASSIC, label: settingsCopy('homeClassic', 'Classic') },
-      { value: HOME_LAYOUT_STUDIO, label: settingsCopy('homeStudio', 'Studio') },
-    ]
+    const pickerOn = prefs.modelPicker && prefs.composerScope !== COMPOSER_SCOPE_OFF
     const quickTrigger = view.quickTrigger
     return [
       {
@@ -43,15 +43,6 @@ export function createSettingsComposerTab(): SettingsTab {
         ),
       },
       {
-        rank: 20,
-        node: controls.row(
-          'homeLayout',
-          settingsCopy('homeTitle', 'Home layout'),
-          settingsCopy('homeDesc', 'The new-conversation page layout. Classic is the centered hero with the input card; Studio moves the greeting to the top left, pins the composer to the bottom and shows usage in between.'),
-          controls.segment(homeLayoutOptions, prefs.homeLayout, value => { write({ homeLayout: value }) }),
-        ),
-      },
-      {
         rank: 40,
         node: controls.subRow(
           'quickProviders',
@@ -61,7 +52,7 @@ export function createSettingsComposerTab(): SettingsTab {
             type: 'button',
             ref: quickTrigger,
             className: 'dsh-claude-settings-picker',
-            disabled: !prefs.modelPicker,
+            disabled: !pickerOn,
             'aria-haspopup': 'menu',
             'aria-expanded': 'false',
             onClick() {
@@ -70,7 +61,7 @@ export function createSettingsComposerTab(): SettingsTab {
               api.toggle(quickTrigger.current, next => { write({ quickProviders: next }) })
             },
           }, quickSummary(prefs.quickProviders)),
-          prefs.modelPicker,
+          pickerOn,
         ),
       },
       {
@@ -82,8 +73,8 @@ export function createSettingsComposerTab(): SettingsTab {
           'peakrate',
           settingsCopy('peakrateTitle', 'Peak rate meter'),
           settingsCopy('peakrateDesc', 'Marks every row of the model menu with the peak, off-peak or promotional rate in force right now, and how long it lasts. Off leaves the rows bare.'),
-          controls.toggle(prefs.peakrate !== false, value => { write({ peakrate: value }) }, !prefs.modelPicker),
-          prefs.modelPicker,
+          controls.toggle(prefs.peakrate !== false, value => { write({ peakrate: value }) }, !pickerOn),
+          pickerOn,
         ),
       },
     ]

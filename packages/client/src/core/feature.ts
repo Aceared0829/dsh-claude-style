@@ -89,7 +89,7 @@ export interface SettingsCopyLine {
 }
 
 /** The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts). */
-export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation'
+export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'desktop'
 
 export interface FeatureSwitchRow {
   tab: SettingsTabId
@@ -99,6 +99,19 @@ export interface FeatureSwitchRow {
   desc: SettingsCopyLine
   /** The choices of a segmented control; without them the row is an on/off switch. */
   choices?: FeatureSwitchChoice[]
+  /** The preference the feature only works under (D29). */
+  requires?: FeatureSwitchRequirement
+}
+
+/**
+ * Another preference a feature only works under: while that preference holds
+ * none of `values` the row keeps the stored choice on show, refuses input and
+ * says why with `note` under its description.
+ */
+export interface FeatureSwitchRequirement {
+  pref: keyof Prefs
+  values: string[]
+  note: SettingsCopyLine
 }
 
 /** One choice of a switch row's segmented control: the stored value and its line of copy. */

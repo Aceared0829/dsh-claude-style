@@ -1,3 +1,4 @@
+import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -12,6 +13,12 @@ export default {
     rank: 50,
     title: { key: 'permissionsTitle', fallback: 'Redraw the permission control' },
     desc: { key: 'permissionsDesc', fallback: 'Replace the composer\'s permission menu with a segmented control. Off restores the host\'s permission menu.' },
+    // The segments are drawn into the restyled composer.
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: { key: 'composerRequired', fallback: 'No effect while Composer restyle is Off.' },
+    },
   },
   cases: ['permissions', 'permissions-locale', 'automode', 'automode-current', 'automode-hero', 'automode-roundtrip', 'no-auto-review', 'sync-fault', 'switches', 'switches-off'],
   description: {

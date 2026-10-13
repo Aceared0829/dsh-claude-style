@@ -8,6 +8,7 @@ import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './sett
 import { createSettingsAppearanceTab } from './settings-tab-appearance'
 import { createSettingsComposerTab } from './settings-tab-composer'
 import { createSettingsConversationTab } from './settings-tab-conversation'
+import { createSettingsDesktopTab } from './settings-tab-desktop'
 import { createSettingsGeneralTab } from './settings-tab-general'
 import { createSettingsSidebarTab } from './settings-tab-sidebar'
 import type { Prefs } from '../../constants'
@@ -68,6 +69,7 @@ export const SETTINGS_TABS: SettingsTab[] = [
   createSettingsComposerTab(),
   createSettingsSidebarTab(),
   createSettingsConversationTab(),
+  createSettingsDesktopTab(),
 ]
 export const SETTINGS_CONTROLS = createSettingsControls()
 

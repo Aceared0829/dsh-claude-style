@@ -1,4 +1,4 @@
-import { STATS_POSITION_CONTEXT, STATS_POSITION_INLINE } from '../../constants'
+import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, STATS_POSITION_CONTEXT, STATS_POSITION_INLINE } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -15,11 +15,18 @@ export default {
     tab: 'conversation',
     rank: 35,
     title: { key: 'statsPositionTitle', fallback: 'Conversation statistics position' },
-    desc: { key: 'statsPositionDesc', fallback: 'Choose where the conversation statistics show.' },
+    desc: { key: 'statsPositionDesc', fallback: 'Inside the context popover puts the session\'s figures in the panel the context ring opens and leaves the ring alone under the input card; On its own line writes the turns, the output speed, the tokens and the cache-hit share on a line under the card, ending in the ring.' },
     choices: [
       { value: STATS_POSITION_INLINE, label: { key: 'statsPositionInline', fallback: 'On its own line' } },
       { value: STATS_POSITION_CONTEXT, label: { key: 'statsPositionContext', fallback: 'Inside the context popover' } },
     ],
+    // The figures hang off the meter the composer restyle stamps, and a
+    // session's figures only exist in the conversation.
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: { key: 'statsComposerRequired', fallback: 'Takes effect only while Composer restyle covers the conversation.' },
+    },
   },
   cases: ['context-stats', 'stats-compact', 'stats-inline'],
   description: {

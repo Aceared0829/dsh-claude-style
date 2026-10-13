@@ -140,6 +140,16 @@ body[data-dsh-claude-style] .dsh-claude-settings-rows > :first-child {
   border-top: none;
 }
 
+/* A tab's opening line (the Desktop tab off the Windows window) sits above its
+   first row, which keeps no hairline under it. */
+body[data-dsh-claude-style] .dsh-claude-settings-tab-notice {
+  padding-top: 16px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-tab-notice + .dsh-claude-settings-row {
+  border-top: none;
+}
+
 /* A sub-row belongs to the row above it: no hairline between the two and no
    air above it, so they read as one group, and it greys out while its parent
    is off (its control is disabled as well, so the keyboard skips it). */
@@ -295,16 +305,17 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-desc {
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* A row whose behaviour another plugin owns right now: the control refuses input
-   and dims, while the row's own copy stays readable and a line in the accent
-   colour says who owns it. The reader's stored answer is what the control shows,
-   so it already tells what will happen once that plugin goes away. */
+/* A row whose behaviour another plugin owns right now, or whose feature waits for
+   another setting: the control refuses input and dims, while the row's own copy
+   stays readable and a line in the accent colour says who owns it or what it
+   waits for. The reader's stored answer is what the control shows, so it already
+   tells what will happen once that changes. */
 body[data-dsh-claude-style] .dsh-claude-settings-row button:disabled {
   cursor: not-allowed;
   opacity: .45;
 }
 
-body[data-dsh-claude-style] .dsh-claude-settings-row-managed {
+body[data-dsh-claude-style] .dsh-claude-settings-row-note {
   display: block;
   margin-top: 2px;
   color: var(--dsw-alias-state-business-primary);

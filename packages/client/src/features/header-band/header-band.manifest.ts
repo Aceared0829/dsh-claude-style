@@ -10,10 +10,10 @@ export default {
   pref: 'headerBand',
   stylesheets: [{ file: 'header-band.css', rank: 75 }],
   switchRow: {
-    tab: 'conversation',
-    rank: 60,
+    tab: 'desktop',
+    rank: 10,
     title: { key: 'headerBandTitle', fallback: 'Header in the title bar' },
-    desc: { key: 'headerBandDesc', fallback: 'Lift the conversation\'s title and its header controls into the desktop title bar when they fit, and let the rest of the title row close up to the left. Off leaves the header as the host draws it.' },
+    desc: { key: 'headerBandDesc', fallback: 'On the Windows desktop the session title and the header\'s controls rise into the window\'s caption row, and a side without room stays in the header\'s own row.' },
   },
   cases: ['header-band', 'switches'],
   description: {

@@ -97,6 +97,16 @@ function checkManifests(manifests) {
           fail(manifest, 'has a switch row choice without a "value" and a "label" key and fallback')
         }
       }
+      const requires = manifest.switchRow.requires
+      if (requires !== undefined) {
+        if (requires.pref === manifest.pref) fail(manifest, 'has a switch row that requires its own preference')
+        if (!Array.isArray(requires.values) || requires.values.length === 0 || requires.values.some((value) => typeof value !== 'string' || value === '')) {
+          fail(manifest, 'has a switch row requirement without "values": the other preference\'s values the feature works under')
+        }
+        if (typeof requires.note?.key !== 'string' || typeof requires.note?.fallback !== 'string') {
+          fail(manifest, 'has a switch row requirement without a "note" key and fallback')
+        }
+      }
     }
     for (const lang of ['zh', 'en']) {
       const copy = manifest.description?.[lang]

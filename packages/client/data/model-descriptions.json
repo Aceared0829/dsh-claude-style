@@ -280,6 +280,19 @@
     "tabComposer": { "zh": "输入区", "en": "Composer" },
     "tabSidebar": { "zh": "侧栏", "en": "Sidebar" },
     "tabConversation": { "zh": "对话", "en": "Conversation" },
+    "tabDesktop": { "zh": "桌面端", "en": "Desktop" },
+    "desktopNotice": {
+      "zh": "这一页的设置只作用于 Windows 桌面端的窗口；当前页面不是那个窗口，在这里改动后，效果出现在桌面端的窗口里。",
+      "en": "These settings act on the Windows desktop window only. This page is not that window, so a change made here shows there."
+    },
+    "composerRequired": {
+      "zh": "「重绘对话框」为「关闭」时不生效。",
+      "en": "No effect while Composer restyle is Off."
+    },
+    "statsComposerRequired": {
+      "zh": "只在「重绘对话框」覆盖对话页时生效。",
+      "en": "Takes effect only while Composer restyle covers the conversation."
+    },
     "paletteTitle": { "zh": "配色", "en": "Colours" },
     "paletteDesc": {
       "zh": "允许插件修改主题配色，关闭后只保留布局和控件。",
@@ -321,7 +334,10 @@
       "en": "A search box in the sidebar that finds sessions, projects, plugins, Skills and shortcuts. Off restores the host's brand row."
     },
     "searchStyleTitle": { "zh": "搜索框样式", "en": "Search box style" },
-    "searchStyleDesc": { "zh": "选择搜索框样式", "en": "Choose the search box style" },
+    "searchStyleDesc": {
+      "zh": "「覆盖品牌」放进品牌行，指针移到侧栏时盖过品牌；「独立」在品牌行下方单独一行；「图标」保留 DSH 自己的搜索按钮，点它打开本插件的面板。",
+      "en": "Cover the brand puts the box in the brand row, standing over the brand while the pointer is on the sidebar; Standalone gives it a row of its own under the brand; Icon keeps the host's own search button and opens this panel from it."
+    },
     "searchStyleIcon": { "zh": "图标", "en": "Icon" },
     "searchStyleOverlay": { "zh": "覆盖品牌", "en": "Cover the brand" },
     "searchStyleStandalone": { "zh": "独立", "en": "Standalone" },
@@ -354,7 +370,10 @@
     },
     "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
     "statsLineLabel": { "zh": "对话统计信息", "en": "Conversation statistics" },
-    "statsPositionDesc": { "zh": "选择对话统计信息的展示位置。", "en": "Choose where the conversation statistics show." },
+    "statsPositionDesc": {
+      "zh": "「收进上下文」把会话数字放进上下文圆环的弹层，输入卡片下方只留圆环；「独立成行」把轮数、输出速度、tokens 与缓存命中率写在输入卡片下面单独一行，末尾是圆环。",
+      "en": "Inside the context popover puts the session's figures in the panel the context ring opens and leaves the ring alone under the input card; On its own line writes the turns, the output speed, the tokens and the cache-hit share on a line under the card, ending in the ring."
+    },
     "statsPositionContext": { "zh": "收进上下文", "en": "Inside the context popover" },
     "statsPositionInline": { "zh": "独立成行", "en": "On its own line" },
     "caretTitle": { "zh": "光标动画", "en": "Composer caret motion" },
@@ -373,8 +392,8 @@
     },
     "headerBandTitle": { "zh": "标题进入顶栏", "en": "Header in the title bar" },
     "headerBandDesc": {
-      "zh": "桌面端把会话标题与顶栏那一行的控件抬进窗口的标题栏，放不下的一侧留在原来的行里。",
-      "en": "On the desktop the session title and the header's controls rise into the window's caption row, and a side without room stays in the header's own row."
+      "zh": "Windows 桌面端把会话标题与顶栏那一行的控件抬进窗口的标题栏，放不下的一侧留在原来的行里。",
+      "en": "On the Windows desktop the session title and the header's controls rise into the window's caption row, and a side without room stays in the header's own row."
     },
     "unavailable": {
       "zh": "ERROR : 设置存储服务异常，改动不会被保存。",
