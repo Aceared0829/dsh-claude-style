@@ -6,13 +6,35 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 封号彩蛋可以关掉了：按账号弹层顶上的账号行总会打开那张仿 Claude「账号已暂停」的整页彩蛋，设置里只能换它的语言。现在「侧栏」页「折叠侧栏设置区」下面多出「封号彩蛋」一行，可选「关闭」「中文」「English」；选「关闭」后账号行只显示名字，不再有悬停底色、不在 Tab 顺序里，按下也不打开任何东西。设置项 `banLocale` 多了取值 `off`。
+
+### 体验优化
 
 - 同一个文件的读取、编辑与写入各占一行时，行数越多越难看出这个文件一共经历了什么。现在同一个文件在同一个过程组里的多次调用读成一行：行首的图标与标题跟着这个文件最后一次操作换新（读取、编辑、写入，旧标题向上离开、新标题自下升入），行尾的 `+n -m` 仍是这些改动的累计值、随每次改动到达逐位翻页，展开这一行读到全部改动；只被读取过的文件不显示改动数字，展开读到这一次读取的窗口。只被操作过一次的文件保持原样，失败与中断的行仍各自保留裁决信息。
+- 运行中的那一行状态词换词时，旧词向上离开、新词从下方升入，这之前是同一个节点直接改字。现在这一行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带在整个换词过程中一直亮着而不从头再扫；行的宽度和高度由一个隐藏测量层稳住，换词期间它按住两句里较宽的那句，换词一结束就落到正在显示的那句上，所以换词期间旁边的计时不会先被挤到左边再退回，换完词之后计时紧跟在说法后面，行的上下也不会因新词从下方升入而变高。扫光带与换词都跟着「动画效果」的取值走。
+- 设置页里只在另一项打开时才起作用的行，以前在那一项关闭时照样可以切换，切了没有任何效果。现在「重绘对话框」选「关闭」时，「重绘模型选择器」（连同快捷供应商与峰谷电表）与「重绘权限控件」变灰、不能操作；「对话统计信息位置」只在重绘覆盖对话页时可用；「封号彩蛋」随「折叠侧栏设置区」一起变灰。变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。
+- 设置页分成六页：新增的「桌面端」页放「标题进入顶栏」，在浏览器或 macOS 窗口里打开时，这一页开头说明它的设置只作用于 Windows 桌面端的窗口，以前这一行混在「对话」页里，在不起作用的页面上也看不出来；「首页版面」从「输入区」挪到「外观」；「封号彩蛋」从「通用」挪到「侧栏」，挂在打开它的账号弹层那一行下面。「搜索框样式」与「对话统计信息位置」的说明以前只重复标题，现在写出每个选项的效果。
 
-<h3 id="en-unreleased">Improvements</h3>
+### 问题修复
+
+- 打开「悬停自动展开弹层」后，鼠标停在入口上让弹层展开，再按这个入口会把刚展开的弹层收起，想点进去的条目反而被自己合上。现在悬停态下按同一个入口不再收起弹层，覆盖侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器，以及输入框右侧的上下文圆环：弹层保持展开，退出方式交给鼠标离开入口与卡片（关掉这个偏好时按下仍是唯一的开关）。
+
+<h3 id="en-unreleased">New Features</h3>
+
+- The account-hold easter egg can be turned off: pressing the account row at the top of the account popover always opened the full-page replica of Claude's account-hold page, and the settings only chose its language. The Sidebar tab now carries an Account-hold easter egg row under Collapse the sidebar settings area, with Off, 中文 and English; with Off the account row is a plain name, without a hover plate, out of the Tab order, and a press opens nothing. The `banLocale` setting gains the value `off`.
+
+### Improvements
 
 - A file read, edited and written was listed as one row per call, so the more of it there was, the harder it became to see what the file had been through. The calls on one file inside one process group now stand as a single row: its icon and title move on with the file's last operation — read, edit or write, the old title leaving upward as the new one rises in behind it — its `+n -m` tail still counts those changes and turns character by character as each one lands, and opening the row reads every change. A file that was only read shows no change figures and opens onto the window it was read at. A file touched once is drawn as before, and a failed or interrupted row keeps its own verdict.
+- The running status line's wording swap — the old words leaving upward, the new ones rising from below — used to rewrite one node in place. It now runs transitions.dev's "Thinking states" composition: the two halves move at once, and the sweeping highlight stays lit through the swap instead of restarting. A hidden sizer holds the line's width and height — the wider of the two halves while a swap runs, the words standing once it settles — so the elapsed clock beside it is never shoved to the left and back during a swap, sits right after the words once they settle, and the copy rising from below never makes the line taller. Both the highlight and the swap follow the animation setting.
+- Settings rows that only work while another setting is on could still be switched while it was off, to no effect. Now with Composer restyle set to Off, Redraw the model picker (with Quick providers and the Peak rate meter) and Redraw the permission control grey out and take no input; Conversation statistics position takes input only while the restyle covers the conversation; the Account-hold easter egg greys out with Collapse the sidebar settings area. A greyed row still shows the value you set, and a line in the accent colour under its description says what it waits for.
+- The settings page has six tabs: the new Desktop tab carries Header in the title bar and, opened in a browser or in the macOS window, starts with a line saying its settings act on the Windows desktop window only, where the row used to sit on the Conversation tab with nothing to say it did nothing on those pages; Home layout moves from Composer to Appearance; the Account-hold easter egg moves from General to Sidebar, under the row of the account popover it opens from. The descriptions of Search box style and Conversation statistics position used to repeat their titles, and now say what each choice does.
+
+### Bug Fixes
+
+- With "Open popovers on hover" on, a pointer resting on a trigger opened its popover, and a press on that same trigger then folded the popover the pointer had just opened. Under hover a press on the trigger no longer folds it — on the sidebar account entry, the permission picker, the model picker, the effort picker, the home row's two pickers and the context ring beside the composer: the popover stays up, and leaving the trigger and its card is what closes it. With the preference off, a press remains the only way in and out.
 
 ## [0.13.3] - 2026-10-12
 
