@@ -297,8 +297,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // The account row reaches this through the shared `ui` handle registry —
   // the same discipline the scheduler and the other features use — so the
   // handle must be REGISTERED here, not merely returned. (The account row is
-  // wired in account-footer.ts before this runs, but it only reads
-  // `ui.ban` at click time, so the order is safe either way.)
+  // wired in account-footer.ts before this runs, but it reads `ui.ban` on
+  // each pass and at click time, so the order is safe either way.)
   ui.ban = {
     open: openBanScreen,
     /**

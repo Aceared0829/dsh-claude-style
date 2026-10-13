@@ -218,6 +218,10 @@ module.exports = {
     check('the host menu stays up behind the hold screen and the screen leaves by its own control',
       r.menuBehindBan === true && r.banAfterDismiss === 0,
       JSON.stringify({ menu: r.menuBehindBan, dismissed: r.banAfterDismiss }))
+    check('with the easter egg off the account row is a plain name a press does not open, and back on it is the button again',
+      !!r.banOff && !!r.banOff.row && r.banOff.row.role === null && r.banOff.row.tabindex === null && r.banOff.opened === 0 &&
+        !!r.banOn && !!r.banOn.row && r.banOn.row.role === 'button' && r.banOn.row.tabindex === '0',
+      JSON.stringify({ off: r.banOff, on: r.banOn }))
     check('closing the host menu leaves no injected container behind',
       r.injectAfterClose === 0 && r.hostMenuAfterClose === 0,
       JSON.stringify({ containers: r.injectAfterClose, menus: r.hostMenuAfterClose }))

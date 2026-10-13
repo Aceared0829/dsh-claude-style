@@ -1,4 +1,4 @@
-import { SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE, SIDEBAR_LAYOUT_COMPACT, SIDEBAR_LAYOUT_RELAXED } from '../../constants'
+import { BAN_LOCALE_EN, BAN_LOCALE_OFF, BAN_LOCALE_ZH, SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE, SIDEBAR_LAYOUT_COMPACT, SIDEBAR_LAYOUT_RELAXED } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { SettingsRow, SettingsTab, SettingsView } from './settings-controls'
 
@@ -10,15 +10,22 @@ import type { SettingsRow, SettingsTab, SettingsView } from './settings-controls
  * (packages/client/src/theme/sidebar.css, theme/chrome.css), so the tab writes
  * those two rows itself.
  *
- * The search box's own style row belongs to the search feature too, and
- * follows its switch as a sub-row: a manifest carries one row, so the row
- * under it is written here, disabled while the box itself is off.
+ * Two sub-rows follow a switch and are written here, since a manifest carries
+ * one row: the account-hold easter egg under the footer takeover, whose
+ * account popover holds the row that opens it, and the search box's style
+ * under the search box. Each is disabled while the row above it is off.
  */
 export function createSettingsSidebarTab(): SettingsTab {
   const rows = (view: SettingsView): SettingsRow[] => {
     const prefs = view.prefs
     const write = view.write
     const controls = view.controls
+    const footerOn = prefs.collapseFooter !== false
+    const banOptions = [
+      { value: BAN_LOCALE_OFF, label: settingsCopy('banLocaleOff', 'Off') },
+      { value: BAN_LOCALE_ZH, label: settingsCopy('banLocaleZh', '中文') },
+      { value: BAN_LOCALE_EN, label: settingsCopy('banLocaleEn', 'English') },
+    ]
     const searchOn = prefs.sidebarSearch !== false
     const searchStyleOptions = [
       { value: SEARCH_STYLE_ICON, label: settingsCopy('searchStyleIcon', 'Icon') },
@@ -30,6 +37,16 @@ export function createSettingsSidebarTab(): SettingsTab {
       { value: SIDEBAR_LAYOUT_COMPACT, label: settingsCopy('sidebarLayoutCompact', 'Compact') },
     ]
     return [
+      {
+        rank: 15,
+        node: controls.subRow(
+          'banLocale',
+          settingsCopy('banLocaleTitle', 'Account-hold easter egg'),
+          settingsCopy('banLocaleDesc', 'The account row at the top of the account popover opens a replica of Claude\'s account-hold page, in the language chosen here whatever the interface language. Off leaves that row a plain name.'),
+          controls.segment(banOptions, prefs.banLocale, value => { write({ banLocale: value }) }, !footerOn),
+          footerOn,
+        ),
+      },
       {
         rank: 30,
         node: controls.subRow(

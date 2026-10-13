@@ -11,11 +11,12 @@ import type { HostAccountMenu } from './host-menu'
  * The footer (account-footer.ts) builds the containers and decides which
  * mount point is active (account/surface.ts); this factory builds and syncs
  * the rows that go into them. `options.hostMenu` is the host's account menu
- * (account/host-menu.ts) and `options.openBan()` what a press on the header
- * does; the nickname and the picture come from the identity chain
+ * (account/host-menu.ts), `options.openBan()` what a press on the header
+ * does and `options.banAvailable()` whether there is an easter egg to open;
+ * the nickname and the picture come from the identity chain
  * (packages/client/src/core/host.ts).
  */
-export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(): void, onChange?(): void }) {
+export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(): void, banAvailable(): boolean, onChange?(): void }) {
   const hostMenu = options.hostMenu
 
   /**
@@ -179,15 +180,13 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
    * container on the host path, the popover's own header on the self-built
    * one. The header is only a WRAPPER: the clickable strip is the inner row,
    * so the hover plate covers the name and not the divider that follows it.
+   * Whether that row is a button is the header sync's business (syncBanEntry).
    */
   function buildAccountHeader(username: string) {
     const header = buildElement('div', 'dsh-claude-account-popover-header')
     header.setAttribute('data-dsh-claude-ban-row', '')
 
     const rowEl = buildElement('div', 'dsh-claude-account-popover-row')
-    rowEl.setAttribute('role', 'button')
-    rowEl.setAttribute('tabindex', '0')
-    rowEl.setAttribute('aria-haspopup', 'dialog')
 
     const nameEl = buildElement('div', 'dsh-claude-account-popover-name', username)
 
@@ -217,6 +216,25 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
   }
 
   /**
+   * The header's row is the easter egg's button while the easter egg is
+   * installed, and a plain name while it is switched off (or retired): no
+   * role, no stop in the tab order, no hover plate (account-footer.css).
+   */
+  function syncBanEntry(rowEl: HTMLElement) {
+    const available = options.banAvailable()
+    if (available === (rowEl.getAttribute('role') === 'button')) return
+    if (available) {
+      rowEl.setAttribute('role', 'button')
+      rowEl.setAttribute('tabindex', '0')
+      rowEl.setAttribute('aria-haspopup', 'dialog')
+    } else {
+      rowEl.removeAttribute('role')
+      rowEl.removeAttribute('tabindex')
+      rowEl.removeAttribute('aria-haspopup')
+    }
+  }
+
+  /**
    * Sync the header of the active container: the nickname and the easter
    * egg's binding. Bound OUTSIDE the build branch so the pass that creates
    * the container already wires the row; `__dshBanBound` keeps a later pass
@@ -227,10 +245,13 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
     const nameEl = root.querySelector('.dsh-claude-account-popover-name')
     const username = accountDisplayName(hostRow)
     if (nameEl && nameEl.textContent !== username) nameEl.textContent = username
+    const rowEl = root.querySelector<HTMLElement>('.dsh-claude-account-popover-row')
+    if (rowEl !== null) syncBanEntry(rowEl)
     const banRow = root.querySelector<HTMLElement>('[data-dsh-claude-ban-row]')
     if (banRow && !banRow.__dshBanBound) {
       banRow.__dshBanBound = true
       banRow.addEventListener('click', e => {
+        if (!options.banAvailable()) return
         // The row's gesture is the easter egg, not a menu selection.
         e.preventDefault()
         e.stopPropagation()
@@ -238,6 +259,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
       })
       banRow.addEventListener('keydown', e => {
         if (e.key !== 'Enter' && e.key !== ' ') return
+        if (!options.banAvailable()) return
         e.preventDefault()
         e.stopPropagation()
         options.openBan()

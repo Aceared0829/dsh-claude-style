@@ -151,7 +151,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // had it once the screen is dismissed.
       popoverOpenedByClick = true
       if (ui.ban) ui.ban.open()
-    }
+    },
+    // The handle is there exactly while the easter egg is installed: its
+    // language switch is on, its chunk has arrived and it has not retired.
+    banAvailable() {
+      return ui.ban !== undefined
+    },
   })
   const surface = createAccountSurface({
     hostTrigger: hostMenu.trigger,

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "new",
+  "order": 0,
+  "external": true,
+  "zh": "封号彩蛋可以关掉了：按账号弹层顶上的账号行总会打开那张仿 Claude「账号已暂停」的整页彩蛋，设置里只能换它的语言。现在「侧栏」页「折叠侧栏设置区」下面多出「封号彩蛋」一行，可选「关闭」「中文」「English」；选「关闭」后账号行只显示名字，不再有悬停底色、不在 Tab 顺序里，按下也不打开任何东西。设置项 `banLocale` 多了取值 `off`。",
+  "en": "The account-hold easter egg can be turned off: pressing the account row at the top of the account popover always opened the full-page replica of Claude's account-hold page, and the settings only chose its language. The Sidebar tab now carries an Account-hold easter egg row under Collapse the sidebar settings area, with Off, 中文 and English; with Off the account row is a plain name, without a hover plate, out of the Tab order, and a press opens nothing. The `banLocale` setting gains the value `off`."
+}

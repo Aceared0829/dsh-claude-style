@@ -492,10 +492,10 @@ module.exports = {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['brand', 'username', 'motion', 'autoPopover', 'banLocale'],
+      general: ['brand', 'username', 'motion', 'autoPopover'],
       appearance: ['palette', 'typeface', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk', 'brandAccent'],
       composer: ['composerScope', 'homeLayout', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
-      sidebar: ['collapseFooter', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
+      sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs', 'headerBand'],
     }
     const pages = settings.pages || {}

@@ -162,6 +162,26 @@
         if (banDismiss) banDismiss.click()
         await sleep(80)
         r.banAfterDismiss = document.querySelectorAll('[data-dsh-ban]').length
+        // The easter egg switched off: the row is a plain name, out of the tab
+        // order, and a press opens nothing; switched back on it is the button again.
+        var headerRow = function () {
+          var row = document.querySelector('.dsh-claude-account-inject .dsh-claude-account-popover-row')
+          return row === null ? null : { role: row.getAttribute('role'), tabindex: row.getAttribute('tabindex') }
+        }
+        window.__pushForm({ banLocale: 'off' })
+        await sleep(150)
+        r.banOff = { row: headerRow() }
+        window.__pushForm({ banLocale: 'en' })
+        await sleep(300)
+        r.banOn = { row: headerRow() }
+        window.__pushForm({ banLocale: 'off' })
+        await sleep(150)
+        var plainEntry = document.querySelector('.dsh-claude-account-inject [data-dsh-claude-ban-row]')
+        if (plainEntry) plainEntry.click()
+        await sleep(80)
+        r.banOff.opened = document.querySelectorAll('[data-dsh-ban]').length
+        window.__pushForm({ banLocale: 'en' })
+        await sleep(300)
       }
       // Closing the host's menu (its own Escape) leaves no container behind.
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))

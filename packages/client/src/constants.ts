@@ -206,26 +206,43 @@ export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT]
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
 
 /**
+ * The language the account-hold easter egg (packages/client/src/features/ban-screen/ban-screen.ts) is
+ * written in, or `off` for no easter egg at all: the feature runs under the two
+ * languages (its manifest's `prefValues`), and the account row is then a plain
+ * name. It is its own preference rather than "follow the shell", because the
+ * page reproduces a real Claude screen: the point is to read it in the
+ * language Claude actually used, whatever the shell is set to. The default is
+ * English for that reason.
+ */
+export const BAN_LOCALE_EN = 'en'
+export const BAN_LOCALE_ZH = 'zh'
+export const BAN_LOCALE_OFF = 'off'
+export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF]
+
+/**
  * Feature switches: one preference per feature that replaces or moves a host
  * control, on by default. Each feature's manifest names its key (`pref`, D42)
  * and, for a choice preference, the values it runs under (`prefValues`); a
  * value outside that set runs the feature's teardown, which hands its surface
  * back to the host.
  *
- * `statsPosition` is the one choice among them; `chatAnimations` is the switch
- * covering the ported chat-area effects — the follow, the automatic folding with
- * its rolling door, the text fade, the file change rows, the send flight, the
- * counted process headers and the waiting line — and belongs here rather than
- * among the live-read preferences because two of those cannot be stopped by
- * reading a preference: the file change rows take the host's two seat keys over
- * (D32), and a seat registration only comes back when the feature is torn down
- * whole. `statsPosition` answers where the session's numbers show: one value
- * writes them on a line of their own under the card, the other fills the context
- * popover with them and leaves that line to the host's meter.
+ * `statsPosition` and `banLocale` are the choices among them; `chatAnimations`
+ * is the switch covering the ported chat-area effects — the follow, the
+ * automatic folding with its rolling door, the text fade, the file change rows,
+ * the send flight, the counted process headers and the waiting line — and
+ * belongs here rather than among the live-read preferences because two of those
+ * cannot be stopped by reading a preference: the file change rows take the
+ * host's two seat keys over (D32), and a seat registration only comes back when
+ * the feature is torn down whole. `statsPosition` answers where the session's
+ * numbers show: one value writes them on a line of their own under the card,
+ * the other fills the context popover with them and leaves that line to the
+ * host's meter. `banLocale` names the easter egg's language, and `off` takes
+ * the easter egg away.
  */
 export const FEATURE_PREF_DEFAULTS = {
   permissionsControl: true,
   statsPosition: STATS_POSITION_CONTEXT,
+  banLocale: BAN_LOCALE_EN,
   workspaceView: true,
   sidebarSearch: true,
   turnNav: true,
@@ -312,16 +329,6 @@ export const CARET_HOST_ATTR = 'data-dsh-claude-caret-host'
 export const CHAT_FOLD_ATTR = 'data-dsh-claude-chat-fold'
 /** Present while the skin takes over the sidebar footer (settings area + account row). */
 export const FOOTER_ATTR = 'data-dsh-claude-footer-takeover'
-/**
- * The language the account-hold easter egg (packages/client/src/features/ban-screen/ban-screen.ts) is
- * written in. It is its own preference rather than "follow the shell",
- * because the page reproduces a real Claude screen: the point is to read it
- * in the language Claude actually used, whatever the shell is set to. The
- * default is English for that reason.
- */
-export const BAN_LOCALE_EN = 'en'
-export const BAN_LOCALE_ZH = 'zh'
-export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH]
 /** Present while the composer restyle applies to the page currently shown. */
 export const COMPOSER_ATTR = 'data-dsh-claude-composer-active'
 /**

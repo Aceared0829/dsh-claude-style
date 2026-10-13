@@ -1,13 +1,12 @@
 import * as React from 'react'
-import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BAN_LOCALE_EN, BAN_LOCALE_ZH, BRAND_CLAUDE, BRAND_DEEPSEEK, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, USERNAME_MAX } from '../../constants'
+import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, USERNAME_MAX } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { Prefs } from '../../constants'
 import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's General tab: the theme style, the username, the
- * animation choice, the hover-open popovers and the account-hold easter
- * egg's language.
+ * animation choice and the hover-open popovers.
  *
  * Each tab is a `{ id, label, rows(view) }` record: `rows` runs on every
  * render of the page (packages/client/src/features/settings/settings.ts) with the page's
@@ -59,10 +58,6 @@ export function createSettingsGeneralTab(): SettingsTab {
       { value: AUTO_POPOVER_ACCOUNT, label: settingsCopy('autoPopoverAccount', 'Account only') },
       { value: AUTO_POPOVER_ALL, label: settingsCopy('autoPopoverAll', 'All') },
     ]
-    const banLocaleOptions = [
-      { value: BAN_LOCALE_ZH, label: settingsCopy('banLocaleZh', '中文') },
-      { value: BAN_LOCALE_EN, label: settingsCopy('banLocaleEn', 'English') },
-    ]
     const username = view.username
     return [
       {
@@ -111,15 +106,6 @@ export function createSettingsGeneralTab(): SettingsTab {
           settingsCopy('autoPopoverTitle', 'Open popovers on hover'),
           settingsCopy('autoPopoverDesc', 'Which popovers open on hover. "Account only" keeps it to the sidebar account popover; "All" adds the permission, model, session-stats and home-page pickers. Off leaves every popover click-to-open.'),
           controls.segment(autoPopoverOptions, prefs.autoPopover, value => { write({ autoPopover: value }) }),
-        ),
-      },
-      {
-        rank: 50,
-        node: controls.row(
-          'banLocale',
-          settingsCopy('banLocaleTitle', 'Account-hold easter egg language'),
-          settingsCopy('banLocaleDesc', 'The language of the account-hold easter egg page (open it from the account row at the top of the sidebar footer popover). It does not follow the interface language.'),
-          controls.segment(banLocaleOptions, prefs.banLocale, value => { write({ banLocale: value }) }),
         ),
       },
     ]

@@ -146,16 +146,19 @@ body[data-dsh-claude-style] .dsh-claude-account-popover::after {
 /* The account row is the ban-screen easter egg's trigger
    (packages/client/src/features/ban-screen/ban-screen.ts). The header is only the wrapper — the clickable
    strip is the inner row, so the hover plate covers the name and not the divider
-   that follows it. */
+   that follows it. With the easter egg switched off the row carries no button
+   role and stays a plain name, without the pointer or the plate (rows.ts). */
 body[data-dsh-claude-style] .dsh-claude-account-popover-row {
   min-height: 32px;
   padding: 2px 7px;
   border-radius: 6px;
-  cursor: pointer;
   transition: background-color 0.12s ease;
 }
-body[data-dsh-claude-style] .dsh-claude-account-popover-row:hover,
-body[data-dsh-claude-style] .dsh-claude-account-popover-row:focus-visible {
+body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"] {
+  cursor: pointer;
+}
+body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"]:hover,
+body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"]:focus-visible {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
   outline: none !important;
 }
