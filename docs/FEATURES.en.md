@@ -2,7 +2,7 @@
 
 > [简体中文](FEATURES.md)
 
-What each feature does and where its switch lives; the five tabs, their rows and what each tier changes are in [Settings](SETTINGS.en.md).
+What each feature does and where its switch lives; the six tabs, their rows and what each tier changes are in [Settings](SETTINGS.en.md).
 
 <!-- features:start — written by npm run features, not by hand -->
 
@@ -20,7 +20,7 @@ What each feature does and where its switch lives; the five tabs, their rows and
 - **Home page directory and preset menus**: The directory and agent-preset menus on the new-conversation page are drawn as the skin's popover cards, parked over their own buttons, one open at a time.
 - **Quick providers**: The settings page picks which providers' models the model picker's first level carries; a provider gone from the catalog is marked Removed and can be unchecked.
 - **Sidebar account area**: The sidebar footer's settings entry folds into the account popover, which carries the account header, other plugins' footer entries and the settings row; on the desktop the host's own account menu is used.
-- **Account-hold easter egg**: The account row at the top of the account popover opens a full-page replica of Claude's account-hold page. Every control on it, and Esc, closes it, and nothing it names actually happens. Its language is chosen on the General tab.
+- **Account-hold easter egg**: The account row at the top of the account popover opens a full-page replica of Claude's account-hold page. Every control on it, and Esc, closes it, and nothing it names actually happens. The Sidebar tab picks its language or turns it off, leaving the account row a plain name.
 - **One-frame theme switch**: Switching between light and dark changes borders, shadows and fills in the same frame, instead of the colours first and the borders easing in after.
 - **In progress / Archived**: The sidebar's workspace section splits into In progress and Archived; Archived is one flat list whose rows can be restored or deleted.
 - **Sidebar search**: A search box in the sidebar opens a palette that finds sessions (titles and content), projects, plugins, Skills and shortcuts, through the host's own dialog and navigation; picking a content hit lands on the turn holding that message rather than at the top of the session. Search box style places it: Cover the brand (the default) keeps it in the brand row, standing over the brand while the pointer is over the sidebar; Standalone gives it a row of its own under the brand row, shown always; Icon leaves the host's own search button in place and takes only its click over.
@@ -34,6 +34,6 @@ What each feature does and where its switch lives; the five tabs, their rows and
 - **Composer caret motion**: The composer's text caret is drawn by the plugin and glides when it moves; a question card's answer box and a queued message's inline editor are covered as well. The Conversation tab offers Every move (the default), Explicit moves and Off.
 - **Chat / Trajectory tabs**: The Chat / Trajectory tab strip at the top of the conversation is redrawn as a segmented control and lifted onto the title's line when it fits.
 - **Header in the title bar**: On the desktop the session title and the header's controls rise into the window's own caption row: whichever side fits is placed there — the title at the left, the controls at the right — and the rest of the title row closes up to the left.
-- **Settings page**: The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in five tabs: General, Appearance, Composer, Sidebar and Conversation. Every feature that takes over part of the host's interface has its own switch; turning it off brings the host's original back at once, without a reload. In the settings dialog the heading row ends with a link to the plugin's repository.
+- **Settings page**: The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in six tabs: General, Appearance, Composer, Sidebar, Conversation and Desktop. Every feature that takes over part of the host's interface has its own switch; turning it off brings the host's original back at once, without a reload. A setting that only works while another one is on greys out while that one is off and says why. In the settings dialog the heading row ends with a link to the plugin's repository.
 
 <!-- features:end -->

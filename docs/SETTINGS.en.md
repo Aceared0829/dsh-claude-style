@@ -4,17 +4,24 @@
 
 What each feature does is in [Features](FEATURES.en.md).
 
-The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in five tabs:
+The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in six tabs:
 
 | Tab | Settings |
 |---|---|
-| General | Theme style, Username, Animation, Open popovers on hover, Account-hold easter egg language |
-| Appearance | Colours, Typefaces, Mascot, Where it appears, Brand name, Brand mark, Wordmark, Image colours, Accent colour |
-| Composer | Composer restyle, Home layout, Redraw the model picker (with Quick providers under it), Peak rate meter, Redraw the permission control |
-| Sidebar | Collapse the sidebar settings area, Sidebar search, Search box style, Sidebar layout (Relaxed / Compact), In progress / Archived view, Float docked panels |
-| Conversation | Conversation navigator, Chat-area animations (Off / Enhanced), Conversation statistics position (Inside the context popover / On its own line), Composer caret motion, Chat / Trajectory tabs |
+| General | Theme style, Username, Animation, Open popovers on hover |
+| Appearance | Colours, Typefaces, Home layout, Mascot, Where it appears, Brand name, Brand mark, Wordmark, Image colours, Accent colour |
+| Composer | Composer restyle, Redraw the model picker (with Quick providers and the Peak rate meter under it), Redraw the permission control |
+| Sidebar | Collapse the sidebar settings area (with the Account-hold easter egg under it: Off / 中文 / English), Sidebar search, Search box style, In progress / Archived view, Float docked panels, Sidebar layout (Relaxed / Compact) |
+| Conversation | Conversation navigator, Chat-area animations, Conversation statistics position (Inside the context popover / On its own line), Composer caret motion, Chat / Trajectory tabs |
+| Desktop | Header in the title bar |
 
 Every feature that takes over part of the host's interface has its own switch; turning it off brings the host's original back at once, without a reload. The conversation area's effects — the follow, the automatic folding with its rolling door, the text fade, the file change rows, the send flight, the counted figures on each process group's header and the line saying what the model is doing — share the one Chat-area animations switch: on plays this plugin's set, off hands the conversation back to the host with the host's own words; the caret keeps its own three-way choice.
+
+A few settings only work while another one is on; while that one is off they grey out and take no input, still showing the value you set, and a line under the description says what they wait for. Redraw the model picker (with Quick providers and the Peak rate meter) and Redraw the permission control are drawn into the restyled composer, so they grey out while Composer restyle is Off; Conversation statistics position only works while the restyle covers the conversation (Conversation only or All); the Account-hold easter egg opens from the account popover, so it greys out with Collapse the sidebar settings area.
+
+**Desktop**: the settings on this tab act on the Windows desktop window only. Opened in a browser or in the macOS window, the tab starts with a line saying so; a change is saved all the same and shows in the Windows window.
+
+**Account-hold easter egg**: the account row at the top of the account popover opens a full-page replica of Claude's account-hold page, in the language chosen on the Sidebar tab whatever the interface language. With Off chosen the account row is a plain name and pressing it opens nothing.
 
 In the settings dialog, this page's heading row ends with a GitHub mark; pressing it opens the plugin's repository in a new tab.
 
@@ -46,7 +53,7 @@ In the settings dialog, this page's heading row ends with a GitHub mark; pressin
 
 **New text fades in**: characters arriving in a streaming answer start faint and settle over about 0.12 s, staggered slightly by arrival order; a block arriving whole, a burst of thousands of characters and text that just reflowed from a fold stay solid.
 
-**A rolling door for folds**: opening or closing a row (a tool card, a thinking row, a command card) or a process group moves the height frame by frame, really pushing the content below away or pulling it back. The door only rolls the stretch the reader can see, so any length moves at the same speed, and a body holding several cards rolls as one door. It belongs to the Enhanced setting of Chat-area animations, together with the entrance fade of an expanded body.
+**A rolling door for folds**: opening or closing a row (a tool card, a thinking row, a command card) or a process group moves the height frame by frame, really pushing the content below away or pulling it back. The door only rolls the stretch the reader can see, so any length moves at the same speed, and a body holding several cards rolls as one door. It switches with Chat-area animations, together with the entrance fade of an expanded body.
 
 **Composer caret motion**: the composer's text caret is drawn by the plugin and glides when it moves; a question card's answer box and a queued message's inline editor are covered as well. The Conversation tab offers Every move (the default), Explicit moves and Off.
 

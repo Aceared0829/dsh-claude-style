@@ -103,7 +103,7 @@ Anthropic 字体启用（二选一）：
 | [更新日志](CHANGELOG.md) | 版本历史 |
 | [贡献指南](CONTRIBUTING.md) | 如何从 `packages/client/src/` 构建、提交规范与截图/回归工具（英文） |
 | [功能一览](docs/FEATURES.md) | 每一项功能做什么、在设置页哪里开关 |
-| [设置说明](docs/SETTINGS.md) | 五个分页（通用、外观、输入区、侧栏、对话）的设置项与各档效果 |
+| [设置说明](docs/SETTINGS.md) | 六个分页（通用、外观、输入区、侧栏、对话、桌面端）的设置项与各档效果 |
 
 ## 鸣谢
 
