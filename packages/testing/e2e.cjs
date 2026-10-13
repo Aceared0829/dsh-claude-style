@@ -21,7 +21,7 @@
  * writes can reach another.
  *
  * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--headed] [--out <dir>] [--delay <ms>]
- *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, send, processSummary, reasoningStream, waitLine, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
+ *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, doorPin, send, processSummary, reasoningStream, waitLine, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
  *        (default: every scenario but statsPosition and statsOverlay)
  */
 'use strict'
@@ -124,8 +124,10 @@ async function startTrace(page) {
       frame.rowWords = words(last)
       // The live turn's own status line at the end of the flow: the skin pins it
       // while the reader is at the tail, so its screen position is the check.
+      // Kept to the hundredth: a pin that slips by a fraction of a pixel is the
+      // shake a reader sees once the page is scaled, and rounding would hide it.
       const running = document.querySelector(host.running)
-      frame.running = running === null ? null : Math.round(running.getBoundingClientRect().top)
+      frame.running = running === null ? null : Math.round(running.getBoundingClientRect().top * 100) / 100
       if (ghost !== null && takeOff === null) {
         // The stand-in is a clone of the composer card appended to the page, so
         // the real card is the first one the stand-in does not contain.
@@ -241,7 +243,7 @@ async function main() {
       + `${unknown.length > 0 ? `; named there but missing here: ${unknown.join(', ')}` : ''}`
       + `${unnamed.length > 0 ? `; run here but unnamed there: ${unnamed.join(', ')}` : ''}`)
   }
-  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,processSummary,reasoningStream,waitLine,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
+  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,doorPin,processSummary,reasoningStream,waitLine,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
   const options = {
     headed: args.includes('--headed'),

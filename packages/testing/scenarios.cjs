@@ -17,6 +17,7 @@ const { recordProbes } = require('./contract-probe.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { importanceScenario } = require('./importance.cjs')
 const { readerScrollScenario } = require('./reader-scroll.cjs')
+const { doorPinScenario } = require('./door-pin.cjs')
 const { processSummaryScenario } = require('./process-summary.cjs')
 const { fileMergeScenario } = require('./file-merge.cjs')
 const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
@@ -201,8 +202,8 @@ const SCENARIOS = {
         check('尾部没有自己跑远', escaped.length === 0, `escaped=${escaped.length}${escaped.length === 0 ? '' : ` at ${escaped.slice(0, 3).map((f) => f.t).join(',')}ms`}`),
         check('跟随期间尾部留在视野里', worst <= MAX_FOLLOW_GAP_PX, `maxGap=${worst}px of ${following.length} following frames`),
         check('落定后回到末尾', last !== undefined && last.gap <= 4, `lastGap=${last === undefined ? 'n/a' : last.gap}`),
-        check('宿主关掉跟随时状态行仍停在同一处', held.length > 3 && heldSpread <= 2, `frames the host mark was off in=${held.length}, top ${heldTops.length === 0 ? 'n/a' : `${Math.min(...heldTops)}..${Math.max(...heldTops)}`}`),
-        check('满屏之后宿主的状态行不再随内容移动', live.length > 10 && spread <= 2, `overflowing frames with the row=${live.length}, top ${tops.length === 0 ? 'n/a' : `${Math.min(...tops)}..${Math.max(...tops)}`}`),
+        check('宿主关掉跟随时状态行仍停在同一处', held.length > 3 && heldSpread === 0, `frames the host mark was off in=${held.length}, top ${heldTops.length === 0 ? 'n/a' : `${Math.min(...heldTops)}..${Math.max(...heldTops)}`}`),
+        check('满屏之后宿主的状态行不再随内容移动，连半个像素也不动', live.length > 10 && spread === 0, `overflowing frames with the row=${live.length}, top ${tops.length === 0 ? 'n/a' : `${Math.min(...tops)}..${Math.max(...tops)}`}`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },
@@ -212,6 +213,8 @@ const SCENARIOS = {
    * only while the skin's follow moves the position (D41, D32).
    */
   readerScroll: readerScrollScenario({ check }),
+  /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.cjs, D41). */
+  doorPin: doorPinScenario({ check }),
   /** The send flight: the stand-in takes off, the row lands, the words stay put. */
   send: {
     script: 'greeting',

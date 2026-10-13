@@ -10,17 +10,25 @@
    scrolled away from the tail the row keeps its document place, so it never
    floats over what the reader went back to read.
 
+   The line stands 1px above that sum. The content's height can be fractional
+   while the scroll offset lands on whole pixels, so at the end the content
+   stops up to a pixel short of the scrollport's bottom edge, where the sticky
+   inset is measured from. On the sum itself the row would rest above the line
+   and be held on it whenever a burst opens a gap, moving by that fraction on
+   every burst; above every place the end can stop, the line holds the row in
+   every frame the tail is followed.
+
    The gates say whose scroll this is: the host's own attribute and the stream
    glide's hold mark (FOLLOW_HOLD_ATTR, features/chat-follow/chat-follow.ts) for
    "the tail is being followed" — the mark is what a position held short of the
-   end needs, because that is exactly what makes the host take its attribute away
-   mid-stream — and the reader's takeover (READER_HOLD_ATTR,
+   end and a rolling door need, because both make the host take its attribute
+   away mid-turn — and the reader's takeover (READER_HOLD_ATTR,
    shared/scroll-owner.ts) for "the reader is the one scrolling", which drops the
    pin even where the host still reports its follow. */
 body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running],
 body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running] {
   position: sticky;
-  bottom: calc(var(--dsh-composer-height, 0px) + var(--dsh-composer-fade-h, 40px) + 16px);
+  bottom: calc(var(--dsh-composer-height, 0px) + var(--dsh-composer-fade-h, 40px) + 16px + 1px);
   z-index: 1;
   /* Pinned, the row floats over the tail of the transcript, and the words there
      would show through it. The canvas it already stands on paints the band, the

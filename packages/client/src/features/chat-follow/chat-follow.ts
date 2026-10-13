@@ -144,7 +144,7 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   let glideHeight = 0
   /** Whether the glide is holding the position right now. */
   let glideHeld = false
-  /** The column the hold mark (FOLLOW_HOLD_ATTR) is on, or null while the glide holds nothing. */
+  /** The column the hold mark (FOLLOW_HOLD_ATTR) is on, or null while neither the glide nor a door holds it. */
   let heldColumn: HTMLElement | null = null
 
   /**
@@ -196,7 +196,9 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
    * the position reads to the host as a reader who left the tail, so the host
    * takes data-chat-following-tail away; the waiting line's pin waits for
    * that attribute (features/chat-wait/chat-wait.css), and this mark keeps
-   * the pin standing while the glide is the one moving the position.
+   * the pin standing while the glide is the one moving the position. A door's
+   * height change takes the host's attribute away the same way, so the mark
+   * also stands while a door rolls (glideCheck).
    */
   const markHold = (column: HTMLElement) => {
     if (heldColumn === column) return
@@ -254,8 +256,16 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
       if (glideHeld) {
         glideHeld = false
         releaseFollowButton()
-        releaseHold()
       }
+      // A rolling door stands the glide down and takes the host's follow away
+      // until the fold hands it back (fold-glide-parts.ts); the tail is still
+      // followed, so the pin's mark stands through the door.
+      if (foldBusy() && !readerAway()) {
+        glideSync()
+        if (glideColumn !== null) markHold(glideColumn)
+        return
+      }
+      releaseHold()
       return
     }
     glideSync()

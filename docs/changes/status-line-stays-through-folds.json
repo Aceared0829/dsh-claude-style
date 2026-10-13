@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "fixes",
+  "order": 2,
+  "external": false,
+  "zh": "对话满屏后，思考行或过程组自动展开、收起的那一刻，输入框上方那一行（「正在思考 3 分 2 秒」）会被内容推下去几十像素，有时整行被推出屏幕，随后再弹回原处；推理刚开始输出、工具调用前后这类时刻最容易出现。现在卷帘门在末尾展开、收起的整个过程中，只要读者没有自己往回翻看，这一行都停在原处不动。",
+  "en": "With the conversation filling the screen, the line above the composer (\"Thinking 3m 2s\") was pushed down by tens of pixels, sometimes off the screen, whenever a thinking row or a process group opened or folded on its own, then sprang back; it showed most at the start of a reasoning and around tool calls. While a fold rolls open or shut at the tail, the line now holds its place, unless the reader has scrolled back."
+}

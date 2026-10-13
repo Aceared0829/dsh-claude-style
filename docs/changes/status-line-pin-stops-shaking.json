@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "zh": "对话满屏后，模型思考时输入框上方那一行（「正在思考 8 秒」）会随推理一段段到达上下抖动，工具运行时又停住不动。原因是这一行被钉住的位置与滚到底时的自然位置差了不到一个像素，每段推理到达都让它在两处之间切换一次，缩放后的屏幕上看得尤其明显。现在钉住的位置比所有可能的停靠位置都高，跟随末尾期间这一行每一帧都停在同一处。",
+  "en": "With the conversation filling the screen, the line above the composer (\"Thinking 8s\") shook up and down while the model reasoned, one jolt per piece of reasoning, and stood still while a tool ran. The line's pinned spot and its resting place at the end of the scroll differed by under a pixel, so every piece of reasoning moved it between the two, most visibly on a scaled display. The pin now stands above every place the end can come to rest, and while the tail is followed the line holds the same spot in every frame."
+}

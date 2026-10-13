@@ -9,7 +9,7 @@
 - 「轮次状态行」功能整体删除：`packages/client/src/features/turn-status/` 的三个文件、调度器里的 `turnStatus` 句柄、`turnStatus` 偏好与它在设置页「对话」页的那一行、契约表里只为它而设的 `turn.process` 条目、`core/host.ts` 的 `findTurnProcess` 与 `dom.ts` 的 `TURN_PROCESS_SELECTOR` 一并删去。
 - 宿主自己的过程控件只在轮次结束（`turn.status === 'closed'`）之后渲染：进行中的轮次里那一行是空的，状态行当年按「进行中也是这个控件」写下的整套渲染（`live` 取值、当前动作的判定、「思考了 N 秒」的测量、转动的火花与它的两个关键帧）在真实宿主上不会执行，随功能一起删去。
 - 已停止与失败的轮次不再改写：宿主自己的控件留在它自己的位置与写法上（「已停止」「处理失败」与折叠行为照旧），`--dsh-claude-turn-order` 的排列与 `data-dsh-claude-turn-status` 画的文字一并消失。
-- 运行行的固定搬进等待行（`packages/client/src/features/chat-wait/chat-wait.css`）：只要对话还在跟随末尾，宿主那一行就停在输入框上方；读者自己接管滚动（`READER_HOLD_ATTR`）或跟随的滑行持有位置（`FOLLOW_HOLD_ATTR`）期间照旧让开。它随「聊天区动画效果」这一个开关，也对 dsh-chat-ux 让位。
+- 运行行的固定搬进等待行（`packages/client/src/features/chat-wait/chat-wait.css`）：只要对话还在跟随末尾，宿主那一行就停在输入框上方。「还在跟随末尾」读两处：宿主自己的跟随标记，以及皮肤的持有标记（`FOLLOW_HOLD_ATTR`）。跟随的滑行把位置停在末尾之前时，卷帘门在末尾展开或收起时，宿主都会撤掉自己的标记，持有标记在这两段时间里留在消息列上。读者自己接管滚动（`READER_HOLD_ATTR`）期间这一行让开，随内容走。它随「聊天区动画效果」这一个开关，也对 dsh-chat-ux 让位。
 - 文案随之归位：四个说法（正在思考、正在写回答、正在准备工具调用、正在调用工具）改名为 `chatWait*`，留在 `packages/client/src/shared/turn-activity.ts`，只由等待行读；等待模型、思考了 N 秒、tokens 与设置行的标题和说明五条删去。
 
 ## 理由
