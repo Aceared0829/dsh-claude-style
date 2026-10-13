@@ -156,13 +156,27 @@ module.exports = {
       glideOpen.inserted === true && glideOpen.rolling === true, JSON.stringify(glideOpen))
     check('when the door lands the inserted body stays and nothing rolls',
       glideOpenAfter.present === true && glideOpenAfter.rolling === false, JSON.stringify(glideOpenAfter))
+    // A row the host wraps in a header: the body stands beside the wrapper, and
+    // the accessory beside the row is not the door's target.
+    const wrapped = fold.wrappedRolled || {}
+    check('a press on a row the host wraps in a header rolls that row\'s own body',
+      wrapped.rolling === true && wrapped.clipped === true && wrapped.accessoryRolled === false,
+      JSON.stringify(wrapped))
+    check('the wrapped row\'s door is handed back when it lands',
+      wrapped.clicksDuringRoll === 0 && wrapped.clicks === 1 &&
+        wrapped.bodyGone === true && wrapped.folded === true, JSON.stringify(wrapped))
     // The switch covers the door and the entrance fade as well (D29/D32).
     const animationsOff = fold.animationsOff || {}
-    check('with Automatic folding on, the entrance fade runs',
-      fold.entranceOn === '0.12s, 0.12s', JSON.stringify(fold.entranceOn))
+    const wrappedEntrance = fold.entranceWrapped || {}
+    const wrappedOff = animationsOff.wrappedEntrance || {}
+    check('with Automatic folding on, the entrance fade runs, and only the body takes it',
+      fold.entranceOn === '0.12s, 0.12s' &&
+        wrappedEntrance.body === '0.12s, 0.12s' && wrappedEntrance.accessory === wrappedEntrance.page,
+      JSON.stringify({ plain: fold.entranceOn, wrapped: wrappedEntrance }))
     check('switching it off takes the mark and the fade, and lets the press land at once with nothing rolling',
-      animationsOff.mark === false && animationsOff.entrance === '0s' &&
-        animationsOff.immediateClicks === 1 && animationsOff.rolling === false, JSON.stringify(animationsOff))
+      animationsOff.mark === false && animationsOff.entrance === '0s' && wrappedOff.body === '0s' &&
+        animationsOff.immediateClicks === 1 && animationsOff.rolling === false,
+      JSON.stringify(animationsOff))
     check('switching it back brings the fold mark back',
       (fold.animationsBack || {}).mark === true, JSON.stringify(fold.animationsBack))
   },

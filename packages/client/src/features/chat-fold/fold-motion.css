@@ -18,9 +18,12 @@
    CSS has no old value to transition from. An exit would mean taking over the
    render.
 
-   The selector anchors on data-disclosure-row, an attribute DisclosureRow emits
-   itself rather than a hashed class name, so a host release cannot break it.
-   Every sibling after the row is its body.
+   The selector anchors on data-disclosure-row and data-disclosure-header,
+   attributes DisclosureRow emits itself rather than hashed class names, so a
+   host release cannot break it. Every sibling after the row is its body. A
+   newer host build wraps the row and its accessory in a header and puts the
+   expanded content inside that same wrapper: the body is then the innermost
+   element, which the attribute selector below names in both shapes.
 
    Two exclusions:
 
@@ -37,9 +40,13 @@
                             sliding the whole block into place. The process
                             members carry the host's own data-turn-process-member,
                             so that subtree is excluded whole; the turn's trigger
-                            notice ([data-turn-trigger]) likewise. */
+                            notice ([data-turn-trigger]) likewise.
+
+   The trailing :is() picks the body out of both host shapes: the sibling after
+   the row where the row is its own header, and the innermost element of the
+   box the wrapper holds where the row sits inside a header. */
 @starting-style {
-  body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] [data-disclosure-row] ~ *:not([data-turn-process-member] *, [data-turn-trigger] *) {
+  body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] :is([data-disclosure-row], [data-disclosure-header]) ~ *:not([data-turn-process-member] *, [data-turn-trigger] *):is([data-disclosure-row] ~ *, [data-disclosure-header] ~ * *) {
     opacity: 0;
     translate: 0 -2px;
   }
@@ -49,14 +56,14 @@
    (MessageItem and the TurnNavigator preview match it), which is the reveal
    token (D65). It rides the folding switch with the rest of the feature: off
    leaves the host's own insertion. */
-body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] [data-disclosure-row] ~ *:not([data-turn-process-member] *, [data-turn-trigger] *) {
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] :is([data-disclosure-row], [data-disclosure-header]) ~ *:not([data-turn-process-member] *, [data-turn-trigger] *):is([data-disclosure-row] ~ *, [data-disclosure-header] ~ * *) {
   transition: opacity var(--dsh-claude-duration-reveal) var(--dsh-claude-ease-out), translate var(--dsh-claude-duration-reveal) var(--dsh-claude-ease-out);
 }
 
 /* The reader's animation choice, resolved onto <body> (packages/client/src/core/prefs.ts, D26):
    the system setting is folded into that attribute by "follow the system", so
    this one rule covers both it and the explicit "reduced". */
-body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-chat-flow] [data-disclosure-row] ~ *:not([data-turn-process-member] *, [data-turn-trigger] *) {
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-chat-flow] :is([data-disclosure-row], [data-disclosure-header]) ~ *:not([data-turn-process-member] *, [data-turn-trigger] *):is([data-disclosure-row] ~ *, [data-disclosure-header] ~ * *) {
   transition: none;
 }
 

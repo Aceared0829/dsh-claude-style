@@ -1,6 +1,6 @@
 import { requestFrame } from '../../core/frame'
 import { CHAT_ROLLING_ATTR } from '../../constants'
-import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CONVERSATION_SCROLL_SELECTOR, DISCLOSURE_HEADER_SELECTOR, DISCLOSURE_ROW_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { handBackFollow, readerMovedSince } from '../../shared/scroll-owner'
 import { motionMs } from '../../shared/motion'
 
@@ -96,9 +96,14 @@ export function foldVisibleReach(element: Element) {
 /**
  * The body a control expands. When the control names one with aria-controls
  * that id is the answer (useId makes it carry colons, so getElementById is
- * the only way); otherwise the shape of the unmounting family decides it —
- * "the sibling after the control". Null means this control is collapsed right
- * now.
+ * the only way); otherwise the shape of the unmounting family decides it.
+ *
+ * That shape differs between host builds. A row DisclosureRow renders is one
+ * of the family's children with the body beside it; a newer build wraps the
+ * row and its accessory in a header (DISCLOSURE_HEADER_SELECTOR) and puts the
+ * expanded content inside that same wrapper, so the family's last child is the
+ * wrapper the control itself lives in. The body is then that wrapper's own
+ * last child. Null means this control is collapsed right now.
  *
  * A process group's header never arrives here: foldProcessBody claims it
  * first, and that path presses the group root rather than the body's own
@@ -110,9 +115,14 @@ export function foldExpandedBody(control: Element) {
     const target = document.getElementById(controls)
     return target instanceof HTMLElement ? target : null
   }
-  const parent = control.parentElement
-  const last = parent === null ? null : parent.lastElementChild
-  return last instanceof HTMLElement && last !== control ? last : null
+  const wrapper = control.parentElement
+  const header = wrapper !== null && control.matches(DISCLOSURE_ROW_SELECTOR) && wrapper.matches(DISCLOSURE_HEADER_SELECTOR) ? wrapper : control
+  const family = header.parentElement
+  const last = family === null ? null : family.lastElementChild
+  if (!(last instanceof HTMLElement) || last === header) return null
+  if (!last.contains(header)) return last
+  const inner = last.lastElementChild
+  return inner instanceof HTMLElement && inner !== control ? inner : null
 }
 
 /**

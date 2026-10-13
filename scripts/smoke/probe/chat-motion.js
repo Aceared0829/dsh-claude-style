@@ -395,6 +395,31 @@
       foldHeader.click()
       await sleep(350)
       r.fold.readerOpen = !foldBody.hasAttribute('hidden')
+      // A row the host wraps in a header: the door has to step out of that
+      // wrapper for its body, and the accessory beside the row is not it.
+      var wrappedRow = document.getElementById('debugWrappedRow')
+      var wrappedAccessory = document.getElementById('debugWrappedAccessory')
+      var wrappedBody = function () { return document.getElementById('debugWrappedBody') }
+      var wrappedBefore = window.__wrappedClicks
+      wrappedRow.click()
+      await sleep(60)
+      var wrappedDuring = wrappedBody()
+      var rolled = {
+        rolling: wrappedDuring !== null && wrappedDuring.hasAttribute('data-dsh-claude-rolling'),
+        clipped: wrappedDuring !== null && wrappedDuring.style.overflow === 'hidden',
+        accessoryRolled: wrappedAccessory.hasAttribute('data-dsh-claude-rolling'),
+        clicksDuringRoll: window.__wrappedClicks - wrappedBefore,
+      }
+      await sleep(500)
+      r.fold.wrappedRolled = {
+        rolling: rolled.rolling,
+        clipped: rolled.clipped,
+        accessoryRolled: rolled.accessoryRolled,
+        clicksDuringRoll: rolled.clicksDuringRoll,
+        bodyGone: wrappedBody() === null,
+        folded: wrappedRow.getAttribute('aria-expanded') === 'false',
+        clicks: window.__wrappedClicks - wrappedBefore,
+      }
       // The switch covers the door and the entrance fade as well as the automatic
       // folding: off, a press reaches the host's own handler in the same turn and
       // an inserted body carries no transition (fold-motion.css rides
@@ -413,7 +438,38 @@
         body.remove()
         return value
       }
+      // The wrapped family: the body standing after the header carries the fade,
+      // and the accessory beside the row inside it keeps the page's own reading.
+      // That reading is taken on a bare span first, so a page-wide transition
+      // cannot answer for the entrance rule.
+      var bareSpan = document.createElement('span')
+      foldFlow.appendChild(bareSpan)
+      var pageSpan = getComputedStyle(bareSpan).transitionDuration
+      bareSpan.remove()
+      var wrappedEntranceOf = function () {
+        var header = document.createElement('div')
+        header.setAttribute('data-disclosure-header', '')
+        var row = document.createElement('div')
+        row.setAttribute('data-disclosure-row', '')
+        var accessory = document.createElement('span')
+        accessory.textContent = 'accessory'
+        var body = document.createElement('div')
+        body.textContent = 'probe body'
+        header.appendChild(row)
+        header.appendChild(accessory)
+        foldFlow.appendChild(header)
+        foldFlow.appendChild(body)
+        var value = {
+          body: getComputedStyle(body).transitionDuration,
+          accessory: getComputedStyle(accessory).transitionDuration,
+          page: pageSpan,
+        }
+        header.remove()
+        body.remove()
+        return value
+      }
       r.fold.entranceOn = entranceOf()
+      r.fold.entranceWrapped = wrappedEntranceOf()
       window.__pushForm({ chatAnimations: false })
       await sleep(200)
       var offBefore = window.__disclosureClicks
@@ -423,6 +479,7 @@
       r.fold.animationsOff = {
         mark: document.body.hasAttribute('data-dsh-claude-chat-fold'),
         entrance: entranceOf(),
+        wrappedEntrance: wrappedEntranceOf(),
         immediateClicks: offImmediate,
         rolling: document.querySelector('[data-dsh-claude-rolling]') !== null,
       }

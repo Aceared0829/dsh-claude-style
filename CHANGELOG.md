@@ -21,6 +21,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 在较新的宿主上，思考行自动收起，以及读者点开或收起思考行时，高度一步到位，卷帘门没有滚动。现在这两种结构上的展开体都能被找到——行自己带标题的取行后面的兄弟，行被标题包住的进入承载展开体的那个盒子再取其最后的子元素——所以思考行的自动收起与读者的点开收起都会像其他行一样逐帧滚动。展开体的入场淡入用同一套查找，新增的展开体在这两种结构上都淡入并上移两个像素进入。
 - 打开「悬停自动展开弹层」后，鼠标停在入口上让弹层展开，再按这个入口会把刚展开的弹层收起，想点进去的条目反而被自己合上。现在悬停态下按同一个入口不再收起弹层，覆盖侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器，以及输入框右侧的上下文圆环：弹层保持展开，退出方式交给鼠标离开入口与卡片（关掉这个偏好时按下仍是唯一的开关）。
 - 对话满屏后，模型思考时输入框上方那一行（「正在思考 8 秒」）会随推理一段段到达上下抖动，工具运行时又停住不动。原因是这一行被钉住的位置与滚到底时的自然位置差了不到一个像素，每段推理到达都让它在两处之间切换一次，缩放后的屏幕上看得尤其明显。现在钉住的位置比所有可能的停靠位置都高，跟随末尾期间这一行每一帧都停在同一处。
 - 对话满屏后，思考行或过程组自动展开、收起的那一刻，输入框上方那一行（「正在思考 3 分 2 秒」）会被内容推下去几十像素，有时整行被推出屏幕，随后再弹回原处；推理刚开始输出、工具调用前后这类时刻最容易出现。现在卷帘门在末尾展开、收起的整个过程中，只要读者没有自己往回翻看，这一行都停在原处不动。
@@ -41,6 +42,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- On newer hosts a thinking row's automatic fold — and a reader's own press on such a row — moved the height in one step with no rolling door. The expanded body is now found on both shapes: the family's last child where the row is its own header, and that child's own last element where the row sits inside a header, so a thinking row rolls frame by frame like any other row. The entrance fade reads the body the same way, so an inserted body fades in and rises two pixels on both shapes.
 - With "Open popovers on hover" on, a pointer resting on a trigger opened its popover, and a press on that same trigger then folded the popover the pointer had just opened. Under hover a press on the trigger no longer folds it — on the sidebar account entry, the permission picker, the model picker, the effort picker, the home row's two pickers and the context ring beside the composer: the popover stays up, and leaving the trigger and its card is what closes it. With the preference off, a press remains the only way in and out.
 - With the conversation filling the screen, the line above the composer ("Thinking 8s") shook up and down while the model reasoned, one jolt per piece of reasoning, and stood still while a tool ran. The line's pinned spot and its resting place at the end of the scroll differed by under a pixel, so every piece of reasoning moved it between the two, most visibly on a scaled display. The pin now stands above every place the end can come to rest, and while the tail is followed the line holds the same spot in every frame.
 - With the conversation filling the screen, the line above the composer ("Thinking 3m 2s") was pushed down by tens of pixels, sometimes off the screen, whenever a thinking row or a process group opened or folded on its own, then sprang back; it showed most at the start of a reasoning and around tool calls. While a fold rolls open or shut at the tail, the line now holds its place, unless the reader has scrolled back.
