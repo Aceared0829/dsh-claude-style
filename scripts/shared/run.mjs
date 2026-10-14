@@ -12,7 +12,11 @@ import { execFileSync } from 'node:child_process'
 
 /** A `run(command, args, options?)` that starts in `root` and returns stdout. */
 export function runner(root) {
-  const quote = (value) => /[\s"]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value
+  // A value the shell reads as itself. Everything else is quoted, because the
+  // line goes through a shell: `git for-each-ref --format=%(objectname)` is a
+  // syntax error in /bin/sh, and a path with a space would split in two.
+  const safe = /^[A-Za-z0-9_@%+=:,./-]+$/
+  const quote = (value) => safe.test(value) ? value : `"${value.replace(/"/g, '\\"')}"`
   return (command, args, options = {}) => {
     const line = [command, ...args.map(quote)].join(' ')
     return execFileSync(line, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], shell: true, ...options }).trim()
