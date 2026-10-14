@@ -130,11 +130,11 @@ function page(name, tier, cases) {
     ? '<span class="_q_mobileStats_1" data-mobile-nav="stats"><span>12 轮</span><span>34 步</span><span>56 tok/s</span></span>'
     : ''
   var dock = '<div class="_x_dock_1">' + stats + mobileStats +
-      '<span class="_m_meter_1"><button type="button" id="context-meter" class="_m_trigger_1" aria-haspopup="dialog" aria-expanded="false" aria-label="Context used 42%">' +
+      '<span class="_m_meter_1"><button type="button" id="context-meter" class="_m_trigger_1" aria-haspopup="dialog" aria-expanded="false" aria-label="Context used 84%">' +
         // The host gives the filled arc a dash array and leaves its track bare
         // (packages/contracts/src/dom.ts, composer.meter-fill), which is how the skin
         // tells the two apart when it paints the reading's colour onto it.
-        '<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5"></circle><circle cx="7" cy="7" r="5.5" stroke-dasharray="15.5 34.5"></circle></svg><span>42%</span></button></span>' +
+        '<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5"></circle><circle cx="7" cy="7" r="5.5" stroke-dasharray="29 5.56"></circle></svg><span>84%</span></button></span>' +
     '</div>'
   // The hero row's two pickers, only where the popovers case drives them: each is
   // its own host menu, opened and closed by pressing its own trigger.

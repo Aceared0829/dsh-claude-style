@@ -16,21 +16,21 @@ test('a reading below the first stop saturates at the low end', () => {
 test('a reading on a stop belongs to the segment that stop opens', () => {
   // 92 is the second stop: inside the segment that runs from orange to yellow.
   expect(rampPosition(92, CACHE_HIT_STOPS)).toEqual({ span: '1', mix: '0%' })
-  // 20 is the first stop: the segment that runs from green to light green.
-  expect(rampPosition(20, CONTEXT_STOPS)).toEqual({ span: '0', mix: '0%' })
+  // 40 is the first stop: the segment that runs from green to light green.
+  expect(rampPosition(40, CONTEXT_STOPS)).toEqual({ span: '0', mix: '0%' })
 })
 
 test('a reading inside a segment lands part way along it, to a tenth of a percent', () => {
   // Halfway from 90 to 92.
   expect(rampPosition(91, CACHE_HIT_STOPS)).toEqual({ span: '0', mix: '50%' })
-  // Three quarters of the way from 36 to 40.
-  expect(rampPosition(39, CONTEXT_STOPS)).toEqual({ span: '4', mix: '75%' })
+  // Three quarters of the way from 72 to 80.
+  expect(rampPosition(78, CONTEXT_STOPS)).toEqual({ span: '4', mix: '75%' })
   // A reading that does not divide evenly keeps one decimal.
-  expect(rampPosition(37, CONTEXT_STOPS)).toEqual({ span: '4', mix: '25%' })
+  expect(rampPosition(75, CONTEXT_STOPS)).toEqual({ span: '4', mix: '37.5%' })
 })
 
 test('a reading at or past the last stop saturates at the high end', () => {
   expect(rampPosition(99, CACHE_HIT_STOPS)).toEqual({ span: RAMP_SPAN_HIGH, mix: '0%' })
   expect(rampPosition(100, CACHE_HIT_STOPS)).toEqual({ span: RAMP_SPAN_HIGH, mix: '0%' })
-  expect(rampPosition(40, CONTEXT_STOPS)).toEqual({ span: RAMP_SPAN_HIGH, mix: '0%' })
+  expect(rampPosition(80, CONTEXT_STOPS)).toEqual({ span: RAMP_SPAN_HIGH, mix: '0%' })
 })

@@ -401,8 +401,8 @@ body[data-dsh-claude-style] [data-dsh-claude-ramp="cache"][data-dsh-claude-ramp-
 body[data-dsh-claude-style] [data-dsh-claude-ramp="cache"][data-dsh-claude-ramp-span="high"] {
   --dsh-claude-ramp-from: var(--dsh-claude-tone-green);
 }
-/* The context occupancy: green below 20%, through light green, yellow and
-   orange, to red from 40% on. */
+/* The context occupancy: green below 40%, through light green, yellow and
+   orange, to red from 80% on. */
 body[data-dsh-claude-style] [data-dsh-claude-ramp="context"][data-dsh-claude-ramp-span="low"] {
   --dsh-claude-ramp-from: var(--dsh-claude-tone-green);
 }

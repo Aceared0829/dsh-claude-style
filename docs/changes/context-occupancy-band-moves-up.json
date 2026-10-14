@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 11,
+  "external": false,
+  "zh": "上下文占用的色带移到四成到八成：占用四成以下保持绿色，四成到八成之间依次经过浅绿、黄与橙，八成起为红色。",
+  "en": "The context-occupancy colour band moves to two fifths through four fifths: the reading stays green below two fifths, runs through light green, yellow and orange in between, and is red from four fifths on."
+}
