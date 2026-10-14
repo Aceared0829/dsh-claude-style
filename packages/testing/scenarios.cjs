@@ -260,6 +260,17 @@ const SCENARIOS = {
   send: {
     script: 'greeting',
     prompt: 'hello there',
+    /**
+     * The page as the Windows desktop shell marks it: the host's layout frame
+     * then draws its title bar strip as a `::before`, which the stand-in's
+     * imitation chain carries a copy of (send-flight.css).
+     */
+    async beforeSend({ page }) {
+      await page.evaluate(() => {
+        document.documentElement.setAttribute('data-windows-titlebar', '')
+        document.documentElement.style.setProperty('--dsh-windows-titlebar-height', '40px')
+      })
+    },
     async assert({ page, session, trace }) {
       // The trace stops when the turn settles, and the stand-in leaves a moment
       // after the handover: on a slow runner the last frame still carried it,
@@ -292,6 +303,10 @@ const SCENARIOS = {
       const translucent = covered.filter((frame) => /rgba\([^)]*,\s*0?\.\d+\)/.test(frame.shellFill ?? ''))
       // While the row is shown, the stand-in has to be on it (onRowCheck).
       const shown = covered.filter((frame) => frame.rowVisible === true)
+      // The chain's links paint nothing: an ancestor's pseudo-element copied onto
+      // one is a band across the stand-in in the ancestor's colour.
+      const linkPaints = [...new Set(flight.flatMap((frame) => frame.linkPaints ?? []))]
+      const withLinks = flight.filter((frame) => (frame.links ?? 0) > 0).length
       return [
         check('替身起飞后离开页面', firstGhost !== -1 && goneByNow, `firstGhost at ${firstGhost === -1 ? 'n/a' : `${trace[firstGhost].t}ms`}, ghost at the end=${last.ghost}, left by now=${goneByNow}`),
         check('真行在飞行期间不可见', hidden.length > 0 && exposedWhileFlying.length === 0, `flying frames=${hidden.length}, of them visible=${exposedWhileFlying.length}`),
@@ -301,6 +316,7 @@ const SCENARIOS = {
         check('替身落地时不低于它替换的那一行', covered.length > 0 && short.length === 0, `readable frames=${covered.length}, standing above the row's own foot=${covered.length - short.length}${short.length === 0 ? '' : `：${short.slice(0, 3).map((frame) => `shell ${(frame.shell[3] - frame.shell[1]).toFixed(1)} vs row ${frame.bubble[3] - frame.bubble[1]}`).join(' | ')}`}`),
         onRowCheck(shown),
         check('替身的底色是画面上的颜色，不是半透明的令牌', covered.length > 0 && translucent.length === 0, `translucent fills=${translucent.length}${translucent.length === 0 ? '' : `（${[...new Set(translucent.map((frame) => frame.shellFill))].join('、')}）`}`),
+        check('Windows 标题栏标记下，替身里的祖先链不画伪元素', withLinks > 0 && linkPaints.length === 0, `frames carrying the chain=${withLinks}${linkPaints.length === 0 ? '' : `，painting: ${linkPaints.join('、')}`}`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

@@ -145,6 +145,13 @@ async function startTrace(page) {
       frame.shell = shellRect === null ? null : [shellRect.left, shellRect.top, shellRect.right, shellRect.bottom]
       frame.bubble = bubbleRect === null ? null : [bubbleRect.left, bubbleRect.top, bubbleRect.right, bubbleRect.bottom]
       frame.shellFill = shell === null ? null : getComputedStyle(shell).backgroundColor
+      // The ancestor chain's links are there for selector matching alone: a
+      // pseudo-element one of them generates paints inside the stand-in.
+      const links = ghost === null ? [] : [...ghost.querySelectorAll(host.sendLink)]
+      frame.links = links.length
+      frame.linkPaints = links.flatMap((link) => ['::before', '::after']
+        .filter((pseudo) => !['none', 'normal'].includes(getComputedStyle(link, pseudo).content))
+        .map((pseudo) => `${link.className}${pseudo}`))
       frame.bubbleFill = bubble === null || bubble === undefined ? null : getComputedStyle(bubble).backgroundColor
       frame.echo = document.querySelector(host.echo) !== null || (last !== null && last.hasAttribute(host.echoAttribute))
       frame.ghostWords = words(ghost)

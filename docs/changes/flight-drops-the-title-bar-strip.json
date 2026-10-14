@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "fixes",
+  "order": 6,
+  "external": false,
+  "zh": "Windows 桌面端发出消息时，气泡从输入框飞向消息列表的一路上，上半截（顶部 40 像素）是一条比气泡浅的色带，字在这条色带上显得发虚发锐，单行消息几乎整块变浅、底下只露出一线气泡色；web 端没有这个现象。现在飞行的气泡全程是气泡自己的颜色，桌面端与 web 端一致；这条色带同时是窗口的拖拽区，飞行期间在那一块按下鼠标也不会再拖动窗口。",
+  "en": "On the Windows desktop app, a sent bubble flying from the composer to the message list carried a paler band across its top 40 pixels, the words on it looking thinner and sharper; a one-line message came out pale almost whole, with a sliver of the bubble's colour showing underneath. The web page never showed it. The flying bubble now keeps the bubble's own colour all the way, alike on the desktop and the web, and the band — which was also the window's drag region — no longer turns a press there into a window drag during the flight."
+}

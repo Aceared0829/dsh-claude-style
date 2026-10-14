@@ -11,6 +11,8 @@ import { COMPOSER_SCROLL_SELECTOR } from '@dsh-claude-style/contracts/dom'
  */
 /** Marks the stand-in while it is on the page. A handle for looking things up; no rule hangs off it. */
 export const CHAT_SEND_GHOST_ATTR = 'data-dsh-claude-send-ghost'
+/** Marks each link of the stand-in's imitation ancestor chain; send-flight.css takes their pseudo-elements away. */
+export const CHAT_SEND_LINK_ATTR = 'data-dsh-claude-send-link'
 // The mark put on the real row while the stand-in flies is constants.ts's
 // CHAT_FLYING_ATTR; the stylesheet hides it (send-flight.css). The composer
 // card, its scroll area and the echo bubble are the host's own attributes,

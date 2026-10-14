@@ -12,3 +12,13 @@ body[data-dsh-claude-style] [data-dsh-claude-send-flight] {
 body[data-dsh-claude-style] [data-dsh-claude-send-ghost] {
   z-index: var(--dsh-claude-layer-takeover);
 }
+
+/* The imitation ancestor chain is there for selector matching alone. Its links
+   are `display: contents`, which keeps their pseudo-elements: the Windows
+   desktop's layout frame draws its title bar strip as an absolutely placed
+   `::before`, and on a link it lands on the stand-in's top 40px in the sidebar
+   fill, over the bubble's own (send-snapshot.ts's CHAT_SEND_LINK_ATTR). */
+body[data-dsh-claude-style] [data-dsh-claude-send-ghost] [data-dsh-claude-send-link]::before,
+body[data-dsh-claude-style] [data-dsh-claude-send-ghost] [data-dsh-claude-send-link]::after {
+  content: none;
+}

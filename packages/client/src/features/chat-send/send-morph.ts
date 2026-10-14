@@ -1,6 +1,6 @@
 import { CHAT_CHROME_GONE_AT, CHAT_CHROME_MIN_SCALE, CHAT_FLIGHT_MS, CHAT_HALO_GONE_AT, CHAT_MIN_REVERSE_DIVISOR, CHAT_MORPH_END, CHAT_SHAPE_SAMPLES, chatSendCornerRadius, chatSendMorphProgress, chatSendRiseProgress, chatSendShadowSpread, chatSendStepOpacity, chatSendTextLayer, chatSendTextWindows } from './send-shape'
 import type { ShapeSample } from './send-shape'
-import { CHAT_SEND_GHOST_ATTR, chatSendGhostHost, chatSendOpaque, chatSendPixel } from './send-snapshot'
+import { CHAT_SEND_GHOST_ATTR, CHAT_SEND_LINK_ATTR, chatSendGhostHost, chatSendOpaque, chatSendPixel } from './send-snapshot'
 import type { ComposerSnapshot } from './send-snapshot'
 
 /** Where the words sit inside a box: its left, top and right insets and its line height. */
@@ -178,8 +178,13 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
     // against it, moving the whole thing.
     link.style.setProperty('display', 'contents', 'important')
     link.setAttribute('aria-hidden', 'true')
-    // Classes only: not one `data-*` goes on the chain, for the reasons and
-    // the measurements in send-snapshot.ts's ancestor note.
+    // `display: contents` takes away the link's own box but not its
+    // pseudo-elements: an ancestor's `::before` (the Windows title bar strip on
+    // the layout frame) would paint across the top of the stand-in, so the
+    // link carries the skin's mark that send-flight.css hangs their removal on.
+    link.setAttribute(CHAT_SEND_LINK_ATTR, '')
+    // Classes only from the ancestor: none of its `data-*` is copied, for the
+    // reasons and the measurements in send-snapshot.ts's ancestor note.
     if (mark.className !== '') link.className = mark.className
     cloneHost.appendChild(link)
     cloneHost = link
