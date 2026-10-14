@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 0,
   "external": false,
-  "zh": "推理等级滑杆的方向在档位未按强度排列的模型上不再反向：Qoder、Raccoon 与 MiniMax 的档位由供应商按自己的顺序下发（Qoder 的 Qwen3.8-Max 是「极高、低、中、关闭思考」），而滑杆把下发顺序当作强度轴，于是最右端落在最弱的档位上——在这些模型上停止思考被读成了最强。现在档位按强度重新排列后再画，无法判定强度的档位保持供应商顺序并排在已知档位之后。",
-  "en": "The effort slider no longer runs the wrong way on models whose levels arrive unordered: Qoder, Raccoon and MiniMax send their levels in the provider's own order (Qoder's Qwen3.8-Max sends xhigh, low, medium, none), and the slider read that order as a strength scale, so the right end landed on the weakest level — on these models switching thinking off read as the strongest setting. The levels are now ordered by strength before the ladder is drawn, and a level whose strength is unknown keeps the provider order and follows every known level."
+  "zh": "推理等级滑杆的方向在档位未按强度下发的模型上不再反向：宿主把 `reasoning.efforts` 记为从弱到强，而 Qoder 的 Qwen3.8-Max 发来「极高、低、中、关闭思考」、Raccoon 与 MiniMax 发来「高、关闭思考」，滑杆照下发顺序画，最右端便落在最弱的档位上——这些模型上停止思考被读成了最强。现在能判定强度的档位按强度排列，判不出强度的档位留在供应商给出的位置。",
+  "en": "The effort slider no longer runs the wrong way on models whose levels arrive out of order: the host records `reasoning.efforts` from weakest to strongest, while Qoder's Qwen3.8-Max sends xhigh, low, medium, none and Raccoon and MiniMax send high, none, and the slider drew that order as it came, so the right end landed on the weakest level — on these models switching thinking off read as the strongest setting. Levels whose strength is known are now sorted by strength, and a level whose strength is unknown stays where the provider put it."
 }

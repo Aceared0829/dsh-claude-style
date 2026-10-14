@@ -165,8 +165,8 @@ export function createEffortControl(opts: {
     const list: EffortStep[] = []
     let index = -1
     if (effort !== null) {
-      /* The adapter promises a display order, not a strength order, and the
-         slider reads its steps as a strength scale (ladder.ts). */
+      /* The host records the levels as a strength scale; an adapter that hands
+         them over unordered is put right here (ladder.ts). */
       const declared = effort.reasoning.efforts
       const order = orderEffortIds([
         ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
