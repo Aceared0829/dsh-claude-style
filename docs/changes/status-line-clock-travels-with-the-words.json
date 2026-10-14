@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "zh": "状态行换词时，旁边的计时会跳两次：新说法更长时，新词还没显形它就先跳到右边；新说法更短时，交叉淡出结束之后它才跳回左边。现在说法盒子的宽度是一次移动：盒子先按住自己当前的宽度，再写上目标宽度，由滑动高亮那一对时长与曲线（约 0.24 秒）带过去，计时随盒子一起滑到新位置，不再跳变；说法比这一行放得下的宽度更长时照旧在盒子上截断并画省略号；「动画」设为「减弱」时宽度仍然一步到位。",
+  "en": "When the status line's wording changed, the clock beside it was displaced twice: with a longer wording arriving it jumped to the right before the new words had even appeared, and with a shorter one it jumped back to the left only once the cross-fade had finished. The wording box's width is now one move: the box is pinned at the width it stands at, written with the width it heads for, and carried there over the sliding highlight's own time and curve (about 0.24 s), so the clock travels to its new place with it. A wording wider than the room the line has is still cut with an ellipsis inside the box, and with Animation set to Reduced the width lands in one step as before."
+}
