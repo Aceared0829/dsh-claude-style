@@ -69,15 +69,17 @@
           // hidden sizer holds the wider half while words change, so neither may
           // move during a swap, and comes down onto the words standing once they
           // settle — the clock then sits right after them (shared/swapping-text.ts).
+          // Positions and widths share the browser's fractional coordinate space:
+          // rounding them independently changes their relative displacement.
           box: {
-            width: Math.round(label.getBoundingClientRect().width),
-            height: Math.round(label.getBoundingClientRect().height),
-            clockLeft: Math.round(parts[1].getBoundingClientRect().left),
-            lineLeft: Math.round(line.getBoundingClientRect().left),
-            lineWidth: Math.round(line.getBoundingClientRect().width),
-            lineRight: Math.round(line.getBoundingClientRect().right),
-            rowRight: Math.round(row.getBoundingClientRect().right),
-            labelRight: Math.round(label.getBoundingClientRect().right),
+            width: label.getBoundingClientRect().width,
+            height: label.getBoundingClientRect().height,
+            clockLeft: parts[1].getBoundingClientRect().left,
+            lineLeft: line.getBoundingClientRect().left,
+            lineWidth: line.getBoundingClientRect().width,
+            lineRight: line.getBoundingClientRect().right,
+            rowRight: row.getBoundingClientRect().right,
+            labelRight: label.getBoundingClientRect().right,
             // A wording longer than the label's box: the box clips it and the
             // copy draws an ellipsis (shared/swapping-text.css).
             clipped: (function () {
@@ -87,7 +89,7 @@
             })(),
             sizer: (function () {
               var sizer = label.querySelector('.dsh-claude-swap-sizer')
-              return sizer === null ? null : { text: sizer.textContent, width: Math.round(sizer.getBoundingClientRect().width) }
+              return sizer === null ? null : { text: sizer.textContent, width: sizer.getBoundingClientRect().width }
             })(),
             firstChildClass: label.firstElementChild === null ? null : label.firstElementChild.className,
           },
@@ -210,6 +212,39 @@
         previousMarked: previousWords.hasAttribute('data-dsh-claude-wait-words'),
         current: lineOf(),
       }
+      var ownership = function () {
+        return {
+          line: row.querySelector('.dsh-claude-chat-wait') !== null,
+          marked: row.hasAttribute('data-dsh-claude-wait'),
+          wordsMarked: words.hasAttribute('data-dsh-claude-wait-words'),
+          externalHiding: words.style.display,
+          foreignShown: foreignLine.checkVisibility(),
+          follow: document.body.hasAttribute('data-dsh-claude-chat-follow'),
+        }
+      }
+      words.style.display = 'none'
+      await sleep(400)
+      r.wait.takeover = ownership()
+      foreignLine.hidden = true
+      await sleep(400)
+      r.wait.hiddenReplacement = ownership()
+      foreignLine.hidden = false
+      await sleep(400)
+      r.wait.visibleReplacement = ownership()
+      words.style.removeProperty('display')
+      await sleep(400)
+      r.wait.hostRestored = ownership()
+      window.__pushForm({ chatAnimations: false })
+      await sleep(300)
+      words.style.display = 'none'
+      window.__pushForm({ chatAnimations: true })
+      await sleep(400)
+      r.wait.existingOwner = ownership()
+      foreignLine.remove()
+      words.style.removeProperty('display')
+      await sleep(400)
+      r.wait.ownerRemoved = ownership()
+      words.parentElement.appendChild(foreignLine)
       window.__pushForm({ chatAnimations: false })
       await sleep(300)
       r.wait.off = {

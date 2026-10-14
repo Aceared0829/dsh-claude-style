@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "同时使用替代状态行插件时曾出现两套等待文案；同一运行行中有可见替代文字且宿主文案被外部隐藏时，主题等待行现在自动让位，接管结束后恢复，其他聊天动效继续运行。",
+  "en": "Replacement status-line plugins could leave two sets of waiting words visible. The theme now yields its waiting line when a visible sibling replaces externally hidden host wording, restores it when the takeover ends, and keeps other chat animations running."
+}
