@@ -21,8 +21,8 @@
  * writes can reach another.
  *
  * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--headed] [--out <dir>] [--delay <ms>]
- *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, doorPin, motion, send, processSummary, reasoningStream, waitLine, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
- *        (default: every scenario but statsPosition and statsOverlay)
+ *        --scenario names what to run; without it the walk is every scenario in
+ *        the table (packages/testing/scenarios.cjs) but the parked pair below.
  */
 'use strict'
 const fs = require('node:fs')
@@ -44,6 +44,16 @@ const DEFAULT_OUT = path.join(ROOT, '.debug', 'e2e', 'out')
  * watchdog itself.
  */
 const SCENARIO_DEADLINE_MS = Number(process.env.DSH_E2E_DEADLINE_MS ?? '') || 3 * 60 * 1000
+
+/**
+ * The scenarios the default walk leaves out: the two that read the host's own
+ * statistics surfaces on a page the reader has moved (stats-position.cjs,
+ * stats-overlay.cjs). This list is the only place a scenario is parked — the
+ * default walk is every other entry of the table, derived in main() — so a
+ * scenario added to the table runs by default, and a name here that the table
+ * no longer holds stops the run.
+ */
+const PARKED = new Set(['statsPosition', 'statsOverlay'])
 
 /**
  * What the page looked like when a scenario failed: a picture, the console
@@ -287,7 +297,11 @@ async function main() {
       + `${unknown.length > 0 ? `; named there but missing here: ${unknown.join(', ')}` : ''}`
       + `${unnamed.length > 0 ? `; run here but unnamed there: ${unnamed.join(', ')}` : ''}`)
   }
-  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,doorPin,motion,processSummary,reasoningStream,waitLine,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
+  const parked = [...PARKED].filter((name) => !known.includes(name))
+  if (parked.length > 0) {
+    throw new Error(`the lane parks ${parked.join(', ')}, which packages/testing/scenarios.cjs does not hold`)
+  }
+  const names = (argOf('scenario') ?? E2E_SCENARIOS.filter((name) => !PARKED.has(name)).join(',')).split(',').map((name) => name.trim()).filter(Boolean)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
   const options = {
     headed: args.includes('--headed'),

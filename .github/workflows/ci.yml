@@ -69,12 +69,11 @@ jobs:
     if: github.event_name != 'push' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: verify
-    # The lane boots a host per scenario and walks every one of them: nine of
-    # the ten lay out a page and drive at least one turn, and `shots` captures
-    # both palettes. A 30-minute cap cut the run off with `contract`, the last
-    # scenario, still in flight, so the budget holds the whole lane and leaves
-    # room for a slow runner.
-    timeout-minutes: 45
+    # The lane boots a host per scenario and walks every one the table holds but
+    # the parked pair, each laying out a page and driving at least one turn
+    # (`shots` captures both palettes). The budget covers the whole walk and
+    # leaves room for a slow runner.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
