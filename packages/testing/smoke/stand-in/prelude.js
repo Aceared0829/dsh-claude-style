@@ -10,8 +10,19 @@
   window.__dshSmokeHost = { CASE: CASE, MARKUP: MARKUP }
   window.__pwned = 0
   window.__passes = 0
+  window.__passTimes = []
   var raf = window.requestAnimationFrame.bind(window)
-  window.requestAnimationFrame = function (cb) { return raf(function (t) { window.__passes++; cb(t) }) }
+  // The settle probe drives the clock through this reference while it waits: the
+  // frames it asks for are frame work the stand-in's own count must not see.
+  window.__nativeRaf = raf
+  window.requestAnimationFrame = function (cb) {
+    return raf(function (t) {
+      window.__passes++
+      if (window.__passTimes.length === 32) window.__passTimes.shift()
+      window.__passTimes.push(performance.now())
+      cb(t)
+    })
+  }
   window.__errors = []
   // Errors nothing caught: thrown out of a callback, reported through
   // reportError(), or a promise rejection no one handled. The skin must leave

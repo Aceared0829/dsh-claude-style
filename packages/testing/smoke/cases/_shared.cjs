@@ -48,7 +48,8 @@ function commonChecks(r) {
   check('a seat carrying the running status dot draws no circle',
     r.seatRunning !== null && r.seatRunning.content === 'none' && r.seatRunning.svgs > 0,
     JSON.stringify(r.seatRunning))
-  check('scheduler idle once settled (0 passes in 1 s)', r.idlePasses === 0, `${r.idlePasses} passes`, 'timing')
+  check('scheduler idle once settled (0 passes in 1 s)', r.idlePasses === 0,
+    `${r.idlePasses} passes${(r.idlePassTimes ?? []).length === 0 ? '' : ` at ${r.idlePassTimes.join('ms, ')}ms`}`, 'timing')
   check('a closed popover card claims no menu role for the host\'s keyboard arbitration',
     r.closedMenuCards === 0, `${r.closedMenuCards} closed cards carry role=menu`)
   check('no Windows titlebar marker: the body carries no data-dsh-titlebar-tabs',
