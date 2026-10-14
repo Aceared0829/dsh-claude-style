@@ -1,19 +1,23 @@
 name: CI
 
-# Every branch push and every pull request runs the whole matrix, which is where
-# a change is judged (D66): the local machine runs only the narrowest set that
-# answers the question in hand. `branches` keeps tag pushes out — the release
-# workflow owns those.
+# A branch push runs the fast tier — the checks, the build, the unit tests and
+# the smoke on both systems — and a pull request, a push to master or a manual
+# run adds the end-to-end lane and the host-alpha contract warning (D66). The
+# fast tier is the answer a session asks for by pushing its own commit, and the
+# full matrix is what a change is merged on. `branches` keeps tag pushes out:
+# the release workflow owns those.
 on:
   push:
     branches: ['**']
   pull_request:
   workflow_dispatch:
 
-# One group per branch, so a push and its pull request share a run: the later
-# event cancels the earlier one instead of paying for the matrix twice.
+# One group per event and commit, so a series of pushes each finish with a
+# verdict instead of cancelling one another, and a pull request does not cancel
+# the push run it came from. A repeat of the same event on the same commit — the
+# pull request a push already opened — is the duplicate this drops.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: CI-${{ github.event_name }}-${{ github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -60,6 +64,9 @@ jobs:
   # The assembled host: a scratch `dsh web` with this checkout's plugin and the
   # scripted model service, driven through a real conversation (D45).
   e2e:
+    # The full lane is what a change is merged on: a branch push answers with the
+    # fast tier above, and a pull request, master or a manual run walks it.
+    if: github.event_name != 'push' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: verify
     # The lane boots a host per scenario and walks every one of them: nine of
@@ -91,6 +98,7 @@ jobs:
   # the pinned version above: a selector or entry that stopped holding shows up
   # here before the pin moves. Advisory, it holds no merge back (D45).
   contract-host-alpha:
+    if: github.event_name != 'push' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: verify
     continue-on-error: true
