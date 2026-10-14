@@ -321,6 +321,15 @@ module.exports = {
         boxes.every((box, at) => at === 0 || (box.width >= boxes[at - 1].width && box.clockLeft >= boxes[at - 1].clockLeft)) &&
         boxes[boxes.length - 1].clockLeft - boxes[0].clockLeft === boxes[boxes.length - 1].width - boxes[0].width,
       JSON.stringify({ first: boxes[0], last: boxes[boxes.length - 1], widths: boxes.map((box) => box.width), heights: boxes.map((box) => box.height), clockLefts: boxes.map((box) => box.clockLeft) }))
+    // The width is travelled rather than written (shared/swapping-text.ts pins
+    // the box and writes the width it heads for): on this 25 ms grid the clock's
+    // displacement comes in many small steps, where a width written in one task
+    // moves it the whole way inside one frame.
+    const steps = boxes.map((box, at) => at === 0 ? 0 : box.width - boxes[at - 1].width).filter((step) => step > 0)
+    const travelled = boxes[boxes.length - 1].width - boxes[0].width
+    check('the box takes its new width in one move, so the clock slides with it instead of jumping',
+      travelled > 4 && steps.length >= 3 && Math.max(...steps) < travelled / 2,
+      JSON.stringify({ steps: steps.length, largest: steps.length === 0 ? 0 : Math.max(...steps), travelled }))
     check('the new wording is the one left standing once the copy that left is taken down',
       silent[0].displayed === 'Thinking…' && silent[0].copies === 1 && silent[0].phase === null &&
         Number(last.opacity) === 1 && last.copies === 1 && last.word === 'Deep diving',
