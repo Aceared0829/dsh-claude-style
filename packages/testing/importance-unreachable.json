@@ -196,8 +196,7 @@
         "body[data-dsh-claude-style] [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style][data-dsh-window-blur] [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-chat-flow] code:not(pre code)",
-        "body[data-dsh-claude-style]:not([data-ds-dark-theme])[data-dsh-window-blur] [data-chat-flow] code:not(pre code)",
-        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window]>[data-markdown-variant]"
+        "body[data-dsh-claude-style]:not([data-ds-dark-theme])[data-dsh-window-blur] [data-chat-flow] code:not(pre code)"
       ]
     },
     {
@@ -475,13 +474,6 @@
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] :is([data-disclosure-row],[data-disclosure-header])~*:not([data-turn-process-member] *,[data-turn-trigger] *):is([data-disclosure-row]~*,[data-disclosure-header]~* *)",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-chat-flow] :is([data-disclosure-row],[data-disclosure-header])~*:not([data-turn-process-member] *,[data-turn-trigger] *):is([data-disclosure-row]~*,[data-disclosure-header]~* *)"
-      ]
-    },
-    {
-      "reason": "推理窗口：脚本回答没有推理段",
-      "selectors": [
-        "body[data-dsh-claude-style] [data-dsh-claude-reason-window][data-dsh-claude-reason-capped]",
-        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window]"
       ]
     },
     {
