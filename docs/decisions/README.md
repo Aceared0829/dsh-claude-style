@@ -20,6 +20,7 @@
 | [D47](D47-build-output.md) | 构建产物不进主分支，发布分支提供 git 安装 | 部分实施 |
 | [D51](D51-css-toolchain.md) | CSS 工具链：语法树上的检查与一份令牌数据 | 已实施 |
 | [D65](D65-motion-tokens.md) | 动效令牌与共享预设：时长与曲线只写在令牌里 | 已实施 |
+| [D67](D67-layer-tokens.md) | 层级令牌：与宿主争高低的 z-index 只写在令牌里 | 已实施 |
 
 ## 宿主边界
 

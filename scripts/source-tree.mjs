@@ -1,6 +1,6 @@
 /**
  * source-tree.mjs — the browser half's TypeScript read on its syntax tree, for
- * the build's refusals that are about what the code does (D51, D65, D00).
+ * the build's refusals that are about what the code does (D51, D65, D67).
  *
  * TypeScript's own program over tsconfig.json answers through types: a name
  * handed over as a constant, a union or a parameter reaches a check as the
@@ -196,7 +196,7 @@ function collect(project, root, srcDir) {
   }
   const stackingLevels = new Map()
   for (const expression of stacking) {
-    follow(expression, firstAt(stackingLevels), 'writes a stacking level the build cannot read; mark the element and place it on a layer in its stylesheet (D00)')
+    follow(expression, firstAt(stackingLevels), 'writes a stacking level the build cannot read; mark the element and place it on a layer in its stylesheet (D67)')
   }
   // A whole inline declaration list carries its stacking level inside the text.
   for (const text of strings) {

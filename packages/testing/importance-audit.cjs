@@ -59,16 +59,18 @@ const SHEET = 'style[data-plugin-css="dsh-claude-style/client.css"]'
 /** Pseudo-elements the page can read a computed style for. */
 const READABLE_PSEUDO = new Set(['::before', '::after', '::marker', '::placeholder'])
 /**
- * Selectors whose rule only applies while a transient mark is on the page, or
- * under a pointer state the walk cannot hold: no audited state carries them
- * reliably, so a run that happened to catch the element called the weight
- * removable and the next run, which did not, called it unmatched. Each entry is
- * a contract, not a convenience: the skin's own marks that go on and come off
- * within one animation (`fold-motion.css`'s rolling door, `inline.css`'s
- * active-composer controls, the send flight, the wait badge's leave, the reveal
- * of a panel), a state a pointer holds (a dragged effort knob, a file row
- * swapping its operation), and the host's own mark for a theme transition. The
- * hover walk still covers the rules whose own trigger it can point at.
+ * Selectors whose rule only applies while a transient mark is on the page,
+ * under a pointer state the walk cannot hold, or in a state the walk carries
+ * only now and then: no audited state carries them reliably, so a run that
+ * happened to catch the element called the weight removable and the next run,
+ * which did not, called it unmatched. Each entry is a contract, not a
+ * convenience: the skin's own marks that go on and come off within one
+ * animation (`fold-motion.css`'s rolling door, `inline.css`'s active-composer
+ * controls, the send flight, the wait badge's leave, the reveal of a panel, the
+ * reasoning window whose markdown variant the walk's turn sometimes carries), a
+ * state a pointer holds (a dragged effort knob, a file row swapping its
+ * operation), and the host's own mark for a theme transition. The hover walk
+ * still covers the rules whose own trigger it can point at.
  */
 const TRANSIENT_SELECTORS = [
   '[data-dsh-claude-rolling]', '[data-dsh-claude-composer-active]',
@@ -79,6 +81,7 @@ const TRANSIENT_SELECTORS = [
   '[data-dsh-claude-reader-hold]', '[data-dsh-claude-summary-running]', '[data-dsh-claude-wait-badge-leaving]',
   '[data-dsh-claude-file-merge]', '[data-dsh-claude-chat-reveal]', '[data-dsh-claude-roll]',
   '[data-dsh-claude-dragging]', '[data-dsh-claude-swapping]',
+  '[data-dsh-claude-reason-window]',
   '[data-dsh-theme-transitioning]',
 ]
 
