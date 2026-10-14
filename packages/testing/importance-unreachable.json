@@ -197,7 +197,6 @@
         "body[data-dsh-claude-style][data-dsh-window-blur] [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme])[data-dsh-window-blur] [data-chat-flow] code:not(pre code)",
-        "body[data-dsh-claude-style] [data-dsh-claude-reason-window]>[data-markdown-variant]",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window]>[data-markdown-variant]"
       ]
     },
@@ -419,6 +418,7 @@
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-status-motion=wash] .dsh-claude-chat-wait .dsh-claude-swap-shimmer",
         "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start",
+        "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-exit",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-copy",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-label"
       ]
@@ -520,6 +520,20 @@
       "reason": "停靠卡座：走查没有打开它",
       "selectors": [
         "body[data-dsh-claude-style] .dsh-claude-home-seat"
+      ]
+    },
+    {
+      "reason": "宿主的会话按钮没有按键提示：临时宿主没有渲染 newSessionShortcut 里的按键",
+      "selectors": [
+        "body[data-dsh-claude-style] button[class*=newSession] [class*=newSessionShortcut] kbd[class*=_separator]",
+        "body[data-dsh-claude-style] button[class*=newSession] [class*=newSessionShortcut] kbd:not([class*=_separator])",
+        "body[data-dsh-claude-style][data-ds-dark-theme] button[class*=newSession] [class*=newSessionShortcut] kbd:not([class*=_separator])"
+      ]
+    },
+    {
+      "reason": "深色形态里没有搜索按键：走查的深色页面形态不含这一行",
+      "selectors": [
+        "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key"
       ]
     }
   ]
