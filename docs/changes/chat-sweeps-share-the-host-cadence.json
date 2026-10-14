@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 5,
   "external": false,
-  "zh": "对话区三处扫光各走各的节奏：状态行 2 秒一趟、连续不停，过程组头部 1.5 秒一趟、每趟末了歇一下，宿主自己的工具行又是宿主的步调；状态行的色带颜色与宽度也与宿主的不同。现在状态行与过程组头部同读宿主自己 TextShimmer 的一档：1.5 秒一趟、steps(48, end)、每趟最后三分之一歇停，状态行的色带改用宿主的扫光色与 20% 带宽，三处扫光同一节奏。",
-  "en": "The chat area's three sweeps each kept their own rhythm: the status line crossed every 2s without a pause, a process group's header every 1.5s with a rest, and the host's own tool rows kept the host's pace; the line's band also differed in tint and width. The line and the header now read the host's own TextShimmer gear — 1.5s a pass, steps(48, end), the band resting the last third of each pass — and the line's band takes the host's shimmer tint and 20% width, so all three sweep to one rhythm."
+  "zh": "状态行与过程组头部同读宿主 `TextShimmer` 的一档：1.5 秒一趟、`steps(48, end)`、每趟最后三分之一歇停，状态行的色带改用宿主的扫光色与 20% 带宽。",
+  "en": "The line and a process group's header share the host's own `TextShimmer` gear — 1.5 s a pass, `steps(48, end)`, the band resting the last third — and the line's band takes the host's shimmer tint at 20% width."
 }

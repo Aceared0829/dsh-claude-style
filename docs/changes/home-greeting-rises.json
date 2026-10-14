@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 10,
   "external": false,
-  "zh": "首页的品牌标志与问候语原来直接出现。现在首页打开时标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）；动画设为「减弱」时直接出现。",
-  "en": "The home page's brand mark and greeting used to appear at once. Opening the home page now raises the mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s); with Animation set to Reduced they appear at once."
+  "zh": "首页打开时品牌标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）。",
+  "en": "Opening the home page raises the brand mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s)."
 }

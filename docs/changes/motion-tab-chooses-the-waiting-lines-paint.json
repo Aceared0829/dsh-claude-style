@@ -3,6 +3,6 @@
   "group": "new",
   "order": 2,
   "external": true,
-  "zh": "设置页多出「动效」分页，其中一项「状态行动画」用两张实时预览的卡片代替文字：卡片里的字在「正在思考」与「深度求索中」两种说法之间来回换，用的是状态行换词的那套动作；画法一档是现在这道扫光，另一档让状态行的文字本身流动着变色——七层径向色斑压在一条灰色渐变上，色斑绕着字框游走，同时整圈色相在转。选哪一档立刻生效，真实状态行的说法、换词与旁边的时间两档都一样。设置项 `statusMotion` 的取值为 `sweep`（默认）与 `wash`。",
-  "en": "The settings page gains a Motion tab, whose Waiting-line animation setting picks the paint with two live previews instead of text, the words inside each card taking turns between \"Thinking…\" and \"Deep diving\" through the swap the line itself runs. One card paints them with the highlight band the line sweeps today, the other with a colour wash that moves through the letters themselves — seven radial washes over a grey ramp, orbiting the glyph box while the hue turns a full circle. The choice applies at once, and on the line itself the wording, its swap and the clock beside it are the same either way. The `statusMotion` setting's values are `sweep` (the default) and `wash`."
+  "zh": "设置页多出「动效」分页，其中「状态行动画」用两张实时预览的卡片代替文字，一档是现在这道扫光，另一档让状态行的文字本身流动着变色；设置项 `statusMotion` 的取值为 `sweep`（默认）与 `wash`。",
+  "en": "The settings page gains a Motion tab whose Waiting-line animation setting picks the paint with two live previews instead of text — the highlight band the line sweeps today, or a colour wash that moves through the letters; the `statusMotion` setting is `sweep` (the default) or `wash`."
 }

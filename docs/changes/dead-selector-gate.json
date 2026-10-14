@@ -3,6 +3,6 @@
   "group": "chores",
   "order": 2,
   "external": false,
-  "zh": "`importance` 场景多审两件事：每个页面状态下，凡是没有被任何状态匹配到元素的选择器都拿到页面上问一遍，走遍所有状态都没匹配到元素的选择器即失败；走查新走进设置页与它的每个页签、每个控件，以及皮肤为偏好写在页面上的每个标记。走查到不了的选择器逐条登记在 `packages/testing/importance-unreachable.json`，每条写明缘由，登记表只许变短。同一轮走查里判明多余的八处 `!important` 去掉，端到端通道的设置层在每次运行前回到运行前的副本，设置页的改动不再带进下一次运行。",
-  "en": "The `importance` scenario now audits two more things: in every page state it asks the page about each selector no state has matched an element with, and a selector that matches nothing across the whole walk fails it; the walk also enters the settings page with each of its tabs and controls, and writes every preference mark the skin puts on the page. The selectors the walk cannot reach are recorded one by one in `packages/testing/importance-unreachable.json`, each with its reason, and that record may only shrink. The same walk proved eight `!important` declarations redundant and they are gone, and the end-to-end lane's settings layer goes back to the copy taken before each run, so the settings page's changes no longer carry into the next one."
+  "zh": "`importance` 场景在走查里多审两件事：走遍所有页面形态都没匹配到元素的选择器即失败，到不了的选择器逐条登记在 `packages/testing/importance-unreachable.json`、每条写明缘由且登记表只许变短；同一轮走查去掉八处多余的 `!important`，端到端通道的设置层每次运行前回到运行前的副本。",
+  "en": "The `importance` scenario audits two more things in its walk: a selector that matches no element in any page state fails it, and the selectors the walk cannot reach are recorded with their reasons in `packages/testing/importance-unreachable.json`, a record that may only shrink; the same walk proved eight `!important` declarations redundant and took them out, and the end-to-end lane's settings layer returns to its pre-run copy."
 }

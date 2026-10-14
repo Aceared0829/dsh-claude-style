@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 2,
   "external": false,
-  "zh": "设置页里只在另一项打开时才起作用的行，以前在那一项关闭时照样可以切换，切了没有任何效果。现在「重绘对话框」选「关闭」时，「重绘模型选择器」（连同快捷供应商与峰谷电表）与「重绘权限控件」变灰、不能操作；「对话统计信息位置」只在重绘覆盖对话页时可用；「封号彩蛋」随「折叠侧栏设置区」一起变灰。变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。",
-  "en": "Settings rows that only work while another setting is on could still be switched while it was off, to no effect. Now with Composer restyle set to Off, Redraw the model picker (with Quick providers and the Peak rate meter) and Redraw the permission control grey out and take no input; Conversation statistics position takes input only while the restyle covers the conversation; the Account-hold easter egg greys out with Collapse the sidebar settings area. A greyed row still shows the value you set, and a line in the accent colour under its description says what it waits for."
+  "zh": "只在另一项打开时才起作用的设置行现在随父项一起变灰、不能操作（重绘模型选择器与重绘权限控件随「重绘对话框」，对话统计信息位置随重绘覆盖对话页，封号彩蛋随「折叠侧栏设置区」），变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。",
+  "en": "Settings rows that only work while another setting is on grey out and take no input with it — the model picker and the permission control with the composer restyle, the statistics position with the restyle covering the conversation, the easter egg with the sidebar settings — and a greyed row still shows the value you set, with a line in the accent colour saying what it waits for."
 }

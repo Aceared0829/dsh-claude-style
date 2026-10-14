@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 6,
   "external": false,
-  "zh": "换词时，说法盒子在开始那一刻先被钉在它当时站着的宽度上，再沿过渡移到新宽度。钉住用的宽度取整到了整像素，而盒子当时站的是一个带小数的宽度，于是换词一开始盒子连同它右边的计时会往回退不到一个像素，位移结束、钉子松开时再往前跳同样的一段；缩放过的屏幕上这段回落更明显。现在钉住的宽度与要去的宽度都按布局实际的宽度取，换词期间盒子稳住不动，计时只随说法变长而移动。",
-  "en": "When the wording swapped, the box was pinned at the width it stood at for the instant the move began, and travelled from there to the new one. The pin took that width rounded to whole pixels while the box really stood at a fractional one, so as a swap began the box and the clock laid out beside it stepped back by up to a pixel, and stepped forward by the same amount once the move ended and the pin was let go — most visible on a scaled display. The pin and the width it heads for are now the widths the layout really holds, so the box holds its place through the swap and the clock moves only as the wording grows."
+  "zh": "换词时钉住的宽度与要去的宽度都按布局实际的宽度取，盒子稳住不动，计时只随说法变长而移动。",
+  "en": "The pin and the width it heads for are the widths the layout really holds, so the box holds its place through a swap and the clock moves only as the wording grows."
 }

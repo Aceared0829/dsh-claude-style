@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 5,
+  "external": false,
+  "zh": "`docs/STYLE.md` 只留视觉规则与三张由令牌表生成的对照表，精灵的网格、格宽与帧号由 `packages/client/src/features/mascot/sheets.ts` 与精灵样式表持有。",
+  "en": "`docs/STYLE.md` keeps the visual rules and the three tables generated from the token table, with the sprites' grids, cell sizes and frame numbers held in `packages/client/src/features/mascot/sheets.ts` and the mascots' stylesheets."
+}

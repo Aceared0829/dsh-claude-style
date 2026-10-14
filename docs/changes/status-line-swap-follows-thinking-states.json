@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 1,
   "external": false,
-  "zh": "运行中的那一行状态词换词时，旧词向上离开、新词从下方升入，这之前是同一个节点直接改字。现在这一行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带在整个换词过程中一直亮着而不从头再扫；行的宽度和高度由一个隐藏测量层稳住，换词期间它按住两句里较宽的那句，换词一结束就落到正在显示的那句上，所以换词期间旁边的计时不会先被挤到左边再退回，换完词之后计时紧跟在说法后面，行的上下也不会因新词从下方升入而变高。扫光带与换词都跟着「动画效果」的取值走。",
-  "en": "The running status line's wording swap — the old words leaving upward, the new ones rising from below — used to rewrite one node in place. It now runs transitions.dev's \"Thinking states\" composition: the two halves move at once, and the sweeping highlight stays lit through the swap instead of restarting. A hidden sizer holds the line's width and height — the wider of the two halves while a swap runs, the words standing once it settles — so the elapsed clock beside it is never shoved to the left and back during a swap, sits right after the words once they settle, and the copy rising from below never makes the line taller. Both the highlight and the swap follow the animation setting."
+  "zh": "运行行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带全程亮着而不从头再扫，行由一个隐藏测量层按住宽度与高度，换词期间旁边的计时不会被挤动，新词从下方升入也不会让整行变高。",
+  "en": "The running line's wording swap runs transitions.dev's \"Thinking states\": the two halves move at once, the sweeping highlight stays lit through the swap, and a hidden sizer holds the width and height, so the clock is never shoved aside and the copy rising from below never makes the line taller."
 }

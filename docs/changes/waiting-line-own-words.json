@@ -3,6 +3,6 @@
   "group": "new",
   "order": 1,
   "external": false,
-  "zh": "运行中那一行现在说出具体的文件名（超过 32 字截断），推理里出现英文进行时从句时写出模型自己那句话。",
-  "en": "The running line now names the file a call works on, cut past 32 characters, and writes the model's own words when the reasoning carries an English present-continuous clause."
+  "zh": "运行行现在说出具体的文件名（超过 32 字截断），推理里出现英文进行时从句时写出模型自己那句话。",
+  "en": "The running line names the file a call works on, cut past 32 characters, and writes the model's own words when the reasoning carries an English present-continuous clause."
 }

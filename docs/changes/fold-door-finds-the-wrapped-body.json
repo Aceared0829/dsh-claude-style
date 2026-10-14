@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 0,
   "external": false,
-  "zh": "在较新的宿主上，思考行自动收起，以及读者点开或收起思考行时，高度一步到位，卷帘门没有滚动。现在这两种结构上的展开体都能被找到——行自己带标题的取行后面的兄弟，行被标题包住的进入承载展开体的那个盒子再取其最后的子元素——所以思考行的自动收起与读者的点开收起都会像其他行一样逐帧滚动。展开体的入场淡入用同一套查找，新增的展开体在这两种结构上都淡入并上移两个像素进入。",
-  "en": "On newer hosts a thinking row's automatic fold — and a reader's own press on such a row — moved the height in one step with no rolling door. The expanded body is now found on both shapes: the family's last child where the row is its own header, and that child's own last element where the row sits inside a header, so a thinking row rolls frame by frame like any other row. The entrance fade reads the body the same way, so an inserted body fades in and rises two pixels on both shapes."
+  "zh": "思考行自动收起与读者的点开收起在两种宿主结构上都找得到展开体，因此都逐帧滚动；新增的展开体淡入并上移两个像素进入。",
+  "en": "A thinking row's automatic fold and a reader's own press find the expanded body on both host shapes, so both roll frame by frame; an inserted body fades in and rises two pixels."
 }

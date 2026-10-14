@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 3,
   "external": false,
-  "zh": "同一个文件在一个过程组里被多次读取或编辑、几次调用读成一行之后，过程组里会多出一段段空白：被合并掉的每一次调用都留下约 12 像素的空隙，连续合并几次就叠成更大的一块，「编辑」「运行命令」「思考」几行之间忽宽忽窄。现在被合并掉的调用连同宿主给它留的间距一起离开页面，过程组里各行的间距保持一致。",
-  "en": "Once several reads or edits of one file inside a process group stood as one row, the group showed stretches of blank space: every merged-away call left a gap of about 12 px, several in a row stacked into a larger one, and the spacing between the Edit, Run command and Thinking rows went uneven. A merged-away call now leaves the page together with the spacing the host gave it, and the rows of a group keep one even spacing."
+  "zh": "被合并掉的调用连同宿主给它留的间距一起离开页面，过程组里各行的间距保持一致。",
+  "en": "A merged-away call leaves the page together with the spacing the host gave it, and the rows of a process group keep one even spacing."
 }

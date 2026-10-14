@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 8,
   "external": false,
-  "zh": "设置页的开关原来按下后圆钮匀速滑到另一端。现在圆钮越过终点再弹回（约 0.35 秒）；只有按过的开关才这样动，打开设置页或换回某个分页时，各个开关都静止在原位。",
-  "en": "A settings switch used to slide its knob straight across. The knob now runs past the end and settles back (about 0.35 s); only a switch the reader has pressed moves like this, and opening the page or coming back to a tab shows every switch at rest."
+  "zh": "设置页的开关按下后圆钮越过终点再弹回（约 0.35 秒），只有按过的开关这样动，打开设置页或换回某个分页时各个开关都静止在原位。",
+  "en": "A settings switch now runs its knob past the end and settles back (about 0.35 s), and only a switch the reader has pressed moves — opening the page or coming back to a tab shows every switch at rest."
 }

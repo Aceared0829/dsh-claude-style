@@ -3,6 +3,6 @@
   "group": "chores",
   "order": 1,
   "external": false,
-  "zh": "三个微型功能并入它们服务的功能：失焦时的选区镜像与输入框的空白提示并入输入区，首页问候语并入首页版面，亮暗切换的过渡抑制并入设置页。三份清单、三个设置开关位与三份功能条目随之取消，功能数量从 28 降到 25。行为与设置项不变：提示语照旧跟随输入框改造的范围，问候语照旧跟随首页版面，主题翻转抑制在页面让位给别的皮肤时照旧停手。",
-  "en": "Three micro-features folded into the features they serve: the window-blur mirror behind the selection paints and the composer's own idle hint moved into the composer, the home page's greeting into the home layout, and the theme flip's transition suppression into the settings page. Their three manifests, switch slots and feature entries are gone, taking the feature count from 28 to 25. Behaviour and settings are unchanged: the hint still follows the composer restyle's scope, the greeting still follows the home layout, and the flip suppression still stands down while the page belongs to another skin."
+  "zh": "三个微型功能并入它们服务的功能——选区镜像与输入框的空白提示并入输入区、首页问候语并入首页版面、亮暗切换的过渡抑制并入设置页——功能数量从 28 降到 25。",
+  "en": "Three micro-features fold into the features they serve — the window-blur selection mirror and the composer's idle hint into the composer, the home greeting into the home layout, the theme flip's transition suppression into the settings page — taking the feature count from 28 to 25."
 }

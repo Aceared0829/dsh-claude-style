@@ -3,6 +3,6 @@
   "group": "improvements",
   "order": 12,
   "external": false,
-  "zh": "等待行的「暂未响应」徽标原来直接出现、直接消失。现在它从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒），消失之前不改变这一行的排版。",
-  "en": "The waiting line's \"No response yet\" badge used to appear and vanish at once. It now slides onto the line from below and to the left while it pops out of nothing (about 0.5 s), and shrinks away as soon as the model speaks (about 0.12 s), keeping the line's layout until it is gone."
+  "zh": "等待行的「暂未响应」徽标从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒）。",
+  "en": "The waiting line's \"No response yet\" badge slides onto the line from below and to the left while it pops out of nothing (about 0.5 s) and shrinks away as soon as the model speaks (about 0.12 s)."
 }

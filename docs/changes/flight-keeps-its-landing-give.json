@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 7,
   "external": false,
-  "zh": "发出消息时，气泡飞到消息列表里停下的一刻没有回弹了：它贴着落点停住，落定像被按住而不是落到位置上。飞行竖直方向的弹簧阻尼比在中间某次动效令牌整理里从 0.75 改成了 0.9，落地过冲从上升距离的约 2.8%（一条一百多像素的飞行里约 3.6 像素）收到不足百分之一像素，眼睛看不到。现在阻尼比回到 0.75，落定的那点回落又回来了。",
-  "en": "A sent bubble no longer gave on landing: it came to a stop flat against the row, reading as held in place rather than set down. A motion-token refactor in between had moved the flight's vertical damping ratio from 0.75 to 0.9, which took the landing's overshoot from about 2.8% of the rise — some 3.6px over a flight of a hundred-odd pixels — to under a hundredth of a pixel, past seeing. The ratio is 0.75 again, and the drop back into place is back with it."
+  "zh": "飞行的竖直阻尼比回到 0.75，落定的那点回落又回来了。",
+  "en": "The flight's vertical damping ratio is 0.75 again, and the drop back into place is back with it."
 }

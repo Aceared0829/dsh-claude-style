@@ -3,6 +3,6 @@
   "group": "fixes",
   "order": 4,
   "external": false,
-  "zh": "状态行的扫光带在文案首次写入之后、第一次换词落定之前比文字高 8 像素——切换进一个正在运行的会话时最常看到——「动画」设为「减弱」时更是始终偏高：扫光层挂在标签盒上，而标签盒为了给换词位移留出上下空间，比文字本身高。现在扫光层始终挂在承载文字的那个副本上，扫光带贴着字形扫过。",
-  "en": "The status line's sweeping highlight sat 8px above the words from the line's first write until its first wording swap settled — seen most right after switching into a running session — and kept the offset for good with Animation set to Reduced: the band rode the label's box, which stands taller than the text by the swap's travel above and below. The band now rides the copy holding the words, so it sweeps across the glyphs themselves."
+  "zh": "状态行的扫光层始终挂在承载文字的那个副本上，扫光带贴着字形扫过。",
+  "en": "The sweeping highlight rides the copy holding the words, so the band sweeps across the glyphs themselves."
 }
