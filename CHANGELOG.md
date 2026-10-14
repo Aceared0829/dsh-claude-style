@@ -6,11 +6,19 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">其他变更</h3>
+<h3 id="cn-unreleased">问题修复</h3>
+
+- `npm run session` 拆除会话工作树前先删掉它的 `node_modules` 联接：`git worktree remove` 把这个联接当目录走进去，再顺着主树 `node_modules` 里的工作区联接删掉主树 `packages/*` 的文件；现在先删联接再拆树，树里另有指向自己的链接时拒绝拆除并列出它们。
+
+### 其他变更
 
 - 文档里带单位的数值不再进闸门：`scripts/doc-numbers.mjs` 留着按需运行（`npm run docs:numbers`），lint 不再核对它，`docs/STYLE.md` 里与样式表逐字对应的几何与时长因此不再让推送失败。
 
-<h3 id="en-unreleased">Chores</h3>
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- `npm run session` drops a session tree's `node_modules` junction before it removes the tree: `git worktree remove` walked into that junction and, through the workspace junctions in the main tree's `node_modules`, deleted the main tree's own `packages/*` files. The junction goes first now, and a tree holding any other link out of itself is listed and kept.
+
+### Chores
 
 - A number with a unit in a document is no longer a gate: `scripts/doc-numbers.mjs` stays for running on demand (`npm run docs:numbers`), and lint no longer checks it, so the geometry and timing in `docs/STYLE.md` that mirror the stylesheets no longer fail a push.
 

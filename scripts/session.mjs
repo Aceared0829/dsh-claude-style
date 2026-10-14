@@ -29,7 +29,8 @@
  * directory. `start` refuses when the lock file differs between the trees —
  * the junction would serve dependencies the session's sources do not match —
  * and `--deps` is the explicit override for the session whose task is the
- * lock file change itself.
+ * lock file change itself. The junction also goes before the tree does: a
+ * recursive delete that meets it walks into the main tree (removeTree below).
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -170,6 +171,52 @@ function holding(tree) {
   return parts
 }
 
+/** The one link a session tree is meant to hold: its own `node_modules`. */
+const MODULES_LINK = 'node_modules'
+
+/**
+ * Every link inside `treePath` other than the `node_modules` junction, so a
+ * tree that points anywhere else is seen before it is removed.
+ *
+ * Nothing here follows a link: `readdirSync` answers for the entry itself, and
+ * a link's target is never entered.
+ */
+function strayLinks(treePath) {
+  const found = []
+  const walk = (dir, relative) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const at = path.join(dir, entry.name)
+      const seen = relative === '' ? entry.name : `${relative}/${entry.name}`
+      if (entry.isSymbolicLink()) {
+        if (seen !== MODULES_LINK) found.push(seen)
+        continue
+      }
+      if (entry.isDirectory() && entry.name !== '.git') walk(at, seen)
+    }
+  }
+  walk(treePath, '')
+  return found
+}
+
+/**
+ * Remove one session tree: its `node_modules` junction goes first.
+ *
+ * Windows reports a junction as a directory to git, so `git worktree remove`
+ * walks into this one and reaches the main tree's `node_modules`, where npm's
+ * workspace junctions (`node_modules/@dsh-claude-style/*`) lead on into the
+ * main tree's `packages/*` and delete those files in place (D68). `rmdir`
+ * drops the reparse point alone, and the tree is left with no way out of
+ * itself. A tree holding any other link out is kept and named rather than
+ * removed.
+ */
+function removeTree(treePath) {
+  const strays = strayLinks(treePath)
+  if (strays.length > 0) bad(`${treePath} holds links out of itself (${strays.join(', ')}) — remove them by hand and delete the tree, or ask what put them there`)
+  const linked = path.join(treePath, MODULES_LINK)
+  if (fs.lstatSync(linked, { throwIfNoEntry: false })?.isSymbolicLink() === true) fs.rmdirSync(linked)
+  git(['worktree', 'remove', '--force', treePath])
+}
+
 function cmdStart(name, deps) {
   if (name === undefined || !/^[a-z0-9][a-z0-9-]*$/.test(name)) bad(`a session name is lowercase words joined by dashes, got "${name ?? ''}"`)
   const main = mainTree()
@@ -190,7 +237,7 @@ function cmdStart(name, deps) {
   if (lockHash(main) !== lockHash(target)) {
     const message = 'the lock file differs between the main tree and this one — run npm ci in the main tree, or open with --deps when the lock file change is the task'
     if (!deps) {
-      git(['worktree', 'remove', '--force', target])
+      removeTree(target)
       git(['branch', '-D', `session/${name}`])
       bad(message)
     }
@@ -252,7 +299,7 @@ function cmdSweep() {
       console.log(`session: keeping ${name} — ${held.join(', ')}`)
       continue
     }
-    git(['worktree', 'remove', '--force', tree.path])
+    removeTree(tree.path)
     if (tree.branch !== undefined && tree.branch.startsWith('session/')) git(['branch', '-D', tree.branch])
     console.log(`session: swept ${name}`)
   }
