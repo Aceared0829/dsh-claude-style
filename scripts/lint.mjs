@@ -5,7 +5,8 @@
  * The promises the repository makes in prose and a tool can check without
  * guessing: no source file crosses the stop line, every link in the committed
  * Markdown resolves, every decision a comment or a document cites exists
- * (numbers are stable and a retired one stays citable, D48), every repository
+ * (numbers are stable and a retired one stays citable, D48; drafts carry the
+ * D00 placeholder, allowed locally and rejected under CI), every repository
  * path prose names exists, and no feature module reaches past the handles its
  * manifest declares (D42). Everything else a tool could enforce is already a
  * build check (D44, D51), the type check or a smoke case.
@@ -54,18 +55,51 @@ function filesUnder(dir, extensions) {
 
 const relative = (file) => path.relative(ROOT, file).replace(/\\/g, '/')
 
-/** The decision numbers that exist, and the ones a replacing decision retired. */
+/** CI (GitHub Actions sets `CI=true`) rejects the D00 draft placeholder. */
+const CI = Boolean(process.env.CI)
+
+/**
+ * The files documenting the placeholder mechanism itself mention D00 without
+ * citing a draft; the CI rejection does not read them. A draft's own file is
+ * reported by the draft check below, not per citation.
+ */
+const MECHANISM_FILES = new Set([
+  'docs/decisions/D48-documentation.md',
+  'docs/decisions/README.md',
+  'scripts/decisions-index.mjs',
+  'scripts/decision-number.mjs',
+  'scripts/lint.mjs',
+])
+
+/**
+ * The decision numbers that exist, the ones a replacing decision retired, and
+ * the drafts holding the D00 placeholder. Numbers retired without a successor
+ * sit in retired.txt, one per line (D48).
+ */
 function decisionNumbers() {
   const live = new Set()
   const retired = new Set()
+  const drafts = []
   for (const name of fs.readdirSync(DECISIONS)) {
+    if (/^D00-.*\.md$/.test(name)) { drafts.push(name); continue }
     if (!/^D\d+-.*\.md$/.test(name)) continue
     live.add(Number(name.match(/^D(\d+)/)[1]))
     const text = fs.readFileSync(path.join(DECISIONS, name), 'utf8')
     const related = text.match(/^- \*\*关联\*\*：(.+)$/m)
     const replaced = related === null ? null : related[1].match(/取代\s*([^；;]+)/)
-    if (replaced !== null) for (const number of replaced[1].matchAll(/D(\d+)/g)) retired.add(Number(number[1]))  }
-  return { live, retired }
+    if (replaced !== null) for (const number of replaced[1].matchAll(/D(\d+)/g)) retired.add(Number(number[1]))
+  }
+  const retiredFile = path.join(DECISIONS, 'retired.txt')
+  if (fs.existsSync(retiredFile)) {
+    fs.readFileSync(retiredFile, 'utf8').split('\n').forEach((line, at) => {
+      const trimmed = line.trim()
+      if (trimmed === '' || trimmed.startsWith('#')) return
+      const entry = trimmed.match(/^D(\d+)$/)
+      if (entry === null) { problems.push(`docs/decisions/retired.txt:${at + 1}: not a bare number: ${trimmed}`); return }
+      retired.add(Number(entry[1]))
+    })
+  }
+  return { live, retired, drafts }
 }
 
 // 1. The stop line.
@@ -102,7 +136,8 @@ for (const file of markdown) {
 }
 
 // 3. Decision numbers cited by code and documents.
-const { live, retired } = decisionNumbers()
+const { live, retired, drafts } = decisionNumbers()
+if (CI && drafts.length > 0) problems.push(`docs/decisions: ${drafts.join(', ')} still carry the D00 placeholder — run \`npm run decision:number\` before merging`)
 const citing = [
   ...sources,
   ...markdown,
@@ -116,6 +151,10 @@ for (const file of citing) {
     for (const match of line.matchAll(/(?<![\w#-])D(\d{1,3})(?![\w-])/g)) {
       const number = Number(match[1])
       citations += 1
+      if (number === 0) {
+        if (CI && !MECHANISM_FILES.has(relative(file)) && !path.basename(file).startsWith('D00-')) problems.push(`${relative(file)}:${at + 1}: cites D00, the draft placeholder — run \`npm run decision:number\` before merging`)
+        continue
+      }
       if (live.has(number) || retired.has(number)) continue
       problems.push(`${relative(file)}:${at + 1}: cites D${number}, which is not a decision`)
     }

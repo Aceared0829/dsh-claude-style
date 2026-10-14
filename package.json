@@ -15,6 +15,7 @@
     "changelog:check": "node scripts/changelog.mjs --check",
     "docs:index": "node scripts/decisions-index.mjs",
     "docs:check": "node scripts/decisions-index.mjs --check",
+    "decision:number": "node scripts/decision-number.mjs",
     "lint": "node scripts/lint.mjs",
     "features": "node scripts/features.mjs",
     "features:check": "node scripts/features.mjs --check",

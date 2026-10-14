@@ -38,6 +38,7 @@ The repository is moving to the architecture in `docs/decisions/` (D36–D48). A
 ## Principles
 
 - Read the relevant decisions in `docs/decisions/` before a structural change; never contradict one. If a decision must be overturned, first write the replacing decision and retire the old number (D48).
+- A change earns a decision file only by D48's threshold: one-time moves go to `docs/changes/` and the commit message, tool-enforceable rules go to lint or the build checks, and a decision constrains future changes with reasoning the code and tests cannot carry. A draft decision keeps the placeholder number (D48) until `npm run decision:number` assigns the real one before merging; when the new decision overlaps an old one, the old one's live content is rewritten into the new file and the old number retired — amendments are never stacked as separate files.
 - Public documentation (the bilingual READMEs, the feature and settings documents beside them, the CHANGELOG) never shows decision numbers.
 - The Anthropic Sans/Serif fonts are Anthropic's, for personal use, not covered by MIT, and never shipped in the npm package; `packages/assets/src/fonts/anthropic/` is a repository-only download, and a user's own copy is served from `$DSH_HOME/dsh-claude-style/fonts/`. JetBrains Mono, Inter and Noto Serif ship under the SIL OFL 1.1. The pixel crab is Anthropic's character and its sheets are not covered by MIT. Deepy's sheets are by calmly-eating-bugs (@wp3171216237); `docs/gifs/` holds that author's GIFs and stays out of the package.
 - Local debug scripts, screenshots and intermediate artifacts go into `.debug/` and are never committed. Drafts are deleted when the task ends; a probe worth keeping becomes a scenario in `packages/testing/scenarios.cjs` (D45).
@@ -104,6 +105,7 @@ npm run changelog                            # write the CHANGELOG's [Unreleased
 npm run changelog:check                      # fail when that section differs from docs/changes/; CI runs this
 npm run docs:index                           # write docs/decisions/README.md from the decision files (D48)
 npm run docs:check                           # fail when that index differs from the files; CI runs this
+npm run decision:number                      # assign a draft decision (placeholder number, D48) its real number before merging
 npm test                                     # unit tests: Vitest in browser mode on the local Chrome/Edge
 npm run smoke                                # full run: every browser case and check, plus the host half's route checks
 npm run smoke -- --quick --feature <dir>     # iteration run: quick tier, cases covering one packages/client/src/features/ directory
