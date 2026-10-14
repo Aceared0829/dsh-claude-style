@@ -6,7 +6,7 @@ import type { FileToolOperation } from './file-tool'
 import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } from '@dsh-claude-style/contracts/services'
 
 /**
- * What an open turn is doing now, in words (D32, D58, D63): the states the
+ * What an open turn is doing now, in words (D32): the states the
  * waiting line says, the one line that speaks for a running turn.
  *
  * Most of the words are the copy document's own (`chatWait*`,

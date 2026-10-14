@@ -137,7 +137,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const line = lineOf(row, words)
     const [label, clock, badge] = line.children as HTMLCollectionOf<HTMLElement>
     // What the turn is doing, and the host's own word for a turn whose state
-    // cannot be read (D58): the line says the model's work, never a guess. Two
+    // cannot be read (D32): the line says the model's work, never a guess. Two
     // states carry words of their own — the file a call works on, and the clause
     // the model's reasoning says it is on — and those are written as they are.
     // A wording written is locked for a second (wordForPass): a turn passes

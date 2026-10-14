@@ -313,7 +313,7 @@ const SCENARIOS = {
   fileMerge: fileMergeScenario({ check }),
   /** The reasoning's streamed window while the model thinks (reasoning-stream.cjs, D32). */
   reasoningStream: reasoningStreamScenario({ check }),
-  /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D58). */
+  /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D32). */
   waitLine: waitLineScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D51). */
   importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
