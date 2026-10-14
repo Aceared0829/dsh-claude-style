@@ -1,6 +1,7 @@
 import { requestFrame } from '../../core/frame'
 import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_FASTER, MODEL_EFFORT_LABEL, MODEL_EFFORT_NONE, MODEL_EFFORT_SMARTER } from '../model/copy-fallbacks'
 import { copyLabel } from '../../core/i18n'
+import { orderEffortIds } from './ladder'
 import { createEffortMatrix } from './matrix'
 import { buildElement, setAttributeIfChanged } from '../../shared/dom'
 import type { ModelCatalog } from '../model/catalog'
@@ -25,8 +26,9 @@ interface EffortLabels {
  *
  * The catalog describes a model's reasoning as a discrete ladder
  * (`reasoning.efforts` plus the level in force), and this control draws that
- * ladder as a track: the label carries the level's name, `Faster` / `Smarter`
- * name the direction of travel, and the knob follows the pointer
+ * ladder as a track ordered by strength (ladder.ts): the label carries the
+ * level's name, `Faster` / `Smarter` name the direction of travel, and the
+ * knob follows the pointer
  * CONTINUOUSLY rather than hopping stop to stop. The value settles only when
  * the gesture ends — release, or the pointer leaving the control — and it
  * settles on the NEAREST level, so dragging never reads as a hard switch
@@ -163,9 +165,18 @@ export function createEffortControl(opts: {
     const list: EffortStep[] = []
     let index = -1
     if (effort !== null) {
-      if (effort.reasoning.defaultEffort === undefined) list.push({ id: undefined, name: MODEL_EFFORT_DEFAULT })
-      for (let i = 0; i < effort.reasoning.efforts.length; i++) {
-        list.push({ id: effort.reasoning.efforts[i].id, name: effort.reasoning.efforts[i].name })
+      /* The adapter promises a display order, not a strength order, and the
+         slider reads its steps as a strength scale (ladder.ts). */
+      const declared = effort.reasoning.efforts
+      const order = orderEffortIds([
+        ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
+        ...declared.map(level => level.id),
+      ])
+      const byId = new Map(declared.map(level => [level.id, level.name]))
+      for (const id of order) {
+        list.push(id === undefined
+          ? { id: undefined, name: MODEL_EFFORT_DEFAULT }
+          : { id, name: byId.get(id) ?? id })
       }
       index = 0
       for (let s = 0; s < list.length; s++) {

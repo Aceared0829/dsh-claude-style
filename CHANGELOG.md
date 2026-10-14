@@ -35,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 推理等级滑杆的方向在档位未按强度排列的模型上不再反向：Qoder、Raccoon 与 MiniMax 的档位由供应商按自己的顺序下发（Qoder 的 Qwen3.8-Max 是「极高、低、中、关闭思考」），而滑杆把下发顺序当作强度轴，于是最右端落在最弱的档位上——在这些模型上停止思考被读成了最强。现在档位按强度重新排列后再画，无法判定强度的档位保持供应商顺序并排在已知档位之后。
 - 修复 Firefox 下鼠标停留在上下文用量圆环时统计弹层反复闪烁的问题：返回入口会取消待执行的关闭任务，鼠标仍在入口上时弹层保持展开。
 - 思考行自动收起与读者的点开收起在两种宿主结构上都找得到展开体，因此都逐帧滚动；新增的展开体淡入并上移两个像素进入。
 - 开着「悬停自动展开弹层」时，悬停态下按同一个入口不再收起刚展开的弹层（侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器与输入框右侧的上下文圆环），收起交给鼠标离开入口与卡片。
@@ -92,6 +93,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- The effort slider no longer runs the wrong way on models whose levels arrive unordered: Qoder, Raccoon and MiniMax send their levels in the provider's own order (Qoder's Qwen3.8-Max sends xhigh, low, medium, none), and the slider read that order as a strength scale, so the right end landed on the weakest level — on these models switching thinking off read as the strongest setting. The levels are now ordered by strength before the ladder is drawn, and a level whose strength is unknown keeps the provider order and follows every known level.
 - Fix the context statistics popover repeatedly flickering while the pointer rests on the context ring in Firefox: returning to the trigger cancels the pending close, and the popover stays open while the trigger is hovered.
 - A thinking row's automatic fold and a reader's own press find the expanded body on both host shapes, so both roll frame by frame; an inserted body fades in and rises two pixels.
 - With popovers opening on hover, a press on the trigger no longer folds the popover the pointer just opened — on the sidebar account entry, the permission, model and effort pickers, the home row's two pickers and the context ring beside the composer — leaving the pointer's departure to close it.
