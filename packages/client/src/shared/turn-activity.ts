@@ -1,4 +1,6 @@
 import { readTurnActivity } from '../core/host'
+import { BRAND_DEEPSEEK } from '../constants'
+import { copyLabel } from '../core/i18n'
 import { activityPhrase } from './activity-phrase'
 import { callDescription } from './call-description'
 import { fileToolCall } from './file-tool'
@@ -11,9 +13,10 @@ import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } f
  * waiting line says, the one line that speaks for a running turn.
  *
  * Most of the words are the copy document's own (`chatWait*`,
- * model-descriptions.json) and a line that cannot read a state falls back to its
- * own wording. Three states are not copy, and the `precise` choice decides
- * whether the line reads them at all: the file a call in flight works on
+ * model-descriptions.json) and a line that cannot read a state stands on one
+ * word of the brand's (waitingWord). Three states are not copy, and the
+ * `precise` choice decides whether the line reads them at all: the file a call
+ * in flight works on
  * (shared/file-tool), which fills the copy's `{file}` slot, the description a
  * command call declares for itself (shared/call-description), and the clause
  * the model's own reasoning says it is on (shared/activity-phrase). The last
@@ -37,14 +40,30 @@ export interface ActivityWords {
   params?: CopyParams
 }
 
+/** The thinking state's copy key, which is also the word a brand waits on while the model thinks (waitingWord). */
+const THINKING_KEY = 'chatWaitThinking'
 /** The model is thinking, and its reasoning says nothing the line can take. */
-export const ACTIVITY_THINKING: ActivityWords = { key: 'chatWaitThinking', fallback: 'Thinking…' }
+export const ACTIVITY_THINKING: ActivityWords = { key: THINKING_KEY, fallback: 'Thinking…' }
 /** The model is writing its answer. */
 export const ACTIVITY_WRITING: ActivityWords = { key: 'chatWaitWriting', fallback: 'Writing…' }
 /** The model is drawing up a tool call. */
 export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', fallback: 'Preparing a tool call…', aboutCall: 'generic' }
 /** The turn's tool calls are running, and the running call says nothing of its own. */
 export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: 'Running tools…', aboutCall: 'generic' }
+
+/**
+ * The one word a wait stands on: what the line says while the model is thinking
+ * and what it says where no state can be read at all. The Claude brand says the
+ * skin's own word for both; the DeepSeek brand says the host's own word for
+ * both, which is the word that brand's own interface shows. One word per brand,
+ * so the line never swaps between two words for the same wait.
+ *
+ * @param brand - the brand in force (core/prefs, `BRAND_ATTR`).
+ * @param hostWord - the host's own word for a wait (`hostChatCopy('chat.deepDiving', …)`).
+ */
+export function waitingWord(brand: string, hostWord: string) {
+  return brand === BRAND_DEEPSEEK ? hostWord : copyLabel(THINKING_KEY, ACTIVITY_THINKING.fallback)
+}
 
 /** Reading, editing and writing one file: the file's own name fills the copy's slot. */
 const ACTIVITY_FILE: Record<FileToolOperation, ActivityWords> = {

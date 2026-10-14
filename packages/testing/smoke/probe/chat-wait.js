@@ -158,20 +158,42 @@
       r.wait = { working: await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 }) }
       // The whale tail is DeepSeek's own character: under that brand the host's
       // icon comes back and the skin's dots stand down, and the Claude brand
-      // takes them up again.
+      // takes them up again. The word the line waits on follows the brand too
+      // (shared/turn-activity): the skin's own under Claude, and the host's own
+      // — the one the host's own interface shows — under DeepSeek.
       window.__pushForm({ brand: 'deepseek' })
-      await sleep(250)
-      r.wait.deepseek = lineOf()
+      r.wait.deepseek = await awaitWord(function (reading) { return reading.word === 'Deep diving' && reading.copies === 1 })
       window.__pushForm({ brand: 'claude' })
-      await sleep(250)
-      // The silence that triggers the swap, with the entry's own frames sampled
-      // by the browser rather than by a polling loop: the window between the
-      // incoming copy's rest pose and its release is shorter than a 10 ms poll
-      // can see, and the reading is about how the two halves move together.
-      // The entering copy is the one whose `data-text` names what the line is
-      // heading for, so it is found by its words and watched frame by frame.
-      // The timeout is the bound: a frame that never arrives answers with the
-      // frames that did.
+      r.wait.claudeAgain = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 })
+      foreignLine.remove()
+      words.parentElement.appendChild(foreignLine)
+      await sleep(300)
+      r.wait.foreignAfter = lineOf()
+      // A tool call in flight is a state of its own, with no block streaming.
+      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
+      var calls = window.__dshSmokeHost.turnFixtureCalls
+      calls.push({ turn: 2 })
+      r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
+      // A call that has its arguments names the file it works on; one whose
+      // arguments are still arriving names nothing yet.
+      calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
+      r.wait.fileCall = await awaitWord(function (reading) { return reading.word === 'Reading app.js' && reading.copies === 1 })
+      calls[0] = { turn: 2, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"C:\\\\work\\\\app' }
+      r.wait.arriving = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
+      // The lock the tool state carries is let run out before the turn is
+      // emptied, so the swap below lands inside the window the entry's watcher
+      // samples rather than being held back by a word written a moment ago.
+      await sleep(900)
+      // The model goes silent: the running turn has written nothing and no call
+      // is in flight, so the line stands on the word its brand waits on — the
+      // same word it says while the model is thinking. The swap that reaches it
+      // is watched with the entry's own frames sampled by the browser rather
+      // than by a polling loop: the window between the incoming copy's rest pose
+      // and its release is shorter than a 10 ms poll can see, and the reading is
+      // about how the two halves move together. The entering copy is the one
+      // whose `data-text` names what the line is heading for, so it is found by
+      // its words and watched frame by frame. The timeout is the bound: a frame
+      // that never arrives answers with the frames that did.
       var waitForEnter = new Promise(function (resolve) {
         var frames = []
         var settled = false
@@ -183,7 +205,7 @@
         setTimeout(done, 1500)
         var read = function () {
           var label = row.querySelector('.dsh-claude-chat-wait-label')
-          var copy = label === null ? null : label.querySelector('.dsh-claude-swap-copy[data-text="Deep diving"]')
+          var copy = label === null ? null : label.querySelector('.dsh-claude-swap-copy[data-text="Thinking…"]')
           if (copy === null) { requestAnimationFrame(read); return }
           var style = getComputedStyle(copy)
           frames.push({ opacity: Number(style.opacity), filter: style.filter, transform: style.transform })
@@ -198,26 +220,10 @@
         }
         requestAnimationFrame(read)
       })
-      foreignLine.remove()
-      words.parentElement.appendChild(foreignLine)
-      await sleep(300)
-      r.wait.foreignAfter = lineOf()
-      // The model goes silent: the running turn has written nothing, so the
-      // line falls back to the host's own word for a wait.
+      calls.length = 0
       window.__dshSmokeHost.turnFixtureRunning.steps = []
       r.wait.silent = await watchSwap()
-      // A tool call in flight is a state of its own, with no block streaming.
-      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
-      var calls = window.__dshSmokeHost.turnFixtureCalls
-      calls.push({ turn: 2 })
-      r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
-      // A call that has its arguments names the file it works on; one whose
-      // arguments are still arriving names nothing yet.
-      calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
-      r.wait.fileCall = await awaitWord(function (reading) { return reading.word === 'Reading app.js' && reading.copies === 1 })
-      calls[0] = { turn: 2, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"C:\\\\work\\\\app' }
-      r.wait.arriving = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
-      calls.length = 0
+      r.wait.enterFrames = await waitForEnter
       // Reasoning the line can take words from: the model's own clause, the
       // participle first, up to the sentence's end.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }] } : undefined } } }]
@@ -245,7 +251,6 @@
       window.__pushForm({ statusMotion: 'sweep' })
       await sleep(200)
       r.wait.sweepAgain = lineOf()
-      r.wait.enterFrames = await waitForEnter
       var previousWords = words
       words = document.createElement('span')
       words.setAttribute('data-shimmer', 'true')

@@ -1,6 +1,6 @@
 import { MODEL_COPY_FALLBACK_LOCALE } from '../features/model/copy-fallbacks'
 import { hostCtx } from './host'
-import type { HostContext } from './host'
+import type { HostContext, HostText } from './host'
 import { modelCopy } from './model-copy'
 import { readPrefs } from './prefs'
 
@@ -12,6 +12,26 @@ export function activeLocale(ctx?: HostContext | null): string {
   const active = (ctx || hostCtx)?.get('locale')?.getSnapshot().active
   if (typeof active === 'string' && active) return active
   return modelCopy === null ? MODEL_COPY_FALLBACK_LOCALE : modelCopy.fallback
+}
+
+/**
+ * The host's `chat` namespace translate seat, or null where the host carries no
+ * locale service. A surface with no context of its own — the settings page —
+ * reads the host's words through the module's context (core/host).
+ */
+export function hostChatSeat(ctx?: HostContext | null): HostText | null {
+  const locale = (ctx || hostCtx)?.get('locale')
+  return typeof locale?.bind === 'function' ? locale.bind('chat') : null
+}
+
+/**
+ * One string out of the host's own `chat` namespace, or `fallback` where the
+ * host carries no locale service or no such string: a seat that hands the key
+ * back has no translation for it.
+ */
+export function hostChatCopy(key: string, fallback: string, ctx?: HostContext | null) {
+  const text = hostChatSeat(ctx)?.(key)
+  return typeof text === 'string' && text !== '' && text !== key ? text : fallback
 }
 
 /** Fill a copy string's `{name}` slots from `params`; a slot with no value stays as written. */

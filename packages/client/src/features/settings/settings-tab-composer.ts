@@ -47,7 +47,7 @@ export function createSettingsComposerTab(): SettingsTab {
         node: controls.subRow(
           'quickProviders',
           settingsCopy('quickTitle', 'Quick providers'),
-          settingsCopy('quickDesc', 'Picked providers follow the official service in the picker\'s first level, one rule between providers. A provider removed from the catalog stays in the list marked "Removed"; uncheck it to clear it.'),
+          settingsCopy('quickDesc', 'Picked providers follow the official service in the picker\'s first level; one removed from the catalog stays marked "Removed" until unchecked.'),
           React.createElement('button', {
             type: 'button',
             ref: quickTrigger,

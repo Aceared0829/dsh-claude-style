@@ -1,4 +1,5 @@
 import { conversationSessionId, findConversationSession } from '../../core/host'
+import { hostChatSeat } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
@@ -82,10 +83,9 @@ export function createSessionStats(ctx: HostContext) {
     return typeof face?.getSnapshot === 'function' ? face.getSnapshot() as Value : undefined
   }
 
-  /** The host's `chat` namespace translate seat, or null when it is absent. */
+  /** The host's `chat` namespace translate seat, or null when it is absent (core/i18n). */
   function chatText(): HostText | null {
-    const locale = ctx.get('locale')
-    return typeof locale?.bind === 'function' ? locale.bind('chat') : null
+    return hostChatSeat(ctx)
   }
 
   const block = createStatsBlock(statsValue, chatText)

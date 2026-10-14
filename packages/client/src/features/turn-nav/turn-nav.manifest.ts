@@ -11,7 +11,7 @@ export default {
     tab: 'conversation',
     rank: 20,
     title: { key: 'turnNavTitle', fallback: 'Conversation navigator' },
-    desc: { key: 'turnNavDesc', fallback: 'Rest the pointer on the turn marks at the conversation\'s right edge and they open into a list of every turn, one line each with the message that started it; the wheel scrolls the list and a click jumps to that turn. Alt+↑ and Alt+↓ jump to the previous or the next turn, and the turn you land on is marked with a short line. Off restores the host\'s turn marks.' },
+    desc: { key: 'turnNavDesc', fallback: 'Hover the turn marks at the conversation\'s right edge to open a list of every turn; the wheel scrolls it, a click jumps over. Alt+↑ / Alt+↓ jump between turns. Off restores the host\'s turn marks.' },
   },
   cases: ['turn-nav'],
   description: {

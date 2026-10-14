@@ -1,4 +1,4 @@
-import { CARET_ATTR, CARET_HOST_ATTR, CARET_LAYER_ATTR, CARET_MOTION_MOVE, CARET_MOTION_OFF, CARET_VISIBLE_ATTR, QUIET_ATTR } from '../../constants'
+import { CARET_ATTR, CARET_HOST_ATTR, CARET_LAYER_ATTR, CARET_MOTION_OFF, CARET_VISIBLE_ATTR, QUIET_ATTR } from '../../constants'
 import { subscribeMutations } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
@@ -22,11 +22,9 @@ import type manifest from './caret.manifest'
  * question card's answer box or a queued message's inline editor (measured
  * through a hidden mirror, caret-measure.ts).
  *
- * What the mode means (the settings page's three-way choice):
+ * What the switch means (the settings page's on/off choice):
  *
- *   typing  every move transitions, which is the default;
- *   move    only explicit moves (an arrow key, a click) transition — a
- *           keystroke lands instantly, told apart by the frame's input;
+ *   on      the caret is drawn and every move transitions;
  *   off     nothing is taken over at all: no drawn caret, no mark, the
  *           browser's own caret throughout. That road is also the fallback,
  *           because the one way this effect really hurts a reader is a
@@ -97,8 +95,6 @@ export function createCaretMotion(read: () => string) {
    * a reader with neither.
    */
   let disposed = false
-  /** Input arrived in this frame; the move mode tells typing from an explicit move with it. */
-  let typed = false
   /**
    * The last move was the End key.
    *
@@ -126,15 +122,13 @@ export function createCaretMotion(read: () => string) {
         cancelFrame = null
         queued = false
         if (disposed) return
-        const typing = typed
-        typed = false
-        sync(typing)
+        sync()
       },
     })
   }
 
+  /** Any input answers the End leaning: what follows stands where the input landed. */
   const markTyped = () => {
-    typed = true
     endKeyed = false
   }
 
@@ -292,10 +286,8 @@ export function createCaretMotion(read: () => string) {
 
   /**
    * Put the drawn caret on this viewport box.
-   * @param paused - no transition on this frame: it just appeared, or the
-   *     move mode is landing a keystroke.
    */
-  const drawCaret = (layer: CaretLayer, box: CaretBox, paused: boolean) => {
+  const drawCaret = (layer: CaretLayer, box: CaretBox) => {
     // Absolute positioning goes by the container's padding box and follows
     // its own scroll: the border comes off the difference and the scrolled
     // distance goes back on.
@@ -309,11 +301,10 @@ export function createCaretMotion(read: () => string) {
     // The frame that lands without a transition has to arrive instantly; the
     // transition comes back on the next one.
     const fresh = !layer.visible
-    const instant = fresh || paused
-    if (instant) layer.caret.style.transitionProperty = 'none'
+    if (fresh) layer.caret.style.transitionProperty = 'none'
     layer.caret.style.transform = 'translate(' + left + 'px, ' + top + 'px)'
     layer.caret.style.height = box.height + 'px'
-    if (instant) {
+    if (fresh) {
       if (cancelTransitionFrame !== null) cancelTransitionFrame()
       cancelTransitionFrame = requestFrame({
         write() {
@@ -337,11 +328,8 @@ export function createCaretMotion(read: () => string) {
     }
   }
 
-  /**
-   * Whose caret this frame's is.
-   * @param typing - input arrived in this frame.
-   */
-  const sync = (typing: boolean) => {
+  /** Whose caret this frame's is. */
+  const sync = () => {
     const mode = read()
     // off is absolute: the drawn caret and the mark go away together and the
     // native caret comes back. Keeping them only leaves the reader with none.
@@ -417,15 +405,14 @@ export function createCaretMotion(read: () => string) {
     // mark still stands.
     const box = target instanceof HTMLTextAreaElement ? caretClipToField(target, measured) : measured
     if (box === null) hide(layer)
-    else drawCaret(layer, box, mode === CARET_MOTION_MOVE && typing)
+    else drawCaret(layer, box)
     target.setAttribute(CARET_ATTR, '')
   }
 
   document.addEventListener('selectionchange', queue)
   document.addEventListener('focusin', syncAfterFocusChange)
   document.addEventListener('focusout', syncAfterFocusChange)
-  // What the move mode reads: it arrives before selectionchange, so whether
-  // this frame's move is typing is read rather than guessed from position.
+  // Any input resets the End leaning: it arrives before selectionchange.
   document.addEventListener('beforeinput', markTyped)
   // Which side of a soft wrap is meant: whether the last move was End.
   document.addEventListener('keydown', noteKey, true)

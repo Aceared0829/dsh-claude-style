@@ -140,13 +140,14 @@ export const STATUS_DETAILS = [STATUS_DETAIL_SIMPLE, STATUS_DETAIL_PRECISE]
 
 /**
  * The composer caret's motion (packages/client/src/features/caret/caret.ts): `typing`
- * transitions every move, `move` only explicit ones, `off` takes nothing
- * over at all and leaves the browser's own caret in place.
+ * (the default) takes the caret over and transitions every move; `off` takes
+ * nothing over at all and leaves the browser's own caret in place. The retired
+ * third tier `move` an earlier build stored reads as the default: the choice
+ * set clamps it.
  */
 export const CARET_MOTION_OFF = 'off'
-export const CARET_MOTION_MOVE = 'move'
 export const CARET_MOTION_TYPING = 'typing'
-export const CARET_MOTIONS = [CARET_MOTION_OFF, CARET_MOTION_MOVE, CARET_MOTION_TYPING]
+export const CARET_MOTIONS = [CARET_MOTION_TYPING, CARET_MOTION_OFF]
 
 /**
  * Who paints the colours, and who sets the type. `claude` is the skin's own

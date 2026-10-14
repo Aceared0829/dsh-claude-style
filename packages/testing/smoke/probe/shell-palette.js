@@ -121,7 +121,7 @@
       }
       r.settings = { registered: typeof Section === 'function', pages: {} }
       if (r.settings.registered) {
-        var tabIds = ['general', 'appearance', 'composer', 'sidebar', 'conversation', 'desktop', 'motion']
+        var tabIds = ['general', 'appearance', 'composer', 'sidebar', 'conversation', 'motion']
         for (var ti = 0; ti < tabIds.length; ti++) r.settings.pages[tabIds[ti]] = renderTab(tabIds[ti])
         r.settings.link = r.settings.pages.general.link
         // The heading's mark: the build inlines the asset into the token sheet
@@ -217,6 +217,41 @@
           }
           return out
         })()
+        // The caret row's preview cards: two cards, the stored choice active,
+        // each holding one sample line with one bar; the on bar glides and
+        // blinks, the off bar blinks alone. The stand-in renders the page as a
+        // plain tree, so the cards are read off a fresh render of the tab.
+        var react2 = window.__react
+        react2.rendering = true
+        react2.states = { general: 'motion' }
+        var motionTree = Section({})
+        react2.rendering = false
+        react2.states = null
+        var caretCards = []
+        walk(motionTree, function (el) {
+          var props = el.props || {}
+          if (typeof props.className === 'string' && /(^| )dsh-claude-caret-card( |$)/.test(props.className)) {
+            var barClass = null
+            walk(props.children, function (part) {
+              var partProps = part.props || {}
+              if (typeof partProps.className === 'string' && /(^| )dsh-claude-caret-sample-bar( |$)/.test(partProps.className)) barClass = partProps.className
+            })
+            caretCards.push({ label: props['aria-label'], active: props['data-active'] === '', pressed: props['aria-pressed'], bar: barClass })
+          }
+        })
+        r.settings.caretCards = caretCards
+        var barHost = document.createElement('div')
+        barHost.style.cssText = 'position:absolute;left:-10000px;top:-10000px'
+        var bars = []
+        for (var kb = 0; kb < 2; kb++) {
+          var caretBar = document.createElement('span')
+          caretBar.className = 'dsh-claude-caret-sample-bar dsh-claude-caret-' + (kb === 0 ? 'typing' : 'off')
+          barHost.appendChild(caretBar)
+          bars.push(caretBar)
+        }
+        document.body.appendChild(barHost)
+        r.settings.caretPreview = bars.map(function (b) { return getComputedStyle(b).animationName })
+        barHost.remove()
         window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
         r.settings.parentsOff = { appearance: renderTab('appearance'), composer: renderTab('composer'), sidebar: renderTab('sidebar') }
         window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })
@@ -229,9 +264,10 @@
         window.__pushForm({ composerScope: 'hero', collapseFooter: true })
         r.settings.heroOnly = { composer: renderTab('composer'), conversation: renderTab('conversation') }
         window.__pushForm({ composerScope: 'all' })
-        // On the Windows window the Desktop tab drops its opening line.
+        // On the Windows window the title-bar row takes input; everywhere else
+        // it stays greyed with its note.
         document.documentElement.setAttribute('data-windows-titlebar', '')
-        r.settings.desktopOnWindows = renderTab('desktop')
+        r.settings.onWindows = renderTab('conversation')
         document.documentElement.removeAttribute('data-windows-titlebar')
       }
     })

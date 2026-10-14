@@ -42,7 +42,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.subRow(
           'banLocale',
           settingsCopy('banLocaleTitle', 'Account-hold easter egg'),
-          settingsCopy('banLocaleDesc', 'The account row at the top of the account popover opens a replica of Claude\'s account-hold page, in the language chosen here whatever the interface language. Off leaves that row a plain name.'),
+          settingsCopy('banLocaleDesc', 'The account row in the account popover opens a replica of Claude\'s account-hold page, in the language chosen here; Off leaves a plain name.'),
           controls.segment(banOptions, prefs.banLocale, value => { write({ banLocale: value }) }, !footerOn),
           footerOn,
         ),
@@ -52,7 +52,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.subRow(
           'searchStyle',
           settingsCopy('searchStyleTitle', 'Search box style'),
-          settingsCopy('searchStyleDesc', 'Cover the brand puts the box in the brand row, standing over the brand while the pointer is on the sidebar; Standalone gives it a row of its own under the brand; Icon keeps the host\'s own search button and opens this panel from it.'),
+          settingsCopy('searchStyleDesc', 'Where the search box stands: over the brand, on a row of its own, or as the host\'s own search icon.'),
           controls.segment(searchStyleOptions, prefs.searchStyle, value => { write({ searchStyle: value }) }, !searchOn),
           searchOn,
         ),
@@ -62,7 +62,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.row(
           'dockCards',
           settingsCopy('dockCardsTitle', 'Float docked panels'),
-          settingsCopy('dockCardsDesc', 'Draw the right sidebar\'s docked panels as floating cards: 8px inside the column, a 16px radius, a hairline and an elevation. Off fills the column and hugs its edges; a split gives each pane its own column.'),
+          settingsCopy('dockCardsDesc', 'Draws the right sidebar\'s docked panels as floating cards; Off fills the column edge to edge.'),
           view.controls.toggle(view.prefs.dockCards !== false, value => { view.write({ dockCards: value }) }),
         ),
       },
@@ -71,7 +71,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.row(
           'sidebarLayout',
           settingsCopy('sidebarLayoutTitle', 'Sidebar layout'),
-          settingsCopy('sidebarLayoutDesc', 'Adjust how tight the sidebar is'),
+          settingsCopy('sidebarLayoutDesc', 'How tight the sidebar is: Relaxed is the default look; Compact trims row heights, gaps and padding.'),
           controls.segment(layoutOptions, prefs.sidebarLayout, value => { write({ sidebarLayout: value }) }),
         ),
       },

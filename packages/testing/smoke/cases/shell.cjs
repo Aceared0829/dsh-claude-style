@@ -507,29 +507,31 @@ module.exports = {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['brand', 'username', 'motion', 'autoPopover'],
+      general: ['brand', 'username', 'autoPopover'],
       appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'caretMotion', 'viewTabs'],
-      desktop: ['headerBand'],
-      motion: ['statusMotion'],
+      conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'viewTabs', 'headerBand'],
+      motion: ['motion', 'statusMotion', 'caretMotion'],
     }
+    // Greyed by the page itself rather than by a preference: the title-bar
+    // band waits for the Windows desktop window.
+    const expectedGrey = { conversation: ['headerBand'] }
     const pages = settings.pages || {}
     for (const tab of Object.keys(expected)) {
       const page = pages[tab] || {}
-      check(`the ${tab} tab is selected in the seven-tab strip and carries its rows, every row enabled and none waiting`,
+      check(`the ${tab} tab is selected in the six-tab strip and carries its rows, greying only the rows that wait for something`,
         JSON.stringify(page.tabs) === JSON.stringify(Object.keys(expected)) && page.selected === tab &&
-          JSON.stringify(page.rows) === JSON.stringify(expected[tab]) && Array.isArray(page.disabled) && page.disabled.length === 0 &&
-          Array.isArray(page.notes) && page.notes.length === 0,
+          JSON.stringify(page.rows) === JSON.stringify(expected[tab]) &&
+          JSON.stringify(page.disabled || []) === JSON.stringify(expectedGrey[tab] || []) &&
+          JSON.stringify(page.notes || []) === JSON.stringify(expectedGrey[tab] || []),
         JSON.stringify(page))
     }
-    const desktop = pages.desktop || {}
-    const onWindows = settings.desktopOnWindows || {}
-    check('the Desktop tab opens with a line saying its settings act on the Windows window, on a page that is not that window, and without it on that window',
-      typeof desktop.notice === 'string' && desktop.notice.length > 0 && onWindows.notice === null &&
-        JSON.stringify(onWindows.rows) === '["headerBand"]' && JSON.stringify(onWindows.disabled) === '[]',
-      JSON.stringify({ desktop, onWindows }))
+    const onWindows = settings.onWindows || {}
+    check('on the Windows window the title-bar row takes input and carries no note',
+      JSON.stringify(onWindows.rows) === JSON.stringify(expected.conversation) &&
+        JSON.stringify(onWindows.disabled) === '[]' && JSON.stringify(onWindows.notes) === '[]',
+      JSON.stringify(onWindows))
     const off = settings.parentsOff || {}
     check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["brandAccent","mascotScope"]' &&
@@ -540,14 +542,14 @@ module.exports = {
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
       !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","quickProviders","peakrate","permissionsControl"]' &&
         JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
-        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition"]' &&
-        JSON.stringify(unmet.conversation.notes) === '["statsPosition"]' &&
+        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","headerBand"]' &&
+        JSON.stringify(unmet.conversation.notes) === '["statsPosition","headerBand"]' &&
         !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
       JSON.stringify(unmet))
     const hero = settings.heroOnly || {}
     check('with the restyle on the home page alone, the picker and the permission control take input and the statistics\' position still waits for a conversation',
       !!hero.composer && JSON.stringify(hero.composer.disabled) === '[]' &&
-        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition"]',
+        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition","headerBand"]',
       JSON.stringify(hero))
     const link = settings.link || {}
     const mark = settings.mark || {}
@@ -583,6 +585,14 @@ module.exports = {
           preview.width === Math.max(...(preview.wordWidths || [0]))
       }),
       JSON.stringify(previews))
+    const caretCards = settings.caretCards || []
+    check('the caret row shows its choice as two preview cards, the stored one active, each holding one bar',
+      caretCards.length === 2 && caretCards.every((card) => typeof card.label === 'string' && card.label.length > 0 && typeof card.bar === 'string') &&
+        caretCards[0].active === true && caretCards[0].pressed === 'true' && caretCards[1].active === false && caretCards[1].pressed === 'false',
+      JSON.stringify(caretCards))
+    check('the on card\'s caret glides and blinks; the off card\'s only blinks',
+      JSON.stringify(settings.caretPreview) === JSON.stringify(['dsh-claude-caret-glide, dsh-claude-caret-blink', 'dsh-claude-caret-blink']),
+      JSON.stringify(settings.caretPreview))
     commonChecks(r)
   },
   'dock-cards'(r) {

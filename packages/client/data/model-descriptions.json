@@ -171,7 +171,7 @@
     "brandTitle": { "zh": "主题风格", "en": "Theme style" },
     "brandDesc": {
       "zh": "插件提供的品牌标识和配色色系风格。",
-      "en": "The brand mark in the sidebar and on the home page, and its colour family: warm for Claude, blue for DeepSeek. While Colours is set to Follow the host, only the mark changes."
+      "en": "The brand mark and its colour family: warm for Claude, blue for DeepSeek. While Colours follows the host, only the mark changes."
     },
     "collapseTitle": { "zh": "折叠侧栏设置区", "en": "Collapse the sidebar settings area" },
     "collapseDesc": {
@@ -181,7 +181,7 @@
     "autoPopoverTitle": { "zh": "悬停展开弹层", "en": "Open popovers on hover" },
     "autoPopoverDesc": {
       "zh": "本插件提供的哪些弹层悬停时便展开。",
-      "en": "Which popovers open on hover. \"Account only\" keeps it to the sidebar account popover; \"All\" adds the permission, model, session-stats and home-page pickers. Off leaves every popover click-to-open."
+      "en": "Which popovers open on hover: the account popover alone, or also the permission, model, session-stats and home-page pickers."
     },
     "autoPopoverOff": { "zh": "关闭", "en": "Off" },
     "autoPopoverAccount": { "zh": "仅账号区", "en": "Account only" },
@@ -194,7 +194,7 @@
     "homeTitle": { "zh": "首页版面", "en": "Home layout" },
     "homeDesc": {
       "zh": "新会话页的排版",
-      "en": "The new-conversation page layout. Classic is the centered hero with the input card; Studio moves the greeting to the top left, pins the composer to the bottom and shows usage in between."
+      "en": "The new-conversation page layout. Classic centers the hero and input card; Studio pins the composer to the bottom and shows usage."
     },
     "homeClassic": { "zh": "经典", "en": "Classic" },
     "homeStudio": { "zh": "工作台", "en": "Studio" },
@@ -211,7 +211,7 @@
     "quickTitle": { "zh": "快捷供应商", "en": "Quick providers" },
     "quickDesc": {
       "zh": "在一级列表展示勾选的供应商。",
-      "en": "Picked providers follow the official service in the picker's first level, one rule between providers. A provider removed from the catalog stays in the list marked \"Removed\"; uncheck it to clear it."
+      "en": "Picked providers follow the official service in the picker's first level; one removed from the catalog stays marked \"Removed\" until unchecked."
     },
     "quickNone": { "zh": "未选择", "en": "None" },
     "quickCount": { "zh": "{count} 个供应商", "en": "{count} providers" },
@@ -220,7 +220,7 @@
     "usernameTitle": { "zh": "用户名", "en": "Username" },
     "usernameDesc": {
       "zh": "用户名会显示在欢迎语和账号行里。",
-      "en": "The name shown in the new-conversation greeting and the account row. Leave empty to use the signed-in account name, then the HDSL launcher name, then the local system user."
+      "en": "The name shown in the greeting and the account row; empty falls back to the signed-in account, then the launcher, then the system user."
     },
     "usernamePlaceholder": { "zh": "自动获取", "en": "Auto-detect account or host user" },
     "brandDeepseek": { "zh": "DeepSeek", "en": "DeepSeek" },
@@ -234,12 +234,12 @@
     "brandMarkTitle": { "zh": "标志图片", "en": "Brand mark" },
     "brandMarkDesc": {
       "zh": "替换侧栏顶部、折叠栏、新会话页与账号行兜底头像上的品牌标志。PNG、SVG 或 WebP，不超过 2 MB。",
-      "en": "Replaces the brand mark at the top of the sidebar, on the collapsed rail, on the new-conversation page and as the account row's fallback picture. PNG, SVG or WebP, up to 2 MB."
+      "en": "Replaces the brand mark in the sidebar, the collapsed rail, the home page and the account row's fallback picture. PNG, SVG or WebP, up to 2 MB."
     },
     "brandWordmarkTitle": { "zh": "文字标志", "en": "Wordmark" },
     "brandWordmarkDesc": {
       "zh": "替换标志旁的品牌名称，宽度按图片比例随高度换算，优先于品牌名称。PNG、SVG 或 WebP，不超过 2 MB。",
-      "en": "Replaces the brand name beside the mark; its width follows the image's proportions at the row's height, and it takes precedence over the brand name. PNG, SVG or WebP, up to 2 MB."
+      "en": "Replaces the brand name beside the mark, sized from the image's proportions, and wins over the brand name. PNG, SVG or WebP, up to 2 MB."
     },
     "brandImageUpload": { "zh": "上传", "en": "Upload" },
     "brandImageReplace": { "zh": "更换", "en": "Replace" },
@@ -250,21 +250,21 @@
     "brandInkTitle": { "zh": "图片颜色", "en": "Image colours" },
     "brandInkDesc": {
       "zh": "「原色」保留图片自己的颜色；「文字色」把图片当作形状，按所在位置的文字颜色上色，亮色暗色下都看得清。",
-      "en": "Original keeps the images' own colours; Text colour uses each image as a shape filled with the text colour where it stands, so it reads in both light and dark."
+      "en": "Original keeps the images' own colours; Text colour fills each image with the text colour where it stands, legible in light and dark."
     },
     "brandInkOriginal": { "zh": "原色", "en": "Original" },
     "brandInkText": { "zh": "文字色", "en": "Text colour" },
     "brandAccentTitle": { "zh": "强调色", "en": "Accent colour" },
     "brandAccentDesc": {
       "zh": "按钮、选中标记、链接与焦点环使用的颜色；未指定时沿用所选品牌的强调色。配色选「跟随宿主」时不生效。",
-      "en": "The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand's own accent stays. It has no effect while Colours is set to Follow the host."
+      "en": "The colour of buttons, selected marks, links and focus rings; unset keeps the brand's own. No effect while Colours follows the host."
     },
     "brandAccentUnset": { "zh": "跟随品牌", "en": "Brand's own" },
     "brandAccentReset": { "zh": "恢复品牌强调色", "en": "Use the brand's accent" },
     "motionTitle": { "zh": "动画效果", "en": "Animation" },
     "motionDesc": {
       "zh": "「随系统」跟随系统的动画设置；「减弱」把动画停在代表帧；「总是」始终播放。",
-      "en": "Follow the system keeps the system's animation setting in charge; Reduced holds animations on their still frame; Always plays them. The background-work ring turns in every setting."
+      "en": "Follow the system, hold animations on a still frame, or always play them; the background-work ring turns in every setting."
     },
     "motionSystem": { "zh": "随系统", "en": "Follow the system" },
     "motionReduced": { "zh": "减弱", "en": "Reduced" },
@@ -276,7 +276,7 @@
     "banLocaleTitle": { "zh": "封号彩蛋", "en": "Account-hold easter egg" },
     "banLocaleDesc": {
       "zh": "点账户弹层顶部的用户名行打开的彩蛋页，按这里选的语言显示；关闭后用户名行只显示名字。",
-      "en": "The account row at the top of the account popover opens a replica of Claude's account-hold page, in the language chosen here whatever the interface language. Off leaves that row a plain name."
+      "en": "The account row in the account popover opens a replica of Claude's account-hold page, in the language chosen here; Off leaves a plain name."
     },
     "banLocaleOff": { "zh": "关闭", "en": "Off" },
     "banLocaleZh": { "zh": "中文", "en": "中文" },
@@ -286,21 +286,10 @@
     "tabComposer": { "zh": "输入区", "en": "Composer" },
     "tabSidebar": { "zh": "侧栏", "en": "Sidebar" },
     "tabConversation": { "zh": "对话", "en": "Conversation" },
-    "tabDesktop": { "zh": "桌面端", "en": "Desktop" },
     "tabMotion": { "zh": "动效", "en": "Motion" },
     "statusMotionTitle": { "zh": "状态行动画", "en": "Waiting-line animation" },
-    "statusMotionDesc": {
-      "zh": "轮次进行中，对话末尾那一行文字上的动静：默认与宿主自己的行一样扫过一道高光，另一档让文字本身流动着变色。两档的说法、换词与旁边的时间都一样。",
-      "en": "What the words on the running turn's line do: the highlight band the host's own rows sweep (the default), or a colour wash that moves through the letters themselves. The wording, its swap and the clock beside it are the same either way."
-    },
-    "statusMotionSample": { "zh": "正在思考", "en": "Thinking…" },
-    "statusMotionSampleWait": { "zh": "深度求索中", "en": "Deep diving" },
     "statusMotionSweep": { "zh": "扫光", "en": "Highlight sweep" },
     "statusMotionWash": { "zh": "渐变流动", "en": "Colour wash" },
-    "desktopNotice": {
-      "zh": "这一页的设置只作用于 Windows 桌面端的窗口；当前页面不是那个窗口，在这里改动后，效果出现在桌面端的窗口里。",
-      "en": "These settings act on the Windows desktop window only. This page is not that window, so a change made here shows there."
-    },
     "composerRequired": {
       "zh": "「重绘对话框」为「关闭」时不生效。",
       "en": "No effect while Composer restyle is Off."
@@ -312,21 +301,21 @@
     "paletteTitle": { "zh": "配色", "en": "Colours" },
     "paletteDesc": {
       "zh": "允许插件修改主题配色，关闭后只保留布局和控件。",
-      "en": "Claude uses the skin's own colours; Follow the host leaves the colours to DSH and to other theme plugins (a wallpaper plugin, say), and the skin keeps only its layout and controls."
+      "en": "Claude uses the skin's own colours; Follow the host leaves colours to DSH or other theme plugins and keeps only layout and controls."
     },
     "paletteClaude": { "zh": "开启", "en": "Claude" },
     "paletteHost": { "zh": "关闭", "en": "Follow the host" },
     "typefaceTitle": { "zh": "字体", "en": "Typefaces" },
     "typefaceDesc": {
       "zh": "使用插件提供的字体。",
-      "en": "Claude uses the Anthropic faces (or the lookalike Inter and Noto Serif when they are missing) and JetBrains Mono for code; Follow the host keeps the fonts DSH or another plugin sets."
+      "en": "Claude uses the Anthropic faces (or the Inter and Noto Serif stand-ins) with JetBrains Mono for code; Follow the host keeps the fonts DSH sets."
     },
     "typefaceClaude": { "zh": "开启", "en": "Claude" },
     "typefaceHost": { "zh": "关闭", "en": "Follow the host" },
     "mascotTitle": { "zh": "吉祥物", "en": "Mascot" },
     "mascotDesc": {
       "zh": "站在输入框上沿的像素小伙伴。",
-      "en": "The pixel companion on the input area's top edge, animated by what the agent is doing. Follow the brand shows the pixel crab under Claude and Deepy the whale under DeepSeek."
+      "en": "The pixel companion on the input area's top edge, animated by the agent's state. Follow the brand picks the crab under Claude, Deepy under DeepSeek."
     },
     "mascotBrand": { "zh": "自动", "en": "Follow the brand" },
     "mascotCrab": { "zh": "Clawd", "en": "Crab" },
@@ -341,8 +330,8 @@
     "mascotScopeAll": { "zh": "首页与对话", "en": "Home and conversation" },
     "permissionsTitle": { "zh": "重绘权限控件", "en": "Redraw the permission control" },
     "permissionsDesc": {
-      "zh": "使用插件自己的权限控件：经典首页是一排分段按钮，工作台首页与对话页是一枚按钮加一张档位卡片；关闭后交还宿主自己的权限菜单。",
-      "en": "Use the skin's own permission control: a row of segments on the classic home, and a trigger with its tier card on the studio home and in conversations. Off restores the host's permission menu."
+      "zh": "使用插件自己的权限控件；关闭后交还宿主的权限菜单。",
+      "en": "Use the skin's own permission control; Off restores the host's permission menu."
     },
     "searchTitle": { "zh": "侧栏搜索", "en": "Sidebar search" },
     "searchDesc": {
@@ -351,8 +340,8 @@
     },
     "searchStyleTitle": { "zh": "搜索框样式", "en": "Search box style" },
     "searchStyleDesc": {
-      "zh": "「覆盖品牌」放进品牌行，指针移到侧栏时盖过品牌；「独立」在品牌行下方单独一行；「图标」保留 DSH 自己的搜索按钮，点它打开本插件的面板。",
-      "en": "Cover the brand puts the box in the brand row, standing over the brand while the pointer is on the sidebar; Standalone gives it a row of its own under the brand; Icon keeps the host's own search button and opens this panel from it."
+      "zh": "搜索框放在哪里：盖过品牌、品牌行下单独一行，或只保留宿主的搜索图标。",
+      "en": "Where the search box stands: over the brand, on a row of its own, or as the host's own search icon."
     },
     "searchStyleIcon": { "zh": "图标", "en": "Icon" },
     "searchStyleOverlay": { "zh": "覆盖品牌", "en": "Cover the brand" },
@@ -364,42 +353,45 @@
     },
     "dockCardsTitle": { "zh": "面板悬浮卡片", "en": "Float docked panels" },
     "dockCardsDesc": {
-      "zh": "右侧栏停靠的面板画成悬浮卡片：四周留 8px、16px 圆角、1px 描边与投影；关闭后铺满整列、贴住四边，分栏时每栏铺满各自那一栏。",
-      "en": "Draw the right sidebar's docked panels as floating cards: 8px inside the column, a 16px radius, a hairline and an elevation. Off fills the column and hugs its edges; a split gives each pane its own column."
+      "zh": "把右侧栏停靠的面板画成悬浮卡片；关闭后铺满整列、贴住四边。",
+      "en": "Draws the right sidebar's docked panels as floating cards; Off fills the column edge to edge."
     },
     "sidebarLayoutTitle": { "zh": "左侧栏布局", "en": "Sidebar layout" },
     "sidebarLayoutDesc": {
-      "zh": "调整左侧栏的紧凑程度。「宽松」是现在的样子；「紧凑」缩短上侧各行到工作区之间的间隙、压低对话行的高度与行间距、收紧账号区的内边距。",
-      "en": "Adjust how tight the sidebar is. Relaxed is how it looks now; Compact shortens the gap between the sidebar's top rows and the workspace, takes the conversation rows' height and spacing down, and trims the account area's padding."
+      "zh": "调整左侧栏的紧凑程度：「紧凑」收紧行高、间距与账号区内边距。",
+      "en": "How tight the sidebar is: Relaxed is the default look; Compact trims row heights, gaps and padding."
     },
     "sidebarLayoutRelaxed": { "zh": "宽松", "en": "Relaxed" },
     "sidebarLayoutCompact": { "zh": "紧凑", "en": "Compact" },
     "turnNavTitle": { "zh": "对话导航", "en": "Conversation navigator" },
     "turnNavDesc": {
       "zh": "重绘对话导航区域。",
-      "en": "Rest the pointer on the turn marks at the conversation's right edge and they open into a list of every turn, one line each with the message that started it; the wheel scrolls the list and a click jumps to that turn. Alt+↑ and Alt+↓ jump to the previous or the next turn, and the turn you land on is marked with a short line. Off restores the host's turn marks."
+      "en": "Hover the turn marks at the conversation's right edge to open a list of every turn; the wheel scrolls it, a click jumps over. Alt+↑ / Alt+↓ jump between turns. Off restores the host's turn marks."
     },
     "chatAnimationsTitle": { "zh": "聊天区动画效果", "en": "Chat-area animations" },
     "chatAnimationsDesc": {
-      "zh": "聊天区的动效：跟随、自动开合与卷帘门、新文字淡入、文件变更行、发送时的气泡动效、过程组标题上的计数，以及说明模型正在做什么的那一行。开启时播放本插件的这一套，关闭后聊天区交回宿主——宿主自己的说法也一并回来。「动画」设为「减弱」时一律停在原处。",
-      "en": "The conversation area's motion: the follow, the automatic folding with its rolling door, the text fade, the file change rows, the send flight, the counted figures on each process group's header and the line saying what the model is doing. On plays this plugin's set; off hands the conversation back to the host, its own words included. With Animation set to Reduced it all stands still."
+      "zh": "聊天区的一整套动效：跟随、折叠、文字淡入、文件变更行、发送气泡、过程计数与状态行；关闭后交回宿主。",
+      "en": "The conversation area's motion set: follow, folding, text fade, file change rows, send flight, counters and the waiting line. Off hands the area back to the host."
     },
     "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
     "statsLineLabel": { "zh": "对话统计信息", "en": "Conversation statistics" },
     "statsPositionDesc": {
-      "zh": "「收进上下文」把会话数字放进上下文圆环的弹层，输入卡片下方只留圆环；「独立成行」把轮数、输出速度、tokens 与缓存命中率写在输入卡片下面单独一行，末尾是圆环。",
-      "en": "Inside the context popover puts the session's figures in the panel the context ring opens and leaves the ring alone under the input card; On its own line writes the turns, the output speed, the tokens and the cache-hit share on a line under the card, ending in the ring."
+      "zh": "「收进上下文」把会话数字放进上下文圆环的弹层；「独立成行」写在输入卡片下面一行，末尾是圆环。",
+      "en": "Inside the context popover puts the session's figures in the ring's panel; On its own line writes them under the input card, ending in the ring."
     },
     "statsPositionContext": { "zh": "收进上下文", "en": "Inside the context popover" },
     "statsPositionInline": { "zh": "独立成行", "en": "On its own line" },
     "caretTitle": { "zh": "光标动画", "en": "Composer caret motion" },
-    "caretDesc": {
-      "zh": "移动光标时平滑移动。",
-      "en": "The composer's caret is drawn by the plugin and glides between positions instead of jumping. Explicit moves glides only on an arrow key or a click, and lands instantly while typing."
+    "caretOn": { "zh": "开", "en": "On" },
+    "caretOff": { "zh": "关", "en": "Off" },
+    "caretSample": { "zh": "在此输入", "en": "Type here" },
+    "statusDetailTitle": { "zh": "状态行描述", "en": "Waiting-line detail" },
+    "statusDetailDesc": {
+      "zh": "「简洁」只写状态行的状态；「精确」补上正在操作的文件、命令声明的描述或推理里的原句。",
+      "en": "Simple names the running turn's state alone; Precise adds the file a call works on, a command's declared description or a clause from the reasoning."
     },
-    "caretTyping": { "zh": "总是", "en": "Every move" },
-    "caretMove": { "zh": "减弱", "en": "Explicit moves" },
-    "caretOff": { "zh": "关闭", "en": "Off" },
+    "statusDetailSimple": { "zh": "简洁", "en": "Simple" },
+    "statusDetailPrecise": { "zh": "精确", "en": "Precise" },
     "chatUxManaged": { "zh": "该选项由插件 dsh-chat-ux 管理", "en": "Managed by dsh-chat-ux" },
     "viewTabsTitle": { "zh": "重绘标签条", "en": "Chat / Trajectory tabs" },
     "viewTabsDesc": {
@@ -411,6 +403,7 @@
       "zh": "Windows 桌面端把会话标题与顶栏那一行的控件抬进窗口的标题栏，放不下的一侧留在原来的行里。",
       "en": "On the Windows desktop the session title and the header's controls rise into the window's caption row, and a side without room stays in the header's own row."
     },
+    "windowsOnlyNote": { "zh": "只在 Windows 桌面端的窗口里生效。", "en": "Takes effect in the Windows desktop window only." },
     "unavailable": {
       "zh": "ERROR : 设置存储服务异常，改动不会被保存。",
       "en": "The settings store is unavailable, so changes will not be saved."

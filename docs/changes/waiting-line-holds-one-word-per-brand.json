@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 17,
+  "external": false,
+  "zh": "轮次进行中那一行等待时只说品牌自己的那一个词：Claude 品牌下是皮肤自己的「正在思考」，DeepSeek 品牌下是宿主自己的「深度求索中」；模型思考与读不出状态两种情形共用这一个词，读不出状态不再换一次说法。",
+  "en": "While a turn runs, the line stands on one word per brand: the skin's own \"Thinking…\" under the Claude brand and the host's own \"Deep diving\" under the DeepSeek brand, and a model thinking and a turn whose state cannot be read use that one word, so a wait no longer changes wording."
+}

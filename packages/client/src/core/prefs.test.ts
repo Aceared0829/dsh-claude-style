@@ -25,6 +25,12 @@ test('a choice outside its set reads as its default', () => {
   expect(normalizePrefs({ statusDetail: 'verbose' }).statusDetail).toBe(PREF_DEFAULTS.statusDetail)
 })
 
+test('the caret switch reads the retired explicit-moves tier as on', () => {
+  expect(normalizePrefs({ caretMotion: 'typing' }).caretMotion).toBe('typing')
+  expect(normalizePrefs({ caretMotion: 'off' }).caretMotion).toBe('off')
+  expect(normalizePrefs({ caretMotion: 'move' }).caretMotion).toBe(PREF_DEFAULTS.caretMotion)
+})
+
 test('the brand stored under its earlier name lands on its choice, anything else on Claude', () => {
   expect(normalizePrefs({ brand: BRAND_DEEPSEEK }).brand).toBe(BRAND_DEEPSEEK)
   expect(normalizePrefs({ brand: BRAND_DEEPSEEK_LEGACY }).brand).toBe(BRAND_DEEPSEEK)

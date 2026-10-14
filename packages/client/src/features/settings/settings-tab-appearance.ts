@@ -45,7 +45,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
         node: controls.row(
           'palette',
           settingsCopy('paletteTitle', 'Colours'),
-          settingsCopy('paletteDesc', 'Claude uses the skin\'s own colours; Follow the host leaves the colours to DSH and to other theme plugins (a wallpaper plugin, say), and the skin keeps only its layout and controls.'),
+          settingsCopy('paletteDesc', 'Claude uses the skin\'s own colours; Follow the host leaves colours to DSH or other theme plugins and keeps only layout and controls.'),
           controls.segment(paletteOptions, prefs.palette, value => { write({ palette: value }) }),
         ),
       },
@@ -55,7 +55,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
         node: controls.row(
           'typeface',
           settingsCopy('typefaceTitle', 'Typefaces'),
-          settingsCopy('typefaceDesc', 'Claude uses the Anthropic faces (or the lookalike Inter and Noto Serif when they are missing) and JetBrains Mono for code; Follow the host keeps the fonts DSH or another plugin sets.'),
+          settingsCopy('typefaceDesc', 'Claude uses the Anthropic faces (or the Inter and Noto Serif stand-ins) with JetBrains Mono for code; Follow the host keeps the fonts DSH sets.'),
           controls.segment(typefaceOptions, prefs.typeface, value => { write({ typeface: value }) }),
         ),
       },
@@ -64,7 +64,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
         node: controls.row(
           'homeLayout',
           settingsCopy('homeTitle', 'Home layout'),
-          settingsCopy('homeDesc', 'The new-conversation page layout. Classic is the centered hero with the input card; Studio moves the greeting to the top left, pins the composer to the bottom and shows usage in between.'),
+          settingsCopy('homeDesc', 'The new-conversation page layout. Classic centers the hero and input card; Studio pins the composer to the bottom and shows usage.'),
           controls.segment(homeLayoutOptions, prefs.homeLayout, value => { write({ homeLayout: value }) }),
         ),
       },
@@ -73,7 +73,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
         node: controls.row(
           'mascot',
           settingsCopy('mascotTitle', 'Mascot'),
-          settingsCopy('mascotDesc', 'The pixel companion on the input area\'s top edge, animated by what the agent is doing. Follow the brand shows the pixel crab under Claude and Deepy the whale under DeepSeek.'),
+          settingsCopy('mascotDesc', 'The pixel companion on the input area\'s top edge, animated by the agent\'s state. Follow the brand picks the crab under Claude, Deepy under DeepSeek.'),
           controls.segment(mascotOptions, prefs.mascot, value => { write({ mascot: value }) }),
         ),
       },

@@ -104,7 +104,7 @@ export interface SettingsCopyLine {
 }
 
 /** The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts). */
-export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'desktop' | 'motion'
+export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'motion'
 
 export interface FeatureSwitchRow {
   tab: SettingsTabId
@@ -116,6 +116,12 @@ export interface FeatureSwitchRow {
   choices?: FeatureSwitchChoice[]
   /** The preference the feature only works under (D29). */
   requires?: FeatureSwitchRequirement
+  /**
+   * The row acts on the Windows desktop window alone: on any other page it
+   * keeps the stored choice on show, refuses input and says where it acts
+   * (core/desktop-band.ts).
+   */
+  windowsOnly?: boolean
 }
 
 /**

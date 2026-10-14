@@ -17,6 +17,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 体验优化
 
 - 同一个文件在同一个过程组里的多次读取、编辑与写入读成一行：图标与标题跟着最后一次操作换新，行尾的 `+n -m` 是这些改动的累计值并随每次改动逐位翻页，展开读到全部改动；只被读取过的文件展开读到这次读取的窗口。
+- 设置页过长的描述统一改写为简洁风格：一句说清这项设置管什么、各档位做什么，中英两版同步。
 - 每帧那一趟刷新不再为已知的宿主节点重新查询整份文档：输入卡片与它的占位、运行行、思考行、标题行、对话框、页脚、会话根、模型槽与上下文表盘都从观察总线按选择器登记的活清单里读，宿主换掉节点时才重解一次。会话越长，每帧的查询开销越不再跟着页面规模走。
 - 状态行换词时说法盒子的宽度是一次移动：盒子先按住当前宽度再写上目标宽度，由滑动高亮那一对时长与曲线（约 0.24 秒）带过去，旁边的计时随盒子滑到新位置。
 - 运行行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带全程亮着而不从头再扫，行由一个隐藏测量层按住宽度与高度，换词期间旁边的计时不会被挤动，新词从下方升入也不会让整行变高。
@@ -24,6 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 只在另一项打开时才起作用的设置行现在随父项一起变灰、不能操作（重绘模型选择器与重绘权限控件随「重绘对话框」，对话统计信息位置随重绘覆盖对话页，封号彩蛋随「折叠侧栏设置区」），变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。
 - 滚动与窗口尺寸变化重新定位浮层时，一帧只派发一次（原来是每个滚动事件一次）；关闭着的模型卡与档位卡不再读宿主触发器的盒子，上下文数字行的合身测量只在输入卡片宽度变化时重做。
 - 「标题进入顶栏」放进设置页的「对话」页，只在 Windows 桌面端的窗口里可改，在别的页面变灰、仍显示你设的值，并在下面注明它只在哪个窗口生效；「动画效果」从「通用」挪到「动效」，「首页版面」挪到「外观」，「封号彩蛋」挪到「侧栏」并挂在打开它的账号弹层那一行下面，「搜索框样式」与「对话统计信息位置」的说明写出每个选项的效果。
+- 「光标动画」从三档简化为开与关，从「对话」页挪到「动效」页，两档各用一张预览卡呈现：开的那张光标在样例行上来回滑动，关的那张停在行首闪烁；早先存下的「只在移动时」读作开。已经用预览卡呈现选项的行（状态行动画、光标动画）不再带文字说明。
 - 皮肤里所有动效的时长、曲线、位移与模糊改由 `packages/client/src/theme/tokens.json` 的 `motion` 一组统一给出，同一作用的数值合成一档，`docs/STYLE.md` 的动效表由同一份数据生成，构建拒绝样式表里直接写出的时长与曲线、内容重复的关键帧，以及没有读者认领的动效令牌。
 - 流式回答里新文字的淡入改按文本节点增量比较：一条回答里追加字符时不再把整条回答重拼成字符串、也不再逐字符重比，成本随本批新增的字符走；markdown 中途改写标记的那一段仍按原来的窗口判定，超过预算或刚被折叠重排过就保持本色。
 - 状态行与过程组头部同读宿主 `TextShimmer` 的一档：1.5 秒一趟、`steps(48, end)`、每趟最后三分之一歇停，状态行的色带改用宿主的扫光色与 20% 带宽。
@@ -42,6 +44,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 「外观」页的「主色」改名「强调色」并挪到「配色」下方，配色选「跟随宿主」时它变灰、不能操作。
 - 工作台首页的权限控件此前和经典首页一样是一排 Read / Edit / Auto / Yolo 分段按钮，与它那身对话式的单行输入卡片并不相称；现在工作台首页与对话页一致：输入区里是一枚写着当前档位的按钮，点开是一张档位卡片，滑块式分段只留在经典首页。工作台首页还没选工作区时，按钮停在新会话的默认档位上、不接收点击，点它和点输入框一样打开工作区选择。
 - 中文界面下内置 Auto review 档位此前显示英文名，因为宿主的档位文案表里这一条两种语言都是英文；现在它读「自动审查」，其它档位仍读宿主自己的中文名，界面语言不是中文时照旧读 Auto review。
+- 轮次进行中那一行等待时只说品牌自己的那一个词：Claude 品牌下是皮肤自己的「正在思考」，DeepSeek 品牌下是宿主自己的「深度求索中」；模型思考与读不出状态两种情形共用这一个词，读不出状态不再换一次说法。
+- 「动效」页两张状态行动画卡片里的预览说法改为这一行真正会用的两个：当前品牌的等待词与「正在调用工具」；换词动作与两档画法照旧。
 
 ### 问题修复
 
@@ -49,6 +53,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复 Firefox 下鼠标停留在上下文用量圆环时统计弹层反复闪烁的问题：返回入口会取消待执行的关闭任务，鼠标仍在入口上时弹层保持展开。
 - 思考行自动收起与读者的点开收起在两种宿主结构上都找得到展开体，因此都逐帧滚动；新增的展开体淡入并上移两个像素进入。
 - 开着「悬停自动展开弹层」时，悬停态下按同一个入口不再收起刚展开的弹层（侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器与输入框右侧的上下文圆环），收起交给鼠标离开入口与卡片。
+- 「状态行描述」在中文界面补回中文的标题、描述与两个档位名：这一行的文案没有进文案文档，中文界面一直读英文兜底。
 - 同一运行行中有可见替代文字且宿主文案被外部隐藏时，主题等待行自动让位，接管结束后恢复，其他聊天动效继续运行。
 - 钉住的位置比末尾所有可能的停靠位置都高，跟随末尾期间输入框上方那一行每一帧都停在同一处，推理一段段到达也不再上下抖动。
 - 功能被关掉或整代被换下之后，它留下的挂在宿主节点上的监听、观察总线订阅、排队帧与定时器一并收走：宿主账户菜单每次打开不再留住上一张已经卸载的卡片，会话数字的圆环与弹层不再累积旧的挂载代，输入卡片选择器关掉时不再把 mousemove 留在文档上，模型档位滑块按住时被拆下也不再留下 pointerup，进程组表头的摘要不会在拆除后重建并永久订阅宽度，思考窗与折叠回滚不再在拆除后继续排帧。
@@ -72,11 +77,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 重要性走查里标为动画中间帧的那一组记录改成「抓到与否都算数」：这一类选择器只在动画播放的那几帧存在，走查在固定时刻读页面，同一次改动可能这一趟读到、下一趟读不到，原来会把其中一次读不到判成「从未匹配」、把读到判成「该划掉」，两边都会失败；换字退场的那个类补进这一组。
 - `importance` 场景在走查里多审两件事：走遍所有页面形态都没匹配到元素的选择器即失败，到不了的选择器逐条登记在 `packages/testing/importance-unreachable.json`、每条写明缘由且登记表只许变短；同一轮走查去掉八处多余的 `!important`，端到端通道的设置层每次运行前回到运行前的副本。
 - 文档里带单位的数值必须有出处：能由令牌或常量给出的一律读它，读不到的登记在 `scripts/doc-numbers.mjs` 的来源表里，数值失去出处时 `npm run lint` 与云端闸门报出。
-- `docs/SETTINGS.md` 与 `docs/SETTINGS.en.md` 只留设置页自己的内容——七个分页与各档、设置项之间的依赖、跨功能的几段说明——动效各自做什么由链接指向功能一览。
+- `docs/SETTINGS.md` 与 `docs/SETTINGS.en.md` 只留设置页自己的内容——六个分页与各档、设置项之间的依赖、跨功能的几段说明——动效各自做什么由链接指向功能一览。
 - `docs/STYLE.md` 只留视觉规则与三张由令牌表生成的对照表，精灵的网格、格宽与帧号由 `packages/client/src/features/mascot/sheets.ts` 与精灵样式表持有。
 - 决策的「决定」一节限定篇幅：一条不超过三百字、一节不超过三千字，「现状」不超过六百字，由 `npm run lint` 判定。
 - `AGENTS.md` 的命令清单改由 `npm run agents` 从 `package.json` 与各脚本自己的首行生成，云端闸门用 `npm run agents:check` 核对。
 - 端到端通道的两个发送场景在替身离场之后再读一次页面自己继续采样的帧：真行是否显形、替身是否落在它身上改按这一段帧判定，慢跑机器上不再把尚未显形的行当成不可见。
+- 闸门的发起时机写明：本机默认不起闸门，开发期间的判断来自构建与在线页面；一次运行只属于推送之前那一段，取覆盖这次改动的最小集合。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -89,6 +95,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Improvements
 
 - The calls on one file inside one process group stand as a single row: its icon and title move on with the file's last operation, its `+n -m` tail counts those changes and turns character by character as each one lands, and opening the row reads every change — or the window a read-only file was read at.
+- The settings page's over-long descriptions are rewritten in a concise style — one sentence naming what the setting governs and what each tier does — with the Chinese and English copies kept in step.
 - A pass no longer queries the whole document for host nodes it already knows: the composer cards and their placeholders, the running rows, the thinking rows, the title row, the dialogs, the footer, the conversation root, the model slot and the context meter are read from live per-selector registries on the observation bus, and only a node the host replaced is resolved again. The longer a session runs, the less a frame's query cost follows the size of the page.
 - The wording box's width is now one move — pinned at the width it stands at, written with the width it heads for, and carried there over the sliding highlight's own time and curve (about 0.24 s) — so the clock travels to its new place with it.
 - The running line's wording swap runs transitions.dev's "Thinking states": the two halves move at once, the sweeping highlight stays lit through the swap, and a hidden sizer holds the width and height, so the clock is never shoved aside and the copy rising from below never makes the line taller.
@@ -96,6 +103,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Settings rows that only work while another setting is on grey out and take no input with it — the model picker and the permission control with the composer restyle, the statistics position with the restyle covering the conversation, the easter egg with the sidebar settings — and a greyed row still shows the value you set, with a line in the accent colour saying what it waits for.
 - Scrolling or resizing now re-places fixed popovers once a frame instead of once per event; a shut model or effort card stops reading its trigger's box, and the inline context line is measured for fit only when the card's width has changed.
 - Header in the title bar lives on the settings page's Conversation tab, taking input on the Windows desktop window alone and greying out on every other page — still showing the value you set, with a note naming the window it acts in; Animation moves from General to Motion, Home layout to Appearance, the Account-hold easter egg to Sidebar under the row of the account popover it opens from, and Search box style and Conversation statistics position now say what each choice does.
+- Composer caret motion drops its third tier for On and Off and moves from the Conversation tab to the Motion tab, each choice a preview card — the caret gliding along a sample line, or standing at its head blinking; a stored Explicit moves reads as On. A row whose preview cards already present the choice (the waiting-line animation, the caret) carries no description.
 - Every duration, curve, distance and blur in the skin comes from the `motion` group of `packages/client/src/theme/tokens.json`, one value per role, with the style guide's motion table generated from the same data and the build refusing a duration or curve written straight into a stylesheet, keyframes that repeat one the skin has, and a motion token nothing reads.
 - The fade over newly arrived characters in a streaming answer now compares text nodes incrementally: an append no longer rejoins the whole answer into a string nor walks it character by character, so the cost follows the batch. A markdown rewrite in the middle is still judged by the same window, and a rewrite past its budget or one that just reflowed from a fold stays solid.
 - The line and a process group's header share the host's own `TextShimmer` gear — 1.5 s a pass, `steps(48, end)`, the band resting the last third — and the line's band takes the host's shimmer tint at 20% width.
@@ -114,6 +122,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The Appearance tab's Primary colour row is renamed Accent colour and moves under Colours, greying out and taking no input while Colours is set to Follow the host.
 - The studio home's permission control was the same Read / Edit / Auto / Yolo segment row the classic home wears, which sat oddly with its conversation-style single-line card; it now matches the conversation: one button naming the current tier, opening a card of tiers, with the slider-style segment row left to the classic home. Before a workspace is picked the button rests on the preset a new session starts in and takes no input, so pressing it opens the workspace picker the same as pressing the input box.
 - Under a Chinese interface the built-in Auto review tier showed its English name, the host's own tier dictionary carrying that entry in English in every language; it now reads 自动审查, while the tiers the host names in Chinese keep their own words and every other interface language still reads Auto review.
+- While a turn runs, the line stands on one word per brand: the skin's own "Thinking…" under the Claude brand and the host's own "Deep diving" under the DeepSeek brand, and a model thinking and a turn whose state cannot be read use that one word, so a wait no longer changes wording.
+- The two Waiting-line animation cards on the Motion tab take turns between two wordings the line really uses — the current brand's waiting word and "Running tools…" — with the same swap and the same paints.
 
 ### Bug Fixes
 
@@ -121,6 +131,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the context statistics popover repeatedly flickering while the pointer rests on the context ring in Firefox: returning to the trigger cancels the pending close, and the popover stays open while the trigger is hovered.
 - A thinking row's automatic fold and a reader's own press find the expanded body on both host shapes, so both roll frame by frame; an inserted body fades in and rises two pixels.
 - With popovers opening on hover, a press on the trigger no longer folds the popover the pointer just opened — on the sidebar account entry, the permission, model and effort pickers, the home row's two pickers and the context ring beside the composer — leaving the pointer's departure to close it.
+- Waiting-line detail reads in Chinese on a Chinese interface — title, description and both tier names: the row's copy never entered the copy document, so a Chinese interface read the English fallbacks.
 - The theme yields its waiting line when a visible sibling replaces externally hidden host wording, restores it when the takeover ends, and keeps other chat animations running.
 - The pin stands above every place the scroll end can come to rest, so the line above the composer holds the same spot in every frame while the tail is followed and no longer shakes with each piece of reasoning.
 - Turning a feature off or replacing a generation now takes its listeners on host-owned nodes, its observation-bus subscriptions, its queued frames and its timers with it: the host account menu no longer keeps every card it has already unmounted, the conversation meter and panel no longer stack bindings from earlier generations, switching the model picker off no longer leaves a document mousemove behind, dropping the effort slider mid-drag no longer leaves pointerup bound, a process header's summary is not rebuilt and subscribed after its teardown, and the reasoning window and fold roll stop queueing frames once the feature is gone.
@@ -144,11 +155,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The groups of the importance walk marked as animation frames are now read as "counted whether or not the walk catches them": such a selector exists only inside an animation, the walk reads the page at fixed moments, and the same change may be caught in one run and missed in the next — which used to fail the run either way, as "never matched" when missed and as "strike this off" when caught. The swap's exit class joins that group.
 - The `importance` scenario audits two more things in its walk: a selector that matches no element in any page state fails it, and the selectors the walk cannot reach are recorded with their reasons in `packages/testing/importance-unreachable.json`, a record that may only shrink; the same walk proved eight `!important` declarations redundant and took them out, and the end-to-end lane's settings layer returns to its pre-run copy.
 - A number a document states now has a home: a value a token or a constant holds is read from there, the few a reader needs are registered with their source in `scripts/doc-numbers.mjs`, and `npm run lint` and the cloud gates fail when one loses it.
-- `docs/SETTINGS.md` and `docs/SETTINGS.en.md` carry the settings page's own content — the seven tabs and their tiers, the dependencies between rows, the cross-cutting notes — and link to the feature list for what each effect does.
+- `docs/SETTINGS.md` and `docs/SETTINGS.en.md` carry the settings page's own content — the six tabs and their tiers, the dependencies between rows, the cross-cutting notes — and link to the feature list for what each effect does.
 - `docs/STYLE.md` keeps the visual rules and the three tables generated from the token table, with the sprites' grids, cell sizes and frame numbers held in `packages/client/src/features/mascot/sheets.ts` and the mascots' stylesheets.
 - A decision's 决定 section is held to a length — one bullet of at most 300 characters, a section of at most 3000, a 现状 line of at most 600 — enforced by `npm run lint`.
 - `AGENTS.md`'s command list is generated by `npm run agents` from `package.json` and each script's own header line, and checked in the cloud with `npm run agents:check`.
 - The end-to-end lane's two send scenarios read the frames the page keeps sampling once the stand-in has left: whether the real row appeared, and whether the stand-in sat on it, are judged on that stretch, so a slow runner no longer calls a row that had not appeared yet invisible.
+- The occasion for a gate run is stated plainly: no gate starts on this machine by default, work in progress runs on the build and the live page, and a run belongs to the stretch before a push over the smallest set covering that change.
 
 ## [0.13.3] - 2026-10-12
 

@@ -1,5 +1,6 @@
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget, findConversationSession, sessionOutline } from '../../core/host'
+import { hostChatSeat } from '../../core/i18n'
 import { CONVERSATION_SCROLL_SELECTOR, TURN_RAIL_CURRENT_SELECTOR, TURN_RAIL_INSET, TURN_RAIL_MARK_SELECTOR, TURN_RAIL_PITCH, TURN_RAIL_SCROLLER_SELECTOR, TURN_RAIL_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { closestFrom } from '../../shared/dom'
 import type { HostContext, HostText } from '../../core/host'
@@ -118,10 +119,9 @@ export function createTurnNavHost(ctx: HostContext) {
     return items
   }
 
-  /** The host's `chat` namespace translate seat, or null when it is absent. */
+  /** The host's `chat` namespace translate seat, or null when it is absent (core/i18n). */
   function chatText(): HostText | null {
-    const locale = ctx.get('locale')
-    return typeof locale?.bind === 'function' ? locale.bind('chat') : null
+    return hostChatSeat(ctx)
   }
 
   /**

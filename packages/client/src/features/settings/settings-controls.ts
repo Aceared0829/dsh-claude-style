@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
+import { windowsDesktop } from '../../core/desktop-band'
 import { prefYielded, switchRowFeatures } from '../../core/feature'
 import { settingsCopy } from '../../core/i18n'
 import { createSlidingPill } from '../../shared/sliding-pill'
@@ -79,7 +80,8 @@ export function tabRows(tab: SettingsTab, view: SettingsView) {
  * value on show and refuses input, saying who manages it (managedDesc); so
  * does a row whose feature only works under another preference's values
  * (`requires`, D29) while that preference holds none of them, saying what it
- * waits for.
+ * waits for, and a row acting on the Windows desktop window alone
+ * (`windowsOnly`) on every page that is not that window, saying where it acts.
  */
 function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
   const controls = view.controls
@@ -91,7 +93,8 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     const waits = requires !== undefined && !requires.values.includes(String(view.prefs[requires.pref]))
       ? settingsCopy(requires.note.key, requires.note.fallback)
       : null
-    const unmet = waits !== null
+    const offWindows = row.windowsOnly === true && !windowsDesktop()
+    const unmet = waits !== null || offWindows
     const stored = view.prefs[pref]
     const write = (value: string | boolean) => { view.write({ [pref]: value }) }
     const control = row.choices === undefined
@@ -103,12 +106,13 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
         yielded || unmet,
       )
     const text = settingsCopy(row.desc.key, row.desc.fallback)
+    const note = waits ?? (offWindows ? settingsCopy('windowsOnlyNote', 'Takes effect in the Windows desktop window only.') : null)
     return {
       rank: row.rank,
       node: controls.row(
         pref,
         settingsCopy(row.title.key, row.title.fallback),
-        yielded ? managedDesc(text, true) : noteDesc(text, waits),
+        yielded ? managedDesc(text, true) : noteDesc(text, note),
         control,
         { disabled: unmet },
       ),
@@ -223,13 +227,13 @@ export function createSettingsControls() {
     return React.createElement(ClaudeStyleSwitch, { on, onPick, disabled })
   }
 
-  /** A row's text half: the title over the description. */
+  /** A row's text half: the title over the description; a row whose control is the explanation (a preview card) carries no description. */
   function rowText(title: string, description: React.ReactNode) {
     return React.createElement(
       'div',
       { className: 'dsh-claude-settings-row-text' },
       React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
-      React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
+      description === null ? null : React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
     )
   }
 

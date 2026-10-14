@@ -207,7 +207,7 @@ export function accentRow(view: SettingsView): SettingsRow {
     node: controls.subRow(
       'brandAccent',
       settingsCopy('brandAccentTitle', 'Accent colour'),
-      settingsCopy('brandAccentDesc', 'The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand\'s own accent stays. It has no effect while Colours is set to Follow the host.'),
+      settingsCopy('brandAccentDesc', 'The colour of buttons, selected marks, links and focus rings; unset keeps the brand\'s own. No effect while Colours follows the host.'),
       React.createElement(BrandAccentControl, { stored: prefs.brandAccent, write, disabled: !enabled }),
       enabled,
     ),
@@ -236,7 +236,7 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       node: controls.row(
         'brandMark',
         settingsCopy('brandMarkTitle', 'Brand mark'),
-        settingsCopy('brandMarkDesc', 'Replaces the brand mark at the top of the sidebar, on the collapsed rail, on the new-conversation page and as the account row\'s fallback picture. PNG, SVG or WebP, up to 2 MB.'),
+        settingsCopy('brandMarkDesc', 'Replaces the brand mark in the sidebar, the collapsed rail, the home page and the account row\'s fallback picture. PNG, SVG or WebP, up to 2 MB.'),
         React.createElement(BrandImageControl, { kind: 'mark' }),
       ),
     },
@@ -245,7 +245,7 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       node: controls.row(
         'brandWordmark',
         settingsCopy('brandWordmarkTitle', 'Wordmark'),
-        settingsCopy('brandWordmarkDesc', 'Replaces the brand name beside the mark; its width follows the image\'s proportions at the row\'s height, and it takes precedence over the brand name. PNG, SVG or WebP, up to 2 MB.'),
+        settingsCopy('brandWordmarkDesc', 'Replaces the brand name beside the mark, sized from the image\'s proportions, and wins over the brand name. PNG, SVG or WebP, up to 2 MB.'),
         React.createElement(BrandImageControl, { kind: 'wordmark' }),
       ),
     },
@@ -254,7 +254,7 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       node: controls.row(
         'brandInk',
         settingsCopy('brandInkTitle', 'Image colours'),
-        settingsCopy('brandInkDesc', 'Original keeps the images\' own colours; Text colour uses each image as a shape filled with the text colour where it stands, so it reads in both light and dark.'),
+        settingsCopy('brandInkDesc', 'Original keeps the images\' own colours; Text colour fills each image with the text colour where it stands, legible in light and dark.'),
         controls.segment(inkOptions, prefs.brandInk, value => { write({ brandInk: value }) }),
       ),
     },

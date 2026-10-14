@@ -15,7 +15,7 @@ export default {
     tab: 'conversation',
     rank: 35,
     title: { key: 'statsPositionTitle', fallback: 'Conversation statistics position' },
-    desc: { key: 'statsPositionDesc', fallback: 'Inside the context popover puts the session\'s figures in the panel the context ring opens and leaves the ring alone under the input card; On its own line writes the turns, the output speed, the tokens and the cache-hit share on a line under the card, ending in the ring.' },
+    desc: { key: 'statsPositionDesc', fallback: 'Inside the context popover puts the session\'s figures in the ring\'s panel; On its own line writes them under the input card, ending in the ring.' },
     choices: [
       { value: STATS_POSITION_INLINE, label: { key: 'statsPositionInline', fallback: 'On its own line' } },
       { value: STATS_POSITION_CONTEXT, label: { key: 'statsPositionContext', fallback: 'Inside the context popover' } },

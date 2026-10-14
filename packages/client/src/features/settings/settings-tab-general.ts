@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, USERNAME_MAX } from '../../constants'
+import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, USERNAME_MAX } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { Prefs } from '../../constants'
 import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
- * The settings page's General tab: the theme style, the username, the
- * animation choice and the hover-open popovers.
+ * The settings page's General tab: the theme style, the username and the
+ * hover-open popovers.
  *
  * Each tab is a `{ id, label, rows(view) }` record: `rows` runs on every
  * render of the page (packages/client/src/features/settings/settings.ts) with the page's
@@ -48,11 +48,6 @@ export function createSettingsGeneralTab(): SettingsTab {
     const prefs = view.prefs
     const write = view.write
     const controls = view.controls
-    const motionOptions = [
-      { value: MOTION_SYSTEM, label: settingsCopy('motionSystem', 'Follow the system') },
-      { value: MOTION_REDUCED, label: settingsCopy('motionReduced', 'Reduced') },
-      { value: MOTION_FULL, label: settingsCopy('motionFull', 'Always') },
-    ]
     const autoPopoverOptions = [
       { value: AUTO_POPOVER_OFF, label: settingsCopy('autoPopoverOff', 'Off') },
       { value: AUTO_POPOVER_ACCOUNT, label: settingsCopy('autoPopoverAccount', 'Account only') },
@@ -65,7 +60,7 @@ export function createSettingsGeneralTab(): SettingsTab {
         node: controls.row(
           'brand',
           settingsCopy('brandTitle', 'Theme style'),
-          settingsCopy('brandDesc', 'The brand mark in the sidebar and on the home page, and its colour family: warm for Claude, blue for DeepSeek. While Colours is set to Follow the host, only the mark changes.'),
+          settingsCopy('brandDesc', 'The brand mark and its colour family: warm for Claude, blue for DeepSeek. While Colours follows the host, only the mark changes.'),
           themePicker(prefs, write),
           { block: true },
         ),
@@ -75,7 +70,7 @@ export function createSettingsGeneralTab(): SettingsTab {
         node: controls.row(
           'username',
           settingsCopy('usernameTitle', 'Username'),
-          settingsCopy('usernameDesc', 'The name shown in the new-conversation greeting and the account row. Leave empty to use the signed-in account name, then the HDSL launcher name, then the local system user.'),
+          settingsCopy('usernameDesc', 'The name shown in the greeting and the account row; empty falls back to the signed-in account, then the launcher, then the system user.'),
           React.createElement('input', {
             type: 'text',
             className: 'dsh-claude-settings-input',
@@ -91,20 +86,11 @@ export function createSettingsGeneralTab(): SettingsTab {
         ),
       },
       {
-        rank: 30,
-        node: controls.row(
-          'motion',
-          settingsCopy('motionTitle', 'Animation'),
-          settingsCopy('motionDesc', 'Follow the system keeps the system\'s animation setting in charge; Reduced holds animations on their still frame; Always plays them. The background-work ring turns in every setting.'),
-          controls.segment(motionOptions, prefs.motion, value => { write({ motion: value }) }),
-        ),
-      },
-      {
         rank: 40,
         node: controls.row(
           'autoPopover',
           settingsCopy('autoPopoverTitle', 'Open popovers on hover'),
-          settingsCopy('autoPopoverDesc', 'Which popovers open on hover. "Account only" keeps it to the sidebar account popover; "All" adds the permission, model, session-stats and home-page pickers. Off leaves every popover click-to-open.'),
+          settingsCopy('autoPopoverDesc', 'Which popovers open on hover: the account popover alone, or also the permission, model, session-stats and home-page pickers.'),
           controls.segment(autoPopoverOptions, prefs.autoPopover, value => { write({ autoPopover: value }) }),
         ),
       },

@@ -12,7 +12,7 @@ export default {
     tab: 'composer',
     rank: 50,
     title: { key: 'permissionsTitle', fallback: 'Redraw the permission control' },
-    desc: { key: 'permissionsDesc', fallback: 'Use the skin\'s own permission control: a row of segments on the classic home, and a trigger with its tier card on the studio home and in conversations. Off restores the host\'s permission menu.' },
+    desc: { key: 'permissionsDesc', fallback: 'Use the skin\'s own permission control; Off restores the host\'s permission menu.' },
     // The segments are drawn into the restyled composer.
     requires: {
       pref: 'composerScope',

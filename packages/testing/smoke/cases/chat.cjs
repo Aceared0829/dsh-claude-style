@@ -294,9 +294,12 @@ module.exports = {
         loader.duration === '0.5s' && loader.delay === '0.3s' && loader.background === 'rgb(217, 119, 87)' &&
         loader.shadow === 'none' && working.whaleShown === false,
       JSON.stringify({ loader, whaleShown: working.whaleShown }))
-    check('the DeepSeek brand keeps the host\'s whale tail and stands the skin\'s dots down',
-      wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true,
+    check('the DeepSeek brand keeps the host\'s whale tail, stands the skin\'s dots down and waits on the host\'s own word',
+      wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true && wait.deepseek?.word === 'Deep diving',
       JSON.stringify(wait.deepseek))
+    check('the Claude brand takes the dots back and waits on the skin\'s own word',
+      wait.claudeAgain?.loader?.shown === true && wait.claudeAgain?.whaleShown === false && wait.claudeAgain?.word === 'Thinking…',
+      JSON.stringify(wait.claudeAgain))
     check('only the host words are marked and a third-party line stays visible before or after the waiting line mounts',
       working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
       JSON.stringify({ working, after: wait.foreignAfter }))
@@ -316,7 +319,7 @@ module.exports = {
     const leaving = silent.filter((frame) => frame.phase === 'exit')
     const last = silent[silent.length - 1] || {}
     check('the old wording leaves upward with a blur: the leave pose is set, its opacity falls and its glyphs blur',
-      leaving.length > 2 && leaving.every((frame) => frame.displayed === 'Thinking…') &&
+      leaving.length > 2 && leaving.every((frame) => frame.displayed === 'Running tools…') &&
         Number(leaving[0].opacity) > 0.5 && Number(leaving[leaving.length - 1].opacity) < 0.1 &&
         leaving.some((frame) => blurOf(frame) > 0.5),
       JSON.stringify({ frames: silent.length, leaving: leaving.map((frame) => [frame.opacity, frame.filter]) }))
@@ -331,25 +334,31 @@ module.exports = {
         enter.every((frame, at) => at === 0 || frame.opacity >= enter[at - 1].opacity - 0.01),
       JSON.stringify(enter))
     const boxes = silent.map((frame) => frame.box)
-    check('the box the swap runs in never reads as empty, holds its height, and moves the clock only where the words themselves grew',
+    // The wording this swap reaches is the shorter of the two, so the box comes
+    // down where the other swap of this case went up: what is asserted is the
+    // one move and the direction it holds, not the sign of it.
+    const travelled = boxes[boxes.length - 1].width - boxes[0].width
+    const toward = travelled < 0 ? -1 : 1
+    check('the box the swap runs in never reads as empty, holds its height, and moves the clock only where the words themselves changed',
       boxes.length > 4 &&
         boxes.every((box) => box.width > 0 && box.height === boxes[0].height) &&
-        boxes.every((box, at) => at === 0 || (box.width >= boxes[at - 1].width && box.clockLeft >= boxes[at - 1].clockLeft)) &&
-        boxes[boxes.length - 1].clockLeft - boxes[0].clockLeft === boxes[boxes.length - 1].width - boxes[0].width,
+        boxes.every((box, at) => at === 0 || (toward * (box.width - boxes[at - 1].width) >= 0 && toward * (box.clockLeft - boxes[at - 1].clockLeft) >= 0)) &&
+        boxes[boxes.length - 1].clockLeft - boxes[0].clockLeft === travelled,
       JSON.stringify({ first: boxes[0], last: boxes[boxes.length - 1], widths: boxes.map((box) => box.width), heights: boxes.map((box) => box.height), clockLefts: boxes.map((box) => box.clockLeft) }))
     // The width is travelled rather than written (shared/swapping-text.ts pins
     // the box and writes the width it heads for): on this 25 ms grid the clock's
     // displacement comes in many small steps, where a width written in one task
     // moves it the whole way inside one frame.
-    const steps = boxes.map((box, at) => at === 0 ? 0 : box.width - boxes[at - 1].width).filter((step) => step > 0)
-    const travelled = boxes[boxes.length - 1].width - boxes[0].width
+    const steps = boxes.map((box, at) => at === 0 ? 0 : toward * (box.width - boxes[at - 1].width)).filter((step) => step > 0)
     check('the box takes its new width in one move, so the clock slides with it instead of jumping',
-      travelled > 4 && steps.length >= 3 && Math.max(...steps) < travelled / 2,
+      Math.abs(travelled) > 4 && steps.length >= 3 && Math.max(...steps) < Math.abs(travelled) / 2,
       JSON.stringify({ steps: steps.length, largest: steps.length === 0 ? 0 : Math.max(...steps), travelled }))
     check('the new wording is the one left standing once the copy that left is taken down',
-      silent[0].displayed === 'Thinking…' && silent[0].copies === 1 && silent[0].phase === null &&
-        Number(last.opacity) === 1 && last.copies === 1 && last.word === 'Deep diving',
+      silent[0].displayed === 'Running tools…' && silent[0].copies === 1 && silent[0].phase === null &&
+        Number(last.opacity) === 1 && last.copies === 1 && last.word === 'Thinking…',
       JSON.stringify({ first: [silent[0].displayed, silent[0].copies, silent[0].phase], rest: [last.opacity, last.filter, last.copies, last.word] }))
+    check('a wait nothing can be read from stands on the word the brand says while the model thinks, not a second word of its own',
+      last.word === working.word, JSON.stringify({ silent: last.word, working: working.word }))
     check('a model silent past ten seconds shows the overtime badge', last.badge === 'No response yet', JSON.stringify(last))
     const tools = wait.tools || {}
     check('a tool call in flight is named as such',

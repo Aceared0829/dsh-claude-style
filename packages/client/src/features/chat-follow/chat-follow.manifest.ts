@@ -12,7 +12,7 @@ export default {
     tab: 'conversation',
     rank: 30,
     title: { key: 'chatAnimationsTitle', fallback: 'Chat-area animations' },
-    desc: { key: 'chatAnimationsDesc', fallback: 'The conversation area\'s motion: the follow, the automatic folding with its rolling door, the text fade, the file change rows, the send flight, the counted figures on each process group\'s header and the line saying what the model is doing. Off hands the conversation back to the host\'s own behaviour, the host\'s own words included. With Animation set to Reduced it all stands still.' },
+    desc: { key: 'chatAnimationsDesc', fallback: 'The conversation area\'s motion set: follow, folding, text fade, file change rows, send flight, counters and the waiting line. Off hands the area back to the host.' },
   },
   cases: ['chat-follow'],
   description: {

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 4,
+  "external": true,
+  "zh": "「光标动画」从三档简化为开与关，从「对话」页挪到「动效」页，两档各用一张预览卡呈现：开的那张光标在样例行上来回滑动，关的那张停在行首闪烁；早先存下的「只在移动时」读作开。已经用预览卡呈现选项的行（状态行动画、光标动画）不再带文字说明。",
+  "en": "Composer caret motion drops its third tier for On and Off and moves from the Conversation tab to the Motion tab, each choice a preview card — the caret gliding along a sample line, or standing at its head blinking; a stored Explicit moves reads as On. A row whose preview cards already present the choice (the waiting-line animation, the caret) carries no description."
+}

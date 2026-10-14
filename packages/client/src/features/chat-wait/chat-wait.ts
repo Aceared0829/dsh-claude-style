@@ -2,13 +2,13 @@ import { QUIET_ATTR, STATUS_DETAIL_PRECISE } from '../../constants'
 import { observeMatches } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
+import { copyLabel, hostChatCopy, hostChatSeat } from '../../core/i18n'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
-import { activityWords } from '../../shared/turn-activity'
+import { ACTIVITY_THINKING, activityWords, waitingWord } from '../../shared/turn-activity'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
@@ -28,9 +28,11 @@ interface WaitLine {
 
 /**
  * The live turn's running row: what the turn is doing now in this line's own
- * words (shared/turn-activity.ts), the host's own 「深度求索中」 where no state
- * can be read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
- * once the model has been silent for ten seconds (wait-state.ts). Under the
+ * words (shared/turn-activity.ts), the word its brand waits on where no state
+ * can be read — the skin's own 「正在思考」 under the Claude brand, the host's own
+ * 「深度求索中」 under the DeepSeek brand — the turn's elapsed time as a quiet
+ * clock beside it, and 「暂未响应」 once the model has been silent for ten seconds
+ * (wait-state.ts). Under the
  * Precise choice three of those states name more than a state: a call in
  * flight says the file it works on (「正在读取 app.js」) or the description it
  * declares for itself (a command call must carry one), and reasoning says the
@@ -189,8 +191,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const turn = snapshot === null ? undefined : openTurn(snapshot)
     const line = lineOf(row, words)
     const { label, clock, badge } = line
-    // What the turn is doing, and the host's own word for a turn whose state
-    // cannot be read (D32): the line says the model's work, never a guess.
+    // What the turn is doing, and the one word its brand waits on for a turn
+    // whose state cannot be read (D32): the line says the model's work, never a
+    // guess.
     // Under the Precise choice three states carry words of their own — the
     // file a call works on, the description a command call declares, and the
     // clause the model's reasoning says it is on — and those are written as
@@ -198,16 +201,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // locked for a second (wordForPass): a turn passes through several states
     // that fast, and only the newest one after the lock is worth showing; a
     // call's own words are the one thing that waits for it.
-    const precise = readPrefs().statusDetail === STATUS_DETAIL_PRECISE
+    const prefs = readPrefs()
+    const precise = prefs.statusDetail === STATUS_DETAIL_PRECISE
     const activity = activityWords(snapshot, turn, precise)
+    // One word stands for the model thinking and for a wait nothing can be read
+    // from (shared/turn-activity): the skin's own under the Claude brand, the
+    // host's own under the DeepSeek brand.
+    const waiting = waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving', ctx))
     const said = activity === null
       ? null
-      : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
+      : activity.key === ACTIVITY_THINKING.key
+        ? waiting
+        : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
     const pass = wordForPass({
       word: said,
       detail: activity !== null && activity.aboutCall === 'detail' ? said : null,
       onCall: activity !== null && activity.aboutCall === 'generic',
-      host: t('chat.deepDiving'),
+      host: waiting,
     }, wording.get(row), now)
     wording.set(row, pass.row)
     setSwappingText(label, pass.word, true)
@@ -267,8 +277,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   function sync() {
-    const t = ctx.get('locale')?.bind('chat')
-    const rows = t === undefined ? [] : runningRows.all()
+    const t = hostChatSeat(ctx)
+    const rows = t === null ? [] : runningRows.all()
     const now = Date.now()
     const seen = new Set<string>()
     for (const row of rows) syncRow(row, t!, now, seen)
