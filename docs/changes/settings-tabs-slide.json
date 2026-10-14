@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 9,
+  "external": false,
+  "zh": "设置页切换分页时，内容原来瞬间整块替换。现在新的一页从它在分页条上所在的一侧滑入并穿过一点模糊，被换下的那一页朝另一侧滑出（约 0.25 秒）；滑出的那一页只是一张静止的副本，读屏与 Tab 键都不会碰到它。",
+  "en": "Changing settings tabs used to swap the whole page at once. The new tab now slides in from the side it sits on along the strip, through a short blur, while the one it replaces slides out the other way (about 0.25 s); the page sliding out is a still copy that neither a screen reader nor the Tab key reaches."
+}

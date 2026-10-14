@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 7,
+  "external": false,
+  "zh": "封号彩蛋的整页原来一下子出现、一下子消失。现在打开时它从中心略小处放大淡入（约 0.25 秒），按页上的按钮或 Esc 关掉时缩回去淡出（约 0.12 秒）再离开页面；语言或模型文案变化时就地重画的那一页不再重播入场。",
+  "en": "The account-hold page used to appear and vanish at once. It now grows out of the centre as it fades in (about 0.25 s), and a control on it or Esc shrinks it back as it fades (about 0.12 s) before it leaves the page; a page redrawn in place for a copy change no longer replays its entrance."
+}

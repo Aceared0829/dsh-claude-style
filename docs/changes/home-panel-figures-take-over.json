@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 11,
+  "external": false,
+  "zh": "工作室首页的用量面板在数字算好之前画着占位条，数字到达时占位一下子变成数字。现在占位的底色淡去、数字从模糊里显出来，热力图的格子从占位色渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）；打开时数字已经算好的面板不播这一段。",
+  "en": "The studio home's usage panel draws placeholders until its figures are ready, and the figures used to replace them at once. The placeholders' fills now fade while the figures come out of a blur, the heat map's cells shade from the placeholder tone into their own colours, and the model list and chart fade in (about 0.3 s); a panel whose figures are ready when it opens skips this."
+}

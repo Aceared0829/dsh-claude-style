@@ -4,7 +4,7 @@
 
 What each feature does is in [Features](FEATURES.en.md).
 
-The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in six tabs:
+The settings page appears both in the settings dialog (the "Claude Style" tab) and on the plugin page, in seven tabs:
 
 | Tab | Settings |
 |---|---|
@@ -14,6 +14,7 @@ The settings page appears both in the settings dialog (the "Claude Style" tab) a
 | Sidebar | Collapse the sidebar settings area (with the Account-hold easter egg under it: Off / 中文 / English), Sidebar search, Search box style, In progress / Archived view, Float docked panels, Sidebar layout (Relaxed / Compact) |
 | Conversation | Conversation navigator, Chat-area animations, Conversation statistics position (Inside the context popover / On its own line), Composer caret motion, Chat / Trajectory tabs |
 | Desktop | Header in the title bar |
+| Motion | Waiting-line animation (Highlight sweep / Colour wash) |
 
 Every feature that takes over part of the host's interface has its own switch; turning it off brings the host's original back at once, without a reload. The conversation area's effects — the follow, the automatic folding with its rolling door, the text fade, the file change rows, the send flight, the counted figures on each process group's header and the line saying what the model is doing — share the one Chat-area animations switch: on plays this plugin's set, off hands the conversation back to the host with the host's own words; the caret keeps its own three-way choice.
 
@@ -56,6 +57,8 @@ In the settings dialog, this page's heading row ends with a GitHub mark; pressin
 **A rolling door for folds**: opening or closing a row (a tool card, a thinking row, a command card) or a process group moves the height frame by frame, really pushing the content below away or pulling it back. The door only rolls the stretch the reader can see, so any length moves at the same speed, and a body holding several cards rolls as one door. It switches with Chat-area animations, together with the entrance fade of an expanded body.
 
 **Composer caret motion**: the composer's text caret is drawn by the plugin and glides when it moves; a question card's answer box and a queued message's inline editor are covered as well. The Conversation tab offers Every move (the default), Explicit moves and Off.
+
+**Waiting-line animation**: the Motion tab's one setting, and it is about the words on the line that says what the model is doing: neither choice carries text, each card being that line's own words, moving, all the time. Inside a card the words take turns between two wordings — "Thinking…" and "Deep diving" — the old one leaving upward and the new one rising back in, which is the swap the line itself runs, over either paint: Highlight sweep (the default) crosses a band of light over the glyphs at the rhythm of the host's own rows, and Colour wash makes the letters themselves move through colour — seven radial washes over a grey ramp, orbiting the glyph box while the hue turns a full circle. One press on a card changes it at once; on the line itself the wording, its swap and the clock beside it are the same either way; with Animation set to Reduced the preview stands on one wording and the line holds its still frame.
 
 **Conversation statistics position**: the session's eight figures have two places to live. Inside the context popover (the default) puts them in the panel that ring opens and leaves only the ring under the input card; On its own line writes the turns and steps, the output speed, the tokens read in, the tokens written back and the cache-hit share on a line of their own below the input card, with the ring itself at the end. A figure on that line re-enters character by character whenever it moves (every step, and all through a streaming answer), and the cache share and the ring each take their own colour band: the share runs from red in the nineties to dark green at 99%, the occupancy from green at a fifth to red at two fifths. A window too narrow for the whole line makes it give way one step at a time: first the cache share's words, then the turns and steps, then the number beside the ring (the ring stays), then the tokens read in and written back as one total, and last the counts folded into k / M / B — and the same order gives them back when the window grows.
 

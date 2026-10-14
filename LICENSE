@@ -30,11 +30,6 @@ Font files notice:
   They are included in this repository for personal use only and are **not**
   covered by the MIT license above; all rights remain with Anthropic. The npm
   package does not ship these files.
-Provider icon notice: the files under `packages/assets/src/icons/providers/` (and their
-`lib/icons/providers/` build copy) are vendored from farion1231/cc-switch
-(MIT License, Copyright (c) 2025 Jason Young). They are redistributed under
-the MIT License; brand names and logos remain trademarks of their respective
-owners.
 
 - `packages/assets/src/fonts/JetBrainsMonoVariable.ttf` and
   `packages/assets/src/fonts/JetBrainsMonoItalicVariable.ttf` are JetBrains Mono,

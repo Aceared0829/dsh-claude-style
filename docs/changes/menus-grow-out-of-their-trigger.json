@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 6,
+  "external": false,
+  "zh": "模型、推理等级、权限、账号这几张弹层卡片，以及新会话页的目录与预设菜单，原来一律淡入并上移 4 像素出现。现在它们从各自按钮所在的一角、由略小的尺寸长出来（约 0.25 秒，不再上移），收起时更快（约 0.12 秒），只略微收拢就淡出，下一次打开仍从原来的起点长出。",
+  "en": "The model, reasoning, permission and account cards, and the new-conversation page's folder and preset menus, used to fade in while rising 4px. They now grow out of the corner nearest their button from a little smaller (about 0.25 s, with no rise) and close faster (about 0.12 s), shrinking only slightly as they fade, and the next opening grows from the full distance again."
+}

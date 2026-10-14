@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "fixes",
+  "order": 5,
+  "external": false,
+  "zh": "发出消息时，气泡从输入框飞向消息列表的过程中上半部分会变浅，浅色块的高度看着和单行输入框一样，落定后闪一下才恢复。替身（飞行的那个气泡）的高度取自宿主刚挂上的那一行，而那一行还在长高，于是替身比它要替换的那一行矮——淡出交接时只盖住气泡的上半段，被盖住的一段带着替身的底色、露在外面的一段是页面自己的底色，两段深浅不同就成了那道横带。现在替身的高度以落点那一行的实际高度为准，淡出时整行都被它盖住；替身的底色也按画面上的颜色写定（气泡底色是半透明令牌时与画布合成一次），压在气泡上不再叠出第二层。落定的回弹从约 3.6 像素收到约 0.2 像素，替身不再在淡出期间露到那一行外面。",
+  "en": "While a sent bubble flew from the composer to the message list, the upper part of the bubble came out pale — a band about as tall as the composer's single-line field — and flickered back once it settled. The stand-in took its height from the row the host had just mounted, which was still growing, so it stood shorter than the row it was replacing: as it faded across, it covered only the bubble's upper part, and the covered part carried the stand-in's own fill while the part left outside kept the page's, which reads as a band. The stand-in's height now follows the row it lands on, so it covers that row whole while it fades, and its fill is written as the colour the screen paints (a translucent bubble token is composited over the canvas once) instead of compositing a second time over the bubble. The landing's give is down from about 3.6px to about 0.2px, so the stand-in no longer stands outside that row as it fades."
+}
