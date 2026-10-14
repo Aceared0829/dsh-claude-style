@@ -64,6 +64,9 @@ async function captureFailure(session, out, name) {
         .filter((node) => node.offsetParent !== null)
         .map((node) => (node.innerText || '').replace(/\s+/g, ' ').slice(0, 160)),
       skin: document.body.getAttribute('data-dsh-claude-style'),
+      // Whatever a scenario left in the title: a page under test has no other
+      // channel out of the browser, and a failure is when it is worth reading.
+      title: document.title,
     }
   }).catch((error) => ({ error: String(error) }))
   const report = [
