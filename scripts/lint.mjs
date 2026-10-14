@@ -7,12 +7,14 @@
  * Markdown resolves, every decision a comment or a document cites exists
  * (numbers are stable and a retired one stays citable, D48; drafts carry the
  * D00 placeholder, allowed locally and rejected under CI), every repository
- * path prose names exists, and no feature module reaches past the handles its
- * manifest declares (D42). Everything else a tool could enforce is already a
+ * path prose names exists, no feature module reaches past the handles its
+ * manifest declares (D42), and no pair of files holds more copied code than the
+ * baseline records (jscpd). Everything else a tool could enforce is already a
  * build check (D44, D51), the type check or a smoke case.
  *
  * Usage: node scripts/lint.mjs
  */
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -142,6 +144,8 @@ const citing = [
   ...sources,
   ...markdown,
   path.join(ROOT, 'AGENTS.md'),
+  // The licence file is prose as well, and names repository paths the same way.
+  path.join(ROOT, 'LICENSE'),
 ].filter((file, at, all) => all.indexOf(file) === at && fs.existsSync(file))
 let citations = 0
 for (const file of citing) {
@@ -197,6 +201,25 @@ for (const file of featureModules) {
   if (/^import type \{[^}]*\bUi\b[^}]*\} from '[./]+core\/scheduler'/m.test(text)) problems.push(`${relative(file)}: imports the whole ui registry type; type ui as FeatureUi<typeof manifest> and list the handles it reads in the manifest (D42)`)
 }
 
+// 6. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy
+// is where it moves into the shared layer. The copies written before the rule
+// are fingerprinted in its baseline, waiting for that move; any other copy
+// fails, and so does a scan that read nothing. `npx jscpd` lists every copy.
+const copies = spawnSync(process.execPath, [
+  path.join(ROOT, 'node_modules', 'jscpd', 'run-jscpd.js'),
+  '--fail-on-new-clones',
+  '--fail-on-empty',
+  '--reporters', 'console',
+  '--no-colors',
+], { cwd: ROOT, encoding: 'utf8' })
+if (copies.status !== 0) {
+  // The console report lists every copy; the ones past the baseline are marked
+  // [NEW], each followed by its two places.
+  const fresh = [...copies.stdout.matchAll(/^Clone found \([^)]*\) \[NEW\]\n.*\n.*$/gm)].map((match) => match[0])
+  problems.push(`copied code the jscpd baseline does not hold; move the shared part into the shared layer (npx jscpd lists every copy):\n${fresh.length > 0 ? fresh.join('\n') : `${copies.stdout}${copies.stderr}`}`)
+}
+const copyBaseline = Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts', 'jscpd-baseline.json'), 'utf8')).fingerprints).length
+
 // A rule whose pattern stopped matching anything would pass forever: each of the
 // rules has to have looked at something.
 if (featureUiChecked === 0) problems.push('lint: no feature module types ui as FeatureUi — the feature rule matches nothing')
@@ -209,5 +232,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code beyond the ${copyBaseline} the jscpd baseline holds)`)
 }

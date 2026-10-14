@@ -1,0 +1,8 @@
+{
+  "path": ["."],
+  "format": ["typescript", "javascript", "css"],
+  "pattern": "{packages/client/src,packages/host/src,packages/contracts/src,packages/testing,scripts}/**/*",
+  "ignore": ["**/*.test.ts", "**/node_modules/**"],
+  "baseline": "scripts/jscpd-baseline.json",
+  "reporters": ["console"]
+}

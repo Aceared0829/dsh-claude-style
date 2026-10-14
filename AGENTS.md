@@ -56,7 +56,7 @@ Hard stops: stop the moment one triggers, without first judging whether it is wo
 
 - Stylesheets are plain CSS: attributes are spelled out, and a brand mark is read as `var(--dsh-claude-image-<name>)`. The build checks scope, the composer gate, `:has()` placement, the token gates and that every `data-dsh-*` attribute a selector reads is written somewhere in the TypeScript, on the syntax tree (D51). Dark tokens are the base, light overrides go under `:not([data-ds-dark-theme])`. Light canvas `#FCFCFB`, dark `#141413`, accent ember orange `#D97757`; no pure white, pure black or cold grays.
 - `!important` only where the page needs it: over a host `!important`, an inline style or another skin rule. The lane's `importance` scenario drops each one on the real page and fails on any that changes nothing (D51); run it after writing one.
-- Token values and host aliases live in `packages/client/src/theme/tokens.json`; the token stylesheet and the token table in `docs/STYLE.md` are generated from it.
+- Token values and host aliases live in `packages/client/src/theme/tokens.json`; the token stylesheet and the token, motion and layer tables in `docs/STYLE.md` are generated from it. A time, an easing curve (D65) and a z-index above 9 (D00) are read from it, never written.
 - A feature never borrows another feature's class names; shared looks use the neutral shared classes (`dsh-claude-popover-card`, `dsh-claude-popover-item`, …).
 - Design tokens and shape rules are in `docs/STYLE.md`; read it before changing visuals.
 
@@ -98,7 +98,8 @@ The source is TypeScript ES modules under `strict` (D36). A module nothing impor
 npm install                                  # dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright, React types
 npm run build                                # type-checks src/, bundles it into lib/client.js and the deferred features' chunks under lib/assets/ with their source maps, runs the build checks, prints the build id
 npm run dev                                  # rebuild on every change to packages/client, assets, host, contracts and scripts/, each run with DSH_CLAUDE_STYLE_DEBUG=1
-npm run lint                                 # the rules that need no build: the stop line, Markdown links, decision citations, the repository paths prose names (D48) and feature modules' ui (D42)
+npm run lint                                 # the rules that need no build: the stop line, Markdown links, decision citations, the repository paths prose names (D48), feature modules' ui (D42) and copied code past the jscpd baseline
+npx jscpd                                    # list every copied stretch the lint rule reads, as .jscpd.json scans them, the new ones marked [NEW]
 npm run features                             # write the feature docs' list from the feature manifests (D48)
 npm run features:check                       # fail when that list differs from the manifests; CI runs this
 npm run changelog                            # write the CHANGELOG's [Unreleased] section from docs/changes/ (D48)
