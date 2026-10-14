@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 10,
+  "external": false,
+  "zh": "`npm run verify` 先跑云端快档那批检查（lint、特性清单、决策索引、变更记录、AGENTS 表），推送前的一次运行与云端判定同一批内容。",
+  "en": "`npm run verify` starts with the checks the cloud's fast tier runs (lint, the feature list, the decisions index, the changelog and the AGENTS table), so the run before a push judges the same set."
+}
