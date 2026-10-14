@@ -94,9 +94,12 @@ export function createSessionStats(ctx: HostContext) {
 
   /** Stop following the projections (a different session, or the teardown). */
   function releaseWatch() {
-    if (watch === null) return
-    for (let i = 0; i < watch.off.length; i++) watch.off[i]()
-    watch = null
+    if (watch !== null) {
+      for (let i = 0; i < watch.off.length; i++) watch.off[i]()
+      watch = null
+    }
+    // The skeleton's wait holds the panel's place, not the session's: it goes
+    // whether a session was ever bound or not (stats-block.ts).
     block.stopSkeleton()
   }
 
@@ -194,11 +197,12 @@ export function createSessionStats(ctx: HostContext) {
       }
       inline.fit()
     },
-    /** Drop the appends, the line, the projection subscriptions and the hover timers. */
+    /** Drop the appends, the line, the projection subscriptions and the host-node bindings. */
     teardown() {
-      binding.cancelHover()
       releaseWatch()
-      binding.releaseSize()
+      // Everything this generation bound on the host's own meter, line and
+      // panel comes off with it (stats-binding.ts's release).
+      binding.release()
       inline.clear()
       const meter = findContextMeter()
       if (meter !== null) writeRamp(meter, 'context', null)

@@ -177,6 +177,10 @@ export function createProcessSummary() {
   /** The groups waiting for the next frame. */
   const pending = new Set<Element>()
   let queued = false
+  /** Set by the teardown: nothing more is queued, and the frame in flight is cancelled. */
+  let stopped = false
+  /** Cancels the frame the pending groups wait on. */
+  let cancelFrame: (() => void) | null = null
 
   /** One figure's count, rolled from the one it showed. */
   function setCount(roll: HTMLElement, count: number) {
@@ -338,11 +342,12 @@ export function createProcessSummary() {
   }
 
   function queue(group: Element) {
+    if (stopped) return
     pending.add(group)
     if (queued) return
     queued = true
     const forms = new Map<HTMLElement, SummaryForm>()
-    requestFrame({
+    cancelFrame = requestFrame({
       read() {
         // The measurement the write needs, taken before this frame's writes.
         for (const candidate of pending) {
@@ -354,6 +359,7 @@ export function createProcessSummary() {
         }
       },
       write() {
+        cancelFrame = null
         queued = false
         const groups = [...pending]
         pending.clear()
@@ -387,6 +393,14 @@ export function createProcessSummary() {
       for (const group of document.querySelectorAll(PROCESS_GROUP_SELECTOR)) queue(group)
     },
     stop() {
+      // First: a frame still waiting would otherwise write the summaries again
+      // after this teardown and subscribe their sizes with nothing left to
+      // unsubscribe them (D12 — the feature stays off for the generation).
+      stopped = true
+      if (cancelFrame !== null) cancelFrame()
+      cancelFrame = null
+      queued = false
+      pending.clear()
       stopMutations()
       for (const [digit, timer] of leaving) {
         window.clearTimeout(timer)

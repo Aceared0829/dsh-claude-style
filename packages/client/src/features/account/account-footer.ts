@@ -384,8 +384,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * row) would otherwise collect one set of listeners per switch.
    */
   const hostRowBindings = new Map<HTMLElement, { catch: (e: Event) => void, enter: () => void, leave: () => void, press: () => void }>()
-  /** The host's menu bindings this generation installed, taken off with it. */
-  const hostMenuBindings = new Map<HTMLElement, { enter: () => void, leave: () => void }>()
+  /**
+   * The host's open menu with its two listeners. The host mounts a fresh card
+   * for each open, so one binding at a time is all there is, and it is taken
+   * off the moment that card goes: a table keyed by node would keep every card
+   * the host has already unmounted, and its subtree, reachable until the
+   * teardown.
+   */
+  let hostMenuBinding: { menu: HTMLElement, enter: () => void, leave: () => void } | null = null
+
+  /** Take the host menu's listeners off, mounted or not. */
+  function unbindHostMenu() {
+    if (hostMenuBinding === null) return
+    hostMenuBinding.menu.removeEventListener('mouseenter', hostMenuBinding.enter)
+    hostMenuBinding.menu.removeEventListener('mouseleave', hostMenuBinding.leave)
+    hostMenuBinding = null
+  }
 
   /**
    * Bind the hover preference on the host's account row. The host renders
@@ -431,10 +445,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function onHostMenuChanged(menu: HTMLElement | null) {
     if (menu === null) {
       disarmAccountMenu()
+      unbindHostMenu()
       return
     }
-    if (menu.__dshHostHoverToken === hostRowBindingToken) return
-    menu.__dshHostHoverToken = hostRowBindingToken
+    if (hostMenuBinding !== null && hostMenuBinding.menu === menu) return
+    // A different card: the host unmounted the one before it, so its listeners
+    // come off now rather than at the teardown.
+    unbindHostMenu()
     const enter = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.cancel()
     }
@@ -443,7 +460,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     menu.addEventListener('mouseenter', enter)
     menu.addEventListener('mouseleave', leave)
-    hostMenuBindings.set(menu, { enter, leave })
+    hostMenuBinding = { menu, enter, leave }
   }
 
   function onSurfaceMode(mode: AccountSurfaceMode) {
@@ -464,6 +481,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function dropAccountFooter(footArea: Element | null) {
     cancelClosePopover()
     hostHoverIntent.cancel()
+    // The drive that presses the host's own settings row stops with the footer
+    // it was reaching through.
+    hostMenu.stopSettingsDrive()
     disarmAccountMenu()
     if (accountWidth !== 0) {
       accountWidth = 0
@@ -493,12 +513,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       delete row.__dshHostRowToken
     }
     hostRowBindings.clear()
-    for (const [menu, bindings] of hostMenuBindings) {
-      menu.removeEventListener('mouseenter', bindings.enter)
-      menu.removeEventListener('mouseleave', bindings.leave)
-      delete menu.__dshHostHoverToken
-    }
-    hostMenuBindings.clear()
+    unbindHostMenu()
     if (footArea) mirror.clear(footArea)
   }
 

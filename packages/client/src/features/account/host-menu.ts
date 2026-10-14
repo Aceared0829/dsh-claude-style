@@ -17,6 +17,9 @@ const MENU_LOOK_TRIES = 20
  * the synthetic path's settings row still use.
  */
 export function createHostAccountMenu(options: { close(): void }) {
+  /** The wait between two looks for the host's menu, while one is in flight. */
+  let lookTimer: ReturnType<typeof setTimeout> | null = null
+
   /** A click the host's React handlers actually see (pointerdown + click). */
   function realClick(el: HTMLElement | null | undefined) {
     if (el === null || el === undefined) return
@@ -124,6 +127,7 @@ export function createHostAccountMenu(options: { close(): void }) {
     realClick(account)
     let tries = 0
     function look() {
+      lookTimer = null
       const menu = findAccountMenu()
       if (menu !== null) {
         const row = settingsRowOf(menu)
@@ -139,9 +143,19 @@ export function createHostAccountMenu(options: { close(): void }) {
         return
       }
       if (tries++ > MENU_LOOK_TRIES) return
-      setTimeout(look, MENU_LOOK_INTERVAL_MS)
+      lookTimer = setTimeout(look, MENU_LOOK_INTERVAL_MS)
     }
-    setTimeout(look, MENU_LOOK_INTERVAL_MS)
+    lookTimer = setTimeout(look, MENU_LOOK_INTERVAL_MS)
+  }
+
+  /**
+   * Drop the poll for the host's menu. The poll presses the host's own row
+   * after it starts, and the rows it drives are handed back when the footer
+   * is, so the footer's teardown stops it here.
+   */
+  function stopSettingsDrive() {
+    if (lookTimer !== null) clearTimeout(lookTimer)
+    lookTimer = null
   }
 
   /**
@@ -163,7 +177,8 @@ export function createHostAccountMenu(options: { close(): void }) {
     findMenu: findAccountMenu,
     menuViewport,
     openMenu: openAccountMenu,
-    openSettings: openHostSettings
+    openSettings: openHostSettings,
+    stopSettingsDrive
   }
 }
 

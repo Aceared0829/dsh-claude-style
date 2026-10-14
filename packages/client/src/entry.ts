@@ -159,8 +159,12 @@ export function apply(ctx: HostContext) {
     const index = installed.findIndex(entry => entry.id === name || entry.handle === name)
     // A handle-only match does not tear the install down.
     if (index !== -1 && installed[index].id === name) {
-      const stop = installed[index].stop
+      const { stop, handle } = installed[index]
       installed.splice(index, 1)
+      // The handle goes with the install: with it left on `ui`, every pass and
+      // every pointer, key and activity event would still reach a feature that
+      // has been torn down (applySwitch drops it the same way).
+      if (handle !== null) delete ui[handle]
       // Retiring goes through even when the feature's own teardown fails too.
       try { stop() } catch (error) { reportError(error) }
     }

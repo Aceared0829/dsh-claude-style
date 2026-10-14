@@ -31,9 +31,8 @@ interface Element {
   __dshContextMeterToken?: object
   __dshContextPanelToken?: object
   __dshContextLineToken?: object
-  /** The host's account row and menu bound by this generation (features/account). */
+  /** The host's account row bound by this generation (features/account). */
   __dshHostRowToken?: object
-  __dshHostHoverToken?: object
   __dshBanBound?: boolean
   /** A mirrored footer entry: the icon markup it carries, the host entry and the click it forwards. */
   __dshIconHtml?: string

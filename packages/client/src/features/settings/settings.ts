@@ -57,9 +57,12 @@ type PageDirection = 'forward' | 'back'
 /**
  * The quick-provider popover (packages/client/src/features/settings/quick-providers.ts). The settings
  * row is React-rendered while that card is imperative, so the row reaches the
- * popover through this handle.
+ * popover through this handle. The handle is read through the live registry
+ * (D42) rather than kept: a page yielded to another owner takes the
+ * quick-provider install down and brings a fresh one back, while this page's
+ * section stays mounted, and a stored handle would drive the dead one.
  */
-export let quickProviderApi: QuickProvidersHandle | null = null
+let quickProviderHandle: (() => QuickProvidersHandle | null) | null = null
 
 /**
  * The host's slot registry, kept from the settings-section registration so
@@ -252,7 +255,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
     write,
     controls: SETTINGS_CONTROLS,
     quickTrigger,
-    quickProviderApi: () => quickProviderApi,
+    quickProviderApi: () => quickProviderHandle === null ? null : quickProviderHandle(),
     username: {
       value: username,
       onChange(e) {
@@ -376,7 +379,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
        * observer's attributeFilter, so no pass would fire for them. */
       onPointerDown() { syncSettingsNav() },
     }
-    quickProviderApi = ui.quickProviders || null
+    quickProviderHandle = () => ui.quickProviders ?? null
   }
   if (typeof ctx.inject !== 'function') return stopThemeFlip
   const fiber = ctx.inject(['slots'], scope => {
@@ -418,7 +421,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (ui && ui.settingsNav) {
       delete ui.settingsNav
     }
-    quickProviderApi = null
+    quickProviderHandle = null
     slotsApi = null
     if (fiber && typeof fiber.dispose === 'function') fiber.dispose()
   }

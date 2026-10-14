@@ -130,13 +130,25 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function trackPointerWhileOpen() {
     const wanted = modelPop !== null && modelPop.getAttribute('data-open') === 'true'
     if (wanted === pointerBound) return
-    pointerBound = wanted
-    if (wanted) {
-      document.addEventListener('mousemove', trackPointer, true)
-    } else {
-      document.removeEventListener('mousemove', trackPointer, true)
-      pointer = null
+    if (!wanted) {
+      unbindPointerTracking()
+      return
     }
+    pointerBound = true
+    document.addEventListener('mousemove', trackPointer, true)
+  }
+
+  /**
+   * Take the pointer watch off the document. The open card is the only thing
+   * that asks for it, so it goes with the card: a generation torn down while
+   * the card stands would otherwise leave this listener, and the closure
+   * behind it, on the document for the page's life.
+   */
+  function unbindPointerTracking() {
+    if (!pointerBound) return
+    document.removeEventListener('mousemove', trackPointer, true)
+    pointerBound = false
+    pointer = null
   }
 
   /** True while the tracked pointer sits within one card's box, with the same
@@ -485,6 +497,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     modelSubBody = null
     modelBodySig = ''
     modelSubSig = ''
+    unbindPointerTracking()
     cancelCloseModel()
     modelCatalog.reset()
   }

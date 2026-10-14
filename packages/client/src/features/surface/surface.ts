@@ -93,10 +93,16 @@ export function install() {
     if (account === null) throw new Error('surface: ds-bot\'s account button is not on the page')
     body.toggleAttribute(SWITCHING_ATTR, true)
     account.click()
-    requestFrame({
+    cancelSwitchFrame = requestFrame({
       write() {
+        cancelSwitchFrame = null
         const item = document.querySelector<HTMLElement>(DS_BOT_AGENT_ITEM_SELECTOR)
-        requestFrame({ write: () => body.removeAttribute(SWITCHING_ATTR) })
+        cancelSwitchFrame = requestFrame({
+          write() {
+            cancelSwitchFrame = null
+            body.removeAttribute(SWITCHING_ATTR)
+          },
+        })
         if (item === null) throw new Error('surface: ds-bot\'s account menu carries no Agent mode item')
         item.click()
       },
@@ -218,6 +224,12 @@ export function install() {
 
   // The pass reads and writes, so it runs in the frame's write phase (D40).
   let cancelPass: (() => void) | null = null
+  /**
+   * The two frames the mode switch presses ds-bot's own menu in. They outlive
+   * the press, so the teardown drops them: a press still waiting would click
+   * ds-bot's item, and the mark it lifts, after the switch is off the page.
+   */
+  let cancelSwitchFrame: (() => void) | null = null
   const pass = {
     write() {
       cancelPass = null
@@ -239,6 +251,8 @@ export function install() {
   return () => {
     if (cancelPass !== null) cancelPass()
     cancelPass = null
+    if (cancelSwitchFrame !== null) cancelSwitchFrame()
+    cancelSwitchFrame = null
     stopMutations()
     stopOwner()
     stopCopy()

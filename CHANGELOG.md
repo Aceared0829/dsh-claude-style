@@ -28,10 +28,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 设置页的开关按下后圆钮越过终点再弹回（约 0.35 秒），只有按过的开关这样动，打开设置页或换回某个分页时各个开关都静止在原位。
 - 设置页切分页时新的一页从它在分页条上所在的一侧滑入并穿过一点模糊，被换下的那一页朝另一侧滑出（约 0.25 秒），滑出的那张静止副本读屏与 Tab 键都碰不到。
 - 首页打开时品牌标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）。
+- 设置页在极窄宽度下，分页条把每个标签压成一列单字，「强调色」这类行的说明文字也被控件挤到每行只剩几个字。现在一行放不下全部分页时分页条换到第二行，每个标签始终完整显示在一行上；一行的文字空间不足时，开关、分段选择器等控件移到文字下方独占一行。
+- 上下文占用的色带移到四成到八成：占用四成以下保持绿色，四成到八成之间依次经过浅绿、黄与橙，八成起为红色。
 - 工作室首页的用量面板：占位的底色淡去、数字从模糊里显出来，热力图的格子渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）。
 - 等待行的「暂未响应」徽标从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒）。
 - Claude 品牌下，轮次进行中那一行开头是主题自己的三枚 4px 加载点（各弹起 8 像素并在离地时压扁，半秒一次，错开周期依次起跳）；DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变。
 - 「外观」页的「主色」改名「强调色」并挪到「配色」下方，配色选「跟随宿主」时它变灰、不能操作。
+- 工作台首页的权限控件此前和经典首页一样是一排 Read / Edit / Auto / Yolo 分段按钮，与它那身对话式的单行输入卡片并不相称；现在工作台首页与对话页一致：输入区里是一枚写着当前档位的按钮，点开是一张档位卡片，滑块式分段只留在经典首页。工作台首页还没选工作区时，按钮停在新会话的默认档位上、不接收点击，点它和点输入框一样打开工作区选择。
 
 ### 问题修复
 
@@ -40,6 +43,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 开着「悬停自动展开弹层」时，悬停态下按同一个入口不再收起刚展开的弹层（侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器与输入框右侧的上下文圆环），收起交给鼠标离开入口与卡片。
 - 同一运行行中有可见替代文字且宿主文案被外部隐藏时，主题等待行自动让位，接管结束后恢复，其他聊天动效继续运行。
 - 钉住的位置比末尾所有可能的停靠位置都高，跟随末尾期间输入框上方那一行每一帧都停在同一处，推理一段段到达也不再上下抖动。
+- 功能被关掉或整代被换下之后，它留下的挂在宿主节点上的监听、观察总线订阅、排队帧与定时器一并收走：宿主账户菜单每次打开不再留住上一张已经卸载的卡片，会话数字的圆环与弹层不再累积旧的挂载代，输入卡片选择器关掉时不再把 mousemove 留在文档上，模型档位滑块按住时被拆下也不再留下 pointerup，进程组表头的摘要不会在拆除后重建并永久订阅宽度，思考窗与折叠回滚不再在拆除后继续排帧。
 - 卷帘门在末尾展开、收起的整个过程中，只要读者没有自己往回翻看，输入框上方那一行都停在原处不动。
 - 被合并掉的调用连同宿主给它留的间距一起离开页面，过程组里各行的间距保持一致。
 - 状态行的扫光层始终挂在承载文字的那个副本上，扫光带贴着字形扫过。
@@ -85,10 +89,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - A settings switch now runs its knob past the end and settles back (about 0.35 s), and only a switch the reader has pressed moves — opening the page or coming back to a tab shows every switch at rest.
 - Changing settings tabs slides the new one in from the side it sits on along the strip, through a short blur, while the one it replaces slides out the other way (about 0.25 s); the page sliding out is a still copy that neither a screen reader nor the Tab key reaches.
 - Opening the home page raises the brand mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s).
+- On the settings page at very narrow widths the tab strip crushed every label into a column of single characters, and a description like the accent colour row was squeezed by its control down to a few characters a line. The strip now wraps onto a second line when one line no longer holds every tab, each label always whole on one line; a row whose text runs out of room drops its control — a switch, a segmented control — onto a line of its own under the text.
+- The context-occupancy colour band moves to two fifths through four fifths: the reading stays green below two fifths, runs through light green, yellow and orange in between, and is red from four fifths on.
 - The studio home's usage panel fades its placeholders out while the figures come out of a blur, shades the heat map's cells into their own colours and fades the model list and chart in (about 0.3 s).
 - The waiting line's "No response yet" badge slides onto the line from below and to the left while it pops out of nothing (about 0.5 s) and shrinks away as soon as the model speaks (about 0.12 s).
 - Under the Claude brand the head of the running row carries the skin's own three 4px dots, each rising 8px and flattening as it leaves the floor, half a second a bounce with the three staggered into a wave; under the DeepSeek brand the host's whale tail stands as before, and the screen-reader announcement is unchanged.
 - The Appearance tab's Primary colour row is renamed Accent colour and moves under Colours, greying out and taking no input while Colours is set to Follow the host.
+- The studio home's permission control was the same Read / Edit / Auto / Yolo segment row the classic home wears, which sat oddly with its conversation-style single-line card; it now matches the conversation: one button naming the current tier, opening a card of tiers, with the slider-style segment row left to the classic home. Before a workspace is picked the button rests on the preset a new session starts in and takes no input, so pressing it opens the workspace picker the same as pressing the input box.
 
 ### Bug Fixes
 
@@ -97,6 +104,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - With popovers opening on hover, a press on the trigger no longer folds the popover the pointer just opened — on the sidebar account entry, the permission, model and effort pickers, the home row's two pickers and the context ring beside the composer — leaving the pointer's departure to close it.
 - The theme yields its waiting line when a visible sibling replaces externally hidden host wording, restores it when the takeover ends, and keeps other chat animations running.
 - The pin stands above every place the scroll end can come to rest, so the line above the composer holds the same spot in every frame while the tail is followed and no longer shakes with each piece of reasoning.
+- Turning a feature off or replacing a generation now takes its listeners on host-owned nodes, its observation-bus subscriptions, its queued frames and its timers with it: the host account menu no longer keeps every card it has already unmounted, the conversation meter and panel no longer stack bindings from earlier generations, switching the model picker off no longer leaves a document mousemove behind, dropping the effort slider mid-drag no longer leaves pointerup bound, a process header's summary is not rebuilt and subscribed after its teardown, and the reasoning window and fold roll stop queueing frames once the feature is gone.
 - While a fold rolls open or shut at the tail, the line above the composer holds its place, unless the reader has scrolled back.
 - A merged-away call leaves the page together with the spacing the host gave it, and the rows of a process group keep one even spacing.
 - The sweeping highlight rides the copy holding the words, so the band sweeps across the glyphs themselves.

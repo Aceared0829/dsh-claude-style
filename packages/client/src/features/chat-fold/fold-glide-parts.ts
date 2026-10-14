@@ -214,15 +214,20 @@ export function foldHandBackFollow(watch: FoldWatch) {
  */
 export function foldSettleAfter(watch: FoldWatch, roll?: Animation | null) {
   if (roll === null || roll === undefined) {
-    window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       foldHandBackFollow(watch)
     }, FOLD_ROLL_MS)
-    return
+    return () => { window.clearTimeout(timer) }
   }
+  // A settle an ended generation should not make is dropped rather than left:
+  // the hand-back walks the position and presses the host's own button.
+  let stopped = false
   const settle = () => {
+    if (stopped) return
     foldHandBackFollow(watch)
   }
   roll.finished.then(settle, settle)
+  return () => { stopped = true }
 }
 
 /**
@@ -246,12 +251,17 @@ export function foldHoldThroughStalls(roll: Animation) {
   let lastFrameAt = 0
   let lastTime = 0
   let frameInterval = FOLD_NOMINAL_FRAME_MS
+  /** Set by the returned stop: the look in flight does not book another. */
+  let stopped = false
+  /** Cancels the frame the next look waits on. */
+  let cancelLook: (() => void) | null = null
   const timeOf = () => {
     const time = roll.currentTime
     return typeof time === 'number' ? time : 0
   }
   const look = (now: number) => {
-    if (roll.playState !== 'running') return
+    cancelLook = null
+    if (stopped || roll.playState !== 'running') return
     const gap = lastFrameAt === 0 ? 0 : now - lastFrameAt
     if (gap > FOLD_FRAME_GAP_LIMIT_MS) {
       const resumeAt = lastTime + frameInterval
@@ -265,9 +275,14 @@ export function foldHoldThroughStalls(roll: Animation) {
     }
     lastFrameAt = now
     lastTime = timeOf()
-    requestFrame({ write: look })
+    cancelLook = requestFrame({ write: look })
   }
-  requestFrame({ write: look })
+  cancelLook = requestFrame({ write: look })
+  return () => {
+    stopped = true
+    if (cancelLook !== null) cancelLook()
+    cancelLook = null
+  }
 }
 
 /**
@@ -281,17 +296,28 @@ export function foldHoldThroughStalls(roll: Animation) {
  * the DOM really collapsed; a few frames without that means the click did not
  * fold anything, and the element is put back as it was.
  */
-export function foldConfirmCollapsed(settled: () => boolean, done: () => void, attempt?: number) {
-  const tries = typeof attempt === 'number' ? attempt : 0
-  if (settled() || tries >= FOLD_SHUT_CONFIRM_FRAMES) {
-    done()
-    return
+export function foldConfirmCollapsed(settled: () => boolean, done: () => void) {
+  /** Set by the returned stop: the frames in flight do not press on. */
+  let stopped = false
+  /** Cancels the frame the next look waits on. */
+  let cancelLook: (() => void) | null = null
+  let tries = 0
+  const step = () => {
+    cancelLook = null
+    if (stopped) return
+    if (settled() || tries >= FOLD_SHUT_CONFIRM_FRAMES) {
+      done()
+      return
+    }
+    tries += 1
+    cancelLook = requestFrame({ write: step })
   }
-  requestFrame({
-    write() {
-      foldConfirmCollapsed(settled, done, tries + 1)
-    },
-  })
+  step()
+  return () => {
+    stopped = true
+    if (cancelLook !== null) cancelLook()
+    cancelLook = null
+  }
 }
 
 /**

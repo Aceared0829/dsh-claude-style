@@ -108,6 +108,12 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   /** When structure last changed, for the grace above. */
   let lastActivityAt = 0
   let scanQueued = false
+  /** Set by the teardown: no pass is queued and no retry is waiting. */
+  let stopped = false
+  /** Cancels the frame a seen moment waits on. */
+  let cancelScan: (() => void) | null = null
+  /** The wait a fold glide put the hand-back on, so the teardown can drop it. */
+  let foldWaitTimer: number | null = null
   /** This batch of mutations held a structural moment / the follow being turned off. */
   let structureSeen = false
   let guardSeen = false
@@ -308,7 +314,7 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
    * @param attempt - how many times this round has been put off by a fold glide.
    */
   const ensure = (attempt?: number) => {
-    if (readerAway()) return
+    if (stopped || readerAway()) return
     const scroller = conversationScroller()
     if (scroller === null) return
     // While the glide holds the position the follow is its own business: the
@@ -324,13 +330,17 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
     if (foldBusy()) {
       const tries = typeof attempt === 'number' ? attempt : 0
       if (tries >= FOLLOW_FOLD_WAIT_ATTEMPTS) return
-      window.setTimeout(() => ensure(tries + 1), FOLLOW_FOLD_WAIT_MS)
+      if (foldWaitTimer !== null) window.clearTimeout(foldWaitTimer)
+      foldWaitTimer = window.setTimeout(() => {
+        foldWaitTimer = null
+        ensure(tries + 1)
+      }, FOLLOW_FOLD_WAIT_MS)
       return
     }
     const now = performance.now()
     if (now - lastEnsureAt < FOLLOW_MIN_INTERVAL_MS) return
     lastEnsureAt = now
-    handBackFollow('follow', { stillWanted: () => !readerAway() })
+    handBackFollow('follow', { stillWanted: () => !stopped && !readerAway() })
   }
 
   /** A batch of mutations is settled: decide whether to act. */
@@ -346,11 +356,12 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   }
 
   const queue = () => {
-    if (scanQueued) return
+    if (scanQueued || stopped) return
     scanQueued = true
     // The hand-back reads the position and writes it in one go: write phase (D40).
-    requestFrame({
+    cancelScan = requestFrame({
       write() {
+        cancelScan = null
         scanQueued = false
         settle()
       },
@@ -407,6 +418,12 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   }, onRecords)
 
   return () => {
+    stopped = true
+    if (cancelScan !== null) cancelScan()
+    cancelScan = null
+    scanQueued = false
+    if (foldWaitTimer !== null) window.clearTimeout(foldWaitTimer)
+    foldWaitTimer = null
     stopMutations()
     if (stopGlideSize !== null) stopGlideSize()
     stopGlideSize = null

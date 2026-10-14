@@ -21,13 +21,20 @@ const CONTEXT_PANEL_MARGIN = 12
 /**
  * The panel's bindings.
  *
- * @returns { bindMeter, bindPanel, align, close, cancelHover, releaseSize }.
+ * @returns { bindMeter, bindPanel, align, close, cancelHover, releaseSize, release }.
  */
 export function createContextStatsBinding() {
   /** Identity of the bindings THIS generation installed (a hot reload reuses the host's nodes). */
   const statsBindingToken = {}
   /** The open panel's size watcher, or null before a panel has been seen. */
   let stopPanelSize: (() => void) | null = null
+  /**
+   * Every listener this generation put on a node the host owns, with the call
+   * that takes it off. The meter, the line and the panel outlive the
+   * generation, so the teardown has to remove what it bound: the token above
+   * only keeps one generation from binding the same element twice.
+   */
+  const boundListeners: { remove: () => void }[] = []
 
   /**
    * Open the context panel by pressing the host's trigger: the panel, its
@@ -69,26 +76,36 @@ export function createContextStatsBinding() {
   function bindContextMeter(meter: Element) {
     if (meter.__dshContextMeterToken === statsBindingToken) return
     meter.__dshContextMeterToken = statsBindingToken
-    meter.addEventListener('mouseenter', () => {
+    const onEnter = () => {
       if (hoverEnabled()) hoverIntent.scheduleOpen()
-    })
-    meter.addEventListener('mouseleave', () => {
+    }
+    const onLeave = () => {
       if (hoverEnabled()) hoverIntent.scheduleClose()
-    })
+    }
     // The host's own trigger toggles the panel on a press, and its onClick is
     // delegated from the document, so a press on the ring the dwell just
     // opened is stopped on its way there: the pointer is on the trigger it
     // opened from, and the leave is the way out
     // (shared/popover.ts::pressKeepsPopoverOpen). The line of figures keeps
     // its own press behaviour: it is not a hover trigger (D27).
-    meter.addEventListener('click', (event) => {
+    const onClick = (event: Event) => {
       if (isProgrammaticPress()) return
       const trigger = contextTrigger()
       const target = event.target
       if (trigger === null || !(target instanceof Node) || !trigger.contains(target)) return
       if (!pressKeepsPopoverOpen(hoverEnabled(), trigger.getAttribute('aria-expanded') === 'true')) return
       event.stopPropagation()
-    }, true)
+    }
+    meter.addEventListener('mouseenter', onEnter)
+    meter.addEventListener('mouseleave', onLeave)
+    meter.addEventListener('click', onClick, true)
+    boundListeners.push({
+      remove() {
+        meter.removeEventListener('mouseenter', onEnter)
+        meter.removeEventListener('mouseleave', onLeave)
+        meter.removeEventListener('click', onClick, true)
+      },
+    })
   }
 
   /**
@@ -105,13 +122,13 @@ export function createContextStatsBinding() {
     line.setAttribute('tabindex', '0')
     line.setAttribute('aria-haspopup', 'dialog')
     line.setAttribute('aria-expanded', 'false')
-    line.addEventListener('click', (event) => {
+    const onClick = (event: Event) => {
       // The host reads presses outside its panel as a dismissal; the press that
       // opens it must not reach that reader in the same event.
       event.stopPropagation()
       toggleContextPanel()
-    })
-    line.addEventListener('keydown', (event) => {
+    }
+    const onKeyDown = (event: Event) => {
       if (!(event instanceof KeyboardEvent)) return
       if (event.key === 'Escape') {
         event.stopPropagation()
@@ -122,6 +139,14 @@ export function createContextStatsBinding() {
       event.preventDefault()
       event.stopPropagation()
       toggleContextPanel()
+    }
+    line.addEventListener('click', onClick)
+    line.addEventListener('keydown', onKeyDown)
+    boundListeners.push({
+      remove() {
+        line.removeEventListener('click', onClick)
+        line.removeEventListener('keydown', onKeyDown)
+      },
     })
   }
 
@@ -179,11 +204,19 @@ export function createContextStatsBinding() {
     if (!panel.hasAttribute(CONTEXT_PANEL_ATTR)) panel.setAttribute(CONTEXT_PANEL_ATTR, '')
     if (panel.__dshContextPanelToken === statsBindingToken) return
     panel.__dshContextPanelToken = statsBindingToken
-    panel.addEventListener('mouseenter', () => {
+    const onEnter = () => {
       hoverIntent.cancel()
-    })
-    panel.addEventListener('mouseleave', () => {
+    }
+    const onLeave = () => {
       if (hoverEnabled()) hoverIntent.scheduleClose()
+    }
+    panel.addEventListener('mouseenter', onEnter)
+    panel.addEventListener('mouseleave', onLeave)
+    boundListeners.push({
+      remove() {
+        panel.removeEventListener('mouseenter', onEnter)
+        panel.removeEventListener('mouseleave', onLeave)
+      },
     })
     // The panel's own box is what the reading is taken from, so the reading
     // is re-taken whenever that box changes: the host's rows growing, or
@@ -207,6 +240,14 @@ export function createContextStatsBinding() {
     trigger.click()
   }
 
+  /** Stop watching the open panel's size. */
+  function releasePanelSize() {
+    if (stopPanelSize !== null) {
+      stopPanelSize()
+      stopPanelSize = null
+    }
+  }
+
   return {
     /** Bind the meter once per generation. */
     bindMeter: bindContextMeter,
@@ -225,11 +266,18 @@ export function createContextStatsBinding() {
       hoverIntent.cancel()
     },
     /** Stop watching the panel's size. */
-    releaseSize() {
-      if (stopPanelSize !== null) {
-        stopPanelSize()
-        stopPanelSize = null
-      }
+    releaseSize: releasePanelSize,
+    /**
+     * The generation's whole binding goes: the hover timers, the size watcher
+     * and every listener put on the host's own meter, line and panel. Those
+     * nodes outlive the generation, so what is not taken off here would answer
+     * a later generation's pointer with this one's closure.
+     */
+    release() {
+      hoverIntent.cancel()
+      releasePanelSize()
+      for (let i = 0; i < boundListeners.length; i++) boundListeners[i].remove()
+      boundListeners.length = 0
     },
   }
 }

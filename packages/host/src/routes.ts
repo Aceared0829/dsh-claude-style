@@ -532,6 +532,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
     return () => {
       usage.dispose()
       peakrate.dispose()
+      sessionSearch.dispose()
       // One route's disposer failing must not keep the others registered
       // (docs/decisions D12); the failure is reported.
       for (const dispose of disposers) {

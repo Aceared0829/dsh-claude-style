@@ -350,6 +350,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function teardown() {
     effortHoverIntent.cancel()
+    // The slider's own waits — a hold's document listeners, a pending move, the
+    // wait for the host's echo — go before the card it lives in is dropped.
+    if (effortSlider !== null) effortSlider.dispose()
     if (effortBtn !== null && effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
     if (effortPop !== null && effortPop.parentElement !== null) effortPop.parentElement.removeChild(effortPop)
     effortBtn = null

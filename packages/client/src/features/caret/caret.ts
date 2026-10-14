@@ -380,6 +380,13 @@ export function createCaretMotion(read: () => string) {
       if (!input.isConnected) {
         release(input, layer)
         layers.delete(input)
+        // Its content watch goes too: a subscription left behind would keep the
+        // removed surface and its subtree in the bus's registry.
+        const stopWatching = watchedSurfaces.get(input)
+        if (stopWatching !== undefined) {
+          stopWatching()
+          watchedSurfaces.delete(input)
+        }
         continue
       }
       if (input === target) continue

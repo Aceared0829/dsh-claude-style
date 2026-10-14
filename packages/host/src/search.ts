@@ -378,5 +378,18 @@ export function createSessionSearch(ctx: DshContext) {
     return { sessions: hits.slice(0, SESSION_LIMIT), scanned: cache.size }
   }
 
-  return { search, warm: () => catchUp(true) }
+  /**
+   * The corpora this store holds. Each one is a whole session's message text,
+   * in original and folded case, so the store is dropped with the routes that
+   * serve it: a reloaded plugin builds a fresh one from the cache files.
+   */
+  function dispose() {
+    cache.clear()
+    lower.clear()
+    writtenAt.clear()
+    stored = null
+    refreshing = null
+  }
+
+  return { search, warm: () => catchUp(true), dispose }
 }

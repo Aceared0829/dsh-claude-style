@@ -83,6 +83,22 @@ export function installChatFoldGlide() {
   let glideShutting = false
   /** The intercepted click is being replayed to React, and that one must not be intercepted again. */
   let glideReplaying = false
+  /**
+   * What the last fold left running: the stall watch on its animation, the
+   * settle that hands the follow back, and a collapse's confirmation. All three
+   * end by writing the scroll position or pressing the host's own button, so
+   * the teardown cancels them; a new fold of the same kind cancels the one
+   * before it.
+   */
+  let stopStallWatch: (() => void) | null = null
+  let stopSettleWait: (() => void) | null = null
+  let stopConfirmWait: (() => void) | null = null
+
+  /** Replace one of the waits above with the next one. */
+  function replaceWait(current: (() => void) | null, next: () => void) {
+    if (current !== null) current()
+    return next
+  }
 
   // The reader's animation choice, resolved (packages/client/src/core/prefs.ts): D26's own
   // preference, not the raw media query, so "reduced" in the settings page
@@ -145,7 +161,7 @@ export function installChatFoldGlide() {
           ],
       { duration: FOLD_ROLL_MS, easing: motionEase('--dsh-claude-ease-out') },
     )
-    foldHoldThroughStalls(growing)
+    stopStallWatch = replaceWait(stopStallWatch, foldHoldThroughStalls(growing))
     growing.onfinish = () => {
       growing.cancel()
       restore()
@@ -180,7 +196,7 @@ export function installChatFoldGlide() {
     if (height <= fold.floor) {
       window.clearTimeout(release)
       replay(fold.control, fold.own)
-      foldSettleAfter(fold.watch)
+      stopSettleWait = replaceWait(stopSettleWait, foldSettleAfter(fold.watch))
       return
     }
     const travel = Math.max(fold.floor, foldVisibleReach(fold.target))
@@ -195,17 +211,17 @@ export function installChatFoldGlide() {
           ],
       { duration: FOLD_ROLL_MS, easing: motionEase('--dsh-claude-ease-out'), fill: 'forwards' },
     )
-    foldHoldThroughStalls(shrinking)
+    stopStallWatch = replaceWait(stopStallWatch, foldHoldThroughStalls(shrinking))
     shrinking.onfinish = () => {
       window.clearTimeout(release)
       replay(fold.control, fold.own)
       // The DOM should have collapsed by now; if it has not, the animation
       // cannot be withdrawn — see foldConfirmCollapsed.
-      foldConfirmCollapsed(fold.collapsed, () => {
+      stopConfirmWait = replaceWait(stopConfirmWait, foldConfirmCollapsed(fold.collapsed, () => {
         shrinking.cancel()
         restore()
-      })
-      foldSettleAfter(fold.watch)
+      }))
+      stopSettleWait = replaceWait(stopSettleWait, foldSettleAfter(fold.watch))
     }
   }
 
@@ -221,14 +237,14 @@ export function installChatFoldGlide() {
     // its own scrollbar and the host's follow is watching it.
     if (current.groupRoot !== null && current.groupBody !== null) {
       if (current.groupBody.hasAttribute('hidden')) return
-      foldSettleAfter(watch, rollOpen(current.groupRoot, current.collapsedHeight))
+      stopSettleWait = replaceWait(stopSettleWait, foldSettleAfter(watch, rollOpen(current.groupRoot, current.collapsedHeight)))
       return
     }
     const body = foldExpandedBody(current.control)
     if (body === null) return
     // A DisclosureRow: the body is a plain block, and pressing its height is
     // "show as much as it has pulled down".
-    foldSettleAfter(watch, rollOpen(body, 0))
+    stopSettleWait = replaceWait(stopSettleWait, foldSettleAfter(watch, rollOpen(body, 0)))
   }
 
   const onClick = (event: MouseEvent) => {
@@ -325,6 +341,14 @@ export function installChatFoldGlide() {
   return () => {
     document.removeEventListener('click', onClick, true)
     stopMutations()
+    // The waits go before the intent does: each of them ends by writing the
+    // scroll position or pressing the host's button.
+    if (stopStallWatch !== null) stopStallWatch()
+    stopStallWatch = null
+    if (stopSettleWait !== null) stopSettleWait()
+    stopSettleWait = null
+    if (stopConfirmWait !== null) stopConfirmWait()
+    stopConfirmWait = null
     glideIntent = null
     leaveOwner()
   }

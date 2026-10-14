@@ -605,5 +605,23 @@ export function createEffortControl(opts: {
     // ends earlier — at the boundary settle — which is exactly when the
     // pointer is on its way out of the card.
     isHeld() { return held },
+    /**
+     * The control's own teardown. The listeners a hold put on the document,
+     * the frame a pending move waits on and the wait for the host's echo all
+     * outlive the card they serve, so the picker calls this when it drops the
+     * slider rather than letting the removal of the node drop them.
+     */
+    dispose() {
+      if (held) {
+        held = false
+        document.removeEventListener('pointerup', onHeldRelease, true)
+        document.removeEventListener('pointercancel', onHeldRelease, true)
+      }
+      if (cancelPendingFrame !== null) cancelPendingFrame()
+      cancelPendingFrame = null
+      moveQueued = false
+      releaseCapture()
+      clearPending()
+    },
   }
 }

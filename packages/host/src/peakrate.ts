@@ -86,6 +86,11 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
   let fetchedAt = 0
   let loaded = false
   let timer: ReturnType<typeof setInterval> | undefined
+  /**
+   * The source read in flight, so a disposal can stop it: the answer would
+   * otherwise land after the routes are gone and write the cache file.
+   */
+  let inFlight: AbortController | null = null
   /** When the route last asked: what tells a reader-driven timer from an idle one. */
   let lastAskedAt = 0
   const warn = (message: string) => ctx.logger?.warn?.(message)
@@ -145,6 +150,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     let raw: unknown
     try {
       const controller = new AbortController()
+      inFlight = controller
       const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
       try {
         const response = await fetch(PEAKRATE_CATALOG_URL, { signal: controller.signal })
@@ -155,6 +161,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
         raw = await response.json()
       } finally {
         clearTimeout(timeout)
+        if (inFlight === controller) inFlight = null
       }
     } catch (error) {
       // A source that cannot be reached is not a fault here: the meter keeps
@@ -221,6 +228,12 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     payload,
     dispose() {
       stopTimer()
+      // A read still in flight is stopped here: its answer would write the
+      // cache file for a plugin that is no longer installed.
+      if (inFlight !== null) {
+        inFlight.abort()
+        inFlight = null
+      }
     },
   }
 }

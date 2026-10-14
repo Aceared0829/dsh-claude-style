@@ -89,6 +89,10 @@ export function createReasoningStream() {
   const windows = new Map<Element, WindowState>()
   let queued = false
   const pending = new Set<Element>()
+  /** Set by the teardown: no row is queued any more, and the frame in flight is cancelled. */
+  let stopped = false
+  /** Cancels the frame the queued rows wait on. */
+  let cancelFrame: (() => void) | null = null
 
   /** Take one row's window off and drop its wait: the text stands as the host drew it. */
   function clearWindow(row: Element) {
@@ -170,6 +174,7 @@ export function createReasoningStream() {
   }
 
   function flush() {
+    cancelFrame = null
     queued = false
     const rows = [...pending]
     pending.clear()
@@ -184,10 +189,11 @@ export function createReasoningStream() {
   }
 
   function queue(row: Element) {
+    if (stopped) return
     pending.add(row)
     if (queued) return
     queued = true
-    requestFrame({ write: flush })
+    cancelFrame = requestFrame({ write: flush })
   }
 
   return {
@@ -197,6 +203,12 @@ export function createReasoningStream() {
     },
     queueRow: queue,
     stop() {
+      // A row the frame was about to window would otherwise be given a window
+      // and a repeating wait after the teardown, with nothing left to clear it.
+      stopped = true
+      if (cancelFrame !== null) cancelFrame()
+      cancelFrame = null
+      queued = false
       for (const row of [...windows.keys()]) clearWindow(row)
       pending.clear()
     },
