@@ -7,11 +7,14 @@ import { observeSize } from '../core/bus'
  * The conversation view tabs, the permission segments and the workspace
  * section's 进行中 / 已归档 control all place it through this one factory.
  *
- * The control gets `data-dsh-claude-pill` and two custom properties,
- * `--dsh-claude-pill-x` and `--dsh-claude-pill-w`, measured from the active
- * item's box against the control's padding box — the box the absolutely
- * placed pseudo-element is laid out in. Any transform on the control moves
- * both boxes alike, so it cancels out. The attribute and the first placement
+ * The control gets `data-dsh-claude-pill` and four custom properties,
+ * `--dsh-claude-pill-x` / `-y` / `-w` / `-h`, measured from the active item's
+ * box against the control's padding box — the box the absolutely placed
+ * pseudo-element is laid out in. The whole box is measured, not only the
+ * horizontal share of it, so the pill lands on the item's own line when a
+ * control wraps onto two (the settings tabs at a narrow width). Any transform
+ * on the control moves both boxes alike, so it cancels out. The attribute and
+ * the first placement
  * land in the same call: the pseudo-element does not exist before it, so the
  * pill appears in place and only later moves slide. A control with no
  * visible active item (hidden, or nothing selected) drops the attribute and
@@ -28,18 +31,24 @@ import { observeSize } from '../core/bus'
 export function createSlidingPill(activeSelector: string) {
   const PILL_ATTR = 'data-dsh-claude-pill'
   let control: HTMLElement | null = null
-  /** The last written offset and width, so an unchanged placement writes nothing. */
+  /** The last written box, so an unchanged placement writes nothing. */
   let lastX: number | null = null
+  let lastY: number | null = null
   let lastW: number | null = null
+  let lastH: number | null = null
   /** Stops watching the current control's size. */
   let stopSize: (() => void) | null = null
 
   function clear(el: HTMLElement) {
     el.removeAttribute(PILL_ATTR)
     el.style.removeProperty('--dsh-claude-pill-x')
+    el.style.removeProperty('--dsh-claude-pill-y')
     el.style.removeProperty('--dsh-claude-pill-w')
+    el.style.removeProperty('--dsh-claude-pill-h')
     lastX = null
+    lastY = null
     lastW = null
+    lastH = null
   }
 
   function place(control: HTMLElement) {
@@ -51,12 +60,18 @@ export function createSlidingPill(activeSelector: string) {
       return
     }
     const x = Math.round((itemBox.left - box.left - control.clientLeft) * 100) / 100
+    const y = Math.round((itemBox.top - box.top - control.clientTop) * 100) / 100
     const w = Math.round(itemBox.width * 100) / 100
-    if (x === lastX && w === lastW && control.hasAttribute(PILL_ATTR)) return
+    const h = Math.round(itemBox.height * 100) / 100
+    if (x === lastX && y === lastY && w === lastW && h === lastH && control.hasAttribute(PILL_ATTR)) return
     lastX = x
+    lastY = y
     lastW = w
+    lastH = h
     control.style.setProperty('--dsh-claude-pill-x', `${x}px`)
+    control.style.setProperty('--dsh-claude-pill-y', `${y}px`)
     control.style.setProperty('--dsh-claude-pill-w', `${w}px`)
+    control.style.setProperty('--dsh-claude-pill-h', `${h}px`)
     if (!control.hasAttribute(PILL_ATTR)) control.setAttribute(PILL_ATTR, '')
   }
 

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 10,
+  "external": false,
+  "zh": "设置页在极窄宽度下保持可读：一行放不下全部分页时分页条换到第二行，每个分页标签始终完整显示在一行上；一行的文字空间不足时，开关、分段选择器等控件移到文字下方独占一行，说明文字保持整行排版。",
+  "en": "The settings page stays readable at very narrow widths: the tab strip wraps onto a second line when one line no longer holds every tab, each label always whole on one line, and a row whose text runs out of room drops its control — a switch, a segmented control — onto a line of its own under the text."
+}

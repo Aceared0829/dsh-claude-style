@@ -98,15 +98,19 @@ body[data-dsh-claude-style] .dsh-claude-settings-repo:focus-visible {
 
 /* The tab strip is the segmented control itself, stretched across the page so
    every tab gets an equal share; the open tab's rows follow in their own
-   column. */
+   column. A page too narrow for one line of tabs wraps the strip onto a second
+   line: a tab never shrinks under its label's one-line width, so the strip
+   wraps exactly when one line no longer holds every label, and the pill covers
+   the active tab on the line it lands on (shared/sliding-pill.ts). */
 body[data-dsh-claude-style] .dsh-claude-settings-tabs {
   display: flex;
   align-self: stretch;
+  flex-wrap: wrap;
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-tabs > [role="tab"] {
   flex: 1 1 0;
-  min-width: 0;
+  min-width: max-content;
 }
 
 /* The rows sit in a fieldset so a read-only page disables every control at
@@ -219,23 +223,20 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-sub[data-disabled] :is(butt
   cursor: not-allowed;
 }
 
+/* A row keeps its control on the right while the two share one line, and hands
+   it the next line — where it starts at the row's left edge — only when the
+   text's room would fall under the text's basis: the controls are `flex: none`,
+   so the basis alone is the wrap decision, and a narrow page drops the control
+   under the text rather than crushing the description into a few characters a
+   line. A segmented control is wider than a switch or a colour well, so its row
+   wraps earlier (220px against 140px). */
 body[data-dsh-claude-style] .dsh-claude-settings-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px 0;
-  border-top: 0.5px solid var(--dsw-alias-border-l2);
-}
-
-/* A row whose control is a segmented control (the row builder marks it) keeps it
-   on the right while the two share one line, and hands it the next line — where
-   it starts at the row's left edge, as it always did — only when it no longer
-   fits beside the text. The text's basis is the whole decision: the control is
-   `flex: none`, so the row wraps exactly when the text's room would fall under
-   this. */
-body[data-dsh-claude-style] .dsh-claude-settings-row-segment {
   flex-wrap: wrap;
   gap: 12px 8px;
+  padding: 16px 0;
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-row-segment > .dsh-claude-settings-row-text {
@@ -243,7 +244,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-segment > .dsh-claude-setti
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-row-text {
-  flex: 1;
+  flex: 1 1 140px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -254,13 +255,18 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-text {
 /* A block row stacks its control under the text — the brand picker's cards
    and the four-way mascot choice need more room than an inline control slot
    gives. A control keeps its own width; only the brand cards span the row. */
+/* A block row is a column, so it stands apart from the row's wrap rules: its
+   children never wrap sideways, and its text keeps no width basis — in a
+   column a flex basis reads as a height. */
 body[data-dsh-claude-style] .dsh-claude-settings-row-block {
   flex-direction: column;
+  flex-wrap: nowrap;
   align-items: flex-start;
   gap: 12px;
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-row-block > .dsh-claude-settings-row-text {
+  flex: none;
   align-self: stretch;
   padding-right: 0;
 }
