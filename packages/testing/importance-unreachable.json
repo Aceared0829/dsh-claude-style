@@ -530,6 +530,12 @@
         "body[data-dsh-claude-style] .dsh-claude-settings-tab-notice",
         "body[data-dsh-claude-style] .dsh-claude-settings-tab-notice+.dsh-claude-settings-row"
       ]
+    },
+    {
+      "reason": "深色形态里没有搜索按键：走查的深色页面形态不含这一行",
+      "selectors": [
+        "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key"
+      ]
     }
   ]
 }
