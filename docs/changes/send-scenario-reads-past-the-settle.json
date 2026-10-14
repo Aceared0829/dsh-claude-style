@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 8,
+  "external": false,
+  "zh": "端到端通道的两个发送场景在替身离场之后再读一次页面自己继续采样的帧：真行是否显形、替身是否落在它身上改按这一段帧判定，慢跑机器上不再把尚未显形的行当成不可见。",
+  "en": "The end-to-end lane's two send scenarios read the frames the page keeps sampling once the stand-in has left: whether the real row appeared, and whether the stand-in sat on it, are judged on that stretch, so a slow runner no longer calls a row that had not appeared yet invisible."
+}
