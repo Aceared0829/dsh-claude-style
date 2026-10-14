@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "开着「悬停自动展开弹层」时，悬停态下按同一个入口不再收起刚展开的弹层（侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器与输入框右侧的上下文圆环），收起交给鼠标离开入口与卡片。",
-  "en": "With popovers opening on hover, a press on the trigger no longer folds the popover the pointer just opened — on the sidebar account entry, the permission, model and effort pickers, the home row's two pickers and the context ring beside the composer — leaving the pointer's departure to close it."
-}

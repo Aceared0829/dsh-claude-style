@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "new",
-  "order": 0,
-  "external": false,
-  "zh": "和 [ds-bot](https://github.com/Fei2411/DeepSeek-Bot) 同时安装时，侧栏顶端多出一个聊天 / 代码切换：聊天是 ds-bot 的 Bot 界面、本主题整个让开，代码是宿主自己的界面、由本主题绘制；没装 ds-bot 时页面上没有它。",
-  "en": "With [ds-bot](https://github.com/Fei2411/DeepSeek-Bot) installed too, the top of the sidebar carries a Chat / Code switch: Chat is ds-bot's Bot surface with the theme standing aside, Code is the host's own interface painted by the theme, and without ds-bot the page carries none."
-}

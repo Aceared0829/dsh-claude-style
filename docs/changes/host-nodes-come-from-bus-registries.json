@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 1,
-  "external": false,
-  "zh": "每帧那一趟刷新不再为已知的宿主节点重新查询整份文档：输入卡片与它的占位、运行行、思考行、标题行、对话框、页脚、会话根、模型槽与上下文表盘都从观察总线按选择器登记的活清单里读，宿主换掉节点时才重解一次。会话越长，每帧的查询开销越不再跟着页面规模走。",
-  "en": "A pass no longer queries the whole document for host nodes it already knows: the composer cards and their placeholders, the running rows, the thinking rows, the title row, the dialogs, the footer, the conversation root, the model slot and the context meter are read from live per-selector registries on the observation bus, and only a node the host replaced is resolved again. The longer a session runs, the less a frame's query cost follows the size of the page."
-}

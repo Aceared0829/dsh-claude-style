@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "new",
-  "order": 0,
-  "external": true,
-  "zh": "「侧栏」页多出「封号彩蛋」一行，选「关闭」后账号行只显示名字，设置项 `banLocale` 多了取值 `off`。",
-  "en": "The Sidebar tab gains an Account-hold easter egg row, with Off the account row is a plain name, and the `banLocale` setting gains the value `off`."
-}

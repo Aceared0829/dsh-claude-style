@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "new",
-  "order": 2,
-  "external": true,
-  "zh": "设置页多出「动效」分页，其中「状态行动画」用两张实时预览的卡片代替文字，一档是现在这道扫光，另一档让状态行的文字本身流动着变色；设置项 `statusMotion` 的取值为 `sweep`（默认）与 `wash`。",
-  "en": "The settings page gains a Motion tab whose Waiting-line animation setting picks the paint with two live previews instead of text — the highlight band the line sweeps today, or a colour wash that moves through the letters; the `statusMotion` setting is `sweep` (the default) or `wash`."
-}

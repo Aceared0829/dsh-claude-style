@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "「状态行描述」在中文界面补回中文的标题、描述与两个档位名：这一行的文案没有进文案文档，中文界面一直读英文兜底。",
-  "en": "Waiting-line detail reads in Chinese on a Chinese interface — title, description and both tier names: the row's copy never entered the copy document, so a Chinese interface read the English fallbacks."
-}

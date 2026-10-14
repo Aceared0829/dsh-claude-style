@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.14.0] - 2026-10-14
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.14.0) | [English](#en-0.14.0)
+
+<h3 id="cn-0.14.0">新增功能</h3>
 
 - 「侧栏」页多出「封号彩蛋」一行，选「关闭」后账号行只显示名字，设置项 `banLocale` 多了取值 `off`。
 - 和 [ds-bot](https://github.com/Fei2411/DeepSeek-Bot) 同时安装时，侧栏顶端多出一个聊天 / 代码切换：聊天是 ds-bot 的 Bot 界面、本主题整个让开，代码是宿主自己的界面、由本主题绘制；没装 ds-bot 时页面上没有它。
@@ -85,7 +87,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 端到端通道的两个发送场景在替身离场之后再读一次页面自己继续采样的帧：真行是否显形、替身是否落在它身上改按这一段帧判定，慢跑机器上不再把尚未显形的行当成不可见。
 - 闸门的发起时机写明：本机默认不起闸门，开发期间的判断来自构建与在线页面；一次运行只属于推送之前那一段，取覆盖这次改动的最小集合。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.14.0">New Features</h3>
 
 - The Sidebar tab gains an Account-hold easter egg row, with Off the account row is a plain name, and the `banLocale` setting gains the value `off`.
 - With [ds-bot](https://github.com/Fei2411/DeepSeek-Bot) installed too, the top of the sidebar carries a Chat / Code switch: Chat is ds-bot's Bot surface with the theme standing aside, Code is the host's own interface painted by the theme, and without ds-bot the page carries none.

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 11,
-  "external": false,
-  "zh": "工作室首页的用量面板：占位的底色淡去、数字从模糊里显出来，热力图的格子渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）。",
-  "en": "The studio home's usage panel fades its placeholders out while the figures come out of a blur, shades the heat map's cells into their own colours and fades the model list and chart in (about 0.3 s)."
-}

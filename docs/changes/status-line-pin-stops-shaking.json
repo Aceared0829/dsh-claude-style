@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "zh": "钉住的位置比末尾所有可能的停靠位置都高，跟随末尾期间输入框上方那一行每一帧都停在同一处，推理一段段到达也不再上下抖动。",
-  "en": "The pin stands above every place the scroll end can come to rest, so the line above the composer holds the same spot in every frame while the tail is followed and no longer shakes with each piece of reasoning."
-}

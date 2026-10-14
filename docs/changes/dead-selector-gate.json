@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "chores",
-  "order": 2,
-  "external": false,
-  "zh": "`importance` 场景在走查里多审两件事：走遍所有页面形态都没匹配到元素的选择器即失败，到不了的选择器逐条登记在 `packages/testing/importance-unreachable.json`、每条写明缘由且登记表只许变短；同一轮走查去掉八处多余的 `!important`，端到端通道的设置层每次运行前回到运行前的副本。",
-  "en": "The `importance` scenario audits two more things in its walk: a selector that matches no element in any page state fails it, and the selectors the walk cannot reach are recorded with their reasons in `packages/testing/importance-unreachable.json`, a record that may only shrink; the same walk proved eight `!important` declarations redundant and took them out, and the end-to-end lane's settings layer returns to its pre-run copy."
-}

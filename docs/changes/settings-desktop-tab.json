@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 3,
-  "external": false,
-  "zh": "「标题进入顶栏」放进设置页的「对话」页，只在 Windows 桌面端的窗口里可改，在别的页面变灰、仍显示你设的值，并在下面注明它只在哪个窗口生效；「动画效果」从「通用」挪到「动效」，「首页版面」挪到「外观」，「封号彩蛋」挪到「侧栏」并挂在打开它的账号弹层那一行下面，「搜索框样式」与「对话统计信息位置」的说明写出每个选项的效果。",
-  "en": "Header in the title bar lives on the settings page's Conversation tab, taking input on the Windows desktop window alone and greying out on every other page — still showing the value you set, with a note naming the window it acts in; Animation moves from General to Motion, Home layout to Appearance, the Account-hold easter egg to Sidebar under the row of the account popover it opens from, and Search box style and Conversation statistics position now say what each choice does."
-}

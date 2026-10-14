@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 7,
-  "external": false,
-  "zh": "飞行的竖直阻尼比回到 0.75，落定的那点回落又回来了。",
-  "en": "The flight's vertical damping ratio is 0.75 again, and the drop back into place is back with it."
-}

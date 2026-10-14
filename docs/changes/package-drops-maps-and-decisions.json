@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 0,
-  "external": true,
-  "zh": "npm 包不再携带 source map 与 `docs/decisions/` 决策文档，包体积从 2.3 MB 降到 1.6 MB。",
-  "en": "The npm package no longer carries source maps or the `docs/decisions/` documents, taking it from 2.3 MB to 1.6 MB."
-}

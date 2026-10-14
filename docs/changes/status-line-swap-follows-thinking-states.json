@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 1,
-  "external": false,
-  "zh": "运行行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带全程亮着而不从头再扫，行由一个隐藏测量层按住宽度与高度，换词期间旁边的计时不会被挤动，新词从下方升入也不会让整行变高。",
-  "en": "The running line's wording swap runs transitions.dev's \"Thinking states\": the two halves move at once, the sweeping highlight stays lit through the swap, and a hidden sizer holds the width and height, so the clock is never shoved aside and the copy rising from below never makes the line taller."
-}

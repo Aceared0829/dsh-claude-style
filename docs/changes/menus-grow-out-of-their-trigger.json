@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 6,
-  "external": false,
-  "zh": "模型、推理等级、权限、账号几张弹层卡片与新会话页的菜单从各自按钮所在的一角、由略小的尺寸长出来（约 0.25 秒，不再上移），收起时更快（约 0.12 秒）。",
-  "en": "The model, reasoning, permission and account cards and the new-conversation page's menus grow out of the corner nearest their button from a little smaller (about 0.25 s, with no rise) and close faster (about 0.12 s)."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "chores",
-  "order": 0,
-  "external": false,
-  "zh": "压过宿主界面的 z-index 改由 `packages/client/src/theme/tokens.json` 的 `layer` 一组给出，`docs/STYLE.md` 里的层级表由同一份数据生成，构建拒绝样式表里 9 以上的 z-index 字面值与 TS 里内联写出的层级。",
-  "en": "A z-index that has to clear the host's interface comes from the `layer` group of `packages/client/src/theme/tokens.json`, the layer table in `docs/STYLE.md` is generated from the same data, and the build refuses a z-index literal above 9 in a stylesheet and a stacking level written inline in TypeScript."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "chores",
-  "order": 9,
-  "external": false,
-  "zh": "闸门的发起时机写明：本机默认不起闸门，开发期间的判断来自构建与在线页面；一次运行只属于推送之前那一段，取覆盖这次改动的最小集合。",
-  "en": "The occasion for a gate run is stated plainly: no gate starts on this machine by default, work in progress runs on the build and the live page, and a run belongs to the stretch before a push over the smallest set covering that change."
-}

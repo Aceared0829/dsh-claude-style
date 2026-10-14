@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 6,
-  "external": false,
-  "zh": "Windows 桌面端飞行的气泡全程是气泡自己的颜色，与 web 端一致；这条色带同时是窗口的拖拽区，飞行期间在那一块按下鼠标也不再拖动窗口。",
-  "en": "On the Windows desktop app the flying bubble keeps the bubble's own colour all the way, alike on the web, and the band — also the window's drag region — no longer turns a press there into a window drag during the flight."
-}

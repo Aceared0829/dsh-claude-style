@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 0,
-  "external": false,
-  "zh": "冒烟架、临时宿主、脚本化模型、端到端通道与三个在线探针全部住进 `packages/testing/`，共用一套 Playwright 浏览器栈，`scripts/` 只剩构建与文档工具。",
-  "en": "The smoke harness, the scratch host, the scripted model service, the end-to-end lane and the three live probes all live in `packages/testing/` on one Playwright stack, leaving `scripts/` with the build and document tools."
-}

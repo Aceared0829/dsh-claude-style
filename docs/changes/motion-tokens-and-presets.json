@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 4,
-  "external": false,
-  "zh": "皮肤里所有动效的时长、曲线、位移与模糊改由 `packages/client/src/theme/tokens.json` 的 `motion` 一组统一给出，同一作用的数值合成一档，`docs/STYLE.md` 的动效表由同一份数据生成，构建拒绝样式表里直接写出的时长与曲线、内容重复的关键帧，以及没有读者认领的动效令牌。",
-  "en": "Every duration, curve, distance and blur in the skin comes from the `motion` group of `packages/client/src/theme/tokens.json`, one value per role, with the style guide's motion table generated from the same data and the build refusing a duration or curve written straight into a stylesheet, keyframes that repeat one the skin has, and a motion token nothing reads."
-}

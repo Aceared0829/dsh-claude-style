@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 3,
-  "external": false,
-  "zh": "文档里带单位的数值必须有出处：能由令牌或常量给出的一律读它，读不到的登记在 `scripts/doc-numbers.mjs` 的来源表里，数值失去出处时 `npm run lint` 与云端闸门报出。",
-  "en": "A number a document states now has a home: a value a token or a constant holds is read from there, the few a reader needs are registered with their source in `scripts/doc-numbers.mjs`, and `npm run lint` and the cloud gates fail when one loses it."
-}

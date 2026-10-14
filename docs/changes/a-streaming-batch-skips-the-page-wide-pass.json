@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 2,
-  "external": false,
-  "zh": "只落在对话消息列里的变更批次（流式输出就是这种）只叫醒读消息列的功能，页头、视图标签、侧边栏页脚、模型与档位选择器不再跟着跑一趟；任何读到整页的信号（语言、偏好、时钟、功能自己排的一帧）照旧触发完整一趟。",
-  "en": "A change confined to the conversation column — streaming, above all — wakes only the features that read it: the header, the view tabs, the sidebar footer and the model and effort pickers no longer take a pass of their own. Any signal that reads the whole page (a language, a preference, the clock, a frame a feature asks for) still runs the full pass."
-}

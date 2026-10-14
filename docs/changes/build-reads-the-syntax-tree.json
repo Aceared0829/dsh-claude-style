@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 1,
-  "external": false,
-  "zh": "构建对浏览器半边源码的检查改在 TypeScript 语法树上进行（`scripts/source-tree.mjs`）：样式表读到的 `data-dsh-*` 属性必须真的有代码写入，经变量、联合类型与辅助函数转手也追得到，注释里的同名写法不再误报；流式淡入的 24 条 `::highlight()` 规则与首页热度图的四档规则由构建按 `constants.ts` 里的取值写出，步数、档数与规则出自同一处。",
-  "en": "The build's checks on the browser half's source read its TypeScript syntax tree (`scripts/source-tree.mjs`): every `data-dsh-*` attribute a stylesheet reads must really be written by code, found through a variable, a union or a helper parameter, and the same spelling in a comment no longer trips the check; the 24 `::highlight()` rules behind the streaming fade and the home heat grid's four levels are written by the build from `constants.ts`, so the counts and the rules have one source."
-}

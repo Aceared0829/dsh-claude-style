@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "修复 Firefox 下鼠标停留在上下文用量圆环时统计弹层反复闪烁的问题：返回入口会取消待执行的关闭任务，鼠标仍在入口上时弹层保持展开。",
-  "en": "Fix the context statistics popover repeatedly flickering while the pointer rests on the context ring in Firefox: returning to the trigger cancels the pending close, and the popover stays open while the trigger is hovered."
-}

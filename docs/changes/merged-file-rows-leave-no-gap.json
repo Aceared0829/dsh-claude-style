@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 3,
-  "external": false,
-  "zh": "被合并掉的调用连同宿主给它留的间距一起离开页面，过程组里各行的间距保持一致。",
-  "en": "A merged-away call leaves the page together with the spacing the host gave it, and the rows of a process group keep one even spacing."
-}

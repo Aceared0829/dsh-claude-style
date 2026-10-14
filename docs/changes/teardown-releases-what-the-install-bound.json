@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "zh": "功能被关掉或整代被换下之后，它留下的挂在宿主节点上的监听、观察总线订阅、排队帧与定时器一并收走：宿主账户菜单每次打开不再留住上一张已经卸载的卡片，会话数字的圆环与弹层不再累积旧的挂载代，输入卡片选择器关掉时不再把 mousemove 留在文档上，模型档位滑块按住时被拆下也不再留下 pointerup，进程组表头的摘要不会在拆除后重建并永久订阅宽度，思考窗与折叠回滚不再在拆除后继续排帧。",
-  "en": "Turning a feature off or replacing a generation now takes its listeners on host-owned nodes, its observation-bus subscriptions, its queued frames and its timers with it: the host account menu no longer keeps every card it has already unmounted, the conversation meter and panel no longer stack bindings from earlier generations, switching the model picker off no longer leaves a document mousemove behind, dropping the effort slider mid-drag no longer leaves pointerup bound, a process header's summary is not rebuilt and subscribed after its teardown, and the reasoning window and fold roll stop queueing frames once the feature is gone."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-12",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "同一个文件在同一个过程组里的多次读取、编辑与写入读成一行：图标与标题跟着最后一次操作换新，行尾的 `+n -m` 是这些改动的累计值并随每次改动逐位翻页，展开读到全部改动；只被读取过的文件展开读到这次读取的窗口。",
-  "en": "The calls on one file inside one process group stand as a single row: its icon and title move on with the file's last operation, its `+n -m` tail counts those changes and turns character by character as each one lands, and opening the row reads every change — or the window a read-only file was read at."
-}

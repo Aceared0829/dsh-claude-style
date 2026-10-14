@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 0,
-  "external": false,
-  "zh": "36 段登记在册的复制代码全部清零：分段控件、品牌图蒙版、弹层暗色卡片与表单盒型等收进共享样式表，脚本与测试工具的公共启动代码收进 `scripts/shared/` 与 `packages/testing/`，jscpd 基线文件随之删除，lint 对任何新复制段直接拒绝。",
-  "en": "The 36 tracked copied stretches are gone — the segment controls, the masked brand-mark idiom, the dark popover card and the form-control boxes now live in shared sheets, and the scripts' and testing tools' bootstrap moved into `scripts/shared/` and `packages/testing/`; the jscpd baseline is deleted with them and lint refuses any new copied stretch."
-}

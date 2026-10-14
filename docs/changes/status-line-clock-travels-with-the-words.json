@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 1,
-  "external": false,
-  "zh": "状态行换词时说法盒子的宽度是一次移动：盒子先按住当前宽度再写上目标宽度，由滑动高亮那一对时长与曲线（约 0.24 秒）带过去，旁边的计时随盒子滑到新位置。",
-  "en": "The wording box's width is now one move — pinned at the width it stands at, written with the width it heads for, and carried there over the sliding highlight's own time and curve (about 0.24 s) — so the clock travels to its new place with it."
-}

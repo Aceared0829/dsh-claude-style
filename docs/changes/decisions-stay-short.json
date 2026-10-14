@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 6,
-  "external": false,
-  "zh": "决策的「决定」一节限定篇幅：一条不超过三百字、一节不超过三千字，「现状」不超过六百字，由 `npm run lint` 判定。",
-  "en": "A decision's 决定 section is held to a length — one bullet of at most 300 characters, a section of at most 3000, a 现状 line of at most 600 — enforced by `npm run lint`."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 15,
-  "external": false,
-  "zh": "工作台首页的权限控件此前和经典首页一样是一排 Read / Edit / Auto / Yolo 分段按钮，与它那身对话式的单行输入卡片并不相称；现在工作台首页与对话页一致：输入区里是一枚写着当前档位的按钮，点开是一张档位卡片，滑块式分段只留在经典首页。工作台首页还没选工作区时，按钮停在新会话的默认档位上、不接收点击，点它和点输入框一样打开工作区选择。",
-  "en": "The studio home's permission control was the same Read / Edit / Auto / Yolo segment row the classic home wears, which sat oddly with its conversation-style single-line card; it now matches the conversation: one button naming the current tier, opening a card of tiers, with the slider-style segment row left to the classic home. Before a workspace is picked the button rests on the preset a new session starts in and takes no input, so pressing it opens the workspace picker the same as pressing the input box."
-}

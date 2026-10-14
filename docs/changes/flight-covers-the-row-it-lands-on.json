@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 5,
-  "external": false,
-  "zh": "飞行的气泡每一帧都从它按住的那一行重新取落点与高度、底色按画面上的颜色写定（半透明气泡令牌只与画布合成一次），真实行等它站上去并连着几帧不动之后才显形、显形瞬间两者对齐到同一像素，淡出期间它始终钉在那一行上；等待本身有上限，页面一直在动也不会把消息一直扣着。",
-  "en": "The flying bubble takes its landing spot and height again every frame from the row it holds, its fill is written as the colour the screen paints (a translucent bubble token composites over the canvas once), and the real row is shown only once the stand-in is on it and the row has held still for several frames — the two are the same pixel then, and through the fade the stand-in stays pinned to the row; the wait is bounded, so a page that keeps moving never holds the message back."
-}

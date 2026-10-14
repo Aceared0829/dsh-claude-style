@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 4,
-  "external": false,
-  "zh": "`docs/SETTINGS.md` 与 `docs/SETTINGS.en.md` 只留设置页自己的内容——六个分页与各档、设置项之间的依赖、跨功能的几段说明——动效各自做什么由链接指向功能一览。",
-  "en": "`docs/SETTINGS.md` and `docs/SETTINGS.en.md` carry the settings page's own content — the six tabs and their tiers, the dependencies between rows, the cross-cutting notes — and link to the feature list for what each effect does."
-}

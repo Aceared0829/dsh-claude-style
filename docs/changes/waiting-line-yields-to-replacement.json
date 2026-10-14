@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "同一运行行中有可见替代文字且宿主文案被外部隐藏时，主题等待行自动让位，接管结束后恢复，其他聊天动效继续运行。",
-  "en": "The theme yields its waiting line when a visible sibling replaces externally hidden host wording, restores it when the takeover ends, and keeps other chat animations running."
-}

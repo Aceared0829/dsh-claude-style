@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 16,
-  "external": false,
-  "zh": "中文界面下内置 Auto review 档位此前显示英文名，因为宿主的档位文案表里这一条两种语言都是英文；现在它读「自动审查」，其它档位仍读宿主自己的中文名，界面语言不是中文时照旧读 Auto review。",
-  "en": "Under a Chinese interface the built-in Auto review tier showed its English name, the host's own tier dictionary carrying that entry in English in every language; it now reads 自动审查, while the tiers the host names in Chinese keep their own words and every other interface language still reads Auto review."
-}

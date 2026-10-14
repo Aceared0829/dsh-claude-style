@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 14,
-  "external": false,
-  "zh": "「外观」页的「主色」改名「强调色」并挪到「配色」下方，配色选「跟随宿主」时它变灰、不能操作。",
-  "en": "The Appearance tab's Primary colour row is renamed Accent colour and moves under Colours, greying out and taking no input while Colours is set to Follow the host."
-}

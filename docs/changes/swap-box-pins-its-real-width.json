@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 6,
-  "external": false,
-  "zh": "换词时钉住的宽度与要去的宽度都按布局实际的宽度取，盒子稳住不动，计时只随说法变长而移动。",
-  "en": "The pin and the width it heads for are the widths the layout really holds, so the box holds its place through a swap and the clock moves only as the wording grows."
-}

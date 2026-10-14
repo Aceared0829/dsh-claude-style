@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "fixes",
-  "order": 4,
-  "external": false,
-  "zh": "状态行的扫光层始终挂在承载文字的那个副本上，扫光带贴着字形扫过。",
-  "en": "The sweeping highlight rides the copy holding the words, so the band sweeps across the glyphs themselves."
-}

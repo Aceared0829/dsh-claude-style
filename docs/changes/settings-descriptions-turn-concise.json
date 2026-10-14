@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "设置页过长的描述统一改写为简洁风格：一句说清这项设置管什么、各档位做什么，中英两版同步。",
-  "en": "The settings page's over-long descriptions are rewritten in a concise style — one sentence naming what the setting governs and what each tier does — with the Chinese and English copies kept in step."
-}

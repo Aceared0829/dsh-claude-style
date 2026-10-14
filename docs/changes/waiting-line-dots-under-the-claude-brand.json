@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-13",
-  "group": "improvements",
-  "order": 13,
-  "external": false,
-  "zh": "Claude 品牌下，轮次进行中那一行开头是主题自己的三枚 4px 加载点（各弹起 8 像素并在离地时压扁，半秒一次，错开周期依次起跳）；DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变。",
-  "en": "Under the Claude brand the head of the running row carries the skin's own three 4px dots, each rising 8px and flattening as it leaves the floor, half a second a bounce with the three staggered into a wave; under the DeepSeek brand the host's whale tail stands as before, and the screen-reader announcement is unchanged."
-}
