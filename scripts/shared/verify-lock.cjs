@@ -77,6 +77,11 @@ async function takeLock(label, runId) {
   let announced = 0
   for (;;) {
     try {
+      // The lock directory is the lock, and it lives under `.debug/`, which a
+      // fresh checkout does not have yet: create that parent first, so the
+      // mkdir below answers EEXIST for a lock in flight instead of ENOENT for
+      // a missing parent.
+      fs.mkdirSync(path.dirname(LOCK), { recursive: true })
       fs.mkdirSync(LOCK)
       fs.writeFileSync(OWNER, `${JSON.stringify({ pid: process.pid, at: new Date().toISOString(), label, runId }, null, 2)}\n`)
       return () => fs.rmSync(LOCK, { recursive: true, force: true })
