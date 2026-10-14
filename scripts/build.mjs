@@ -62,6 +62,7 @@ import { readSourceTree } from './source-tree.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import manifestReader from './shared/read-manifests.cjs'
+import { withLock } from './shared/verify-lock.cjs'
 import { loadModule } from './shared/ts-module.cjs'
 import { chunkModulesModule, featuresModule, generatedModule } from './virtual-modules.mjs'
 
@@ -559,4 +560,4 @@ async function main() {
   }
 }
 
-await main()
+await withLock('build', 'build', main)

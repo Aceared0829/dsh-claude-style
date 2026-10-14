@@ -18,6 +18,7 @@
  * from packages/testing/browser.cjs and is stopped when the probe ends.
  */
 const { findChrome, openBrowser } = require('./browser.cjs')
+const { withLock } = require('../../scripts/shared/verify-lock.cjs')
 const { TOKEN, BASE } = require('./cli-args.cjs')
 
 if (!TOKEN) {
@@ -141,7 +142,7 @@ async function probe(page) {
   return failures
 }
 
-main().then(
+withLock('probe', 'probe', main).then(
   (failures) => { process.exitCode = failures === 0 ? 0 : 1 },
   (e) => { console.error(e); process.exitCode = 1 },
 )

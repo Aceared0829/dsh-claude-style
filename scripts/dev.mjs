@@ -47,7 +47,7 @@ function build(reason) {
   const child = spawn(process.execPath, [BUILD], {
     cwd: ROOT,
     stdio: 'inherit',
-    env: { ...process.env, DSH_CLAUDE_STYLE_DEBUG: '1' },
+    env: { ...process.env, DSH_CLAUDE_STYLE_DEBUG: '1', DSH_CLAUDE_STYLE_DEV: '1' },
   })
   child.on('close', (code) => {
     const took = Date.now() - started

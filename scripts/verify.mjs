@@ -34,9 +34,9 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
+import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
-const LOCK = path.join(ROOT, '.debug', 'verify.lock')
 const CACHE = path.join(ROOT, '.debug', 'verify-cache')
 /** Bumped when a recorded verdict stops meaning what this file reads it as. */
 const FORMAT = 1
@@ -47,13 +47,6 @@ const FORMAT = 1
 const TREES = ['packages', 'scripts', 'locale', 'docs']
 /** What no walk enters: the build output, the local scratch and the worktrees under `.claude/`. */
 const SKIPPED = new Set(['.git', '.debug', '.claude', 'node_modules', 'lib'])
-/** A lock whose owner file cannot be read is given this long before it is read as a run that died taking it. */
-const OWNER_GRACE_MS = 60_000
-/** How often a waiting request looks at the lock again. */
-const WAIT_POLL_MS = 2_000
-/** How often a waiting request says it is still waiting. */
-const WAIT_SAY_MS = 30_000
-
 /** The flags a request may carry, without their dashes; the three name-taking ones carry values. */
 const FLAGS = new Set(['quick', 'no-e2e', 'force', 'case', 'feature', 'scenario'])
 
@@ -67,76 +60,6 @@ const say = (line) => process.stdout.write(`${line}\n`)
 function bad(message) {
   console.error(`verify: ${message}`)
   process.exit(2)
-}
-
-/**
- * Whether a pid is still alive. The operating system answers this by throwing
- * rather than by returning: `ESRCH` means the process is gone, `EPERM` that it
- * exists and belongs to somebody else.
- */
-function alive(pid) {
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch (error) {
-    return error.code === 'EPERM'
-  }
-}
-
-/**
- * What the lock says right now.
- * @returns `{ kind: 'free' }`, `{ kind: 'held', owner }` or `{ kind: 'stale', note }`.
- */
-function lockState() {
-  const stat = fs.statSync(LOCK, { throwIfNoEntry: false })
-  if (stat === undefined) return { kind: 'free' }
-  const file = path.join(LOCK, 'owner.json')
-  if (fs.existsSync(file)) {
-    let owner = null
-    // The file is read and parsed in one step: it is written whole, so what
-    // fails here is a reader that raced a run taking the lock, not a state.
-    try {
-      owner = JSON.parse(fs.readFileSync(file, 'utf8'))
-    } catch {
-      owner = null
-    }
-    if (owner !== null && Number.isInteger(owner.pid)) {
-      return alive(owner.pid) ? { kind: 'held', owner } : { kind: 'stale', note: `pid ${owner.pid} is gone` }
-    }
-  }
-  const age = Date.now() - stat.mtimeMs
-  return age > OWNER_GRACE_MS
-    ? { kind: 'stale', note: `no owner file after ${Math.round(age / 1000)} s` }
-    : { kind: 'held', owner: null }
-}
-
-/** Hold the lock, waiting out any run in flight, and return the release. */
-async function takeLock(runId, request) {
-  let announced = 0
-  for (;;) {
-    try {
-      fs.mkdirSync(LOCK)
-      fs.writeFileSync(path.join(LOCK, 'owner.json'), `${JSON.stringify({ pid: process.pid, at: new Date().toISOString(), runId, request }, null, 2)}\n`)
-      return () => fs.rmSync(LOCK, { recursive: true, force: true })
-    } catch (error) {
-      // The lock directory is the lock: another run holds it.
-      if (error.code !== 'EEXIST') throw error
-    }
-    const state = lockState()
-    if (state.kind === 'stale') {
-      say(`verify: taking the lock from a run that left it behind — ${state.note}`)
-      fs.rmSync(LOCK, { recursive: true, force: true })
-      continue
-    }
-    const owner = state.owner
-    if (announced === 0 || Date.now() - announced >= WAIT_SAY_MS) {
-      announced = Date.now()
-      say(owner === null
-        ? 'verify: a run is taking the lock; waiting for it'
-        : `verify: waiting for the run in flight — pid ${owner.pid}, started ${owner.at}, ${owner.runId}`)
-    }
-    await new Promise((resolve) => { setTimeout(resolve, WAIT_POLL_MS) })
-  }
 }
 
 /**
@@ -309,13 +232,16 @@ async function main() {
     report(before, 'cache')
     process.exit(before.exitCode)
   }
-  const release = await takeLock(`${key.slice(0, 12)}`, request)
+  const release = await takeLock('verify', key.slice(0, 12))
+  // The gates run under this lock: they must not ask for it again.
+  process.env[HELD] = LOCK
   let record
   try {
     // The run this request waited for may have answered this very key.
     record = (request.force ? null : cached(key)) ?? await runAll(request, tree, key)
   } finally {
     release()
+    delete process.env[HELD]
   }
   report(record, 'run')
   process.exit(record.exitCode)

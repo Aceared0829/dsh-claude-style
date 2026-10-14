@@ -33,6 +33,7 @@ const { SCENARIOS } = require('./scenarios.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { startMockLlm } = require('./mock-llm.cjs')
 const { loadModule } = require('../../scripts/shared/ts-module.cjs')
+const { withLock } = require('../../scripts/shared/verify-lock.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const DEFAULT_OUT = path.join(ROOT, '.debug', 'e2e', 'out')
@@ -316,7 +317,7 @@ async function main() {
   process.exit(failed > 0 ? 1 : 0)
 }
 
-main().catch((error) => {
+withLock('e2e', 'e2e', main).catch((error) => {
   console.error(error)
   process.exit(1)
 })

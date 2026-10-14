@@ -66,6 +66,7 @@ const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, check, failures, skips,
 const { hostHalf } = require('./smoke/host-half.cjs')
 const { page } = require('./smoke/page.cjs')
 const { CASES } = require('./smoke/cases.cjs')
+const { withLock } = require('../../scripts/shared/verify-lock.cjs')
 
 /**
  * The build's asset manifest: which names the page may ask for, their type and
@@ -294,7 +295,7 @@ async function main() {
   process.exit(failures() > 0 ? 1 : ran ? 0 : 2)
 }
 
-main().catch((error) => {
+withLock('smoke', 'smoke', main).catch((error) => {
   console.error(error)
   process.exit(1)
 })
