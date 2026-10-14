@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 import { CHAT_DRAFT_HANDOFF_AT, CHAT_MAX_TEXT_LAYERS, CHAT_MORPH_END, CHAT_RISE_DAMPING, CHAT_RISE_OMEGA, CHAT_SHAPE_SAMPLES, chatSendCornerRadius, chatSendMorphProgress, chatSendRiseProgress, chatSendShadowSpread, chatSendSpringProgress, chatSendStepOpacity, chatSendTextWindows } from './send-shape'
 import type { ShapeSample } from './send-shape'
+import { motionMs } from '../../shared/motion'
 
 const cleanups: (() => void)[] = []
 afterEach(() => {
@@ -17,17 +18,39 @@ test('a critically damped spring rises from 0 without passing 1', () => {
   expect(Math.max(...values)).toBeLessThanOrEqual(1)
 })
 
-test('the rise overshoots by the damping ratio\'s amount, and lands without leaving the row', () => {
+test('the rise overshoots by the damping ratio\'s amount, and is back on the row before the fade', () => {
   const peak = Math.max(...sampled(u => chatSendSpringProgress(u, CHAT_RISE_DAMPING, CHAT_RISE_OMEGA), 2000))
   const ratio = CHAT_RISE_DAMPING / Math.sqrt(1 - CHAT_RISE_DAMPING * CHAT_RISE_DAMPING)
   expect(peak - 1).toBeCloseTo(Math.exp(-Math.PI * ratio), 3)
+  // The give is the landing, so it has to be a distance a reader can see: what
+  // is written here is a share of the rise, so the flight reads the same on any
+  // screen and a ratio near critical — a hundredth of a pixel over a tall rise
+  // — fails rather than passing quietly.
+  expect(peak - 1).toBeGreaterThan(0.02)
+  expect(peak - 1).toBeLessThan(0.04)
   expect(chatSendRiseProgress(0)).toBe(0)
-  expect(chatSendRiseProgress(1)).toBeCloseTo(1, 12)
-  // The give on landing, over a tall rise: past a fraction of a pixel the
-  // stand-in stands above the row it lands on while it fades (a stripe across
-  // the bubble's top).
-  const rise = Math.max(...sampled(chatSendRiseProgress, 2000)) - 1
-  expect(rise * 400).toBeLessThan(1)
+  expect(chatSendRiseProgress(1)).toBe(1)
+  // One peak, on the way up: the curve rises past the target once and comes
+  // back, so nothing the reader sees is a second bounce.
+  const values = sampled(chatSendRiseProgress, 2000)
+  const peakAt = values.indexOf(Math.max(...values))
+  expect(peakAt).toBeGreaterThan(0)
+  expect(peakAt).toBeLessThan(values.length - 1)
+  for (let index = 1; index <= peakAt; index += 1) expect(values[index]).toBeGreaterThanOrEqual(values[index - 1]!)
+  for (let index = peakAt + 1; index < values.length; index += 1) expect(values[index]).toBeLessThanOrEqual(values[index - 1]!)
+  // The landing fade starts once the flight's own animation is over — at
+  // fadeAt, one shape sample past the flight's end — and the stand-in is pinned
+  // to the row through it: a give still standing would show as two pictures of
+  // one message a few pixels apart. That is also the gate the real row waits
+  // behind (send-flight.ts's arrived(): half a pixel), so what is left at the
+  // end has to be under half a pixel over any rise the reader can see; measured
+  // over a 400ms flight and a 150ms fade it is 0.8% of it, a few tenths of a
+  // pixel over a tall rise and nothing over a short one.
+  const flightMs = motionMs('--dsh-claude-duration-flight')
+  const fadeAt = (flightMs + motionMs('--dsh-claude-duration-surface')) / flightMs
+  const atFade = Math.abs(chatSendRiseProgress(fadeAt) - 1)
+  expect(fadeAt).toBeGreaterThan(1)
+  expect(atFade).toBeLessThan(0.01)
 })
 
 test('the shape runs its whole course within its share of the flight', () => {
