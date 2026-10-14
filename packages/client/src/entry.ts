@@ -7,7 +7,8 @@ import { installScheduler, reportFeatureFailure } from './core/scheduler'
 import type { HandleName, Ui } from './core/scheduler'
 import { mountStylesheet, parkForeignSheets } from './core/stylesheet'
 import { peerPresent, subscribePeerPresence } from './shared/peer-plugin'
-import { externalOwnerActive, subscribeExternalOwner } from './shared/visual-owner'
+import { pageOwner, subscribePageOwner } from './shared/visual-owner'
+import type { PageOwner } from './shared/visual-owner'
 import { loadFeatureChunk } from './core/chunks'
 import { handleName, setFeatureRegistry } from './core/feature'
 import type { Feature, FeatureInstall } from './core/feature'
@@ -46,6 +47,17 @@ function isWanted(feature: Feature) {
   return feature.yieldsTo === undefined || !peerPresent(feature.yieldsTo)
 }
 
+/**
+ * The features that stay while another owner has the page (D49): the
+ * settings section always, the reader's way to this theme's own page; beside
+ * ds-bot's Bot surface also the surface switch, the reader's way back to this
+ * theme's page.
+ */
+const KEPT_FOR: Record<PageOwner, string[]> = {
+  'skin': ['settings'],
+  'ds-bot': ['settings', 'surface'],
+}
+
 export function apply(ctx: HostContext) {
   const body = document.body
   const ui: Ui = { retire }
@@ -57,20 +69,20 @@ export function apply(ctx: HostContext) {
   let offSwitches: (() => void) | null = null
   /** Keeps the other chat plugin's presence watch alive; set once the features install. */
   let offPeerWatch: (() => void) | null = null
-  /** Watches the skin center's stamp on the page; D49. */
+  /** Watches the page owners' marks; D49. */
   let offOwnerWatch: (() => void) | null = null
   /** Unmounts this generation's stylesheet; set once the sheet is mounted. */
   let stopStylesheet: (() => void) | null = null
   let disposed = false
-  /** True while a skin owns the page and this theme stands down (D49). */
-  let yielded = externalOwnerActive()
+  /** Who has the page while this theme stands down; null while the theme has it (D49). */
+  let owner = pageOwner()
 
   /**
    * Give the page back, keeping the features `keep` names: run every other
    * feature's teardown and take this package's body attributes and stylesheet
-   * away. A yield keeps the settings section and the preference binding: the
-   * reader must still reach the plugin's own page, and another plugin taking
-   * the screen uninstalls nothing of the reader's (D49).
+   * away. A yield keeps the owner's KEPT_FOR features and the preference
+   * binding: another plugin taking the screen uninstalls nothing of the
+   * reader's (D49).
    */
   function release(keep: string[] = []) {
     // First, so no preference flip installs a feature mid-release.
@@ -197,13 +209,13 @@ export function apply(ctx: HostContext) {
 
   /**
    * Whether a feature whose chunk just arrived still belongs on the page: the
-   * page may have been given to a skin (only the settings section stays,
-   * D49), the feature switched off, or the generation ended while the chunk
-   * was on its way.
+   * page may have been given to another owner (only its KEPT_FOR features
+   * stay, D49), the feature switched off, or the generation ended while the
+   * chunk was on its way.
    */
   function belongs(feature: Feature) {
     if (disposed || failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) return false
-    if (yielded && feature.id !== 'settings') return false
+    if (owner !== null && !KEPT_FOR[owner].includes(feature.id)) return false
     return !isLive(feature) || isWanted(feature)
   }
 
@@ -263,9 +275,24 @@ export function apply(ctx: HostContext) {
   }
 
   /**
+   * Stand down for another owner (D49): install the features it leaves on the
+   * page that are not installed yet — a page booting yielded, or going from
+   * one owner to the other — and release the rest. A kept feature that is
+   * deferred installs when its chunk arrives (D39).
+   */
+  function yieldTo(next: PageOwner) {
+    const keep = KEPT_FOR[next]
+    for (const feature of FEATURES) {
+      if (!keep.includes(feature.id) || failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) continue
+      installFeature(feature)
+    }
+    release(keep)
+  }
+
+  /**
    * Take the page: stamp, mount the sheet, install the features, schedule.
    * Idempotent over what is already installed, so taking the page back after
-   * a yield leaves the settings section alone (D49); a feature retired after
+   * a yield leaves the features it kept alone (D49); a feature retired after
    * failing stays retired (D12).
    *
    * FEATURES is the registry the build generates from the manifests (D42),
@@ -330,23 +357,17 @@ export function apply(ctx: HostContext) {
   // features that yield to it in or out (packages/client/src/shared/peer-plugin.ts). The
   // subscription itself carries no logic.
   offPeerWatch = subscribePeerPresence(() => {})
-  // A skin can arrive or leave whichever way the page booted; the
-  // verdict is read again on every flip rather than remembered (D49).
-  offOwnerWatch = subscribeExternalOwner(active => {
-    if (active === yielded) return
-    yielded = active
-    if (active) release(['settings'])
-    else own()
+  // An owner can arrive or leave whichever way the page booted; the
+  // verdict is read again on every change rather than remembered (D49).
+  offOwnerWatch = subscribePageOwner(next => {
+    if (next === owner) return
+    owner = next
+    if (next === null) own()
+    else yieldTo(next)
   })
 
-  if (yielded) {
-    // A skin already has this page (D49). The settings section is the
-    // one feature that stays: the reader still has to reach this theme's own
-    // page. adoptPrefs mirrors nothing onto a yielded page, and the release
-    // leaves the section alone, installed now or on its chunk's arrival (D39).
-    installFeature(FEATURES.find(feature => feature.id === 'settings')!)
-    release(['settings'])
-    return
-  }
-  own()
+  // Another owner already has this page (D49): adoptPrefs mirrors nothing
+  // onto it, and the release leaves the owner's KEPT_FOR features alone.
+  if (owner !== null) yieldTo(owner)
+  else own()
 }

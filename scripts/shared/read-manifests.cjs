@@ -83,6 +83,7 @@ function checkManifests(manifests) {
       // A generated sheet is checked where it is written (scripts/feature-sheets.mjs).
       if (sheet.generated !== undefined) continue
       if (!fs.existsSync(path.join(FEATURES, manifest.dir, sheet.file))) fail(manifest, `names the stylesheet ${sheet.file}, which packages/client/src/features/${manifest.dir}/ does not hold`)
+      if (sheet.scope !== undefined && sheet.scope !== 'surface') fail(manifest, `gives ${sheet.file} the scope "${sheet.scope}"; the one scope a sheet can name is "surface"`)
     }
     if (manifest.prefValues !== undefined) {
       if (manifest.pref === undefined) fail(manifest, 'names "prefValues" without a "pref"')

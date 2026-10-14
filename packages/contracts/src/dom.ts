@@ -213,6 +213,15 @@ export const FOOT_AREA_SELECTOR = '[class*="footArea"]'
  * this slot.
  */
 export const SIDEBAR_SEARCH_SLOT_SELECTOR = '[data-slot="sidebar"] [class*="_searchSlot"]'
+/** The sidebar's own column box, whose width follows the collapse and the reader's drag. */
+export const SIDEBAR_ROOT_SELECTOR = '[data-slot="sidebar"] > [class*="_root"]'
+/** The wide brand in the sidebar's top row; the collapsed rail has none. */
+export const SIDEBAR_BRAND_SELECTOR = '[data-slot="sidebar"] [class*="_logoRow"] > [class*="_brand"]'
+/**
+ * The sidebar's collapse toggle, inside the top row. The desktop shells fix it
+ * into the caption strip; the web leaves it the row's last cell.
+ */
+export const SIDEBAR_TOGGLE_SELECTOR = '[data-slot="sidebar"] [class*="_logoRow"] > [class*="_toggle"]'
 /** The host's own composer is replaced by a panel of its own choice; this is that panel's seat. */
 export const CHAIN_OVERLAY_FALLBACK_ATTRIBUTE = 'data-chain-overlay-fallback'
 /** The host's own open menus and modal dialogs: the foreground the skin must not walk over. */
@@ -279,3 +288,22 @@ export const DARK_THEME_ATTRIBUTE = 'data-ds-dark-theme'
 export const PEER_SHEET_SELECTOR = 'style[data-plugin-css="dsh-plugin-msg-nav/style.css"]'
 /** Every untagged stylesheet in `<head>`: the host's claim sweep would otherwise take a sibling's. */
 export const UNTAGGED_SHEET_SELECTOR = 'style:not([data-plugin])'
+
+/* ---------- ds-bot (Fei2411/DeepSeek-Bot) ---------- */
+
+/**
+ * On `<body>` while ds-bot's Bot surface is painted: its shell group writes
+ * the motion level there and deletes it when the group withdraws for the
+ * shell's own interface (its Agent mode).
+ */
+export const DS_BOT_SURFACE_ATTRIBUTE = 'data-bt-motion'
+/** In Agent mode, ds-bot's one control on the shell's own page: the footer button back to its Bot surface. */
+export const DS_BOT_RETURN_SELECTOR = '.bt-return'
+/** ds-bot's account button, which opens its menu on the Bot surface. */
+export const DS_BOT_ACCOUNT_SELECTOR = '.bt-account'
+/** That menu, portalled into `<body>` while open. */
+export const DS_BOT_ACCOUNT_MENU_SELECTOR = '.bt-account-menu'
+/** The menu's last group, after its last separator: the one item that switches to Agent mode. */
+export const DS_BOT_AGENT_ITEM_SELECTOR = '.bt-account-menu > .bt-menu-sep:last-of-type ~ [role="menuitem"]'
+/** The top row of ds-bot's own sidebar: its brand, search and new buttons. */
+export const DS_BOT_SIDEBAR_TOP_SELECTOR = '.bt-side-top'

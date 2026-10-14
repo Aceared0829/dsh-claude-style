@@ -10,6 +10,8 @@
 import { PREFS_DEFAULT } from '@dsh-claude-style/contracts/prefs'
 
 export const STYLE_ID = 'dsh-claude-style-style'
+/** The surface sheets' own element, which stays while ds-bot's surface has the page (D49). */
+export const SURFACE_STYLE_ID = 'dsh-claude-style-surface'
 
 /**
  * Settings identity.
@@ -32,6 +34,8 @@ export const PACKAGE_NAME = 'dsh-claude-style'
  * claim sweep and every sibling package's removal off it (D33).
  */
 export const STYLE_PLUGIN_CSS = `${PACKAGE_NAME}/client.css`
+/** The surface sheets' key in the same bookkeeping. */
+export const SURFACE_PLUGIN_CSS = `${PACKAGE_NAME}/surface.css`
 /**
  * The tag this package gives a sibling's untagged stylesheet so the host's
  * claim sweep cannot attribute it to this package (D33). It carries a slash,

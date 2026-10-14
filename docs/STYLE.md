@@ -558,7 +558,8 @@ padding, so the box's hairline stands on the two edges of the column's own
 inset and is exactly as wide as the New session plate below it. In the desktop
 titlebar mode the brand row rises 6px, since the sidebar column starts under
 the 40px titlebar — as far as it goes with the box still wholly below that
-edge, which clips the column.
+edge, which clips the column. A box narrower than 200px keeps its glyph and
+label and leaves the keycaps out.
 
 **Palette.** A modal card set 8vh from the top, 760px wide at most, 16px radius,
 on the same ivory fill (dark `#1E1E1D`) under the host's mask. From the top: a
@@ -575,6 +576,23 @@ highlighted row takes `rgba(20, 20, 19, 0.05)` (dark `rgba(250, 249, 245, 0.07)`
 and shows the Enter glyph; the others hide it. The card fades in and settles
 from 6px above at 98.5% scale over 0.18s; on close card and mask fade out
 together over 0.14s before the modal unmounts.
+
+## Chat / Code switch · 聊天 / 代码切换
+
+With ds-bot installed, the switch is two 28×22 options on a 2px-padded plate
+with a 7px radius, each option 5px: chat bubbles and `</>`, 16px glyphs in the
+1.3px stroke the sidebar's glyphs use. It is painted on both sides of the switch
+by whoever paints the host's tokens — the theme on the Code side, ds-bot on the
+Chat side — so the plate is a translucent tint (`rgba(20, 20, 19, 0.06)`, dark
+`rgba(255, 255, 255, 0.08)`), the options take the tertiary label at rest and
+the primary on hover, and the checked one is cut from the conversation canvas
+(`--dsw-alias-bg-base`) with a 1px `rgba(20, 20, 19, 0.10)` drop (dark: a
+`rgba(255, 255, 255, 0.14)` fill and no drop). On the desktop it stands in the
+caption row, its right edge 12px inside the sidebar column's, centred in the
+row, and leaves the screen while the column is too narrow to keep 8px clear of
+the controls at the row's left end; on the web it is a cell of the sidebar's
+first row, before the collapse toggle. It moves nothing: there is no
+transition, since the press hands the whole page to the other side.
 
 ## The waiting line · 模型正在做什么的那一行
 

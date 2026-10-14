@@ -5,7 +5,9 @@
  * skin's CSS lives by are checked on the syntax tree, selectors through
  * postcss-selector-parser:
  *
- *   scope        every selector holds `body[data-dsh-claude-style]` (outside :not())
+ *   scope        every selector holds `body[data-dsh-claude-style]` (outside :not());
+ *                a sheet whose manifest entry says `scope: 'surface'` holds
+ *                `body[data-dsh-claude-surface]` instead and ships apart (D49)
  *   :has()       only in its selector's last compound, at every nesting level (D9)
  *   token gates  a rule writing a host token carries the Claude palette or
  *                typeface gate, and every private token the Claude choice
@@ -39,6 +41,12 @@ import { minifyCss } from './shared/minify-css.cjs'
 const SCOPE_TAG = 'body'
 const SCOPE_ATTRIBUTE = 'data-dsh-claude-style'
 const SCOPE = `${SCOPE_TAG}[${SCOPE_ATTRIBUTE}]`
+/**
+ * The scope of the sheets that stay on the page while ds-bot's surface has it
+ * (D49): the theme's own scope is gone then, and these rules are the surface
+ * switch's whole look.
+ */
+const SURFACE_SCOPE_ATTRIBUTE = 'data-dsh-claude-surface'
 /** The comment in a gated sheet below which every rule follows the composer preference. */
 const COMPOSER_GATE_MARKER = '@composer-gate'
 /** The token stylesheet's place in the sheet list: generated, never read from disk. */
@@ -91,14 +99,15 @@ function negated(node) {
 }
 
 /**
- * The scope compounds of one selector: each `[data-dsh-claude-style]` on a
- * `body` compound outside :not(), with the compound around it. A rule that
- * paints the document element reaches the scope through `html:has(…)`.
+ * The scope compounds of one selector: each scope attribute
+ * (`[data-dsh-claude-style]` unless named) on a `body` compound outside
+ * :not(), with the compound around it. A rule that paints the document
+ * element reaches the scope through `html:has(…)`.
  */
-function scopeCompounds(selector) {
+function scopeCompounds(selector, scopeAttribute = SCOPE_ATTRIBUTE) {
   const found = []
   selector.walkAttributes((attribute) => {
-    if (attribute.attribute !== SCOPE_ATTRIBUTE || negated(attribute)) return
+    if (attribute.attribute !== scopeAttribute || negated(attribute)) return
     const compound = compoundOf(attribute)
     if (compound.some((node) => node.type === 'tag' && node.value === SCOPE_TAG)) found.push({ attribute, compound })
   })
@@ -235,6 +244,10 @@ function sheetLabel(sheet) {
 function processSheet(sheet, text, gates, names, read, keyframes) {
   const label = sheetLabel(sheet)
   const root = postcss.parse(text, { from: label })
+  const surface = sheet.scope === 'surface'
+  const scopeAttribute = surface ? SURFACE_SCOPE_ATTRIBUTE : SCOPE_ATTRIBUTE
+  // The composer gate is an attribute of the theme's own scope, which a surface sheet outlives.
+  if (surface && sheet.gate === true) throw new Error(`build: ${label} is a surface sheet and cannot be composer-gated`)
   let markerEnd = null
   if (sheet.gate === true) {
     const marker = root.nodes.find((node) => node.type === 'comment' && node.text === COMPOSER_GATE_MARKER)
@@ -251,8 +264,8 @@ function processSheet(sheet, text, gates, names, read, keyframes) {
     })
     const stamp = markerEnd !== null && rule.source.start.offset > markerEnd
     for (const selector of selectors.nodes) {
-      const scopes = scopeCompounds(selector)
-      if (scopes.length === 0) throw new Error(`build: ${where} selector "${selector.toString().trim()}" is not under ${SCOPE}`)
+      const scopes = scopeCompounds(selector, scopeAttribute)
+      if (scopes.length === 0) throw new Error(`build: ${where} selector "${selector.toString().trim()}" is not under ${SCOPE_TAG}[${scopeAttribute}]`)
       checkHasPlacement(where, selector)
       if (!stamp) continue
       for (const { attribute } of scopes) attribute.parent.insertAfter(attribute, selectorParser.attribute({ attribute: gates.composer }))
@@ -464,14 +477,15 @@ function checkAttributes(read, sources) {
 /**
  * Every sheet in cascade order, checked, gated and joined.
  *
- * @param options.sheets - `{ file, rank, gate? }` or `{ generated, rank }` in cascade order (TOKEN_SHEET generated).
+ * @param options.sheets - `{ file, rank, gate?, scope? }` or `{ generated, rank }` in cascade order (TOKEN_SHEET generated).
  * @param options.srcDir - the source directory.
  * @param options.sources - the browser half on its syntax tree (scripts/source-tree.mjs).
  * @param options.tokenDoc - packages/client/src/theme/tokens.json (loadTokens).
  * @param options.gates - `{ composer, palette: { attribute, claude, host }, typeface: { attribute, claude, host }, brand: { attribute, deepseek } }`.
  * @param options.images - brand mark name → its address, for the token sheet.
  * @param options.featureConstants - what the generated feature sheets are written from (scripts/feature-sheets.mjs).
- * @returns the stylesheet text, minified once every check has read the sheets.
+ * @returns `{ main, surface }`: the theme's sheet and the surface sheets (D49),
+ *     each minified once every check has read every sheet.
  */
 export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images, featureConstants }) {
   const names = { claude: new Set(), host: new Set() }
@@ -485,7 +499,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
         : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
     return { sheet, text: processSheet(sheet, source, gates, names, read, keyframes).replace(/\n+$/, '') }
   })
-  const text = processed.map((item) => item.text).join('\n\n')
+  const joined = (surface) => processed.filter((item) => (item.sheet.scope === 'surface') === surface).map((item) => item.text).join('\n\n')
   for (const name of names.claude) {
     if (!names.host.has(name)) throw new Error(`build: ${name} is defined under the Claude palette or typeface but has no alias under the host's`)
   }
@@ -497,5 +511,5 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
     ...tokenDoc.motion.map((item) => item.value),
   ].join('\n')
   checkTokensRead(tokenDoc, readers, sources)
-  return minifyCss(text)
+  return { main: minifyCss(joined(false)), surface: minifyCss(joined(true)) }
 }

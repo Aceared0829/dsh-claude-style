@@ -9,7 +9,7 @@
 - 层叠顺序由样式表的排位声明：主题样式表在 `scripts/build.mjs` 的 `THEME_SHEETS`，功能样式表在各自清单里（D42），两张样式表同一排位即构建失败。规则之间的先后由排位与选择器权重决定。不使用层叠层。
 - `!important` 只留给真实页面上需要它的地方：压过宿主的 `!important`、内联样式或另一条皮肤规则。端到端通道的 `importance` 场景（`packages/testing/importance.cjs`，D66）在临时宿主走过的页面状态里逐条去掉它、比较匹配元素的计算值，计算值不变的判为多余，场景即失败；没出现过的界面上的那些保留，等审计能走到时再判。同一次走查还回答另一半问题：每个状态里，凡是没有被任何状态匹配到元素的选择器都拿到页面上问一遍，走遍所有状态都没匹配到元素的选择器即失败。走查到不了的那些逐条登记在 `packages/testing/importance-unreachable.json`，每条写明缘由（桌面端窗口独有、宿主的壁纸、脚本回答里没有的 markdown 材料、走查打不开的界面）；登记表只许变短，新出现的死选择器失败，登记过又开始匹配到元素的同样失败。规则处在条件不成立的 `@media` / `@supports` 里时，去掉重要性本来就改不动计算值，审计按页面当刻的 `matchMedia` / `CSS.supports` 判条件，条件不成立就不审这条规则。清掉一批多余的重要性时，用 `DSH_IMPORTANCE_REFERENCE=<压缩前的样式表>` 把两份样式表放在同一页上逐元素比对，作为「画出的样子不变」的证据。
 - 样式表是普通 CSS，没有构建期占位：属性名与属性值写成字面值，品牌标志的地址读令牌样式表生成的 `--dsh-claude-image-<名字>`（地址由资源清单决定，D38）。构建把每张样式表交给 PostCSS 解析，选择器用 postcss-selector-parser 解析，规则在语法树上检查（`scripts/css.mjs`）：
-  - 作用域：每个选择器都含 `body[data-dsh-claude-style]`，且不在 `:not()` 里；画 `<html>` 的规则经 `html:has(body[data-dsh-claude-style]…)` 进入作用域。
+  - 作用域：每个选择器都含 `body[data-dsh-claude-style]`，且不在 `:not()` 里；画 `<html>` 的规则经 `html:has(body[data-dsh-claude-style]…)` 进入作用域。清单里标了 `scope: 'surface'` 的样式表换成 `body[data-dsh-claude-surface]`，不带输入框门控，构建把它们拼成另一张表（`SURFACE_STYLESHEET`）单独发出：本主题让路给 ds-bot 时界面切换还要靠它画出来（D49）。
   - `:has()` 只在所在选择器的最后一段，`:is()`、`:not()` 里的每一层都一样（D9）。
   - 令牌门：写 `--dsw-` 颜色令牌的规则每个选择器都在作用域那一段挂配色门，写 `--dsw-font-*` 的挂字体门；Claude 一档定义的每个私有令牌在宿主一档都有别名（D30）。
   - 输入框门控：带门控的样式表在 `/* @composer-gate */` 注释以下的每条规则，门控属性盖到作用域那一段上；缺少标记或标记以下没有规则即构建失败（D4）。

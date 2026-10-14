@@ -71,6 +71,17 @@ body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"]:has
   visibility: hidden;
   pointer-events: none;
 }
+/* A box too narrow for its word and its key hints together keeps the word:
+   the web's Chat / Code switch (features/surface) takes a cell of the brand
+   row, and the reader can drag the sidebar narrow. */
+body[data-dsh-claude-style] .dsh-claude-search-trigger {
+  container-type: inline-size;
+}
+@container (width < 200px) {
+  body[data-dsh-claude-style] .dsh-claude-search-trigger > .dsh-claude-search-keys {
+    display: none;
+  }
+}
 /* Standalone: the box keeps a row of its own under the brand row and shows
    whether or not the pointer is over the sidebar. The row takes the same 28px
    and the same 6px foot as the rows below it, so the box lands on the sidebar

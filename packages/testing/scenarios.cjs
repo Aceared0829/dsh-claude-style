@@ -5,11 +5,13 @@
  * this one (a `*Scenario` export), registered in the table below.
  *
  * A scenario is `{ script, prompt, delayMs?, viewport?, patch?, hostArgs?,
- * browserArgs?, initScript?, beforeSend?, duringTurn?, afterTurn?, assert }`:
- * `script` names the scripted model's answer (packages/testing/mock-llm.cjs),
- * `patch` adds loader patch entries, `hostArgs` and `browserArgs` reach the
- * host's command line and the browser's, `initScript` runs in the page before
- * its own scripts, and `assert` returns the checks.
+ * browserArgs?, plugins?, initScript?, beforeSend?, duringTurn?, afterTurn?,
+ * assert }`: `script` names the scripted model's answer
+ * (packages/testing/mock-llm.cjs), `patch` adds loader patch entries,
+ * `hostArgs` and `browserArgs` reach the host's command line and the
+ * browser's, `plugins` installs other plugins from the registry into a home
+ * the scenario boots alone, `initScript` runs in the page before its own
+ * scripts, and `assert` returns the checks.
  */
 'use strict'
 const path = require('node:path')
@@ -29,6 +31,7 @@ const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
 const { customBrandScenario } = require('./custom-brand.cjs')
+const { dsBotScenario } = require('./ds-bot.cjs')
 const { CANVAS } = require('./shoot.cjs')
 const { sanitizePage } = require('../../scripts/shared/privacy.cjs')
 
@@ -434,6 +437,8 @@ const SCENARIOS = {
   remoteSettings: remoteSettingsScenario({ check }),
   /** The reader's own brand images through the host half's routes and on the real shell (packages/testing/custom-brand.cjs, D64). */
   customBrand: customBrandScenario({ check }),
+  /** The Chat / Code switch beside ds-bot's published browser half (packages/testing/ds-bot.cjs, D49). */
+  dsBot: dsBotScenario({ check }),
   /** Both palettes captured to the run's out directory and swept for personal data. */
   shots: {
     script: 'greeting',

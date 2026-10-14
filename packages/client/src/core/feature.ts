@@ -83,6 +83,12 @@ export interface FeatureStylesheetFile {
   rank: number
   /** The composer rules are gated (D4). */
   gate?: boolean
+  /**
+   * `'surface'`: the sheet is scoped to `body[data-dsh-claude-surface]` and
+   * ships apart from the theme's sheet, so it stays while ds-bot's surface has
+   * the page (D49).
+   */
+  scope?: 'surface'
 }
 
 /** A sheet of one rule per entry of a table the code reads too: its generator's name in scripts/feature-sheets.mjs. */

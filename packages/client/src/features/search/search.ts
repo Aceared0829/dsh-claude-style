@@ -2,7 +2,7 @@ import { requestFrame } from '../../core/frame'
 import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
-import { SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { SIDEBAR_BRAND_SELECTOR, SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
 import { conversationSessionId, findConversationSession, sessionOutline, turnForSeq } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
@@ -173,7 +173,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * holds it — the host's logo row, or the skin's own row under it.
    */
   function syncTrigger() {
-    const brand = document.querySelector('[data-slot="sidebar"] [class*="_logoRow"] > [class*="_brand"]')
+    const brand = document.querySelector(SIDEBAR_BRAND_SELECTOR)
     const row = brand === null ? null : brand.parentElement
     const style = readPrefs().searchStyle
     // The brand is absent in the collapsed rail: no wide brand, no box.

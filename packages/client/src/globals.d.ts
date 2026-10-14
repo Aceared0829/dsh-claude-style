@@ -3,7 +3,7 @@
  */
 
 /** The Window Controls Overlay API (Chromium): the caption buttons' box on the Windows desktop shell (D28). */
-interface WindowControlsOverlay {
+interface WindowControlsOverlay extends EventTarget {
   readonly visible: boolean
   getTitlebarAreaRect(): DOMRect
 }
@@ -15,6 +15,8 @@ interface Navigator {
 interface Window {
   /** The host's boot manifest: every client entry the loader will evaluate (D32's peer check reads it). */
   readonly __DSH_BOOT__?: { entries?: unknown }
+  /** ds-bot's registry, present while its browser half runs (D49 reads only its presence). */
+  readonly dshBot?: unknown
 }
 
 /** Additions this skin puts on the global scope. */

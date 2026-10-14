@@ -76,6 +76,7 @@ export interface Handles {
   viewTabs: FeatureHandle
   headerBand: FeatureHandle
   settingsNav: FeatureHandle
+  surface: FeatureHandle
 }
 
 export type HandleName = keyof Handles

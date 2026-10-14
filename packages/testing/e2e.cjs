@@ -195,7 +195,13 @@ async function runScenario(name, options) {
   // (packages/testing/mock-llm.cjs), and the scenario writes files beside them.
   // A program-dispatched call carries the path inside the program's own source,
   // where a backslash is an escape, so that slot carries the doubled form.
-  const home = path.resolve(options.home ?? DEFAULT_HOME)
+  // A scenario that installs another plugin boots a home of its own: the
+  // shared one would carry that plugin onto every later scenario's page. The
+  // home starts empty on every run, since the reset below clears the host's
+  // sessions and leaves the other plugin's own store pointing at them.
+  const sharedHome = path.resolve(options.home ?? DEFAULT_HOME)
+  const home = scenario.plugins === undefined ? sharedHome : path.join(path.dirname(sharedHome), `home-${name}`)
+  if (scenario.plugins !== undefined) fs.rmSync(home, { recursive: true, force: true })
   const workspace = path.join(home, 'workspace')
   const mock = await startMockLlm({
     script: scenario.script,
@@ -203,7 +209,7 @@ async function runScenario(name, options) {
     vars: { workspace, workspaceCode: workspace.replaceAll('\\', '\\\\') },
   })
   const patch = ['- id: llm-deepseek', '  config:', `    baseURL: ${mock.url}`, '    apiKeyEnv: DSH_E2E_MOCK_KEY', ...scenario.patch ?? []].join('\n')
-  const host = await start({ patch, args: scenario.hostArgs, env: { DSH_E2E_MOCK_KEY: 'mock' }, home: options.home, resetState: true })
+  const host = await start({ patch, args: scenario.hostArgs, env: { DSH_E2E_MOCK_KEY: 'mock' }, home, plugins: scenario.plugins, resetState: true })
   process.stdout.write(`\n== ${name} ==  mock ${mock.url}  host ${host.url}\n`)
   /** Where the scenario is, so a hang in the log says which step it never left. */
   const step = (label) => process.stdout.write(`  · ${label}\n`)

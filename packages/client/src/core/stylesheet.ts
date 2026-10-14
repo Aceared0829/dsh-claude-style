@@ -2,8 +2,10 @@ import { UNTAGGED_SHEET_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { STYLESHEET } from 'virtual:dsh-claude-style/generated'
 import { FOREIGN_SHEET_TAG, PACKAGE_NAME, STYLE_ID, STYLE_PLUGIN_CSS } from '../constants'
 
-/** The generation whose stylesheet is mounted; 0 before the first mount. */
-let sheetGeneration = 0
+/** The generation whose copy of each sheet is mounted, by the sheet's element id. */
+const mountedGenerations = new Map<string, number>()
+/** The last generation handed out, across the sheets. */
+let lastGeneration = 0
 
 /**
  * Park a sibling's untagged stylesheet so no package's bookkeeping can take it.
@@ -32,7 +34,8 @@ export function parkForeignSheets() {
 }
 
 /**
- * Mount the skin's stylesheet, once per generation.
+ * Mount one of the skin's stylesheets, once per generation: the theme's own
+ * by default, or the surface sheets under their own id (D49).
  *
  * The sheet wears this package's own `data-plugin` and its own
  * `data-plugin-css` from the moment it exists — the claim sweep reads
@@ -40,22 +43,26 @@ export function parkForeignSheets() {
  * it is refreshed in place rather than replaced, so a stale generation's
  * stop can never take a newer generation's sheet away (D33).
  *
+ * @param id - the `<style>` element's id.
+ * @param text - the sheet.
+ * @param pluginCss - the sheet's key in the client module system's bookkeeping.
  * @returns this generation's stop function: it unmounts the sheet unless a
  *          newer generation mounted after it.
  */
-export function mountStylesheet() {
-  const generation = ++sheetGeneration
-  let sheet = document.getElementById(STYLE_ID)
+export function mountStylesheet(id = STYLE_ID, text = STYLESHEET, pluginCss = STYLE_PLUGIN_CSS) {
+  const generation = ++lastGeneration
+  mountedGenerations.set(id, generation)
+  let sheet = document.getElementById(id)
   if (sheet === null) {
     sheet = document.createElement('style')
-    sheet.id = STYLE_ID
+    sheet.id = id
     document.head.appendChild(sheet)
   }
   sheet.dataset.plugin = PACKAGE_NAME
-  sheet.dataset.pluginCss = STYLE_PLUGIN_CSS
-  sheet.dataset.skinChrome = STYLE_ID
-  if (sheet.textContent !== STYLESHEET) sheet.textContent = STYLESHEET
+  sheet.dataset.pluginCss = pluginCss
+  sheet.dataset.skinChrome = id
+  if (sheet.textContent !== text) sheet.textContent = text
   return () => {
-    if (sheetGeneration === generation) sheet.remove()
+    if (mountedGenerations.get(id) === generation) sheet.remove()
   }
 }
