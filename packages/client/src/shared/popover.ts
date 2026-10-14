@@ -144,6 +144,10 @@ export function createHoverIntent(open: () => void, close: () => void, openDelay
       }
     },
     scheduleOpen() {
+      if (closeTimer) {
+        clearTimeout(closeTimer)
+        closeTimer = null
+      }
       if (openTimer) clearTimeout(openTimer)
       openTimer = setTimeout(() => {
         openTimer = null
