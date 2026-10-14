@@ -64,6 +64,8 @@ const FLAGS = new Set(['quick', 'no-e2e', 'force', 'case', 'feature', 'scenario'
 
 /** The run in flight, so an interrupt can take it down with this process. */
 let running = null
+/** The release of the lock this process holds, or null while it holds none. */
+let holding = null
 
 const seconds = (ms) => `${(ms / 1000).toFixed(1)} s`
 const say = (line) => process.stdout.write(`${line}\n`)
@@ -99,6 +101,26 @@ function treeHash() {
     digest.update(crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, file))).digest())
   }
   return { hash: digest.digest('hex'), files: files.length }
+}
+
+/**
+ * The bytes of the build output the browser gates read, or null before the
+ * build has written any. The rebuilds behind `npm run dev` go straight through
+ * the lock on purpose, so this is what tells a run whether the page it drove is
+ * still the page its build produced.
+ */
+function libHash() {
+  const digest = crypto.createHash('sha256')
+  const lib = path.join(ROOT, 'lib')
+  // An empty extension matches every name, which is what hashing the output wants.
+  const files = filesUnder(lib, [''], SKIPPED).map((file) => path.relative(lib, file).replace(/\\/g, '/')).sort()
+  if (files.length === 0) return null
+  for (const file of files) {
+    digest.update(file)
+    digest.update('\0')
+    digest.update(crypto.createHash('sha256').update(fs.readFileSync(path.join(lib, file))).digest())
+  }
+  return digest.digest('hex')
 }
 
 /** One request's own flags, read off this process's command line. */
@@ -200,19 +222,23 @@ async function runAll(request, tree, key) {
   const started = Date.now()
   const gates = []
   let exitCode = 0
+  /** The build output the build gate left behind; null before that gate runs. */
+  let built = null
   for (const gate of gatesFor(request)) {
     say(`\nverify: ${gate.id} — node ${gate.script}${gate.args.length === 0 ? '' : ` ${gate.args.join(' ')}`}`)
     const at = Date.now()
     const code = await runGate(gate)
     gates.push({ id: gate.id, code, ms: Date.now() - at })
     say(`verify: ${gate.id} ${code === 0 ? 'ok' : `exit ${code}`} (${seconds(Date.now() - at)})`)
-    // A failed gate ends the run: the lanes after it read what it produces, and
-    // the fix comes before their minutes are spent.
     if (code !== 0) {
+      // A failed gate ends the run: the lanes after it read what it produces, and
+      // the fix comes before their minutes are spent.
       exitCode = 1
       break
     }
+    if (gate.id === 'build') built = libHash()
   }
+  const swapped = exitCode === 0 && libHash() !== built
   const record = {
     format: FORMAT,
     key,
@@ -222,8 +248,13 @@ async function runAll(request, tree, key) {
     runId,
     at: new Date().toISOString(),
     ms: Date.now() - started,
-    exitCode,
+    exitCode: swapped ? 1 : exitCode,
+    filed: !swapped,
     gates,
+  }
+  if (swapped) {
+    say('verify: the build output changed while the gates ran — a rebuild behind `npm run dev` takes no lock; no verdict filed, re-run over a still tree')
+    return record
   }
   fs.mkdirSync(CACHE, { recursive: true })
   fs.writeFileSync(path.join(CACHE, `${key}.json`), `${JSON.stringify(record, null, 2)}\n`)
@@ -238,7 +269,8 @@ function report(record, source) {
     say(`verify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates}`)
     return
   }
-  say(`\nverify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates} (${seconds(record.ms)}); verdict filed as ${record.key.slice(0, 12)}`)
+  const filed = record.filed === false ? '; no verdict filed' : `; verdict filed as ${record.key.slice(0, 12)}`
+  say(`\nverify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates} (${seconds(record.ms)})${filed}`)
 }
 
 async function main() {
@@ -252,6 +284,7 @@ async function main() {
     process.exit(before.exitCode)
   }
   const release = await takeLock('verify', key.slice(0, 12))
+  holding = release
   // The gates run under this lock: they must not ask for it again.
   process.env[HELD] = LOCK
   let record
@@ -260,6 +293,7 @@ async function main() {
     record = (request.force ? null : cached(key)) ?? await runAll(request, tree, key)
   } finally {
     release()
+    holding = null
     delete process.env[HELD]
   }
   report(record, 'run')
@@ -269,7 +303,9 @@ async function main() {
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
     if (running !== null) running.kill(signal)
-    fs.rmSync(LOCK, { recursive: true, force: true })
+    // Only the lock this process holds is released: a request still waiting for
+    // the lock must leave the run it is waiting for alone.
+    if (holding !== null) holding()
     say(`verify: interrupted (${signal})`)
     process.exit(signal === 'SIGINT' ? 130 : 143)
   })
