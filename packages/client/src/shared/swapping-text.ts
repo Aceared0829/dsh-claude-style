@@ -96,6 +96,16 @@ function sizerOf(element: HTMLElement): HTMLElement {
 }
 
 /**
+ * The width an element's own layout takes. `offsetWidth` rounds to whole pixels
+ * and the computed `width` to a sixty-fourth, and a pin written with either
+ * steps the box — and the clock laid out beside it — as the pin goes on and
+ * comes off again, so the width is read as the layout really takes it.
+ */
+function layoutWidth(element: HTMLElement) {
+  return element.getBoundingClientRect().width
+}
+
+/**
  * Write one text into the sizer and answer the width it takes. The width has to
  * be committed here, in the task the words arrived in: a sizer left unmeasured
  * until the next frame lets the box grow a beat into the swap, and everything
@@ -106,7 +116,7 @@ function hold(sizer: HTMLElement, text: string) {
     sizer.textContent = text
     void sizer.offsetWidth
   }
-  return sizer.offsetWidth
+  return layoutWidth(sizer)
 }
 
 /**
@@ -118,7 +128,7 @@ function hold(sizer: HTMLElement, text: string) {
  * read here, before the sizer takes the words it is heading for.
  */
 function holdWidest(element: HTMLElement, texts: readonly string[]) {
-  const from = element.offsetWidth
+  const from = layoutWidth(element)
   const sizer = sizerOf(element)
   let held = ''
   let heldWidth = -1
