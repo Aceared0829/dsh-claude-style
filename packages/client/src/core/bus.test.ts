@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from 'vitest'
 import { QUIET_ATTR } from '../constants'
-import { observeSize, subscribeMutations } from './bus'
+import { observeMatches, observeSize, subscribeMutations } from './bus'
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -165,4 +165,75 @@ test('unsubscribing the last size subscription stops the reports', async () => {
   root.style.height = '50px'
   await nextFrame()
   expect(seen).toEqual([10])
+})
+
+test('a match registry hands out the current matches in document order and follows the page', async () => {
+  const root = host()
+  const first = document.createElement('i')
+  first.setAttribute('data-probe', '')
+  const second = document.createElement('b')
+  second.setAttribute('data-probe', '')
+  root.append(second, first)
+  const matches = observeMatches<HTMLElement>('[data-probe]')
+  cleanups.push(() => matches.release())
+  expect(matches.all()).toEqual([second, first])
+  const third = document.createElement('u')
+  third.setAttribute('data-probe', '')
+  first.append(third)
+  await settle()
+  expect(matches.all()).toEqual([second, first, third])
+  first.remove()
+  expect(matches.all()).toEqual([second])
+})
+
+test('a match registry keeps the same array until a match changes', async () => {
+  const root = host()
+  const only = document.createElement('i')
+  only.setAttribute('data-probe', '')
+  root.append(only)
+  const matches = observeMatches<HTMLElement>('[data-probe]')
+  cleanups.push(() => matches.release())
+  expect(matches.all()).toBe(matches.all())
+  const added = document.createElement('b')
+  added.setAttribute('data-probe', '')
+  root.append(added)
+  await settle()
+  expect(matches.all()).toEqual([only, added])
+})
+
+test('two readers of one selector share a registry, and the last release takes it down', async () => {
+  const root = host()
+  const first = observeMatches<HTMLElement>('[data-probe]')
+  const second = observeMatches<HTMLElement>('[data-probe]')
+  const added = document.createElement('i')
+  added.setAttribute('data-probe', '')
+  root.append(added)
+  await settle()
+  expect(first.all()).toEqual([added])
+  expect(second.all()).toEqual([added])
+  first.release()
+  const later = document.createElement('b')
+  later.setAttribute('data-probe', '')
+  root.append(later)
+  await settle()
+  expect(second.all()).toEqual([added, later])
+  second.release()
+  // A reader taken after the last release resolves the document again.
+  const third = observeMatches<HTMLElement>('[data-probe]')
+  cleanups.push(() => third.release())
+  expect(third.all()).toEqual([added, later])
+})
+
+test('a match added inside a quiet container is registered too', async () => {
+  const root = host()
+  const quiet = document.createElement('div')
+  quiet.setAttribute(QUIET_ATTR, '')
+  root.append(quiet)
+  const matches = observeMatches<HTMLElement>('[data-probe]')
+  cleanups.push(() => matches.release())
+  const added = document.createElement('i')
+  added.setAttribute('data-probe', '')
+  quiet.append(added)
+  await settle()
+  expect(matches.all()).toEqual([added])
 })

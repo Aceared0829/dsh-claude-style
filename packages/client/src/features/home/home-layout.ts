@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom/client'
 import { PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } from '../../constants'
-import { COMPOSER_STACK } from '../../core/host'
+import { COMPOSER_STACK, cacheFirstMatch } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
@@ -51,6 +51,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const DOCK_SLOT = 'conversation.input.dock'
   /** On the usage panel while its numbers take over from its placeholders. */
   const HOME_REVEALING_ATTR = 'data-dsh-claude-revealing'
+  /** The hero composer's stack, kept while it stays the first match (D40). */
+  const heroStack = cacheFirstMatch<HTMLElement>(`${COMPOSER_STACK}[class*="_composerHero"]`)
 
   let layout = PREF_DEFAULTS.homeLayout
   /** Whether the last pass saw the new-conversation hero, as of that reading. */
@@ -238,9 +240,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * is re-mounted on the new stack.
    */
   function syncColdSeat() {
-    const stack = document.body.hasAttribute(HOME_HERO_ATTR)
-      ? document.querySelector(`${COMPOSER_STACK}[class*="_composerHero"]`)
-      : null
+    const stack = document.body.hasAttribute(HOME_HERO_ATTR) ? heroStack() : null
     if (stack === null || stack.querySelector(`:scope > [data-slot="${DOCK_SLOT}"]`) !== null) {
       unmountColdSeat()
       return

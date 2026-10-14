@@ -1,4 +1,4 @@
-import { observeSize } from '../../core/bus'
+import { observeSize, subscribeMutations } from '../../core/bus'
 import { PROCESS_BODY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor } from '../../shared/scroll-owner'
 
@@ -36,8 +36,6 @@ import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopSc
  * between 20 and 50 px, so 40 sits in the middle.
  */
 export const CATCH_UP_GAP_PX = 40
-/** How often the watched bodies are brought up to date; session switches and groups coming and going ride it. */
-export const PROCESS_SYNC_INTERVAL_MS = 500
 
 /**
  * Watch every process group's body on the page and catch up the ones that
@@ -129,12 +127,42 @@ export function createChatProcessFollow() {
     }
   }
 
-  const timer = window.setInterval(sync, PROCESS_SYNC_INTERVAL_MS)
+  /**
+   * The bodies that have to be followed, and the moment to look for them: a
+   * batch that touches one, brings one, or takes one away. Sized changes are
+   * the subscriptions' own business (onResize), so no timer is left running
+   * over a page that holds no process group at all (D40).
+   */
+  const stopWatch = subscribeMutations(document.body, { childList: true, subtree: true }, records => {
+    for (const record of records) {
+      const target = record.target instanceof Element ? record.target : record.target.parentElement
+      if (target !== null && target.closest(PROCESS_BODY_SELECTOR) !== null) {
+        sync()
+        return
+      }
+      for (const node of record.addedNodes) {
+        if (!(node instanceof Element)) continue
+        if (node.matches(PROCESS_BODY_SELECTOR) || node.querySelector(PROCESS_BODY_SELECTOR) !== null) {
+          sync()
+          return
+        }
+      }
+      for (const node of record.removedNodes) {
+        if (!(node instanceof Element)) continue
+        for (const body of watched.keys()) {
+          if (body === node || node.contains(body)) {
+            sync()
+            return
+          }
+        }
+      }
+    }
+  })
   sync()
 
   return () => {
     stopped = true
-    window.clearInterval(timer)
+    stopWatch()
     for (const [body, entry] of watched) {
       entry.stopBody()
       if (entry.stopContent !== null) entry.stopContent()

@@ -70,15 +70,16 @@ export interface RevealRun {
   colorElement: HTMLElement | null
 }
 
-/** One text node's offset in the joined text the scan built for its container. */
+/** One text node's offset in the container's text, with the text it held when the scan read it. */
 export interface RevealTextEntry {
   node: Text
   start: number
+  data: string
 }
 
-/** A streaming container's joined text and the nodes it was joined from. */
+/** A streaming container's text length and the nodes it is made of. */
 export interface RevealSnapshot {
-  text: string
+  length: number
   entries: RevealTextEntry[]
 }
 

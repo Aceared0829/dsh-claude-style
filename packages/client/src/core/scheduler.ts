@@ -1,4 +1,4 @@
-import { closestComposerCard, findComposerCard, onHdslLoaded, onUsernameLoaded } from './host'
+import { closestComposerCard, findComposerCard, findConversationScroller, onHdslLoaded, onUsernameLoaded } from './host'
 import { onModelCopyLoaded } from './model-copy'
 import { loadPrefs, refreshMotionAttribute, subscribePrefs } from './prefs'
 import type { HostContext } from './host'
@@ -23,6 +23,18 @@ export type CloseReason = 'outside' | 'escape' | 'composer'
 export interface FeatureHandle {
   /** Every scheduler pass, in FEATURES order. */
   sync?(): void
+  /**
+   * The pass's read phase, before every feature's `sync` of the same frame
+   * (D40): a feature that places boxes reads them here and writes them in
+   * `sync`, so no feature's write forces a layout under another's read.
+   */
+  measure?(): void
+  /**
+   * Whether a batch confined to the conversation column cannot change what this
+   * feature reads: such a batch skips its pass (D40). Leave it out when the
+   * answer is not certain — the pass then runs as it always did.
+   */
+  skipOnContentOnly?: boolean
   /** Whether the press landed inside the feature's own DOM; a press it does not own closes it through `close('outside')`. */
   owns?(target: Node): boolean
   /** Every press. */
@@ -102,6 +114,12 @@ export function reportFeatureFailure(name: string, error: unknown) {
 }
 
 /**
+ * The handle's hooks `dispatch` may call. The flag beside them
+ * (`skipOnContentOnly`) is read by the pass itself.
+ */
+type FeatureHook = 'sync' | 'measure' | 'owns' | 'onPointerDown' | 'close' | 'onInput' | 'onFocusIn' | 'reposition' | 'onCopyChange' | 'onKey' | 'onActivity' | 'teardown'
+
+/**
  * @param features - every feature's `ui` handle name, in FEATURES order: a
  *     switched feature comes and goes during the generation, so each use
  *     checks whether the handle exists.
@@ -115,6 +133,8 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
   let cancelPass: (() => void) | null = null
   /** Set by the teardown: no pass may be scheduled, or run, after it. */
   let stopped = false
+  /** Whether everything that asked for the pending pass was a batch inside the conversation column. */
+  let passContentOnly = false
 
   /** The handle a feature registered under `name`, while that feature is installed. */
   function handleOf(name: HandleName): FeatureHandle | undefined {
@@ -122,7 +142,7 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
   }
 
   /** Call one hook on every feature that implements it, in FEATURES order. */
-  function dispatch<K extends keyof FeatureHandle>(hook: K, ...args: Parameters<NonNullable<FeatureHandle[K]>>) {
+  function dispatch<K extends FeatureHook>(hook: K, ...args: Parameters<NonNullable<FeatureHandle[K]>>) {
     for (const name of features) {
       const handle = handleOf(name)
       const call = handle?.[hook] as ((...args: unknown[]) => void) | undefined
@@ -189,8 +209,17 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
 
   // Fixed popovers are anchored to their trigger, and page scroll or a resize
   // moves that anchor, so whichever is open re-resolves it in the same frame.
+  // Scroll fires per frame at most, and a window drag fires far faster: the
+  // callbacks are coalesced into one frame the way the pass is (D40).
+  let cancelViewportFrame: (() => void) | null = null
   function onFixedPopoverViewportChange() {
-    dispatch('reposition', 'viewport')
+    if (cancelViewportFrame !== null) return
+    cancelViewportFrame = requestFrame({
+      write() {
+        cancelViewportFrame = null
+        dispatch('reposition', 'viewport')
+      },
+    })
   }
   window.addEventListener('resize', onFixedPopoverViewportChange)
   window.addEventListener('scroll', onFixedPopoverViewportChange, true)
@@ -264,18 +293,87 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
     }
   }
 
+  /**
+   * Run one feature's measurement, in the pass's read phase and under the same
+   * failure rule as its sync (D12): a feature that throws here is retired like
+   * one that throws while writing.
+   */
+  function runMeasure(name: HandleName) {
+    const feature = handleOf(name)
+    if (!feature || typeof feature.measure !== 'function') return
+    const failures = syncFailures[name] || 0
+    if (failures >= SYNC_FAILURE_LIMIT) return
+    try {
+      feature.measure()
+    } catch (error) {
+      syncFailures[name] = failures + 1
+      if (failures + 1 < SYNC_FAILURE_LIMIT) return
+      reportFeatureFailure(name, error)
+      ui.retire(name)
+    }
+  }
+
+  /**
+   * Whether every record of the batch lies inside the conversation column.
+   * A removal's target is the parent it left, which is still the column's
+   * node, so removed nodes are read off the target alone.
+   */
+  function contentOnly(records: MutationRecord[]) {
+    const column = findConversationScroller()
+    if (column === null) return false
+    for (const record of records) {
+      if (!column.contains(record.target)) return false
+      for (const added of record.addedNodes) {
+        if (!column.contains(added)) return false
+      }
+    }
+    return true
+  }
+
   /** Chat streaming mutates the tree constantly; coalesce to one pass a frame. */
-  function schedule() {
-    if (scheduled || stopped) return
+  function schedule(options?: { contentOnly?: boolean }) {
+    if (scheduled) {
+      // A reason that reads the whole page joins the pass already queued.
+      if (options?.contentOnly !== true) passContentOnly = false
+      return
+    }
     scheduled = true
-    // The pass reads and writes feature by feature, so it runs in the write
-    // phase: the frame's reads have all happened before it (D40).
+    passContentOnly = options?.contentOnly === true
+    // The pass measures in the read phase and writes in the write phase, so a
+    // feature that reads a box reads the layout the frame started with, and
+    // every measurement happens before any feature's write can invalidate it
+    // (D40). The flag says whether this frame's read phase ran, so a task
+    // cancelled between the phases writes from the previous measurements.
+    let measured = false
     cancelPass = requestFrame({
+      read() {
+        measured = true
+        if (stopped) return
+        const content = passContentOnly
+        for (const name of features) {
+          if (content && handleOf(name)?.skipOnContentOnly === true) continue
+          runMeasure(name)
+        }
+      },
       write() {
         scheduled = false
         cancelPass = null
         if (stopped) return
-        for (const name of features) runSync(name)
+        const content = passContentOnly
+        passContentOnly = false
+        if (!measured) {
+          // The write phase is running without this frame's read phase (the
+          // task was queued after the frame's reads): measure now, before any
+          // feature writes.
+          for (const name of features) {
+            if (content && handleOf(name)?.skipOnContentOnly === true) continue
+            runMeasure(name)
+          }
+        }
+        for (const name of features) {
+          if (content && handleOf(name)?.skipOnContentOnly === true) continue
+          runSync(name)
+        }
         const currentCard = findComposerCard()
         if (currentCard !== observedCard) {
           if (stopCardSize !== null) stopCardSize()
@@ -291,7 +389,8 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
   // Every change under <body> asks for a pass, the skin's own quiet writes
   // (QUIET_ATTR) aside: the caret motion measures through probes and redraws
   // per frame, and without this every keystroke would schedule a pass for work
-  // no feature reads.
+  // no feature reads. A batch the conversation column holds alone (streaming)
+  // asks for the pass its readers need and skips the page-wide ones.
   const stopMutations = subscribeMutations(document.body, {
     childList: true,
     characterData: true,
@@ -301,13 +400,13 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
     // aria-selected.
     attributeFilter: ['aria-label', 'aria-selected'],
     skipQuiet: true,
-  }, schedule)
+  }, records => schedule({ contentOnly: contentOnly(records) }))
   schedule()
 
   // Copy that follows the clock (the hero greeting rolls over on the hour) has
   // no DOM change to wake a pass. The syncs skip identical writes, so this
   // cannot feed the observer.
-  const clockTimer = setInterval(schedule, 60000)
+  const clockTimer = setInterval(() => schedule(), 60000)
 
   return () => {
     // A pass already requested would run against torn-down features and build
@@ -316,6 +415,8 @@ export function installScheduler(ctx: HostContext, ui: Ui, features: HandleName[
     stopped = true
     if (cancelPass !== null) cancelPass()
     cancelPass = null
+    if (cancelViewportFrame !== null) cancelViewportFrame()
+    cancelViewportFrame = null
     scheduled = false
     clearInterval(clockTimer)
     window.removeEventListener('resize', onFixedPopoverViewportChange)

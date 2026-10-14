@@ -170,8 +170,11 @@ interface SummaryReading {
  * @returns teardown: the summaries, the marks and the names go, and the host's words come back.
  */
 export function createProcessSummary() {
-  /** Each summarised header: the name written there, and the size watch on its summary. */
-  const named = new Map<HTMLElement, { name: string, unwatch: () => void }>()
+  /** Each summarised header: the name written there, and the summary element it carries. */
+  const named = new Map<HTMLElement, { name: string, summary: HTMLElement }>()
+  /** The summaries one size subscription watches, and how to take it down (D40). */
+  let watchedSummaries: HTMLElement[] = []
+  let stopSummarySizes: (() => void) | null = null
   /** The digits still leaving, so a teardown or a quick second change can finish them. */
   const leaving = new Map<HTMLElement, number>()
   /** The groups waiting for the next frame. */
@@ -302,11 +305,36 @@ export function createProcessSummary() {
   /** Take one header's summary down and give the host's words back. */
   function release(header: HTMLElement) {
     const kept = named.get(header)
-    kept?.unwatch()
     header.querySelector(`:scope > .${SUMMARY_CLASS}`)?.remove()
     if (kept !== undefined && header.getAttribute('aria-label') === kept.name) header.removeAttribute('aria-label')
     named.delete(header)
     header.closest(PROCESS_GROUP_SELECTOR)?.removeAttribute(PROCESS_SUMMARY_ATTR)
+  }
+
+  /**
+   * Watch the summaries the pass left standing through one size subscription:
+   * one subscription per group would grow with the page, and the bus hands a
+   * subscription its own elements' entries either way (D40).
+   */
+  function watchSummaries(summaries: HTMLElement[]) {
+    if (sameSummaries(summaries)) return
+    if (stopSummarySizes !== null) stopSummarySizes()
+    watchedSummaries = summaries
+    stopSummarySizes = summaries.length === 0 ? null : observeSize(summaries, entries => {
+      for (const entry of entries) {
+        const group = entry.target.closest(PROCESS_GROUP_SELECTOR)
+        if (group !== null) queue(group)
+      }
+    })
+  }
+
+  /** Whether the same summaries are watched, in the same order. */
+  function sameSummaries(summaries: readonly HTMLElement[]) {
+    if (summaries.length !== watchedSummaries.length) return false
+    for (let index = 0; index < summaries.length; index += 1) {
+      if (summaries[index] !== watchedSummaries[index]) return false
+    }
+    return true
   }
 
   /**
@@ -331,14 +359,18 @@ export function createProcessSummary() {
       const known = named.get(header)
       if (known === undefined) {
         // A header only ever shrinks with its row, so its own size is what to watch.
-        named.set(header, { name: reading.name, unwatch: observeSize(summary, () => queue(group)) })
-      } else known.name = reading.name
+        named.set(header, { name: reading.name, summary })
+      } else {
+        known.name = reading.name
+        known.summary = summary
+      }
       if (!group.hasAttribute(PROCESS_SUMMARY_ATTR)) group.setAttribute(PROCESS_SUMMARY_ATTR, '')
     }
     // A header the host replaced or unmounted takes nothing more from this module.
     for (const header of [...named.keys()]) {
       if (!header.isConnected) release(header)
     }
+    watchSummaries([...named.values()].map(entry => entry.summary))
   }
 
   function queue(group: Element) {
@@ -408,6 +440,9 @@ export function createProcessSummary() {
       }
       leaving.clear()
       for (const header of [...named.keys()]) release(header)
+      if (stopSummarySizes !== null) stopSummarySizes()
+      stopSummarySizes = null
+      watchedSummaries = []
       for (const group of document.querySelectorAll(`[${PROCESS_SUMMARY_ATTR}]`)) group.removeAttribute(PROCESS_SUMMARY_ATTR)
     },
   }

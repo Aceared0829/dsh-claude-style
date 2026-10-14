@@ -341,8 +341,8 @@
     "mascotScopeAll": { "zh": "首页与对话", "en": "Home and conversation" },
     "permissionsTitle": { "zh": "重绘权限控件", "en": "Redraw the permission control" },
     "permissionsDesc": {
-      "zh": "使用插件提供的权限菜单样式。",
-      "en": "Replace the composer's permission menu with a segmented control. Off restores the host's permission menu."
+      "zh": "使用插件自己的权限控件：经典首页是一排分段按钮，工作台首页与对话页是一枚按钮加一张档位卡片；关闭后交还宿主自己的权限菜单。",
+      "en": "Use the skin's own permission control: a row of segments on the classic home, and a trigger with its tier card on the studio home and in conversations. Off restores the host's permission menu."
     },
     "searchTitle": { "zh": "侧栏搜索", "en": "Sidebar search" },
     "searchDesc": {

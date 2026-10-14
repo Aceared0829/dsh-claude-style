@@ -1,5 +1,8 @@
 import { COMPOSER_STAT_SELECTOR, DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { observeMatches } from '../../core/bus'
+import { cacheFirstMatch } from '../../core/host'
 import { removeStrayNodes } from '../../shared/popover'
+import type { MatchList } from '../../core/bus'
 
 /**
  * The host's context panel and the marks this feature puts on the host's
@@ -22,14 +25,15 @@ export const CONTEXT_PANEL_ALIGNED_ATTR = 'data-dsh-claude-context-aligned'
  */
 const HOST_STATS_DIALOGS = '[data-session-stats-details], [data-session-stats-usage], [data-turn-usage-details]'
 
+/** The dialog registry, taken on the first read of the panel and released with the feature. */
+let dialogs: MatchList<HTMLElement> | null = null
+
 /**
  * The context meter, stamped by the composer pass
  * (features/composer/composer.ts), which is also what tells this feature the
  * composer restyle covers the page.
  */
-export function findContextMeter() {
-  return document.querySelector<HTMLElement>('[data-dsh-claude-context-meter]')
-}
+export const findContextMeter = cacheFirstMatch<HTMLElement>('[data-dsh-claude-context-meter]')
 
 /**
  * The occupancy the meter reads, as a percentage, or null when the reading
@@ -64,7 +68,7 @@ export function contextTrigger() {
  * so a walk that stops there writes the numbers onto the page.
  */
 export function contextPanel() {
-  const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"]')
+  const dialogs = dialogList().all()
   for (let i = 0; i < dialogs.length; i++) {
     const dialog = dialogs[i]
     if (dialog.getAttribute('aria-modal') === 'true') continue
@@ -73,6 +77,22 @@ export function contextPanel() {
     return dialog
   }
   return null
+}
+
+/**
+ * The dialogs on the page, kept current by the bus (D40): the host portals its
+ * dialogs to <body>, so the child list carries every one of them. The list is
+ * taken on the first read and released with the feature.
+ */
+function dialogList() {
+  dialogs ??= observeMatches<HTMLElement>('[role="dialog"]')
+  return dialogs
+}
+
+/** Drop the dialog registry; the feature's teardown calls this. */
+export function releaseDialogWatch() {
+  dialogs?.release()
+  dialogs = null
 }
 
 /**

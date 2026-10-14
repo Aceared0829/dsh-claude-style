@@ -4,7 +4,7 @@ import { STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
-import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy } from './stats-panel'
+import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import type { HostContext, HostText } from '../../core/host'
 import type { HostSnapshotSource } from '@dsh-claude-style/contracts/services'
@@ -200,6 +200,7 @@ export function createSessionStats(ctx: HostContext) {
     /** Drop the appends, the line, the projection subscriptions and the host-node bindings. */
     teardown() {
       releaseWatch()
+      releaseDialogWatch()
       // Everything this generation bound on the host's own meter, line and
       // panel comes off with it (stats-binding.ts's release).
       binding.release()

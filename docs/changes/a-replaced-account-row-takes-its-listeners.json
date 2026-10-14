@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 6,
+  "external": false,
+  "zh": "宿主账户行被宿主换掉时，旧行上的四个监听与这一代登记的记录一起收走，不再留到整代拆除；账户菜单的绑定保持一次只有一张卡。",
+  "en": "When the host replaces its own account row, the four listeners on the old row leave with this generation's record of it instead of waiting for the teardown; the account menu still holds one card's binding at a time."
+}

@@ -384,6 +384,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * row) would otherwise collect one set of listeners per switch.
    */
   const hostRowBindings = new Map<HTMLElement, { catch: (e: Event) => void, enter: () => void, leave: () => void, press: () => void }>()
+
+  /** Take one row's four listeners off, and its token with them. */
+  function takeHostRowBindings(row: HTMLElement, bindings: { catch: (e: Event) => void, enter: () => void, leave: () => void, press: () => void }) {
+    row.removeEventListener('click', bindings.catch, true)
+    row.removeEventListener('mouseenter', bindings.enter)
+    row.removeEventListener('mouseleave', bindings.leave)
+    row.removeEventListener('click', bindings.press)
+    delete row.__dshHostRowToken
+  }
   /**
    * The host's open menu with its two listeners. The host mounts a fresh card
    * for each open, so one binding at a time is all there is, and it is taken
@@ -408,6 +417,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function bindHostRowHover(row: HTMLElement) {
     if (row.__dshHostRowToken === hostRowBindingToken) return
+    // A row the host replaced takes its listeners with it: without this sweep
+    // the map would hold every row it ever mounted, and their closures.
+    for (const [bound, bindings] of hostRowBindings) {
+      if (bound.isConnected) continue
+      takeHostRowBindings(bound, bindings)
+      hostRowBindings.delete(bound)
+    }
     row.__dshHostRowToken = hostRowBindingToken
     const enter = () => {
       if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) hostHoverIntent.scheduleOpen()
@@ -506,15 +522,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The host's row outlives this generation, so its listeners come off here:
     // a switch off and on again must not leave a second set behind.
     for (const [row, bindings] of hostRowBindings) {
-      row.removeEventListener('click', bindings.catch, true)
-      row.removeEventListener('mouseenter', bindings.enter)
-      row.removeEventListener('mouseleave', bindings.leave)
-      row.removeEventListener('click', bindings.press)
-      delete row.__dshHostRowToken
+      takeHostRowBindings(row, bindings)
     }
     hostRowBindings.clear()
     unbindHostMenu()
     if (footArea) mirror.clear(footArea)
+  }
+
+  /** The entry row's boxes, taken in the pass's read phase when the row already stands (D40). */
+  let rowBoxes: { row: Element, rowRect: DOMRect, footRect: DOMRect | null } | null = null
+
+  /**
+   * Read the entry row's box before the pass writes. The row a pass creates
+   * itself (the synthetic button) is not there yet, so that pass falls back to
+   * measuring it while writing, as it always did.
+   */
+  function measureAccountRow() {
+    rowBoxes = null
+    const footArea = findFootArea()
+    if (footArea === null) return
+    const synthetic = surface.mode() === 'synthetic'
+    const row = synthetic ? accountBtn : hostMenu.trigger()
+    if (row === null) return
+    rowBoxes = { row, rowRect: row.getBoundingClientRect(), footRect: synthetic ? footArea.getBoundingClientRect() : null }
   }
 
   /**
@@ -529,14 +559,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function syncAccountRowBox(row: Element | null, footArea: Element) {
     if (row === null) return
-    const rowRect = row.getBoundingClientRect()
+    const synthetic = surface.mode() === 'synthetic'
+    const measured = rowBoxes !== null && rowBoxes.row === row
+      ? rowBoxes
+      : { row, rowRect: row.getBoundingClientRect(), footRect: synthetic ? footArea.getBoundingClientRect() : null }
+    const rowRect = measured.rowRect
     const rowWidth = Math.round(rowRect.width)
     if (rowWidth > 0 && rowWidth !== accountWidth) {
       accountWidth = rowWidth
       document.body.style.setProperty('--dsh-claude-account-width', `${rowWidth}px`)
     }
-    if (surface.mode() !== 'synthetic') return
-    const footRect = footArea.getBoundingClientRect()
+    if (!synthetic || measured.footRect === null) return
+    const footRect = measured.footRect
     const left = Math.round(rowRect.left - footRect.left)
     const right = Math.round(footRect.right - rowRect.right)
     if (left !== accountInsetLeft) {
@@ -594,6 +628,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   ui.footer = {
     sync: syncAccountFooter,
+    /** The read phase: the entry row's box, so the pass's writes do not force a layout under it. */
+    measure: measureAccountRow,
+    // The footer sits in the sidebar, outside the column a streaming batch
+    // touches, so such a batch skips this pass (D40).
+    skipOnContentOnly: true,
     /**
      * The self-built drawer's dismiss routes: 'outside' (a press the footer
      * does not own), 'escape' and 'composer'. The shipped scheduler only

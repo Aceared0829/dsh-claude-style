@@ -7,7 +7,7 @@ import {
   VIEW_TABS_STRIP_SELECTOR,
   WINDOWS_MENU_SELECTOR,
 } from '@dsh-claude-style/contracts/dom'
-import { observeSize } from '../../core/bus'
+import { observeMatches, observeSize } from '../../core/bus'
 import { desktopBand } from '../../core/desktop-band'
 import { createStamp, setAttributeIfChanged } from '../../shared/dom'
 import type { FeatureUi } from '../../core/feature'
@@ -109,6 +109,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let watched: HTMLElement | null = null
   /** Stops watching it. */
   let stopSize: (() => void) | null = null
+  /** Every candidate title row, kept current by the bus (D40), and the one this pass took. */
+  const titleRows = observeMatches<HTMLElement>(HEADER_TITLE_ROW_SELECTOR)
+  let keptRow: HTMLElement | null = null
 
   /**
    * The header's title row: the one carrying a title or the utilities. The
@@ -116,11 +119,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * that took one of those would lift nothing all session.
    */
   function titleRow() {
-    for (const row of document.querySelectorAll<HTMLElement>(HEADER_TITLE_ROW_SELECTOR)) {
-      if (row.querySelector(HEADER_TITLE_SELECTOR) !== null) return row
-      if (row.querySelector(HEADER_UTILITIES_SELECTOR) !== null) return row
+    if (keptRow !== null && stillHeaderRow(keptRow)) return keptRow
+    for (const row of titleRows.all()) {
+      if (!carriesHeaderText(row)) continue
+      keptRow = row
+      return row
     }
+    keptRow = null
     return null
+  }
+
+  /** Whether `row` carries a title or the utilities. */
+  function carriesHeaderText(row: HTMLElement) {
+    return row.querySelector(HEADER_TITLE_SELECTOR) !== null || row.querySelector(HEADER_UTILITIES_SELECTOR) !== null
+  }
+
+  /** Whether the kept row is still the first match carrying header text (D40). */
+  function stillHeaderRow(row: HTMLElement) {
+    if (!row.isConnected || !carriesHeaderText(row)) return false
+    for (const earlier of titleRows.all()) {
+      if (earlier === row) return true
+      if (carriesHeaderText(earlier)) return false
+    }
+    return false
   }
 
   function rect(element: Element | null) {
@@ -158,44 +179,105 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (row !== null) stopSize = observeSize(row, () => { ui.schedule?.() })
   }
 
-  function sync() {
+  /**
+   * What one pass places against: the row and the clusters, with the boxes read
+   * in the frame's read phase (D40). `row` is kept even when its box is not
+   * laid out, so the size watch follows a row that is merely hidden.
+   */
+  interface BandReading {
+    band: NonNullable<ReturnType<typeof desktopBand>>
+    row: HTMLElement
+    header: Element | null
+    title: HTMLElement | null
+    utilities: HTMLElement | null
+    corner: HTMLElement | null
+    stripEl: HTMLElement | null
+    rowBox: DOMRect | null
+    stripBox: DOMRect | null
+    menuBox: DOMRect | null
+    utilitiesBox: DOMRect | null
+    cornerBox: DOMRect | null
+    titleBox: DOMRect | null
+  }
+
+  /** The reading this pass places against, and whether `measure` took it for this pass. */
+  let reading: BandReading | null = null
+  let measured = false
+
+  /**
+   * Read the boxes the pass places against. Written in the pass's read phase,
+   * before any feature's write can invalidate the layout it read (D40).
+   */
+  function measure() {
+    measured = true
     const band = desktopBand()
-    const row = band === null || band.platform !== 'win32' ? null : titleRow()
-    if (band === null || band.platform !== 'win32' || row === null) {
-      watch(null)
-      clear()
+    if (band === null || band.platform !== 'win32') {
+      reading = null
       return
     }
-    watch(row)
-    const rowBox = rect(row)
-    if (rowBox === null) {
-      clear()
+    const row = titleRow()
+    if (row === null) {
+      reading = null
       return
     }
     const header = row.closest(CONVERSATION_HEADER_SELECTOR)
     const title = row.querySelector<HTMLElement>(HEADER_TITLE_SELECTOR)
     const utilities = row.querySelector<HTMLElement>(HEADER_UTILITIES_SELECTOR)
     const corner = row.querySelector<HTMLElement>(HEADER_CORNER_SELECTOR)
+    const stripEl = header === null ? null : header.querySelector<HTMLElement>(VIEW_TABS_STRIP_SELECTOR)
+    reading = {
+      band,
+      row,
+      header,
+      title,
+      utilities,
+      corner,
+      stripEl,
+      rowBox: rect(row),
+      stripBox: rect(stripEl),
+      menuBox: rect(document.querySelector(WINDOWS_MENU_SELECTOR)),
+      utilitiesBox: rect(utilities),
+      cornerBox: rect(corner),
+      titleBox: rect(title),
+    }
+  }
+
+  function sync() {
+    if (!measured) measure()
+    measured = false
+    const current = reading
+    if (current === null) {
+      watch(null)
+      clear()
+      return
+    }
+    const { band, row, title, utilities, corner } = current
+    watch(row)
+    const rowBox = current.rowBox
+    if (rowBox === null) {
+      clear()
+      return
+    }
     // Only a strip the view-tabs feature has already lifted shares the caption
     // row; one still drawn in the header's own row takes nothing from it. Its
     // room is read off the width rather than the box: view-tabs centres it on
     // the window, this pass then moves it, and a fit decided against the moved
     // box would answer differently on the next pass.
-    const stripEl = header === null ? null : header.querySelector<HTMLElement>(VIEW_TABS_STRIP_SELECTOR)
-    const stripBox = rect(stripEl)
+    const stripEl = current.stripEl
+    const stripBox = current.stripBox
     const inBand = stripBox !== null && stripBox.top < band.height
     const stripWidth = stripBox === null || !inBand ? 0 : stripBox.width
     const stripRight = stripWidth === 0 ? 0 : document.documentElement.clientWidth / 2 + stripWidth / 2
     // The shell's own menu seat takes the row's left end, and the collapsed
     // sidebar's control sits left of it whether the seat is mounted or not.
-    const menuBox = rect(document.querySelector(WINDOWS_MENU_SELECTOR))
+    const menuBox = current.menuBox
     const furniture = menuBox === null ? FURNITURE : Math.max(FURNITURE, menuBox.right)
     // Either cluster can be missing: the corner seat is empty while the right
     // sidebar is open, whose own chrome carries those controls. The cluster
     // that is there still belongs in the caption row, and a missing one leaves
     // no air behind.
-    const utilitiesBox = rect(utilities)
-    const cornerBox = rect(corner)
+    const utilitiesBox = current.utilitiesBox
+    const cornerBox = current.cornerBox
     const utilitiesWidth = utilitiesBox === null ? 0 : utilitiesBox.width
     const cornerWidth = cornerBox === null ? 0 : cornerBox.width
     const clusterWidth = utilitiesWidth + cornerWidth + (utilitiesBox === null || cornerBox === null ? 0 : GAP)
@@ -218,7 +300,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // two, so its width is reserved here rather than read off a position it is
     // about to leave.
     const room = rightStop - GAP - (inBand ? stripWidth + GAP : 0) - left
-    const titleBox = rect(title)
+    const titleBox = current.titleBox
     const liftTitle = title !== null && room >= MIN_TITLE
     // The row the title leaves holds only controls, and the host's inset for a
     // row that still carried a title would leave them floating below the caption
@@ -263,7 +345,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     else setAttributeIfChanged(document.body, BAND_ATTR, tokens)
   }
 
-  ui.headerBand = { sync }
+  // The row it reads lives in the conversation header, never inside the column
+  // a streaming batch touches, so such a batch skips this pass (D40). The boxes
+  // are read in the pass's read phase and written in its write phase.
+  ui.headerBand = { measure, sync, skipOnContentOnly: true }
 
   return () => {
     const row = rowStamp.current()
@@ -282,6 +367,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (strip !== null) strip.style.removeProperty(TABS_LEFT)
     clear()
     watch(null)
+    titleRows.release()
+    keptRow = null
     delete ui.headerBand
   }
 }

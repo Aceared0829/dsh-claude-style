@@ -116,12 +116,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // its card up would stack two panels over the same corner.
     closeOtherPopovers('effort')
     if (effortSlider !== null) effortSlider.update()
-    positionEffortPopover()
+    // Open BEFORE placing: the placement reads the card only while it is
+    // marked open, so positioning first would skip it and leave the card
+    // where it stood.
     if (effortPop !== null) setMenuPopoverOpen(effortPop, true, effortBtn)
+    positionEffortPopover()
   }
 
   function positionEffortPopover() {
     if (effortBtn === null || effortPop === null) return
+    // A shut card has no anchor to re-read, so a scroll or resize costs it nothing.
+    if (effortPop.getAttribute('data-open') !== 'true') return
     positionAnchoredPopover(effortBtn, effortPop, { side: 'above', gap: 6 })
   }
 
@@ -369,6 +374,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   ui.effort = {
     sync: syncEffortControl,
+    // The trigger sits on the composer, outside the column a streaming batch
+    // touches, so such a batch skips this pass (D40).
+    skipOnContentOnly: true,
     /**
      * The effort card closes on an outside press and on Esc. Composer focus
      * is NOT one of its dismiss routes (the model picker closes there, this

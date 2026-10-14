@@ -3,6 +3,7 @@ import { MODEL_EMPTY_LABEL, MODEL_FALLBACK_LABEL, MODEL_LOADING_LABEL, MODEL_MOR
 import { activeLocale, copyLabel } from '../../core/i18n'
 import { loadModelCopy } from '../../core/model-copy'
 import { readPrefs } from '../../core/prefs'
+import { cacheFirstMatch } from '../../core/host'
 import { createModelCatalog } from './catalog'
 import { byModelId, createModelRows } from './rows'
 import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
@@ -28,6 +29,9 @@ export interface ModelHandle extends FeatureHandle {
   onProviders(listener: (providers: CatalogProvider[]) => void): () => void
   teardown(): void
 }
+
+/** The host's model slot, resolved once and re-resolved when the host swaps it (D40). */
+const modelSlotOf = cacheFirstMatch<HTMLElement>('[data-slot="conversation.input.model"]')
 
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
@@ -517,7 +521,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     loadModelCopy()
     modelCatalog.directory()
     modelCatalog.warm()
-    const slot = document.querySelector<HTMLElement>('[data-slot="conversation.input.model"]')
+    const slot = modelSlotOf()
     modelSlot = slot
     if (slot === null) return
     // Hide the host's own seat (React owns the node; re-mark on swap).
@@ -605,6 +609,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   ui.model = {
     sync: syncModelControl,
+    // The seat sits on the composer, outside the column a streaming batch
+    // touches, so such a batch skips this pass (D40).
+    skipOnContentOnly: true,
     /**
      * Close both levels of the picker. The scheduler calls this for every
      * dismiss reason ('outside', 'escape', 'composer') and the picker acts
@@ -653,7 +660,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
              (modelPop !== null && modelPop.contains(target)) ||
              (modelSubPop !== null && modelSubPop.contains(target))
     },
-    reposition: positionModelPopovers,
+    /**
+     * A viewport change moves the trigger the open card is anchored to. A card
+     * that is shut has no anchor to re-read, so the scroll or resize costs it
+     * nothing.
+     */
+    reposition() {
+      if (modelPop === null || modelPop.getAttribute('data-open') !== 'true') return
+      positionModelPopovers()
+    },
     providers: modelCatalog.providers,
     onProviders: modelCatalog.onProviders,
     /**

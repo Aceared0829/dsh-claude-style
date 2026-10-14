@@ -1,4 +1,5 @@
 import { QUIET_ATTR, STATUS_DETAIL_PRECISE } from '../../constants'
+import { observeMatches } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
@@ -58,8 +59,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const WORDS_ATTR = 'data-dsh-claude-wait-words'
   /** On the overtime badge while it plays its way out (syncBadge). */
   const BADGE_LEAVING_ATTR = 'data-dsh-claude-wait-badge-leaving'
-  /** The clock's step: the host's own row ticks once a second, and a quarter keeps the two in step. */
+  /**
+   * The clock's step: fast enough that a replacement which stops owning the
+   * words hands the line back without a visible pause, and that the seconds
+   * the line shows never lag the turn by more than a quarter.
+   */
   const TICK_MS = 250
+  /** The host's running rows, kept current by the bus: a pass reads this instead of querying (D40). */
+  const runningRows = observeMatches<HTMLElement>(CHAT_RUNNING_SELECTOR)
   /** Each running row with the line drawn into it and the parts a pass writes. */
   const lines = new Map<HTMLElement, WaitLine>()
   const hostWords = new Map<HTMLElement, Element>()
@@ -261,7 +268,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function sync() {
     const t = ctx.get('locale')?.bind('chat')
-    const rows = t === undefined ? [] : [...document.querySelectorAll<HTMLElement>(CHAT_RUNNING_SELECTOR)]
+    const rows = t === undefined ? [] : runningRows.all()
     const now = Date.now()
     const seen = new Set<string>()
     for (const row of rows) syncRow(row, t!, now, seen)
@@ -288,6 +295,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   return () => {
     offDetailChoice()
+    runningRows.release()
     if (timer !== null) window.clearInterval(timer)
     timer = null
     if (cancelTick !== null) cancelTick()

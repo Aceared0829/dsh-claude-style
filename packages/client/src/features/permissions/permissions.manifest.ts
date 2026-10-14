@@ -12,7 +12,7 @@ export default {
     tab: 'composer',
     rank: 50,
     title: { key: 'permissionsTitle', fallback: 'Redraw the permission control' },
-    desc: { key: 'permissionsDesc', fallback: 'Replace the composer\'s permission menu with a segmented control. Off restores the host\'s permission menu.' },
+    desc: { key: 'permissionsDesc', fallback: 'Use the skin\'s own permission control: a row of segments on the classic home, and a trigger with its tier card on the studio home and in conversations. Off restores the host\'s permission menu.' },
     // The segments are drawn into the restyled composer.
     requires: {
       pref: 'composerScope',
@@ -24,11 +24,11 @@ export default {
   description: {
     zh: {
       title: '权限控件',
-      text: '输入区的权限菜单换成一排分段按钮，档位以宿主的目录为准，别的插件加的档位也在里面；新会话页上显示新会话会用的那一档。',
+      text: '输入区的权限菜单在经典首页换成一排分段按钮，工作台首页与对话页是一枚按钮加一张档位卡片，与输入区其余选择器同一形制；档位以宿主的目录为准，别的插件加的档位也在里面；新会话页上显示新会话会用的那一档。',
     },
     en: {
       title: 'Permission control',
-      text: 'The composer\'s permission menu becomes a row of segments. The presets are the host\'s own catalog, a plugin\'s preset included; the new-conversation page shows the one a new session will start in.',
+      text: 'The composer\'s permission menu becomes a row of segments on the classic home; the studio home and conversations carry one trigger with its tier card, shaped like the composer\'s other pickers. The presets are the host\'s own catalog, a plugin\'s preset included; the new-conversation page shows the one a new session will start in.',
     },
   },
 } satisfies FeatureManifest

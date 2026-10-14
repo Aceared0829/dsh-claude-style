@@ -134,6 +134,8 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   /** The ladder step in force, and what the last fit measured. */
   let level = 0
   let fitted = false
+  /** The card width the last fit answered for; -1 asks for one. */
+  let fittedWidth = -1
 
   /** Build the line once, in the order its segments appear. */
   function buildLine(): Line {
@@ -220,6 +222,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     if (hostMeter !== null) hostMeter.removeAttribute(METER_TIGHT_ATTR)
     level = 0
     fitted = false
+    fittedWidth = -1
   }
 
   /** Show or hide one segment. */
@@ -342,8 +345,12 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    * Giving back measures on the twin and writes the shown line once, so a
    * step the room does not allow leaves it untouched. Both walks end at a
    * ladder end, so a card too narrow for the last step leaves the line on it.
+   *
+   * @param force - measure again even when the card has not changed width:
+   *     the render path passes it, a scroll does not, so scrolling a card of
+   *     one width stops paying for the twin probes.
    */
-  function fit() {
+  function fit(force = false) {
     const shown = line
     if (shown === null || shown.root.parentElement === null) return level
     const card = findComposerCard()
@@ -351,6 +358,8 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     if (card === null || chat === null) return level
     const available = card.clientWidth
     if (available <= 0) return level
+    if (!force && fitted && available === fittedWidth) return level
+    fittedWidth = available
     const shownWidth = () => neededWidth(shown, shown.root.getBoundingClientRect().width)
     const step = (next: number) => {
       setLevel(next)
@@ -390,7 +399,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       return
     }
     const changed = writeLine(line, level, chat)
-    if (changed || !fitted) fit()
+    if (changed || !fitted) fit(true)
   }
 
   return {

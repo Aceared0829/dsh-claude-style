@@ -2,6 +2,7 @@ import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../co
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
+import { observeMatches } from './bus'
 import { closestFrom } from '../shared/dom'
 import { createHostResource } from '../shared/resource'
 
@@ -39,18 +40,52 @@ export interface HostFiber {
 }
 
 /**
+ * Whether `element` is still the document's first match: it is connected, it
+ * matches itself, and no earlier sibling subtree holds a match. The sibling
+ * walk is short for these seats (a header, a card, a footer), which the host
+ * mounts once and replaces whole.
+ */
+function stillFirstMatch(element: Element, selector: string) {
+  if (!element.isConnected || !element.matches(selector)) return false
+  for (let node: Element | null = element; node !== null; node = node.parentElement) {
+    for (let earlier = node.previousElementSibling; earlier !== null; earlier = earlier.previousElementSibling) {
+      if (earlier.matches(selector) || earlier.querySelector(selector) !== null) return false
+    }
+  }
+  return true
+}
+
+/**
+ * The first match of `selector`, resolved once and kept while it stays the
+ * first match (D40): a pass re-reads it, and the document is queried again only
+ * when the host replaced the element or mounted one before it. The answer is
+ * the one a query gives — an earlier match invalidates the kept element.
+ *
+ * Exported for the seats one feature alone reads (a header, a slot, a meter):
+ * the mechanism lives once, the selector stays with its reader.
+ */
+export function cacheFirstMatch<T extends Element>(selector: string) {
+  let kept: T | null = null
+  return () => {
+    if (kept !== null && stillFirstMatch(kept, selector)) return kept
+    kept = document.querySelector<T>(selector)
+    return kept
+  }
+}
+
+function cacheFirst<T extends Element>(selector: string) {
+  return cacheFirstMatch<T>(selector)
+}
+
+/**
  * The host's access-mode trigger: the button its permission slot renders.
  * Every slot render site carries a `[data-slot="<key>"]` wrapper (D19), and
  * the skin inserts its own buttons inside that wrapper, so those are skipped.
  */
-export function findAccessTrigger() {
-  return document.querySelector<HTMLButtonElement>(PERMISSION_TRIGGER_SELECTOR)
-}
+export const findAccessTrigger = cacheFirst<HTMLButtonElement>(PERMISSION_TRIGGER_SELECTOR)
 
 /** The sidebar footer, where the account row and the plugin footer entries live. */
-export function findFootArea() {
-  return document.querySelector<HTMLElement>(FOOT_AREA_SELECTOR)
-}
+export const findFootArea = cacheFirst<HTMLElement>(FOOT_AREA_SELECTOR)
 
 /**
  * The host's composer card — the element the skin's composer rules hang on —
@@ -60,22 +95,22 @@ export function findFootArea() {
 const COMPOSER_CARD = COMPOSER_CARD_SELECTOR
 const COMPOSER_PLACEHOLDER = COMPOSER_PLACEHOLDER_SELECTOR
 
-export function findComposerCards() {
-  return document.querySelectorAll<HTMLElement>(COMPOSER_CARD)
+/** The composer cards, kept current by the bus instead of queried every pass (D40). */
+export function observeComposerCards() {
+  return observeMatches<HTMLElement>(COMPOSER_CARD)
 }
 
-export function findComposerCard() {
-  return document.querySelector<HTMLElement>(COMPOSER_CARD)
+/** The composer placeholders, kept current by the bus (D40); the skin's synthetic one is a match too. */
+export function observeComposerPlaceholders() {
+  return observeMatches<HTMLElement>(COMPOSER_PLACEHOLDER)
 }
+
+export const findComposerCard = cacheFirst<HTMLElement>(COMPOSER_CARD)
 
 /** The composer card `node` sits in, or null; `variant` narrows it to one variant. */
 export function closestComposerCard(node: EventTarget | null | undefined, variant?: string) {
   if (variant === undefined) return closestFrom(node, COMPOSER_CARD)
   return closestFrom(node, `${COMPOSER_CARD}[${COMPOSER_VARIANT_ATTRIBUTE}="${variant}"]`)
-}
-
-export function findComposerPlaceholders() {
-  return document.querySelectorAll<HTMLElement>(COMPOSER_PLACEHOLDER)
 }
 
 export function findComposerPlaceholder(card: Element) {
@@ -108,9 +143,7 @@ export function findComposerSeat(scope: ParentNode = document) {
 }
 
 /** The session scroller: the element the host hangs its own follow off (D41). */
-export function findConversationScroller() {
-  return document.querySelector<HTMLElement>(CONVERSATION_SCROLL_SELECTOR)
-}
+export const findConversationScroller = cacheFirst<HTMLElement>(CONVERSATION_SCROLL_SELECTOR)
 
 /** The chat columns on the page: the root every chat-area behaviour scopes to. */
 export function findChatFlows() {
@@ -121,9 +154,12 @@ export function findChatFlows() {
 const CONVERSATION_SESSION_ATTR = CONVERSATION_SESSION_ATTRIBUTE
 const CONVERSATION_SESSION = `[${CONVERSATION_SESSION_ATTR}]`
 
-export function findConversationSession() {
-  return document.querySelector<HTMLElement>(CONVERSATION_SESSION_SELECTOR)
-}
+/**
+ * The shown conversation, kept while it stays the document's first match: a
+ * session switch mounts the next one, and an earlier match invalidates the
+ * kept element as a fresh query would answer with it.
+ */
+export const findConversationSession = cacheFirst<HTMLElement>(CONVERSATION_SESSION_SELECTOR)
 
 export function closestConversationSession(node: EventTarget | null | undefined) {
   return closestFrom(node, CONVERSATION_SESSION)

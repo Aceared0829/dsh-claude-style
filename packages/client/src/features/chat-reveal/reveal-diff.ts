@@ -9,12 +9,96 @@ import {
   CHAT_REVEAL_REWRITE_DIFF_BUDGET,
   CHAT_REVEAL_STAGGER_DIVISOR,
 } from './reveal-params'
-import type { RevealRun, RevealState, RevealTextEntry } from './reveal-params'
+import type { RevealRun, RevealSnapshot, RevealState, RevealTextEntry } from './reveal-params'
 
 /** What a scan needs from the rest of the engine: the colour it publishes and the repaint it forces. */
 interface RevealScanHooks {
   publishRunColor: (element: HTMLElement | null) => void
   paint: (now: number, fromFrame: boolean) => void
+}
+
+/** The characters two strings share at their front; a streamed append is the native test. */
+function commonHead(left: string, right: string) {
+  if (left.length <= right.length && right.startsWith(left)) return left.length
+  if (right.length <= left.length && left.startsWith(right)) return right.length
+  const limit = Math.min(left.length, right.length)
+  let shared = 0
+  while (shared < limit && left.charCodeAt(shared) === right.charCodeAt(shared)) shared += 1
+  return shared
+}
+
+/** The characters two strings share at their end, for a batch that closed a marker rather than appended. */
+function commonTail(left: string, right: string) {
+  if (left.length <= right.length && right.endsWith(left)) return left.length
+  if (right.length <= left.length && left.endsWith(right)) return right.length
+  const limit = Math.min(left.length, right.length)
+  let shared = 0
+  while (shared < limit && left.charCodeAt(left.length - 1 - shared) === right.charCodeAt(right.length - 1 - shared)) shared += 1
+  return shared
+}
+
+/**
+ * How many leading characters the batch left untouched, read off the nodes: a
+ * node that kept its place and its text carries unchanged characters, and only
+ * the node a batch really rewrote is compared by its own characters.
+ */
+function commonPrefix(previous: RevealSnapshot | undefined, entries: readonly RevealTextEntry[]) {
+  if (previous === undefined) return 0
+  const before = previous.entries
+  const limit = Math.min(before.length, entries.length)
+  let prefix = 0
+  for (let index = 0; index < limit; index += 1) {
+    const kept = before[index]
+    const next = entries[index]
+    if (kept === undefined || next === undefined) break
+    if (kept.node !== next.node) break
+    if (kept.data === next.data) {
+      prefix = next.start + next.data.length
+      continue
+    }
+    return next.start + commonHead(kept.data, next.data)
+  }
+  return prefix
+}
+
+/**
+ * How many trailing characters the batch left untouched. The suffix never
+ * reaches into the prefix, exactly as a character-by-character walk stops
+ * short of it.
+ */
+function commonSuffix(previous: RevealSnapshot | undefined, entries: readonly RevealTextEntry[], prefix: number) {
+  if (previous === undefined) return 0
+  const before = previous.entries
+  const overlap = Math.min(previous.length, entries.length === 0 ? 0 : entries[entries.length - 1]!.start + entries[entries.length - 1]!.data.length) - prefix
+  let suffix = 0
+  const limit = Math.min(before.length, entries.length)
+  for (let back = 1; back <= limit; back += 1) {
+    const kept = before[before.length - back]
+    const next = entries[entries.length - back]
+    if (kept === undefined || next === undefined) break
+    if (kept.node !== next.node) break
+    const room = overlap - suffix
+    if (room <= 0) break
+    if (kept.data === next.data) {
+      suffix += Math.min(next.data.length, room)
+      continue
+    }
+    suffix += Math.min(commonTail(kept.data, next.data), room)
+    break
+  }
+  return suffix
+}
+
+/** The characters between two offsets, read off the nodes that hold them. */
+function sliceText(entries: readonly RevealTextEntry[], from: number, to: number) {
+  let text = ''
+  for (const entry of entries) {
+    const end = entry.start + entry.data.length
+    if (end <= from) continue
+    if (entry.start >= to) break
+    text += entry.data.slice(Math.max(from, entry.start) - entry.start, Math.min(to, end) - entry.start)
+  }
+  return text
 }
 
 /**
@@ -39,10 +123,10 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
     let containers: Element[]
     if (only === null) {
       containers = [...document.querySelectorAll(STREAMING_SELECTOR)]
-      // Containers no longer streaming lose their segments with their
-      // snapshots: a snapshot is a copy of a whole message, kept alive by its
-      // element, and over a long session that is memory growing with the
-      // session.
+      // Containers no longer streaming lose their snapshots and their
+      // segments: a snapshot holds the message's text nodes (and the text they
+      // carried when it was read), so a finished answer would otherwise stay
+      // reachable through this engine for the rest of the session.
       for (const gone of state.liveContainers) {
         if (containers.includes(gone)) continue
         state.textSnapshots.delete(gone)
@@ -62,30 +146,32 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
     const createdRuns: RevealRun[] = []
     for (const container of containers) {
       const batchStart = createdRuns.length
-      // First join every text node under the container, remembering each
-      // node's offset in the joined string.
+      // Walk every text node under the container once, remembering its offset
+      // and its text. No joined string is built: a batch compares nodes, and
+      // only a rewritten middle is ever materialised.
       const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
       const entries: RevealTextEntry[] = []
-      let text = ''
+      let length = 0
       let node = walker.nextNode()
       while (node !== null) {
         // SHOW_TEXT: every node the walker yields is a text node.
         const textNode = node as Text
-        entries.push({ node: textNode, start: text.length })
-        text += textNode.data
+        const data = textNode.data
+        entries.push({ node: textNode, start: length, data })
+        length += data.length
         node = walker.nextNode()
       }
 
-      const previous = state.textSnapshots.get(container)?.text
-      state.textSnapshots.set(container, { text, entries })
+      const previous = state.textSnapshots.get(container)
+      state.textSnapshots.set(container, { length, entries })
 
       // The first sight of this container. One that was on the page when the
       // engine installed is history; one that appears already long (a session
       // switch, a page of history mounting) counts as history too. Only one
       // that appeared after install without much text — a new answer — has its
       // opening characters counted as new.
-      if (previous === undefined && (state.historyContainers.has(container) || text.length > CHAT_REVEAL_FIRST_SIGHT_LIMIT)) continue
-      const before = previous ?? ''
+      if (previous === undefined && (state.historyContainers.has(container) || length > CHAT_REVEAL_FIRST_SIGHT_LIMIT)) continue
+      const beforeLength = previous === undefined ? 0 : previous.length
 
       // This batch's two stable stretches: segments inside the common prefix
       // keep their place, ones inside the common suffix move as a whole, and
@@ -95,18 +181,16 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
       // character, and those characters must not freeze because the reader
       // touched a control. Killing every segment in the container on any
       // reflow would snap half-faded text to solid.
-      const overlapLimit = Math.min(before.length, text.length)
-      let prefix = 0
-      while (prefix < overlapLimit && before.charCodeAt(prefix) === text.charCodeAt(prefix)) prefix += 1
-      // The suffix does not overlap the prefix, so the rewritten middle is not
-      // claimed by both.
-      let suffix = 0
-      while (
-        suffix < overlapLimit - prefix
-        && before.charCodeAt(before.length - 1 - suffix) === text.charCodeAt(text.length - 1 - suffix)
-      ) suffix += 1
-      const stableFrom = before.length - suffix
-      const shift = text.length - before.length
+      //
+      // The stretches are read off the nodes: a node that kept its place and
+      // its text carries unchanged characters, and only the one or two nodes a
+      // batch really touched are compared character by character. A streamed
+      // append is the batch that matters most, and its check is the native
+      // prefix test below rather than a loop over the whole answer.
+      const prefix = commonPrefix(previous, entries)
+      const suffix = commonSuffix(previous, entries, prefix)
+      const stableFrom = beforeLength - suffix
+      const shift = length - beforeLength
       for (let index = state.liveRuns.length - 1; index >= 0; index -= 1) {
         const run = state.liveRuns[index]
         if (run === undefined) continue
@@ -140,10 +224,15 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
       // on — a whole-block rewrite (the final re-layout at the end of a
       // stream, a switch of rendering branch) must not make the reader watch
       // the fade again, and only a small close is worth animating.
-      const oldMiddle = before.slice(prefix, before.length - suffix)
-      const newMiddle = text.slice(prefix, text.length - suffix)
-      if (newMiddle.length === 0) continue
-      if (oldMiddle.length > 0 && oldMiddle.length * newMiddle.length > CHAT_REVEAL_REWRITE_DIFF_BUDGET) continue
+      const oldMiddleLength = beforeLength - prefix - suffix
+      const newMiddleLength = length - prefix - suffix
+      if (newMiddleLength === 0) continue
+      if (oldMiddleLength > 0 && oldMiddleLength * newMiddleLength > CHAT_REVEAL_REWRITE_DIFF_BUDGET) continue
+      // The middles are materialised only now, and only as far as the budget
+      // above lets them be: the common batch (an append) leaves the old middle
+      // empty and pays for nothing here.
+      const oldMiddle = oldMiddleLength === 0 || previous === undefined ? '' : sliceText(previous.entries, prefix, stableFrom)
+      const newMiddle = sliceText(entries, prefix, length - suffix)
 
       // Whether each new character matches one in the old text. With an empty
       // old middle every character is new and no alignment is needed.

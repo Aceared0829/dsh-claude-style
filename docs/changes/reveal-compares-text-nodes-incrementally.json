@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 4,
+  "external": false,
+  "zh": "流式回答里新文字的淡入改按文本节点增量比较：一条回答里追加字符时不再把整条回答重拼成字符串、也不再逐字符重比，成本随本批新增的字符走；markdown 中途改写标记的那一段仍按原来的窗口判定，超过预算或刚被折叠重排过就保持本色。",
+  "en": "The fade over newly arrived characters in a streaming answer now compares text nodes incrementally: an append no longer rejoins the whole answer into a string nor walks it character by character, so the cost follows the batch. A markdown rewrite in the middle is still judged by the same window, and a rewrite past its budget or one that just reflowed from a fold stays solid."
+}

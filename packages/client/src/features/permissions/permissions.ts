@@ -1,6 +1,6 @@
 import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
-import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
+import { AUTO_POPOVER_ALL, HOME_HERO_ATTR, PERMISSIONS_ATTR } from '../../constants'
+import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
 import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
 import { activeLocale, copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
@@ -74,20 +74,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return catalogOption(preset) !== null
   }
 
+  /** Whether the interface language reads the host's own tier dictionary (D17). */
+  function readsHostTierNames() {
+    return activeLocale(ctx).startsWith(PERMISSION_HOST_LABEL_LOCALE)
+  }
+
   /**
    * The host's own name for a tier, or '' when the skin's table answers. Claude
    * names the tiers in English and a Chinese interface shows the host's original
    * Chinese names instead. A host that mounts no locale service, and one that
    * never registers the namespace — whose translate seat then answers with the
-   * key itself — both leave the skin's table in charge.
+   * key itself — both leave the skin's table in charge, and so does an entry the
+   * host never translated (its `auto.label` is the English name in every
+   * language).
    */
   function hostPresetLabel(preset: string): string {
     const key = PERMISSION_HOST_LABEL_KEYS[preset]
-    if (key === undefined || !activeLocale(ctx).startsWith(PERMISSION_HOST_LABEL_LOCALE)) return ''
+    if (key === undefined || !readsHostTierNames()) return ''
     const locale = ctx.get('locale')
     if (typeof locale?.bind !== 'function') return ''
     const text: string = locale.bind(PERMISSION_ACCESS_NAMESPACE)(key)
-    return typeof text === 'string' && text !== '' && text !== key ? text : ''
+    if (typeof text !== 'string' || text === '' || text === key) return ''
+    const known = PERMISSION_PRESETS[preset]
+    return known !== undefined && known.label === text ? '' : text
   }
 
   /** The name a preset reads as: the host's own Chinese name first, then the skin's table, then the host's catalog. */
@@ -95,7 +104,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const hostName = hostPresetLabel(preset)
     if (hostName !== '') return hostName
     const known = PERMISSION_PRESETS[preset]
-    if (known !== undefined) return known.label
+    if (known !== undefined) {
+      // A Chinese interface takes the skin's own Chinese name where it carries
+      // one (PERMISSION_CHINESE_LABELS); the English name is for every other
+      // language, and for a tier the host translates itself.
+      const chinese = readsHostTierNames() ? PERMISSION_CHINESE_LABELS[preset] : undefined
+      return chinese === undefined ? known.label : chinese
+    }
     const option = catalogOption(preset)
     if (option !== null && typeof option.name === 'string' && option.name !== '') return option.name
     const current = PERMISSION_CURRENT_LABELS[preset]
@@ -372,6 +387,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     setMenuPopoverOpen(popover, false)
 
     function openPerm() {
+      // A trigger the page cannot act through (the cold start screen) never
+      // opens its card: the press belongs to the workspace pick under it.
+      if (btn.disabled) return
       if (permHoverIntent) permHoverIntent.cancel()
       closeOtherPopovers('permission')
       positionAnchoredPopover(btn, popover, PERM_POPOVER_PLACEMENT)
@@ -446,8 +464,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
   }
 
-  function updatePermState(preset: string | null) {
+  /**
+   * Mirror the running preset onto the trigger and its rows. `inert` marks the
+   * cold start screen, which has no session to switch: the trigger reads the
+   * preset a new session starts in and takes no input, so a press falls through
+   * to the workspace pick the card itself performs.
+   */
+  function updatePermState(preset: string | null, inert: boolean) {
     if (!permLabel || !permPopover) return
+    if (permBtn !== null && permBtn.disabled !== inert) permBtn.disabled = inert
+    if (inert && permPopover.getAttribute('data-open') === 'true') closePermMenu()
     // The rows follow the host's catalog: one it does not serve is not
     // drawn at all, and one it starts serving appears.
     syncPermRows()
@@ -555,9 +581,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const trigger = findAccessTrigger()
     // The cold start screen (no session yet) renders no access button: the
     // host leaves the card's mode strip empty and turns the whole card into
-    // the workspace pick target. The segments take that strip and show the
-    // preset the new session will start in; they are disabled there, so a
-    // press falls through to the card and opens the workspace picker like
+    // the workspace pick target. The skin's own control takes that strip and
+    // shows the preset the new session will start in; it takes no input there,
+    // so a press falls through to the card and opens the workspace picker like
     // every other control on it.
     const coldStart = trigger === null && isHero && session === null
     const host = coldStart
@@ -570,8 +596,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (host === null) return
 
     const preset = coldStart ? defaultPreset : session === null ? null : currentPreset(session)
+    // The segment group is the classic hero's own shape. The studio hero draws
+    // its composer in the conversation's single-line form, where this control is
+    // the conversation's trigger and card; the home layout marks that page on
+    // the document (packages/client/src/features/home/home-layout.ts).
+    const segmentsHere = isHero && !document.body.hasAttribute(HOME_HERO_ATTR)
 
-    if (isHero) {
+    if (segmentsHere) {
       for (let i = 0; i < existingPermContainers.length; i++) {
         existingPermContainers[i].remove()
       }
@@ -642,7 +673,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         permPopover = res.popover
         host.insertBefore(permContainer, host.firstChild)
       }
-      updatePermState(preset)
+      updatePermState(preset, coldStart)
     }
   }
 

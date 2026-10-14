@@ -1,10 +1,12 @@
-import { findComposerCards, findComposerInput, findComposerPlaceholder, findComposerPlaceholders } from '../../core/host'
-import { removeStrayNodes } from '../../shared/popover'
+import { findComposerInput, findComposerPlaceholder } from '../../core/host'
+import type { MatchList } from '../../core/bus'
 
 /** The hero composer's own hint, which the skin's placeholder stands in for. */
 const HERO_HINT = 'How can I help you today?'
 /** The conversation composer's hint, which the same placeholder settles on. */
 const DEFAULT_HINT = 'Type / for commands'
+/** The mark that tells the skin's own placeholder from the host's (its teardown swears by it). */
+const SYNTHETIC_ATTR = 'data-dsh-synthetic-placeholder'
 
 /** Shipped idle composer hints (zh / en, hero / default) this skin replaces. */
 const HINT_SOURCES = [
@@ -25,8 +27,11 @@ const HINT_SOURCES = [
  * draws no placeholder of its own, so the skin adds one
  * (`data-dsh-synthetic-placeholder`) and takes it away again when the draft
  * has text; the teardown removes whatever it left.
+ *
+ * @param cards - the composer cards, kept current by the bus (D40).
+ * @param placeholders - the placeholders those cards carry, from the same source.
  */
-export function createPlaceholderCopy() {
+export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholders: MatchList<HTMLElement>) {
   /** Whether a placeholder's text is one of the hints this skin replaces. */
   function isShippedHint(text: string) {
     for (let j = 0; j < HINT_SOURCES.length; j++) {
@@ -38,7 +43,7 @@ export function createPlaceholderCopy() {
   function rewriteHint(hero: boolean, active: boolean) {
     if (!active) return
     const targetHint = hero ? HERO_HINT : DEFAULT_HINT
-    const hints = findComposerPlaceholders()
+    const hints = placeholders.all()
     for (let i = 0; i < hints.length; i++) {
       const node = hints[i]
       const text = node.textContent || ''
@@ -48,13 +53,17 @@ export function createPlaceholderCopy() {
 
   function syncAttachmentPlaceholder(hero: boolean, active: boolean) {
     if (!active) {
-      removeStrayNodes(document, '[data-dsh-synthetic-placeholder]', [])
+      // The synthetic ones are ordinary placeholders too, so the registry in
+      // hand names exactly what this sweep used to query the document for.
+      for (const node of placeholders.all()) {
+        if (node.hasAttribute(SYNTHETIC_ATTR)) node.remove()
+      }
       return
     }
     const targetHint = hero ? HERO_HINT : DEFAULT_HINT
-    const cards = findComposerCards()
-    for (let ci = 0; ci < cards.length; ci++) {
-      const card = cards[ci]
+    const found = cards.all()
+    for (let ci = 0; ci < found.length; ci++) {
+      const card = found[ci]
       const input = findComposerInput(card)
       if (!input) continue
       const text = (input.textContent || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
@@ -66,7 +75,7 @@ export function createPlaceholderCopy() {
         if (!placeholder && grow) {
           placeholder = document.createElement('div')
           placeholder.setAttribute('data-composer-placeholder', '')
-          placeholder.setAttribute('data-dsh-synthetic-placeholder', 'true')
+          placeholder.setAttribute(SYNTHETIC_ATTR, 'true')
           placeholder.textContent = targetHint
           grow.appendChild(placeholder)
         } else if (placeholder) {
@@ -75,7 +84,7 @@ export function createPlaceholderCopy() {
           if (isShippedHint(curText) && curText !== targetHint) placeholder.textContent = targetHint
         }
       } else {
-        if (placeholder && placeholder.hasAttribute('data-dsh-synthetic-placeholder')) {
+        if (placeholder && placeholder.hasAttribute(SYNTHETIC_ATTR)) {
           if (placeholder.parentElement) placeholder.parentElement.removeChild(placeholder)
         }
       }
@@ -98,7 +107,9 @@ export function createPlaceholderCopy() {
     },
     /** The placeholders the skin added stand in for the host's own, so they leave with it. */
     dispose() {
-      removeStrayNodes(document, '[data-dsh-synthetic-placeholder]', [])
+      for (const node of placeholders.all()) {
+        if (node.hasAttribute(SYNTHETIC_ATTR)) node.remove()
+      }
     },
   }
 }

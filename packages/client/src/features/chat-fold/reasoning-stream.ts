@@ -1,4 +1,5 @@
 import { requestFrame } from '../../core/frame'
+import { observeMatches } from '../../core/bus'
 import { motionReduced } from '../../core/prefs'
 import { EXPANDED_ATTRIBUTE, REASONING_TEXT_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
@@ -87,6 +88,8 @@ function lineHeightOf(text: HTMLElement) {
  */
 export function createReasoningStream() {
   const windows = new Map<Element, WindowState>()
+  /** Every thinking row on the page, kept current by the bus (D40): a scroll reads this instead of querying. */
+  const thinkRows = observeMatches<HTMLElement>(THINK_ROW_SELECTOR)
   let queued = false
   const pending = new Set<Element>()
   /** Set by the teardown: no row is queued any more, and the frame in flight is cancelled. */
@@ -199,7 +202,7 @@ export function createReasoningStream() {
   return {
     /** Re-read every thinking row, for a change the caller saw outside a row. */
     sync() {
-      for (const row of document.querySelectorAll(THINK_ROW_SELECTOR)) queue(row)
+      for (const row of thinkRows.all()) queue(row)
     },
     queueRow: queue,
     stop() {
@@ -211,6 +214,7 @@ export function createReasoningStream() {
       queued = false
       for (const row of [...windows.keys()]) clearWindow(row)
       pending.clear()
+      thinkRows.release()
     },
   }
 }

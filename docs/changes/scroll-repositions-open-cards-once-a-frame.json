@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 3,
+  "external": false,
+  "zh": "滚动与窗口尺寸变化重新定位浮层时，一帧只派发一次（原来是每个滚动事件一次）；关闭着的模型卡与档位卡不再读宿主触发器的盒子，上下文数字行的合身测量只在输入卡片宽度变化时重做。",
+  "en": "Scrolling or resizing now re-places fixed popovers once a frame instead of once per event; a shut model or effort card stops reading its trigger's box, and the inline context line is measured for fit only when the card's width has changed."
+}

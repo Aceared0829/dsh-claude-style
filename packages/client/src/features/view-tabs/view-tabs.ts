@@ -1,4 +1,5 @@
 import { windowsDesktop } from '../../core/desktop-band'
+import { cacheFirstMatch } from '../../core/host'
 import { createStamp } from '../../shared/dom'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
@@ -129,13 +130,53 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * order, so a header mounted before the one found last time takes that answer
    * while leaving the old header connected, and a kept one would go on stamping
    * and placing a strip the page no longer reads as the conversation's. The pair
-   * is resolved on every pass (D9); the boxes inside it are read once each.
+   * is resolved on every pass (D9) — the kept header is dropped the moment an
+   * earlier match appears, which is the answer a fresh query gives — and the
+   * boxes inside it are read once each.
    */
+  const firstHeader = cacheFirstMatch<HTMLElement>(HEADER)
   function findStrip() {
-    const header = document.querySelector(HEADER)
+    const header = firstHeader()
     if (header === null) return null
     const strip = header.querySelector<HTMLElement>(STRIP)
     return strip === null ? null : { header, strip }
+  }
+
+  /**
+   * The boxes the shift is decided from: the strip, the header, the title that
+   * carries the words and the header's actions. Taken in the pass's read phase
+   * (D40), so no feature's write of the same frame can invalidate them.
+   */
+  interface StripReading {
+    header: HTMLElement
+    strip: HTMLElement
+    stripBox: DOMRect | null
+    headerBox: DOMRect | null
+    titleBox: DOMRect | null
+    actionsBox: DOMRect | null
+  }
+
+  /** The reading this pass places from, and the strip it belongs to. */
+  let reading: StripReading | null = null
+  let measuredStrip: HTMLElement | null = null
+
+  /** Read the four boxes for one strip. */
+  function takeReading(header: HTMLElement, strip: HTMLElement): StripReading {
+    return {
+      header,
+      strip,
+      stripBox: rect(strip),
+      headerBox: rect(header),
+      titleBox: titleBoxOf(header),
+      actionsBox: rect(header.querySelector(ACTIONS)),
+    }
+  }
+
+  /** The pass's read phase: the strip is resolved and its boxes read before anyone writes. */
+  function measure() {
+    const found = findStrip()
+    measuredStrip = found === null ? null : found.strip
+    reading = found === null ? null : takeReading(found.header, found.strip)
   }
 
   function sync() {
@@ -154,16 +195,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // Windows titlebar mode places the strip itself (view-tabs.css): it is
     // fixed there, so neither the measured shift nor the fallback applies.
     if (titlebar) return
-    const stripBox = rect(strip)
+    const boxes = reading !== null && measuredStrip === strip ? reading : takeReading(header, strip)
+    const stripBox = boxes.stripBox
     if (stripBox === null) return
-    const headerBox = rect(header)
+    const headerBox = boxes.headerBox
     if (headerBox === null) return
     // The strip's own layout position, with the shift we may already have
     // applied taken back out: rect.top moves with the transform.
     let applied = parseFloat(strip.style.getPropertyValue('--dsh-view-tabs-shift'))
     if (!isFinite(applied)) applied = FALLBACK
     const naturalTop = stripBox.top - applied
-    const titleBox = titleBoxOf(header)
+    const titleBox = boxes.titleBox
     let shift = FALLBACK
     if (titleBox !== null) {
       let want = titleBox.top + titleBox.height / 2 - naturalTop - stripBox.height / 2
@@ -172,7 +214,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (top < headerBox.top + TOP_INSET) want = headerBox.top + TOP_INSET - naturalTop
       // Room sideways: centred, it must clear the title and the actions, the
       // boxes it would share the title's line with.
-      const actionsBox = rect(header.querySelector(ACTIONS))
+      const actionsBox = boxes.actionsBox
       const clash = [titleBox, actionsBox].some((box) => box !== null && stripBox.right > box.left - CLEARANCE && stripBox.left < box.right + CLEARANCE)
       if (!clash) shift = Math.round(want)
     }
@@ -182,7 +224,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     strip.style.setProperty('--dsh-view-tabs-shift', `${shift}px`)
   }
 
-  ui.viewTabs = { sync }
+  // The strip lives in the conversation header, outside the column a streaming
+  // batch touches, so such a batch skips this pass (D40). The boxes are read in
+  // the pass's read phase and written in its write phase.
+  ui.viewTabs = { measure, sync, skipOnContentOnly: true }
 
   return () => {
     if (titlebar) {

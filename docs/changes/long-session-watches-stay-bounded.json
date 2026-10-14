@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 5,
+  "external": false,
+  "zh": "长会话里跟着会话长度增长的三处记账收敛：进程组表头的摘要共用一条尺寸订阅（原来一组一条），思考行的清单由变更批次增量登记（滚动不再扫整份文档），进程组跟随不再有常驻的定时器——页面上没有进程组时就没有任何定时查询。",
+  "en": "Three books that grew with a long session are now bounded: the process headers' summaries share one size subscription instead of one per group, the thinking rows are registered incrementally from change batches rather than scanned for on every scroll, and the process-group follow keeps no timer when the page holds no process group."
+}

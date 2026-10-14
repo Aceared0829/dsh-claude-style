@@ -15,6 +15,14 @@ export const PERMISSION_PRESETS: Record<string, { label: string, desc: string }>
 }
 
 /**
+ * The skin's own Chinese name for a tier the host's dictionary carries without
+ * one: its `auto.label` reads "Auto review" in every language, so a Chinese
+ * interface would otherwise show one English name among Chinese ones. A tier
+ * the host translates is never overridden (D17).
+ */
+export const PERMISSION_CHINESE_LABELS: Record<string, string> = { 'auto': '自动审查' }
+
+/**
  * The control's segments, in slot order. Each slot lists the presets it may
  * bind to, best first: the deployment's own auto tier wins the slot over the
  * host's built-in Auto review, and a slot none of whose presets the host

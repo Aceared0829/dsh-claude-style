@@ -150,6 +150,107 @@ export function subscribeMutations(target: Node, options: MutationOptions, callb
   }
 }
 
+/**
+ * One selector's live matches (D40): a reader takes the list once and reads it
+ * every pass, so the document is queried when the registry is taken and when a
+ * matching node arrives — never per pass. Registries are shared per selector
+ * and reference counted: two features reading one selector pay for a single
+ * subscription, and the last release takes it down.
+ */
+export interface MatchList<T extends Element> {
+  /**
+   * The matches right now, in document order; the same array until a match
+   * changes. An arrival is seen once the bus has delivered its record — every
+   * reader here reads inside a frame pass or a resize callback, both of which
+   * run after the batch — while a departure is settled on the read itself.
+   */
+  all(): T[]
+  /** Drop this reader; the registry leaves with its last reader. */
+  release(): void
+}
+
+interface MatchRegistry {
+  items: Set<Element>
+  /** The document-ordered array handed out, or null while the set has changed since the last read. */
+  ordered: Element[] | null
+  readers: number
+  stop: () => void
+}
+
+const matchRegistries = new Map<string, MatchRegistry>()
+
+/** Document order, so `all()[0]` is the first match in the page, as a query returns it. */
+function byDocumentOrder(left: Element, right: Element) {
+  return (left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 ? -1 : 1
+}
+
+function registryFor(selector: string): MatchRegistry {
+  const kept = matchRegistries.get(selector)
+  if (kept !== undefined) {
+    kept.readers += 1
+    return kept
+  }
+  const registry: MatchRegistry = {
+    items: new Set(document.querySelectorAll(selector)),
+    ordered: null,
+    readers: 1,
+    // Only added nodes are examined, and an element that left the document is
+    // dropped by the next read: a removal needs no walk of the whole set. The
+    // skin's quiet writes are heard too — its own synthetic placeholder is a
+    // match — and the check on them is one `matches` per added node.
+    stop: () => {},
+  }
+  registry.stop = subscribeMutations(document.body, { childList: true, subtree: true }, records => {
+    let changed = false
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (!(node instanceof Element)) continue
+        if (node.matches(selector)) {
+          registry.items.add(node)
+          changed = true
+        }
+        const found = node.querySelectorAll(selector)
+        for (let index = 0; index < found.length; index += 1) {
+          registry.items.add(found[index])
+          changed = true
+        }
+      }
+      if (record.removedNodes.length > 0) changed = true
+    }
+    if (changed) registry.ordered = null
+  })
+  matchRegistries.set(selector, registry)
+  return registry
+}
+
+/**
+ * Read one selector's matches through a shared registry (D40). The list is
+ * resolved once and kept current by the bus's child list records, so a pass
+ * reads it where it used to query the document.
+ */
+export function observeMatches<T extends Element>(selector: string): MatchList<T> {
+  const registry = registryFor(selector)
+  let released = false
+  return {
+    all() {
+      if (registry.ordered !== null && registry.ordered.every(item => item.isConnected)) return registry.ordered as T[]
+      // An element that left the document is no match, whether or not this
+      // reader's own task has been handed the removal record yet.
+      registry.ordered = [...registry.items].filter(item => item.isConnected).sort(byDocumentOrder)
+      registry.items = new Set(registry.ordered)
+      return registry.ordered as T[]
+    },
+    release() {
+      if (released) return
+      released = true
+      registry.readers -= 1
+      if (registry.readers > 0) return
+      registry.stop()
+      matchRegistries.delete(selector)
+    },
+  }
+}
+
 /** A size subscription: the elements it watches and what hears their entries. */
 interface SizeSubscription {
   targets: Element[]

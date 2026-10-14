@@ -1,7 +1,7 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, STATS_POSITION_CONTEXT } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '../../core/bus'
-import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerCards, findComposerPlaceholder, findComposerSeat, findConversationScroller } from '../../core/host'
+import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, observeComposerCards, observeComposerPlaceholders } from '../../core/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '../../core/host'
 import type { FeatureHandle } from '../../core/scheduler'
@@ -46,7 +46,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The hero page's composer card, or null off the hero page, as of the last pass. */
   let heroCard: HTMLElement | null = null
   /** The idle hint's own words, and the synthetic placeholder that carries them. */
-  const placeholderCopy = createPlaceholderCopy()
+  const cards = observeComposerCards()
+  const placeholders = observeComposerPlaceholders()
+  const placeholderCopy = createPlaceholderCopy(cards, placeholders)
+  /**
+   * The attachment tiles the skin marked, read once at install so a generation
+   * whose teardown a hot reload dropped still has its marks swept.
+   */
+  const markedTiles = new Set<Element>(document.querySelectorAll(`[data-dsh-claude-attachment]`))
   /** The window-blur mirror the selection paints key on (D35). */
   const stopWindowBlur = installWindowBlurMirror()
 
@@ -74,7 +81,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * The studio home layout draws its composer in the conversation's
    * single-line form, so a studio hero page stamps `inline`, not `hero`.
    */
-  function syncVariant(cards: NodeListOf<HTMLElement>) {
+  function syncVariant(cards: readonly HTMLElement[]) {
     const value = hero && !studioHome ? 'hero' : 'inline'
     const stacks = new Set<Element>()
     for (const card of cards) {
@@ -106,7 +113,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const ATTACHMENT_TILE_ATTR = 'data-dsh-claude-attachment'
 
   /** Mark the cards that carry attachments, and the tiles inside them. */
-  function syncAttachments(cards: NodeListOf<HTMLElement>) {
+  function syncAttachments(cards: readonly HTMLElement[]) {
     const tiles = new Set<Element>()
     for (const card of cards) {
       const carries = active && card.querySelector(ATTACHMENT_PRESENT) !== null
@@ -117,10 +124,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         card.removeAttribute('data-has-attachments')
       }
     }
-    for (const marked of document.querySelectorAll(`[${ATTACHMENT_TILE_ATTR}]`)) {
-      if (!tiles.has(marked)) marked.removeAttribute(ATTACHMENT_TILE_ATTR)
+    // The skin wrote every mark, so the sweep reads its own registry (D40)
+    // rather than querying the document for the attribute each pass.
+    for (const marked of markedTiles) {
+      if (tiles.has(marked) && marked.isConnected) continue
+      if (marked.isConnected) marked.removeAttribute(ATTACHMENT_TILE_ATTR)
+      markedTiles.delete(marked)
     }
-    for (const tile of tiles) tile.toggleAttribute(ATTACHMENT_TILE_ATTR, true)
+    for (const tile of tiles) {
+      tile.toggleAttribute(ATTACHMENT_TILE_ATTR, true)
+      markedTiles.add(tile)
+    }
   }
 
   const CONTROL_ATTR = 'data-dsh-claude-control'
@@ -136,7 +150,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    *     are the same submit button under another label);
    *   access — the button the permission slot renders (host.ts).
    */
-  function syncControls(cards: NodeListOf<HTMLElement>) {
+  function syncControls(cards: readonly HTMLElement[]) {
     for (const card of cards) {
       const commands = card.querySelector('[class*="_tools"] button[aria-haspopup="listbox"]')
       if (commands !== null) setAttributeIfChanged(commands, CONTROL_ATTR, 'commands')
@@ -158,7 +172,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * change re-match the whole document. The placeholder comes and goes as a
    * DOM change, so the pass that follows it moves the mark in the same frame.
    */
-  function syncDraftState(cards: NodeListOf<HTMLElement>) {
+  function syncDraftState(cards: readonly HTMLElement[]) {
     for (const card of cards) card.toggleAttribute(DRAFT_EMPTY_ATTR, findComposerPlaceholder(card) !== null)
   }
 
@@ -247,7 +261,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (stopMeterRow !== null) stopMeterRow()
       stopMeterRow = observeSize([row, stack], () => {
         meterRow = ''
-        stampContextMeter(findComposerCards()[0])
+        stampContextMeter(cards.all()[0])
       })
       meterRowBox = row
       meterRowStack = stack
@@ -424,17 +438,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function syncComposer() {
     readState()
-    const cards = findComposerCards()
-    heroCard = hero && cards.length > 0 ? cards[0] : null
-    syncVariant(cards)
+    const found = cards.all()
+    heroCard = hero && found.length > 0 ? found[0] : null
+    syncVariant(found)
     document.body.toggleAttribute(COMPOSER_ATTR, active)
-    syncAttachments(cards)
+    syncAttachments(found)
     // Before the draft mark: the hint the skin adds is part of what "empty"
     // means to the stylesheet's `card:has(placeholder)` rules.
     placeholderCopy.sync(hero, active)
-    syncDraftState(cards)
-    syncControls(cards)
-    stampContextMeter(cards[0])
+    syncDraftState(found)
+    syncControls(found)
+    stampContextMeter(found[0])
     syncChatTabComposer()
   }
 
@@ -491,6 +505,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     heroCard = null
     stopWindowBlur()
     placeholderCopy.dispose()
+    cards.release()
+    placeholders.release()
     document.body.removeAttribute(COMPOSER_ATTR)
     document.body.removeAttribute(COMPOSER_HIDDEN_ATTR)
     const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR, 'data-dsh-claude-context-meter']
