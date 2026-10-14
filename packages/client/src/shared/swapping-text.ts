@@ -14,7 +14,11 @@ import { motionMs, motionValue } from './motion'
  * back. The sizer holds the widest of the words a swap puts in the box while it
  * runs, and comes down onto the words standing the moment it settles — so two
  * states of different lengths never leave the clock beside the line stranded
- * after words that are no longer that long. The wording is written into the
+ * after words that are no longer that long. Each of those two widths is a move
+ * rather than a jump: the box is pinned at the width it stands at, written with
+ * the one it heads for, and the stylesheet's transition carries it there
+ * (shared/swapping-text.css), so the clock beside the line travels with it
+ * instead of being displaced twice per wording. The wording is written into the
  * sizer as well, so the live region hears one line and never two.
  *
  * The names, the blurs and the distance are the recipe's, carried as this
@@ -30,17 +34,24 @@ const SIZER_CLASS = 'dsh-claude-swap-sizer'
 const COPY_CLASS = 'dsh-claude-swap-copy'
 
 /**
- * The word a swap is handing over to, the exit in flight, and whether this
- * element has ever been written. The written mark matters: a line that already
- * carries its words when it is first handed over must not swap them for the
- * identical words.
+ * The word a swap is handing over to, the exit in flight, whether this element
+ * has ever been written, and the width its box is on its way to. The written
+ * mark matters: a line that already carries its words when it is first handed
+ * over must not swap them for the identical words. The travel matters for the
+ * same reason the other two do: a write heading for the width already being
+ * travelled to leaves that move running.
  */
-const swapped = new WeakMap<HTMLElement, { pending: string | null, timer: number | null, written: boolean }>()
+const swapped = new WeakMap<HTMLElement, {
+  pending: string | null
+  timer: number | null
+  written: boolean
+  travel: { target: number, timer: number } | null
+}>()
 
 function stateOf(element: HTMLElement) {
   let state = swapped.get(element)
   if (state === undefined) {
-    state = { pending: null, timer: null, written: false }
+    state = { pending: null, timer: null, written: false, travel: null }
     swapped.set(element, state)
   }
   return state
@@ -103,8 +114,11 @@ function hold(sizer: HTMLElement, text: string) {
  * the line is laid out against this box, so its width may not change while the
  * two halves move; the words left standing take it over once they settle
  * (setSwappingText), which is what keeps the clock right after them at rest.
+ * Both widths are travelled to (travelWidth): the width the box stands at is
+ * read here, before the sizer takes the words it is heading for.
  */
 function holdWidest(element: HTMLElement, texts: readonly string[]) {
+  const from = element.offsetWidth
   const sizer = sizerOf(element)
   let held = ''
   let heldWidth = -1
@@ -116,6 +130,47 @@ function holdWidest(element: HTMLElement, texts: readonly string[]) {
     }
   }
   hold(sizer, held)
+  travelWidth(element, from, heldWidth)
+}
+
+/**
+ * Let the box be the sizer's own width again, and drop the timer that would have
+ * done it: the pin and the timer are one thing and neither outlives the other.
+ */
+function stopTravel(element: HTMLElement) {
+  const state = stateOf(element)
+  if (state.travel === null) return
+  window.clearTimeout(state.travel.timer)
+  state.travel = null
+  element.style.width = ''
+}
+
+/**
+ * Take the box from the width it stands at to the width it heads for in one
+ * move. The clock beside the line is laid out against this box, so a width
+ * written in one step moves the clock in one step; the box is pinned at the
+ * width it stands at, written with the one it heads for, and the stylesheet's
+ * transition carries it (shared/swapping-text.css). Two `auto` widths cannot be
+ * interpolated, which is why the pin exists; it is let go on the travel's own
+ * clock, onto the width the sizer already holds, so a box at rest is the sizer's
+ * own width again. A write heading for the width already being travelled to
+ * leaves that move running, since a swap settles inside the travel it began.
+ */
+function travelWidth(element: HTMLElement, from: number, to: number) {
+  const state = stateOf(element)
+  if (state.travel !== null && state.travel.target === to) return
+  stopTravel(element)
+  if (from === to || motionReduced()) return
+  element.style.width = `${from}px`
+  // The pinned width has to be committed here, in the task the words arrived in:
+  // a box the browser reads only on the next frame travels from the width it has
+  // already reached, which is no move at all.
+  void element.offsetWidth
+  element.style.width = `${to}px`
+  state.travel = {
+    target: to,
+    timer: window.setTimeout(() => stopTravel(element), motionMs('--dsh-claude-duration-slide')),
+  }
 }
 
 /**
@@ -151,9 +206,6 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   if (!element.classList.contains('dsh-claude-swap-label')) element.classList.add('dsh-claude-swap-label')
   element.style.setProperty('--dsh-claude-swap-distance', distanceOf(element))
   state.written = true
-  // The box takes the widest of the words going into it, the arriving one
-  // included: nothing laid out beside the line moves while the two halves do.
-  holdWidest(element, [...wordsIn(element), text])
 
   if (first || motionReduced()) {
     state.pending = null
@@ -161,6 +213,12 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
       window.clearTimeout(state.timer)
       state.timer = null
     }
+    // A width already travelling lands here too: the words written without a
+    // swap take the box at once.
+    stopTravel(element)
+    // The sizer comes first, so the copy written below stands after it: it is
+    // the box's only child in the flow, and everything past it is a copy.
+    const sizer = sizerOf(element)
     const standing = document.createElement('span')
     standing.className = COPY_CLASS
     standing.textContent = text
@@ -172,12 +230,15 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
     element.dataset.text = text
     // The box comes down onto the words standing — the copies the last swap
     // left behind are gone — so the clock sits right after them again.
-    hold(sizerOf(element), text)
+    hold(sizer, text)
     if (withShimmer) element.classList.add('dsh-claude-swap-shimmer')
     else element.classList.remove('dsh-claude-swap-shimmer')
     return
   }
 
+  // The box takes the widest of the words going into it, the arriving one
+  // included: nothing laid out beside the line moves while the two halves do.
+  holdWidest(element, [...wordsIn(element), text])
   state.pending = text
   if (state.timer !== null) return
   // The copy left behind is the one holding the words now: it starts leaving at
@@ -224,12 +285,17 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
 }
 
 /**
- * Let go of a label's swap: a row leaving the page takes no timer with it. The
- * words standing stay where they are.
+ * Let go of a label's swap: a row leaving the page takes no timer with it, and
+ * neither its exit nor a width still travelling may outlive it. The words
+ * standing stay where they are.
  */
 export function releaseSwappingText(element: HTMLElement) {
   const state = swapped.get(element)
   if (state === undefined) return
   if (state.timer !== null) window.clearTimeout(state.timer)
+  if (state.travel !== null) {
+    window.clearTimeout(state.travel.timer)
+    element.style.width = ''
+  }
   swapped.delete(element)
 }

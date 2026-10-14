@@ -30,6 +30,13 @@ body[data-dsh-claude-style] .dsh-claude-swap-label {
   overflow: hidden;
   padding: var(--dsh-claude-swap-distance) 0;
   margin: calc(var(--dsh-claude-swap-distance) * -1) 0;
+  /* The box's width is where the clock beside the line stands, so the two
+     instants a swap changes it travel instead of jumping: shared/swapping-text.ts
+     pins the box at the width it stands at and writes the one it heads for, and
+     this carries it there. Between two `auto` widths no transition can run,
+     which is why the pin exists — the words standing take the box back the
+     moment the move is over. */
+  transition: width var(--dsh-claude-duration-slide) var(--dsh-claude-ease-glide);
 }
 
 /* The sizer paints nothing and is never read out; it is the box. */
@@ -97,4 +104,8 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-swap-c
   transition: none;
   transform: none;
   filter: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-swap-label {
+  transition: none;
 }
