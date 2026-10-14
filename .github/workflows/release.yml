@@ -1,10 +1,12 @@
 name: Release
 
 # A release starts from a tag the maintainer pushes: the version's CHANGELOG
-# section and the bumped package.json are already in that commit. The job runs
-# the gates again, writes the same files npm gets to the `dist` branch so a git
-# install needs no build (D47), publishes the package to npm and opens the
-# GitHub Release with the version's CHANGELOG section.
+# section and the bumped package.json are already in that commit. The job packs
+# the package once and publishes it as `<version>-dev.<run number>` under npm's
+# `dev` tag so the version can be tried before the gates finish, runs the gates,
+# and only then publishes `<version>` as `latest` from the same tarball, writes
+# the same files npm gets to the `dist` branch so a git install needs no build
+# (D47), and opens the GitHub Release with the version's CHANGELOG section.
 
 on:
   push:
@@ -46,6 +48,27 @@ jobs:
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
       - run: npm ci
+      # A rerun carries on from where the last attempt stopped: npm refuses a
+      # version twice, the dev build of this tag is not published again, and a
+      # tag already on the dist head means the branch went out.
+      - name: Read what is already out
+        id: state
+        run: node scripts/release-state.mjs >> "$GITHUB_OUTPUT"
+      # One build, two tarballs: the release the promotion publishes, and the
+      # same files with the dev version in them that the `dev` tag gets now.
+      - name: Pack the release and its dev version
+        id: pack
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          paths="$(node scripts/release-pack.mjs --out .debug/release --dev "${VERSION}-dev.${GITHUB_RUN_NUMBER}")"
+          echo "release=$(printf '%s\n' "${paths}" | sed -n 1p)" >> "$GITHUB_OUTPUT"
+          echo "dev=$(printf '%s\n' "${paths}" | sed -n 2p)" >> "$GITHUB_OUTPUT"
+      # Out before the gates, so the version can be installed while they run; a
+      # gate that fails leaves the dev build where it is and promotes nothing.
+      - name: Publish the dev version
+        if: steps.state.outputs.published != 'true' && steps.state.outputs.dev == ''
+        run: npm publish "${{ steps.pack.outputs.dev }}" --access public --provenance --tag dev
       - run: npm run lint
       - run: npm run features:check
       - run: npm run docs:check
@@ -53,33 +76,22 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run smoke
-      # A rerun carries on from where the last run stopped: npm refuses a version
-      # twice, and a tag already on the dist head means the branch went out.
-      - name: Read what is already out
-        id: state
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          if npm view "dsh-claude-style@${VERSION}" version > /dev/null 2>&1; then published=true; else published=false; fi
-          tagged="$(git rev-parse "refs/tags/v${VERSION}^{commit}")"
-          dist="$(git rev-parse --verify --quiet refs/remotes/origin/dist || true)"
-          if [ "${tagged}" = "${dist}" ]; then packaged=true; else packaged=false; fi
-          echo "published=${published}" >> "$GITHUB_OUTPUT"
-          echo "packaged=${packaged}" >> "$GITHUB_OUTPUT"
-          echo "npm has ${VERSION}: ${published}; the tag is on the dist head: ${packaged}"
-      # The same build npm gets: `npm pack` builds through prepublishOnly.
+      # The dist branch carries the npm package's own contents, and the step
+      # builds first: `lib/` is not in version control, so a fresh checkout has
+      # none and packing alone would ship a `main` that is not in the package.
       - name: Write the dist branch and move the tag
         if: steps.state.outputs.packaged != 'true'
         run: node scripts/dist-branch.mjs --push
       - name: Publish to npm
         if: steps.state.outputs.published != 'true'
         env:
+          RELEASE: ${{ steps.pack.outputs.release }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           # npm refuses a prerelease without a dist-tag; it must not become latest.
           case "${VERSION}" in
-            *-*) npm publish --access public --provenance --tag next ;;
-            *) npm publish --access public --provenance ;;
+            *-*) npm publish "${RELEASE}" --access public --provenance --tag next ;;
+            *) npm publish "${RELEASE}" --access public --provenance ;;
           esac
       - name: Create or update the GitHub Release
         env:

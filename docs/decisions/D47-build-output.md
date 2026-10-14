@@ -3,7 +3,7 @@
 - **状态**：部分实施
 - **分组**：构建与源码
 - **关联**：D36、D66
-- **现状**：`lib/` 已加入 `.gitignore` 并从版本管理里移出；`scripts/dist-branch.mjs` 自己跑一遍构建、把 npm 会发布的同一份文件写成一个孤立的 `dist` 提交，并把版本标签移到该提交上（两条安装路径同一份产物），`.github/workflows/release.yml` 在标签推送后核对标签与版本、跑门、推送该分支、经可信发布上 npm 并建 GitHub Release；整条发布路径已在临时克隆里走过一遍（汇编变更记录、改版本、打标签、写分支、核对产物与标签指向），首次推送与 README 的 GitHub 安装行改指 `#dist` 待这次发版进行
+- **现状**：`lib/` 已加入 `.gitignore` 并从版本管理里移出；`scripts/dist-branch.mjs` 自己跑一遍构建、把 npm 会发布的同一份文件写成一个孤立的 `dist` 提交，并把版本标签移到该提交上（两条安装路径同一份产物），`.github/workflows/release.yml` 在标签推送后核对标签与版本、跑门、推送该分支、经可信发布上 npm 并建 GitHub Release；整条发布路径已在临时克隆里走过一遍（汇编变更记录、改版本、打标签、写分支、核对产物与标签指向），首次推送与 README 的 GitHub 安装行改指 `#dist` 待这次发版进行；两段发布尚未在真实标签上跑过，`scripts/release-pack.mjs` 已在本地检出的副本里跑出两份 tarball（文件清单一致，只差版本字段），`scripts/release-state.mjs` 已对着真实注册表与本地标签跑通
 
 ## 决定
 
@@ -12,6 +12,7 @@
 - 同一次发版，持续集成把与 npm 包内容相同的文件提交到 `dist` 分支，并把版本标签移到那个提交上（发布工作流由标签推送触发，标签先落在发版提交上）：按标签安装与按 npm 安装拿到的是同一份已构建的包。`dist` 分支只由持续集成写入。
 - 写 `dist` 的那一步自己先构建：`lib/` 不在版本管理里，干净检出没有它，只执行打包会写出一个 `main` 指向缺失文件的包。
 - 发布工作流先核对标签与 `package.json` 的版本一致，不一致即失败。重跑时从上次停下的地方接着走：npm 上已有这个版本就不再发布，标签已在 `dist` 的头上就不再写分支。预发布版以 `next` 标签发布，不占 `latest`。
+- 发布分两段落地：标签推上后，工作流先用同一次打包的结果发一个 `dev` 版本——`<版本>-dev.<运行序号>`，由 `scripts/release-pack.mjs` 从 tarball 里改写版本字段再打包，npm 发布 tarball 时不跑任何生命周期脚本，因此它与正式包只差版本字段——闸门全部通过之后才发 `<版本>` 并把它设为 `latest`。`dev` 标签随每一版的第一次发布前移，已经发出的 dev 版本不撤回；这一版已经有 dev 版本在 npm 上时，重跑不再发第二个。
 - 上 npm 走可信发布（trusted publishing）：工作流用 OIDC 换一次性的发布凭据并附 provenance，仓库不存 npm 令牌。npm 上该包的可信发布者登记本仓库与 `release.yml`。
 - 发布后以版本的 CHANGELOG 段为正文建或更新 GitHub Release（`scripts/changelog.mjs --notes <版本>`）。
 

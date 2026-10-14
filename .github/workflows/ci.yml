@@ -1,13 +1,19 @@
 name: CI
 
+# Every branch push and every pull request runs the whole matrix, which is where
+# a change is judged (D66): the local machine runs only the narrowest set that
+# answers the question in hand. `branches` keeps tag pushes out — the release
+# workflow owns those.
 on:
   push:
-    branches: [master]
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 
+# One group per branch, so a push and its pull request share a run: the later
+# event cancels the earlier one instead of paying for the matrix twice.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -31,6 +37,7 @@ jobs:
       - run: npm run features:check
       - run: npm run docs:check
       - run: npm run changelog:check
+      - run: npm run agents:check
       - run: npm run build
       - run: npm test
       - run: npm run smoke

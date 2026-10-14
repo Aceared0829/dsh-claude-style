@@ -16,11 +16,11 @@ export default {
   description: {
     zh: {
       title: '封号彩蛋',
-      text: '点账号弹层顶上的账号行，会打开一张仿 Claude「账号已暂停」的整页彩蛋，整页从中心略小处放大淡入（约 0.25 秒）；页上的每个按钮和 Esc 都把它关掉，关掉时它缩回去淡出（约 0.12 秒），什么都不会真的发生。设置页「侧栏」里选它的语言或关掉它，关掉后账号行只显示名字。',
+      text: '点账号弹层顶上的账号行，会打开一张仿 Claude「账号已暂停」的整页彩蛋，整页从中心略小处放大淡入；页上的每个按钮和 Esc 都把它关掉，关掉时它缩回去淡出，什么都不会真的发生。设置页「侧栏」里选它的语言或关掉它，关掉后账号行只显示名字。',
     },
     en: {
       title: 'Account-hold easter egg',
-      text: 'The account row at the top of the account popover opens a full-page replica of Claude\'s account-hold page, growing out of the centre as it fades in (about 0.25 s). Every control on it, and Esc, closes it — it shrinks back as it fades (about 0.12 s) — and nothing it names actually happens. The Sidebar tab picks its language or turns it off, leaving the account row a plain name.',
+      text: 'The account row at the top of the account popover opens a full-page replica of Claude\'s account-hold page, growing out of the centre as it fades in. Every control on it, and Esc, closes it — it shrinks back as it fades — and nothing it names actually happens. The Sidebar tab picks its language or turns it off, leaving the account row a plain name.',
     },
   },
 } satisfies FeatureManifest

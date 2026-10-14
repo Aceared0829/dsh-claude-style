@@ -80,47 +80,55 @@ Before writing to disk, `scripts/shared/privacy.cjs` replaces workspace names, s
 
 Target layout: D46. Today:
 
-- `packages/client/src/core/` host access, preferences, model copy, i18n, the scheduler, the observation bus and the frame pipeline (D40), with their unit tests beside them (`*.test.ts`); `packages/client/src/shared/` parts several features use (TypeScript beside CSS); `packages/client/src/theme/` the global look no single feature owns and the design tokens (`tokens.json`, its shape in `tokens.schema.json`); `packages/client/src/features/<feature>/` one feature's installer, helpers and stylesheets, the main file named after the feature.
-- `packages/` the npm workspaces (D46): `packages/contracts` holds what both halves share — the host contract (`src/dom.ts` the selectors and attributes the skin reads, `src/table.ts` the same list with what each means and who reads it, `src/timing.ts` the timing assumptions, `src/services.ts` the service and value shapes, `src/usage.ts` the payloads the two halves exchange) and the preference defaults and route paths (`src/prefs.ts`, `src/routes.ts`). Import it by package name (`@dsh-claude-style/contracts/services`); the type check and the bundler both resolve it through `tsconfig.json`'s `paths`, the build loads those tables by repository path, and the host build inlines its values so the published package carries no contracts module.
-- `packages/client/src/constants.ts` holds the constants the build reads out of the browser half; `packages/client/data/model-descriptions.json` the model copy and `brands` bindings, its shape declared in `packages/client/data/model-descriptions.schema.json`; `packages/assets/src/` every image, from brand marks to mascot sheets (`packages/assets/assets.mjs` decides inline or route, D38) beside `fonts/` the faces the package ships with their licences and authors file, which `buildFonts` copies into `lib/fonts/` and the repository-only Anthropic faces live one directory deeper under `anthropic/`.
-- `packages/client/src/generated.d.ts` types the module the build generates; `packages/client/src/globals.d.ts` the DOM additions and the element properties the skin sets; `tsconfig.json` the type check.
-- `packages/host/` the handwritten host half (private routes, settings `Config`, HDSL, search, usage); the build writes it into `lib/host/`, which the package's `main` and `exports` point at.
-- `lib/` build output only, never edited by hand and never committed (D47).
-- `locale/<language>.json` plugin metadata; `package.json`'s `exports` must cover them with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`.
-- `skin.json` the skin manifest; `cordis.patch.yml` inserts the skin into the web roster.
-- `scripts/` the build and the documents' tools (`build.mjs` the pipeline, `css.mjs` the stylesheets, minified at the end by `scripts/shared/minify-css.cjs`, `feature-sheets.mjs` the feature stylesheets written from constants, `build-checks.mjs` the refusals beyond them, `source-tree.mjs` the browser half read on its TypeScript syntax tree for those refusals, `model-copy.mjs` the copy document's check, `peakrate-catalog.mjs` the shipped rate catalog's check, `chunks.mjs` the deferred features' chunks, `virtual-modules.mjs` the three generated modules, `build-cache.mjs` the Deepy vectors and brotli payloads kept in `.debug/build-cache/` under the hash of their inputs, `dev.mjs` the watcher behind `npm run dev`, `lint.mjs`, `features.mjs`, `changelog.mjs`, `decisions-index.mjs`, `decision-number.mjs`, `dist-branch.mjs`, and the networked scripts run by hand: `fetch-lobe-combines.py`, `fetch-peakrate-catalog.mjs`, `draw-crab.py`); `scripts/shared/privacy.cjs` the replacements and the sweep before a screenshot reaches disk, beside the build-side helpers the tools load (`read-manifests.cjs`, `ts-module.cjs`, `file-walk.mjs`, `motion-tokens.mjs`, `minify-css.cjs`); `packages/assets/` the images and the generator that decides how each is delivered (`assets.mjs`); `packages/testing/` every runnable verification tool (D66), all of them driving the machine's own Chrome through Playwright (`browser.cjs` the browser lookup and the page opening): `smoke.cjs` the stand-in tier's runner with its `smoke/` parts, `dsh-web.cjs` the scratch host, `mock-llm.cjs` the scripted model service, `e2e.cjs` the end-to-end lane's runner with `scenarios.cjs` and the scenario modules beside it, and the live tools `probe.cjs`, `probe-timing.cjs` and `shoot.cjs`; `docs/` the decisions (`docs/decisions/`), the style guide, the feature and settings documents (`docs/FEATURES.md`, `docs/SETTINGS.md` and their `.en` twins), the README screenshots (`docs/screenshots/`), the showcase GIFs (`docs/gifs/`) and the change records (`docs/changes/`).
+The packages are the tree the repository holds: `packages/client` the browser half, `packages/host` the host half, `packages/contracts` what both halves share, `packages/assets` the images and the font faces, and `packages/testing` the verification tools, with `scripts/` the build and the documents' tools beside them. Where a file belongs, and why, is D46; read it before moving one. `lib/` is build output (D47), never edited by hand and never committed. `locale/<language>.json` is plugin metadata, and `package.json`'s `exports` must cover it with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`.
 
 The source is TypeScript ES modules under `strict` (D36). A module nothing imports fails the build; a feature is a directory under `packages/client/src/features/` whose main module exports `install(ctx, ui)` beside a `<main>.manifest.ts` (D42) — its order, switch, stylesheets with their ranks, settings switch row, smoke cases, description and the other features' handles it `reads`. A feature module types `ui` as `FeatureUi<typeof manifest>` (the manifest imported as a type): it sees its own handle and the ones it `reads`, a new handle goes into `Handles` in `core/scheduler.ts`, and lint refuses a feature module importing the whole `Ui`. A stylesheet that belongs to no feature goes into `THEME_SHEETS` in `scripts/build.mjs`. A manifest's `load: 'deferred'` takes the feature's own modules out of `lib/client.js` into a chunk the page fetches once it is taken (D39); only a feature the first frames can do without is deferred. React and the host packages are imported by name and stay external; build-time data (stylesheet, asset addresses, lockups, build id) is imported from `virtual:dsh-claude-style/generated`. A host value without a type yet is `HostValue` (D44); a non-null assertion `!` only marks a value the call order guarantees.
 
 ## Commands
 
+Each script states its own purpose at the top of the script; the table below is written by `npm run agents`, and the runs that take flags or drive a live page follow it.
+
+<!-- commands:start — written by npm run agents, not by hand -->
+
+| Command | What it does |
+|---|---|
+| `npm install` | the dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright and the React types |
+| `npm run build` | bundle `lib/client.js` from the TypeScript modules and stylesheets in `packages/client/src/` |
+| `npm run dev` | rebuild on every change to what the build reads |
+| `npm run changelog` | assemble CHANGELOG.md's [Unreleased] section from docs/changes/ |
+| `npm run changelog:check` | fail when the committed `[Unreleased]` section differs from `docs/changes/`; the cloud job runs this |
+| `npm run docs:index` | write docs/decisions/README.md from the decision files themselves |
+| `npm run docs:check` | fail when the committed decisions index differs from the decision files; the cloud job runs this |
+| `npm run docs:numbers` | fail when a document states a number that no token or constant holds (D48) |
+| `npm run agents` | write this table into AGENTS.md from `package.json` and each script's own header |
+| `npm run agents:check` | fail when AGENTS.md's command table differs from `package.json`; the cloud job runs this |
+| `npm run decision:number` | assign a draft decision its real number |
+| `npm run lint` | the rules that need no build |
+| `npm run features` | write the feature docs' list from the feature manifests |
+| `npm run features:check` | fail when the committed feature list differs from the manifests; the cloud job runs this |
+| `npm run probe` | headless UI regression probe for the composer invariants |
+| `npm run smoke` | zero-dependency smoke test of the BUILT plugin (`lib/`); no running DSH instance is needed |
+| `npm test` | the unit lane on its own, as the cloud job runs it: Vitest in browser mode on the local Chrome or Edge |
+| `npm run verify` | the one entry a test run goes through |
+
+<!-- commands:end -->
+
 ```sh
-npm install                                  # dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright, React types
-npm run build                                # type-checks src/, bundles it into lib/client.js and the deferred features' chunks under lib/assets/ with their source maps, runs the build checks, prints the build id
-npm run dev                                  # rebuild on every change to packages/client, assets, host, contracts and scripts/, each run with DSH_CLAUDE_STYLE_DEBUG=1
-npm run lint                                 # the rules that need no build: the stop line, Markdown links, decision citations, the repository paths prose names (D48), feature modules' ui (D42) and copied code (jscpd)
-npx jscpd                                    # list every copied stretch the lint rule reads, as .jscpd.json scans them; any one fails the lint
-npm run features                             # write the feature docs' list from the feature manifests (D48)
-npm run features:check                       # fail when that list differs from the manifests; CI runs this
-npm run changelog                            # write the CHANGELOG's [Unreleased] section from docs/changes/ (D48)
-npm run changelog:check                      # fail when that section differs from docs/changes/; CI runs this
-npm run docs:index                           # write docs/decisions/README.md from the decision files (D48)
-npm run docs:check                           # fail when that index differs from the files; CI runs this
-npm run decision:number                      # assign a draft decision (placeholder number, D48) its real number before merging
-npm test                                     # unit tests: Vitest in browser mode on the local Chrome/Edge
-npm run smoke                                # full run: every browser case and check, plus the host half's route checks
-npm run smoke -- --quick --feature <dir>     # iteration run: quick tier, cases covering one packages/client/src/features/ directory
-npm run smoke -- --case <name>[,<name>…]     # named browser cases
-npm run smoke -- --feature <dir>[,<dir>…]    # cases covering those directories (the `cases` of their manifests)
+npm run verify -- --quick --feature <dir>       # the smoke's quick tier on one packages/client/src/features/ directory
+npm run verify -- --case <name>[,<name>…]       # named browser cases
+npm run verify -- --scenario <name>[,<name>…]   # named end-to-end scenarios
+npm run verify -- --no-e2e                      # the build, the unit tests and the smoke, without the end-to-end lane
+npx jscpd                                       # list every copied stretch the lint rule reads, as .jscpd.json scans them
 node packages/testing/probe.cjs --token <launch-token>          # composer invariants against a running dsh web
 node packages/testing/probe-timing.cjs --token <launch-token>   # startup, catalog readiness, open latency, heap
 node packages/testing/shoot.cjs --token <launch-token> --brand <claude|deepseek> --scene <home|conversation>   # re-shoot one README screenshot pair
 node packages/testing/dsh-web.cjs                       # boot a scratch dsh web (`$DSH_HOME` under .debug/) with this checkout linked in, and print its URL
-node packages/testing/e2e.cjs                           # the end-to-end lane: scratch host plus a scripted model service, asserting on the real page
 node packages/testing/e2e.cjs --scenario <name>[,<name>…] [--headed]   # one scenario; the shots scenario writes its captures to the trace directory
-DSH_IMPORTANCE_REFERENCE=<old.css> node packages/testing/e2e.cjs --scenario importance   # also compare every page state with an earlier stylesheet, element by element (importance-sheet.css of an earlier run)
+DSH_IMPORTANCE_REFERENCE=<old.css> node packages/testing/e2e.cjs --scenario importance   # compare every page state with an earlier stylesheet, element by element
 node packages/testing/mock-llm.cjs                      # the scripted model service on its own, printing the base URL to configure a route with
 ```
+
+Every test run goes through `npm run verify` (D66). It starts the gates in order, holds one run at a time per working tree so a second session waits instead of starting a second browser, and answers a request whose tree and gates are unchanged from the verdict it recorded, naming the run that produced it; `--force` re-runs. The gates run in the cloud on every branch push and every pull request (D66), so a local run is the narrowest set that answers the question in hand, started in the background: the verdict names the tree it read, and editing that tree makes the verdict stale. `npm test` and `npm run smoke` are the lanes it starts and the ones CI's own jobs run.
 
 The quick tier leaves out the motion cases; a feature whose cases all watch motion needs the run without `--quick`. probe, probe-timing and shoot need a running `dsh web` (default `http://127.0.0.1:3080`, `--url` for another; the token is the `/?token=…` in the GUI URL or `DSH_WEB_TOKEN`). All of them need a local Chrome/Edge (`CHROME_PATH` to choose one). `packages/testing/e2e.cjs` boots its own host and needs no running instance; its scenarios, their scripts and their bounds are in D66.
 
@@ -135,20 +143,20 @@ The quick tier leaves out the motion cases; a feature whose cases all watch moti
 
 1. Change `packages/client/src/` or `packages/host/src/`; never touch `lib/`.
 2. `npm run build`, or keep `npm run dev` running while iterating.
-3. While iterating, `npm test` for the logic with unit tests and `npm run smoke -- --quick --feature <dir>` (without `--quick` for motion features); with a `dsh web` running, also `probe.cjs`; check the live page, including after a hot reload. Timing and ordering against the real host is verified on a real instance — the smoke stand-in does not reproduce it.
+3. While iterating, start a run only when the change needs a verdict before the push, in the background, and take the narrowest scope that covers it: `--quick --feature <dir>` (without `--quick` for motion features), `--case`, `--scenario` or `--no-e2e`. Compare the tree hash the run prints with the tree in hand. With a `dsh web` running, also run `probe.cjs`; check the live page, including after a hot reload. Timing and ordering against the real host is verified on a real instance — the smoke stand-in does not reproduce it.
 4. Visual changes are checked by the user in light and dark; re-shoot stale README screenshots with `shoot.cjs`; `packages/testing/e2e.cjs --scenario shots` writes both palettes to the trace directory for that review, with the privacy sweep already applied.
 5. Sync documents: the bilingual READMEs and the documents beside them change together, and the feature list in `docs/FEATURES.md` and `docs/FEATURES.en.md` comes from the manifests — edit a feature's `description` and run `npm run features`; a behavior change adds one file under `docs/changes/` (D48) and `npm run changelog` writes the `[Unreleased]` section from those files — never edit that section by hand; a changed decision is rewritten in `docs/decisions/` following D48's template, and the index is regenerated with `npm run docs:index`.
-6. Done means the build, the unit tests, the relevant smoke and the end-to-end scenarios covering the change pass, and the behavior is verified; the full smoke is the release gate, and the lane runs on every change to the chat area or to timing. If a gate fails, keep fixing.
+6. Done means the pushed branch's cloud run passes — the build checks, the unit tests, the smoke on Linux and Windows and the end-to-end lane — and the behavior is verified. The full smoke is the release gate; a local run before the push is for the changes that must be judged earlier, and it belongs in the background.
 
 ## Git and Release
 
 - Conventional commit prefixes (`fix(scope):`, `refactor(scope):`, `docs(scope):`, `chore(release):` …); commit titles and bodies in Chinese; one logical change per commit, no WIP, no unrelated changes; moves are committed apart from logic changes.
 - Another session may be editing the same working tree: commit only your own changes — whole files only when every change in them is yours, otherwise your hunks alone. Before committing, export the index (`git checkout-index -a --prefix=.debug/<dir>/`) and run the build and the relevant smoke there.
 - `lib/` is build output and never committed (D47): it is gitignored on `master`, built by the gates, and shipped by npm and by the `dist` branch.
-- Release: `node scripts/changelog.mjs --release <version>` (the pending changes become that version's section and `docs/changes/` is cleared) → `npm version patch|minor` → commit the two and push the tag. The Release workflow then checks the tag names `package.json`'s version, runs the gates, writes `dist` with the very files npm gets and moves the version tag onto that packaged commit, publishes to npm through trusted publishing (no npm token is stored; the package's trusted publisher on npmjs.com names this repository and `release.yml`), and opens the GitHub Release with the version's CHANGELOG section (`node scripts/changelog.mjs --notes <version>`); a rerun skips what is already out. `scripts/dist-branch.mjs --push` does the same step by hand if needed (it builds first, since `lib/` is not in version control).
+- Release: `node scripts/changelog.mjs --release <version>` (the pending changes become that version's section and `docs/changes/` is cleared) → `npm version patch|minor` → commit the two and push the tag. The local machine runs no gate and no `npm publish`: the package's `prepublishOnly` would only build what the workflow builds again. The Release workflow packs the package once, publishes it as `<version>-dev.<run number>` under npm's `dev` tag within minutes of the tag, runs the gates, and only then publishes `<version>` as `latest` from the same tarball, writes `dist` with the very files npm gets and moves the version tag onto that packaged commit, and opens the GitHub Release with the version's CHANGELOG section (`node scripts/changelog.mjs --notes <version>`); a rerun skips what is already out and the dev build this tag already published. `scripts/dist-branch.mjs --push` does the same step by hand if needed (it builds first, since `lib/` is not in version control).
 - CHANGELOG format (the `[Unreleased]` section and the release sections are written by `scripts/changelog.mjs`; the files under `docs/changes/` are what is authored):
   - Version sections `## [x.y.z] - YYYY-MM-DD`, newest first; work in progress under `## [Unreleased]`.
   - Each section bilingual on one page: a `[中文](#cn-x.y.z) | [English](#en-x.y.z)` line, then `<h3 id="cn-x.y.z">新增功能</h3>` and `<h3 id="en-x.y.z">New Features</h3>` anchors carrying the version; further groups use plain `###`.
   - Groups, fixed in name and order: 新增功能 / 体验优化 / 问题修复 / 安全 / 移除 / 其他变更 and New Features / Improvements / Bug Fixes / Security / Removals / Chores; empty groups are omitted.
   - Footer: `**Full Changelog**: [vPrevious...vCurrent](compare link)`.
-  - One entry per verifiable behavior or contract: the symptom the user saw, then the behavior after the change. Root causes go in the commit message. External contract changes (settings, private routes, host version requirements) are called out; performance changes carry locally measured numbers; user-facing changes stay in sync with the READMEs. No internal numbering, no boilerplate, no format notes inside version sections.
+  - One entry per verifiable behavior or contract, in one sentence: what the reader gets after the change, not the symptom before it and not the root cause — both belong in the commit message. External contract changes (settings, private routes, host version requirements) are called out; performance changes carry locally measured numbers; user-facing changes stay in sync with the READMEs. No internal numbering, no boilerplate, no format notes inside version sections.

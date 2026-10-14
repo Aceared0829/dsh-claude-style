@@ -19,9 +19,9 @@
  *
  * Usage: node scripts/dist-branch.mjs [--push]
  */
-import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { runner } from './shared/run.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DEBUG = path.join(ROOT, '.debug', 'dist')
@@ -29,13 +29,8 @@ const PACK = path.join(DEBUG, 'pack')
 const TREE = path.join(DEBUG, 'tree')
 const INDEX = path.join(DEBUG, 'index')
 
-/** Run one command to completion and return its stdout. */
-function run(command, args, options = {}) {
-  // Through a shell, so npm resolves to npm.cmd on Windows; arguments are quoted here.
-  const quote = (value) => /[\s"]/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value
-  const line = [command, ...args.map(quote)].join(' ')
-  return execFileSync(line, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], shell: true, ...options }).trim()
-}
+/** Every command starts in the repository; the git calls below run in the scratch tree. */
+const run = runner(ROOT)
 
 /** Run one git command against the scratch index and the packed tree. */
 function git(args) {

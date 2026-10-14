@@ -7,15 +7,17 @@
 ## 决定
 
 - 层叠顺序由样式表的排位声明：主题样式表在 `scripts/build.mjs` 的 `THEME_SHEETS`，功能样式表在各自清单里（D42），两张样式表同一排位即构建失败。规则之间的先后由排位与选择器权重决定。不使用层叠层。
-- `!important` 只留给真实页面上需要它的地方：压过宿主的 `!important`、内联样式或另一条皮肤规则。端到端通道的 `importance` 场景（`packages/testing/importance.cjs`，D66）在临时宿主走过的页面状态里逐条去掉它、比较匹配元素的计算值，计算值不变的判为多余，场景即失败；没出现过的界面上的那些保留，等审计能走到时再判。同一次走查还回答另一半问题：每个状态里，凡是没有被任何状态匹配到元素的选择器都拿到页面上问一遍，走遍所有状态都没匹配到元素的选择器即失败。走查到不了的那些逐条登记在 `packages/testing/importance-unreachable.json`，每条写明缘由（桌面端窗口独有、宿主的壁纸、脚本回答里没有的 markdown 材料、走查打不开的界面）；登记表只许变短，新出现的死选择器失败，登记过又开始匹配到元素的同样失败。规则处在条件不成立的 `@media` / `@supports` 里时，去掉重要性本来就改不动计算值，审计按页面当刻的 `matchMedia` / `CSS.supports` 判条件，条件不成立就不审这条规则。清掉一批多余的重要性时，用 `DSH_IMPORTANCE_REFERENCE=<压缩前的样式表>` 把两份样式表放在同一页上逐元素比对，作为「画出的样子不变」的证据。
+- `!important` 只留给真实页面需要它的地方：压过宿主的 `!important`、内联样式或另一条皮肤规则。没出现过的界面上的那些保留，等审计能走到时再判定。清掉多余的重要性时，用 `DSH_IMPORTANCE_REFERENCE` 指定压缩前的样式表，两份样式表在同一页上逐元素比对，作为「画出的样子不变」的证据。
+- 端到端通道的 `importance` 场景在临时宿主的每个页面状态里逐条去掉它，匹配元素的计算值不变即判定为多余。
+- 条件不成立的 `@media` / `@supports` 里去掉重要性本来就改不动计算值，审计按页面当刻的 `matchMedia` / `CSS.supports` 判定条件，条件不成立就不审本条规则。任何页面状态都匹配不到元素的选择器同样判为失败，审计覆盖不到的逐条登记在 `packages/testing/importance-unreachable.json` 并写明缘由，登记表只许变短。
 - 样式表是普通 CSS，没有构建期占位：属性名与属性值写成字面值，品牌标志的地址读令牌样式表生成的 `--dsh-claude-image-<名字>`（地址由资源清单决定，D38）。构建把每张样式表交给 PostCSS 解析，选择器用 postcss-selector-parser 解析，规则在语法树上检查（`scripts/css.mjs`）：
-  - 作用域：每个选择器都含 `body[data-dsh-claude-style]`，且不在 `:not()` 里；画 `<html>` 的规则经 `html:has(body[data-dsh-claude-style]…)` 进入作用域。清单里标了 `scope: 'surface'` 的样式表换成 `body[data-dsh-claude-surface]`，不带输入框门控，构建把它们拼成另一张表（`SURFACE_STYLESHEET`）单独发出：本主题让路给 ds-bot 时界面切换还要靠它画出来（D49）。
+  - 作用域：每个选择器都含 `body[data-dsh-claude-style]`，且不在 `:not()` 里；画 `<html>` 的规则经 `html:has(body[data-dsh-claude-style]…)` 进入作用域。清单里标了 `scope: 'surface'` 的样式表换成 `body[data-dsh-claude-surface]`、不带输入框门控，拼成另一张表单独发出：本主题让路给 ds-bot 时界面还要靠它画出来（D49）。
   - `:has()` 只在所在选择器的最后一段，`:is()`、`:not()` 里的每一层都一样（D9）。
   - 令牌门：写 `--dsw-` 颜色令牌的规则每个选择器都在作用域那一段挂配色门，写 `--dsw-font-*` 的挂字体门；Claude 一档定义的每个私有令牌在宿主一档都有别名（D30）。
   - 输入框门控：带门控的样式表在 `/* @composer-gate */` 注释以下的每条规则，门控属性盖到作用域那一段上；缺少标记或标记以下没有规则即构建失败（D4）。
   - 皮肤属性：选择器读到的每个 `data-dsh-*` 属性都要有代码写入。构建用 TypeScript 自己的程序读浏览器半边的语法树（`scripts/source-tree.mjs`）：`setAttribute`／`toggleAttribute` 的属性名与创建 React 元素时的属性键按类型取字面值，经常量、联合类型与转手它的辅助函数的参数一路追到调用处；追不到字面值的写入即构建失败，按名字拼出的属性因此要给出字面量类型。代码里改了名、不再写入、或样式表拼错，构建即失败；只出现在注释里或只被读取的名字不算写入。
 - 一张表每项一条规则、而表的长度代码也要读的样式（流式文字逐步淡入的 `::highlight()` 规则、首页热度图的档位）由构建生成：取值写在 `packages/client/src/constants.ts`，`scripts/feature-sheets.mjs` 按它写规则，清单里写成 `{ generated, rank }`，生成的样式表与手写的走同样的检查。
-- 以上检查读源样式表；拼好的整张样式表随后经 esbuild 的 CSS 压缩（`scripts/shared/minify-css.cjs`）进产物，注释与排版只留在源文件里，它们约占整张样式表的四成。esbuild 对样式表报出警告即构建失败。`importance` 场景按规则的文本认出第三方规则，读 `third-party.css` 时走同一个压缩，两边的写法才对得上。
+- 以上检查读源样式表；拼好的整张样式表随后经 esbuild 的 CSS 压缩（`scripts/shared/minify-css.cjs`）进产物，注释只留在源文件里，压缩对样式表报出警告即构建失败。`importance` 场景按规则的文本认出第三方规则，读第三方样式表时走同一个压缩，两边的写法才对得上。
 - 设计令牌写在 `packages/client/src/theme/tokens.json`，结构由 `packages/client/src/theme/tokens.schema.json` 声明、构建用 Ajv 校验：字体令牌的 Claude 与宿主两档、推理强度顶档的亮暗两色、颜色令牌在 Claude 品牌亮暗两套里的值、DeepSeek 品牌与之不同的值、宿主一档的别名，以及令牌的用途与取值缘由。构建由它生成令牌样式表（排位最前），并把 `docs/STYLE.md` 里标记之间的令牌表重写一遍；两处都不手改。
 
 ## 理由
