@@ -50,6 +50,13 @@
         return greetSpan.textContent
       }
       r.greeting = { low: await arrive(0) }
+      // The classic hero's permission control is the segment group; the studio
+      // hero's is the conversation's trigger
+      // (packages/client/src/features/permissions/permissions.ts).
+      var heroModes = document.querySelector('[data-composer-card] [class*="_modes"]')
+      r.classicSegments = heroModes === null ? null
+        : Array.prototype.map.call(heroModes.querySelectorAll('.dsh-claude-segments > .dsh-claude-segment'), function (item) { return item.textContent })
+      r.classicPermTrigger = heroModes !== null && heroModes.querySelector('.dsh-claude-perm-btn') !== null
       // The crab stands on the classic home page's card too, as Deepy does.
       r.classicCrab = document.querySelector('[data-composer-card] > .dsh-claude-crab') !== null
       document.body.appendChild(document.createElement('i'))

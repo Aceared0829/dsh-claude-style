@@ -34,8 +34,10 @@
       current: 'workspace-write',
     },
     // The language case runs the full-access tier, so its trigger carries a
-    // name of its own to repaint when the interface language switches.
-    'permissions-locale': { extras: [], current: 'danger-full-access' },
+    // name of its own to repaint when the interface language switches, and it
+    // offers the built-in Auto review tier, whose host dictionary entry carries
+    // no translation (its zh name is the English one).
+    'permissions-locale': { extras: [{ value: 'auto', name: 'Auto review' }], current: 'danger-full-access' },
   }
   var permissionFixture = PERMISSION_FIXTURES[CASE]
   var catalogExtras = permissionFixture === undefined ? [{ value: 'auto', name: 'Auto review' }] : permissionFixture.extras

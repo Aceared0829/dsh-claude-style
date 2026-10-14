@@ -67,6 +67,9 @@ module.exports = {
         greeting.held === greeting.low && typeof greeting.high === 'string' && greeting.high !== 'Host greeting' &&
         greeting.high !== greeting.low,
       JSON.stringify(greeting))
+    check('the classic hero draws the permission segments in the card\'s mode strip',
+      JSON.stringify(r.classicSegments) === JSON.stringify(['Read', 'Edit', 'Auto', 'Yolo']) && r.classicPermTrigger === false,
+      JSON.stringify({ segments: r.classicSegments, trigger: r.classicPermTrigger }))
     check('the classic hero page carries the crab too', r.classicCrab === true, JSON.stringify(r.classicCrab))
     commonChecks(r)
   },
@@ -416,6 +419,10 @@ module.exports = {
     check('the studio hero mark is on the document on the hero page and off it elsewhere, and the studio rules reach the stack',
       r.homeHero !== undefined && r.homeHero.onHero === true && r.homeHero.offHero === false && r.homeHero.stackMaxWidth === '720px',
       JSON.stringify(r.homeHero))
+    check('the studio hero draws the conversation\'s permission trigger in the card\'s mode strip, with no segment group',
+      r.heroPerm !== undefined && r.heroPerm.trigger === true && r.heroPerm.segments === 0 &&
+        r.heroPerm.label === 'Accept edits' && r.heroPerm.disabled === false,
+      JSON.stringify(r.heroPerm))
     check('the usage panel draws under the hero stack only, so sending a message never shows it full width',
       r.panelDisplay !== undefined && r.panelDisplay.hero === 'flex' && r.panelDisplay.coldStart === 'flex' &&
         r.panelDisplay.conversation === 'none',
@@ -424,15 +431,10 @@ module.exports = {
     check('the cold start screen carries the usage panel on the skin\'s own seat, given back once the dock arrives',
       cold.seat === true && cold.rendered === true && cold.seatAfterDock === false && cold.unmountedAfterDock === true,
       JSON.stringify(cold))
-    check('the cold start screen shows the permission segments on the new-session default, disabled',
-      Array.isArray(cold.segments) && cold.segments.length === 4 &&
-        cold.segments.every((item) => item.disabled === true && item.active === (item.label === 'Edit')),
-      JSON.stringify(cold.segments))
-    const coldPill = cold.pill
-    check('the permission segments draw their sliding pill under the active segment',
-      !!coldPill && coldPill.attr && coldPill.content !== 'none' && Math.abs(coldPill.x - coldPill.itemX) < 0.5 &&
-        Math.abs(coldPill.w - coldPill.itemW) < 0.5 && coldPill.itemFill === 'rgba(0, 0, 0, 0)',
-      JSON.stringify(coldPill))
+    check('the cold start screen shows the permission trigger on the new-session default, inert, and opens no card',
+      cold.trigger !== null && cold.trigger !== undefined && cold.segments === 0 &&
+        cold.trigger.label === 'Accept edits' && cold.trigger.disabled === true && cold.openCard === 0,
+      JSON.stringify({ segments: cold.segments, trigger: cold.trigger, open: cold.openCard }))
     check('the open model list shows every row and a "Show less" row',
       rows('models-open') === 8 && said('models-open', /^Show less$/) && !said('models-open', /^Show \d+ more$/),
       JSON.stringify({ rows: rows('models-open'), texts: renders['models-open'] && renders['models-open'].texts.slice(-3) }))

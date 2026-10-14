@@ -39,14 +39,15 @@ module.exports = {
     commonChecks(r)
   },
   // The interface language decides the tier names: a Chinese page reads the
-  // host's own dictionary, and a switch repaints the rows and the trigger.
+  // host's own dictionary, a tier that dictionary leaves in English takes the
+  // skin's Chinese name, and a switch repaints the rows and the trigger.
   'permissions-locale'(r) {
     basicChecks(r)
-    check('the Chinese page names the tiers with the host\'s own Chinese words',
-      same(r.permNamesZh, ['仅可查看', '工作区内修改', '完全权限']) && r.permTriggerZh === '完全权限',
+    check('the Chinese page names the tiers with the host\'s own Chinese words, and the untranslated tier with the skin\'s',
+      same(r.permNamesZh, ['仅可查看', '工作区内修改', '自动审查', '完全权限']) && r.permTriggerZh === '完全权限',
       JSON.stringify({ names: r.permNamesZh, trigger: r.permTriggerZh }))
     check('switching the interface language repaints the rows and the trigger under the skin\'s own names',
-      same(r.permNamesEn, ['Read only', 'Accept edits', 'Full access']) && r.permTriggerEn === 'Full access',
+      same(r.permNamesEn, ['Read only', 'Accept edits', 'Auto review', 'Full access']) && r.permTriggerEn === 'Full access',
       JSON.stringify({ names: r.permNamesEn, trigger: r.permTriggerEn }))
     commonChecks(r)
   },

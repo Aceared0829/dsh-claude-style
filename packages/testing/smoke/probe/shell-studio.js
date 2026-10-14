@@ -7,7 +7,6 @@
 (function () {
   var probe = window.__dshSmokeProbe
   var sleep = probe.sleep
-  var pillState = probe.pillState
   var r = probe.report
 
   probe.step(async function () {
@@ -26,6 +25,18 @@
       document.body.appendChild(heroRoot)
       await sleep(200)
       Math.random = random
+      // The studio hero draws its composer in the conversation's form, so the
+      // permission control there is the conversation's trigger and card: the
+      // segment group belongs to the classic hero alone.
+      var heroModes = document.querySelector('[data-composer-card] [class*="_modes"]')
+      var heroTrigger = heroModes === null ? null : heroModes.querySelector('.dsh-claude-perm-btn')
+      var heroLabel = heroTrigger === null ? null : heroTrigger.querySelector('.dsh-claude-perm-label')
+      r.heroPerm = {
+        trigger: heroTrigger !== null,
+        segments: heroModes === null ? -1 : heroModes.querySelectorAll('.dsh-claude-segments').length,
+        label: heroLabel === null ? null : heroLabel.textContent,
+        disabled: heroTrigger === null ? null : heroTrigger.disabled,
+      }
       r.panelRenders = {}
       // The Overview tab twice — all time, and the 7d pill picked — and the
       // Models tab folded and open; each state is keyed by the initial value it
@@ -109,8 +120,9 @@
       }
       // The cold start screen: no session yet, so the host renders no dock
       // under the hero stack and no access button, and the card is the
-      // workspace picker with an empty mode strip. The page's own access button
-      // stands for a session, so it leaves the page for the length of this.
+      // workspace picker with an empty mode strip, which the skin's permission
+      // trigger takes inert. The page's own access button stands for a session,
+      // so it leaves the page for the length of this.
       var access = document.querySelector('button[aria-label^="Access mode"]')
       var accessParent = access.parentElement
       access.remove()
@@ -122,16 +134,15 @@
       await sleep(200)
       var coldSeat = coldStack.querySelector(':scope > .dsh-claude-home-seat')
       var coldRoot = window.__roots.filter(function (root) { return root.element === coldSeat })[0]
+      var coldTrigger = coldStack.querySelector('._x_modes_1 > .dsh-claude-perm-container > .dsh-claude-perm-btn')
+      var coldLabel = coldTrigger === null ? null : coldTrigger.querySelector('.dsh-claude-perm-label')
       r.coldStart = {
         seat: coldSeat !== null,
         rendered: coldRoot !== undefined && coldRoot.renders > 0,
-        segments: Array.prototype.map.call(coldStack.querySelectorAll('._x_modes_1 > .dsh-claude-segments > .dsh-claude-segment'), function (item) {
-          return { label: item.textContent, disabled: item.disabled, active: item.hasAttribute('data-active') }
-        }),
+        segments: coldStack.querySelectorAll('._x_modes_1 > .dsh-claude-segments').length,
+        trigger: coldTrigger === null ? null : { label: coldLabel === null ? null : coldLabel.textContent, disabled: coldTrigger.disabled },
+        openCard: document.querySelectorAll('.dsh-claude-perm-popover[data-open="true"]').length,
       }
-      var coldGroup = coldStack.querySelector('._x_modes_1 > .dsh-claude-segments')
-      var coldActive = coldGroup === null ? null : coldGroup.querySelector('[data-active]')
-      r.coldStart.pill = coldActive === null ? null : pillState(coldGroup, coldActive)
       // The session arrives: the host renders its dock, and the skin's seat
       // gives the panel back.
       var coldDock = document.createElement('div')

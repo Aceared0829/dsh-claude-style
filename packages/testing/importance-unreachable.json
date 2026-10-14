@@ -416,9 +416,11 @@
     },
     {
       "reason": "换字动画的中间帧：走查把页面停住，帧已经落下",
+      "transient": true,
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-status-motion=wash] .dsh-claude-chat-wait .dsh-claude-swap-shimmer",
         "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start",
+        "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-exit",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-copy",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-label"
       ]

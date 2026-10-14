@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 1,
+  "external": false,
+  "zh": "端到端通道多一个长会话场景：先积累八轮对话，再在页内探针下流过一整条回答，逐帧记下帧间隔与长时间任务，并把每帧耗时的 p50、p95、最大值与页面节点数写进断言说明；本机两次运行读到 p50 31.5 毫秒、p95 156 至 187 毫秒、最大 156 至 218 毫秒、长时间任务合计 289 至 978 毫秒、约 1900 个节点（无显示加速的无头浏览器，读数随同机其他负载浮动）。",
+  "en": "The end-to-end lane gains a long-session scenario: it grows eight turns first, then streams one more answer under an in-page probe that records frame intervals and long tasks, and prints the p50, p95 and worst frame times with the page's node count in the check details. Two local runs read p50 31.5 ms, p95 156 to 187 ms, worst 156 to 218 ms, 289 to 978 ms of long tasks and about 1900 nodes on a headless browser without display acceleration, the readings moving with other load on the machine."
+}

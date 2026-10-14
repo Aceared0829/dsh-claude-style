@@ -27,6 +27,7 @@ const { fileMergeScenario } = require('./file-merge.cjs')
 const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
 const { waitLineScenario } = require('./wait-line.cjs')
 const { washLineScenario } = require('./wash-line.cjs')
+const { longSessionScenario } = require('./long-session.cjs')
 const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
@@ -431,6 +432,8 @@ const SCENARIOS = {
   waitLine: waitLineScenario({ check }),
   /** The waiting line's second paint, chosen in the settings (wash-line.cjs, D26). */
   washLine: washLineScenario({ check }),
+  /** What a frame costs in a transcript that is already long (long-session.cjs, D40). */
+  longSession: longSessionScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D51). */
   importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
   /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D60). */

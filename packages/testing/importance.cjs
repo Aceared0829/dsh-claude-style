@@ -30,6 +30,13 @@ const { createImportanceAudit, planImportance, dropImportance, ROOT } = require(
  */
 const UNREACHABLE_FILE = JSON.parse(fs.readFileSync(path.join(__dirname, 'importance-unreachable.json'), 'utf8'))
 const UNREACHABLE = new Map(UNREACHABLE_FILE.groups.flatMap((group) => group.selectors.map((selector) => [selector, group.reason])))
+/**
+ * A recorded group whose rules paint only inside an animation frame: the walk
+ * reads the page at fixed moments, so such a selector is caught in one run and
+ * missed in the next, and the record holds either way. Every other entry still
+ * only shrinks.
+ */
+const TRANSIENT = new Set(UNREACHABLE_FILE.groups.filter((group) => group.transient === true).flatMap((group) => group.selectors))
 /* ---------- the lane's scenario ---------- */
 
 /** The skin's own triggers, each opening the surface its rules paint. */
@@ -286,7 +293,7 @@ function importanceScenario(lane) {
       const named = states.filter((item) => !item.name.startsWith('hover '))
       const dead = new Set(sweep.dead)
       const unrecorded = sweep.dead.filter((selector) => !UNREACHABLE.has(selector))
-      const reached = [...UNREACHABLE.keys()].filter((selector) => !dead.has(selector))
+      const reached = [...UNREACHABLE.keys()].filter((selector) => !dead.has(selector) && !TRANSIENT.has(selector))
       const brief = (selectors) => selectors.slice(0, 3).map((selector) => selector.replace(/\s+/g, ' ').slice(0, 90)).join('；')
       const recorded = UNREACHABLE_FILE.groups.map((group) => `${group.reason} ${group.selectors.length}`).join('，')
       const checks = [
@@ -303,7 +310,7 @@ function importanceScenario(lane) {
         // does a recorded selector the page has started matching — the record
         // is a debt, and it is only allowed to shrink.
         lane.check('没有从不匹配元素的皮肤选择器', unrecorded.length === 0, `${sweep.total} 个选择器：${sweep.matched} 个在某个页面形态里匹配到元素，${sweep.dead.length} 个从未匹配（登记在册 ${sweep.dead.length - unrecorded.length}${recorded === '' ? '' : `：${recorded}`}${unrecorded.length === 0 ? '' : `；未登记 ${unrecorded.length}：${brief(unrecorded)}…`}）${sweep.unparsed.length === 0 ? '' : `；${sweep.unparsed.length} 个页面解析不了（${sweep.unparsed.slice(0, 2).join('；')}）`}；${Object.entries(sweep.excused).map(([keep, many]) => `${many} 个按契约不扫（${keep}）`).join('，') || '没有按契约豁免的'}`),
-        lane.check('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}`),
+        lane.check('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}${TRANSIENT.size === 0 ? '' : `；另有 ${TRANSIENT.size} 个动画中间帧的记录，抓到与否都算数`}`),
         lane.check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
       if (process.env.DSH_IMPORTANCE_REFERENCE !== undefined) {

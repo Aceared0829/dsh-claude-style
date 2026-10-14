@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 2,
+  "external": false,
+  "zh": "重要性走查里标为动画中间帧的那一组记录改成「抓到与否都算数」：这一类选择器只在动画播放的那几帧存在，走查在固定时刻读页面，同一次改动可能这一趟读到、下一趟读不到，原来会把其中一次读不到判成「从未匹配」、把读到判成「该划掉」，两边都会失败；换字退场的那个类补进这一组。",
+  "en": "The groups of the importance walk marked as animation frames are now read as \"counted whether or not the walk catches them\": such a selector exists only inside an animation, the walk reads the page at fixed moments, and the same change may be caught in one run and missed in the next — which used to fail the run either way, as \"never matched\" when missed and as \"strike this off\" when caught. The swap's exit class joins that group."
+}
