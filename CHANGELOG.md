@@ -46,6 +46,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 仓库里 36 段登记在册的复制代码全部清零：分段控件的大小两种造型收进共享样式表 shared/segment-control.css（视图切换与工作区切换不再各抄一份，权限与设置的分段控件也回到真正的共享层），品牌图的蒙版写法由 shared/masked.css 单源化，弹层暗色卡片、幽灵按钮、表单控件盒型、渐变褪色带等重复声明各自合并，脚本与测试工具的公共启动代码收进 scripts/shared/ 与 packages/testing/。jscpd 基线文件随之删除，lint 现在对任何新复制段直接拒绝。页面外观与行为不变。
 - 需要压过宿主界面的 z-index 改由令牌表里的一组层级令牌给出（`packages/client/src/theme/tokens.json` 的 `layer`：输入框控件、输入框里的选择器、窗口标题行、浮动卡片、整窗界面五层），`docs/STYLE.md` 里多了一张由同一份数据生成的层级表；构建拒绝样式表里 9 以上的 z-index 字面值与 TS 里内联写出的层级。lint 新增复制代码检查：jscpd 按仓库根目录的 `.jscpd.json` 扫描源码与脚本，`scripts/jscpd-baseline.json` 记着检查立下之前已有的 36 处复制，此外再出现一处即失败，`npx jscpd` 列出全部复制。构建对「没有读者的动效令牌」的检查此前把令牌样式表自身算作读者、从未生效，现在只算其他样式表、模块与其他令牌的值。
+- npm 包不再携带与运行无关的内容：source map（含各延迟功能块的压缩 map）与 docs/decisions/ 决策文档退出发布清单，包体积从 2.3 MB 降到 1.6 MB。源码、构建与仓库内的调试流程不受影响。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -87,6 +88,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - The 36 tracked copied stretches are gone: the two segment-control looks live in the shared sheet shared/segment-control.css (the view tabs and the workspace switch no longer carry their own copies, and the permission and settings controls return to a genuinely shared layer), the masked brand-mark idiom is single-sourced in shared/masked.css, the dark popover card, ghost buttons, form-control boxes and the fade ramp are each merged to one rule, and the scripts' and testing tools' shared bootstrap moved into scripts/shared/ and packages/testing/. The jscpd baseline file is deleted with them; lint now refuses any new copied stretch. Page look and behavior are unchanged.
 - A z-index that has to clear the host's interface now comes from a group of layer tokens in the token table (the `layer` group of `packages/client/src/theme/tokens.json`: the composer's controls, a picker inside the composer, the window's title row, floating cards, whole-window surfaces), with a layer table generated from the same data in `docs/STYLE.md`; the build refuses a z-index literal above 9 in a stylesheet and a stacking level written inline in TypeScript. Lint gains a copied-code check: jscpd scans the sources and scripts as the repository root's `.jscpd.json` says, `scripts/jscpd-baseline.json` records the 36 copies that predate the check, and any further copy fails; `npx jscpd` lists every copy. The build's check for motion tokens nothing reads counted the token sheet itself as a reader and so never fired; it now counts only the other stylesheets, the modules and other tokens' values.
+- The npm package no longer carries what the runtime never reads: source maps (including the deferred chunks' compressed ones) and the docs/decisions/ documents leave the publish list, taking the package from 2.3 MB to 1.6 MB. Sources, the build and in-repository debugging are unaffected.
 
 ## [0.13.3] - 2026-10-12
 

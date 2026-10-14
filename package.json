@@ -44,6 +44,8 @@
   },
   "files": [
     "lib",
+    "!lib/**/*.map",
+    "!lib/assets/*.map.br",
     "locale",
     "skin.json",
     "cordis.patch.yml",
@@ -52,7 +54,6 @@
     "docs/FEATURES.en.md",
     "docs/SETTINGS.md",
     "docs/SETTINGS.en.md",
-    "docs/decisions",
     "CHANGELOG.md",
     "README.md",
     "README.en.md",

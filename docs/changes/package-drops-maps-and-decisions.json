@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 0,
+  "external": true,
+  "zh": "npm 包不再携带与运行无关的内容：source map（含各延迟功能块的压缩 map）与 docs/decisions/ 决策文档退出发布清单，包体积从 2.3 MB 降到 1.6 MB。源码、构建与仓库内的调试流程不受影响。",
+  "en": "The npm package no longer carries what the runtime never reads: source maps (including the deferred chunks' compressed ones) and the docs/decisions/ documents leave the publish list, taking the package from 2.3 MB to 1.6 MB. Sources, the build and in-repository debugging are unaffected."
+}
