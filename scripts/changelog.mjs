@@ -13,14 +13,17 @@
  * Usage: node scripts/changelog.mjs [--check | --release <version> [--date <YYYY-MM-DD>] | --notes <version>]
  *        --check writes nothing and fails when the committed section differs.
  *        --release turns the pending changes into the version's section, puts it
- *        above the older ones, and clears docs/changes/.
+ *        above the older ones, and clears docs/changes/; a session branch whose
+ *        work is not merged yet stops it, so no version leaves that work out.
  *        --notes prints a released version's section without its heading: the
  *        body of that version's GitHub Release.
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import { runner } from './shared/run.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
+const run = runner(ROOT)
 const CHANGES = path.join(ROOT, 'docs', 'changes')
 const FILE = path.join(ROOT, 'CHANGELOG.md')
 
@@ -96,6 +99,26 @@ function split(changelog) {
   return { start, body: changelog.slice(start, next === -1 ? changelog.length : next + 1), rest: changelog.slice(next === -1 ? changelog.length : next + 1) }
 }
 
+/**
+ * The `session/` work branches (D68) with how many of their commits this branch
+ * does not hold. Local and remote-tracking refs are both read, because a
+ * session that finished and pushed may exist only on the remote, and two refs
+ * at one tip are one branch.
+ */
+function sessionBranches() {
+  const refs = run('git', ['for-each-ref', '--format=%(refname:short) %(objectname)', 'refs/heads/session', 'refs/remotes/origin/session'])
+  if (refs === '') return []
+  const branches = []
+  const seen = new Set()
+  for (const line of refs.split('\n')) {
+    const [name, object] = line.split(' ')
+    if (seen.has(object)) continue
+    seen.add(object)
+    branches.push({ name, ahead: Number(run('git', ['rev-list', '--count', `HEAD..${name}`])) })
+  }
+  return branches
+}
+
 const fragments = readFragments()
 const changelog = fs.readFileSync(FILE, 'utf8')
 const { start, body: currentSection, rest } = split(changelog)
@@ -121,8 +144,18 @@ if (process.argv.includes('--notes')) {
   const date = dateAt === -1 ? new Date().toISOString().slice(0, 10) : process.argv[dateAt + 1]
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('changelog: --date needs a date like 2026-10-06')
   if (fragments.length === 0) throw new Error('changelog: docs/changes/ holds nothing to release')
+  const sessions = sessionBranches()
+  const unmerged = sessions.filter((branch) => branch.ahead > 0)
+  if (unmerged.length > 0) {
+    throw new Error([
+      'changelog: --release refuses while a session branch holds commits this version would not carry:',
+      ...unmerged.map((branch) => `  ${branch.name} (${branch.ahead} commits ahead)`),
+      'merge the branches this version needs, delete the ones it does not, and run --release again',
+    ].join('\n'))
+  }
   fs.writeFileSync(FILE, changelog.slice(0, start) + section([]) + releaseSection(fragments, version, date) + rest)
   for (const fragment of fragments) fs.rmSync(path.join(CHANGES, fragment.name))
+  console.log(`changelog: ${sessions.length} session branches, none holding commits this version does not`)
   console.log(`changelog: released ${fragments.length} changes as ${version} on ${date}; docs/changes/ is clear`)
 } else {
   fs.writeFileSync(FILE, changelog.slice(0, start) + built + rest)
