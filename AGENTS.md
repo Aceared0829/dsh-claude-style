@@ -48,7 +48,7 @@ The repository is moving to the architecture in `docs/decisions/` (D36–D48). A
 Hard stops: stop the moment one triggers, without first judging whether it is worth it.
 
 - A source file approaching 750 lines: stop adding features to it and propose splitting it by responsibility inside its feature directory; wait for the user's confirmation, and until then the file gets bug fixes only. `npm run lint` fails when a file crosses the line, and the one file it lets past records the size it stood at.
-- The same host query or the same pattern appearing a 3rd time: stop and move it into the shared layer (host accessors into the host access module); never write a 3rd copy.
+- The same host query or the same pattern appearing a 2nd time: stop and move it into the shared layer (host accessors into the host access module). `npm run lint` scans for copied stretches and fails on any of them, so a second copy is the last one.
 
 ## Conventions
 

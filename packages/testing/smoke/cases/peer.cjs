@@ -18,30 +18,41 @@ module.exports = {
     check('a running thinking row is left as the host rendered it', peer.thinkExpanded === false, JSON.stringify(peer.thinkExpanded))
     check('a running process group is left as the host rendered it', peer.groupOpen === false, JSON.stringify(peer.groupOpen))
     const settings = peer.settings || {}
-    const taken = ['chatAnimations', 'caretMotion']
-    const answers = settings.answers || {}
+    const tabs = settings.tabs || {}
+    const page = (tab) => tabs[tab] || {}
+    // The rows the ported features own, each on the tab its manifest registers it
+    // on (D32, D42). headerBand carries a note of its own on a page that is not
+    // the Windows desktop, so its note says nothing about the peer plugin.
+    const ported = { conversation: ['chatAnimations'], motion: ['caretMotion'] }
+    const answers = (tab) => page(tab).answers || {}
     // The reader's own answer stays on show (the chat-area animations on, the
-    // caret on Every move) while the control refuses input and the accent line
-    // names the plugin that owns the behaviour.
-    const showsOwnAnswer = (key) => key === 'chatAnimations'
-      ? (answers[key] || {}).on === true
-      : (answers[key] || {}).option === 'typing'
-    check('the Conversation tab carries both ported controls',
-      settings.registered === true && taken.every(key => (settings.rows || []).includes(key)),
-      JSON.stringify(settings.rows))
+    // caret on Typing) while the control refuses input and the accent line names
+    // the plugin that owns the behaviour.
+    const showsOwnAnswer = {
+      chatAnimations: (answer) => answer.on === true,
+      caretMotion: (answer) => answer.option === 'typing',
+    }
+    const refusingIn = (tab) => page(tab).refusing || []
+    const managedIn = (tab) => page(tab).managed || []
+    const carried = (tab, key) => (page(tab).rows || []).includes(key)
+    check('each ported control is registered on its own tab',
+      settings.registered === true && Object.keys(ported).every(tab => ported[tab].every(key => carried(tab, key))),
+      JSON.stringify(Object.keys(tabs).map(tab => `${tab}: ${(page(tab).rows || []).join(', ')}`)))
     check('the chat-area animation row is a switch, with no segmented control on it',
-      (answers.chatAnimations || {}).on === true && JSON.stringify((answers.chatAnimations || {}).options) === '[]',
-      JSON.stringify(answers.chatAnimations))
-    check('both controls are greyed out and marked as managed by the other plugin',
-      taken.every(key => (settings.refusing || []).includes(key)) &&
-        taken.every(key => (settings.managed || []).includes(key)),
-      JSON.stringify({ refusing: settings.refusing, managed: settings.managed }))
-    check('each control keeps showing the reader\'s own answer', taken.every(showsOwnAnswer), JSON.stringify(answers))
+      (answers('conversation').chatAnimations || {}).on === true && JSON.stringify((answers('conversation').chatAnimations || {}).options) === '[]',
+      JSON.stringify(answers('conversation').chatAnimations))
+    check('each ported control is greyed out and marked as managed by the other plugin',
+      Object.keys(ported).every(tab => ported[tab].every(key => refusingIn(tab).includes(key) && managedIn(tab).includes(key))),
+      JSON.stringify(Object.keys(ported).map(tab => `${tab} refusing=${refusingIn(tab).join(',')} managed=${managedIn(tab).join(',')}`)))
+    check('each ported control keeps showing the reader\'s own answer',
+      Object.keys(ported).every(tab => ported[tab].every(key => showsOwnAnswer[key](answers(tab)[key] || {}))),
+      JSON.stringify({ chatAnimations: answers('conversation').chatAnimations, caretMotion: answers('motion').caretMotion }))
     check('the accent line names dsh-chat-ux',
       (settings.texts || []).some(text => text.includes('dsh-chat-ux')), JSON.stringify(settings.texts))
     check('the rows the other plugin does not own keep answering',
-      (settings.refusing || []).includes('turnNav') === false && (settings.refusing || []).includes('viewTabs') === false,
-      JSON.stringify(settings.refusing))
+      [['conversation', 'turnNav'], ['conversation', 'viewTabs'], ['motion', 'motion'], ['motion', 'statusMotion']]
+        .every(([tab, key]) => refusingIn(tab).includes(key) === false),
+      JSON.stringify(Object.keys(ported).map(tab => `${tab} refusing=${refusingIn(tab).join(',')}`)))
     commonChecks(r)
   },
   // Another plugin owns the page from the first frame (packages/client/src/shared/visual-owner.ts,

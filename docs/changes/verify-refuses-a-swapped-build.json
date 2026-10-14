@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 13,
+  "external": false,
+  "zh": "一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。",
+  "en": "A run whose build output a rebuild behind `npm run dev` swapped files no verdict and reads as failed, so a recorded verdict belongs to the output that run actually drove."
+}

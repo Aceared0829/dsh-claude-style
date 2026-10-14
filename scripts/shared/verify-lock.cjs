@@ -12,7 +12,9 @@
  * minutes for a test run would freeze the loop it exists to serve.
  *
  * The lock is a directory and `owner.json` names the process holding it, so a
- * run killed outright reads as gone and its lock is taken over.
+ * run killed outright reads as gone and its lock is taken over: either its pid
+ * is dead, or — where the platform handed that number to another process — the
+ * time it states is past the longest run this repository has.
  */
 const fs = require('node:fs')
 const path = require('node:path')
@@ -25,6 +27,13 @@ const HELD = 'DSH_CLAUDE_STYLE_LOCK_HELD'
 const DEV = 'DSH_CLAUDE_STYLE_DEV'
 /** A lock whose owner file cannot be read is given this long before it is read as a run that died taking it. */
 const OWNER_GRACE_MS = 60_000
+/**
+ * How long one run may hold the lock. The end-to-end lane is the longest thing
+ * here and stays well inside this; a holder older than this is a dead run whose
+ * pid the platform reused, which is the one state the liveness check reads as
+ * alive forever.
+ */
+const MAX_HOLD_MS = 3 * 60 * 60 * 1000
 /** How often a waiting request looks at the lock again. */
 const WAIT_POLL_MS = 2_000
 /** How often a waiting request says it is still waiting. */
@@ -63,7 +72,12 @@ function lockState() {
       owner = null
     }
     if (owner !== null && Number.isInteger(owner.pid)) {
-      return alive(owner.pid) ? { kind: 'held', owner } : { kind: 'stale', note: `pid ${owner.pid} is gone` }
+      if (!alive(owner.pid)) return { kind: 'stale', note: `pid ${owner.pid} is gone` }
+      const held = Date.now() - Date.parse(owner.at ?? '')
+      if (Number.isFinite(held) && held > MAX_HOLD_MS) {
+        return { kind: 'stale', note: `pid ${owner.pid} states it took the lock ${Math.round(held / 60_000)} min ago` }
+      }
+      return { kind: 'held', owner }
     }
   }
   const age = Date.now() - stat.mtimeMs

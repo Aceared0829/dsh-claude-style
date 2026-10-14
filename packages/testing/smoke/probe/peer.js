@@ -51,9 +51,12 @@
         groupOpen: !document.querySelector('[data-step-process-body]').hasAttribute('hidden'),
       }
       // The settings page, through the same React-tree walk the settings case
-      // uses: the Conversation tab's rows, which of them refuse input, which
-      // carry the line naming the owner, and what answer each control shows.
+      // uses: the rows of the two tabs the ported controls are registered on —
+      // the chat-area animation on the Conversation tab, the caret on the Motion
+      // tab — which of them refuse input, which carry the line naming the owner,
+      // and what answer each control shows.
       var PeerSection = (window.__slotComponents || {})['claude-style']
+      var PEER_TABS = ['conversation', 'motion']
       var peerWalk = function (node, visit) {
         if (node === null || node === undefined || typeof node !== 'object') return
         if (Array.isArray(node)) { node.forEach(function (child) { peerWalk(child, visit) }); return }
@@ -91,24 +94,28 @@
         })
         return answer
       }
-      r.peer.settings = { registered: typeof PeerSection === 'function', rows: [], refusing: [], managed: [], answers: {}, texts: [] }
+      r.peer.settings = { registered: typeof PeerSection === 'function', tabs: {}, texts: [] }
       if (r.peer.settings.registered) {
         var peerReact = window.__react
         peerReact.rendering = true
-        peerReact.states = { general: 'conversation' }
-        var peerTree = PeerSection({})
+        PEER_TABS.forEach(function (tab) {
+          peerReact.states = { general: tab }
+          var peerTree = PeerSection({})
+          var page = { rows: [], refusing: [], managed: [], answers: {} }
+          peerWalk(peerTree, function (node) {
+            var props = node.props || {}
+            if (typeof props.className === 'string' && /(^| )dsh-claude-settings-row( |$)/.test(props.className)) {
+              page.rows.push(props.key)
+              if (peerDisabled(props.children)) page.refusing.push(props.key)
+              if (peerManages(props.children)) page.managed.push(props.key)
+              page.answers[props.key] = peerAnswer(props.children)
+            }
+          })
+          r.peer.settings.tabs[tab] = page
+          peerTexts(peerTree, r.peer.settings.texts)
+        })
         peerReact.rendering = false
         peerReact.states = null
-        peerWalk(peerTree, function (node) {
-          var props = node.props || {}
-          if (typeof props.className === 'string' && /(^| )dsh-claude-settings-row( |$)/.test(props.className)) {
-            r.peer.settings.rows.push(props.key)
-            if (peerDisabled(props.children)) r.peer.settings.refusing.push(props.key)
-            if (peerManages(props.children)) r.peer.settings.managed.push(props.key)
-            r.peer.settings.answers[props.key] = peerAnswer(props.children)
-          }
-        })
-        peerTexts(peerTree, r.peer.settings.texts)
       }
       peerChat.remove()
     })

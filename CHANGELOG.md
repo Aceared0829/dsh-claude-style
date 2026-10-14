@@ -13,6 +13,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - 文档里带单位的数值不再进闸门：`scripts/doc-numbers.mjs` 留着按需运行（`npm run docs:numbers`），lint 不再核对它，`docs/STYLE.md` 里与样式表逐字对应的几何与时长因此不再让推送失败。
+- `npm run verify` 先跑云端快档那批检查（lint、特性清单、决策索引、变更记录、AGENTS 表），推送前的一次运行与云端判定同一批内容。
+- 端到端通道不带 `--scenario` 时走 `packages/contracts/src/timing.ts` 那张表里除停放的两个统计场景之外的全部条目，新加入表的场景默认进入云端判定，停放名单与场景表对不上时运行直接终止。
+- 发版工作流在把这一版转正之前跑完快档那批检查、Windows 上的完整冒烟与端到端通道，与 pull request 判定的内容一致。
+- 一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
@@ -21,6 +25,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - A number with a unit in a document is no longer a gate: `scripts/doc-numbers.mjs` stays for running on demand (`npm run docs:numbers`), and lint no longer checks it, so the geometry and timing in `docs/STYLE.md` that mirror the stylesheets no longer fail a push.
+- `npm run verify` starts with the checks the cloud's fast tier runs (lint, the feature list, the decisions index, the changelog and the AGENTS table), so the run before a push judges the same set.
+- The end-to-end lane without `--scenario` walks every entry of the table in `packages/contracts/src/timing.ts` but the two parked statistics scenarios, so a scenario added to the table is judged in the cloud by default, and a parked name the table does not hold stops the run.
+- The release workflow runs the fast tier's checks, the full smoke on Windows and the end-to-end lane before it promotes a version, the same set a pull request is judged on.
+- A run whose build output a rebuild behind `npm run dev` swapped files no verdict and reads as failed, so a recorded verdict belongs to the output that run actually drove.
 
 ## [0.14.0] - 2026-10-14
 

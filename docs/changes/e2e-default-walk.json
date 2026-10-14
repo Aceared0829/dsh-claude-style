@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 11,
+  "external": false,
+  "zh": "端到端通道不带 `--scenario` 时走 `packages/contracts/src/timing.ts` 那张表里除停放的两个统计场景之外的全部条目，新加入表的场景默认进入云端判定，停放名单与场景表对不上时运行直接终止。",
+  "en": "The end-to-end lane without `--scenario` walks every entry of the table in `packages/contracts/src/timing.ts` but the two parked statistics scenarios, so a scenario added to the table is judged in the cloud by default, and a parked name the table does not hold stops the run."
+}
