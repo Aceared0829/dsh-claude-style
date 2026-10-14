@@ -17,22 +17,31 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 体验优化
 
 - 同一个文件在同一个过程组里的多次读取、编辑与写入读成一行：图标与标题跟着最后一次操作换新，行尾的 `+n -m` 是这些改动的累计值并随每次改动逐位翻页，展开读到全部改动；只被读取过的文件展开读到这次读取的窗口。
+- 每帧那一趟刷新不再为已知的宿主节点重新查询整份文档：输入卡片与它的占位、运行行、思考行、标题行、对话框、页脚、会话根、模型槽与上下文表盘都从观察总线按选择器登记的活清单里读，宿主换掉节点时才重解一次。会话越长，每帧的查询开销越不再跟着页面规模走。
 - 状态行换词时说法盒子的宽度是一次移动：盒子先按住当前宽度再写上目标宽度，由滑动高亮那一对时长与曲线（约 0.24 秒）带过去，旁边的计时随盒子滑到新位置。
 - 运行行的换词按 transitions.dev 的「Thinking states」合成：离场与入场同时进行，扫光带全程亮着而不从头再扫，行由一个隐藏测量层按住宽度与高度，换词期间旁边的计时不会被挤动，新词从下方升入也不会让整行变高。
+- 只落在对话消息列里的变更批次（流式输出就是这种）只叫醒读消息列的功能，页头、视图标签、侧边栏页脚、模型与档位选择器不再跟着跑一趟；任何读到整页的信号（语言、偏好、时钟、功能自己排的一帧）照旧触发完整一趟。
 - 只在另一项打开时才起作用的设置行现在随父项一起变灰、不能操作（重绘模型选择器与重绘权限控件随「重绘对话框」，对话统计信息位置随重绘覆盖对话页，封号彩蛋随「折叠侧栏设置区」），变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。
+- 滚动与窗口尺寸变化重新定位浮层时，一帧只派发一次（原来是每个滚动事件一次）；关闭着的模型卡与档位卡不再读宿主触发器的盒子，上下文数字行的合身测量只在输入卡片宽度变化时重做。
 - 设置页新增「桌面端」页放「标题进入顶栏」，进这一页时开头说明它只作用于 Windows 桌面端的窗口；「首页版面」挪到「外观」，「封号彩蛋」挪到「侧栏」并挂在打开它的账号弹层那一行下面，「搜索框样式」与「对话统计信息位置」的说明写出每个选项的效果。
 - 皮肤里所有动效的时长、曲线、位移与模糊改由 `packages/client/src/theme/tokens.json` 的 `motion` 一组统一给出，同一作用的数值合成一档，`docs/STYLE.md` 的动效表由同一份数据生成，构建拒绝样式表里直接写出的时长与曲线、内容重复的关键帧，以及没有读者认领的动效令牌。
+- 流式回答里新文字的淡入改按文本节点增量比较：一条回答里追加字符时不再把整条回答重拼成字符串、也不再逐字符重比，成本随本批新增的字符走；markdown 中途改写标记的那一段仍按原来的窗口判定，超过预算或刚被折叠重排过就保持本色。
 - 状态行与过程组头部同读宿主 `TextShimmer` 的一档：1.5 秒一趟、`steps(48, end)`、每趟最后三分之一歇停，状态行的色带改用宿主的扫光色与 20% 带宽。
+- 长会话里跟着会话长度增长的三处记账收敛：进程组表头的摘要共用一条尺寸订阅（原来一组一条），思考行的清单由变更批次增量登记（滚动不再扫整份文档），进程组跟随不再有常驻的定时器——页面上没有进程组时就没有任何定时查询。
+- 宿主账户行被宿主换掉时，旧行上的四个监听与这一代登记的记录一起收走，不再留到整代拆除；账户菜单的绑定保持一次只有一张卡。
 - 模型、推理等级、权限、账号几张弹层卡片与新会话页的菜单从各自按钮所在的一角、由略小的尺寸长出来（约 0.25 秒，不再上移），收起时更快（约 0.12 秒）。
 - 封号彩蛋整页打开时从中心略小处放大淡入（约 0.25 秒），按页上的按钮或 Esc 关掉时缩回去淡出（约 0.12 秒）再离开页面。
 - 设置页的开关按下后圆钮越过终点再弹回（约 0.35 秒），只有按过的开关这样动，打开设置页或换回某个分页时各个开关都静止在原位。
 - 设置页切分页时新的一页从它在分页条上所在的一侧滑入并穿过一点模糊，被换下的那一页朝另一侧滑出（约 0.25 秒），滑出的那张静止副本读屏与 Tab 键都碰不到。
 - 首页打开时品牌标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）。
+- 设置页在极窄宽度下保持可读：一行放不下全部分页时分页条换到第二行，每个分页标签始终完整显示在一行上；一行的文字空间不足时，开关、分段选择器等控件移到文字下方独占一行，说明文字保持整行排版。
 - 上下文占用的色带移到四成到八成：占用四成以下保持绿色，四成到八成之间依次经过浅绿、黄与橙，八成起为红色。
 - 工作室首页的用量面板：占位的底色淡去、数字从模糊里显出来，热力图的格子渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）。
 - 等待行的「暂未响应」徽标从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒）。
 - Claude 品牌下，轮次进行中那一行开头是主题自己的三枚 4px 加载点（各弹起 8 像素并在离地时压扁，半秒一次，错开周期依次起跳）；DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变。
 - 「外观」页的「主色」改名「强调色」并挪到「配色」下方，配色选「跟随宿主」时它变灰、不能操作。
+- 工作台首页的权限控件此前和经典首页一样是一排 Read / Edit / Auto / Yolo 分段按钮，与它那身对话式的单行输入卡片并不相称；现在工作台首页与对话页一致：输入区里是一枚写着当前档位的按钮，点开是一张档位卡片，滑块式分段只留在经典首页。工作台首页还没选工作区时，按钮停在新会话的默认档位上、不接收点击，点它和点输入框一样打开工作区选择。
+- 中文界面下内置 Auto review 档位此前显示英文名，因为宿主的档位文案表里这一条两种语言都是英文；现在它读「自动审查」，其它档位仍读宿主自己的中文名，界面语言不是中文时照旧读 Auto review。
 
 ### 问题修复
 
@@ -58,6 +67,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 冒烟架、临时宿主、脚本化模型、端到端通道与三个在线探针全部住进 `packages/testing/`，共用一套 Playwright 浏览器栈，`scripts/` 只剩构建与文档工具。
 - 构建对浏览器半边源码的检查改在 TypeScript 语法树上进行（`scripts/source-tree.mjs`）：样式表读到的 `data-dsh-*` 属性必须真的有代码写入，经变量、联合类型与辅助函数转手也追得到，注释里的同名写法不再误报；流式淡入的 24 条 `::highlight()` 规则与首页热度图的四档规则由构建按 `constants.ts` 里的取值写出，步数、档数与规则出自同一处。
 - 三个微型功能并入它们服务的功能——选区镜像与输入框的空白提示并入输入区、首页问候语并入首页版面、亮暗切换的过渡抑制并入设置页——功能数量从 28 降到 25。
+- 端到端通道多一个长会话场景：先积累八轮对话，再在页内探针下流过一整条回答，逐帧记下帧间隔与长时间任务，并把每帧耗时的 p50、p95、最大值与页面节点数写进断言说明；本机两次运行读到 p50 31.5 毫秒、p95 156 至 187 毫秒、最大 156 至 218 毫秒、长时间任务合计 289 至 978 毫秒、约 1900 个节点（无显示加速的无头浏览器，读数随同机其他负载浮动）。
+- 重要性走查里标为动画中间帧的那一组记录改成「抓到与否都算数」：这一类选择器只在动画播放的那几帧存在，走查在固定时刻读页面，同一次改动可能这一趟读到、下一趟读不到，原来会把其中一次读不到判成「从未匹配」、把读到判成「该划掉」，两边都会失败；换字退场的那个类补进这一组。
 - `importance` 场景在走查里多审两件事：走遍所有页面形态都没匹配到元素的选择器即失败，到不了的选择器逐条登记在 `packages/testing/importance-unreachable.json`、每条写明缘由且登记表只许变短；同一轮走查去掉八处多余的 `!important`，端到端通道的设置层每次运行前回到运行前的副本。
 - 文档里带单位的数值必须有出处：能由令牌或常量给出的一律读它，读不到的登记在 `scripts/doc-numbers.mjs` 的来源表里，数值失去出处时 `npm run lint` 与云端闸门报出。
 - `docs/SETTINGS.md` 与 `docs/SETTINGS.en.md` 只留设置页自己的内容——七个分页与各档、设置项之间的依赖、跨功能的几段说明——动效各自做什么由链接指向功能一览。
@@ -76,22 +87,31 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Improvements
 
 - The calls on one file inside one process group stand as a single row: its icon and title move on with the file's last operation, its `+n -m` tail counts those changes and turns character by character as each one lands, and opening the row reads every change — or the window a read-only file was read at.
+- A pass no longer queries the whole document for host nodes it already knows: the composer cards and their placeholders, the running rows, the thinking rows, the title row, the dialogs, the footer, the conversation root, the model slot and the context meter are read from live per-selector registries on the observation bus, and only a node the host replaced is resolved again. The longer a session runs, the less a frame's query cost follows the size of the page.
 - The wording box's width is now one move — pinned at the width it stands at, written with the width it heads for, and carried there over the sliding highlight's own time and curve (about 0.24 s) — so the clock travels to its new place with it.
 - The running line's wording swap runs transitions.dev's "Thinking states": the two halves move at once, the sweeping highlight stays lit through the swap, and a hidden sizer holds the width and height, so the clock is never shoved aside and the copy rising from below never makes the line taller.
+- A change confined to the conversation column — streaming, above all — wakes only the features that read it: the header, the view tabs, the sidebar footer and the model and effort pickers no longer take a pass of their own. Any signal that reads the whole page (a language, a preference, the clock, a frame a feature asks for) still runs the full pass.
 - Settings rows that only work while another setting is on grey out and take no input with it — the model picker and the permission control with the composer restyle, the statistics position with the restyle covering the conversation, the easter egg with the sidebar settings — and a greyed row still shows the value you set, with a line in the accent colour saying what it waits for.
+- Scrolling or resizing now re-places fixed popovers once a frame instead of once per event; a shut model or effort card stops reading its trigger's box, and the inline context line is measured for fit only when the card's width has changed.
 - The settings page gains a Desktop tab carrying Header in the title bar with a line saying its settings act on the Windows desktop window only; Home layout moves to Appearance, the Account-hold easter egg to Sidebar under the row of the account popover it opens from, and Search box style and Conversation statistics position now say what each choice does.
 - Every duration, curve, distance and blur in the skin comes from the `motion` group of `packages/client/src/theme/tokens.json`, one value per role, with the style guide's motion table generated from the same data and the build refusing a duration or curve written straight into a stylesheet, keyframes that repeat one the skin has, and a motion token nothing reads.
+- The fade over newly arrived characters in a streaming answer now compares text nodes incrementally: an append no longer rejoins the whole answer into a string nor walks it character by character, so the cost follows the batch. A markdown rewrite in the middle is still judged by the same window, and a rewrite past its budget or one that just reflowed from a fold stays solid.
 - The line and a process group's header share the host's own `TextShimmer` gear — 1.5 s a pass, `steps(48, end)`, the band resting the last third — and the line's band takes the host's shimmer tint at 20% width.
+- Three books that grew with a long session are now bounded: the process headers' summaries share one size subscription instead of one per group, the thinking rows are registered incrementally from change batches rather than scanned for on every scroll, and the process-group follow keeps no timer when the page holds no process group.
+- When the host replaces its own account row, the four listeners on the old row leave with this generation's record of it instead of waiting for the teardown; the account menu still holds one card's binding at a time.
 - The model, reasoning, permission and account cards and the new-conversation page's menus grow out of the corner nearest their button from a little smaller (about 0.25 s, with no rise) and close faster (about 0.12 s).
 - The account-hold page grows out of the centre as it fades in (about 0.25 s), and a control on it or Esc shrinks it back as it fades (about 0.12 s) before it leaves the page.
 - A settings switch now runs its knob past the end and settles back (about 0.35 s), and only a switch the reader has pressed moves — opening the page or coming back to a tab shows every switch at rest.
 - Changing settings tabs slides the new one in from the side it sits on along the strip, through a short blur, while the one it replaces slides out the other way (about 0.25 s); the page sliding out is a still copy that neither a screen reader nor the Tab key reaches.
 - Opening the home page raises the brand mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s).
+- The settings page stays readable at very narrow widths: the tab strip wraps onto a second line when one line no longer holds every tab, each label always whole on one line, and a row whose text runs out of room drops its control — a switch, a segmented control — onto a line of its own under the text.
 - The context-occupancy colour band moves to two fifths through four fifths: the reading stays green below two fifths, runs through light green, yellow and orange in between, and is red from four fifths on.
 - The studio home's usage panel fades its placeholders out while the figures come out of a blur, shades the heat map's cells into their own colours and fades the model list and chart in (about 0.3 s).
 - The waiting line's "No response yet" badge slides onto the line from below and to the left while it pops out of nothing (about 0.5 s) and shrinks away as soon as the model speaks (about 0.12 s).
 - Under the Claude brand the head of the running row carries the skin's own three 4px dots, each rising 8px and flattening as it leaves the floor, half a second a bounce with the three staggered into a wave; under the DeepSeek brand the host's whale tail stands as before, and the screen-reader announcement is unchanged.
 - The Appearance tab's Primary colour row is renamed Accent colour and moves under Colours, greying out and taking no input while Colours is set to Follow the host.
+- The studio home's permission control was the same Read / Edit / Auto / Yolo segment row the classic home wears, which sat oddly with its conversation-style single-line card; it now matches the conversation: one button naming the current tier, opening a card of tiers, with the slider-style segment row left to the classic home. Before a workspace is picked the button rests on the preset a new session starts in and takes no input, so pressing it opens the workspace picker the same as pressing the input box.
+- Under a Chinese interface the built-in Auto review tier showed its English name, the host's own tier dictionary carrying that entry in English in every language; it now reads 自动审查, while the tiers the host names in Chinese keep their own words and every other interface language still reads Auto review.
 
 ### Bug Fixes
 
@@ -117,6 +137,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The smoke harness, the scratch host, the scripted model service, the end-to-end lane and the three live probes all live in `packages/testing/` on one Playwright stack, leaving `scripts/` with the build and document tools.
 - The build's checks on the browser half's source read its TypeScript syntax tree (`scripts/source-tree.mjs`): every `data-dsh-*` attribute a stylesheet reads must really be written by code, found through a variable, a union or a helper parameter, and the same spelling in a comment no longer trips the check; the 24 `::highlight()` rules behind the streaming fade and the home heat grid's four levels are written by the build from `constants.ts`, so the counts and the rules have one source.
 - Three micro-features fold into the features they serve — the window-blur selection mirror and the composer's idle hint into the composer, the home greeting into the home layout, the theme flip's transition suppression into the settings page — taking the feature count from 28 to 25.
+- The end-to-end lane gains a long-session scenario: it grows eight turns first, then streams one more answer under an in-page probe that records frame intervals and long tasks, and prints the p50, p95 and worst frame times with the page's node count in the check details. Two local runs read p50 31.5 ms, p95 156 to 187 ms, worst 156 to 218 ms, 289 to 978 ms of long tasks and about 1900 nodes on a headless browser without display acceleration, the readings moving with other load on the machine.
+- The groups of the importance walk marked as animation frames are now read as "counted whether or not the walk catches them": such a selector exists only inside an animation, the walk reads the page at fixed moments, and the same change may be caught in one run and missed in the next — which used to fail the run either way, as "never matched" when missed and as "strike this off" when caught. The swap's exit class joins that group.
 - The `importance` scenario audits two more things in its walk: a selector that matches no element in any page state fails it, and the selectors the walk cannot reach are recorded with their reasons in `packages/testing/importance-unreachable.json`, a record that may only shrink; the same walk proved eight `!important` declarations redundant and took them out, and the end-to-end lane's settings layer returns to its pre-run copy.
 - A number a document states now has a home: a value a token or a constant holds is read from there, the few a reader needs are registered with their source in `scripts/doc-numbers.mjs`, and `npm run lint` and the cloud gates fail when one loses it.
 - `docs/SETTINGS.md` and `docs/SETTINGS.en.md` carry the settings page's own content — the seven tabs and their tiers, the dependencies between rows, the cross-cutting notes — and link to the feature list for what each effect does.

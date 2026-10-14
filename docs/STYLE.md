@@ -642,6 +642,7 @@ inside `…_composerStack …_composerHero` — so only the arrangement differs.
 | greeting | centred, 44.2px serif, brand mark on its line | top left, one fixed line naming the user ("What's up next, …?") in the 20px sans UI face, a 21px brand mark on its line |
 | composer card | vertically centred in the scroll body | the conversation's single-line inline form, resting on the window's bottom edge (16px foot) |
 | between them | — | the usage panel |
+| permission control | the segment group | the conversation's trigger and its card |
 | workspace / preset row | the card's footer tray | hairline chips directly above the card |
 | column width | the hero's centred box | a 720px composer column; the greeting and the panel form a 480px block against its left edge |
 
@@ -669,7 +670,7 @@ The cold start card waits for a workspace: the host marks it with a dashed ring
 and makes every control on it inert, so a press anywhere opens the workspace
 picker. In the studio form the ring sits on the single-line input box itself
 (the host's dashed stroke and colours, flat, no drop shadow), and the permission
-segments fill the card's empty mode strip on the preset a new session starts in
+trigger fills the card's empty mode strip on the preset a new session starts in
 — disabled, like the rest of the card's controls.
 
 The panel is Claude Code's dashboard shape: a flat warm-gray wash (a
