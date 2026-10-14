@@ -12,7 +12,7 @@
 - 生成：令牌样式表多出一个不挂门的块，`docs/STYLE.md` 多出一张由同一份数据重写的层级表。
 - 检查：
   - `scripts/css.mjs` 在语法树上拒绝令牌样式表以外 -1 到 9（以及 `auto`）之外的 z-index 字面值，并拒绝没有任何样式表读到的层级令牌。
-  - `scripts/build-checks.mjs` 拒绝 `packages/client/src/` 的 TS 里写出 9 以上的层级（内联样式的 `z-index` 与 `zIndex`）：浏览器半边给元素做标记，由样式表把它放到某一层。
+  - `scripts/build-checks.mjs` 拒绝 `packages/client/src/` 的 TS 里写出 9 以上的层级（内联样式的 `z-index` 与 `zIndex`，在语法树上按类型读出，经常量与参数转手的同样算，`scripts/source-tree.mjs`）：浏览器半边给元素做标记，由样式表把它放到某一层。
 
 ## 理由
 

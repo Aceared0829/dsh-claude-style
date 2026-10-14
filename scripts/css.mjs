@@ -13,7 +13,7 @@
  *   composer     the rules below a sheet's `@composer-gate` comment get the
  *                composer gate stamped onto their scope compound (D4)
  *   attributes   every `data-dsh-*` attribute a selector reads is one the
- *                browser half writes: its name appears in the TypeScript
+ *                browser half writes, read off its syntax tree (scripts/source-tree.mjs)
  *   motion       a time or an easing curve is written only in the token
  *                stylesheet, no two keyframes say the same thing, and every
  *                motion token is read somewhere (D65)
@@ -68,12 +68,6 @@ const EASE_PATTERN = /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out)(?![\w-])|c
 
 /** The prefix of the attributes the skin writes; the host's own are read as contracts (D44). */
 const SKIN_ATTRIBUTE_PREFIX = 'data-dsh-'
-/**
- * Attributes the browser half builds rather than spells out: the mascot
- * player marks its stand `data-dsh-claude-<character>-anchor` from the
- * character's name (features/mascot/mascot-player.ts).
- */
-const BUILT_ATTRIBUTES = new Set(['data-dsh-claude-crab-anchor', 'data-dsh-claude-deepy-anchor'])
 
 /* ---------- selectors ---------- */
 
@@ -424,18 +418,17 @@ export function writeLayerTable(stylePath, doc) {
  *
  * @param doc - packages/client/src/theme/tokens.json.
  * @param sheetText - every stylesheet but the token sheet, and the tokens' own values.
- * @param srcDir - the source directory.
+ * @param sources - the browser half on its syntax tree (scripts/source-tree.mjs).
  */
-function checkTokensRead(doc, sheetText, srcDir) {
-  const files = walkSources(srcDir, /\.tsx?$/)
+function checkTokensRead(doc, sheetText, sources) {
   const names = new Set(doc.motion.map((item) => item.token))
-  const code = files.map((file) => fs.readFileSync(file, 'utf8')).join('\n')
-  for (const match of code.matchAll(/motion(?:Value|Ms|Ease)\('([^']+)'\)/g)) {
-    if (names.has(match[1])) continue
-    throw new Error(`build: a module under packages/client/src/ reads the motion token ${match[1]}, which packages/client/src/${TOKEN_SHEET} does not declare (D65)`)
+  for (const [name, where] of sources.motion) {
+    if (names.has(name)) continue
+    throw new Error(`build: ${where} reads the motion token ${name}, which packages/client/src/${TOKEN_SHEET} does not declare (D65)`)
   }
+  const named = (token) => [...sources.strings].some((text) => text.includes(token))
   for (const item of doc.motion) {
-    if (sheetText.includes(item.token) || code.includes(item.token)) continue
+    if (sheetText.includes(item.token) || named(item.token)) continue
     throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet or module reads (D65)`)
   }
   // A layer is read by the sheets alone: the browser half stacks nothing by
@@ -446,36 +439,18 @@ function checkTokensRead(doc, sheetText, srcDir) {
   }
 }
 
-/** Every file under `dir` matching `pattern`, down to `depth` directories below the top. */
-function walkSources(dir, pattern, depth = 6) {
-  const out = []
-  const step = (current, left) => {
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-      const full = path.join(current, entry.name)
-      if (entry.isDirectory()) {
-        if (left > 0) step(full, left - 1)
-        continue
-      }
-      if (pattern.test(entry.name) && !/\.test\.[a-z]+$/.test(entry.name)) out.push(full)
-    }
-  }
-  step(dir, depth)
-  return out
-}
-
 /**
- * Hold every skin attribute a selector reads to the browser half: its name has
- * to appear in the TypeScript under `srcDir` (a constant's value or a literal),
- * or be one the browser half builds (BUILT_ATTRIBUTES). An attribute renamed
- * in the code, or misspelt in a sheet, leaves a rule that matches nothing.
+ * Hold every skin attribute a selector reads to the browser half: some code
+ * has to write it (scripts/source-tree.mjs follows the name into the DOM call
+ * or the React props that write it). An attribute renamed in the code, written
+ * nowhere any more, or misspelt in a sheet leaves a rule that matches nothing.
  *
  * @param read - attribute name → where a selector first reads it.
+ * @param sources - the browser half on its syntax tree.
  */
-function checkAttributes(read, srcDir) {
-  const code = walkSources(srcDir, /\.tsx?$/).map((file) => fs.readFileSync(file, 'utf8')).join('\n')
+function checkAttributes(read, sources) {
   for (const [name, where] of read) {
-    if (BUILT_ATTRIBUTES.has(name)) continue
-    if (!new RegExp(`${name}(?![a-z0-9-])`).test(code)) throw new Error(`build: ${where} reads [${name}], which nothing under packages/client/src/ writes`)
+    if (!sources.attributes.has(name)) throw new Error(`build: ${where} reads [${name}], which nothing under packages/client/src/ writes`)
   }
 }
 
@@ -484,12 +459,13 @@ function checkAttributes(read, srcDir) {
  *
  * @param options.sheets - `{ file, rank, gate? }` in cascade order (TOKEN_SHEET generated).
  * @param options.srcDir - the source directory.
+ * @param options.sources - the browser half on its syntax tree (scripts/source-tree.mjs).
  * @param options.tokenDoc - packages/client/src/theme/tokens.json (loadTokens).
  * @param options.gates - `{ composer, palette: { attribute, claude, host }, typeface: { attribute, claude, host }, brand: { attribute, deepseek } }`.
  * @param options.images - brand mark name → its address, for the token sheet.
  * @returns the stylesheet text, minified once every check has read the sheets.
  */
-export function buildStylesheet({ sheets, srcDir, tokenDoc, gates, images }) {
+export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images }) {
   const names = { claude: new Set(), host: new Set() }
   const read = new Map()
   const keyframes = new Map()
@@ -503,13 +479,13 @@ export function buildStylesheet({ sheets, srcDir, tokenDoc, gates, images }) {
   for (const name of names.claude) {
     if (!names.host.has(name)) throw new Error(`build: ${name} is defined under the Claude palette or typeface but has no alias under the host's`)
   }
-  checkAttributes(read, srcDir)
+  checkAttributes(read, sources)
   // The token sheet declares every token, so it is no reader of any: what reads
   // a token is another sheet, or another token's value (a shorthand).
   const readers = [
     ...processed.filter((item) => item.sheet.file !== TOKEN_SHEET).map((item) => item.text),
     ...tokenDoc.motion.map((item) => item.value),
   ].join('\n')
-  checkTokensRead(tokenDoc, readers, srcDir)
+  checkTokensRead(tokenDoc, readers, sources)
   return minifyCss(text)
 }

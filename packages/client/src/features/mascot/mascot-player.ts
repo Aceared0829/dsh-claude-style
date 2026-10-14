@@ -25,9 +25,16 @@ export interface MascotSheets {
   dispose(): void
 }
 
+/**
+ * The characters the player plays. A union of literals: the anchor mark is
+ * built from the name, and the build reads the marks the stylesheets key on
+ * off this type (scripts/source-tree.mjs).
+ */
+export type MascotName = 'crab' | 'deepy'
+
 /** What one character hands the player (see createMascotPlayer). */
 export interface MascotCharacter {
-  name: string
+  name: MascotName
   sheets: Record<string, MascotSheet>
   frameMs: number
   gutter?: number
@@ -90,11 +97,11 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
   const TICKLE_CLICKS = 4
   /** How far a press travels before it lifts the mascot. */
   const LIFT_PX = 4
-  const PREFIX = `dsh-claude-${character.name}`
+  const PREFIX = `dsh-claude-${character.name}` as const
   /** The transparent margin each frame cell carries in this character's sheets (DEEPY_GUTTER), in logical pixels. */
   const GUTTER = character.gutter ?? 0
   /** A marker on the host element the mascot stands on, which makes it the mascot's containing block. */
-  const ANCHOR_ATTR = `data-${PREFIX}-anchor`
+  const ANCHOR_ATTR = `data-${PREFIX}-anchor` as const
   /** The stamp carrying the anchor mark across re-renders. */
   const anchorStamp = createStamp(ANCHOR_ATTR)
   const SHEETS = character.sheets

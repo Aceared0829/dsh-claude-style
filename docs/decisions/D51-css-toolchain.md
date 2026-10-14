@@ -13,7 +13,7 @@
   - `:has()` 只在所在选择器的最后一段，`:is()`、`:not()` 里的每一层都一样（D9）。
   - 令牌门：写 `--dsw-` 颜色令牌的规则每个选择器都在作用域那一段挂配色门，写 `--dsw-font-*` 的挂字体门；Claude 一档定义的每个私有令牌在宿主一档都有别名（D30）。
   - 输入框门控：带门控的样式表在 `/* @composer-gate */` 注释以下的每条规则，门控属性盖到作用域那一段上；缺少标记或标记以下没有规则即构建失败（D4）。
-  - 皮肤属性：选择器读到的每个 `data-dsh-*` 属性，名字都要出现在浏览器半边的 TypeScript 里（常量的值或字面值）；按角色名拼出的吉祥物站位标记登记在 `scripts/css.mjs`。代码里改了名、或样式表拼错，构建即失败。
+  - 皮肤属性：选择器读到的每个 `data-dsh-*` 属性都要有代码写入。构建用 TypeScript 自己的程序读浏览器半边的语法树（`scripts/source-tree.mjs`）：`setAttribute`／`toggleAttribute` 的属性名与创建 React 元素时的属性键按类型取字面值，经常量、联合类型与转手它的辅助函数的参数一路追到调用处；追不到字面值的写入即构建失败，按名字拼出的属性因此要给出字面量类型。代码里改了名、不再写入、或样式表拼错，构建即失败；只出现在注释里或只被读取的名字不算写入。
 - 以上检查读源样式表；拼好的整张样式表随后经 esbuild 的 CSS 压缩（`scripts/shared/minify-css.cjs`）进产物，注释与排版只留在源文件里，它们约占整张样式表的四成。esbuild 对样式表报出警告即构建失败。`importance` 场景按规则的文本认出第三方规则，读 `third-party.css` 时走同一个压缩，两边的写法才对得上。
 - 设计令牌写在 `packages/client/src/theme/tokens.json`，结构由 `packages/client/src/theme/tokens.schema.json` 声明、构建用 Ajv 校验：字体令牌的 Claude 与宿主两档、推理强度顶档的亮暗两色、颜色令牌在 Claude 品牌亮暗两套里的值、DeepSeek 品牌与之不同的值、宿主一档的别名，以及令牌的用途与取值缘由。构建由它生成令牌样式表（排位最前），并把 `docs/STYLE.md` 里标记之间的令牌表重写一遍；两处都不手改。
 
@@ -25,7 +25,7 @@
 
 ## 代价
 
-- 多了 PostCSS 与 postcss-selector-parser 两个开发依赖。
+- 多了 PostCSS 与 postcss-selector-parser 两个开发依赖；读 TS 语法树用的是 TypeScript 7 标为 unstable 的同步 API（`typescript/unstable/sync`），版本固定，升级 TypeScript 时要一并核对。
 - 令牌的说明只能写进 JSON 的 `note` 与 `use` 字段，生成的样式表不带注释。
 - 页面上的样式表没有注释与排版，压缩还会合并相邻的同值规则、把四边合成 `inset`；在开发者工具里对照源文件要按选择器去找。
 

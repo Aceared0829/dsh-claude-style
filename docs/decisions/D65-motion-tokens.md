@@ -18,7 +18,7 @@
 - 检查：
   - `scripts/css.mjs` 在语法树上拒绝令牌样式表以外出现的非零时长与 `ease`、`ease-in`、`ease-out`、`ease-in-out`、`cubic-bezier()` 曲线，范围是 `transition*`、`animation*` 属性与所有自定义属性的值；`linear`、`step-start`、`step-end`、`steps()` 与 0 不算，它们是机械的计时，不是风格选择。
   - 同一份检查拒绝两组内容相同的 `@keyframes`，报出两处的名字；拒绝没有任何样式表或 TS 读到的动效令牌——令牌样式表本身声明了每一个令牌，不算读者，另一个令牌的值（简写）算；也拒绝浏览器半边向 `shared/motion.ts` 问一个令牌表里没有的名字。
-  - `scripts/build-checks.mjs` 拒绝 `packages/client/src/` 的 TS 里写成字面字符串的同类曲线，WAAPI 的曲线经 `motionEase()` 取。
+  - `scripts/build-checks.mjs` 拒绝 `packages/client/src/` 的 TS 里写成字面字符串的同类曲线，WAAPI 的曲线经 `motionEase()` 取；`easing` 的取值在语法树上按类型读出，经常量与参数转手的同样算，注释不算（`scripts/source-tree.mjs`）。
 - 「减弱」（D26）照旧由 `theme/chrome.css` 的一条规则把皮肤节点的时长压到 `--dsh-claude-duration-reduced`；预设关键帧的终态就是元素静止时的样子，压成一瞬也不留中间状态。功能自己需要 `animation: none` 的个别规则留在功能里，理由写在旁边。
 
 ## 理由

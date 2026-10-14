@@ -57,6 +57,7 @@ import { checkContracts, checkCycles, checkDependencies, checkListed, checkManif
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
 import { TOKEN_SHEET, buildStylesheet, loadTokens, writeLayerTable, writeMotionTable, writeTokenTable } from './css.mjs'
 import { motionValues } from './shared/motion-tokens.mjs'
+import { readSourceTree } from './source-tree.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import manifestReader from './shared/read-manifests.cjs'
@@ -333,7 +334,11 @@ async function main() {
   checkManifests(manifests)
   checkContracts(manifests)
   checkDependencies()
-  checkMotionSources(SRC)
+  // The browser half on its syntax tree, once the type check has passed: the
+  // attributes it writes, its easing curves and stacking levels, the motion
+  // tokens it asks for (scripts/source-tree.mjs).
+  const sources = readSourceTree(ROOT, SRC)
+  checkMotionSources(sources)
   const sheets = styleFiles(manifests)
 
   // Every image, its content hash and its address (D38). Nothing is written
@@ -376,7 +381,7 @@ async function main() {
   checkClaimed(plan, claimed)
 
   const tokenDoc = loadTokens(SRC)
-  const cssText = buildStylesheet({ sheets, srcDir: SRC, tokenDoc, gates: CONSTANTS.gates, images })
+  const cssText = buildStylesheet({ sheets, srcDir: SRC, sources, tokenDoc, gates: CONSTANTS.gates, images })
   if (writeTokenTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md token table from packages/client/src/theme/tokens.json')
   if (writeMotionTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md motion table from packages/client/src/theme/tokens.json')
   if (writeLayerTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md layer table from packages/client/src/theme/tokens.json')

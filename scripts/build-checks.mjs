@@ -237,30 +237,18 @@ export function checkScrollOwner(metafile) {
  * packages/client/src/shared/motion.ts and a curve changed in the token table reaches
  * every animation. `linear` and the step functions are mechanical timing and
  * stay; the check reads the `easing` option of a keyframe or of an animation.
- * A stacking level above the local orders is refused the same way (D00).
+ * A stacking level above the local orders is refused the same way (D00): the
+ * browser half marks the element, and a sheet places it on a layer.
  *
- * @param srcDir - packages/client/src.
+ * @param sources - the browser half on its syntax tree (scripts/source-tree.mjs).
  */
-export function checkMotionSources(srcDir) {
-  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) return walk(full)
-    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [full] : []
-  })
-  for (const file of walk(srcDir)) {
-    const text = fs.readFileSync(file, 'utf8')
-    const where = (index) => `${path.relative(ROOT, file).replaceAll('\\', '/')}:${text.slice(0, index).split('\n').length}`
-    for (const match of text.matchAll(/easing:\s*'([^']*)'/g)) {
-      const value = match[1]
-      if (value === 'linear' || /^steps\(/.test(value)) continue
-      throw new Error(`build: ${where(match.index)} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
-    }
-    // A stacking level written by hand in an inline style would stand outside
-    // the layer table (D00): the browser half marks the element, and a sheet
-    // places it on a layer.
-    for (const match of text.matchAll(/z-?index\s*[:=]\s*['"]?(-?\d+)/gi)) {
-      if (Number(match[1]) <= 9) continue
-      throw new Error(`build: ${where(match.index)} writes the stacking level ${match[1]}; mark the element and place it on a layer in its stylesheet (D00)`)
-    }
+export function checkMotionSources(sources) {
+  for (const [value, where] of sources.easings) {
+    if (value === 'linear' || /^steps\(/.test(value)) continue
+    throw new Error(`build: ${where} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
+  }
+  for (const [value, where] of sources.stacking) {
+    if (Number(value) <= 9) continue
+    throw new Error(`build: ${where} writes the stacking level ${value}; mark the element and place it on a layer in its stylesheet (D00)`)
   }
 }
