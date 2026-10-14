@@ -343,7 +343,7 @@ Both are solid (never translucent) and `!important`, so they override whatever
 colour the text underneath carries — links, inline code, syntax tokens. CSS
 cannot read window focus: Chromium reaches the inactive paint through its own
 internal `-internal-inactive-selection-*` properties, which a stylesheet cannot
-address. `packages/client/src/features/selection/selection.ts` therefore mirrors `document.hasFocus()`
+address. `packages/client/src/features/composer/selection-mirror.ts` therefore mirrors `document.hasFocus()`
 onto `data-dsh-window-blur` and the stylesheet switches on that attribute; the
 selection itself survives the blur.
 

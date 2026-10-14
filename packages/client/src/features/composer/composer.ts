@@ -9,6 +9,8 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './composer.manifest'
 import { closestFrom, setAttributeIfChanged } from '../../shared/dom'
 import { writeScroll } from '../../shared/scroll-owner'
+import { createPlaceholderCopy } from './placeholder-copy'
+import { installWindowBlurMirror } from './selection-mirror'
 
 /** What other features read off the composer's reading (ui.composer). */
 export interface ComposerHandle extends FeatureHandle {
@@ -27,9 +29,12 @@ export interface ComposerHandle extends FeatureHandle {
  * keys on: the hero/inline variant on the cards and their stack, the
  * composer gate on <body>, the attachment state and tiles, the context
  * meter's stamp and room, and whether the chat tab (the composer's only
- * view) is up. The scheduler triggers its two behaviours through hooks: a
- * press on the inline card focuses the editor, and the transcript follows
- * the card when it changes height.
+ * view) is up. The scheduler triggers its behaviours through hooks: a press
+ * on the inline card focuses the editor, a composer input refreshes the
+ * hint's synthetic placeholder, and the transcript follows the card when it
+ * changes height. The window-blur mirror the selection paints key on (D35)
+ * and the idle hint's own words live here too — both read the same card
+ * state this reading produces.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Whether the page shows the hero composer, as of the last reading. */
@@ -40,6 +45,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let studioHome = false
   /** The hero page's composer card, or null off the hero page, as of the last pass. */
   let heroCard: HTMLElement | null = null
+  /** The idle hint's own words, and the synthetic placeholder that carries them. */
+  const placeholderCopy = createPlaceholderCopy()
+  /** The window-blur mirror the selection paints key on (D35). */
+  const stopWindowBlur = installWindowBlurMirror()
 
   /**
    * Read the page's composer state. The host marks the conversation root
@@ -420,6 +429,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     syncVariant(cards)
     document.body.toggleAttribute(COMPOSER_ATTR, active)
     syncAttachments(cards)
+    // Before the draft mark: the hint the skin adds is part of what "empty"
+    // means to the stylesheet's `card:has(placeholder)` rules.
+    placeholderCopy.sync(hero, active)
     syncDraftState(cards)
     syncControls(cards)
     stampContextMeter(cards[0])
@@ -464,6 +476,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     isActive() { return active },
     /** A copy source changed, the composer-scope preference among them: read again now. */
     onCopyChange: readState,
+    /** A composer input or composition event: the hint's synthetic placeholder may have changed. */
+    onInput() { placeholderCopy.onInput(hero, active) },
     onPointerDown: focusEditorOnPress,
     /** The composer card changed size: the transcript follows it. */
     reposition(reason: 'viewport' | 'composer') {
@@ -475,6 +489,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   return () => {
     active = false
     heroCard = null
+    stopWindowBlur()
+    placeholderCopy.dispose()
     document.body.removeAttribute(COMPOSER_ATTR)
     document.body.removeAttribute(COMPOSER_HIDDEN_ATTR)
     const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR, 'data-dsh-claude-context-meter']

@@ -30,6 +30,10 @@ import { motionMs } from '../../shared/motion'
  * only times the suppression around that flip. It is a channel of its own on
  * the observation bus (D40): the scheduler's pass only hears
  * aria-label/aria-selected (D9), and this flag must not feed it.
+ *
+ * It lives with the settings page because that page is the one feature that
+ * stays on a yielded page (D49); the sweep itself stands down there, since
+ * another skin's transitions are not this one's to cancel.
  */
 export const THEME_FLIP_ATTR = 'data-dsh-theme-transitioning'
 export const THEME_FLIP_MS = motionMs('--dsh-claude-duration-fade')
@@ -54,7 +58,7 @@ export const THEME_FLIP_PROPS: Record<string, boolean> = {
   'caret-color': true
 }
 
-export function install() {
+export function installThemeFlip() {
   const body = document.body
   const root = document.documentElement
   let flipTimer: ReturnType<typeof setTimeout> | null = null
@@ -80,6 +84,10 @@ export function install() {
   }
 
   function onThemeFlip() {
+    // A yielded page belongs to another skin: its transitions are not this
+    // one's to cancel, and the suppression rule cannot match without the
+    // skin's own stamp (D49).
+    if (!body.hasAttribute('data-dsh-claude-style')) return
     setFlag(true)
     // Force the flip's style recalc right now — inside this microtask,
     // before any paint — so every transition it would start has started.

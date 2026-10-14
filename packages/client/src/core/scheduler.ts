@@ -50,12 +50,10 @@ export interface FeatureHandle {
  * handle type of its own; the others are plain scheduler hooks.
  */
 export interface Handles {
-  selection: FeatureHandle
   brand: FeatureHandle
   composer: ComposerHandle
   homeLayout: FeatureHandle
   mascot: FeatureHandle
-  copy: FeatureHandle
   permissions: FeatureHandle
   contextStats: FeatureHandle
   model: ModelHandle
@@ -65,7 +63,6 @@ export interface Handles {
   quickProviders: QuickProvidersHandle
   footer: FooterHandle
   ban: BanHandle
-  themeFlip: FeatureHandle
   workspace: FeatureHandle
   search: FeatureHandle
   turnNav: FeatureHandle

@@ -13,6 +13,7 @@ import { createSettingsDesktopTab } from './settings-tab-desktop'
 import { createSettingsGeneralTab } from './settings-tab-general'
 import { createSettingsMotionTab } from './settings-tab-motion'
 import { createSettingsSidebarTab } from './settings-tab-sidebar'
+import { installThemeFlip } from './theme-flip'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
 import type { HostContext } from '../../core/host'
@@ -361,6 +362,9 @@ export function settingsSectionIndex() {
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   loadModelCopy()
+  // The one feature that stays on a yielded page also carries the theme
+  // flip's transition suppression (D49); it stands down there itself.
+  const stopThemeFlip = installThemeFlip()
   // The settings services are up by now even when they were not at apply
   // time, so retry the official-form binding before choosing a seat. It is
   // idempotent.
@@ -374,7 +378,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     quickProviderApi = ui.quickProviders || null
   }
-  if (typeof ctx.inject !== 'function') return () => {}
+  if (typeof ctx.inject !== 'function') return stopThemeFlip
   const fiber = ctx.inject(['slots'], scope => {
     const slots = scope.get('slots')
     if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
@@ -410,6 +414,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     )), 'dsh-claude-style: settings section')
   })
   return () => {
+    stopThemeFlip()
     if (ui && ui.settingsNav) {
       delete ui.settingsNav
     }

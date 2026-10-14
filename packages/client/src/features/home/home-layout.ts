@@ -7,6 +7,7 @@ import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
 import { HOME_RANGES, createHomeUsage, homePanelData } from './data'
+import { createGreetingCopy } from './greeting-copy'
 import { createHomeModels } from './models'
 import { createHomeOverview } from './overview'
 import { buildElement } from '../../shared/dom'
@@ -60,6 +61,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * renewed each time the page comes back to the new-conversation hero.
    */
   let bookPick = Math.random()
+  /** The hero headline's greeting, renewed on every return to the hero page. */
+  const greeting = createGreetingCopy()
   let slotsFiber: HostFiber | null = null
   /** The cold start screen's panel: `{ stack, element, root }`, or null. */
   let coldSeat: { stack: Element, element: HTMLElement, root: ReactDOM.Root } | null = null
@@ -257,6 +260,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (next !== layout) {
       setLayout(next)
       syncColdSeat()
+      greeting.sync(lastHero)
       return
     }
     // The hero/active phase flips without any preference change (opening a
@@ -270,6 +274,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (hero) bookPick = Math.random()
       usage.notify()
     }
+    greeting.sync(hero)
     syncColdSeat()
     if (next === HOME_LAYOUT_STUDIO) {
       usage.load(false)

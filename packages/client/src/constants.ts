@@ -421,7 +421,7 @@ export const HERO_MENU_ATTR = 'data-dsh-claude-hero-menu'
  *
  * The window's focus state is the only thing that separates the two text
  * selection paints (gray on black unfocused, blue on white focused), and no
- * selector can read it — so packages/client/src/features/selection/selection.ts mirrors it onto the
+ * selector can read it — so packages/client/src/features/composer/selection-mirror.ts mirrors it onto the
  * document and the stylesheet switches on this attribute.
  */
 export const WINDOW_BLUR_ATTR = 'data-dsh-window-blur'

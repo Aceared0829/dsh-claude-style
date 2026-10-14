@@ -7,7 +7,7 @@
 ## 决定
 
 - 每个功能在自己的清单（D42）里二选一地声明 `pref: '<偏好键>'` 或 `ungated: '<理由>'`；两个都写由类型拒绝，两个都没写或 `pref` 不是宿主半边 `PREFS_DEFAULT` 里的键由构建拒绝。
-- 划分标准：替换或挪动宿主原有的控件与区域、或往界面上加新的可见元素的功能设开关；不设开关的是只修宿主毛病而不改变功能的（`selection`、`themeFlip`）、从属于另一个已有开关的（`copy` 与 `heroMenu` 跟随输入框改造的范围，`effort` 跟随模型选择器，`quickProviders` 是模型选择器的设置项）以及设置页本身。几个功能可以共用一个开关，也可以共用一个选择项的不同取值：六个搬来的聊天区动效都声明 `chatAnimations`，`model` 与 `effort` 都声明 `modelPicker`，`contextStats`（D27）在自己的 `statsPosition` 下运行，`ban` 在 `banLocale` 的两种语言下运行、取值 `off` 时不装。
+- 划分标准：替换或挪动宿主原有的控件与区域、或往界面上加新的可见元素的功能设开关；不设开关的是读者什么都没提供时页面与宿主一致的（`brand`）、从属于另一个已有开关的（`heroMenu` 跟随输入框改造的首页范围，`effort` 跟随模型选择器，`quickProviders` 是模型选择器的设置项）以及设置页本身。几个功能可以共用一个开关，也可以共用一个选择项的不同取值：六个搬来的聊天区动效都声明 `chatAnimations`，`model` 与 `effort` 都声明 `modelPicker`，`contextStats`（D27）在自己的 `statsPosition` 下运行，`ban` 在 `banLocale` 的两种语言下运行、取值 `off` 时不装。
 - `pref` 属于 `FEATURE_PREF_DEFAULTS` 时统一执行：启动时关着的功能不安装（选择项按清单里的 `prefValues` 判定，取值不在其中就是关）；偏好每次被采用时逐个对照，关掉就运行它自己的 teardown、删掉句柄、交还接管的宿主界面，打开就重新安装，都不刷新页面。其余的 `pref`（`composerScope`、`homeLayout`、`modelPicker`、`collapseFooter`、`mascot`）由功能自己读。退役过的功能（D12）在本代内不因偏好变化装回。
 - 设置页按分页组织（通用、外观、输入区、侧栏、对话、桌面端、动效）。布尔开关的行由拥有这个偏好的功能在清单里声明（分页、序号、标题与说明的文案键），共用一个开关的几个功能只由其中一个声明；其余的行写在 `packages/client/src/features/settings/settings-tab-*.ts`，控件在 `settings-controls.ts`，两者按序号合并；从属于另一项的行紧跟在它下面、两行之间不画分隔线，父项关闭时变灰、不能操作。「桌面端」页放只作用于 Windows 桌面端窗口的开关；偏好在宿主的设置文档里、各页面共用，所以别的页面上这些行照常可改，分页开头一行说明改动在 Windows 窗口里生效。「动效」页放不属于任何单个功能的动效选择（`statusMotion`），与「通用」页的 `motion` 分开：后者是减弱与否，前者是在同一个减弱规则下换一种画法。
 - 功能只在另一个偏好的某些取值下起作用、而它的行与那一项不相邻时，清单的开关行声明 `requires`（那个偏好、起作用的取值、一句说明的文案键）：那个偏好不在这些取值里时，这一行保留读者存下的值、控件不能操作，说明下面用强调色写出它在等哪一项。`model` 与 `permissions` 等输入区改造打开，`contextStats` 等它覆盖对话页。
