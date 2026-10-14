@@ -32,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 推理等级滑杆的方向在档位未按强度排列的模型上不再反向：Qoder、Raccoon 与 MiniMax 的档位由供应商按自己的顺序下发（Qoder 的 Qwen3.8-Max 是「极高、低、中、关闭思考」），而滑杆把下发顺序当作强度轴，于是最右端落在最弱的档位上——在这些模型上停止思考被读成了最强。现在档位按强度重新排列后再画，无法判定强度的档位保持供应商顺序并排在已知档位之后。
 - 修复 Firefox 下鼠标停留在上下文用量圆环时统计弹层反复闪烁的问题：返回入口会取消待执行的关闭任务，鼠标仍在入口上时弹层保持展开。
 - 在较新的宿主上，思考行自动收起，以及读者点开或收起思考行时，高度一步到位，卷帘门没有滚动。现在这两种结构上的展开体都能被找到——行自己带标题的取行后面的兄弟，行被标题包住的进入承载展开体的那个盒子再取其最后的子元素——所以思考行的自动收起与读者的点开收起都会像其他行一样逐帧滚动。展开体的入场淡入用同一套查找，新增的展开体在这两种结构上都淡入并上移两个像素进入。
 - 打开「悬停自动展开弹层」后，鼠标停在入口上让弹层展开，再按这个入口会把刚展开的弹层收起，想点进去的条目反而被自己合上。现在悬停态下按同一个入口不再收起弹层，覆盖侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器，以及输入框右侧的上下文圆环：弹层保持展开，退出方式交给鼠标离开入口与卡片（关掉这个偏好时按下仍是唯一的开关）。
@@ -73,6 +74,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- The effort slider no longer runs the wrong way on models whose levels arrive unordered: Qoder, Raccoon and MiniMax send their levels in the provider's own order (Qoder's Qwen3.8-Max sends xhigh, low, medium, none), and the slider read that order as a strength scale, so the right end landed on the weakest level — on these models switching thinking off read as the strongest setting. The levels are now ordered by strength before the ladder is drawn, and a level whose strength is unknown keeps the provider order and follows every known level.
 - Fix the context statistics popover repeatedly flickering while the pointer rests on the context ring in Firefox: returning to the trigger cancels the pending close, and the popover stays open while the trigger is hovered.
 - On newer hosts a thinking row's automatic fold — and a reader's own press on such a row — moved the height in one step with no rolling door. The expanded body is now found on both shapes: the family's last child where the row is its own header, and that child's own last element where the row sits inside a header, so a thinking row rolls frame by frame like any other row. The entrance fade reads the body the same way, so an inserted body fades in and rises two pixels on both shapes.
 - With "Open popovers on hover" on, a pointer resting on a trigger opened its popover, and a press on that same trigger then folded the popover the pointer had just opened. Under hover a press on the trigger no longer folds it — on the sidebar account entry, the permission picker, the model picker, the effort picker, the home row's two pickers and the context ring beside the composer: the popover stays up, and leaving the trigger and its card is what closes it. With the preference off, a press remains the only way in and out.
