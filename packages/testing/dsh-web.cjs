@@ -186,6 +186,8 @@ async function start(options = {}) {
  * @param options.headless - run without a window (default true).
  * @param options.args - extra Chrome switches.
  * @param options.width/height - the viewport.
+ * @param options.initScript - a function the page runs before any of its own
+ *     scripts, for a reading that has to be in place before the first frame.
  * @returns `{ page, context, browser, close() }`.
  */
 async function openPage(url, options = {}) {
@@ -193,6 +195,7 @@ async function openPage(url, options = {}) {
   if (!executablePath) throw new Error('no local Chrome or Edge found; set CHROME_PATH')
   const browser = await chromium.launch({ executablePath, headless: options.headless ?? true, args: options.args ?? [] })
   const context = await browser.newContext({ viewport: { width: options.width ?? 1280, height: options.height ?? 900 } })
+  if (options.initScript !== undefined) await context.addInitScript(options.initScript)
   const page = await context.newPage()
   const problems = []
   page.on('console', (message) => {

@@ -202,7 +202,7 @@ module.exports = {
     check('with the hover preference on, a press on the open menu keeps it open and the leave still closes it',
       r.pressOnOpenMenu === true && r.pressKeepsMenu === true && r.pressLeaveClosesMenu === true,
       JSON.stringify({ open: r.pressOnOpenMenu, kept: r.pressKeepsMenu, closed: r.pressLeaveClosesMenu }))
-    check('the host account menu plays the skin\'s shared entrance preset',
+    check('the host account menu plays the skin\'s shared menu entrance',
       r.menuEntryKeyframes === true && r.menuEntryAnimation === true,
       JSON.stringify({ keyframes: r.menuEntryKeyframes, animation: r.menuEntryAnimation }), 'timing')
     check('the card stays unpainted until the skin\'s rows are in it and the host has placed it',
@@ -218,9 +218,9 @@ module.exports = {
     check('the hold screen opens over the menu and survives the leaves its overlay causes',
       r.banOpened === 1 && r.banSurvivesLeave === 1,
       JSON.stringify({ opened: r.banOpened, survived: r.banSurvivesLeave }))
-    check('the host menu stays up behind the hold screen and the screen leaves by its own control',
-      r.menuBehindBan === true && r.banAfterDismiss === 0,
-      JSON.stringify({ menu: r.menuBehindBan, dismissed: r.banAfterDismiss }))
+    check('the host menu stays up behind the hold screen and the screen leaves by its own control, playing its exit first',
+      r.menuBehindBan === true && r.banLeaving === true && r.banAfterDismiss === 0,
+      JSON.stringify({ menu: r.menuBehindBan, leaving: r.banLeaving, exitMs: r.banExitMs, dismissed: r.banAfterDismiss }))
     check('with the easter egg off the account row is a plain name a press does not open, and back on it is the button again',
       !!r.banOff && !!r.banOff.row && r.banOff.row.role === null && r.banOff.row.tabindex === null && r.banOff.opened === 0 &&
         !!r.banOn && !!r.banOn.row && r.banOn.row.role === 'button' && r.banOn.row.tabindex === '0',

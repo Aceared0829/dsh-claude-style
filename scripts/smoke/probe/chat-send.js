@@ -55,11 +55,23 @@
       await sleep(50)
       var plateEcho = document.createElement('div')
       plateEcho.setAttribute('data-submission-echo', '')
-      plateEcho.innerHTML = '<div id="plateBubble" style="width:220px;height:44px;background:rgb(240,240,240);border-radius:18px;padding:8px 12px;font-size:15px;line-height:24px">plate</div>'
+      plateEcho.innerHTML = '<div id="plateBubble" style="width:220px;height:44px;background:rgba(0, 0, 0, 0.08);border-radius:18px;padding:8px 12px;font-size:15px;line-height:24px">plate</div>'
       sendFlow.appendChild(plateEcho)
       await sleep(16)
       var plateBox = document.getElementById('plateBubble').getBoundingClientRect()
-      var plateFill = getComputedStyle(document.getElementById('plateBubble')).backgroundColor
+      // What the screen paints for that fill: a translucent token composited over
+      // the canvas once (send-snapshot.ts's chatSendOpaque). The stand-in has to
+      // carry this, not the token itself — a translucent plate composites again
+      // over the row it lands on.
+      var plateParts = /rgba?\(([^)]+)\)/.exec(getComputedStyle(document.getElementById('plateBubble')).backgroundColor)
+      var plateNumbers = plateParts[1].split(',').map(Number)
+      var plateAlpha = plateNumbers[3] === undefined ? 1 : plateNumbers[3]
+      var canvasParts = /rgba?\(([^)]+)\)/.exec(getComputedStyle(document.body).backgroundColor)
+      var canvasNumbers = canvasParts[1].split(',').map(Number)
+      var plateMix = function (index) {
+        return Math.round((plateNumbers[index] * plateAlpha) + (canvasNumbers[index] * (1 - plateAlpha)))
+      }
+      var plateFill = 'rgb(' + plateMix(0) + ', ' + plateMix(1) + ', ' + plateMix(2) + ')'
       var plateFrames = 0
       var plateWrong = 0
       var plateLight = 0

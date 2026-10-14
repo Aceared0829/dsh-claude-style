@@ -54,13 +54,16 @@
           copies: copies.length,
           phase: leaving !== null ? 'exit' : (entering !== null ? 'enter' : null),
           displayed: moving === undefined ? null : moving.textContent,
-          // The band rides whichever box holds the words, so the reading is
-          // taken off the box carrying it.
-          sweep: label.classList.contains('dsh-claude-swap-shimmer')
-            ? getComputedStyle(label, '::before').animationName
-            : (entering !== null
-                ? getComputedStyle(entering, '::before').animationName
-                : (copies.length > 0 ? getComputedStyle(copies[copies.length - 1], '::before').animationName : 'none')),
+          // The paint rides the copy showing the words — never the label, whose
+          // box stands taller by the swap's travel — so the reading is taken
+          // off the last copy (the one arriving while a swap runs). Which paint
+          // that is comes from the Motion tab's choice, read here off the
+          // document as well so a name and a choice that disagree are caught.
+          sweep: copies.length > 0
+            ? getComputedStyle(copies[copies.length - 1], '::before').animationName
+            : 'none',
+          statusMotion: document.body.getAttribute('data-dsh-claude-status-motion'),
+          sweepOnLabel: label.classList.contains('dsh-claude-swap-shimmer'),
           filter: movingStyle === null ? 'none' : movingStyle.filter,
           opacity: movingStyle === null ? '1' : movingStyle.opacity,
           clock: parts[1].hidden ? null : parts[1].textContent,
@@ -201,6 +204,16 @@
       r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
       window.__pushForm({ motion: 'system' })
       await sleep(200)
+      // The Motion tab's second paint: the words take the colour wash and its
+      // two loops instead of the band, and picking the band again hands them
+      // back. The choice is one document attribute, so a reading after one
+      // sleep is the whole paint.
+      window.__pushForm({ statusMotion: 'wash' })
+      await sleep(200)
+      r.wait.wash = lineOf()
+      window.__pushForm({ statusMotion: 'sweep' })
+      await sleep(200)
+      r.wait.sweepAgain = lineOf()
       r.wait.enterFrames = await waitForEnter
       var previousWords = words
       words = document.createElement('span')

@@ -121,7 +121,7 @@
       }
       r.settings = { registered: typeof Section === 'function', pages: {} }
       if (r.settings.registered) {
-        var tabIds = ['general', 'appearance', 'composer', 'sidebar', 'conversation', 'desktop']
+        var tabIds = ['general', 'appearance', 'composer', 'sidebar', 'conversation', 'desktop', 'motion']
         for (var ti = 0; ti < tabIds.length; ti++) r.settings.pages[tabIds[ti]] = renderTab(tabIds[ti])
         r.settings.link = r.settings.pages.general.link
         // The heading's mark: the build inlines the asset into the token sheet
@@ -137,6 +137,86 @@
           ink: markStyle.backgroundColor,
         }
         linkNode.remove()
+        // The waiting line's paint cards: the stand-in renders the page as a
+        // plain tree, so the two previews are stood up here with the classes and
+        // the wordings the cards carry, and read through their own boxes — the
+        // layer count is how many radial washes a paint really holds, and the
+        // two wordings' animation names, delays and places are the taking-turns.
+        r.settings.paintCards = (function () {
+          var out = { cards: [], previews: {} }
+          var react = window.__react
+          react.rendering = true
+          react.states = { general: 'motion' }
+          var tree = Section({})
+          react.rendering = false
+          react.states = null
+          walk(tree, function (node) {
+            var props = node.props || {}
+            if (typeof props.className === 'string' && /(^| )dsh-claude-motion-card( |$)/.test(props.className)) {
+              var kids = [].concat(props.children || [])
+              var sample = kids[0] || {}
+              var sampleProps = sample.props || {}
+              // The two wordings, read through the tree: the sample's children
+              // arrive nested (the module passes the mapped array as one child,
+              // as React flattens it), so the walk is what finds the words.
+              var words = []
+              walk(sampleProps.children, function (word) {
+                var wordProps = word.props || {}
+                if (/(^| )dsh-claude-motion-word( |$)/.test(wordProps.className || '')) words.push([].concat(wordProps.children || []).join(''))
+              })
+              out.cards.push({
+                label: props['aria-label'],
+                active: props['data-active'] === '',
+                pressed: props['aria-pressed'],
+                // The card's only content is its sample: the choice carries no
+                // text of its own, and the sample is the words taking turns.
+                sample: kids.length === 1 && /(^| )dsh-claude-motion-sample( |$)/.test(sampleProps.className || ''),
+                words: words,
+                sampleHidden: sampleProps['aria-hidden'] === 'true',
+              })
+            }
+          })
+          var kinds = ['sweep', 'wash']
+          var wordings = (out.cards[0] || {}).words || []
+          for (var ki = 0; ki < kinds.length; ki += 1) {
+            // Inside a card, where the sample is a flex item: its box then takes
+            // the room the card gives it, as it does on the page.
+            var card = document.createElement('button')
+            card.className = 'dsh-claude-motion-card'
+            var box = document.createElement('span')
+            box.className = 'dsh-claude-motion-sample'
+            for (var wi = 0; wi < wordings.length; wi += 1) {
+              var word = document.createElement('span')
+              word.className = 'dsh-claude-motion-word dsh-claude-' + kinds[ki]
+              word.setAttribute('data-text', wordings[wi])
+              word.textContent = wordings[wi]
+              box.appendChild(word)
+            }
+            card.appendChild(box)
+            document.body.appendChild(card)
+            var nodes = [].slice.call(box.children)
+            var style = nodes.length === 0 ? null : getComputedStyle(nodes[0])
+            var paint = nodes.length === 0 ? null : getComputedStyle(nodes[0], '::before')
+            var round = function (value) { return Math.round(value) }
+            var centreOf = function (node) {
+              var rect = node.getBoundingClientRect()
+              return round((rect.left + rect.right) / 2)
+            }
+            out.previews[kinds[ki]] = {
+              words: nodes.map(function (node) { return node.textContent }),
+              wordAnimations: nodes.map(function (node) { return getComputedStyle(node).animationName }),
+              wordDelays: nodes.map(function (node) { return getComputedStyle(node).animationDelay }),
+              wordCentres: nodes.map(centreOf),
+              wordWidths: nodes.map(function (node) { return round(node.getBoundingClientRect().width) }),
+              width: round(box.getBoundingClientRect().width),
+              animation: paint === null ? null : paint.animationName,
+              washes: paint === null ? 0 : (paint.backgroundImage.match(/url\("data:image\/svg/g) || []).length,
+              ink: style === null ? null : style.color,
+            }
+            card.remove()
+          }
+          return out
+        })()
         window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false })
         r.settings.parentsOff = { appearance: renderTab('appearance'), composer: renderTab('composer'), sidebar: renderTab('sidebar') }
         window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true })

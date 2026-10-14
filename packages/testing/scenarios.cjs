@@ -5,10 +5,11 @@
  * this one (a `*Scenario` export), registered in the table below.
  *
  * A scenario is `{ script, prompt, delayMs?, viewport?, patch?, hostArgs?,
- * browserArgs?, beforeSend?, duringTurn?, afterTurn?, assert }`: `script` names
- * the scripted model's answer (packages/testing/mock-llm.cjs), `patch` adds
- * loader patch entries, `hostArgs` and `browserArgs` reach the host's command
- * line and the browser's, and `assert` returns the checks.
+ * browserArgs?, initScript?, beforeSend?, duringTurn?, afterTurn?, assert }`:
+ * `script` names the scripted model's answer (packages/testing/mock-llm.cjs),
+ * `patch` adds loader patch entries, `hostArgs` and `browserArgs` reach the
+ * host's command line and the browser's, `initScript` runs in the page before
+ * its own scripts, and `assert` returns the checks.
  */
 'use strict'
 const path = require('node:path')
@@ -18,10 +19,12 @@ const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { importanceScenario } = require('./importance.cjs')
 const { readerScrollScenario } = require('./reader-scroll.cjs')
 const { doorPinScenario } = require('./door-pin.cjs')
+const { motionScenario } = require('./motion.cjs')
 const { processSummaryScenario } = require('./process-summary.cjs')
 const { fileMergeScenario } = require('./file-merge.cjs')
 const { reasoningStreamScenario } = require('./reasoning-stream.cjs')
 const { waitLineScenario } = require('./wait-line.cjs')
+const { washLineScenario } = require('./wash-line.cjs')
 const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
@@ -215,6 +218,8 @@ const SCENARIOS = {
   readerScroll: readerScrollScenario({ check }),
   /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.cjs, D41). */
   doorPin: doorPinScenario({ check }),
+  /** The transitions.dev surfaces where they move: greeting, panel, switch, tab, badge, menu (motion.cjs, D65). */
+  motion: motionScenario({ check }),
   /** The send flight: the stand-in takes off, the row lands, the words stay put. */
   send: {
     script: 'greeting',
@@ -238,12 +243,25 @@ const SCENARIOS = {
       const sameType = takeOff !== undefined && takeOff.clone !== null && takeOff.composer !== null
         && takeOff.clone.family === takeOff.composer.family && takeOff.clone.size === takeOff.composer.size
         && takeOff.clone.weight === takeOff.composer.weight && takeOff.clone.color === takeOff.composer.color
+      // The stand-in lands on the row it replaces, and it has to be at least as
+      // tall as that row (see the trace's own note): a row taller than the
+      // stand-in keeps the page's paint below it while the covered part carries
+      // the stand-in's faded paint, and the seam reads as a stripe across the
+      // bubble. Height only: the stand-in is above the row while it travels, and
+      // its own landing give is a fraction of a pixel.
+      const covered = flight.filter((frame) => frame.shell !== null && frame.shell !== undefined && frame.bubble !== null && frame.bubble !== undefined)
+      const short = covered.filter((frame) => frame.shell[1] - frame.shell[0] < frame.bubble[1] - frame.bubble[0] - 1)
+      // The stand-in's plate is the row's colour as the screen paints it: a
+      // translucent token left translucent composites again over the row.
+      const translucent = covered.filter((frame) => /rgba\([^)]*,\s*0?\.\d+\)/.test(frame.shellFill ?? ''))
       return [
         check('替身起飞后离开页面', firstGhost !== -1 && goneByNow, `firstGhost at ${firstGhost === -1 ? 'n/a' : `${trace[firstGhost].t}ms`}, ghost at the end=${last.ghost}, left by now=${goneByNow}`),
         check('真行在飞行期间不可见', hidden.length > 0 && exposedWhileFlying.length === 0, `flying frames=${hidden.length}, of them visible=${exposedWhileFlying.length}`),
         check('读者的字每一帧都看得见', words.length === flight.length, `words on ${words.length} of ${flight.length} frames after take-off`),
         check('真行落定后可见并带着字', last.rows > 0 && last.rowVisible === true && (last.rowWords ?? []).includes('hello there'), `rows=${last.rows} visible=${last.rowVisible} words=${JSON.stringify(last.rowWords)}`),
         check('替身带走了输入卡片的样子', sameType === true, takeOff === undefined ? 'no take-off frame in the trace' : `clone ${takeOff.clone.size}/${takeOff.clone.color} vs composer ${takeOff.composer.size}/${takeOff.composer.color}, card ${takeOff.cloneCard} vs ${takeOff.composerCard}`),
+        check('替身落地时不低于它替换的那一行', covered.length > 0 && short.length === 0, `readable frames=${covered.length}, standing above the row's own foot=${covered.length - short.length}${short.length === 0 ? '' : `：${short.slice(0, 3).map((frame) => `shell ${(frame.shell[1] - frame.shell[0]).toFixed(1)} vs row ${frame.bubble[1] - frame.bubble[0]}`).join(' | ')}`}`),
+        check('替身的底色是画面上的颜色，不是半透明的令牌', covered.length > 0 && translucent.length === 0, `translucent fills=${translucent.length}${translucent.length === 0 ? '' : `（${[...new Set(translucent.map((frame) => frame.shellFill))].join('、')}）`}`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },
@@ -315,6 +333,8 @@ const SCENARIOS = {
   reasoningStream: reasoningStreamScenario({ check }),
   /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D32). */
   waitLine: waitLineScenario({ check }),
+  /** The waiting line's second paint, chosen in the settings (wash-line.cjs, D26). */
+  washLine: washLineScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D51). */
   importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
   /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D60). */

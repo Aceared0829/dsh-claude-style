@@ -509,11 +509,12 @@ module.exports = {
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs'],
       desktop: ['headerBand'],
+      motion: ['statusMotion'],
     }
     const pages = settings.pages || {}
     for (const tab of Object.keys(expected)) {
       const page = pages[tab] || {}
-      check(`the ${tab} tab is selected in the six-tab strip and carries its rows, every row enabled and none waiting`,
+      check(`the ${tab} tab is selected in the seven-tab strip and carries its rows, every row enabled and none waiting`,
         JSON.stringify(page.tabs) === JSON.stringify(Object.keys(expected)) && page.selected === tab &&
           JSON.stringify(page.rows) === JSON.stringify(expected[tab]) && Array.isArray(page.disabled) && page.disabled.length === 0 &&
           Array.isArray(page.notes) && page.notes.length === 0,
@@ -553,6 +554,31 @@ module.exports = {
     check('the link\'s mark is the inlined asset, painted as a mask in the quiet ink',
       mark.mask.includes('data:image/svg+xml') && mark.size === '16px×16px',
       JSON.stringify(mark))
+    const paintCards = settings.paintCards || {}
+    const cards = paintCards.cards || []
+    const previews = paintCards.previews || {}
+    check('the Motion tab\'s row is two preview cards carrying no text of their own: each names itself for the reader, the stored choice alone is drawn as picked, and a card holds nothing but its words',
+      cards.length === 2 && cards.every((card) => typeof card.label === 'string' && card.label.length > 0 && card.sample === true && card.sampleHidden === true) &&
+        cards.every((card) => Array.isArray(card.words) && card.words.length === 2 && card.words[0] !== card.words[1]) &&
+        cards[0].active === true && cards[0].pressed === 'true' && cards[1].active === false && cards[1].pressed === 'false',
+      JSON.stringify(cards))
+    check('each card previews its own paint: the band sweeps the words, the wash fills them with seven orbiting washes over the ramp',
+      previews.sweep?.animation === 'dsh-claude-sweep' && previews.sweep?.washes === 0 &&
+        previews.wash?.animation === 'dsh-claude-wash-hue, dsh-claude-wash-drift' && previews.wash?.washes === 7 &&
+        previews.sweep?.words?.join() === previews.wash?.words?.join(),
+      JSON.stringify(previews))
+    const delayOf = (value) => Number.parseFloat(value || '0')
+    check('the card\'s two wordings take turns where one stands: both run the line\'s swap on the preset card\'s period, the second offset half a turn, and they share one centre in a box as wide as the longer of them',
+      ['sweep', 'wash'].every((kind) => {
+        const preview = previews[kind] || {}
+        const delays = preview.wordDelays || []
+        const centres = preview.wordCentres || []
+        return preview.wordAnimations?.join() === 'dsh-claude-motion-word,dsh-claude-motion-word' &&
+          delays.length === 2 && delayOf(delays[0]) === 0 && delayOf(delays[1]) < 0 &&
+          Math.abs(delayOf(delays[1])) === 2 && centres[0] === centres[1] &&
+          preview.width === Math.max(...(preview.wordWidths || [0]))
+      }),
+      JSON.stringify(previews))
     commonChecks(r)
   },
   'dock-cards'(r) {

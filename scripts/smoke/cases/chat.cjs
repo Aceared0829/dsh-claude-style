@@ -292,8 +292,15 @@ module.exports = {
       working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
       JSON.stringify({ working, after: wait.foreignAfter }))
     check('the line says what the turn is doing, sweeping, with the turn\'s clock in the host\'s units',
-      working.word === 'Thinking…' && working.sweep === 'dsh-claude-wait-shimmer' && /^1m [5-9]s$/.test(working.clock || ''),
+      working.word === 'Thinking…' && working.sweep === 'dsh-claude-sweep' && working.statusMotion === 'sweep' && /^1m [5-9]s$/.test(working.clock || ''),
       JSON.stringify(working))
+    check('the band rides the copy holding the words, never the label (a first write and a reduced-motion one alike)',
+      working.sweepOnLabel === false && wait.reduced?.sweepOnLabel === false,
+      JSON.stringify({ working: working.sweepOnLabel, reduced: wait.reduced?.sweepOnLabel }))
+    check('the Motion tab\'s other paint takes the line\'s words over: the copy runs the wash and its two loops, and the band returns when it is picked again',
+      wait.wash?.statusMotion === 'wash' && wait.wash?.sweep === 'dsh-claude-wash-hue, dsh-claude-wash-drift' &&
+        wait.sweepAgain?.statusMotion === 'sweep' && wait.sweepAgain?.sweep === 'dsh-claude-sweep',
+      JSON.stringify({ wash: wait.wash, sweepAgain: wait.sweepAgain }))
     check('a model at work shows no overtime badge', working.badge === null, JSON.stringify(working))
     const silent = wait.silent || []
     const blurOf = (frame) => Number((/blur\(([\d.]+)px\)/.exec(frame.filter || '') || [])[1] || 0)
@@ -306,8 +313,8 @@ module.exports = {
       JSON.stringify({ frames: silent.length, leaving: leaving.map((frame) => [frame.opacity, frame.filter]) }))
     check('the two halves overlap: both copies are in the box while the swap runs, and the band keeps sweeping throughout',
       silent.filter((frame) => frame.copies > 1).length > 2 &&
-        silent.every((frame) => frame.sweep === 'dsh-claude-wait-shimmer'),
-      JSON.stringify({ overlapping: silent.filter((frame) => frame.copies > 1).length, sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-wait-shimmer').length }))
+        silent.every((frame) => frame.sweep === 'dsh-claude-sweep'),
+      JSON.stringify({ overlapping: silent.filter((frame) => frame.copies > 1).length, sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-sweep').length }))
     const enter = wait.enterFrames || []
     check('the wording arriving rises from below through a blur, its opacity climbing to rest',
       enter.length > 3 && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&
@@ -397,9 +404,9 @@ module.exports = {
     check('when the flight lands the stand-in is gone', landed.ghost === false, JSON.stringify(landed))
     check('the row is visible again when the flight lands',
       landed.hidden === false && landed.visibility === 'visible', JSON.stringify(landed))
-    // The plate the flight is drawn on (send-morph.ts): the bubble's own fill,
-    // on the shape, from the first frame — with nothing light left over the
-    // destination once it gets there.
+    // The plate the flight is drawn on (send-morph.ts): the bubble's own fill as
+    // the screen paints it, on the shape, from the first frame — with nothing
+    // light left over the destination once it gets there.
     const plate = send.plate || {}
     check('the stand-in is drawn in the destination bubble\'s own colour from the first frame',
       plate.frames > 5 && plate.wrong === 0 && plate.light === 0, JSON.stringify(plate))

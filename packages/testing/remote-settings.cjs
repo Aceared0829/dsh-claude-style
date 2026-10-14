@@ -129,4 +129,4 @@ function remoteSettingsScenario({ check }) {
   }
 }
 
-module.exports = { remoteSettingsScenario }
+module.exports = { remoteSettingsScenario, openSkinSettings }

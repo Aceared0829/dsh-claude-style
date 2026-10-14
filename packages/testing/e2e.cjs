@@ -21,7 +21,7 @@
  * writes can reach another.
  *
  * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--headed] [--out <dir>] [--delay <ms>]
- *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, doorPin, send, processSummary, reasoningStream, waitLine, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
+ *        scenarios: conversation, narrow, tool, fileMerge, scroll, readerScroll, doorPin, motion, send, processSummary, reasoningStream, waitLine, contract, statsPosition, statsOverlay, sidebarRail, importance, remoteSettings, shots
  *        (default: every scenario but statsPosition and statsOverlay)
  */
 'use strict'
@@ -116,6 +116,29 @@ async function startTrace(page) {
       const rows = [...document.querySelectorAll(host.userRow)]
       const last = rows.length === 0 ? null : rows[rows.length - 1]
       frame.ghost = ghost !== null
+      // The stand-in's own shape against the row it stands in for. Both marks are
+      // read every frame: the stand-in has to cover that row whole, because the
+      // part of the row left outside it keeps the page's own paint while the
+      // covered part carries the stand-in's faded paint on top — one bubble with
+      // a stripe across it, which is what send-shape.ts's destination-height
+      // floor and send-snapshot.ts's flattened fill exist to prevent.
+      const shell = ghost === null ? null : ghost.firstElementChild?.children[1] ?? null
+      // The bubble is the first element inside the row that paints a fill, as
+      // send-flight.ts's findBubble looks for it: the host's class names are not
+      // a contract this lane may lean on.
+      const bubble = last === null ? null : [...last.querySelectorAll('*')].find((node) => {
+        const value = getComputedStyle(node).backgroundColor
+        const match = /rgba?\(([^)]+)\)/.exec(value)
+        if (match === null) return false
+        const parts = match[1].split(',').map(Number)
+        return (parts[3] ?? 1) > 0.01 && node.getBoundingClientRect().width > 60
+      }) ?? null
+      const shellRect = shell === null ? null : shell.getBoundingClientRect()
+      const bubbleRect = bubble === null || bubble === undefined ? null : bubble.getBoundingClientRect()
+      frame.shell = shellRect === null ? null : [shellRect.top, shellRect.bottom]
+      frame.bubble = bubbleRect === null ? null : [bubbleRect.top, bubbleRect.bottom]
+      frame.shellFill = shell === null ? null : getComputedStyle(shell).backgroundColor
+      frame.bubbleFill = bubble === null || bubble === undefined ? null : getComputedStyle(bubble).backgroundColor
       frame.echo = document.querySelector(host.echo) !== null || (last !== null && last.hasAttribute(host.echoAttribute))
       frame.ghostWords = words(ghost)
       frame.rows = rows.length
@@ -174,7 +197,7 @@ async function runScenario(name, options) {
   let expired = false
   const timer = setTimeout(() => { expired = true }, SCENARIO_DEADLINE_MS)
   try {
-    session = await openPage(host.url, { headless: options.headed !== true, args: scenario.browserArgs, ...scenario.viewport })
+    session = await openPage(host.url, { headless: options.headed !== true, args: scenario.browserArgs, initScript: scenario.initScript, ...scenario.viewport })
     const { page } = session
     const body = (async () => {
       step('waiting for the skin')
@@ -243,7 +266,7 @@ async function main() {
       + `${unknown.length > 0 ? `; named there but missing here: ${unknown.join(', ')}` : ''}`
       + `${unnamed.length > 0 ? `; run here but unnamed there: ${unnamed.join(', ')}` : ''}`)
   }
-  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,doorPin,processSummary,reasoningStream,waitLine,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
+  const names = (argOf('scenario') ?? 'conversation,narrow,tool,fileMerge,send,scroll,readerScroll,doorPin,motion,processSummary,reasoningStream,waitLine,sidebarRail,contract,importance,remoteSettings,shots').split(',').map((name) => name.trim()).filter(Boolean)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
   const options = {
     headed: args.includes('--headed'),

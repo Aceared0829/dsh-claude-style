@@ -85,14 +85,14 @@
       // rules are what the page applies.
       var styleEl = document.getElementById('dsh-claude-style-style')
       var sheetRules = styleEl && styleEl.sheet ? Array.prototype.slice.call(styleEl.sheet.cssRules) : []
-      // The entrance is the shared preset (shared/motion.css, D65): the host menu's
-      // own rule plays dsh-claude-surface-in, which the stylesheet carries. The
-      // rule is read as written, since the shorthand names the timing token and a
-      // shorthand holding var() leaves the longhands of `style` empty.
-      r.menuEntryKeyframes = sheetRules.some(function (rule) { return rule instanceof CSSKeyframesRule && rule.name === 'dsh-claude-surface-in' })
+      // The entrance is the shared menu preset (shared/motion.css, D65): the host
+      // menu's own rule plays dsh-claude-dropdown-in, which the stylesheet carries.
+      // The rule is read as written, since the shorthand names the timing tokens
+      // and a shorthand holding var() leaves the longhands of `style` empty.
+      r.menuEntryKeyframes = sheetRules.some(function (rule) { return rule instanceof CSSKeyframesRule && rule.name === 'dsh-claude-dropdown-in' })
       r.menuEntryAnimation = sheetRules.some(function (rule) {
         return rule instanceof CSSStyleRule && rule.selectorText.indexOf('data-dsh-claude-account-ready') !== -1 &&
-          rule.cssText.indexOf('dsh-claude-surface-in') !== -1
+          rule.cssText.indexOf('dsh-claude-dropdown-in') !== -1
       })
       // Open the host's own menu: the card mounts with the host's rows, the skin
       // injects ours a frame later, and the host re-places the card a frame after
@@ -174,9 +174,16 @@
         await sleep(300)
         r.banSurvivesLeave = document.querySelectorAll('[data-dsh-ban]').length
         r.menuBehindBan = accountMenuOpen()
+        // The page leaves on its own exit: it is marked leaving at once and gone
+        // once the exit's duration has played.
         var banDismiss = document.querySelector('.dsh-claude-ban [data-dsh-ban-dismiss]')
         if (banDismiss) banDismiss.click()
-        await sleep(80)
+        r.banLeaving = document.querySelector('[data-dsh-ban][data-dsh-ban-leaving]') !== null
+        // The token as the shipped sheet spells it: the minifier writes times in
+        // whichever unit is shorter.
+        var exitToken = getComputedStyle(document.body).getPropertyValue('--dsh-claude-duration-exit').trim()
+        r.banExitMs = parseFloat(exitToken) * (/ms$/.test(exitToken) ? 1 : 1000)
+        await sleep(r.banExitMs + 80)
         r.banAfterDismiss = document.querySelectorAll('[data-dsh-ban]').length
         // The easter egg switched off: the row is a plain name, out of the tab
         // order, and a press opens nothing; switched back on it is the button again.
