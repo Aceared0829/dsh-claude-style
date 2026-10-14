@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">其他变更</h3>
+
+- `node scripts/changelog.mjs --release <版本>` 在汇编版本一节之前核对 `session/` 分支：有未合并的会话分支时列出它们并终止发版。
+
+<h3 id="en-unreleased">Chores</h3>
+
+- `node scripts/changelog.mjs --release <version>` checks the `session/` branches before it assembles the version's section: an unmerged session branch is listed and stops the release.
+
 ## [0.14.0] - 2026-10-14
 
 [中文](#cn-0.14.0) | [English](#en-0.14.0)
