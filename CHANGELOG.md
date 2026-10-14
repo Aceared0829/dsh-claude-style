@@ -23,7 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 只落在对话消息列里的变更批次（流式输出就是这种）只叫醒读消息列的功能，页头、视图标签、侧边栏页脚、模型与档位选择器不再跟着跑一趟；任何读到整页的信号（语言、偏好、时钟、功能自己排的一帧）照旧触发完整一趟。
 - 只在另一项打开时才起作用的设置行现在随父项一起变灰、不能操作（重绘模型选择器与重绘权限控件随「重绘对话框」，对话统计信息位置随重绘覆盖对话页，封号彩蛋随「折叠侧栏设置区」），变灰的行仍显示你设的值，说明下面用强调色写明它在等哪一项。
 - 滚动与窗口尺寸变化重新定位浮层时，一帧只派发一次（原来是每个滚动事件一次）；关闭着的模型卡与档位卡不再读宿主触发器的盒子，上下文数字行的合身测量只在输入卡片宽度变化时重做。
-- 设置页新增「桌面端」页放「标题进入顶栏」，进这一页时开头说明它只作用于 Windows 桌面端的窗口；「首页版面」挪到「外观」，「封号彩蛋」挪到「侧栏」并挂在打开它的账号弹层那一行下面，「搜索框样式」与「对话统计信息位置」的说明写出每个选项的效果。
+- 「标题进入顶栏」放进设置页的「对话」页，只在 Windows 桌面端的窗口里可改，在别的页面变灰、仍显示你设的值，并在下面注明它只在哪个窗口生效；「动画效果」从「通用」挪到「动效」，「首页版面」挪到「外观」，「封号彩蛋」挪到「侧栏」并挂在打开它的账号弹层那一行下面，「搜索框样式」与「对话统计信息位置」的说明写出每个选项的效果。
 - 皮肤里所有动效的时长、曲线、位移与模糊改由 `packages/client/src/theme/tokens.json` 的 `motion` 一组统一给出，同一作用的数值合成一档，`docs/STYLE.md` 的动效表由同一份数据生成，构建拒绝样式表里直接写出的时长与曲线、内容重复的关键帧，以及没有读者认领的动效令牌。
 - 流式回答里新文字的淡入改按文本节点增量比较：一条回答里追加字符时不再把整条回答重拼成字符串、也不再逐字符重比，成本随本批新增的字符走；markdown 中途改写标记的那一段仍按原来的窗口判定，超过预算或刚被折叠重排过就保持本色。
 - 状态行与过程组头部同读宿主 `TextShimmer` 的一档：1.5 秒一趟、`steps(48, end)`、每趟最后三分之一歇停，状态行的色带改用宿主的扫光色与 20% 带宽。
@@ -35,7 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 设置页切分页时新的一页从它在分页条上所在的一侧滑入并穿过一点模糊，被换下的那一页朝另一侧滑出（约 0.25 秒），滑出的那张静止副本读屏与 Tab 键都碰不到。
 - 首页打开时品牌标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）。
 - 设置页在极窄宽度下保持可读：一行放不下全部分页时分页条换到第二行，每个分页标签始终完整显示在一行上；一行的文字空间不足时，开关、分段选择器等控件移到文字下方独占一行，说明文字保持整行排版。
-- 上下文占用的色带移到四成到八成：占用四成以下保持绿色，四成到八成之间依次经过浅绿、黄与橙，八成起为红色。
+- 上下文占用的色带移到四成到八成，并改用一组低饱和度的色标：占用四成以下保持绿色，四成到八成之间依次经过浅绿、黄与橙，八成起为红色。
 - 工作室首页的用量面板：占位的底色淡去、数字从模糊里显出来，热力图的格子渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）。
 - 等待行的「暂未响应」徽标从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒）。
 - Claude 品牌下，轮次进行中那一行开头是主题自己的三枚 4px 加载点（各弹起 8 像素并在离地时压扁，半秒一次，错开周期依次起跳）；DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变。
@@ -95,7 +95,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - A change confined to the conversation column — streaming, above all — wakes only the features that read it: the header, the view tabs, the sidebar footer and the model and effort pickers no longer take a pass of their own. Any signal that reads the whole page (a language, a preference, the clock, a frame a feature asks for) still runs the full pass.
 - Settings rows that only work while another setting is on grey out and take no input with it — the model picker and the permission control with the composer restyle, the statistics position with the restyle covering the conversation, the easter egg with the sidebar settings — and a greyed row still shows the value you set, with a line in the accent colour saying what it waits for.
 - Scrolling or resizing now re-places fixed popovers once a frame instead of once per event; a shut model or effort card stops reading its trigger's box, and the inline context line is measured for fit only when the card's width has changed.
-- The settings page gains a Desktop tab carrying Header in the title bar with a line saying its settings act on the Windows desktop window only; Home layout moves to Appearance, the Account-hold easter egg to Sidebar under the row of the account popover it opens from, and Search box style and Conversation statistics position now say what each choice does.
+- Header in the title bar lives on the settings page's Conversation tab, taking input on the Windows desktop window alone and greying out on every other page — still showing the value you set, with a note naming the window it acts in; Animation moves from General to Motion, Home layout to Appearance, the Account-hold easter egg to Sidebar under the row of the account popover it opens from, and Search box style and Conversation statistics position now say what each choice does.
 - Every duration, curve, distance and blur in the skin comes from the `motion` group of `packages/client/src/theme/tokens.json`, one value per role, with the style guide's motion table generated from the same data and the build refusing a duration or curve written straight into a stylesheet, keyframes that repeat one the skin has, and a motion token nothing reads.
 - The fade over newly arrived characters in a streaming answer now compares text nodes incrementally: an append no longer rejoins the whole answer into a string nor walks it character by character, so the cost follows the batch. A markdown rewrite in the middle is still judged by the same window, and a rewrite past its budget or one that just reflowed from a fold stays solid.
 - The line and a process group's header share the host's own `TextShimmer` gear — 1.5 s a pass, `steps(48, end)`, the band resting the last third — and the line's band takes the host's shimmer tint at 20% width.
@@ -107,7 +107,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Changing settings tabs slides the new one in from the side it sits on along the strip, through a short blur, while the one it replaces slides out the other way (about 0.25 s); the page sliding out is a still copy that neither a screen reader nor the Tab key reaches.
 - Opening the home page raises the brand mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s).
 - The settings page stays readable at very narrow widths: the tab strip wraps onto a second line when one line no longer holds every tab, each label always whole on one line, and a row whose text runs out of room drops its control — a switch, a segmented control — onto a line of its own under the text.
-- The context-occupancy colour band moves to two fifths through four fifths: the reading stays green below two fifths, runs through light green, yellow and orange in between, and is red from four fifths on.
+- The context-occupancy colour band moves to two fifths through four fifths in a set of low-chroma tones: the reading stays green below two fifths, runs through light green, yellow and orange in between, and is red from four fifths on.
 - The studio home's usage panel fades its placeholders out while the figures come out of a blur, shades the heat map's cells into their own colours and fades the model list and chart in (about 0.3 s).
 - The waiting line's "No response yet" badge slides onto the line from below and to the left while it pops out of nothing (about 0.5 s) and shrinks away as soon as the model speaks (about 0.12 s).
 - Under the Claude brand the head of the running row carries the skin's own three 4px dots, each rising 8px and flattening as it leaves the floor, half a second a bounce with the three staggered into a wave; under the DeepSeek brand the host's whale tail stands as before, and the screen-reader announcement is unchanged.
