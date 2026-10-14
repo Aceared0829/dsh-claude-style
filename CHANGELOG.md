@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
+
+### 问题修复
 
 - `npm run session` 拆除会话工作树前先删掉它的 `node_modules` 联接：`git worktree remove` 把这个联接当目录走进去，再顺着主树 `node_modules` 里的工作区联接删掉主树 `packages/*` 的文件；现在先删联接再拆树，树里另有指向自己的链接时拒绝拆除并列出它们。
 
@@ -19,7 +23,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 发版工作流在把这一版转正之前跑完快档那批检查、Windows 上的完整冒烟与端到端通道，与 pull request 判定的内容一致。
 - 一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
+
+### Bug Fixes
 
 - `npm run session` drops a session tree's `node_modules` junction before it removes the tree: `git worktree remove` walked into that junction and, through the workspace junctions in the main tree's `node_modules`, deleted the main tree's own `packages/*` files. The junction goes first now, and a tree holding any other link out of itself is listed and kept.
 
