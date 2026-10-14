@@ -36,7 +36,9 @@
  *        (naming them drops the quick tier, which leaves the motion cases
  *        out), --e2e and --scenario add the lane, --full walks the whole smoke
  *        and the lane's default table, and --no-e2e leaves the lane out of
- *        either.
+ *        either. A request for everything the tool holds prints
+ *        `请确认你正处于发布流程。` before its gates start: the whole smoke and
+ *        the lane's default table are the cloud's release gate.
  */
 import { spawn } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -177,6 +179,19 @@ function parseRequest() {
   }
 }
 
+/**
+ * Whether a request walks everything the tool holds: the whole smoke and the
+ * end-to-end lane's default table. That pair is the cloud's release gate, so a
+ * request for it is asked to say what it is before the minutes start.
+ */
+function walksEverything(request) {
+  return !request.quick
+    && request.cases.length === 0
+    && request.features.length === 0
+    && request.e2e
+    && request.scenarios.length === 0
+}
+
 /** The gates this request runs, in the order each depends on the one before it. */
 function gatesFor(request) {
   const smoke = []
@@ -300,6 +315,9 @@ async function main() {
     report(before, 'cache')
     process.exit(before.exitCode)
   }
+  // A verdict already filed answers in a moment and says nothing; a run that is
+  // about to spend the release gate's minutes asks before it starts.
+  if (walksEverything(request)) say('verify: warning — 请确认你正处于发布流程。')
   const release = await takeLock('verify', key.slice(0, 12))
   holding = release
   // The gates run under this lock: they must not ask for it again.

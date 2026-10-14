@@ -9,6 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
+- `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
 
 ### 问题修复
 
@@ -26,6 +27,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
+- `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
 
 ### Bug Fixes
 
