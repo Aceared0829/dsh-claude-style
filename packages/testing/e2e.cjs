@@ -135,8 +135,12 @@ async function startTrace(page) {
       }) ?? null
       const shellRect = shell === null ? null : shell.getBoundingClientRect()
       const bubbleRect = bubble === null || bubble === undefined ? null : bubble.getBoundingClientRect()
-      frame.shell = shellRect === null ? null : [shellRect.top, shellRect.bottom]
-      frame.bubble = bubbleRect === null ? null : [bubbleRect.top, bubbleRect.bottom]
+      // Both boxes whole, not just their vertical extent: the row may only be
+      // shown once the stand-in is on it (send-flight.ts's arrived()), and a row
+      // shown while the stand-in is still travelling paints the same message
+      // twice, tens of pixels apart, for as long as the landing fade lasts.
+      frame.shell = shellRect === null ? null : [shellRect.left, shellRect.top, shellRect.right, shellRect.bottom]
+      frame.bubble = bubbleRect === null ? null : [bubbleRect.left, bubbleRect.top, bubbleRect.right, bubbleRect.bottom]
       frame.shellFill = shell === null ? null : getComputedStyle(shell).backgroundColor
       frame.bubbleFill = bubble === null || bubble === undefined ? null : getComputedStyle(bubble).backgroundColor
       frame.echo = document.querySelector(host.echo) !== null || (last !== null && last.hasAttribute(host.echoAttribute))

@@ -40,12 +40,22 @@
         visibility: getComputedStyle(sendEcho).visibility,
         animations: sendGhost === null ? 0 : sendGhost.getAnimations({ subtree: true }).length,
       }
-      await sleep(700)
-      r.send.landed = {
-        ghost: document.querySelector('[data-dsh-claude-send-ghost]') !== null,
-        hidden: sendEcho.hasAttribute('data-dsh-claude-send-flight'),
-        visibility: getComputedStyle(sendEcho).visibility,
+      // The landing is read the moment it is due, and read again into the report
+      // as it stands there: every step below starts a flight of its own, and a
+      // later reading would report one of those stand-ins instead of this one.
+      // The wait covers the flight's own hold for a settled destination
+      // (send-flight.ts's arrived()) on top of the morph and the fade.
+      var landedAt = null
+      for (var wait = 0; wait < 40; wait += 1) {
+        await sleep(50)
+        landedAt = {
+          ghost: document.querySelector('[data-dsh-claude-send-ghost]') !== null,
+          hidden: sendEcho.hasAttribute('data-dsh-claude-send-flight'),
+          visibility: getComputedStyle(sendEcho).visibility,
+        }
+        if (landedAt.ghost === false) break
       }
+      r.send.landed = landedAt
       sendEcho.remove()
       // The plate (send-morph.ts's shell). The shape carries the destination
       // bubble's own fill from the first frame: a fill of its own that has to be
@@ -104,7 +114,10 @@
       }
       r.send.plate = { frames: plateFrames, wrong: plateWrong, light: plateLight }
       plateEcho.remove()
-      await sleep(700)
+      // The flight holds the row until the stand-in has stood on it for a few
+      // frames and the row itself has held still (send-flight.ts's arrived()),
+      // so the landing is later than the flight's own length.
+      await sleep(1500)
       // The hand-over (send-flight.ts's land). The host can take the echo away
       // before the real row mounts; fading then carries the reader's message
       // into the page and puts it back when the row arrives, so the stand-in
@@ -117,7 +130,7 @@
       sendFlow.appendChild(holdEcho)
       await sleep(16)
       holdEcho.remove()
-      await sleep(520)
+      await sleep(1500)
       var holdGhost = document.querySelector('[data-dsh-claude-send-ghost]')
       r.send.hold = { ghost: holdGhost !== null, opacity: holdGhost === null ? 0 : Number(getComputedStyle(holdGhost).opacity) }
       var holdRow = document.createElement('div')
