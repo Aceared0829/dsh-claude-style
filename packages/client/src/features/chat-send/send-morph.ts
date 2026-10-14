@@ -72,7 +72,9 @@ export function chatSendSamples(start: DOMRect, end: DOMRect, from: TextInsets, 
  * @param snapshot - the composer card taken at take-off.
  * @param bubble - the destination bubble (in layout already, and hidden).
  * @param end - the bubble's viewport rect.
- * @returns the morph, or null when the bubble has no box.
+ * @returns the morph, or null when the bubble has no box. `shell` is the drawn
+ *          shape itself, which send-flight.ts measures to know the stand-in has
+ *          arrived before it shows the real row.
  */
 export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end: DOMRect) {
   if (end.width === 0 || end.height === 0) return null
@@ -400,5 +402,5 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
     })))
     run(layer, chatSendStepOpacity(window.from, window.until))
   }
-  return { wrapper, compact, progress, animations }
+  return { wrapper, shell, compact, progress, animations }
 }

@@ -30,6 +30,13 @@ interface Flight {
   landing: boolean
   /** Whether the flight is holding for a row to land on (see land()). */
   waiting: boolean
+  /** Frames the stand-in and the row have both held still for (see arrived()). */
+  stable: number
+  /** The row's own box last frame, what `held` in arrived() compares against. */
+  rowTop: number | null
+  rowHeight: number
+  /** When the stand-in first stood close enough to the row to end the wait early (arrived()). */
+  nearAt: number | null
   landedRow: HTMLElement | null
   bubble: HTMLElement | null
 }
@@ -42,8 +49,14 @@ export const CHAT_ORIGIN_TTL_MS = 1500
  */
 export const CHAT_FLIGHT_LIMIT_FLOOR_PX = 900
 
-/** The backstop keeps a little longer than the flight itself: a throttled background timer still has to release the message before the reader comes back. */
-export const CHAT_RESCUE_MARGIN_MS = 400
+/**
+ * The backstop keeps a good while longer than the flight itself: the stand-in
+ * holds until it has stood on the row for CHAT_ARRIVED_FRAMES (arrived()), and a
+ * transcript still gliding to its tail can take a tenth of a second past the
+ * flight's own end. A throttled background timer still has to release the message
+ * before the reader comes back.
+ */
+export const CHAT_RESCUE_MARGIN_MS = 1500
 
 /**
  * How long the stand-in waits for a row to hand the message over to.
@@ -58,6 +71,36 @@ export const CHAT_HANDOVER_WAIT_MS = 2500
 
 /** Only an echo inside the chat flow counts: one waiting in the queue dock is another transition, not this one. */
 export const CHAT_ECHO_SELECTOR = CHAT_FLOW_SELECTOR + ' ' + SUBMISSION_ECHO_SELECTOR
+
+/**
+ * How close the stand-in has to be to the row before the row may be shown
+ * (arrived()). Half a pixel: the landing's own spring give is a fraction of a
+ * pixel, and anything a reader could see as two pictures of one message is
+ * larger than that.
+ */
+export const CHAT_ARRIVED_PX = 0.5
+
+/**
+ * How close the stand-in has to be before the wait for stillness is shortened
+ * (arrived()): at this gap the two pictures already agree to the eye.
+ */
+export const CHAT_ARRIVED_NEAR_PX = 3
+
+/**
+ * The longest the flight holds a settled destination before showing the row
+ * anyway (arrived()). The wait is for the row to stop moving, and a page that
+ * keeps changing around it — the reader's own scrolling, a stream growing below
+ * — would otherwise hold the message away for good. Measured: the hand-over's own
+ * wait is two frames when the row is still; this ceiling is the backstop.
+ */
+export const CHAT_ARRIVED_CEILING_MS = 500
+
+/**
+ * How many frames in a row the stand-in has to stand on the row before the row
+ * may be shown (arrived()): one frame of slack for a layout the host changes in
+ * its own frame, which this flight can only read a frame later.
+ */
+export const CHAT_ARRIVED_FRAMES = 8
 
 /** A settled user row. It and the echo row are two faces of one component, a level apart. */
 export const CHAT_USER_ROW_SELECTOR = `${CHAT_FLOW_SELECTOR} [${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]`
@@ -206,6 +249,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     row.removeAttribute(CHAT_FLYING_ATTR)
     activeFlight.hidden = null
     activeFlight.landedRow = row
+    // The stand-in is put exactly on the row in this frame. arrived() has just
+    // said the two are within a pixel or two, and this fade is the only thing
+    // between the reader and the real row: a stand-in that is a few pixels out is
+    // a second copy of the same message drifting over it.
+    followTarget(activeFlight, true)
     const fade = activeFlight.morph.wrapper.animate([{ opacity: 1 }, { opacity: 0 }], {
       duration: CHAT_LANDING_MS,
       easing: motionEase('--dsh-claude-ease-out'),
@@ -217,6 +265,65 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     fade.onfinish = () => {
       if (flight === activeFlight) settle()
     }
+  }
+
+  /**
+   * Hand over only once the stand-in has arrived.
+   *
+   * The take-off transform is built for where the destination stood at that
+   * moment (send-shape.ts's `end`), and the host keeps moving the row after it:
+   * the transcript glides to the tail, the echo row becomes the real one, and a
+   * row that arrived while the new one is still growing settles somewhere else.
+   * Showing the real row before the stand-in has caught up leaves both on screen
+   * at once — two copies of the same message, tens of pixels apart — for as long
+   * as the landing fade lasts, which reads as a flicker. Measured with real turns
+   * on this build: the row moved 55 to 109 px once, hundreds of milliseconds
+   * after the flight was over, while the transcript glided to its tail.
+   *
+   * So the wait is for stillness, not for arrival: the stand-in is within half a
+   * pixel of the row AND the row's own box has held still for
+   * CHAT_ARRIVED_FRAMES. The host changes layout in its own frame, which this
+   * flight reads one frame late: a gate on a single frame's reading lets a row
+   * that is about to move through.
+   *
+   * The wait is bounded twice over, because a page that keeps changing around the
+   * flight (the reader scrolling, a stream growing below) would otherwise hold the
+   * row away for good: a gap already too small to see shortens the wait, and
+   * CHAT_ARRIVED_CEILING_MS ends it whatever the page is doing. The row is snapped
+   * onto the stand-in at that point (land()), so the pair still agrees.
+   * @returns true when the row may be shown.
+   */
+  const arrived = (value: Flight) => {
+    const row = value.hidden
+    const bubble = value.bubble
+    if (row === null || bubble === null) return false
+    const shell = value.morph.shell
+    if (shell === null) return false
+    const here = shell.getBoundingClientRect()
+    const there = bubble.getBoundingClientRect()
+    // A row with no box yet is not somewhere to land: hold, as land() does.
+    if (there.width === 0) return false
+    const gap = Math.max(Math.abs(here.top - there.top), Math.abs(here.left - there.left), Math.abs(here.height - there.height))
+    const onIt = gap < CHAT_ARRIVED_PX
+    const held = value.rowTop !== null
+      && Math.abs(there.top - value.rowTop) < CHAT_ARRIVED_PX
+      && Math.abs(there.height - value.rowHeight) < CHAT_ARRIVED_PX
+    value.rowTop = there.top
+    value.rowHeight = there.height
+    if (gap >= CHAT_ARRIVED_NEAR_PX) {
+      value.nearAt = null
+      value.stable = 0
+      return false
+    }
+    if (gap < CHAT_ARRIVED_PX && held) {
+      value.stable += 1
+      if (value.stable >= CHAT_ARRIVED_FRAMES) return true
+    } else {
+      value.stable = 0
+    }
+    const now = performance.now()
+    if (value.nearAt === null) value.nearAt = now
+    return now - value.nearAt >= CHAT_ARRIVED_CEILING_MS
   }
 
   /** Land: release the real row first, then drop the stand-in. Reversed, a blank flashes. */
@@ -263,8 +370,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (activeFlight === null) return
     const u = activeFlight.morph.progress()
     activeFlight.morph.compact(u)
-    if (u >= 1) land()
-    followTarget(activeFlight)
+    if (!activeFlight.landing) {
+      followTarget(activeFlight)
+      if (u >= 1 && arrived(activeFlight)) land()
+    } else {
+      // Through the fade the stand-in is pinned to the row: read and write in the
+      // same task, so no frame of lag. The row has settled by then — arrived()
+      // waits for that — but the host can still move it a few pixels (the
+      // transcript gliding to its tail), and a stand-in left a few pixels short
+      // uncovers the row's own foot, which reads as a line under the message.
+      followTarget(activeFlight, true)
+    }
     requestFrame({ write: tick })
   }
 
@@ -295,6 +411,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Whether the flight has landed and is fading across to the real row, and that row.
       landing: false,
       waiting: false,
+      stable: 0,
+      rowTop: null,
+      rowHeight: 0,
+      nearAt: null,
       landedRow: null,
       bubble,
     }
@@ -386,16 +506,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 /** A draft the instant before it takes off: the whole composer card's snapshot. */
 /** A flight in progress. `hidden` is repointed when the echo is swapped for the real row. */
 /**
- * Add how far the destination moved to the stand-in's outer layer.
+ * Add how far the destination moved to the stand-in's outer layer, and take the
+ * destination's own node again when the one held is gone.
  *
  * This is the frame's only JavaScript: one rect read and at most one style
  * write. The destination usually moves a few dozen pixels during a flight (the
  * host scrolls to the end after a submission, the echo becomes the real row),
- * so adding the difference whole looks the same as recomputing the position
- * from the curve every frame.
+ * and the echo row is taken away and a new row mounted in its place, so the node
+ * the flight was pointed at can leave the document mid-flight. A remembered node
+ * off the document measures as a zero box: the stand-in then holds where it is
+ * for the rest of the flight, lands tens of pixels away from the row, and both
+ * are on screen at once through the landing fade (arrived() in the installer).
  */
-export function followTarget(value: Flight) {
-  const bubble = value.bubble
+export function followTarget(value: Flight, snap = false) {
+  let bubble = value.bubble
+  // The node the destination was taken from can stop being the row's own: the
+  // echo row is unmounted once the real one is there, and the host can mount
+  // another echo or swap the row again while this flight still points at the
+  // one before it. A stale node off the document measures as a zero box, and the
+  // stand-in then holds where it is for the rest of the flight — the reader
+  // waits on a message that never arrives. So the destination is taken from the
+  // row the flight is holding, every frame.
+  const held = value.hidden === null ? null : findBubble(value.hidden)
+  if (held !== null && bubble !== held) bubble = held
   if (bubble === null) return
   const box = bubble.getBoundingClientRect()
   // While the row is taken away and the new one is not in yet the box measured
@@ -403,9 +536,22 @@ export function followTarget(value: Flight) {
   // to the top left: the next frame the observer recognises the new row and
   // picks up again.
   if (box.width === 0) return
+  if (bubble !== value.bubble) {
+    value.bubble = bubble
+    // The new node's own position is where the stand-in is being carried from,
+    // so the shift is measured against it rather than against the old row's.
+    value.targetAt = { left: box.left, top: box.top }
+    value.shiftedX = 0
+    value.shiftedY = 0
+    // The stand-in is elsewhere in the frame the destination is taken again —
+    // this is also the hand-over's own frame (land()) — so that frame closes the
+    // difference whole rather than gliding it: a fade across two pictures of the
+    // same message is exactly what the reader sees as a flicker.
+    snap = true
+  }
   const shiftX = box.left - value.targetAt.left
   const shiftY = box.top - value.targetAt.top
-  if (shiftX === value.shiftedX && shiftY === value.shiftedY) return
+  if (!snap && shiftX === value.shiftedX && shiftY === value.shiftedY) return
   value.shiftedX = shiftX
   value.shiftedY = shiftY
   value.morph.wrapper.style.transform = 'translate(' + shiftX + 'px, ' + shiftY + 'px)'
