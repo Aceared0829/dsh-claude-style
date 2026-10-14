@@ -1,5 +1,5 @@
-import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, STATS_POSITION_CONTEXT } from '../../constants'
-import { DIALOG_TRIGGER_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
+import { DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '../../core/bus'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, observeComposerCards, observeComposerPlaceholders } from '../../core/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
@@ -413,6 +413,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     meterRoom = room
     if (room === '') document.body.style.removeProperty('--dsh-claude-meter-room')
     else document.body.style.setProperty('--dsh-claude-meter-room', room)
+    // The room moves the trailing cluster, and the effort trigger is pinned to
+    // the model trigger's box in a pass of its own (features/effort). Ask for
+    // that pass here: this write is a body style, which the scheduler's
+    // observer does not watch, and a streaming (content-only) pass skips the
+    // pinning feature, so the pin would otherwise trail the controls it sits
+    // between until some later page-wide pass.
+    if (typeof ui.schedule === 'function') ui.schedule()
   }
 
   /**
@@ -436,12 +443,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     document.body.toggleAttribute(COMPOSER_HIDDEN_ATTR, active && !chatActive)
   }
 
+  /**
+   * The portrait layer a mobile remote plugin applies to the desktop GUI (D44):
+   * it floats the composer's controls with transforms of its own, so the
+   * stylesheet scopes the skin's own placement of the send and stop buttons by
+   * this mark. Read every pass — the layer installs and reverts with the
+   * viewport.
+   */
+  function syncMobilePortrait() {
+    document.body.toggleAttribute(MOBILE_PORTRAIT_ATTR, active && document.body.matches(MOBILE_PORTRAIT_SELECTOR))
+  }
+
   function syncComposer() {
     readState()
     const found = cards.all()
     heroCard = hero && found.length > 0 ? found[0] : null
     syncVariant(found)
     document.body.toggleAttribute(COMPOSER_ATTR, active)
+    syncMobilePortrait()
     syncAttachments(found)
     // Before the draft mark: the hint the skin adds is part of what "empty"
     // means to the stylesheet's `card:has(placeholder)` rules.
@@ -509,6 +528,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     placeholders.release()
     document.body.removeAttribute(COMPOSER_ATTR)
     document.body.removeAttribute(COMPOSER_HIDDEN_ATTR)
+    document.body.removeAttribute(MOBILE_PORTRAIT_ATTR)
     const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR, 'data-dsh-claude-context-meter']
     for (const mark of marks) {
       for (const marked of document.querySelectorAll(`[${mark}]`)) marked.removeAttribute(mark)

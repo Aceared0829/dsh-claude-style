@@ -381,6 +381,14 @@ export const COMPOSER_ATTR = 'data-dsh-claude-composer-active'
  */
 export const COMPOSER_HIDDEN_ATTR = 'data-dsh-claude-composer-hidden'
 /**
+ * Present while a mobile remote plugin's portrait layer owns the page
+ * (packages/contracts/src/dom.ts, MOBILE_PORTRAIT_SELECTOR). That layer floats the
+ * composer's controls with transforms of its own, and the skin's placement of
+ * the send and stop buttons stands aside from them under this mark
+ * (packages/client/src/features/composer/inline.css).
+ */
+export const MOBILE_PORTRAIT_ATTR = 'data-dsh-claude-mobile-portrait'
+/**
  * Present while the permission control is installed. The composer restyle
  * hides the host's access-mode button because this feature replaces it,
  * and that rule also requires this attribute: a permission control that is

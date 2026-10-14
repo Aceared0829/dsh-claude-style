@@ -170,7 +170,8 @@ const SCENARIOS = {
    * The composer at a phone's width: the bottom line carries the tier, the
    * model, the effort level and the context ring on one row, and at 390px the
    * row keeps them by dropping what it cannot show — the tier's arrow, the
-   * labels' tails and the ring's number — rather than running past the card.
+   * ring's number and a model name longer than the room left over — rather than
+   * running past the card.
    */
   narrow: {
     script: 'greeting',
@@ -213,7 +214,8 @@ const SCENARIOS = {
       return [
         check('页面是手机的宽度', narrow.width === 390, `innerWidth=${narrow.width}`),
         check('权限选择器收起了下三角', narrow.chevron === false, `chevron=${narrow.chevron}`),
-        check('权限与模型选择器按窄屏上限截断', narrow.permMax === '132px' && narrow.modelMax === '112px' &&
+        check('窄屏下两个选择器的名称超出时以省略号收尾', narrow.permMax === '132px' &&
+          (narrow.modelMax === '280px' || narrow.modelMax === 'none') &&
           narrow.permEllipsis === 'ellipsis' && narrow.modelEllipsis === 'ellipsis',
           JSON.stringify({ permMax: narrow.permMax, modelMax: narrow.modelMax, perm: narrow.permEllipsis, model: narrow.modelEllipsis })),
         check('上下文只留圆环，数字不再显示', narrow.ring === true && narrow.number === false,

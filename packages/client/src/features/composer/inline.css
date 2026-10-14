@@ -333,6 +333,17 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   justify-content: center;
   z-index: var(--dsh-claude-layer-control);
 }
+/* A portrait mobile plugin centers the same two buttons with a transform paired
+   to a `top` of its own (dsh-remote-web-ui writes `top: 50%` and
+   `translateY(-50%)`). The placement above outranks that `top`, but not the
+   transform: the two together lifted the button half a button above the card,
+   out through its top edge. The skin's own `bottom` is what holds the button on
+   the input line, so the leftover transform goes while that layer owns the
+   page. */
+body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] button[data-dsh-claude-control="send"],
+body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] button[data-dsh-claude-control="stop"] {
+  transform: none;
+}
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="send"],
 body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="send"] {
   box-shadow: none;

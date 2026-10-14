@@ -129,6 +129,16 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] [class*="_row"] > [class*="_trailing"] {
   margin-right: var(--dsh-claude-meter-room, 0px);
 }
+/* A portrait mobile plugin reserves that same band with padding of its own: 38px
+   on the line's left for the command button it floats over the row, and 78px on
+   the right for its own send button. The row's own cells already clear the first
+   (the row is one line, features/composer/inline.css) and the meter's room above
+   covers the second, so the padding only took the width the model name and the
+   tier trigger needed. */
+body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] [class*="_row"] > [class*="_trailing"] {
+  padding-left: 0;
+  padding-right: 0;
+}
 
 /* ---------- the host's stats row: hidden, its numbers moved elsewhere ---------- */
 /* The host ships two figures here (turns and steps · tok/s, total tokens · cache
@@ -471,29 +481,24 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
 }
 
 /* ---------- a phone-width composer ---------- */
-/* The trailing cluster's three controls share what the row has left, and the row
-   itself is narrower than the sums the desktop reserves for it. The model name
-   truncates at the phone's own width instead of the 280px it takes on a desktop;
-   the cluster may shrink with it rather than push the row past the card; the
-   context meter keeps the ring that carries the reading, the number beside it
-   being what does not fit — the numbers stand on their own line under the card,
-   so the ring repeats none of them in either position. The dock gives up the
-   padding the overlay reserved the two clusters' room with — on a phone the card
-   is narrower than that reserve, and the padding carried the dock's right edge
-   past the card, taking the ring pinned to it out of the card with it. That last
-   rule stands only in the overlay's own position, and its selector repeats the
+/* The trailing cluster's controls share what the row has left, and the row
+   itself is narrower than the sums the desktop reserves for it. The cluster
+   shrinks rather than pushing the row past the card, and that shrink is what
+   truncates a model name too long for the room: the name takes the width its own
+   seat gives it, so one that fits on the row is shown whole. The context meter
+   keeps the ring that carries the reading, the number beside it being what does
+   not fit — the numbers stand on their own line under the card, so the ring
+   repeats none of them in either position. The dock gives up the padding the
+   overlay reserved the two clusters' room with — on a phone the card is narrower
+   than that reserve, and the padding carried the dock's right edge past the
+   card, taking the ring pinned to it out of the card with it. That last rule
+   stands only in the overlay's own position, and its selector repeats the
    position attribute the overlay carries, or the rule it has to beat would
    outrank it and the reserve would stand at this width after all. */
 @media (max-width: 480px) {
-  body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn {
-    max-width: 112px;
-  }
   body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] [class*="_row"] > [class*="_trailing"] {
     flex: 0 1 auto;
     min-width: 0;
-    /* The meter stands over the row's right end; the room it takes is reserved
-       here, so the reasoning-level button lands before it instead of under it. */
-    padding-right: 34px;
   }
   body[data-dsh-claude-style] [data-dsh-claude-context-meter] button > span {
     display: none;

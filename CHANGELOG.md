@@ -14,6 +14,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - `npm run session` 拆除会话工作树前先删掉它的 `node_modules` 联接：`git worktree remove` 把这个联接当目录走进去，再顺着主树 `node_modules` 里的工作区联接删掉主树 `packages/*` 的文件；现在先删联接再拆树，树里另有指向自己的链接时拒绝拆除并列出它们。
+- 手机远程访问（`@linxin666/dsh-remote-web-ui` 的竖屏适配）下，输入区底行不再错位：发送与停止按钮回到输入行内并完整落在卡片里；档位选择器与上下文圆环之间只隔 16px，和桌面一致；模型名称在行内还有空间时完整显示，只有真的放不下才以省略号收尾。上下文圆环的预留宽度变化时（流式输出期间也会发生），档位选择器当帧就跟着重新定位，不再停在旧位置。
 
 ### 其他变更
 
@@ -32,6 +33,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - `npm run session` drops a session tree's `node_modules` junction before it removes the tree: `git worktree remove` walked into that junction and, through the workspace junctions in the main tree's `node_modules`, deleted the main tree's own `packages/*` files. The junction goes first now, and a tree holding any other link out of itself is listed and kept.
+- On a phone via the mobile remote plugin (`@linxin666/dsh-remote-web-ui`, portrait adaptation) the composer's bottom line no longer slips out of place: the send and stop buttons sit back on the input's own line and inside the card, the tier trigger stands 16px from the context ring as it does on a desktop, and the model name is shown whole whenever the row has room for it, ending in an ellipsis only when it does not. When the room the context ring reserves changes — which also happens while an answer streams — the tier trigger is placed again in that same frame instead of holding its old position.
 
 ### Chores
 

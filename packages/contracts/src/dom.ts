@@ -193,6 +193,15 @@ export const COMPOSER_STAT_SELECTOR = '[data-composer-stat]'
  */
 export const MOBILE_STATS_SELECTOR = '[data-mobile-nav="stats"]'
 /**
+ * The portrait adaptation a mobile remote plugin applies to the desktop GUI
+ * (dsh-remote-web-ui marks the body `dsh-remote-portrait`). Not the host's
+ * either: its rules float the composer's controls with transforms of their
+ * own, so the composer pass reads this mark and hands it to the stylesheet as
+ * the skin's own attribute, and the phone rules that place those controls
+ * stand aside from it.
+ */
+export const MOBILE_PORTRAIT_SELECTOR = 'body.dsh-remote-portrait'
+/**
  * The filled arc of the context meter: the circle the host gives a dash array
  * (its track circle carries none). The skin paints it with the colour the
  * occupancy fell on (D27).
