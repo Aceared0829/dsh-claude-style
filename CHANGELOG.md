@@ -35,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复 Firefox 下鼠标停留在上下文用量圆环时统计弹层反复闪烁的问题：返回入口会取消待执行的关闭任务，鼠标仍在入口上时弹层保持展开。
 - 思考行自动收起与读者的点开收起在两种宿主结构上都找得到展开体，因此都逐帧滚动；新增的展开体淡入并上移两个像素进入。
 - 开着「悬停自动展开弹层」时，悬停态下按同一个入口不再收起刚展开的弹层（侧栏账号入口、权限选择器、模型选择器、档位选择器、首页那一行的两个选择器与输入框右侧的上下文圆环），收起交给鼠标离开入口与卡片。
 - 同一运行行中有可见替代文字且宿主文案被外部隐藏时，主题等待行自动让位，接管结束后恢复，其他聊天动效继续运行。
@@ -91,6 +92,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the context statistics popover repeatedly flickering while the pointer rests on the context ring in Firefox: returning to the trigger cancels the pending close, and the popover stays open while the trigger is hovered.
 - A thinking row's automatic fold and a reader's own press find the expanded body on both host shapes, so both roll frame by frame; an inserted body fades in and rises two pixels.
 - With popovers opening on hover, a press on the trigger no longer folds the popover the pointer just opened — on the sidebar account entry, the permission, model and effort pickers, the home row's two pickers and the context ring beside the composer — leaving the pointer's departure to close it.
 - The theme yields its waiting line when a visible sibling replaces externally hidden host wording, restores it when the takeover ends, and keeps other chat animations running.

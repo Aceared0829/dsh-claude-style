@@ -54,7 +54,12 @@ export function createContextStatsBinding() {
     programmaticPress(trigger)
   }
 
-  const hoverIntent = createHoverIntent(openContextPanel, closeContextPanel, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
+  const hoverIntent = createHoverIntent(openContextPanel, () => {
+    // Layout can return the pointer to the meter before the close grace expires.
+    // Explicit line and keyboard dismissal still use closeContextPanel directly.
+    if (findContextMeter()?.matches(':hover')) return
+    closeContextPanel()
+  }, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
 
   /** The hover preference gates both directions, as it does for the skin's other popovers. */
   function hoverEnabled() {
