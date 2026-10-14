@@ -20,7 +20,7 @@
  *                stylesheet, no two keyframes say the same thing, and every
  *                motion token is read somewhere (D65)
  *   layers       a z-index above the local orders 0 to 9 is a layer token,
- *                and every layer token is read somewhere (D00)
+ *                and every layer token is read somewhere (D67)
  *
  * The token stylesheet is generated from packages/client/src/theme/tokens.json, and so are the
  * token, motion and layer tables in docs/STYLE.md; it also declares the brand marks' addresses
@@ -61,7 +61,7 @@ const LAYER_BEGIN = '<!-- generated:layers (packages/client/src/theme/tokens.jso
 const LAYER_END = '<!-- /generated:layers -->'
 /**
  * A z-index a sheet may write as it is: an order among siblings inside one
- * box (D00). Anything that stacks against the host's own surfaces is a layer
+ * box (D67). Anything that stacks against the host's own surfaces is a layer
  * token instead.
  */
 const LOCAL_LAYER = /^(?:auto|-1|[0-9])$/
@@ -192,7 +192,7 @@ function checkMotionLiterals(sheet, label, rule) {
 }
 
 /**
- * Hold every z-index in a stylesheet to the layer tokens (D00): a sheet orders
+ * Hold every z-index in a stylesheet to the layer tokens (D67): a sheet orders
  * siblings inside its own box with a literal from -1 to 9, and anything that has
  * to clear what the host draws reads `var(--dsh-claude-layer-…)`, so the
  * levels the skin stacks on are one table.
@@ -203,7 +203,7 @@ function checkLayerLiterals(sheet, label, rule) {
     if (node.type !== 'decl' || node.prop !== 'z-index') continue
     const value = node.value.trim()
     if (LOCAL_LAYER.test(value) || /^var\(--dsh-claude-layer-[a-z0-9-]+\)$/.test(value)) continue
-    throw new Error(`build: ${label}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D00)`)
+    throw new Error(`build: ${label}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D67)`)
   }
 }
 
@@ -328,7 +328,7 @@ function declarationsOf(items, pick) {
  * what differs from Claude's. The brand marks' addresses come first: every
  * choice paints with them. The motion and layer tokens are ungated blocks
  * beside them: the same durations, curves, distances and stacking levels under
- * every palette and typeface (D65, D00).
+ * every palette and typeface (D65, D67).
  *
  * @param images - brand mark name → its address (data URI or route).
  */
@@ -417,7 +417,7 @@ export function writeMotionTable(stylePath, doc) {
 }
 
 /**
- * Write the layer table into its region of docs/STYLE.md (D00).
+ * Write the layer table into its region of docs/STYLE.md (D67).
  * @returns whether the file changed.
  */
 export function writeLayerTable(stylePath, doc) {
@@ -427,7 +427,7 @@ export function writeLayerTable(stylePath, doc) {
 /* ---------- the stylesheet ---------- */
 
 /**
- * Hold every motion and layer token to a reader (D65, D00): a token nothing
+ * Hold every motion and layer token to a reader (D65, D67): a token nothing
  * reads is a value the token table claims the skin uses and nothing does. The
  * readers are the stylesheets and, for motion, the browser half's TypeScript,
  * which reads the same table through packages/client/src/shared/motion.ts.
@@ -452,10 +452,10 @@ function checkTokensRead(doc, sheetText, sources) {
     throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet or module reads (D65)`)
   }
   // A layer is read by the sheets alone: the browser half stacks nothing by
-  // hand, it marks the element and the sheet places it (D00).
+  // hand, it marks the element and the sheet places it (D67).
   for (const item of doc.layer) {
     if (sheetText.includes(item.token)) continue
-    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet reads (D00)`)
+    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet reads (D67)`)
   }
 }
 

@@ -308,7 +308,7 @@ edit the JSON, not the table.
 
 ## Layers
 
-A z-index the skin writes is one of two kinds (D00). Inside one box, siblings
+A z-index the skin writes is one of two kinds (D67). Inside one box, siblings
 are ordered with a literal from -1 to 9: a fill painted under its own content,
 a label over its sliding pill, the composer's rows over one another. Anything
 that has to clear what the host draws around it — the composer's own controls,

@@ -237,7 +237,7 @@ export function checkScrollOwner(metafile) {
  * packages/client/src/shared/motion.ts and a curve changed in the token table reaches
  * every animation. `linear` and the step functions are mechanical timing and
  * stay; the check reads the `easing` option of a keyframe or of an animation.
- * A stacking level above the local orders is refused the same way (D00): the
+ * A stacking level above the local orders is refused the same way (D67): the
  * browser half marks the element, and a sheet places it on a layer.
  *
  * @param sources - the browser half on its syntax tree (scripts/source-tree.mjs).
@@ -249,6 +249,6 @@ export function checkMotionSources(sources) {
   }
   for (const [value, where] of sources.stacking) {
     if (Number(value) <= 9) continue
-    throw new Error(`build: ${where} writes the stacking level ${value}; mark the element and place it on a layer in its stylesheet (D00)`)
+    throw new Error(`build: ${where} writes the stacking level ${value}; mark the element and place it on a layer in its stylesheet (D67)`)
   }
 }

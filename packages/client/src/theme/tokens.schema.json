@@ -72,7 +72,7 @@
       }
     },
     "layer": {
-      "description": "Layer tokens (D00): the stacking levels a skin surface takes against what the host draws around it. One value under every palette and typeface; the only place a stylesheet may write a z-index above the local orders 0 to 9.",
+      "description": "Layer tokens (D67): the stacking levels a skin surface takes against what the host draws around it. One value under every palette and typeface; the only place a stylesheet may write a z-index above the local orders 0 to 9.",
       "type": "array",
       "items": {
         "type": "object",
