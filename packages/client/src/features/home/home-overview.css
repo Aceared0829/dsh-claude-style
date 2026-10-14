@@ -65,7 +65,13 @@ body[data-dsh-claude-style] .dsh-claude-home-heat {
 }
 
 /* Claude Code's heat grid is a blue data ramp, not the brand ember: the empty
-   cell stays the neutral base tone, and the four steps mix in the data blue. */
+   cell stays the neutral base tone, and each level mixes in the data blue by
+   its share of the ramp (constants.ts's HOME_HEAT_RAMP; the build writes one
+   rule per level, scripts/feature-sheets.mjs). */
+body[data-dsh-claude-style] .dsh-claude-home-heat {
+  --dsh-claude-heat-ink: #3b6ecf;
+}
+
 body[data-dsh-claude-style] .dsh-claude-home-heat-cell {
   position: relative;
   aspect-ratio: 1;
@@ -105,22 +111,6 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge="end"
   left: auto;
   right: 0;
   transform: none;
-}
-
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-level="1"] {
-  background: color-mix(in srgb, #3b6ecf 20%, transparent);
-}
-
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-level="2"] {
-  background: color-mix(in srgb, #3b6ecf 40%, transparent);
-}
-
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-level="3"] {
-  background: color-mix(in srgb, #3b6ecf 65%, transparent);
-}
-
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-level="4"] {
-  background: #3b6ecf;
 }
 
 /* The one-liner under the grid: a plain caption, no emphasis of its own. */

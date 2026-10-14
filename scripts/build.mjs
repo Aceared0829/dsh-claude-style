@@ -56,6 +56,7 @@ import { openBuildCache } from './build-cache.mjs'
 import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkMotionSources, checkScrollOwner, checkTypes } from './build-checks.mjs'
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
 import { TOKEN_SHEET, buildStylesheet, loadTokens, writeLayerTable, writeMotionTable, writeTokenTable } from './css.mjs'
+import { FEATURE_SHEET_CONSTANTS } from './feature-sheets.mjs'
 import { motionValues } from './shared/motion-tokens.mjs'
 import { readSourceTree } from './source-tree.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
@@ -138,10 +139,11 @@ const THEME_SHEETS = [
 function styleFiles(manifests) {
   const sheets = [
     ...THEME_SHEETS,
-    ...manifests.flatMap((manifest) => manifest.stylesheets.map((sheet) => ({ ...sheet, file: `features/${manifest.dir}/${sheet.file}` }))),
+    // A generated sheet has no file of its own; it is written from constants.ts (scripts/feature-sheets.mjs).
+    ...manifests.flatMap((manifest) => manifest.stylesheets.map((sheet) => (sheet.generated === undefined ? { ...sheet, file: `features/${manifest.dir}/${sheet.file}` } : sheet))),
   ].sort((a, b) => a.rank - b.rank)
   for (let i = 1; i < sheets.length; i++) {
-    if (sheets[i].rank === sheets[i - 1].rank) throw new Error(`build: packages/client/src/${sheets[i - 1].file} and packages/client/src/${sheets[i].file} share the stylesheet rank ${sheets[i].rank}`)
+    if (sheets[i].rank === sheets[i - 1].rank) throw new Error(`build: ${sheets[i - 1].file ?? sheets[i - 1].generated} and ${sheets[i].file ?? sheets[i].generated} share the stylesheet rank ${sheets[i].rank}`)
   }
   return sheets
 }
@@ -235,6 +237,7 @@ const CONSTANTS = (() => {
     },
     ...pick(sheets, sheetsFile, ['CRAB_SHEETS', 'DEEPY_SHEETS', 'DEEPY_SCALE', 'DEEPY_GUTTER']),
     ...pick(constants, constantsFile, ['PREF_DEFAULTS']),
+    featureSheets: pick(constants, constantsFile, FEATURE_SHEET_CONSTANTS),
   }
 })()
 
@@ -381,7 +384,7 @@ async function main() {
   checkClaimed(plan, claimed)
 
   const tokenDoc = loadTokens(SRC)
-  const cssText = buildStylesheet({ sheets, srcDir: SRC, sources, tokenDoc, gates: CONSTANTS.gates, images })
+  const cssText = buildStylesheet({ sheets, srcDir: SRC, sources, tokenDoc, gates: CONSTANTS.gates, images, featureConstants: CONSTANTS.featureSheets })
   if (writeTokenTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md token table from packages/client/src/theme/tokens.json')
   if (writeMotionTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md motion table from packages/client/src/theme/tokens.json')
   if (writeLayerTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md layer table from packages/client/src/theme/tokens.json')

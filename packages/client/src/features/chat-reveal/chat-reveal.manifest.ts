@@ -6,7 +6,7 @@ export default {
   contracts: ['api.highlight', 'api.highlight-constructor', 'chat.streaming', 'chat.streaming-attribute'],
   pref: 'chatAnimations',
   yieldsTo: 'dsh-chat-ux',
-  stylesheets: [{ file: 'reveal-rules.css', rank: 180 }],
+  stylesheets: [{ generated: 'reveal-steps', rank: 180 }],
   cases: ['chat-reveal'],
   description: {
     zh: {

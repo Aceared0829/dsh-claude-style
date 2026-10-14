@@ -32,6 +32,7 @@ import path from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
 import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
+import { featureSheet } from './feature-sheets.mjs'
 import { minifyCss } from './shared/minify-css.cjs'
 
 /** The selector root every skin rule hangs off. */
@@ -138,12 +139,12 @@ function checkHasPlacement(where, selector) {
  * Claude palette gate. Under "follow the host" those rules drop out and the
  * host's tokens (or another theme plugin's) stand.
  */
-function checkTokenGates(file, rule, selectors, gates, names) {
+function checkTokenGates(label, rule, selectors, gates, names) {
   const every = (gate, value) => selectors.every((selector) => carries(selector, gate.attribute, value))
   for (const node of rule.nodes) {
     if (node.type !== 'decl' || !node.prop.startsWith('--')) continue
     const name = node.prop
-    const where = `packages/client/src/${file}:${node.source.start.line}`
+    const where = `${label}:${node.source.start.line}`
     if (name.startsWith('--dsw-font-')) {
       if (!every(gates.typeface, gates.typeface.claude)) throw new Error(`build: ${where} writes ${name} outside the Claude typeface gate`)
     } else if (name.startsWith('--dsw-')) {
@@ -169,15 +170,15 @@ function motionProperty(prop) {
  * than a style choice, and a zero delay or duration is no motion at all, so both
  * stay in the sheets.
  */
-function checkMotionLiterals(file, rule) {
-  if (file === TOKEN_SHEET) return
+function checkMotionLiterals(sheet, label, rule) {
+  if (sheet.file === TOKEN_SHEET) return
   for (const node of rule.nodes) {
     if (node.type !== 'decl' || !motionProperty(node.prop)) continue
     const time = [...node.value.matchAll(TIME_PATTERN)].map((match) => match[0]).filter((value) => Number.parseFloat(value) !== 0)
     const easing = node.value.match(EASE_PATTERN)
     if (time.length === 0 && easing === null) continue
     const found = [...time, ...easing === null ? [] : [easing]].join(', ')
-    throw new Error(`build: packages/client/src/${file}:${node.source.start.line} writes ${found} in ${node.prop}; read the token table in packages/client/src/${TOKEN_SHEET} (D65)`)
+    throw new Error(`build: ${label}:${node.source.start.line} writes ${found} in ${node.prop}; read the token table in packages/client/src/${TOKEN_SHEET} (D65)`)
   }
 }
 
@@ -187,13 +188,13 @@ function checkMotionLiterals(file, rule) {
  * to clear what the host draws reads `var(--dsh-claude-layer-…)`, so the
  * levels the skin stacks on are one table.
  */
-function checkLayerLiterals(file, rule) {
-  if (file === TOKEN_SHEET) return
+function checkLayerLiterals(sheet, label, rule) {
+  if (sheet.file === TOKEN_SHEET) return
   for (const node of rule.nodes) {
     if (node.type !== 'decl' || node.prop !== 'z-index') continue
     const value = node.value.trim()
     if (LOCAL_LAYER.test(value) || /^var\(--dsh-claude-layer-[a-z0-9-]+\)$/.test(value)) continue
-    throw new Error(`build: packages/client/src/${file}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D00)`)
+    throw new Error(`build: ${label}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D00)`)
   }
 }
 
@@ -204,14 +205,19 @@ function checkLayerLiterals(file, rule) {
  *
  * @param seen - signature → `name (file:line)`, across the sheets in cascade order.
  */
-function collectKeyframes(file, root, seen) {
+function collectKeyframes(label, root, seen) {
   root.walkAtRules(/keyframes$/i, (at) => {
     const body = at.nodes.map((rule) => `${rule.selector}{${rule.nodes.filter((node) => node.type === 'decl').map((node) => `${node.prop}:${node.value.replace(/\s+/g, ' ')}`).join(';')}}`).join(' ')
-    const where = `${at.params} (packages/client/src/${file}:${at.source.start.line})`
+    const where = `${at.params} (${label}:${at.source.start.line})`
     const first = seen.get(body)
     if (first !== undefined) throw new Error(`build: ${where} repeats the keyframes of ${first}; use the shared preset (D65)`)
     seen.set(body, where)
   })
+}
+
+/** Where a sheet's rules are reported: its file, or the generator that wrote it (scripts/feature-sheets.mjs). */
+function sheetLabel(sheet) {
+  return sheet.generated === undefined ? `packages/client/src/${sheet.file}` : `scripts/feature-sheets.mjs (${sheet.generated})`
 }
 
 /**
@@ -227,17 +233,18 @@ function collectKeyframes(file, root, seen) {
  * @returns the sheet's text, comments and formatting kept.
  */
 function processSheet(sheet, text, gates, names, read, keyframes) {
-  const root = postcss.parse(text, { from: `packages/client/src/${sheet.file}` })
+  const label = sheetLabel(sheet)
+  const root = postcss.parse(text, { from: label })
   let markerEnd = null
   if (sheet.gate === true) {
     const marker = root.nodes.find((node) => node.type === 'comment' && node.text === COMPOSER_GATE_MARKER)
-    if (marker === undefined) throw new Error(`build: packages/client/src/${sheet.file} is missing the /* ${COMPOSER_GATE_MARKER} */ marker`)
+    if (marker === undefined) throw new Error(`build: ${label} is missing the /* ${COMPOSER_GATE_MARKER} */ marker`)
     markerEnd = marker.source.end.offset
   }
   let stamped = 0
   root.walkRules((rule) => {
     if (rule.parent.type === 'atrule' && /keyframes$/i.test(rule.parent.name)) return
-    const where = `packages/client/src/${sheet.file}:${rule.source.start.line}`
+    const where = `${label}:${rule.source.start.line}`
     const selectors = selectorParser().astSync(rule.selector)
     selectors.walkAttributes((attribute) => {
       if (attribute.attribute.startsWith(SKIN_ATTRIBUTE_PREFIX) && !read.has(attribute.attribute)) read.set(attribute.attribute, where)
@@ -250,15 +257,15 @@ function processSheet(sheet, text, gates, names, read, keyframes) {
       if (!stamp) continue
       for (const { attribute } of scopes) attribute.parent.insertAfter(attribute, selectorParser.attribute({ attribute: gates.composer }))
     }
-    checkTokenGates(sheet.file, rule, selectors.nodes, gates, names)
-    checkMotionLiterals(sheet.file, rule)
-    checkLayerLiterals(sheet.file, rule)
+    checkTokenGates(label, rule, selectors.nodes, gates, names)
+    checkMotionLiterals(sheet, label, rule)
+    checkLayerLiterals(sheet, label, rule)
     if (!stamp) return
     rule.selector = selectors.toString()
     stamped += 1
   })
-  collectKeyframes(sheet.file, root, keyframes)
-  if (markerEnd !== null && stamped === 0) throw new Error(`build: packages/client/src/${sheet.file} has no rules below /* ${COMPOSER_GATE_MARKER} */`)
+  collectKeyframes(label, root, keyframes)
+  if (markerEnd !== null && stamped === 0) throw new Error(`build: ${label} has no rules below /* ${COMPOSER_GATE_MARKER} */`)
   return root.toString()
 }
 
@@ -457,22 +464,25 @@ function checkAttributes(read, sources) {
 /**
  * Every sheet in cascade order, checked, gated and joined.
  *
- * @param options.sheets - `{ file, rank, gate? }` in cascade order (TOKEN_SHEET generated).
+ * @param options.sheets - `{ file, rank, gate? }` or `{ generated, rank }` in cascade order (TOKEN_SHEET generated).
  * @param options.srcDir - the source directory.
  * @param options.sources - the browser half on its syntax tree (scripts/source-tree.mjs).
  * @param options.tokenDoc - packages/client/src/theme/tokens.json (loadTokens).
  * @param options.gates - `{ composer, palette: { attribute, claude, host }, typeface: { attribute, claude, host }, brand: { attribute, deepseek } }`.
  * @param options.images - brand mark name → its address, for the token sheet.
+ * @param options.featureConstants - what the generated feature sheets are written from (scripts/feature-sheets.mjs).
  * @returns the stylesheet text, minified once every check has read the sheets.
  */
-export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images }) {
+export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images, featureConstants }) {
   const names = { claude: new Set(), host: new Set() }
   const read = new Map()
   const keyframes = new Map()
   const processed = sheets.map((sheet) => {
     const source = sheet.file === TOKEN_SHEET
       ? tokenSheet(tokenDoc, gates, images)
-      : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
+      : sheet.generated !== undefined
+        ? featureSheet(sheet.generated, featureConstants)
+        : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
     return { sheet, text: processSheet(sheet, source, gates, names, read, keyframes).replace(/\n+$/, '') }
   })
   const text = processed.map((item) => item.text).join('\n\n')

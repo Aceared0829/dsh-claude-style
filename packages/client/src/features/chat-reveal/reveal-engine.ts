@@ -15,7 +15,7 @@ import type { RevealSnapshot, RevealState } from './reveal-params'
  * characters arrive faint and come to rest, with nothing repainted in some
  * highlight colour. ::highlight() accepts no opacity — its property set is
  * small and does not include it — so alpha rides on `color`, one rule per
- * step (reveal-rules.css).
+ * step, which the build writes from constants.ts (scripts/feature-sheets.mjs).
  *
  * The engine keeps its scope inside the streaming containers: the step rules
  * are scoped under [data-streaming], so elements outside one are filtered out

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 1,
+  "external": false,
+  "zh": "构建对浏览器半边 TypeScript 的检查改在语法树上进行（scripts/source-tree.mjs，TypeScript 自己的程序与类型）：样式表读到的 data-dsh-* 属性必须真的有代码写入（setAttribute、toggleAttribute 的属性名与创建 React 元素时的属性键，经常量、联合类型与辅助函数的参数一路追到字面值），只在注释里出现或只被读取的名字不再算数；WAAPI 的 easing 与内联层级经变量转手也查得到，注释里的同名写法不再误报；按角色名拼出的吉祥物站位标记改由字面量类型给出，构建里手工登记的例外取消。流式文字淡入的 24 条 ::highlight() 规则与首页热度图的四档规则改由构建按 constants.ts 里的取值生成（scripts/feature-sheets.mjs），步数、档数与规则条数出自同一处；对话标签条的定位在一次计算里只读一遍标题的盒子，标题栏元素在页面上仍在时直接复用。页面上的样子与行为不变。",
+  "en": "The build's checks on the browser half's TypeScript now read its syntax tree (scripts/source-tree.mjs, TypeScript's own program and types): every data-dsh-* attribute a stylesheet reads must really be written by code (the name given to setAttribute or toggleAttribute and the prop keys a React element is created with, followed through constants, unions and helper parameters to a literal), and a name that only appears in a comment or is only read no longer counts; a WAAPI easing or an inline stacking level handed over through a variable is caught too, and the same spelling in a comment no longer trips the check; the mascot anchor marks built from the character's name now come from a literal type, and the exceptions registered by hand in the build are gone. The 24 ::highlight() rules of the streaming text fade and the four levels of the home heat grid are now written by the build from the values in constants.ts (scripts/feature-sheets.mjs), so the step count, the level count and the rules have one source; the conversation view-tab strip reads the title's box once per pass and keeps the header element while it is still on the page. Nothing changes in how the page looks or behaves."
+}

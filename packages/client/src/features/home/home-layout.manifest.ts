@@ -8,6 +8,7 @@ export default {
   stylesheets: [
     { file: 'home-panel.css', rank: 320 },
     { file: 'home-overview.css', rank: 330 },
+    { generated: 'heat-levels', rank: 335 },
     { file: 'home-models.css', rank: 340 },
   ],
   cases: ['hero', 'studio', 'late-forms', 'hdsl', 'hdsl-noskin', 'hdsl-broken'],

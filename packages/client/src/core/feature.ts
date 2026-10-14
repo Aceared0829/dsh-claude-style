@@ -74,12 +74,21 @@ export interface FeatureFields {
 /** The other plugins a feature can yield to. */
 export type PeerPlugin = 'dsh-chat-ux'
 
-export interface FeatureStylesheet {
+/** A written stylesheet, or one the build writes from constants.ts. */
+export type FeatureStylesheet = FeatureStylesheetFile | FeatureStylesheetGenerated
+
+export interface FeatureStylesheetFile {
   file: string
   /** Position in the concatenated stylesheet, shared with the theme's sheets (scripts/build.mjs). Unique. */
   rank: number
   /** The composer rules are gated (D4). */
   gate?: boolean
+}
+
+/** A sheet of one rule per entry of a table the code reads too: its generator's name in scripts/feature-sheets.mjs. */
+export interface FeatureStylesheetGenerated {
+  generated: string
+  rank: number
 }
 
 /** A line of settings copy: its key in the model copy document and the English fallback. */

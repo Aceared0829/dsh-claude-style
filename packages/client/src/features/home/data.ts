@@ -1,4 +1,4 @@
-import { USAGE_ROUTE } from '../../constants'
+import { HOME_HEAT_RAMP, USAGE_ROUTE } from '../../constants'
 import { activeLocale, copyLabel } from '../../core/i18n'
 import { pad2 } from '../../shared/format'
 import { notifyAll } from '../../shared/notify'
@@ -71,8 +71,8 @@ export const HOME_POLL_MS = 800
 export const HOME_POLL_MAX = 15
 /** Heat-grid columns: twenty-six weeks of days, Sunday first — Claude Code's span. */
 export const HOME_HEAT_WEEKS = 26
-/** A day's heat is bucketed into four steps against the busiest day shown. */
-export const HOME_HEAT_STEPS = 4
+/** A day's heat is bucketed against the busiest day shown, one level per step of the ramp. */
+export const HOME_HEAT_STEPS = HOME_HEAT_RAMP.length
 /**
  * The yardstick line's books, shortest first: each title's copy key, its
  * English fallback, and its length in tokens. Lengths carry two sources:

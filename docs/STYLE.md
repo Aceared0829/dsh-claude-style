@@ -679,8 +679,8 @@ hero, and a range that has not reached it steps down to the longest book it has
 passed, so the range pills keep the same book whenever the totals allow. The heat
 grid takes one
 equal column per week (twenty-six weeks), square cells from a 3px gutter, in
-Claude Code's blue data ramp (`#3b6ecf` at 20/40/65/100 over the neutral empty
-cell); because the columns are fractions of the panel's own width, the newest
+Claude Code's blue data ramp (`#3b6ecf` mixed in at the shares `HOME_HEAT_RAMP`
+in `packages/client/src/constants.ts` lists, over the neutral empty cell); because the columns are fractions of the panel's own width, the newest
 week can never fall past the edge. Hovering a cell shows Claude Code's day tip at
 once: a solid pill in the label ink with the canvas tone for text (so it inverts
 with the theme), 13px medium, reading the day in the shell's language and the

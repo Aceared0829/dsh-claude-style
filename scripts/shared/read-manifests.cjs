@@ -80,6 +80,8 @@ function checkManifests(manifests) {
       fail(manifest, 'needs "contracts": the host contract ids its own modules name (D44)')
     }
     for (const sheet of manifest.stylesheets) {
+      // A generated sheet is checked where it is written (scripts/feature-sheets.mjs).
+      if (sheet.generated !== undefined) continue
       if (!fs.existsSync(path.join(FEATURES, manifest.dir, sheet.file))) fail(manifest, `names the stylesheet ${sheet.file}, which packages/client/src/features/${manifest.dir}/ does not hold`)
     }
     if (manifest.prefValues !== undefined) {
