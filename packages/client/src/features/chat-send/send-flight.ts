@@ -537,12 +537,21 @@ export function followTarget(value: Flight, snap = false) {
   const held = value.hidden === null ? null : findBubble(value.hidden)
   if (held !== null && bubble !== held) bubble = held
   if (bubble === null) return
-  const box = bubble.getBoundingClientRect()
-  // While the row is taken away and the new one is not in yet the box measured
-  // is off the document (all zeroes). Holding still beats throwing the stand-in
-  // to the top left: the next frame the observer recognises the new row and
-  // picks up again.
-  if (box.width === 0) return
+  let box = bubble.getBoundingClientRect()
+  // The row the flight holds can leave the document while the stand-in still
+  // flies (the echo becoming the real row), and a node off the document measures
+  // a zero box. Holding still there leaves the stand-in hundreds of pixels off a
+  // row that is already showing — the same message twice, one above the other —
+  // so the destination is taken from the row on the page, by the rule the row
+  // watch uses. Once the row is back, the frame closes the difference whole.
+  if (box.width === 0) {
+    const row = currentRow(value.previous) ?? value.landedRow
+    const fresh = row === null ? null : findBubble(row)
+    if (fresh === null || fresh === bubble) return
+    bubble = fresh
+    box = bubble.getBoundingClientRect()
+    if (box.width === 0) return
+  }
   if (bubble !== value.bubble) {
     value.bubble = bubble
     // The new node's own position is where the stand-in is being carried from,
