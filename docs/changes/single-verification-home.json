@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 0,
+  "external": false,
+  "zh": "可运行的验证工具收进一个目录：冒烟架（连同替代宿主页面的各部件）、临时宿主、脚本化模型、端到端通道与三个在线探针全部住在 packages/testing/，共用一套 Playwright 浏览器栈（packages/testing/browser.cjs 负责找本机 Chrome 与开页面），scripts/ 只剩构建与文档工具。原先各带一套 CDP 启动细节的两份共享脚本删除，端到端通道的页面也改由同一处打开。测试覆盖与断言不变。",
+  "en": "Every runnable verification tool now lives in one directory: the smoke harness with its stand-in page parts, the scratch host, the scripted model service, the end-to-end lane and the three live probes all sit in packages/testing/ on one Playwright stack (packages/testing/browser.cjs finds the local Chrome and opens the pages), leaving scripts/ with the build and document tools. The two shared scripts that each carried their own CDP bootstrap are gone, and the lane's pages open through the same place. Coverage and assertions are unchanged."
+}

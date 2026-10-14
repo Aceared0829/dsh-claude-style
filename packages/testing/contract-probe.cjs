@@ -1,7 +1,7 @@
 /**
  * contract-probe.cjs — the host contract table (packages/contracts/src/table.ts)
  * checked entry by entry on the lane's real page, for the `contract` scenario
- * (D44, D45).
+ * (D44, D66).
  */
 'use strict'
 const { loadModule } = require('../../scripts/shared/ts-module.cjs')

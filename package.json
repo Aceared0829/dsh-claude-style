@@ -19,8 +19,8 @@
     "lint": "node scripts/lint.mjs",
     "features": "node scripts/features.mjs",
     "features:check": "node scripts/features.mjs --check",
-    "probe": "node scripts/probe.cjs",
-    "smoke": "node scripts/smoke.cjs",
+    "probe": "node packages/testing/probe.cjs",
+    "smoke": "node packages/testing/smoke.cjs",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },

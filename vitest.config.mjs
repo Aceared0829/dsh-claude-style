@@ -1,4 +1,4 @@
-// Unit tests (D45): Vitest in browser mode, driving a local Chrome/Edge through
+// Unit tests (D66): Vitest in browser mode, driving a local Chrome/Edge through
 // Playwright, so the DOM, MutationObserver, ResizeObserver and frames under
 // test are the browser's own. CHROME_PATH chooses the browser, as for the smoke.
 //
@@ -10,12 +10,20 @@
 import { defineConfig } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
-import chrome from './scripts/shared/chrome.cjs'
 import { motionValues } from './scripts/shared/motion-tokens.mjs'
 import { generatedSource } from './scripts/virtual-modules.mjs'
 
-const executablePath = chrome.findChrome()
+// The lookup lives in the CJS helper every testing tool shares (D66). This file
+// is bundled as ESM before it runs, and a static import of that helper carries
+// its own `require('playwright')` into the bundle as a file URL, which the CJS
+// loader cannot resolve; loading it here keeps the browser driver out of the
+// config bundle.
+const require = createRequire(import.meta.url)
+const { findChrome } = require('./packages/testing/browser.cjs')
+
+const executablePath = findChrome()
 if (executablePath === undefined) throw new Error('vitest: no Chrome or Edge found; set CHROME_PATH')
 
 const SRC = path.resolve(import.meta.dirname, 'packages', 'client', 'src')

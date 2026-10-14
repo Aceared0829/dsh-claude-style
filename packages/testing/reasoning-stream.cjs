@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * reasoning-stream.cjs — the reasoning's streamed window, end to end (D45).
+ * reasoning-stream.cjs — the reasoning's streamed window, end to end (D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

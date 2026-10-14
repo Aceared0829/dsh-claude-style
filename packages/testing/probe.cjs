@@ -2,7 +2,7 @@
 /**
  * probe.cjs — headless UI regression probe for the composer invariants.
  *
- * Drives a headless Chrome over CDP against a running DSH web GUI and asserts:
+ * Drives a headless Chrome against a running DSH web GUI and asserts:
  *   1. the skin is applied (body[data-dsh-claude-style])
  *   2. a session page reaches phase "active"
  *   3. the composer seat is pinned to the viewport bottom (sticky contract)
@@ -11,23 +11,21 @@
  *   6. clearing restores the single-line height
  *
  * Usage:
- *   node scripts/probe.cjs --token <launch-token> [--url http://127.0.0.1:3080]
+ *   node packages/testing/probe.cjs --token <launch-token> [--url http://127.0.0.1:3080]
  *
  * The launch token comes from the GUI URL (`/?token=…`) of the running DSH
- * instance; it may also be passed via the DSH_WEB_TOKEN env var. Chrome is
- * launched headless with a throwaway profile (scripts/shared/chrome.cjs) and stopped
- * when the probe ends.
+ * instance; it may also be passed via the DSH_WEB_TOKEN env var. Chrome comes
+ * from packages/testing/browser.cjs and is stopped when the probe ends.
  */
-const { findChrome, launchChrome, connectTab } = require('./shared/chrome.cjs')
-const { TOKEN, BASE } = require('./shared/probe-cli.cjs')
+const { findChrome, openBrowser } = require('./browser.cjs')
+const { TOKEN, BASE } = require('./cli-args.cjs')
 
 if (!TOKEN) {
-  console.error('usage: node scripts/probe.cjs --token <launch-token> [--url <base>]')
+  console.error('usage: node packages/testing/probe.cjs --token <launch-token> [--url <base>]')
   process.exit(2)
 }
 
-const browser = findChrome()
-if (!browser) {
+if (!findChrome()) {
   console.error('probe: no Chrome/Edge found; set CHROME_PATH')
   process.exit(2)
 }
@@ -35,29 +33,26 @@ if (!browser) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function main() {
-  const chrome = await launchChrome(browser, { name: 'probe', width: 1440, height: 900 })
+  const instance = await openBrowser({ width: 1440, height: 900 })
   try {
-    return await probe(chrome.port)
+    return await probe(instance.page)
   } finally {
-    await chrome.close()
+    await instance.close()
   }
 }
 
-/** Run the checks in a fresh tab; resolves with the number that failed. */
-async function probe(port) {
-  const { send, evalJs } = await connectTab(port)
-
+/** Run the checks on a fresh page; resolves with the number that failed. */
+async function probe(page) {
   let failures = 0
   const check = (label, ok, detail) => {
     console.log((ok ? 'PASS' : 'FAIL') + '  ' + label + (detail ? '  (' + detail + ')' : ''))
     if (!ok) failures++
   }
 
-  await send('Page.enable')
-  await send('Page.navigate', { url: `${BASE}/?token=${TOKEN}` })
+  await page.goto(`${BASE}/?token=${TOKEN}`, { waitUntil: 'domcontentloaded' })
   await sleep(12000)
 
-  check('skin applied', await evalJs(`!!document.body.hasAttribute('data-dsh-claude-style')`))
+  check('skin applied', await page.evaluate(() => document.body.hasAttribute('data-dsh-claude-style')))
 
   // Open the most recent existing session. The sidebar's "new session" row
   // opens the hero, which has no session composer, and sessions can sit under
@@ -74,18 +69,18 @@ async function probe(port) {
     t.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     return true
   })()`
-  if (!(await evalJs(openSession))) {
-    await evalJs(`(() => {
+  if (!(await page.evaluate(openSession))) {
+    await page.evaluate(`(() => {
       for (const p of document.querySelectorAll('[class*="projectRow"]')) {
         if (p.getAttribute('aria-expanded') !== 'true') p.click()
       }
     })()`)
     await sleep(2000)
-    if (!(await evalJs(openSession))) throw new Error('no existing session to open')
+    if (!(await page.evaluate(openSession))) throw new Error('no existing session to open')
   }
   await sleep(7000)
 
-  const state = () => evalJs(`(() => {
+  const state = () => page.evaluate(`(() => {
     const root = document.querySelector('[data-phase]')
     const seat = document.querySelector('[data-composer-seat]')
     const input = document.querySelector('[data-composer-card] [data-composer-input]')
@@ -105,19 +100,17 @@ async function probe(port) {
   check('single-line start (24px)', s0.inputH === 24, 'inputH=' + s0.inputH)
 
   // grow with multiline content
-  await evalJs(`(() => { const i = document.querySelector('[data-composer-card] [data-composer-input]'); i.focus(); return true })()`)
-  await send('Input.insertText', { text: 'line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8' })
+  await page.evaluate(`(() => { const i = document.querySelector('[data-composer-card] [data-composer-input]'); i.focus(); return true })()`)
+  await page.keyboard.insertText('line1\nline2\nline3\nline4\nline5\nline6\nline7\nline8')
   await sleep(1500)
   const s1 = await state()
   check('field grows with content', s1.inputH !== null && s1.inputH >= 160, 'inputH=' + s1.inputH)
   check('seat stays pinned while grown', s1.seatBottom !== null && Math.abs(s1.seatBottom - s1.innerH) <= 2, 'seatBottom=' + s1.seatBottom)
 
   // clear the probe draft (real key events so Lexical processes them)
-  await evalJs(`(() => { const i = document.querySelector('[data-composer-card] [data-composer-input]'); i.focus(); return true })()`)
-  await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', modifiers: 2 })
-  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', modifiers: 2 })
-  await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace' })
-  await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace' })
+  await page.evaluate(`(() => { const i = document.querySelector('[data-composer-card] [data-composer-input]'); i.focus(); return true })()`)
+  await page.keyboard.press('Control+a')
+  await page.keyboard.press('Backspace')
   await sleep(800)
   const s2 = await state()
   check('clears back to one line', s2.inputH === 24, 'inputH=' + s2.inputH)
@@ -126,7 +119,7 @@ async function probe(port) {
   // trailing cluster keeps the meter's room free through the body variable the
   // composer pass writes, and while the composer is shown the two must not
   // overlap.
-  const clearance = () => evalJs(`(() => {
+  const clearance = () => page.evaluate(`(() => {
     const card = document.querySelector('[data-composer-card]')
     const trailing = card === null ? null : card.querySelector('[class*="_row"] > [class*="_trailing"]')
     const meter = document.querySelector('[data-dsh-claude-context-meter]')

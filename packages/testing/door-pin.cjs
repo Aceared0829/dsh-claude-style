@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * door-pin.cjs — the status line's pin while a door rolls at the tail, end to
- * end (D32, D41, D45).
+ * end (D32, D41, D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs). It
  * samples the page itself, as reader-scroll.cjs does.

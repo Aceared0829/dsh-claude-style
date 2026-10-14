@@ -1,7 +1,7 @@
 /**
  * lane.cjs — what the end-to-end lane's runner and its scenarios read off the
  * page alike: the host's markers, the skin's own marks, the settled flow, and
- * the shape of one assertion (D45).
+ * the shape of one assertion (D66).
  */
 'use strict'
 

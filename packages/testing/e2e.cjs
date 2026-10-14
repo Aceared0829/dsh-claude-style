@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * e2e.cjs — the end-to-end lane: a real `dsh web` with this checkout's plugin,
- * a scripted model service, and a browser on the page (D45).
+ * a scripted model service, and a browser on the page (D66).
  *
  * The smoke's stand-in page reproduces the structure its author knows; this lane
  * runs the assembled client and asserts what only it shows — that a scripted

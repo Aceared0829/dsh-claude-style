@@ -1,5 +1,5 @@
 /**
- * scenarios.cjs — the end-to-end lane's scenario table (D45). The runner
+ * scenarios.cjs — the end-to-end lane's scenario table (D66). The runner
  * (packages/testing/e2e.cjs) boots an instance per scenario, sends its prompt
  * and calls its hooks; a scenario carrying its own reader is a module beside
  * this one (a `*Scenario` export), registered in the table below.
@@ -29,7 +29,7 @@ const { statsScenarios } = require('./stats-position.cjs')
 const { sidebarRailScenario } = require('./sidebar-rail.cjs')
 const { remoteSettingsScenario } = require('./remote-settings.cjs')
 const { customBrandScenario } = require('./custom-brand.cjs')
-const { CANVAS } = require('../../scripts/shoot.cjs')
+const { CANVAS } = require('./shoot.cjs')
 const { sanitizePage } = require('../../scripts/shared/privacy.cjs')
 
 /**

@@ -1,6 +1,8 @@
 /**
- * cli-args.cjs — the value after a `--name` flag on this process's command
- * line, for the tools here that also run standalone.
+ * cli-args.cjs — the command line the tools here share: the value after a
+ * `--name` flag, and the launch token and base address the live probes read
+ * from `--token` and `--url` (or the DSH_WEB_TOKEN environment variable). Each
+ * probe keeps its own usage line for a missing token.
  */
 'use strict'
 
@@ -12,4 +14,8 @@ const argOf = (name) => {
   return at === -1 ? undefined : args[at + 1]
 }
 
-module.exports = { argOf }
+/** The running instance's launch token, and the address it serves from. */
+const TOKEN = argOf('token') || process.env.DSH_WEB_TOKEN
+const BASE = (argOf('url') || 'http://127.0.0.1:3080').replace(/\/+$/, '')
+
+module.exports = { argOf, TOKEN, BASE }

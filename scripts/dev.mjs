@@ -21,11 +21,10 @@ const BUILD = path.join(ROOT, 'scripts', 'build.mjs')
 
 /**
  * What the build reads, as paths relative to the repository. A directory covers
- * everything under it; packages/testing/ and the smoke scripts are not build
- * inputs, and the build writes nothing under any of these.
+ * everything under it; packages/testing/ is not a build input, and the build
+ * writes nothing under any of these.
  */
 const WATCHED_DIRS = ['packages/client', 'packages/assets', 'packages/host', 'packages/contracts', 'scripts']
-const UNWATCHED_DIRS = ['scripts/smoke']
 const WATCHED_FILES = ['package.json', 'tsconfig.json']
 
 /** Changes this close together are one edit: a save that touches several files builds once. */
@@ -34,7 +33,6 @@ const SETTLE_MS = 120
 /** @returns whether a change at this repository-relative path is a build input. */
 function isInput(file) {
   if (WATCHED_FILES.includes(file)) return true
-  if (UNWATCHED_DIRS.some((dir) => file.startsWith(`${dir}/`))) return false
   return WATCHED_DIRS.some((dir) => file.startsWith(`${dir}/`))
 }
 

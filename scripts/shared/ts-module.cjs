@@ -2,7 +2,7 @@
  * ts-module.cjs — load one TypeScript module of this repository into a Node process.
  *
  * The build reads the host contract (D44) and the token data as data, and the
- * end-to-end lane runs the same table against a live page (D45); both need the
+ * end-to-end lane runs the same table against a live page (D66); both need the
  * module's exports without a second compiler setup. esbuild is already the
  * bundler, so it does the transform and the relative imports are resolved here.
  *

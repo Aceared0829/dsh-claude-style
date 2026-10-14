@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * dsh-web.cjs — a scratch DSH web instance with this checkout's plugin installed,
- * and a browser page on it (D45).
+ * and a browser page on it (D66).
  *
  * The end-to-end lane needs a real host: the smoke's stand-in page reproduces
  * the structure its author knows, while the timing and ordering the skin leans
@@ -14,7 +14,7 @@
  *             the URL without a cookie is answered 401. The host ends with
  *             the process that called start(), however that process ends
  *             (packages/testing/lifeline.cjs).
- *   openPage() a headless Chrome from scripts/shared/chrome.cjs on that URL.
+ *   openPage() a headless Chrome from packages/testing/browser.cjs on that URL.
  *
  * Run it directly to keep an instance up for manual work: it prints the URL and
  * stays until interrupted.
@@ -26,8 +26,7 @@ const { spawn, spawnSync } = require('node:child_process')
 const { randomUUID } = require('node:crypto')
 const fs = require('node:fs')
 const path = require('node:path')
-const { chromium } = require('playwright')
-const chrome = require('../../scripts/shared/chrome.cjs')
+const { openBrowser } = require('./browser.cjs')
 const { argOf } = require('./cli-args.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -87,7 +86,7 @@ function run(command, options = {}) {
  * @param options.port - the port; 0 lets the OS pick one.
  * @param options.patch - loader patch entries (YAML text) written into a `--patch`
  *     overlay before boot: how a lane points the host's model adapter at the
- *     scripted service (packages/testing/mock-llm.cjs, D45).
+ *     scripted service (packages/testing/mock-llm.cjs, D66).
  * @param options.args - extra arguments for the web app's own command line
  *     (`--trusted-host <name>`, which a page under a non-loopback name needs).
  * @param options.env - extra environment for the host process.
@@ -192,19 +191,20 @@ async function start(options = {}) {
  * @returns `{ page, context, browser, close() }`.
  */
 async function openPage(url, options = {}) {
-  const executablePath = chrome.findChrome()
-  if (!executablePath) throw new Error('no local Chrome or Edge found; set CHROME_PATH')
-  const browser = await chromium.launch({ executablePath, headless: options.headless ?? true, args: options.args ?? [] })
-  const context = await browser.newContext({ viewport: { width: options.width ?? 1280, height: options.height ?? 900 } })
-  if (options.initScript !== undefined) await context.addInitScript(options.initScript)
-  const page = await context.newPage()
+  const opened = await openBrowser({
+    headless: options.headless,
+    args: options.args,
+    width: options.width,
+    height: options.height,
+    initScript: options.initScript,
+  })
   const problems = []
-  page.on('console', (message) => {
+  opened.page.on('console', (message) => {
     if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
   })
-  page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
-  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
-  return { page, context, browser, problems, close: () => browser.close() }
+  opened.page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
+  await opened.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
+  return { page: opened.page, context: opened.context, browser: opened.browser, problems, close: opened.close }
 }
 
 /** Wait until the skin has taken the page (its build id is on `<body>`). */

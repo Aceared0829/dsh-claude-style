@@ -22,7 +22,7 @@
     if (url === '/dsh-claude-style/username') return Promise.resolve(jsonResponse({ ok: true, username: 'Tester' }))
     if (url === '/dsh-claude-style/brand') {
       // The custom-brand case holds both images; the bytes are the runner's to
-      // serve (scripts/smoke.cjs), since the page loads them as images.
+      // serve (packages/testing/smoke.cjs), since the page loads them as images.
       return Promise.resolve(jsonResponse(CASE === 'custom-brand'
         ? { ok: true, mark: { type: 'image/png', version: '1-1' }, wordmark: { type: 'image/svg+xml', version: '1-1' } }
         : { ok: true, mark: null, wordmark: null }))

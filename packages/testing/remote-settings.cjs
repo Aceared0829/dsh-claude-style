@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * remote-settings.cjs — a page under a non-loopback name on the real host
- * (D60, D45).
+ * (D60, D66).
  *
  * The host's settings-form service keeps a page whose hostname is not loopback
  * in memory: it never reads the settings document and saves nothing. The skin

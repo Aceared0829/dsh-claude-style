@@ -13,7 +13,8 @@
  * public prefix route serves the assets the build routed from lib/assets/,
  * under the build's own manifest, and nothing else.
  *
- * Browser half, in headless Chrome/Edge over CDP: `lib/client.js` is loaded into
+ * Browser half, in headless Chrome/Edge through Playwright (packages/testing/browser.cjs):
+ * `lib/client.js` is loaded into
  * a page that stands in for the host (module loader, ctx, a sidebar footer with
  * an account menu and two plugin entries, a composer whose editor handles Enter
  * the way the host's keymap does), and checked for:
@@ -40,17 +41,17 @@
  *   - teardown   dispose leaves no skin node, marker, body attribute or
  *                stylesheet behind, and no pass runs afterwards.
  *
- * This file is the runner. The parts live in scripts/smoke/: shared.cjs (paths,
+ * This file is the runner. The parts live in packages/testing/smoke/: shared.cjs (paths,
  * fixtures, `check`), host-half.cjs (the Node half), page.cjs (one case's
  * stand-in page), the stand-in/ and probe/ parts (the scripts that page runs
  * before and after the bundle) and cases.cjs (what each case's report must show).
  *
- * Usage: node scripts/smoke.cjs [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--quick]
+ * Usage: node packages/testing/smoke.cjs [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--quick]
  *        (CHROME_PATH overrides the browser lookup)
  *        --case runs the named browser cases alone, --feature the cases that
  *        cover the named directories under packages/client/src/features/; both may be repeated,
  *        combined, and neither means every case. --quick leaves out the cases
- *        and the checks that watch motion (TIMING_CASES in scripts/smoke/
+ *        and the checks that watch motion (TIMING_CASES in packages/testing/smoke/
  *        shared.cjs). Cases that share a stand-in configuration and a markup
  *        run in one page load (PAGES in shared.cjs), and the log names the pages
  *        it loaded. The Node host half runs either way.
@@ -60,8 +61,8 @@
 const fs = require('fs')
 const http = require('http')
 const path = require('path')
-const { findChrome, launchChrome, connectTab } = require('./shared/chrome.cjs')
-const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, sleep, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
+const { findChrome, openBrowser } = require('./browser.cjs')
+const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
 const { hostHalf } = require('./smoke/host-half.cjs')
 const { page } = require('./smoke/page.cjs')
 const { CASES } = require('./smoke/cases.cjs')
@@ -134,37 +135,29 @@ function checkFeatureTable() {
   }
 }
 
-/** Load one case in a fresh tab and return the page's report. */
-async function runCase(port, base, name) {
-  const tab = await connectTab(port)
+/**
+ * Load one page in a context of its own and return the report its probe answered
+ * with. The fresh context is what keeps a case from reading what an earlier one
+ * fetched: the routed assets are cached for good, and a case that refuses one
+ * (chunk-fault) must be answered by the server, not by that cache.
+ */
+async function runPage(instance, base, name) {
+  const context = await instance.newContext()
   try {
-    await tab.send('Page.enable')
-    // The machine's own motion setting must not decide a check: every case
-    // runs with no reduced-motion request, and a probe that needs one asks
-    // for it itself.
-    await tab.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] })
-    // Each case asks the server for everything it loads: the routed assets are
-    // cached for good, and a case that refuses one (chunk-fault) must not be
-    // answered from what an earlier case fetched.
-    await tab.send('Network.enable')
-    await tab.send('Network.setCacheDisabled', { cacheDisabled: true })
-    await tab.send('Page.navigate', { url: `${base}/${name}` })
-    for (let i = 0; i < 100; i++) {
-      const out = await tab.send('Runtime.evaluate', { expression: 'window.__smoke', awaitPromise: true, returnByValue: true })
-      // A probe that throws rejects its promise, which CDP answers as an
-      // exception carrying an empty object as the value: without this the case
-      // would report "no report" instead of the failure that caused it.
-      if (out.result && out.result.exceptionDetails) {
-        const exception = out.result.exceptionDetails.exception
-        throw new Error(`case "${name}" threw: ${(exception && exception.description) || out.result.exceptionDetails.text}`)
-      }
-      const result = out.result && out.result.result
-      if (result && result.type === 'object') return result.value
-      await sleep(100)
+    const tab = await context.newPage()
+    await tab.goto(`${base}/${name}`, { waitUntil: 'domcontentloaded' })
+    const reported = await tab.waitForFunction(() => window.__smoke !== undefined, undefined, { timeout: 10000 })
+      .then(() => true, () => false)
+    if (!reported) throw new Error(`case "${name}" never reported`)
+    try {
+      return await tab.evaluate(() => window.__smoke)
+    } catch (error) {
+      // A probe that throws rejects its promise, which the page answers with the
+      // throw itself: the failure that caused it is what the run must show.
+      throw new Error(`case "${name}" threw: ${error.message}`)
     }
-    throw new Error(`case "${name}" never reported`)
   } finally {
-    await tab.close()
+    await context.close()
   }
 }
 
@@ -190,8 +183,7 @@ async function browserHalf(planned) {
   if (!browser) {
     console.log('\nbrowser half — skipped: no Chrome/Edge found (set CHROME_PATH)')
     return { ran: false, scope: '' }
-  }
-  /** The page being served; the picture route answers for it. */
+  }  /** The page being served; the picture route answers for it. */
   let current = null
   const server = http.createServer((req, res) => {
     const name = new URL(req.url, 'http://x').pathname.slice(1)
@@ -267,13 +259,15 @@ async function browserHalf(planned) {
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
 
   const base = `http://127.0.0.1:${server.address().port}`
-  const chrome = await launchChrome(browser, { name: 'smoke', width: 1280, height: 800 })
+  // The machine's own motion setting must not decide a check: every case runs
+  // with no reduced-motion request, and a probe that needs one asks for it itself.
+  const instance = await openBrowser({ width: 1280, height: 800, reducedMotion: 'no-preference' })
   try {
     console.log(`\nbrowser half — tier ${tierName()} — ${cases.length} of ${total} cases in ${pages.length} page loads: ${cases.join(', ')}`)
     if (leftOut.length) console.log(`browser half — left out as timing: ${leftOut.join(', ')}`)
     for (const { page: pageName, cases: pageCases } of pages) {
       if (pageCases.length > 1) console.log(`\nbrowser half — page ${pageName} — ${pageCases.join(', ')}`)
-      const report = await runCase(chrome.port, base, pageName)
+      const report = await runPage(instance, base, pageName)
       for (const name of pageCases) {
         console.log(`\nbrowser half — ${name}`)
         CASES[name](report)
@@ -282,7 +276,7 @@ async function browserHalf(planned) {
     return { ran: true, scope: `${cases.length} of ${total} browser cases in ${pages.length} page loads, tier ${tierName()}` }
   } finally {
     server.close()
-    await chrome.close()
+    await instance.close()
   }
 }
 

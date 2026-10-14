@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * stats-overlay.cjs — the meter's dock laid over the toolbar row (D27, D45).
+ * stats-overlay.cjs — the meter's dock laid over the toolbar row (D27, D66).
  *
  * Registered in the lane's scenario table through packages/testing/stats-position.cjs.
  *

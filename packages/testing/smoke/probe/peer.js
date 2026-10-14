@@ -17,8 +17,10 @@
       var peerHighlights = function () {
         var registry = window.CSS && window.CSS.highlights
         if (!registry) return 0
+        // The reveal registers one highlight per step under this prefix
+        // (constants.ts's CHAT_REVEAL_HIGHLIGHT_PREFIX); any of them is a live engine.
         var count = 0
-        for (var step = 0; step < 24; step++) if (registry.has('dsh-claude-tok-' + step)) count += 1
+        registry.forEach(function (_highlight, name) { if (name.indexOf('dsh-claude-tok-') === 0) count += 1 })
         return count
       }
       // A chat area and a focused composer: live features would mark, fold or

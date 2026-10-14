@@ -6,10 +6,10 @@
  */
 'use strict'
 const path = require('path')
-const { featureCases, readManifests } = require('../shared/read-manifests.cjs')
-const { loadModule } = require('../shared/ts-module.cjs')
+const { featureCases, readManifests } = require('../../../scripts/shared/read-manifests.cjs')
+const { loadModule } = require('../../../scripts/shared/ts-module.cjs')
 
-const ROOT = path.resolve(__dirname, '..', '..')
+const ROOT = path.resolve(__dirname, '..', '..', '..')
 const CLIENT = path.join(ROOT, 'lib', 'client.js')
 // The host half as the package ships it (D46): the build writes it to lib/host.
 const HOST = path.join(ROOT, 'lib', 'host', 'index.js')
