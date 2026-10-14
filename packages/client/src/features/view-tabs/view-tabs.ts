@@ -49,7 +49,8 @@ import type manifest from './view-tabs.manifest'
  * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
-  const HEADER = '[class*="_header"]:has([class*="_tabs"])'
+  const STRIP = '[class*="_tabs"]'
+  const HEADER = `[class*="_header"]:has(${STRIP})`
   /**
    * The title's TEXT, not its row or cluster: `.titleRow` is a flex row and the
    * cluster takes up the slack, so testing against them reported a clash on
@@ -104,16 +105,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return box
   }
 
-  /** The boxes the strip would share the title's line with. */
-  function neighbours(header: Element) {
-    const out: DOMRect[] = []
-    const title = titleBoxOf(header)
-    const actions = rect(header.querySelector(ACTIONS))
-    if (title !== null) out.push(title)
-    if (actions !== null) out.push(actions)
-    return out
-  }
-
   /**
    * The title's box. `querySelector` on the selector list returns the first
    * match in DOCUMENT order, which is the wrapper (`.titleCluster` contains
@@ -131,10 +122,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return best
   }
 
+  /**
+   * The header found last time, kept while it is still in the document and
+   * still holds the strip (D9): the header query carries a `:has()` over the
+   * whole document, and the header outlives every pass of one conversation.
+   */
+  let header: Element | null = null
+  function findStrip() {
+    let strip = header !== null && header.isConnected ? header.querySelector<HTMLElement>(STRIP) : null
+    if (strip === null) {
+      header = document.querySelector(HEADER)
+      strip = header === null ? null : header.querySelector<HTMLElement>(STRIP)
+    }
+    return strip
+  }
+
   function sync() {
     syncTitlebar()
-    const header = document.querySelector(HEADER)
-    const strip = header === null ? null : header.querySelector<HTMLElement>('[class*="_tabs"]')
+    const strip = findStrip()
     stripStamp.mark(strip)
     classStamp(strip)
     pill.sync(strip)
@@ -158,16 +163,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Room above: the lifted strip stays under the header's top inset.
       const top = naturalTop + want
       if (top < headerBox.top + TOP_INSET) want = headerBox.top + TOP_INSET - naturalTop
-      // Room sideways: centred, it must clear the title and the actions.
-      const left = stripBox.left
-      const right = stripBox.right
-      let clash = false
-      const others = neighbours(header)
-      for (let i = 0; i < others.length; i++) {
-        const box = others[i]
-        if (box === null) continue
-        if (right > box.left - CLEARANCE && left < box.right + CLEARANCE) clash = true
-      }
+      // Room sideways: centred, it must clear the title and the actions, the
+      // boxes it would share the title's line with.
+      const actionsBox = rect(header.querySelector(ACTIONS))
+      const clash = [titleBox, actionsBox].some((box) => box !== null && stripBox.right > box.left - CLEARANCE && stripBox.left < box.right + CLEARANCE)
       if (!clash) shift = Math.round(want)
     }
     if (shift === last && strip === lastEl) return
@@ -183,14 +182,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       document.body.removeAttribute(TITLEBAR_ATTR)
       titlebar = false
     }
-    const header = document.querySelector(HEADER)
-    const strip = header === null ? null : header.querySelector<HTMLElement>('[class*="_tabs"]')
+    const strip = findStrip()
     if (strip !== null) strip.style.removeProperty('--dsh-view-tabs-shift')
     pill.release()
     stripStamp.release()
     classStamp(null)
     last = null
     lastEl = null
+    header = null
     delete ui.viewTabs
   }
 }
