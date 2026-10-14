@@ -4,6 +4,7 @@ import { closestConversationSession, conversationSessionId, findChatTarget } fro
 import { copyLabel } from '../../core/i18n'
 import { buildElement } from '../../shared/dom'
 import { formatHostDuration } from '../../shared/format'
+import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { activityWords } from '../../shared/turn-activity'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
@@ -16,10 +17,9 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-wait.manifest'
 
 /**
- * The live turn's running row, after dsh-better-display's status line (MIT):
- * what the turn is doing now in this line's own words
- * (shared/turn-activity.ts), the host's own 「深度求索中」 where no state can be
- * read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
+ * The live turn's running row: what the turn is doing now in this line's own
+ * words (shared/turn-activity.ts), the host's own 「深度求索中」 where no state
+ * can be read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
  * once the model has been silent for ten seconds (wait-state.ts). Two of those
  * states name more than a state: a call in flight says the file it works on
  * (「正在读取 app.js」) and reasoning says the clause the model itself is on
@@ -43,6 +43,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const WAIT_ATTR = 'data-dsh-claude-wait'
   /** On the host's words alone, leaving sibling plugin lines visible. */
   const WORDS_ATTR = 'data-dsh-claude-wait-words'
+  /** On the overtime badge while it plays its way out (syncBadge). */
+  const BADGE_LEAVING_ATTR = 'data-dsh-claude-wait-badge-leaving'
   /** The clock's step: the host's own row ticks once a second, and a quarter keeps the two in step. */
   const TICK_MS = 250
   /** Each running row with the line drawn into it. */
@@ -108,10 +110,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // (chat-wait.css), so the line carries what a reader gets: the wording, the
     // clock and the wait badge are ordinary text, and the host's live region
     // still announces the row.
+    // The badge starts hidden: it comes out only once a wait runs over (syncBadge).
+    const badge = buildElement('span', 'dsh-claude-chat-wait-badge')
+    badge.hidden = true
     line.append(
       buildElement('span', 'dsh-claude-chat-wait-label'),
       buildElement('span', 'dsh-claude-chat-wait-clock'),
-      buildElement('span', 'dsh-claude-chat-wait-badge'),
+      badge,
     )
     words.after(line)
     lines.set(row, line)
@@ -168,9 +173,30 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       }
       overtime = now - began >= WAIT_OVERTIME_MS
     }
-    badge.hidden = !overtime
-    if (overtime) writeText(badge, copyLabel('chatWaitOvertime', 'No response yet'))
+    syncBadge(badge, overtime)
     if (!row.hasAttribute(WAIT_ATTR)) row.setAttribute(WAIT_ATTR, '')
+  }
+
+  /**
+   * The overtime badge comes and goes with motion of its own (chat-wait.css):
+   * it shows the moment the wait runs over, and on its way out it stays laid
+   * out until its exit has played, then hides. A wait that runs over again
+   * before that takes the badge back where it stands.
+   */
+  function syncBadge(badge: HTMLElement, overtime: boolean) {
+    if (overtime) {
+      badge.removeAttribute(BADGE_LEAVING_ATTR)
+      badge.hidden = false
+      writeText(badge, copyLabel('chatWaitOvertime', 'No response yet'))
+      return
+    }
+    if (badge.hidden || badge.hasAttribute(BADGE_LEAVING_ATTR)) return
+    badge.setAttribute(BADGE_LEAVING_ATTR, '')
+    window.setTimeout(() => {
+      if (!badge.hasAttribute(BADGE_LEAVING_ATTR)) return
+      badge.removeAttribute(BADGE_LEAVING_ATTR)
+      badge.hidden = true
+    }, motionMs('--dsh-claude-duration-exit'))
   }
 
   /** Take one row's line down and give the host's words back. */

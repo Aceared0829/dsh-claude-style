@@ -336,7 +336,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: var(--dsh-claude-layer-control);
   box-shadow: none;
   background: transparent;
   color: var(--dsw-alias-label-caption);
@@ -386,7 +386,7 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: var(--dsh-claude-layer-control);
   /* Claude's stop control is a bare ink circle with a filled square inside; the
      plate is hover only, and the glyph is the interface ink — not the accent. */
   background: transparent;

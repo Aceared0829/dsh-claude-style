@@ -10,6 +10,7 @@ export const PREFS_DEFAULT = Object.freeze({
   brandInk: 'original',
   brandAccent: '',
   motion: 'system',
+  statusMotion: 'sweep',
   collapseFooter: true,
   autoPopover: 'all',
   composerScope: 'all',

@@ -2,9 +2,9 @@ import type { HostChatSnapshot, HostTurn } from '@dsh-claude-style/contracts/ser
 
 /**
  * When the model has kept the reader waiting, read off the host's chat
- * snapshot. The wait follows dsh-better-display's waiting clock (MIT): it
- * counts from the moment the move went back to the model, not from the turn's
- * first message, so the minutes a tool spent never count against the model.
+ * snapshot. The wait counts from the moment the move went back to the model,
+ * not from the turn's first message, so the minutes a tool spent never count
+ * against the model.
  */
 
 /** Past this, a wait stops reading as a pause and reads as the model not answering. */

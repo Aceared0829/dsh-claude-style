@@ -3,7 +3,7 @@
   "title": "dsh-claude-style design tokens",
   "description": "The skin's custom properties: the build generates the token stylesheet and the docs/STYLE.md token table from this document (D51).",
   "type": "object",
-  "required": ["typeface", "apex", "palette", "motion"],
+  "required": ["typeface", "apex", "palette", "motion", "layer"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
@@ -67,6 +67,21 @@
           "token": { "type": "string", "pattern": "^--dsh-claude-(duration|period|ease|distance|blur|scale|timing)-[a-z0-9-]+$" },
           "value": { "$ref": "#/$defs/value" },
           "use": { "description": "The role the token plays, for the docs/STYLE.md motion table.", "type": "string", "minLength": 1 },
+          "note": { "$ref": "#/$defs/note" }
+        }
+      }
+    },
+    "layer": {
+      "description": "Layer tokens (D00): the stacking levels a skin surface takes against what the host draws around it. One value under every palette and typeface; the only place a stylesheet may write a z-index above the local orders 0 to 9.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["token", "value", "use"],
+        "additionalProperties": false,
+        "properties": {
+          "token": { "type": "string", "pattern": "^--dsh-claude-layer-[a-z0-9-]+$" },
+          "value": { "type": "string", "pattern": "^[1-9][0-9]+$" },
+          "use": { "description": "What stands on this level and what it has to clear, for the docs/STYLE.md layer table.", "type": "string", "minLength": 1 },
           "note": { "$ref": "#/$defs/note" }
         }
       }

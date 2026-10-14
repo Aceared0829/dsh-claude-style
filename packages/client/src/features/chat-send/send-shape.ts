@@ -78,14 +78,15 @@ export const CHAT_LANDING_MS = motionMs('--dsh-claude-duration-surface')
  *
  * Critically damped, no overshoot: the shape must not bounce.
  *
- * The vertical spring is deliberately under-damped: it overshoots the target
- * by about 2.84% (`exp(-πζ/√(1-ζ²))`, set by the damping ratio alone) with its
- * peak at 190 ms and settles back — that give is the landing.
+ * The vertical spring keeps a little give: it overshoots the target by
+ * `exp(-πζ/√(1-ζ²))` — set by the damping ratio alone — and settles back. At
+ * CHAT_RISE_DAMPING that is a fifth of a pixel, which reads as the landing
+ * without the stand-in ever standing outside the row it lands on.
  */
 export const CHAT_ACROSS_OMEGA = 16
 
-/** The vertical spring's damping ratio, 1 being critical. How much it gives on landing is this one number. */
-export const CHAT_RISE_DAMPING = 0.75
+/** The vertical spring's damping ratio, 1 being critical. How much it gives on landing is this one number: 0.9 leaves the stand-in a fifth of a pixel past the row it lands on, and a flight whose give is a few pixels paints itself above the row's top edge (see chatSendTextWindows). */
+export const CHAT_RISE_DAMPING = 0.9
 
 /** The vertical spring's angular frequency, on the same clock as the whole flight: larger settles earlier and bounces earlier. */
 export const CHAT_RISE_OMEGA = 7.5
@@ -271,12 +272,19 @@ export function chatSendTextLayer(bubble: Element, style: CSSStyleDeclaration) {
  * changing its width re-lays only itself. The first step is left to the
  * draft's clone but handed over by CHAT_DRAFT_HANDOFF_AT at the latest, and
  * the last step is the bubble itself. The heights of the steps the words push
- * taller are filled in on the way (the sample heights are rewritten).
+ * taller are filled in on the way, and no step is left standing below the line
+ * from the card's own height to the row's (the sample heights are rewritten).
  *
  * @param bottomPadding - the distance from the bubble's content to its bottom edge, used when the words push it taller.
+ * @param fromHeight - the composer card's own height (C0), the start of the same floor:
+ *   the two heights are one line from the card to the row, and every step in between
+ *   stands on it, so the floor never crosses the shape it is protecting.
+ * @param destinationHeight - the row's height as it stands now. It is read again here
+ *   rather than taken from the samples: a row measured while the host was still growing
+ *   it into place is short, and the stand-in would land on a row taller than itself.
  * @returns the steps in time order; the first step's content is the draft clone's job, so it only gets a time window here.
  */
-export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration, samples: ShapeSample[], finalLineHeight: number, bottomPadding: number) {
+export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration, samples: ShapeSample[], finalLineHeight: number, bottomPadding: number, fromHeight: number, destinationHeight: number) {
   const probeHost = document.createElement('div')
   // Marked quiet: the probe is built, measured and removed inside this call,
   // and the shared scheduler must not read that as a change worth a pass
@@ -349,9 +357,15 @@ export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration,
     const width = widths[index] ?? sample.content
     const layout = perSample[index] ?? layoutAt(width)
     // Narrower means more lines, and words taller than the shell make it grow:
-    // a self-sizing bubble does the same.
+    // a self-sizing bubble does the same. The height never drops below where the
+    // destination's own edge stands at this step of the flight, whatever the
+    // probe made of the words: the drawn height is the row's own edge at the end
+    // (u = 1 puts this floor at destinationHeight exactly), so the stand-in fades
+    // across the whole row rather than part of it.
+    const floor = fromHeight + (destinationHeight - fromHeight) * sample.m
     const needed = sample.top + layout.lines * sample.lineHeight + bottomPadding
     if (needed > sample.height) sample.height = needed
+    if (sample.height < floor) sample.height = floor
     // With one line the line height does not move the glyphs (the difference is
     // made up by the translation), so it needs no layer of its own.
     const lineHeight = layout.lines > 1

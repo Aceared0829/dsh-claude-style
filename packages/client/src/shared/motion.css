@@ -15,6 +15,26 @@ body[data-dsh-claude-style] {
   --dsh-claude-swap-duration: var(--dsh-claude-duration-swap);
   --dsh-claude-swap-gap: var(--dsh-claude-duration-swap-gap);
   --dsh-claude-swap-ease: var(--dsh-claude-ease-in-out);
+
+  /* The two paints the waiting line's words can wear (D26, D65): the highlight
+     band the host's own rows sweep, and the colour wash transitions.dev's "Pro
+     gradient text" (MIT) moves through the letters — seven radial washes over a
+     grey ramp, blown up and orbited around the glyph box. The wash's colours are
+     the recipe's own, the same under every palette; the band reads the host's
+     shimmer tint, so it follows the host's rows. */
+  --dsh-claude-band-fill: linear-gradient(90deg, transparent 37.5%, var(--dsw-alias-label-shimmer, var(--dsw-alias-label-primary)) 47.5% 52.5%, transparent 62.5%);
+  --dsh-claude-band-size: 400% 100%;
+  --dsh-claude-wash-layers:
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.88'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.34726 -1.3118e-7 8.6482e-7 0.89585 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.5'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-1.3 0.25 -1.2633 -2.7471 33.5 21)'><stop stop-color='rgba(0,110,245,1)' offset='0'/><stop stop-color='rgba(0,110,245,0)' offset='1'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='0.4'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.05 -0.8 0.46018 3.6184 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='0.71709'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.51067 -3.3275e-16 -4.3352e-14 -1.1396 33.5 21)'><stop stop-color='rgba(204,0,167,1)' offset='0'/><stop stop-color='rgba(170,0,204,0)' offset='1'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.45 -0.75 1.9052 -0.7091 33.5 21)'><stop stop-color='rgba(255,173,85,1)' offset='0'/><stop stop-color='rgba(255,173,85,0)' offset='1'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.25 -0.35 -0.4013 3.5959 33.5 21)'><stop stop-color='rgba(0,204,68,1)' offset='0'/><stop stop-color='rgba(0,196,102,0.75)' offset='0.25'/><stop stop-color='rgba(0,187,136,0.5)' offset='0.5'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+    url("data:image/svg+xml;utf8,<svg viewBox='0 0 67 42' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(-0.87391 0.73043 -4.1482 -1.9503 33.5 21)'><stop stop-color='rgba(0,170,204,1)' offset='0'/><stop stop-color='rgba(0,170,204,0)' offset='1'/></radialGradient></defs></svg>"),
+    linear-gradient(rgb(108, 108, 108) 0%, rgb(216, 216, 216) 100%);
+  --dsh-claude-wash-sizes:
+    180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 180% 180%, 100% 100%;
 }
 
 /* A surface arriving and leaving: it rises into place from
@@ -28,6 +48,17 @@ body[data-dsh-claude-style] {
 @keyframes dsh-claude-surface-out {
   from { opacity: 1; transform: none; }
   to { opacity: 0; transform: translateY(var(--dsh-claude-surface-to, calc(-1 * var(--dsh-claude-distance-nudge)))) scale(var(--dsh-claude-surface-scale, var(--dsh-claude-scale-surface))); }
+}
+
+/* A menu growing out of its trigger: it scales up from
+   --dsh-claude-scale-dropdown about the corner its own sheet names as its
+   transform-origin, and travels nowhere (transitions.dev's "Menu dropdown",
+   MIT). The skin's own cards play the same motion as a transition on their
+   open state (shared/popover.css); a menu the host mounts plays it as this
+   entrance. */
+@keyframes dsh-claude-dropdown-in {
+  from { opacity: 0; transform: scale(var(--dsh-claude-scale-dropdown)); }
+  to { opacity: 1; transform: none; }
 }
 
 /* A plain fade, where nothing travels. */
@@ -56,4 +87,71 @@ body[data-dsh-claude-style] {
 @keyframes dsh-claude-pulse {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
+}
+
+/* The highlight band: one pass of a text-clipped gradient across the words, the
+   band resting over the last third of it, at the host's own TextShimmer period
+   and curve. What tints the band is --dsh-claude-band-fill, and how wide the
+   travel is --dsh-claude-band-size. */
+@keyframes dsh-claude-sweep {
+  0% { background-position: 100% 0; }
+  66.6667%, 100% { background-position: 0% 0; }
+}
+
+/* The colour wash, transitions.dev's "Pro gradient text" (MIT,
+   THIRD_PARTY_NOTICES.md): the washes orbit the glyph box while the hue turns a
+   full circle through them, so the letters pass through every colour and no two
+   moments of the loop look alike. */
+@keyframes dsh-claude-wash-hue {
+  from { filter: hue-rotate(0deg) saturate(1.3); }
+  to { filter: hue-rotate(-360deg) saturate(1.3); }
+}
+
+@keyframes dsh-claude-wash-drift {
+  0%, 100% { background-position: 100% 0%, 0% 50%, 100% 50%, 0% 100%, 0% 0%, 50% 0%, 50% 100%, 0 0; }
+  25% { background-position: 100% 100%, 50% 0%, 50% 100%, 0% 0%, 100% 0%, 100% 50%, 0% 50%, 0 0; }
+  50% { background-position: 0% 100%, 100% 50%, 0% 50%, 100% 0%, 100% 100%, 50% 100%, 50% 0%, 0 0; }
+  75% { background-position: 0% 0%, 50% 100%, 50% 0%, 100% 100%, 0% 100%, 0% 50%, 100% 50%, 0 0; }
+}
+
+/* The two paints as shared looks: the words stand in the element and repeat in
+   `data-text`, and the pseudo-element paints them again clipped to the glyphs —
+   so the band crosses words that keep their own colour while the wash fills them
+   with moving colour. The settings page's preview cards wear these classes; the
+   waiting line paints the same two looks onto the copies its swap builds
+   (features/chat-wait/chat-wait.css), where the words arrive one at a time. */
+body[data-dsh-claude-style] :is(.dsh-claude-sweep, .dsh-claude-wash) {
+  position: relative;
+}
+
+body[data-dsh-claude-style] :is(.dsh-claude-sweep, .dsh-claude-wash)::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The two paints, written once each, for both things that wear them: any element
+   carrying the look class (the settings page's preview cards), and the waiting
+   line's copies, whose own sheet says which of the two the reader picked
+   (features/chat-wait/chat-wait.css). The copy is the box the band has to be
+   read off — never the label, which stands taller by the swap's travel — so the
+   line's selector reaches the swap's shimmer copy alone. */
+body[data-dsh-claude-style] .dsh-claude-sweep::before,
+body[data-dsh-claude-style][data-dsh-claude-status-motion="sweep"] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
+  background-image: var(--dsh-claude-band-fill);
+  background-size: var(--dsh-claude-band-size);
+  animation: dsh-claude-sweep var(--dsh-claude-period-host-sweep) var(--dsh-claude-ease-host-sweep) infinite;
+}
+
+body[data-dsh-claude-style] .dsh-claude-wash::before,
+body[data-dsh-claude-style][data-dsh-claude-status-motion="wash"] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
+  background-image: var(--dsh-claude-wash-layers);
+  background-size: var(--dsh-claude-wash-sizes);
+  animation: dsh-claude-wash-hue var(--dsh-claude-period-wash-hue) linear infinite, dsh-claude-wash-drift var(--dsh-claude-period-wash-drift) var(--dsh-claude-ease-in-out) infinite;
 }

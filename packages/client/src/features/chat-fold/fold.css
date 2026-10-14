@@ -47,7 +47,7 @@ body[data-dsh-claude-style] .dsh-claude-process-summary-words {
 }
 
 /* A count rolls in place: the sizer holds the width, the old digit leaves
-   upward as the new one rises (160 ms, dsh-better-display's fold figures). */
+   upward as the new one rises (160 ms). */
 body[data-dsh-claude-style] .dsh-claude-process-summary-roll {
   position: relative;
   display: inline-flex;

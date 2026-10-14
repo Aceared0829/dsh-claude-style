@@ -77,7 +77,7 @@ body[data-dsh-claude-style] .dsh-claude-segments[data-dsh-claude-pill] > .dsh-cl
 body[data-dsh-claude-style] .dsh-claude-perm-container {
   position: relative;
   display: inline-flex;
-  z-index: 20;
+  z-index: var(--dsh-claude-layer-picker);
 }
 body[data-dsh-claude-style] .dsh-claude-perm-btn {
   display: inline-flex;

@@ -55,7 +55,7 @@ import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, planAssets, ro
 import { openBuildCache } from './build-cache.mjs'
 import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkMotionSources, checkScrollOwner, checkTypes } from './build-checks.mjs'
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
-import { TOKEN_SHEET, buildStylesheet, loadTokens, writeMotionTable, writeTokenTable } from './css.mjs'
+import { TOKEN_SHEET, buildStylesheet, loadTokens, writeLayerTable, writeMotionTable, writeTokenTable } from './css.mjs'
 import { motionValues } from './shared/motion-tokens.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
@@ -377,6 +377,7 @@ async function main() {
   const cssText = buildStylesheet({ sheets, srcDir: SRC, tokenDoc, gates: CONSTANTS.gates, images })
   if (writeTokenTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md token table from packages/client/src/theme/tokens.json')
   if (writeMotionTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md motion table from packages/client/src/theme/tokens.json')
+  if (writeLayerTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md layer table from packages/client/src/theme/tokens.json')
 
   // The build-time values, for the bundle and for the chunks alike: each
   // carries the ones its own modules read.

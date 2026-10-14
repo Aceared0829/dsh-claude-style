@@ -128,8 +128,7 @@ body[data-dsh-claude-style] .dsh-claude-account-popover {
   /* The drawer's rows are built and reconciled while it is closed (the mirror
      sync only runs then), so the panel takes the closed state the shared card
      gives every card: out of the paint and the tab order, its box still
-     measurable for the placement. */
-  transform: translateY(6px) scale(0.98);
+     measurable for the placement. It grows out of the account row below it. */
   transform-origin: bottom left;
 }
 /* Hover bridge between trigger and popover */
@@ -362,7 +361,7 @@ body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data
 }
 body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data-menu-material][data-dsh-claude-account-ready] {
   transform-origin: bottom left !important;
-  animation: dsh-claude-surface-in var(--dsh-claude-timing-surface) !important;
+  animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle) !important;
 }
 
 body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-account-menu] {

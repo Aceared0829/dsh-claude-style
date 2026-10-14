@@ -8,7 +8,13 @@ import type { CloseReason, FeatureHandle } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './ban-screen.manifest'
 import { buildElement } from '../../shared/dom'
+import { motionMs } from '../../shared/motion'
 import { removeStrayNodes } from '../../shared/popover'
+
+/** On the page while it plays its way out after a dismissal: the stylesheet runs the exit. */
+const BAN_LEAVING_ATTR = 'data-dsh-ban-leaving'
+/** On a page rebuilt over one already up: it stands where it is instead of growing in again. */
+const BAN_SETTLED_ATTR = 'data-dsh-ban-settled'
 
 /** The easter egg's handle (ui.ban): the account row opens it. */
 export interface BanHandle extends FeatureHandle {
@@ -43,6 +49,9 @@ export interface BanHandle extends FeatureHandle {
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let banRoot: HTMLElement | null = null
+  /** The overlay the reader dismissed, still playing its way out (dismissBanScreen). */
+  let leavingRoot: HTMLElement | null = null
+  let leavingTimer: number | null = null
   /** Whether the open overlay has lent its canvas colour to the Windows caption band. */
   let captionFillHeld = false
 
@@ -54,17 +63,48 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   removeStrayNodes(document, '.dsh-claude-ban', [])
   document.body.style.removeProperty('--dsw-specific-sidebar-fill')
 
+  /** Take the dismissed overlay off the page now, whatever is left of its exit. */
+  function removeLeaving() {
+    if (leavingTimer !== null) window.clearTimeout(leavingTimer)
+    leavingTimer = null
+    if (leavingRoot !== null) leavingRoot.remove()
+    leavingRoot = null
+  }
+
   /**
-   * Close the easter egg. Safe to call at any time (teardown, a second
-   * click, a missing overlay): everything is null-checked and the handle
-   * is idempotent, so the caller never has to know the current state.
+   * Close the easter egg at once: teardown, and a rebuild that replaces the
+   * page. Safe to call at any time (a second call, a missing overlay):
+   * everything is null-checked, so the caller never has to know the current
+   * state.
    */
   function closeBanScreen() {
+    removeLeaving()
     releaseCaptionFill()
-    if (banRoot !== null && banRoot.parentElement !== null) {
-      banRoot.parentElement.removeChild(banRoot)
-    }
+    if (banRoot !== null) banRoot.remove()
     banRoot = null
+  }
+
+  /**
+   * The reader's way out: the page shrinks back toward the centre while it
+   * fades (transitions.dev's "Modal open / close", MIT, ban-screen.css) and
+   * leaves once that has played. It stops being the open overlay at once, so
+   * Esc and a second open never meet the page on its way out; the caption
+   * band keeps the page's colour until the page is gone.
+   */
+  function dismissBanScreen() {
+    if (banRoot === null) return
+    const root = banRoot
+    banRoot = null
+    removeLeaving()
+    leavingRoot = root
+    root.setAttribute(BAN_LEAVING_ATTR, '')
+    // A new opening before this fires clears it (closeBanScreen), so the band
+    // released here is never one a newer page has taken.
+    leavingTimer = window.setTimeout(() => {
+      leavingTimer = null
+      removeLeaving()
+      releaseCaptionFill()
+    }, motionMs('--dsh-claude-duration-exit'))
   }
 
   /**
@@ -233,8 +273,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * @param bannedAt - when the "hold" is dated; defaults to now. Exposed so
    *   a caller (or a probe) can pin the timestamp instead of reading it off
    *   the clock.
+   * @param rebuilt - the page replaces one already up (a copy change): it
+   *   stands where it is instead of growing in again.
    */
-  function openBanScreen(bannedAt?: Date) {
+  function openBanScreen(bannedAt?: Date, rebuilt = false) {
     closeBanScreen()
     if (typeof document === 'undefined' || document.body === null) return
 
@@ -242,6 +284,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     root.setAttribute('role', 'dialog')
     root.setAttribute('aria-modal', 'true')
     root.setAttribute('data-dsh-ban', '')
+    if (rebuilt) root.setAttribute(BAN_SETTLED_ATTR, '')
 
     banOpenedAt = bannedAt instanceof Date ? bannedAt : new Date()
     const stamp = formatBanStamp(banOpenedAt)
@@ -264,7 +307,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // scheduler.ts — deliberately not a window `blur`, which would close
     // the page the moment the reader switched windows to look something up.
     root.addEventListener('click', e => {
-      if (isBanDismissTarget(e.target)) closeBanScreen()
+      if (isBanDismissTarget(e.target)) dismissBanScreen()
     })
 
     banRoot = root
@@ -300,7 +343,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // wired in account-footer.ts before this runs, but it reads `ui.ban` on
   // each pass and at click time, so the order is safe either way.)
   ui.ban = {
-    open: openBanScreen,
+    open(bannedAt?: Date) {
+      openBanScreen(bannedAt)
+    },
     /**
      * Esc is the overlay's only keyboard exit. The scheduler dispatches
      * 'composer' for composer focus and 'outside' for a press; neither may
@@ -308,7 +353,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      */
     close(reason?: CloseReason) {
       if (reason === 'composer' || reason === 'outside') return
-      closeBanScreen()
+      dismissBanScreen()
     },
     isOpen() {
       return banRoot !== null
@@ -324,7 +369,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      */
     onCopyChange() {
       if (banRoot === null) return
-      openBanScreen(banOpenedAt === null ? new Date() : banOpenedAt)
+      openBanScreen(banOpenedAt === null ? new Date() : banOpenedAt, true)
     },
   }
 

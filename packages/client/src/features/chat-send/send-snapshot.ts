@@ -99,6 +99,44 @@ export function chatSendAlpha(color: string) {
 }
 
 /**
+ * One colour painted the way the screen paints it: `color` composited over
+ * `behind`, at full opacity.
+ *
+ * The stand-in's shell carries the bubble's own fill, and the host's user bubble
+ * is often a translucent token — measured in this build, `rgba(0, 0, 0, 0.08)`
+ * over the canvas. Left translucent, the stand-in is two paints at once: its own
+ * fill composited again over the real bubble it fades across, so the part of the
+ * row it covers comes out a shade apart from the part left outside it. Written
+ * flat, it is the page's own colour wherever it stands, alone or on the row.
+ *
+ * The bubble's backdrop is the canvas: the chat flow paints no fill of its own.
+ * @param color - the computed colour to flatten.
+ * @param behind - what it is painted over; an unreadable backdrop leaves the colour as it is.
+ * @returns an `rgb()` / `rgba()` string.
+ */
+export function chatSendOpaque(color: string, behind: string) {
+  const front = chatSendColorParts(color)
+  if (front === null) return color
+  const alpha = front[3] ?? 1
+  if (alpha >= 1) return color
+  const back = chatSendColorParts(behind)
+  if (back === null) return color
+  const backAlpha = back[3] ?? 1
+  // The backdrop's own alpha counts: over nothing, a translucent backdrop is
+  // still nothing, and the front colour keeps its own alpha. An opaque backdrop
+  // takes the result to full opacity, which is the ordinary case (the canvas).
+  const total = alpha + backAlpha * (1 - alpha)
+  const mix = (index: number) => {
+    if (total === 0) return 0
+    const over = front[index] ?? 0
+    const under = back[index] ?? 0
+    return Math.round((over * alpha + under * backAlpha * (1 - alpha)) / total)
+  }
+  if (total >= 1) return 'rgb(' + mix(0) + ', ' + mix(1) + ', ' + mix(2) + ')'
+  return 'rgba(' + mix(0) + ', ' + mix(1) + ', ' + mix(2) + ', ' + Math.round(total * 1000) / 1000 + ')'
+}
+
+/**
  * The element inside the composer card that really paints the card's surface.
  *
  * The card element is not always the one that carries the hairline and the

@@ -89,7 +89,7 @@ export interface SettingsCopyLine {
 }
 
 /** The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts). */
-export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'desktop'
+export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'desktop' | 'motion'
 
 export interface FeatureSwitchRow {
   tab: SettingsTabId

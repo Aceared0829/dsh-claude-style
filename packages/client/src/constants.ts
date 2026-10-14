@@ -109,6 +109,19 @@ export const MOTION_MODES = [MOTION_SYSTEM, MOTION_REDUCED, MOTION_FULL]
 export const MOTION_ATTR = 'data-dsh-claude-motion'
 
 /**
+ * What the words on the waiting line wear while a turn runs: the highlight band
+ * the host's own rows sweep (`sweep`, the default), or the colour wash
+ * transitions.dev's "Pro gradient text" (MIT) moves through the letters
+ * (`wash`). Both are paints of the same line — the wording, the swap and the
+ * clock are untouched — so the choice rides <body> as STATUS_MOTION_ATTR and
+ * the stylesheets decide it (features/chat-wait/chat-wait.css).
+ */
+export const STATUS_MOTION_SWEEP = 'sweep'
+export const STATUS_MOTION_WASH = 'wash'
+export const STATUS_MOTIONS = [STATUS_MOTION_SWEEP, STATUS_MOTION_WASH]
+export const STATUS_MOTION_ATTR = 'data-dsh-claude-status-motion'
+
+/**
  * The composer caret's motion (packages/client/src/features/caret/caret.ts): `typing`
  * transitions every move, `move` only explicit ones, `off` takes nothing
  * over at all and leaves the browser's own caret in place.
@@ -498,6 +511,7 @@ export interface Prefs {
   brandInk: string
   brandAccent: string
   motion: string
+  statusMotion: string
   collapseFooter: boolean
   autoPopover: string
   composerScope: string
@@ -532,6 +546,7 @@ export const PREF_DEFAULTS: Prefs = PREFS_DEFAULT
 export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
   brandInk: BRAND_INKS,
   motion: MOTION_MODES,
+  statusMotion: STATUS_MOTIONS,
   composerScope: COMPOSER_SCOPES,
   banLocale: BAN_LOCALES,
   homeLayout: HOME_LAYOUTS,

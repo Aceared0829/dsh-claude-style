@@ -1,6 +1,6 @@
 import { CHAT_CHROME_GONE_AT, CHAT_CHROME_MIN_SCALE, CHAT_FLIGHT_MS, CHAT_HALO_GONE_AT, CHAT_MIN_REVERSE_DIVISOR, CHAT_MORPH_END, CHAT_SHAPE_SAMPLES, chatSendCornerRadius, chatSendMorphProgress, chatSendRiseProgress, chatSendShadowSpread, chatSendStepOpacity, chatSendTextLayer, chatSendTextWindows } from './send-shape'
 import type { ShapeSample } from './send-shape'
-import { CHAT_SEND_GHOST_ATTR, chatSendGhostHost, chatSendPixel } from './send-snapshot'
+import { CHAT_SEND_GHOST_ATTR, chatSendGhostHost, chatSendOpaque, chatSendPixel } from './send-snapshot'
 import type { ComposerSnapshot } from './send-snapshot'
 
 /** Where the words sit inside a box: its left, top and right insets and its line height. */
@@ -81,7 +81,12 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   const W0 = start.width
   const H0 = start.height
   const W1 = end.width
-  const H1 = end.height
+  // The row's height as it stands, not as it stood when the echo was noticed: the
+  // host grows a new row into place, so the box read a frame earlier can be well
+  // short of the one the stand-in lands on — measured on this build, 74 of the
+  // row's 164. A stand-in shorter than its row fades across part of it and leaves
+  // a stripe where the two paints meet (send-shape.ts's height floor).
+  const H1 = Math.max(end.height, bubble.getBoundingClientRect().height)
   const R0 = snapshot.radius
   const R1 = chatSendPixel(style.borderTopLeftRadius)
   const from = snapshot.text
@@ -101,7 +106,7 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   wrapper.setAttribute(CHAT_SEND_GHOST_ATTR, '')
   wrapper.setAttribute('aria-hidden', 'true')
   wrapper.inert = true
-  wrapper.style.cssText = 'position:fixed;margin:0;width:0;height:0;pointer-events:none;z-index:2147483000'
+  wrapper.style.cssText = 'position:fixed;margin:0;width:0;height:0;pointer-events:none'
   wrapper.style.left = start.left + 'px'
   wrapper.style.top = start.top + 'px'
   const mover = document.createElement('div')
@@ -130,7 +135,9 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   // (the fills' run this replaced), and until it arrives the shape shows the page
   // through it, which reads as the bubble turning pale and then blue. Nothing is
   // animated here: the plate is one declaration, so no clock can leave it behind.
-  shell.style.backgroundColor = style.backgroundColor
+  // Written flat — see chatSendOpaque: a translucent token would composite again
+  // over the row this stand-in fades across.
+  shell.style.backgroundColor = chatSendOpaque(style.backgroundColor, window.getComputedStyle(chatSendGhostHost()).backgroundColor)
   for (const [name, value] of snapshot.context) shell.style.setProperty(name, value)
   // The shell does two things only: it scales (the shape) and it clips
   // (`overflow: hidden`). The `scaler` inside takes the reciprocal of every
@@ -181,7 +188,7 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   // steps by equal breaks and one line-height notch. The first step is the
   // draft inside the cloned card itself; every other is a layer of its own.
   const bottomPadding = chatSendPixel(style.paddingBottom) + chatSendPixel(style.borderBottomWidth)
-  const windows = chatSendTextWindows(bubble, style, samples, to.lineHeight, bottomPadding)
+  const windows = chatSendTextWindows(bubble, style, samples, to.lineHeight, bottomPadding, H0, H1)
   const draftWindow = windows[0]
   const layers = windows.slice(1).map((window) => {
     const layer = chatSendTextLayer(bubble, style)

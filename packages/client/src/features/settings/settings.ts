@@ -3,13 +3,15 @@ import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATT
 import { SEGMENT_CLASS } from '../permissions/permission-copy'
 import { settingsCopy } from '../../core/i18n'
 import { loadModelCopy, onModelCopyLoaded } from '../../core/model-copy'
-import { adoptSettingsForm, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
+import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
+import { motionMs } from '../../shared/motion'
 import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './settings-controls'
 import { createSettingsAppearanceTab } from './settings-tab-appearance'
 import { createSettingsComposerTab } from './settings-tab-composer'
 import { createSettingsConversationTab } from './settings-tab-conversation'
 import { createSettingsDesktopTab } from './settings-tab-desktop'
 import { createSettingsGeneralTab } from './settings-tab-general'
+import { createSettingsMotionTab } from './settings-tab-motion'
 import { createSettingsSidebarTab } from './settings-tab-sidebar'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
@@ -22,6 +24,13 @@ import type { QuickProvidersHandle } from './quick-providers'
 
 /** Pause after the last keystroke before the username is written to the settings store. */
 const USERNAME_SAVE_DEBOUNCE_MS = 600
+/** On the open tab's rows: the way it arrived, which the stylesheet slides it in from. */
+const PAGE_ENTER_ATTR = 'data-dsh-claude-page-enter'
+/** On the still copy of the tab being replaced: the way it leaves. */
+const PAGE_LEAVE_ATTR = 'data-dsh-claude-page-leave'
+
+/** Which way a tab change reads along the strip. */
+type PageDirection = 'forward' | 'back'
 
 /**
  * The skin's settings page, mounted by every seat this host declares.
@@ -70,6 +79,7 @@ export const SETTINGS_TABS: SettingsTab[] = [
   createSettingsSidebarTab(),
   createSettingsConversationTab(),
   createSettingsDesktopTab(),
+  createSettingsMotionTab(),
 ]
 export const SETTINGS_CONTROLS = createSettingsControls()
 
@@ -129,9 +139,39 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
   const tabState = React.useState(SETTINGS_TABS[0].id)
   const activeTab = tabState[0]
   const setActiveTab = tabState[1]
+  /** Which way the open tab arrived, or null for the tab the page opened on. */
+  const enterState = React.useState<PageDirection | null>(null)
   const usernameTimer = React.useRef<number | null>(null)
   const quickTrigger = React.useRef<HTMLButtonElement>(null)
   const pageRef = React.useRef<HTMLDivElement>(null)
+  const rowsRef = React.useRef<HTMLFieldSetElement>(null)
+  const leavingRef = React.useRef<HTMLDivElement>(null)
+
+  /**
+   * Open another tab, sliding the pages the way the strip reads: a tab to the
+   * right arrives from the right while the one it replaces leaves to the left,
+   * and back again (transitions.dev's "Page side-by-side", MIT). The page that
+   * leaves is a still copy of its rows laid over the new one, out of the tab
+   * order and the accessibility tree, and gone once it has played
+   * (settings.css).
+   */
+  const pickTab = (next: SettingsTabId) => {
+    const direction: PageDirection = SETTINGS_TABS.findIndex(item => item.id === next) > SETTINGS_TABS.findIndex(item => item.id === activeTab) ? 'forward' : 'back'
+    const rows = rowsRef.current
+    const holder = leavingRef.current
+    if (rows !== null && holder !== null && !motionReduced()) {
+      const still = rows.cloneNode(true) as HTMLElement
+      still.removeAttribute('role')
+      still.removeAttribute(PAGE_ENTER_ATTR)
+      still.setAttribute('aria-hidden', 'true')
+      still.setAttribute('inert', '')
+      still.setAttribute(PAGE_LEAVE_ATTR, direction)
+      holder.replaceChildren(still)
+      window.setTimeout(() => still.remove(), motionMs('--dsh-claude-duration-open'))
+    }
+    enterState[1](direction)
+    setActiveTab(next)
+  }
 
   // The host scrolls the page in a container of its own (the settings
   // dialog's options column, the plugin page). Mark the nearest scrolling
@@ -247,8 +287,15 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
     { ref: pageRef, className: embedded ? 'dsh-claude-settings dsh-claude-settings-embedded' : 'dsh-claude-settings' },
     embedded ? null : React.createElement(ClaudeStyleSettingsHeading),
     readOnly ? React.createElement('div', { className: 'dsh-claude-settings-notice', role: 'note' }, settingsCopy('remoteReadOnly', 'This page reaches DSH through a remote address, and DSH saves settings only from a page opened at a local address such as localhost. The values shown are the ones DSH holds; change them on the computer running DSH.')) : null,
-    React.createElement(ClaudeStyleSettingsTabStrip, { active: activeTab, onPick: setActiveTab }),
-    React.createElement('fieldset', { className: 'dsh-claude-settings-rows', role: 'tabpanel', key: tab.id, disabled: readOnly }, tabRows(tab, view)),
+    React.createElement(ClaudeStyleSettingsTabStrip, { active: activeTab, onPick: pickTab }),
+    React.createElement(
+      'div',
+      { className: 'dsh-claude-settings-pages' },
+      // The leaving page's holder renders no children of its own: the still
+      // copy pickTab puts there is never one React has to reconcile.
+      React.createElement('div', { ref: leavingRef, className: 'dsh-claude-settings-leaving' }),
+      React.createElement('fieldset', { ref: rowsRef, className: 'dsh-claude-settings-rows', role: 'tabpanel', key: tab.id, disabled: readOnly, [PAGE_ENTER_ATTR]: enterState[0] ?? undefined }, tabRows(tab, view)),
+    ),
     error === null ? null : React.createElement('div', { className: 'dsh-claude-settings-error' }, error),
   )
 }

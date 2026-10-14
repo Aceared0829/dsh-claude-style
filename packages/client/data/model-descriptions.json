@@ -284,6 +284,16 @@
     "tabSidebar": { "zh": "侧栏", "en": "Sidebar" },
     "tabConversation": { "zh": "对话", "en": "Conversation" },
     "tabDesktop": { "zh": "桌面端", "en": "Desktop" },
+    "tabMotion": { "zh": "动效", "en": "Motion" },
+    "statusMotionTitle": { "zh": "状态行动画", "en": "Waiting-line animation" },
+    "statusMotionDesc": {
+      "zh": "轮次进行中，对话末尾那一行文字上的动静：默认与宿主自己的行一样扫过一道高光，另一档让文字本身流动着变色。两档的说法、换词与旁边的时间都一样。",
+      "en": "What the words on the running turn's line do: the highlight band the host's own rows sweep (the default), or a colour wash that moves through the letters themselves. The wording, its swap and the clock beside it are the same either way."
+    },
+    "statusMotionSample": { "zh": "正在思考", "en": "Thinking…" },
+    "statusMotionSampleWait": { "zh": "深度求索中", "en": "Deep diving" },
+    "statusMotionSweep": { "zh": "扫光", "en": "Highlight sweep" },
+    "statusMotionWash": { "zh": "渐变流动", "en": "Colour wash" },
     "desktopNotice": {
       "zh": "这一页的设置只作用于 Windows 桌面端的窗口；当前页面不是那个窗口，在这里改动后，效果出现在桌面端的窗口里。",
       "en": "These settings act on the Windows desktop window only. This page is not that window, so a change made here shows there."

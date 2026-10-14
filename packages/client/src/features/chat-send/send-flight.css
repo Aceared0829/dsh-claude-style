@@ -6,3 +6,9 @@
 body[data-dsh-claude-style] [data-dsh-claude-send-flight] {
   visibility: hidden;
 }
+
+/* The stand-in flies over the whole window: nothing the page stacks may cut
+   across the bubble on its way to its row (send-morph.ts builds it). */
+body[data-dsh-claude-style] [data-dsh-claude-send-ghost] {
+  z-index: var(--dsh-claude-layer-takeover);
+}

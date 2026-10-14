@@ -174,17 +174,6 @@ function travelWidth(element: HTMLElement, from: number, to: number) {
 }
 
 /**
- * Hand the shimmer class to the box showing the words. The box carrying it owns
- * the whole masked highlight — `attr(data-text)` and `inset: 0` are read off it
- * — so the class sits on whichever copy is showing the words, and the label
- * itself carries it while nothing is moving.
- */
-function shimmerOn(element: HTMLElement, holder: HTMLElement) {
-  if (holder !== element) element.classList.remove('dsh-claude-swap-shimmer')
-  holder.classList.add('dsh-claude-swap-shimmer')
-}
-
-/**
  * Write the words onto a label, swapping them in when they differ from the ones
  * standing. The first write (and every write while the animation choice is
  * reduced) lands without motion, so a label never animates on the way in.
@@ -220,7 +209,7 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
     // the box's only child in the flow, and everything past it is a copy.
     const sizer = sizerOf(element)
     const standing = document.createElement('span')
-    standing.className = COPY_CLASS
+    standing.className = COPY_CLASS + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
     standing.textContent = text
     standing.setAttribute('data-text', text)
     // The sizer is the only thing in the flow, so the words standing are
@@ -231,8 +220,6 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
     // The box comes down onto the words standing — the copies the last swap
     // left behind are gone — so the clock sits right after them again.
     hold(sizer, text)
-    if (withShimmer) element.classList.add('dsh-claude-swap-shimmer')
-    else element.classList.remove('dsh-claude-swap-shimmer')
     return
   }
 
@@ -279,7 +266,6 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
     window.setTimeout(() => {
       leaving.remove()
       holdWidest(element, wordsIn(element))
-      shimmerOn(element, entering)
     }, swap + gap)
   }, swap)
 }

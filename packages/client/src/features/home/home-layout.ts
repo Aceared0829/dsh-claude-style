@@ -5,6 +5,7 @@ import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } f
 import { COMPOSER_STACK } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
+import { motionMs } from '../../shared/motion'
 import { HOME_RANGES, createHomeUsage, homePanelData } from './data'
 import { createHomeModels } from './models'
 import { createHomeOverview } from './overview'
@@ -47,6 +48,8 @@ import type manifest from './home-layout.manifest'
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The host's list slot between the hero greeting and the composer card. */
   const DOCK_SLOT = 'conversation.input.dock'
+  /** On the usage panel while its numbers take over from its placeholders. */
+  const HOME_REVEALING_ATTR = 'data-dsh-claude-revealing'
 
   let layout = PREF_DEFAULTS.homeLayout
   /** Whether the last pass saw the new-conversation hero, as of that reading. */
@@ -130,8 +133,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const rangeState = React.useState('all')
     const range = rangeState[0]
     const setRange = rangeState[1]
+    // The numbers landing over the placeholders this panel drew: for one
+    // cross-fade the panel is marked, and the stylesheet hands each placeholder
+    // over to what it stood for (home-panel.css). A panel that opens on numbers
+    // already known has nothing to hand over.
+    const revealState = React.useState<'placeholders' | 'revealing' | 'settled'>('settled')
+    const reveal = revealState[0]
+    const setReveal = revealState[1]
+    React.useEffect(() => {
+      if (reveal !== 'revealing') return undefined
+      const timer = window.setTimeout(() => setReveal('settled'), motionMs('--dsh-claude-duration-fade'))
+      return () => window.clearTimeout(timer)
+    }, [reveal])
     if (layout !== HOME_LAYOUT_STUDIO || !heroPhase()) return null
     const data = homePanelData(state, usage.list(), range, bookPick)
+    if (!data.known && reveal !== 'placeholders') setReveal('placeholders')
+    if (data.known && reveal === 'placeholders') setReveal('revealing')
 
     function tabButton(id: string, label: string) {
       return React.createElement('button', {
@@ -150,6 +167,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         className: 'dsh-claude-home-panel',
         'data-dsh-claude-home-panel': '',
         'data-computing': state.computing ? '' : undefined,
+        [HOME_REVEALING_ATTR]: reveal === 'revealing' ? '' : undefined,
         'aria-busy': state.computing || !data.known ? 'true' : 'false',
       },
       React.createElement(

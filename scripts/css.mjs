@@ -17,9 +17,11 @@
  *   motion       a time or an easing curve is written only in the token
  *                stylesheet, no two keyframes say the same thing, and every
  *                motion token is read somewhere (D65)
+ *   layers       a z-index above the local orders 0 to 9 is a layer token,
+ *                and every layer token is read somewhere (D00)
  *
  * The token stylesheet is generated from packages/client/src/theme/tokens.json, and so are the
- * token and motion tables in docs/STYLE.md; it also declares the brand marks' addresses
+ * token, motion and layer tables in docs/STYLE.md; it also declares the brand marks' addresses
  * as `--dsh-claude-image-<name>`, the one thing in the CSS only the build knows.
  *
  * The joined sheet ships minified (scripts/shared/minify-css.cjs): comments and
@@ -46,6 +48,14 @@ const TABLE_BEGIN = '<!-- generated:tokens (packages/client/src/theme/tokens.jso
 const TABLE_END = '<!-- /generated:tokens -->'
 const MOTION_BEGIN = '<!-- generated:motion (packages/client/src/theme/tokens.json) -->'
 const MOTION_END = '<!-- /generated:motion -->'
+const LAYER_BEGIN = '<!-- generated:layers (packages/client/src/theme/tokens.json) -->'
+const LAYER_END = '<!-- /generated:layers -->'
+/**
+ * A z-index a sheet may write as it is: an order among siblings inside one
+ * box (D00). Anything that stacks against the host's own surfaces is a layer
+ * token instead.
+ */
+const LOCAL_LAYER = /^(?:auto|-1|[0-9])$/
 
 /**
  * A time and an easing curve as a declaration's value spells them (D65). A
@@ -178,6 +188,22 @@ function checkMotionLiterals(file, rule) {
 }
 
 /**
+ * Hold every z-index in a stylesheet to the layer tokens (D00): a sheet orders
+ * siblings inside its own box with a literal from -1 to 9, and anything that has
+ * to clear what the host draws reads `var(--dsh-claude-layer-…)`, so the
+ * levels the skin stacks on are one table.
+ */
+function checkLayerLiterals(file, rule) {
+  if (file === TOKEN_SHEET) return
+  for (const node of rule.nodes) {
+    if (node.type !== 'decl' || node.prop !== 'z-index') continue
+    const value = node.value.trim()
+    if (LOCAL_LAYER.test(value) || /^var\(--dsh-claude-layer-[a-z0-9-]+\)$/.test(value)) continue
+    throw new Error(`build: packages/client/src/${file}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D00)`)
+  }
+}
+
+/**
  * Record one sheet's keyframes, refusing a second body that says the same thing
  * as an earlier one: the same effect twice is what the shared presets are for
  * (D65).
@@ -232,6 +258,7 @@ function processSheet(sheet, text, gates, names, read, keyframes) {
     }
     checkTokenGates(sheet.file, rule, selectors.nodes, gates, names)
     checkMotionLiterals(sheet.file, rule)
+    checkLayerLiterals(sheet.file, rule)
     if (!stamp) return
     rule.selector = selectors.toString()
     stamped += 1
@@ -252,7 +279,7 @@ export function loadTokens(srcDir) {
   const validate = new Ajv2020({ allErrors: true }).compile(schema)
   const doc = JSON.parse(fs.readFileSync(path.join(srcDir, TOKEN_SHEET), 'utf8'))
   if (!validate(doc)) throw new Error(`build: packages/client/src/${TOKEN_SHEET} ${validate.errors.map((error) => `${error.instancePath || '/'} ${error.message}`).join('; ')}`)
-  for (const group of ['typeface', 'apex', 'palette', 'motion']) {
+  for (const group of ['typeface', 'apex', 'palette', 'motion', 'layer']) {
     const seen = new Set()
     for (const item of doc[group]) {
       if (seen.has(item.token)) throw new Error(`build: packages/client/src/${TOKEN_SHEET} names ${item.token} twice in ${group}`)
@@ -285,9 +312,9 @@ function declarationsOf(items, pick) {
  * the loader appended last would win; naming the attribute lifts these to
  * (0,2,1). The DeepSeek blocks add the brand attribute on top and only state
  * what differs from Claude's. The brand marks' addresses come first: every
- * choice paints with them. The motion tokens are one ungated block beside them:
- * the same durations, curves and distances under every palette and typeface
- * (D65).
+ * choice paints with them. The motion and layer tokens are ungated blocks
+ * beside them: the same durations, curves, distances and stacking levels under
+ * every palette and typeface (D65, D00).
  *
  * @param images - brand mark name → its address (data URI or route).
  */
@@ -301,6 +328,7 @@ function tokenSheet(doc, gates, images) {
     `/* Generated from packages/client/src/${TOKEN_SHEET} by scripts/css.mjs; edit the JSON. */\n`,
     tokenBlock(SCOPE, Object.entries(images).map(([name, url]) => [`--dsh-claude-image-${name}`, `url("${url}")`])),
     tokenBlock(SCOPE, declarationsOf(doc.motion, (item) => item.value)),
+    tokenBlock(SCOPE, declarationsOf(doc.layer, (item) => item.value)),
     tokenBlock(`${SCOPE}${gate(gates.typeface, gates.typeface.claude)}`, declarationsOf(doc.typeface, (item) => item.claude)),
     tokenBlock(`${SCOPE}${gate(gates.typeface, gates.typeface.host)}`, declarationsOf(doc.typeface, (item) => item.host)),
     tokenBlock(`${SCOPE}${dark}`, declarationsOf(doc.apex, (item) => item.dark)),
@@ -334,23 +362,31 @@ function tokenTable(doc) {
 }
 
 /**
- * Write the token table into its region of docs/STYLE.md.
+ * Write `table` into the region of docs/STYLE.md between `begin` and `end`.
  * @returns whether the file changed.
  */
-export function writeTokenTable(stylePath, doc) {
+function writeRegion(stylePath, begin, end, table) {
   const text = fs.readFileSync(stylePath, 'utf8')
-  const begin = text.indexOf(TABLE_BEGIN)
-  const end = text.indexOf(TABLE_END)
-  if (begin === -1 || end < begin) throw new Error(`build: ${path.basename(stylePath)} lacks the ${TABLE_BEGIN} … ${TABLE_END} region`)
-  const next = text.slice(0, begin + TABLE_BEGIN.length) + '\n' + tokenTable(doc) + '\n' + text.slice(end)
+  const from = text.indexOf(begin)
+  const to = text.indexOf(end)
+  if (from === -1 || to < from) throw new Error(`build: ${path.basename(stylePath)} lacks the ${begin} … ${end} region`)
+  const next = text.slice(0, from + begin.length) + '\n' + table + '\n' + text.slice(to)
   if (next === text) return false
   fs.writeFileSync(stylePath, next)
   return true
 }
 
-/** The motion tokens as a Markdown table: the value and the role it plays (D65). */
-function motionTable(doc) {
-  const rows = doc.motion.map((item) => `| \`${item.token}\` | \`${item.value.replace(/\|/g, '\\|')}\` | ${item.use} |`)
+/**
+ * Write the token table into its region of docs/STYLE.md.
+ * @returns whether the file changed.
+ */
+export function writeTokenTable(stylePath, doc) {
+  return writeRegion(stylePath, TABLE_BEGIN, TABLE_END, tokenTable(doc))
+}
+
+/** A group of one-value tokens as a Markdown table: the value and the role it plays. */
+function valueTable(items) {
+  const rows = items.map((item) => `| \`${item.token}\` | \`${item.value.replace(/\|/g, '\\|')}\` | ${item.use} |`)
   return [
     '| Token | Value | Use |',
     '|---|---|---|',
@@ -363,33 +399,34 @@ function motionTable(doc) {
  * @returns whether the file changed.
  */
 export function writeMotionTable(stylePath, doc) {
-  const text = fs.readFileSync(stylePath, 'utf8')
-  const begin = text.indexOf(MOTION_BEGIN)
-  const end = text.indexOf(MOTION_END)
-  if (begin === -1 || end < begin) throw new Error(`build: ${path.basename(stylePath)} lacks the ${MOTION_BEGIN} … ${MOTION_END} region`)
-  const next = text.slice(0, begin + MOTION_BEGIN.length) + '\n' + motionTable(doc) + '\n' + text.slice(end)
-  if (next === text) return false
-  fs.writeFileSync(stylePath, next)
-  return true
+  return writeRegion(stylePath, MOTION_BEGIN, MOTION_END, valueTable(doc.motion))
+}
+
+/**
+ * Write the layer table into its region of docs/STYLE.md (D00).
+ * @returns whether the file changed.
+ */
+export function writeLayerTable(stylePath, doc) {
+  return writeRegion(stylePath, LAYER_BEGIN, LAYER_END, valueTable(doc.layer))
 }
 
 /* ---------- the stylesheet ---------- */
 
 /**
- * Hold every motion token to a reader (D65): a token nothing reads is a value
- * the token table claims the skin uses and nothing does. The readers are the
- * stylesheets and the browser half's TypeScript, which reads the same table
- * through packages/client/src/shared/motion.ts.
+ * Hold every motion and layer token to a reader (D65, D00): a token nothing
+ * reads is a value the token table claims the skin uses and nothing does. The
+ * readers are the stylesheets and, for motion, the browser half's TypeScript,
+ * which reads the same table through packages/client/src/shared/motion.ts.
  *
  * The names the browser half asks for are checked the other way round: a name
  * that is not a motion token throws where it is read, so a misspelt one has to
  * fail here instead of on the page.
  *
  * @param doc - packages/client/src/theme/tokens.json.
- * @param sheetText - the joined stylesheets.
+ * @param sheetText - every stylesheet but the token sheet, and the tokens' own values.
  * @param srcDir - the source directory.
  */
-function checkMotionRead(doc, sheetText, srcDir) {
+function checkTokensRead(doc, sheetText, srcDir) {
   const files = walkSources(srcDir, /\.tsx?$/)
   const names = new Set(doc.motion.map((item) => item.token))
   const code = files.map((file) => fs.readFileSync(file, 'utf8')).join('\n')
@@ -400,6 +437,12 @@ function checkMotionRead(doc, sheetText, srcDir) {
   for (const item of doc.motion) {
     if (sheetText.includes(item.token) || code.includes(item.token)) continue
     throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet or module reads (D65)`)
+  }
+  // A layer is read by the sheets alone: the browser half stacks nothing by
+  // hand, it marks the element and the sheet places it (D00).
+  for (const item of doc.layer) {
+    if (sheetText.includes(item.token)) continue
+    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet reads (D00)`)
   }
 }
 
@@ -450,16 +493,23 @@ export function buildStylesheet({ sheets, srcDir, tokenDoc, gates, images }) {
   const names = { claude: new Set(), host: new Set() }
   const read = new Map()
   const keyframes = new Map()
-  const text = sheets.map((sheet) => {
+  const processed = sheets.map((sheet) => {
     const source = sheet.file === TOKEN_SHEET
       ? tokenSheet(tokenDoc, gates, images)
       : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
-    return processSheet(sheet, source, gates, names, read, keyframes).replace(/\n+$/, '')
-  }).join('\n\n')
+    return { sheet, text: processSheet(sheet, source, gates, names, read, keyframes).replace(/\n+$/, '') }
+  })
+  const text = processed.map((item) => item.text).join('\n\n')
   for (const name of names.claude) {
     if (!names.host.has(name)) throw new Error(`build: ${name} is defined under the Claude palette or typeface but has no alias under the host's`)
   }
   checkAttributes(read, srcDir)
-  checkMotionRead(tokenDoc, text, srcDir)
+  // The token sheet declares every token, so it is no reader of any: what reads
+  // a token is another sheet, or another token's value (a shorthand).
+  const readers = [
+    ...processed.filter((item) => item.sheet.file !== TOKEN_SHEET).map((item) => item.text),
+    ...tokenDoc.motion.map((item) => item.value),
+  ].join('\n')
+  checkTokensRead(tokenDoc, readers, srcDir)
   return minifyCss(text)
 }

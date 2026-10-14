@@ -354,7 +354,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn {
      paint above anything lower — the trigger read as missing while it sat at 4
      under the opaque card. Page-level surfaces sit at 1000 and above, and the
      trigger goes with the seat when the composer does. */
-  z-index: 10;
+  z-index: var(--dsh-claude-layer-control);
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-effort-btn:hover {

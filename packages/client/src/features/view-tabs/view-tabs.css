@@ -123,7 +123,7 @@ body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
   margin: 0 !important;
   transform: translate(-50%, -50%) !important;
   justify-self: auto !important;
-  z-index: 30 !important;
+  z-index: var(--dsh-claude-layer-chrome) !important;
   /* The titlebar band is a drag region; the strip's tabs must stay clickable. */
   -webkit-app-region: no-drag !important;
   /* The pane-hover reveal stays the rule here, as it was inside the header. The

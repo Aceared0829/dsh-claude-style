@@ -17,12 +17,17 @@ test('a critically damped spring rises from 0 without passing 1', () => {
   expect(Math.max(...values)).toBeLessThanOrEqual(1)
 })
 
-test('the rise overshoots by the damping ratio\'s amount and still lands exactly', () => {
+test('the rise overshoots by the damping ratio\'s amount, and lands without leaving the row', () => {
   const peak = Math.max(...sampled(u => chatSendSpringProgress(u, CHAT_RISE_DAMPING, CHAT_RISE_OMEGA), 2000))
   const ratio = CHAT_RISE_DAMPING / Math.sqrt(1 - CHAT_RISE_DAMPING * CHAT_RISE_DAMPING)
   expect(peak - 1).toBeCloseTo(Math.exp(-Math.PI * ratio), 3)
   expect(chatSendRiseProgress(0)).toBe(0)
   expect(chatSendRiseProgress(1)).toBeCloseTo(1, 12)
+  // The give on landing, over a tall rise: past a fraction of a pixel the
+  // stand-in stands above the row it lands on while it fades (a stripe across
+  // the bubble's top).
+  const rise = Math.max(...sampled(chatSendRiseProgress, 2000)) - 1
+  expect(rise * 400).toBeLessThan(1)
 })
 
 test('the shape runs its whole course within its share of the flight', () => {
@@ -66,20 +71,20 @@ function bubble(text: string) {
   return element
 }
 
-/** A flight narrowing the words' width from `from` to `to` along the shape's own curve. */
-function narrowing(from: number, to: number): ShapeSample[] {
+/** A flight narrowing the words' width from `from` to `to` along the shape's own curve, its height held at `height`. */
+function narrowing(from: number, to: number, height = 44): ShapeSample[] {
   return Array.from({ length: CHAT_SHAPE_SAMPLES + 1 }, (_, index) => {
     const u = index / CHAT_SHAPE_SAMPLES
     const m = chatSendMorphProgress(u)
     const content = from + (to - from) * m
-    return { u, m, width: content + 28, visible: content + 28, height: 44, radius: 20, left: 0, top: 10, content, lineHeight: 24 }
+    return { u, m, width: content + 28, visible: content + 28, height, radius: 20, left: 0, top: 10, content, lineHeight: 24 }
   })
 }
 
 test('the words are laid out in steps that cover the flight end to end, the draft handing over on time', () => {
   const words = bubble('The quick brown fox jumps over the lazy dog, then turns round and jumps back over it again before the bubble has narrowed all the way.')
-  const samples = narrowing(620, 180)
-  const windows = chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10)
+  const samples = narrowing(620, 180, 120)
+  const windows = chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10, 120, 44)
   expect(windows[0].from).toBe(0)
   expect(windows.at(-1)!.until).toBe(1)
   for (let i = 1; i < windows.length; i += 1) expect(windows[i].from).toBe(windows[i - 1].until)
@@ -105,8 +110,8 @@ function linesAt(words: HTMLElement, width: number) {
 
 test('the halving search groups the flight exactly where the line breaks change', () => {
   const words = bubble('Several words of different lengths, wrapping at a few widths as the shell narrows toward the bubble.')
-  const samples = narrowing(560, 160)
-  const windows = chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10)
+  const samples = narrowing(560, 160, 120)
+  const windows = chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10, 120, 44)
   expect(windows.length).toBeGreaterThan(3)
   // Past the draft's own step every step is one layout: each width inside it
   // breaks into as many lines as the step's own width does.
@@ -122,10 +127,34 @@ test('the halving search groups the flight exactly where the line breaks change'
 
 test('words taller than the shell push its height, as a self-sizing bubble would', () => {
   const words = bubble('One line at the start that breaks into several once the shell is narrow enough to force it.')
-  const samples = narrowing(600, 120)
-  chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10)
+  const samples = narrowing(600, 120, 120)
+  chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10, 120, 44)
+  expect(samples[0].height).toBe(120)
   const last = samples.at(-1)!
-  expect(last.height).toBeGreaterThan(44)
+  expect(last.height).toBeGreaterThan(120)
   // The probe the layout ran in is gone again.
   expect(document.body.lastElementChild).toBe(words)
+})
+
+test('the shell never stands shorter than the row it lands on', () => {
+  // The probe's own line count comes out below the row's — its words re-flow at
+  // a width of their own — so the steps are written below the row's height and
+  // the stand-in would fade across only part of the row, leaving a stripe where
+  // the two paints meet.
+  const words = bubble('Wrapping words the shell narrows past, so the probe counts more lines than the bubble holds.')
+  const row = 400
+  const samples = narrowing(620, 180, 120)
+  chatSendTextWindows(words, getComputedStyle(words), samples, 24, 10, 120, row)
+  for (const sample of samples) {
+    const floor = 120 + (row - 120) * sample.m
+    expect(sample.height).toBeGreaterThanOrEqual(floor)
+  }
+  // The floor is the row's own edge at the end of the flight: the stand-in's
+  // height there is the row's height, to the pixel.
+  expect(samples.at(-1)!.height).toBe(row)
+  // A row taller than the floor's own end still pushes the shell taller than it.
+  const long = bubble('A passage long enough to need several lines once the shell has narrowed all the way to the row, which the floor cannot cover on its own.')
+  const grown = narrowing(620, 180, 120)
+  chatSendTextWindows(long, getComputedStyle(long), grown, 24, 10, 120, 120)
+  expect(grown.at(-1)!.height).toBeGreaterThan(120)
 })

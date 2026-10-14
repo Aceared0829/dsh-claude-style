@@ -39,9 +39,8 @@ body[data-dsh-claude-style]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-
 
 /* The host's running row keeps its whale and its live region; its words,
    marked by chat-wait.ts, step aside for the skin's line: the turn's current
-   activity, elapsed time as a quiet clock, and the overtime badge. The look
-   follows dsh-better-display's status line, and the wording's own change runs
-   transitions.dev's "Text states swap" (MIT). */
+   activity, elapsed time as a quiet clock, and the overtime badge. The
+   wording's own change runs transitions.dev's "Text states swap" (MIT). */
 
 /* The host's words step aside for the skin's line; the line itself is not
    touched, so the wording, the elapsed clock and the wait badge stay the row's
@@ -61,20 +60,22 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
 
 /* The words sweep under a highlight band: a copy of them laid over the words
    and clipped to their glyphs, so the words themselves keep their own colour.
+   The band and its cadence are the host's own TextShimmer's — the period, the
+   steps, the rest between passes (the last third of each), the shimmer tint
+   and the band's width — so the line, a running group's header and the host's
+   own rows all sweep as one.
 
    The wording swaps in place when the turn moves on: the motion itself is
    shared/swapping-text.css, transitions.dev's "Text states swap" composed the
-   way its "Thinking states" recipe does it. This sheet adds what only the
-   status line carries — the band's own colours and its cadence.
+   way its "Thinking states" recipe does it.
 
-   The band rides the box that holds the words, not a child of it: the label
-   while the line is at rest and the copy while a swap runs, so the band is in
-   the paint on every frame and its sweep never restarts mid-swap. The helper
-   writes the class on whichever of the two holds the words and keeps their
-   `data-text` in step (shared/swapping-text.ts). The reader's animation choice
-   (D26) is the gate: core/prefs.ts resolves the setting and the system
-   preference onto the body attribute, and the helper reads it at each swap, so
-   the recipe's own media query is not repeated. */
+   The helper writes the shimmer class on the copy showing the words
+   (shared/swapping-text.ts): the label's own box stands taller than the text
+   by the swap's travel, and a band read off that box would sweep above the
+   glyphs. The reader's animation choice (D26) is the gate: core/prefs.ts
+   resolves the setting and the system preference onto the body attribute, and
+   the helper reads it at each swap, so the recipe's own media query is not
+   repeated. */
 /* The label's words can be a clause the model wrote, longer than any state
    word, so it is the label that gives way when the row is narrow: the clock and
    the badge keep their places and the words are cut with an ellipsis inside the
@@ -84,15 +85,12 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-label {
   color: var(--dsw-alias-label-secondary);
 }
 
-body[data-dsh-claude-style] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
-  background-image: linear-gradient(90deg, transparent 0%, transparent 40%, var(--dsw-alias-label-primary) 50%, transparent 60%, transparent 100%);
-  animation: dsh-claude-wait-shimmer var(--dsh-claude-period-sweep) linear infinite;
-}
-
-@keyframes dsh-claude-wait-shimmer {
-  from { background-position: 100% 0; }
-  to { background-position: 0% 0; }
-}
+/* What the words wear: the band the host's own rows sweep, or the colour wash
+   the reader can pick instead (Motion tab). Both paints live in
+   shared/motion.css, beside the presets and the periods they read, and are
+   written once for the line and for the settings page's preview cards; this
+   sheet only says that the copy carrying the words is the box the line paints
+   them onto. The reader's animation choice (D26) is the gate there as well. */
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-clock {
   margin-left: 8px;
@@ -109,6 +107,45 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-badge {
   line-height: 16px;
   color: var(--dsw-alias-state-warn-label);
   background: color-mix(in srgb, var(--dsw-alias-state-warn-label) 16%, transparent);
+  /* The badge slides onto the line from below and to the left while the pill
+     itself pops out of nothing, the two on their own clocks; on its way out it
+     shrinks back faster than it came (transitions.dev's "Notification badge",
+     MIT). The slide is `translate` and the pop is `scale`, so neither undoes
+     the other; the pop's starting point is @starting-style, because the badge
+     arrives from `hidden` and has no earlier style to change from
+     (chat-wait.ts keeps it laid out until its exit has played). */
+  transform-origin: center;
+  scale: 1;
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    scale var(--dsh-claude-duration-pop) var(--dsh-claude-ease-spring),
+    opacity var(--dsh-claude-duration-pop) var(--dsh-claude-ease-spring),
+    filter var(--dsh-claude-duration-pop) var(--dsh-claude-ease-spring);
+  animation: dsh-claude-wait-badge-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
+}
+
+@starting-style {
+  body[data-dsh-claude-style] .dsh-claude-chat-wait-badge {
+    scale: 0;
+    opacity: 0;
+    filter: blur(var(--dsh-claude-blur-soft));
+  }
+}
+
+body[data-dsh-claude-style] .dsh-claude-chat-wait-badge[data-dsh-claude-wait-badge-leaving] {
+  scale: 0;
+  opacity: 0;
+  filter: blur(var(--dsh-claude-blur-soft));
+  transition:
+    scale var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard),
+    opacity var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard),
+    filter var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard);
+}
+
+@keyframes dsh-claude-wait-badge-in {
+  from { translate: calc(-1 * var(--dsh-claude-distance-travel)) var(--dsh-claude-distance-rise); }
+  to { translate: 0 0; }
 }
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait [hidden] {

@@ -17,7 +17,7 @@ body[data-dsh-claude-style][data-dsh-header-band~="title"] [data-dsh-header-titl
   max-width: var(--dsh-header-band-max, none) !important;
   margin: 0 !important;
   transform: translateY(-50%) !important;
-  z-index: 30 !important;
+  z-index: var(--dsh-claude-layer-chrome) !important;
   -webkit-app-region: no-drag !important;
 }
 
@@ -61,6 +61,6 @@ body[data-dsh-claude-style][data-dsh-header-band~="actions"] [data-dsh-header-co
      fixed box has no row to keep clear of. */
   margin: 0 !important;
   transform: translateY(-50%) !important;
-  z-index: 30 !important;
+  z-index: var(--dsh-claude-layer-chrome) !important;
   -webkit-app-region: no-drag !important;
 }

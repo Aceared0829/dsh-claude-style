@@ -236,6 +236,36 @@ body[data-dsh-claude-style] .dsh-claude-home-heat[data-skeleton] .dsh-claude-hom
   animation: dsh-claude-pulse var(--dsh-claude-period-pulse) var(--dsh-claude-ease-in-out) infinite;
 }
 
+/* The numbers landing take over from the placeholders in one motion: each
+   placeholder's fill fades while what it stood for comes out of a soft blur,
+   on the same clock (transitions.dev's "Skeleton loader and reveal", MIT). The
+   tiles and the grid keep their elements across the hand-over, so their fills
+   change under a transition; the models list and chart come in whole. Only a
+   panel that drew placeholders plays it, once (home-layout.ts). */
+body[data-dsh-claude-style] .dsh-claude-home-panel[data-dsh-claude-revealing] .dsh-claude-home-stat-value,
+body[data-dsh-claude-style] .dsh-claude-home-panel[data-dsh-claude-revealing] .dsh-claude-home-heat-cell {
+  transition: background-color var(--dsh-claude-duration-fade) var(--dsh-claude-ease-in-out);
+}
+
+body[data-dsh-claude-style] .dsh-claude-home-panel[data-dsh-claude-revealing] .dsh-claude-home-stat-value {
+  animation: dsh-claude-home-reveal-words var(--dsh-claude-duration-fade) var(--dsh-claude-ease-in-out);
+}
+
+body[data-dsh-claude-style] .dsh-claude-home-panel[data-dsh-claude-revealing] .dsh-claude-home-models:not([data-skeleton]),
+body[data-dsh-claude-style] .dsh-claude-home-panel[data-dsh-claude-revealing] .dsh-claude-home-chart:not([data-skeleton]) {
+  animation: dsh-claude-home-reveal var(--dsh-claude-duration-fade) var(--dsh-claude-ease-in-out);
+}
+
+@keyframes dsh-claude-home-reveal-words {
+  from { color: transparent; filter: blur(var(--dsh-claude-blur-soft)); }
+  to { filter: blur(0); }
+}
+
+@keyframes dsh-claude-home-reveal {
+  from { opacity: 0; filter: blur(var(--dsh-claude-blur-soft)); }
+  to { opacity: 1; filter: blur(0); }
+}
+
 /* The skeleton pulse stands down with the rest of the skin's motion when the
    animation choice resolves to "reduced" (theme/chrome.css): the shared rule
    holds it on its first frame, and it covers "Always" as well. */

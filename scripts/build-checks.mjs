@@ -237,6 +237,7 @@ export function checkScrollOwner(metafile) {
  * packages/client/src/shared/motion.ts and a curve changed in the token table reaches
  * every animation. `linear` and the step functions are mechanical timing and
  * stay; the check reads the `easing` option of a keyframe or of an animation.
+ * A stacking level above the local orders is refused the same way (D00).
  *
  * @param srcDir - packages/client/src.
  */
@@ -248,11 +249,18 @@ export function checkMotionSources(srcDir) {
   })
   for (const file of walk(srcDir)) {
     const text = fs.readFileSync(file, 'utf8')
+    const where = (index) => `${path.relative(ROOT, file).replaceAll('\\', '/')}:${text.slice(0, index).split('\n').length}`
     for (const match of text.matchAll(/easing:\s*'([^']*)'/g)) {
       const value = match[1]
       if (value === 'linear' || /^steps\(/.test(value)) continue
-      const line = text.slice(0, match.index).split('\n').length
-      throw new Error(`build: ${path.relative(ROOT, file).replaceAll('\\', '/')}:${line} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
+      throw new Error(`build: ${where(match.index)} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
+    }
+    // A stacking level written by hand in an inline style would stand outside
+    // the layer table (D00): the browser half marks the element, and a sheet
+    // places it on a layer.
+    for (const match of text.matchAll(/z-?index\s*[:=]\s*['"]?(-?\d+)/gi)) {
+      if (Number(match[1]) <= 9) continue
+      throw new Error(`build: ${where(match.index)} writes the stacking level ${match[1]}; mark the element and place it on a layer in its stylesheet (D00)`)
     }
   }
 }

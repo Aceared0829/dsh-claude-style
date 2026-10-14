@@ -121,6 +121,51 @@ body[data-dsh-claude-style] .dsh-claude-settings-rows {
   border: 0;
 }
 
+/* A tab change slides the pages the way the strip reads: the open tab arrives
+   from the side it sits on through a short blur while the still copy of the
+   tab it replaced leaves to the other side, laid over it and out of the way of
+   every press (transitions.dev's "Page side-by-side", MIT; settings.ts). The
+   tab the page opens on arrives without motion. */
+body[data-dsh-claude-style] .dsh-claude-settings-pages {
+  position: relative;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-leaving {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-enter] {
+  animation: dsh-claude-page-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-enter="forward"],
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-leave="back"] {
+  --dsh-claude-page-shift: var(--dsh-claude-distance-travel);
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-enter="back"],
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-leave="forward"] {
+  --dsh-claude-page-shift: calc(-1 * var(--dsh-claude-distance-travel));
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-leave] {
+  animation: dsh-claude-page-out var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle) forwards;
+}
+
+@keyframes dsh-claude-page-in {
+  from { opacity: 0; transform: translateX(var(--dsh-claude-page-shift)); filter: blur(var(--dsh-claude-blur-enter)); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@keyframes dsh-claude-page-out {
+  from { opacity: 1; transform: none; filter: blur(0); }
+  to { opacity: 0; transform: translateX(var(--dsh-claude-page-shift)); filter: blur(var(--dsh-claude-blur-enter)); }
+}
+
 body[data-dsh-claude-style] .dsh-claude-settings-rows:disabled :is(button, input) {
   cursor: not-allowed;
 }
@@ -220,27 +265,31 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-block > .dsh-claude-setting
   padding-right: 0;
 }
 
-body[data-dsh-claude-style] .dsh-claude-settings-row-block > .dsh-claude-brand-picker {
+body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker) {
   align-self: stretch;
 }
 
-/* The brand picker: one card per brand, the brand's mark above its name. The
-   marks are the same assets the sidebar and hero paint — Claude's clay
-   starburst, DeepSeek's whale in brand blue — inlined as CSS data URIs, so
-   they read in full colour on either theme. A new brand adds one option in
+/* The settings page's pickers are one control: a grid of cards, one per choice,
+   spanning the row it sits in. The theme style's cards carry the brand's mark
+   over its name; the waiting line's paint cards carry the line's words wearing
+   the paint itself, which is why both read shared/motion.css. The brand marks
+   are the same assets the sidebar and hero paint — Claude's clay starburst,
+   DeepSeek's whale in brand blue — inlined as CSS data URIs, so they read in
+   full colour on either theme: a new brand is one option in
    settings-tab-general.ts and one [data-brand] rule here. */
-body[data-dsh-claude-style] .dsh-claude-brand-picker {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
 }
 
-body[data-dsh-claude-style] .dsh-claude-brand-card {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card) {
   appearance: none;
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 14px 12px 10px;
   box-sizing: border-box;
@@ -253,16 +302,16 @@ body[data-dsh-claude-style] .dsh-claude-brand-card {
   transition: border-color var(--dsh-claude-timing-feedback);
 }
 
-body[data-dsh-claude-style] .dsh-claude-brand-card:hover {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card):hover {
   border-color: var(--dsw-alias-border-l2);
 }
 
-body[data-dsh-claude-style] .dsh-claude-brand-card:focus-visible {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card):focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
   outline-offset: 1px;
 }
 
-body[data-dsh-claude-style] .dsh-claude-brand-card[data-active] {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card)[data-active] {
   border-color: var(--dsw-alias-brand-primary, #d97757);
 }
 
@@ -286,6 +335,50 @@ body[data-dsh-claude-style] .dsh-claude-brand-card-name {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.5;
+}
+
+/* A paint card holds nothing but the words, centred: the card gives a preview
+   the room a line's words need, whatever the sample is. The sample stands on
+   the line's own metrics and never wraps, so the cards stay one height and a
+   longer sample is cut where the line cuts it. */
+body[data-dsh-claude-style] .dsh-claude-motion-card {
+  min-height: 64px;
+  padding: 14px 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* A paint card's sample is the line's own wording taking turns: one wording
+   stands, leaves the way a wording leaves the line, and the other rises in its
+   place, on a loop. Both stand in one grid cell, so the box is as wide as the
+   longer wording and neither the card nor the clock's place beside it would
+   move when they change (settings-tab-motion.ts writes the two). */
+body[data-dsh-claude-style] .dsh-claude-motion-sample {
+  display: grid;
+  font-size: 14px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+/* One turn of the cycle per wording: it stands for a little under half of it,
+   leaves upward through the blur in a twentieth, waits out of sight, and rises
+   from below at the end — the swap's own travel, blur and curve
+   (shared/motion.css), on the preset card's period. The second wording is
+   offset half a turn, so the two are never on the card together. */
+body[data-dsh-claude-style] .dsh-claude-motion-word {
+  grid-area: 1 / 1;
+  justify-self: center;
+  animation: dsh-claude-motion-word var(--dsh-claude-period-preview-swap) var(--dsh-claude-swap-ease) infinite;
+}
+
+body[data-dsh-claude-style] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  animation-delay: calc(-0.5 * var(--dsh-claude-period-preview-swap));
+}
+
+@keyframes dsh-claude-motion-word {
+  0%, 45% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  50% { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(calc(-1 * var(--dsh-claude-swap-distance))); }
+  95% { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(var(--dsh-claude-swap-distance)); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
 }
 
 /* The row title is UI text in the host's row metrics: the sans face, not the
@@ -361,11 +454,38 @@ body[data-dsh-claude-style] .dsh-claude-settings-switch-knob {
   corner-shape: round;
   background: var(--dsw-alias-bg-overlay, #ffffff);
   box-shadow: 0 1px 2px rgba(20, 20, 19, 0.18);
-  transition: transform var(--dsh-claude-timing-feedback);
+  --dsh-claude-switch-travel: 16px;
+  --dsh-claude-switch-overshoot: 1px;
+  translate: 0 0;
 }
 
 body[data-dsh-claude-style] .dsh-claude-settings-switch[data-on] .dsh-claude-settings-switch-knob {
-  transform: translateX(16px);
+  translate: var(--dsh-claude-switch-travel) 0;
+}
+
+/* Pressed, the knob travels across with a double bounce — past its end, back,
+   settled — while the track's colour changes on its own clock
+   (transitions.dev's "Toggle", MIT). Only a switch the reader has pressed is
+   armed (data-moved, settings-controls.ts): a knob drawn by a page opening
+   stands where it is. */
+body[data-dsh-claude-style] .dsh-claude-settings-switch[data-moved][data-on] .dsh-claude-settings-switch-knob {
+  animation: dsh-claude-switch-on var(--dsh-claude-duration-bounce) var(--dsh-claude-ease-spring) both;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-switch[data-moved]:not([data-on]) .dsh-claude-settings-switch-knob {
+  animation: dsh-claude-switch-off var(--dsh-claude-duration-bounce) var(--dsh-claude-ease-spring) both;
+}
+
+@keyframes dsh-claude-switch-on {
+  0% { translate: 0 0; }
+  55% { translate: calc(var(--dsh-claude-switch-travel) + var(--dsh-claude-switch-overshoot)) 0; }
+  80%, 100% { translate: var(--dsh-claude-switch-travel) 0; }
+}
+
+@keyframes dsh-claude-switch-off {
+  0% { translate: var(--dsh-claude-switch-travel) 0; }
+  55% { translate: calc(0px - var(--dsh-claude-switch-overshoot)) 0; }
+  80%, 100% { translate: 0 0; }
 }
 
 /* Custom username input: same row rhythm as the switch/segments, but wide

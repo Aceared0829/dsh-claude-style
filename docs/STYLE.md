@@ -239,10 +239,15 @@ edit; the build refuses a time or a curve written anywhere else.
 - The swap, its gap and the roll of a figure's digits come from the transitions
   this skin ports; `THIRD_PARTY_NOTICES.md` names each one.
 - Loop periods are separate from durations: a sweep, a pulse, a blink, a spin.
+- Open: a menu growing out of its trigger, a dialog out of the centre, a
+  settings page sliding in — the transitions.dev surfaces, settling on their own
+  curve and closing on the exit duration.
 - The presets these tokens feed live in `packages/client/src/shared/motion.css`:
-  a surface arriving or leaving, a plain fade, one half of a wording swap, and
-  the placeholder pulse. A feature that needs its own effect reads the tokens
-  and keeps its own keyframes.
+  a surface arriving or leaving, a menu growing out of its trigger, a plain
+  fade, one half of a wording swap, the placeholder pulse, and the two paints
+  the waiting line's words can wear (a highlight band and a colour wash). A
+  feature that needs its own effect reads the tokens and keeps its own
+  keyframes.
 
 The table below is generated from `packages/client/src/theme/tokens.json` by `npm run build`;
 edit the JSON, not the table.
@@ -254,20 +259,25 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-feedback` | `120ms` | a control answering hover, press or focus: its colour, background, border, shadow, or a small turn or slide of its own parts |
 | `--dsh-claude-duration-reveal` | `120ms` | content entering the chat area: an opened row's body, and each streamed piece of the answer |
 | `--dsh-claude-duration-surface` | `150ms` | a floating surface or a group of controls appearing: popover cards, menus, panels, the search dialog, a toast, a strip fading in |
-| `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal |
+| `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal: a menu or a dialog closing, the overtime badge leaving |
+| `--dsh-claude-duration-open` | `250ms` | a surface growing out of its anchor: a menu out of its trigger, a full-window dialog out of the centre, a settings page sliding in, the overtime badge sliding onto its line |
 | `--dsh-claude-duration-swap` | `150ms` | each half of a wording swap: the old words leaving, the new ones arriving |
 | `--dsh-claude-duration-swap-gap` | `50ms` | the pause between the two halves of a wording swap |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
 | `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
 | `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight (D20), a sidebar icon's quarter turn, and the wording box taking the width of the words arriving |
-| `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow |
+| `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow, a placeholder handing its place to what it stood for |
+| `--dsh-claude-duration-bounce` | `350ms` | a switch's knob travelling across with its double bounce |
 | `--dsh-claude-duration-flight` | `400ms` | the sent message flying from the composer to its row |
 | `--dsh-claude-duration-step` | `500ms` | one step of the reasoning window's text rising two lines |
-| `--dsh-claude-duration-pop` | `500ms` | a changed digit of the session numbers popping in |
-| `--dsh-claude-duration-stagger` | `70ms` | how far behind the rest the last two popping digits start |
+| `--dsh-claude-duration-pop` | `500ms` | something popping into place: a changed digit of the session numbers, the overtime badge's own pill |
+| `--dsh-claude-duration-rise` | `500ms` | a line of the home greeting rising into place |
+| `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the last two popping digits, the greeting's second line |
 | `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
-| `--dsh-claude-period-sweep` | `2000ms` | one pass of the highlight band across the waiting line's words |
-| `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the band across a running process group's header |
+| `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the highlight band across the waiting line's words and a running process group's header |
+| `--dsh-claude-period-preview-swap` | `4000ms` | one turn of the settings page's waiting-line preview: one wording standing, leaving, and standing again |
+| `--dsh-claude-period-wash-hue` | `4000ms` | one turn of the hue rotation the waiting line's colour wash runs through |
+| `--dsh-claude-period-wash-drift` | `5000ms` | one orbit of the colour washes around the waiting line's glyph box |
 | `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |
 | `--dsh-claude-period-flash` | `1450ms` | one flash of the reasoning slider's top-rung matrix |
 | `--dsh-claude-period-blink` | `1000ms` | one blink of the composer caret |
@@ -279,15 +289,43 @@ edit the JSON, not the table.
 | `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
 | `--dsh-claude-ease-glide` | `cubic-bezier(0.22, 0.61, 0.36, 1)` | travel along a track: the sliding highlight, the reasoning slider, the search dialog's entrance, the reasoning window's step, the wording box's width |
 | `--dsh-claude-ease-roll` | `cubic-bezier(0.4, 0, 0.2, 1)` | digits rolling over: the file rows' tail and the process group header's counts |
-| `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the session numbers' digits popping in |
-| `--dsh-claude-ease-host-sweep` | `cubic-bezier(0.33, 0, 0.67, 1)` | the band across a running process group's header |
+| `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the session numbers' digits and the overtime badge popping in, a switch's knob bouncing past its end |
+| `--dsh-claude-ease-settle` | `cubic-bezier(0.22, 1, 0.36, 1)` | a surface or a page settling into place out of its anchor: menus and dialogs opening and closing, a settings page sliding, the overtime badge sliding onto its line, the greeting's lines rising |
+| `--dsh-claude-ease-host-sweep` | `steps(48, end)` | the band across the waiting line's words and a running process group's header |
 | `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, and a small row's wording swap travels |
-| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, and the distance a popping digit comes from |
-| `--dsh-claude-blur-soft` | `2px` | the blur words and digits pass through while they swap or pop in |
+| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, the distance a popping digit comes from, a settings page's slide, the overtime badge's sideways slide |
+| `--dsh-claude-distance-rise` | `12px` | how far below its place a line of the home greeting starts, and the overtime badge's upward slide |
+| `--dsh-claude-blur-soft` | `2px` | the blur words, digits and badges pass through while they swap or pop in, and a placeholder passes through as it hands its place over |
+| `--dsh-claude-blur-enter` | `3px` | the blur a settings page or a line of the home greeting passes through as it slides or rises in |
 | `--dsh-claude-scale-surface` | `0.98` | the scale a surface grows from as it rises |
+| `--dsh-claude-scale-dropdown` | `0.97` | the scale a menu grows from out of its trigger |
+| `--dsh-claude-scale-dropdown-exit` | `0.99` | the scale a menu shrinks to while it fades on closing |
+| `--dsh-claude-scale-dialog` | `0.96` | the scale a full-window dialog grows from and returns to |
 | `--dsh-claude-timing-feedback` | `var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard)` | shorthand: a control's state change, written after the property in a transition |
 | `--dsh-claude-timing-surface` | `var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard)` | shorthand: a surface appearing, written after the property or the keyframes' name |
 <!-- /generated:motion -->
+
+## Layers
+
+A z-index the skin writes is one of two kinds (D00). Inside one box, siblings
+are ordered with a literal from -1 to 9: a fill painted under its own content,
+a label over its sliding pill, the composer's rows over one another. Anything
+that has to clear what the host draws around it — the composer's own controls,
+the window's title row, a floating card, a surface over the whole window —
+stands on a layer token, and the build refuses any other number.
+
+The table below is generated from `packages/client/src/theme/tokens.json` by `npm run build`;
+edit the JSON, not the table.
+
+<!-- generated:layers (packages/client/src/theme/tokens.json) -->
+| Token | Value | Use |
+|---|---|---|
+| `--dsh-claude-layer-control` | `10` | a control kept over the composer card's own stacked rows: the send and stop buttons, the reasoning picker's trigger |
+| `--dsh-claude-layer-picker` | `20` | a picker that hangs its card from inside the composer: the permission picker, whose card has to stand over the controls beside it |
+| `--dsh-claude-layer-chrome` | `30` | the window's title row the skin draws into: the header band's title and actions, the titlebar's view tabs, over the host's own header |
+| `--dsh-claude-layer-float` | `99999` | a floating card or menu over everything the host draws: the popover cards, the hero menu |
+| `--dsh-claude-layer-takeover` | `2147483000` | a surface that covers the whole window: the account-hold page, the sent message's stand-in in flight |
+<!-- /generated:layers -->
 
 ## Text selection
 
@@ -544,11 +582,20 @@ as the host draws it; the host's own shimmering words step aside for the skin's
 line beside the whale: the wording in the secondary label at 14px on a 24px line,
 the turn's clock 8px later in the caption at 13px with tabular figures, and the
 "No response yet" badge 8px after that (11px on a 16px line, 0 6px padding, a 5px
-radius, the warning label over 16% of itself). The wording carries a highlight
-band swept across it over 2s, and a wording that changes runs the three-phase
+radius, the warning label over 16% of itself). The wording wears one of two
+paints, whichever the Motion tab's Waiting-line animation holds: a highlight band
+swept across it the way the host's own rows sweep — 1.5s a pass with the band
+resting the last third of it, in the host's shimmer tint — or a colour wash, the
+seven radial washes of `packages/client/src/shared/motion.css` over a grey ramp,
+orbiting the glyph box (5s an orbit while the hue turns a full circle over 4s),
+which is the effect transitions.dev ships as its Pro gradient text. A wording that
+changes runs the three-phase
 swap over 0.15s: the old one leaves upward with a 2px blur, the new one enters
-from 4px below; under Reduced motion the band is left out and the wording is
-written at once.
+from 4px below; under Reduced motion the band is left out, the wash holds its
+still frame, and the wording is written at once. The Motion tab's preview cards
+wear these same two paints (`packages/client/src/features/settings/settings.css`)
+and take turns between a state word and the host's own word for a wait, so a card
+shows the wording swap as well as the paint.
 
 While the conversation follows its tail the row is pinned at the place the
 follow's glide comes to rest — the composer's own height, the fade band above it
