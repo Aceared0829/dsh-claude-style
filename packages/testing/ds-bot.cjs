@@ -142,8 +142,15 @@ function dsBotScenario({ check }) {
       await page.waitForTimeout(1000)
       notes.desktop = await read(page)
       await page.keyboard.press('Control+Alt+B')
-      await page.waitForTimeout(1500)
+      // The shortcut reaches the host a beat later, and the collapse has to be
+      // in the layout before the box means anything: re-read until the column
+      // is gone. The assertion below still judges what the last read saw, so a
+      // collapse that never happens fails there.
       notes.rail = await read(page)
+      for (let tries = 0; tries < 20 && (notes.rail.box?.columnRight ?? 0) !== 0; tries += 1) {
+        await page.waitForTimeout(250)
+        notes.rail = await read(page)
+      }
     },
     async assert(context) {
       const { notes, session } = context

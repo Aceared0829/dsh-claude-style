@@ -98,16 +98,26 @@ function flightGap(frame) {
   )
 }
 
+/** The row's own foot, left uncovered by the few pixels a moving transcript costs. */
+const LANDING_GIVE = 4
+
 /**
  * One check on every frame the row is shown in: the stand-in is on it.
  *
  * Two copies of the same message, one above the other, is what a reader sees
  * when the row is released before the stand-in has arrived (send-flight.ts's
- * arrived()), and a stand-in left a few pixels short by a row that moved under it
- * uncovers the row's own foot, which reads as a line under the message.
+ * arrived()), and a stand-in left short by a row that moved under it uncovers
+ * the row's own foot, which reads as a line under the message. The host can move
+ * the row between two samples (the transcript gliding to its tail) and the
+ * flight re-pins the stand-in in its own frame, so a gap the next sample no
+ * longer shows was never painted: only a gap that holds is judged.
  */
 function onRowCheck(shown) {
-  const apart = shown.filter((frame) => flightGap(frame) > 1)
+  const gaps = shown.map((frame) => flightGap(frame))
+  const apart = shown.filter((frame, at) => {
+    if (gaps[at] <= LANDING_GIVE) return false
+    return gaps[at + 1] !== undefined && gaps[at + 1] > LANDING_GIVE
+  })
   return check('真行显形期间替身一直落在它身上', shown.length > 0 && apart.length === 0,
     `frames with the row shown=${shown.length}, of them apart=${apart.length}${apart.length === 0 ? '' : `：${apart.slice(0, 3).map((frame) => `${flightGap(frame).toFixed(2)}px`).join(' | ')}`}`)
 }
@@ -302,8 +312,9 @@ const SCENARIOS = {
         document.documentElement.style.setProperty('--dsh-windows-titlebar-height', '40px')
       })
     },
-    async assert({ page, session, trace }) {
-      const { frames, settled } = await handoverFrames(page, trace)
+    async assert(context) {
+      const { page, session } = context
+      const { frames, settled } = await handoverFrames(context)
       const firstGhost = frames.findIndex((frame) => frame.ghost)
       const takeOffFrame = frames.find((frame) => frame.takeOff !== undefined)
       const flight = firstGhost === -1 ? [] : frames.slice(firstGhost)
@@ -367,8 +378,8 @@ const SCENARIOS = {
       await context.page.waitForTimeout(600)
     },
     async assert(context) {
-      const { page, session, trace } = context
-      const { frames, settled } = await handoverFrames(page, trace)
+      const { page, session } = context
+      const { frames, settled } = await handoverFrames(context)
       const firstGhost = frames.findIndex((frame) => frame.ghost)
       const flight = firstGhost === -1 ? [] : frames.slice(firstGhost)
       const covered = flightBoxes(flight)

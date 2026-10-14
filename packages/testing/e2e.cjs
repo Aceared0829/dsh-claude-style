@@ -116,6 +116,13 @@ async function startTrace(page) {
     }
     const cardOf = (element) => element === null ? null : element.querySelector(host.composerCard)
     let takeOff = null
+    // The row the skin marks while the stand-in flies is the row it replaces, and
+    // it stays the measured row after the mark clears, when the row is shown
+    // again. Reading the last user row in the document instead measures whichever
+    // row the host renders last, which is not the newest message: on a full
+    // transcript the stand-in then looks hundreds of pixels off the row it lands
+    // on. The stand-in's own words ride along in the same trace.
+    let adopted = null
     const sample = () => {
       const frame = { t: Math.round(performance.now()) }
       const scroller = document.querySelector(host.scroller)
@@ -128,7 +135,15 @@ async function startTrace(page) {
       }
       const ghost = document.querySelector(host.sendGhost)
       const rows = [...document.querySelectorAll(host.userRow)]
-      const last = rows.length === 0 ? null : rows[rows.length - 1]
+      // The element the skin marks while the stand-in flies is the one it
+      // replaces, wherever the host keeps it: a fresh message may sit in the
+      // host's own echo element rather than in a user row. It stays the measured
+      // row after the mark clears, when the row is shown again, and it is
+      // dropped once the host re-renders it away.
+      const marked = [...document.querySelectorAll(`[${host.flyingMark}]`)]
+      if (marked.length > 0) adopted = marked[marked.length - 1]
+      if (adopted !== null && !adopted.isConnected) adopted = null
+      const last = adopted ?? (rows.length === 0 ? null : rows[rows.length - 1])
       frame.ghost = ghost !== null
       // The stand-in's own shape against the row it stands in for. Both marks are
       // read every frame: the stand-in has to cover that row whole, because the
