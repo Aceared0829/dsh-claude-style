@@ -2,13 +2,14 @@ import * as React from 'react'
 import { HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, MASCOT_SCOPE_ALL, MASCOT_SCOPE_HOME, PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_CLAUDE, TYPEFACE_HOST } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import { resolveMascot } from '../../core/prefs'
-import { brandRows } from './settings-brand'
+import { accentRow, brandRows } from './settings-brand'
 import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
- * The settings page's Appearance tab: who paints the colours and sets the
- * type, how the new-conversation page is laid out, the mascot with where it
- * stands, and the custom brand rows (settings-brand.ts).
+ * The settings page's Appearance tab: who paints the colours — with the
+ * accent colour as that row's sub-row — who sets the type, how the
+ * new-conversation page is laid out, the mascot with where it stands, and
+ * the custom brand rows (settings-brand.ts).
  */
 export function createSettingsAppearanceTab(): SettingsTab {
   function rows(view: SettingsView) {
@@ -48,6 +49,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
           controls.segment(paletteOptions, prefs.palette, value => { write({ palette: value }) }),
         ),
       },
+      accentRow(view),
       {
         rank: 20,
         node: controls.row(

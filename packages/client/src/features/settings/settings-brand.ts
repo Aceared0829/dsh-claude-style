@@ -1,17 +1,18 @@
 import * as React from 'react'
 import { BRAND_IMAGE_MAX_BYTES, BRAND_IMAGE_TYPES } from '@dsh-claude-style/contracts/brand'
 import type { BrandImageKind } from '@dsh-claude-style/contracts/brand'
-import { BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX } from '../../constants'
+import { BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, PALETTE_HOST } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import { loadBrandImages, readBrandImages, removeBrandImage, subscribeBrandImages, uploadBrandImage } from '../../shared/custom-brand'
 import type { SettingsRow, SettingsView } from './settings-controls'
 
 /**
  * The Appearance tab's custom brand rows (D64), after the mascot: the brand
- * name, the two images, how the images are inked and the accent colour.
- * The name and the colour are preferences written through the page's own
- * write path; the images live in the host half's brand directory and go
- * through the shared image state (packages/client/src/shared/custom-brand.ts).
+ * name, the two images and how the images are inked. The name is a
+ * preference written through the page's own write path; the images live in
+ * the host half's brand directory and go through the shared image state
+ * (packages/client/src/shared/custom-brand.ts). The accent colour stands
+ * apart from them as Colours' sub-row (accentRow).
  */
 
 /** Pause after the last edit before a typed name or a dragged colour is written to the settings store. */
@@ -166,7 +167,7 @@ function BrandImageControl(props: { kind: BrandImageKind }) {
  * button that hands the accent back to the brand. Unset, the well shows the
  * accent the page paints right now.
  */
-function BrandAccentControl(props: { stored: string, write: SettingsView['write'] }) {
+function BrandAccentControl(props: { stored: string, write: SettingsView['write'], disabled?: boolean }) {
   const { draft, change, flush } = useDraft(props.stored, value => props.write({ brandAccent: value }))
   const live = getComputedStyle(document.body).getPropertyValue('--dsw-alias-brand-primary').trim().toLowerCase()
   const shown = draft !== '' ? draft : /^#[0-9a-f]{6}$/.test(live) ? live : ACCENT_FALLBACK
@@ -177,6 +178,7 @@ function BrandAccentControl(props: { stored: string, write: SettingsView['write'
       type: 'color',
       className: 'dsh-claude-settings-color',
       value: shown,
+      disabled: props.disabled === true,
       'aria-label': settingsCopy('brandAccentTitle', 'Accent colour'),
       onChange: (event: React.ChangeEvent<HTMLInputElement>) => change(event.target.value),
       onBlur: () => flush(draft),
@@ -186,9 +188,30 @@ function BrandAccentControl(props: { stored: string, write: SettingsView['write'
       : React.createElement('button', {
         type: 'button',
         className: 'dsh-claude-settings-button',
+        disabled: props.disabled === true,
         onClick: () => flush(''),
       }, settingsCopy('brandAccentReset', 'Use the brand\'s accent')),
   )
+}
+
+/**
+ * The accent colour as Colours' sub-row (D29): the accent paints only over
+ * the skin's own palette (D64), so the row greys out while Colours follows
+ * the host, still showing the stored colour.
+ */
+export function accentRow(view: SettingsView): SettingsRow {
+  const { prefs, write, controls } = view
+  const enabled = prefs.palette !== PALETTE_HOST
+  return {
+    rank: 15,
+    node: controls.subRow(
+      'brandAccent',
+      settingsCopy('brandAccentTitle', 'Accent colour'),
+      settingsCopy('brandAccentDesc', 'The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand\'s own accent stays. It has no effect while Colours is set to Follow the host.'),
+      React.createElement(BrandAccentControl, { stored: prefs.brandAccent, write, disabled: !enabled }),
+      enabled,
+    ),
+  }
 }
 
 /** The custom brand rows, ranked after the mascot's placement row (rank 40). */
@@ -233,15 +256,6 @@ export function brandRows(view: SettingsView): SettingsRow[] {
         settingsCopy('brandInkTitle', 'Image colours'),
         settingsCopy('brandInkDesc', 'Original keeps the images\' own colours; Text colour uses each image as a shape filled with the text colour where it stands, so it reads in both light and dark.'),
         controls.segment(inkOptions, prefs.brandInk, value => { write({ brandInk: value }) }),
-      ),
-    },
-    {
-      rank: 54,
-      node: controls.row(
-        'brandAccent',
-        settingsCopy('brandAccentTitle', 'Accent colour'),
-        settingsCopy('brandAccentDesc', 'The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand\'s own accent stays. It has no effect while Colours is set to Follow the host.'),
-        React.createElement(BrandAccentControl, { stored: prefs.brandAccent, write }),
       ),
     },
   ]

@@ -506,10 +506,10 @@ module.exports = {
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
       general: ['brand', 'username', 'motion', 'autoPopover'],
-      appearance: ['palette', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk', 'brandAccent'],
+      appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'chatAnimations', 'statsPosition', 'caretMotion', 'viewTabs'],
+      conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'caretMotion', 'viewTabs'],
       desktop: ['headerBand'],
       motion: ['statusMotion'],
     }
@@ -529,8 +529,8 @@ module.exports = {
         JSON.stringify(onWindows.rows) === '["headerBand"]' && JSON.stringify(onWindows.disabled) === '[]',
       JSON.stringify({ desktop, onWindows }))
     const off = settings.parentsOff || {}
-    check('a sub-row greys out while its parent is off: the mascot\'s place with the mascot off, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
-      !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&
+    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
+      !!off.appearance && JSON.stringify(off.appearance.disabled) === '["brandAccent","mascotScope"]' &&
         !!off.composer && JSON.stringify(off.composer.disabled) === '["quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))

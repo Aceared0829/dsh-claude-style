@@ -254,13 +254,13 @@
     },
     "brandInkOriginal": { "zh": "原色", "en": "Original" },
     "brandInkText": { "zh": "文字色", "en": "Text colour" },
-    "brandAccentTitle": { "zh": "主色", "en": "Accent colour" },
+    "brandAccentTitle": { "zh": "强调色", "en": "Accent colour" },
     "brandAccentDesc": {
-      "zh": "按钮、选中标记、链接与焦点环使用的颜色；未指定时沿用所选品牌的主色。配色选「跟随宿主」时不生效。",
+      "zh": "按钮、选中标记、链接与焦点环使用的颜色；未指定时沿用所选品牌的强调色。配色选「跟随宿主」时不生效。",
       "en": "The colour of buttons, selected marks, links and focus rings. Unset, the chosen brand's own accent stays. It has no effect while Colours is set to Follow the host."
     },
     "brandAccentUnset": { "zh": "跟随品牌", "en": "Brand's own" },
-    "brandAccentReset": { "zh": "恢复品牌主色", "en": "Use the brand's accent" },
+    "brandAccentReset": { "zh": "恢复品牌强调色", "en": "Use the brand's accent" },
     "motionTitle": { "zh": "动画效果", "en": "Animation" },
     "motionDesc": {
       "zh": "「随系统」跟随系统的动画设置；「减弱」把动画停在代表帧；「总是」始终播放。",

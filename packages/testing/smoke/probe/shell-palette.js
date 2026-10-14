@@ -217,9 +217,9 @@
           }
           return out
         })()
-        window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false })
+        window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
         r.settings.parentsOff = { appearance: renderTab('appearance'), composer: renderTab('composer'), sidebar: renderTab('sidebar') }
-        window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true })
+        window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })
         // The rows that wait for another setting: the composer restyle off greys
         // the picker, its sub-rows, the permission control and the statistics'
         // position; the footer takeover off greys the easter egg under it. Home
