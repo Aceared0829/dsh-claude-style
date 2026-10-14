@@ -39,11 +39,11 @@ export function activityPhrase(text: string): string | null {
     if (words === '') continue
     phrase = words.charAt(0).toUpperCase() + words.slice(1)
   }
-  return phrase === null ? null : cut(phrase)
+  return phrase === null ? null : cutPhrase(phrase)
 }
 
-/** The line's own length: a clause past it is cut where it stops fitting. */
-function cut(phrase: string) {
+/** The line's own length: wording past it is cut where it stops fitting. A reasoning clause and a call's own description (shared/call-description) share it. */
+export function cutPhrase(phrase: string) {
   if (phrase.length <= PHRASE_MAX_CHARS) return phrase
   return `${phrase.slice(0, PHRASE_MAX_CHARS).trimEnd()}\u2026`
 }

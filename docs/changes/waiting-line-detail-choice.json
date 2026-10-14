@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "new",
+  "order": 0,
+  "external": true,
+  "zh": "「对话」页新增「状态行描述」（设置项 `statusDetail`，取值 `precise`（默认）与 `simple`），「精确」让命令调用说出模型为自己写下的描述。",
+  "en": "The Conversation tab gains Waiting-line detail (setting `statusDetail`, `precise` (the default) or `simple`), where Precise has a command call say the description the model declared for it."
+}

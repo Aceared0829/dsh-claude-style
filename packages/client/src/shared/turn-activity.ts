@@ -1,5 +1,6 @@
 import { readTurnActivity } from '../core/host'
 import { activityPhrase } from './activity-phrase'
+import { callDescription } from './call-description'
 import { fileToolCall } from './file-tool'
 import type { CopyParams } from '../core/i18n'
 import type { FileToolOperation } from './file-tool'
@@ -11,10 +12,13 @@ import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } f
  *
  * Most of the words are the copy document's own (`chatWait*`,
  * model-descriptions.json) and a line that cannot read a state falls back to its
- * own wording. Two states are not copy: the file a call in flight works on
- * (shared/file-tool), which fills the copy's `{file}` slot, and the clause the
- * model's own reasoning says it is on (shared/activity-phrase), which is the
- * model's text as it wrote it and carries no copy key.
+ * own wording. Three states are not copy, and the `precise` choice decides
+ * whether the line reads them at all: the file a call in flight works on
+ * (shared/file-tool), which fills the copy's `{file}` slot, the description a
+ * command call declares for itself (shared/call-description), and the clause
+ * the model's own reasoning says it is on (shared/activity-phrase). The last
+ * two are the model's text as it wrote it and carry no copy key. The simple
+ * choice reads none of them: every state is its bare copy.
  */
 
 /** One line of copy: its key in the copy document, or null for words the model itself wrote. */
@@ -22,11 +26,13 @@ export interface ActivityWords {
   key: string | null
   fallback: string
   /**
-   * Set on the words that are about a tool call: the file one call works on, or
-   * the turn's calls where the running one names no file. The waiting line reads
-   * it to keep a call's own words past its lock (features/chat-wait).
+   * Set on the words that are about a tool call: `detail` marks the words one
+   * call carries of its own (the file it works on, the description it
+   * declares), which the waiting line keeps past a standing lock
+   * (features/chat-wait); `generic` marks the turn's calls with nothing of
+   * their own to say.
    */
-  aboutCall?: 'file' | 'tools'
+  aboutCall?: 'detail' | 'generic'
   /** Values for the copy's `{name}` slots. */
   params?: CopyParams
 }
@@ -36,30 +42,33 @@ export const ACTIVITY_THINKING: ActivityWords = { key: 'chatWaitThinking', fallb
 /** The model is writing its answer. */
 export const ACTIVITY_WRITING: ActivityWords = { key: 'chatWaitWriting', fallback: 'Writing…' }
 /** The model is drawing up a tool call. */
-export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', fallback: 'Preparing a tool call…', aboutCall: 'tools' }
-/** The turn's tool calls are running, and the running call names no file. */
-export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: 'Running tools…', aboutCall: 'tools' }
+export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', fallback: 'Preparing a tool call…', aboutCall: 'generic' }
+/** The turn's tool calls are running, and the running call says nothing of its own. */
+export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: 'Running tools…', aboutCall: 'generic' }
 
 /** Reading, editing and writing one file: the file's own name fills the copy's slot. */
 const ACTIVITY_FILE: Record<FileToolOperation, ActivityWords> = {
-  read: { key: 'chatWaitReading', fallback: 'Reading {file}', aboutCall: 'file' },
-  edit: { key: 'chatWaitEditing', fallback: 'Editing {file}', aboutCall: 'file' },
-  write: { key: 'chatWaitWritingFile', fallback: 'Writing {file}', aboutCall: 'file' },
+  read: { key: 'chatWaitReading', fallback: 'Reading {file}', aboutCall: 'detail' },
+  edit: { key: 'chatWaitEditing', fallback: 'Editing {file}', aboutCall: 'detail' },
+  write: { key: 'chatWaitWritingFile', fallback: 'Writing {file}', aboutCall: 'detail' },
 }
 
 /**
  * The words for what the turn is doing, or null where there is nothing to say:
  * the model has written nothing in its newest step and no tool is running. A
  * turn's newest block decides among thinking, a tool call being drawn up and
- * writing; any other block kind reads as writing.
+ * writing; any other block kind reads as writing. `precise` is the
+ * waiting line's detail choice: without it the states read as their bare copy
+ * and nothing the moment carries is extracted.
  */
-export function activityWords(snapshot: HostChatSnapshot | null, turn: HostTurn | undefined): ActivityWords | null {
+export function activityWords(snapshot: HostChatSnapshot | null, turn: HostTurn | undefined, precise: boolean): ActivityWords | null {
   if (snapshot === null || turn === undefined) return null
   const activity = readTurnActivity(snapshot, turn)
   if (activity === null) return null
-  if (activity.kind === 'tools') return toolWords(activity.call)
+  if (activity.kind === 'tools') return precise ? toolWords(activity.call) : ACTIVITY_TOOLS
   const newest = activity.newest
   if (newest === 'reasoning') {
+    if (!precise) return ACTIVITY_THINKING
     const phrase = reasoningPhrase(activity.assistant)
     return phrase === null ? ACTIVITY_THINKING : { key: null, fallback: phrase }
   }
@@ -68,11 +77,13 @@ export function activityWords(snapshot: HostChatSnapshot | null, turn: HostTurn 
   return ACTIVITY_WRITING
 }
 
-/** What a call in flight says: the file it names, where it names one. */
+/** What a call in flight says: the file it works on, or the words it declares for itself. */
 function toolWords(call: HostRunningCall): ActivityWords {
   const file = fileToolCall(call)
-  if (file === null) return ACTIVITY_TOOLS
-  return { ...ACTIVITY_FILE[file.operation], params: { file: file.file } }
+  if (file !== null) return { ...ACTIVITY_FILE[file.operation], params: { file: file.file } }
+  const description = callDescription(call)
+  if (description !== null) return { key: null, fallback: description, aboutCall: 'detail' }
+  return ACTIVITY_TOOLS
 }
 
 /** The model's own words for its work, off the reasoning block it is streaming into. */

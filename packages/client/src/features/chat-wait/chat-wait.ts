@@ -1,7 +1,8 @@
-import { QUIET_ATTR } from '../../constants'
+import { QUIET_ATTR, STATUS_DETAIL_PRECISE } from '../../constants'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
+import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
@@ -28,10 +29,12 @@ interface WaitLine {
  * The live turn's running row: what the turn is doing now in this line's own
  * words (shared/turn-activity.ts), the host's own 「深度求索中」 where no state
  * can be read, the turn's elapsed time as a quiet clock beside it, and 「暂未响应」
- * once the model has been silent for ten seconds (wait-state.ts). Two of those
- * states name more than a state: a call in flight says the file it works on
- * (「正在读取 app.js」) and reasoning says the clause the model itself is on
- * (「Checking the file is true」); a wording written stands a whole second
+ * once the model has been silent for ten seconds (wait-state.ts). Under the
+ * Precise choice three of those states name more than a state: a call in
+ * flight says the file it works on (「正在读取 app.js」) or the description it
+ * declares for itself (a command call must carry one), and reasoning says the
+ * clause the model itself is on (「Checking the file is true」); the Simple
+ * choice reads the bare states alone. A wording written stands a whole second
  * (wordForPass), so a turn that moves through several states that fast reads as
  * one line rather than as flicker. The wording swaps in place after
  * transitions.dev's "Thinking states" (MIT): a sweeping highlight while a word
@@ -69,6 +72,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let timer: number | null = null
   let cancelTick: (() => void) | null = null
   let queued: Promise<void> | null = null
+
+  // The detail choice is read on every pass; a change of it rewrites the line
+  // at once rather than waiting out the standing word's lock.
+  let detailChoice = readPrefs().statusDetail
+  const offDetailChoice = subscribePrefs(prefs => {
+    if (prefs.statusDetail === detailChoice) return
+    detailChoice = prefs.statusDetail
+    wording.clear()
+    sync()
+  })
 
   /**
    * One pass per task, for the publishes the host makes: a step that streams
@@ -170,20 +183,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const line = lineOf(row, words)
     const { label, clock, badge } = line
     // What the turn is doing, and the host's own word for a turn whose state
-    // cannot be read (D32): the line says the model's work, never a guess. Two
-    // states carry words of their own — the file a call works on, and the clause
-    // the model's reasoning says it is on — and those are written as they are.
-    // A wording written is locked for a second (wordForPass): a turn passes
-    // through several states that fast, and only the newest one after the lock
-    // is worth showing; a call's own words are the one thing that waits for it.
-    const activity = activityWords(snapshot, turn)
+    // cannot be read (D32): the line says the model's work, never a guess.
+    // Under the Precise choice three states carry words of their own — the
+    // file a call works on, the description a command call declares, and the
+    // clause the model's reasoning says it is on — and those are written as
+    // they are; Simple reads the bare states alone. A wording written is
+    // locked for a second (wordForPass): a turn passes through several states
+    // that fast, and only the newest one after the lock is worth showing; a
+    // call's own words are the one thing that waits for it.
+    const precise = readPrefs().statusDetail === STATUS_DETAIL_PRECISE
+    const activity = activityWords(snapshot, turn, precise)
     const said = activity === null
       ? null
       : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
     const pass = wordForPass({
       word: said,
-      file: activity !== null && activity.aboutCall === 'file' ? said : null,
-      onCall: activity !== null && activity.aboutCall === 'tools',
+      detail: activity !== null && activity.aboutCall === 'detail' ? said : null,
+      onCall: activity !== null && activity.aboutCall === 'generic',
       host: t('chat.deepDiving'),
     }, wording.get(row), now)
     wording.set(row, pass.row)
@@ -271,6 +287,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   ui.chatWait = { sync, onCopyChange: sync }
 
   return () => {
+    offDetailChoice()
     if (timer !== null) window.clearInterval(timer)
     timer = null
     if (cancelTick !== null) cancelTick()

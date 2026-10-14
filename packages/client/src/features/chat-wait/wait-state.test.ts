@@ -18,59 +18,59 @@ function snapshot(turns: HostTurn[], runningCalls: { turn: number }[] = []): Hos
 
 test('no state can be read before any step, and while a started step has written nothing', () => {
   const fresh = turn(1, 'open', [])
-  expect(activityWords(snapshot([fresh]), fresh)).toBeNull()
+  expect(activityWords(snapshot([fresh]), fresh, true)).toBeNull()
   const started = turn(1, 'open', [step('running', [])])
-  expect(activityWords(snapshot([started]), started)).toBeNull()
-  expect(activityWords(null, fresh)).toBeNull()
-  expect(activityWords(snapshot([fresh]), undefined)).toBeNull()
+  expect(activityWords(snapshot([started]), started, true)).toBeNull()
+  expect(activityWords(null, fresh, true)).toBeNull()
+  expect(activityWords(snapshot([fresh]), undefined, true)).toBeNull()
 })
 
 test('the newest block says what the model is doing: thinking, drawing up a call, writing', () => {
   const thinking = turn(1, 'open', [step('running', ['reasoning'])])
-  expect(activityWords(snapshot([thinking]), thinking)).toBe(ACTIVITY_THINKING)
+  expect(activityWords(snapshot([thinking]), thinking, true)).toBe(ACTIVITY_THINKING)
   const drawing = turn(1, 'open', [step('running', ['reasoning', 'tool-call'])])
-  expect(activityWords(snapshot([drawing]), drawing)?.fallback).toBe('Preparing a tool call…')
+  expect(activityWords(snapshot([drawing]), drawing, true)?.fallback).toBe('Preparing a tool call…')
   const writing = turn(1, 'open', [step('running', ['reasoning', 'tool-call', 'text'])])
-  expect(activityWords(snapshot([writing]), writing)?.fallback).toBe('Writing…')
+  expect(activityWords(snapshot([writing]), writing, true)?.fallback).toBe('Writing…')
 })
 
 test('a running tool call is its own state, and one from another turn does not count', () => {
   const tooling = turn(1, 'open', [step('settled', ['reasoning', 'tool-call'])])
-  expect(activityWords(snapshot([tooling], [{ turn: 1 }]), tooling)?.fallback).toBe('Running tools…')
-  expect(activityWords(snapshot([tooling], [{ turn: 2 }]), tooling)).toBeNull()
+  expect(activityWords(snapshot([tooling], [{ turn: 1 }]), tooling, true)?.fallback).toBe('Running tools…')
+  expect(activityWords(snapshot([tooling], [{ turn: 2 }]), tooling, true)).toBeNull()
 })
 
 test('a running call names its file, and the newest of several calls names the line', () => {
   const tooling = turn(1, 'open', [step('settled', ['reasoning', 'tool-call'])])
   const read = { turn: 1, phase: 'start', name: 'read', argsRaw: '{"file_path":"C:\\\\work\\\\app.js"}' }
   const edit = { turn: 1, phase: 'start', name: 'edit', argsRaw: '{"file_path":"/work/notes.md"}' }
-  const words = activityWords(snapshot([tooling], [read]), tooling)
+  const words = activityWords(snapshot([tooling], [read]), tooling, true)
   expect(words?.key).toBe('chatWaitReading')
   expect(words?.params).toEqual({ file: 'app.js' })
-  expect(activityWords(snapshot([tooling], [read, edit]), tooling)?.params).toEqual({ file: 'notes.md' })
+  expect(activityWords(snapshot([tooling], [read, edit]), tooling, true)?.params).toEqual({ file: 'notes.md' })
 })
 
 test('a call that names no file keeps the tool state, and one still arriving names nothing yet', () => {
   const tooling = turn(1, 'open', [step('settled', ['reasoning', 'tool-call'])])
   const command = { turn: 1, phase: 'start', name: 'pwsh', argsRaw: '{"command":"ls"}' }
   const arriving = { turn: 1, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"app' }
-  expect(activityWords(snapshot([tooling], [command]), tooling)?.fallback).toBe('Running tools…')
-  expect(activityWords(snapshot([tooling], [arriving]), tooling)?.fallback).toBe('Running tools…')
+  expect(activityWords(snapshot([tooling], [command]), tooling, true)?.fallback).toBe('Running tools…')
+  expect(activityWords(snapshot([tooling], [arriving]), tooling, true)?.fallback).toBe('Running tools…')
 })
 
 test('reasoning that says what it is doing hands the line its own clause', () => {
   const thinking = turn(1, 'open', [step('running', [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }])])
-  const words = activityWords(snapshot([thinking]), thinking)
+  const words = activityWords(snapshot([thinking]), thinking, true)
   expect(words?.key).toBeNull()
   expect(words?.fallback).toBe('Checking the file is true')
   const quiet = turn(1, 'open', [step('running', [{ kind: 'reasoning', text: '先看清工作区。' }])])
-  expect(activityWords(snapshot([quiet]), quiet)).toBe(ACTIVITY_THINKING)
+  expect(activityWords(snapshot([quiet]), quiet, true)).toBe(ACTIVITY_THINKING)
 })
 
 test('a wording written stands a whole second; the newest state after it is written at once', () => {
-  const quiet = { word: null, file: null, onCall: false, host: 'Deep diving' }
-  const thinking = { word: 'Thinking…', file: null, onCall: false, host: 'Deep diving' }
-  const read = { word: 'Reading app.js', file: 'Reading app.js', onCall: false, host: 'Deep diving' }
+  const quiet = { word: null, detail: null, onCall: false, host: 'Deep diving' }
+  const thinking = { word: 'Thinking…', detail: null, onCall: false, host: 'Deep diving' }
+  const read = { word: 'Reading app.js', detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
   const first = wordForPass(read, undefined, 1000)
   expect(first).toEqual({ word: 'Reading app.js', row: { standing: { word: 'Reading app.js', until: 1000 + WORD_LOCK_MS } } })
   // Inside the second the newest state waits, however many arrive.
@@ -90,26 +90,26 @@ test('a wording written stands a whole second; the newest state after it is writ
 })
 
 test('a call the lock stepped over waits for it and is written ahead of the state', () => {
-  const quiet = { word: null, file: null, onCall: false, host: 'Deep diving' }
-  const thinking = { word: 'Thinking…', file: null, onCall: false, host: 'Deep diving' }
-  const preparing = { word: 'Preparing a tool call…', file: null, onCall: true, host: 'Deep diving' }
-  const read = { word: 'Reading app.js', file: 'Reading app.js', onCall: false, host: 'Deep diving' }
-  const edit = { word: 'Editing notes.md', file: 'Editing notes.md', onCall: false, host: 'Deep diving' }
+  const quiet = { word: null, detail: null, onCall: false, host: 'Deep diving' }
+  const thinking = { word: 'Thinking…', detail: null, onCall: false, host: 'Deep diving' }
+  const preparing = { word: 'Preparing a tool call…', detail: null, onCall: true, host: 'Deep diving' }
+  const read = { word: 'Reading app.js', detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
+  const edit = { word: 'Editing notes.md', detail: 'Editing notes.md', onCall: false, host: 'Deep diving' }
   const first = wordForPass(thinking, undefined, 1000)
   // The read is read while the lock stands: it waits, and the state stays.
   const waiting = wordForPass(read, first.row, 1300)
   expect(waiting.word).toBe('Thinking…')
-  expect(waiting.row.pending).toEqual({ word: 'Reading app.js', at: 1300 })
+  expect(waiting.row.pending).toBe('Reading app.js')
   // Another call inside the same second takes its place: only the newest waits.
   const second = wordForPass(edit, waiting.row, 1500)
-  expect(second.row.pending).toEqual({ word: 'Editing notes.md', at: 1500 })
+  expect(second.row.pending).toBe('Editing notes.md')
   // The lock ends: the call that waited is written, not the state of that moment.
   const written = wordForPass(quiet, second.row, 1000 + WORD_LOCK_MS + 1)
   expect(written.word).toBe('Editing notes.md')
   expect(written.row.pending).toBeUndefined()
   // A call being drawn up after it does not stand behind the file: that is newer work.
   const late = wordForPass(read, written.row, 2100)
-  expect(late.row.pending?.word).toBe('Reading app.js')
+  expect(late.row.pending).toBe('Reading app.js')
   expect(wordForPass(preparing, late.row, 2200).row.pending).toBeUndefined()
   expect(wordForPass(preparing, late.row, 2200 + WORD_LOCK_MS).word).toBe('Preparing a tool call…')
 })

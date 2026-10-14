@@ -50,25 +50,19 @@ export interface StandingWords {
   until: number
 }
 
-/** The words a call in flight gave while a lock stood, and when they were read. */
-export interface PendingCall {
-  word: string
-  at: number
-}
-
 /** What one row holds between passes: the wording standing, and the call words waiting for it. */
 export interface RowWords {
   standing: StandingWords
-  pending?: PendingCall
+  pending?: string
 }
 
 /** What one pass read: the words the state answers, the call the words are about, and the host's words under both. */
 export interface PassReading {
   /** The words the state answers, or null where no state can be read at all. */
   word: string | null
-  /** The words naming the file a call in flight works on, or null where no call names one. */
-  file: string | null
-  /** The state's own words are about a call: one being drawn up, or calls running with no file named. */
+  /** The words one call in flight carries of its own — the file it works on, or the description it declares — or null where the running call says none. */
+  detail: string | null
+  /** The state's own words are about a call: one being drawn up, or calls running with nothing of their own to say. */
   onCall: boolean
   /** The host's own words for a wait, which stand when nothing else does. */
   host: string
@@ -81,16 +75,16 @@ export interface PassReading {
  * thing the lock may not lose — a read of a small file is over inside a frame —
  * so they wait for the lock and are written as soon as it ends, ahead of
  * whatever the state says by then; a state about another call takes their place,
- * since that is newer work than the file they name.
+ * since that is newer work than the words they carry.
  */
 export function wordForPass(reading: PassReading, row: RowWords | undefined, now: number): { word: string, row: RowWords } {
-  const waiting = reading.file !== null
-    ? { word: reading.file, at: now }
+  const waiting = reading.detail !== null
+    ? reading.detail
     : (reading.onCall ? undefined : row?.pending)
   if (row !== undefined && now < row.standing.until) {
     return { word: row.standing.word, row: waiting === undefined ? { standing: row.standing } : { standing: row.standing, pending: waiting } }
   }
-  const candidate = waiting === undefined ? reading.word ?? reading.host : waiting.word
+  const candidate = waiting === undefined ? reading.word ?? reading.host : waiting
   if (row !== undefined && row.standing.word === candidate) return { word: candidate, row: { standing: row.standing } }
   return { word: candidate, row: { standing: { word: candidate, until: now + WORD_LOCK_MS } } }
 }
