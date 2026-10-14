@@ -89,12 +89,19 @@ function run(command, options = {}) {
  *     scripted service (packages/testing/mock-llm.cjs, D66).
  * @param options.args - extra arguments for the web app's own command line
  *     (`--trusted-host <name>`, which a page under a non-loopback name needs).
+ * @param options.plugins - other plugins' package specs (`name@version`) added
+ *     to the profile beside this checkout, from the registry: what a lane
+ *     checks against another plugin's real browser half installs it here, in
+ *     a home of its own.
  * @param options.env - extra environment for the host process.
  * @param options.resetState - clear the home's sessions and their sidebar cache
  *     first, so a lane that asserts on what the page shows starts from an empty
- *     conversation list. The profile stays — it holds the plugin link and the
- *     onboarding steps already answered — and so does the workspace registry,
- *     without which the shell asks for a workspace instead of starting a turn.
+ *     conversation list, and put the profile's settings layer back to the copy
+ *     kept beside it, so the preferences a run's own settings page turned on do
+ *     not carry into the next one. The profile stays — it holds the plugin link
+ *     and the onboarding steps already answered — and so does the workspace
+ *     registry, without which the shell asks for a workspace instead of starting
+ *     a turn.
  * @param options.timeoutMs - how long to wait for the printed URL.
  * @returns `{ url, home, stop() }`; `stop` ends the host and everything it spawned.
  */
@@ -120,11 +127,22 @@ async function start(options = {}) {
     for (const entry of ['sessions', path.join('storages', 'session_projcache'), path.join('cache', 'dsh-claude-style', 'usage.json')]) {
       fs.rmSync(path.join(home, entry), { recursive: true, force: true })
     }
+    // The skin's settings page is part of the end-to-end walk, and the choices
+    // it leaves behind are persisted in the profile's patch layer: the layer
+    // goes back to the copy kept beside it, or that copy is taken now, so a run
+    // starts from the same preferences whatever the run before it turned on.
+    const layer = path.join(home, 'profiles', profile, 'cordis.patch.yml')
+    const pristine = path.join(home, 'profiles', profile, 'cordis.patch.pristine.yml')
+    if (fs.existsSync(layer)) {
+      if (fs.existsSync(pristine)) fs.copyFileSync(pristine, layer)
+      else fs.copyFileSync(layer, pristine)
+    }
   }
   ensureWorkspace(home)
   // Idempotent: the profile is initialized and the checkout linked into it on
   // the first run, and pnpm reports "already up to date" afterwards.
   run(`dsh plugin --profile ${profile} add "${ROOT}"`, { env: { ...process.env, DSH_HOME: home } })
+  for (const spec of options.plugins ?? []) run(`dsh plugin --profile ${profile} add ${spec}`, { env: { ...process.env, DSH_HOME: home } })
   // The lane's own entries go into a separate overlay (`--patch`), never into
   // the profile's `cordis.patch.yml`: that file is the host's user layer, where
   // the shell persists settings such as the answered onboarding steps, and
