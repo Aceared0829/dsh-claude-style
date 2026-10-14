@@ -356,12 +356,21 @@ function tokenSheet(doc, gates, images) {
 }
 
 /**
+ * A token value as a Markdown table cell: a code span, with the backslash
+ * escaped before the pipe, since a value's own `\` would otherwise escape the
+ * `\|` that keeps the cell from ending at a pipe inside the value.
+ */
+function tableCell(value) {
+  return '`' + value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|') + '`'
+}
+
+/**
  * The palette as a Markdown table: each token's value in the four brand ×
  * theme cells (a DeepSeek cell shows the Claude value it keeps), its value
  * under the host palette (a host token keeps the host's own) and its use.
  */
 function tokenTable(doc) {
-  const cell = (value) => (value === undefined ? '—' : '`' + value.replace(/\|/g, '\\|') + '`')
+  const cell = (value) => (value === undefined ? '—' : tableCell(value))
   const rows = doc.palette.map((item) => {
     const claudeLight = item.claude?.light
     const claudeDark = item.claude?.dark
@@ -400,7 +409,7 @@ export function writeTokenTable(stylePath, doc) {
 
 /** A group of one-value tokens as a Markdown table: the value and the role it plays. */
 function valueTable(items) {
-  const rows = items.map((item) => `| \`${item.token}\` | \`${item.value.replace(/\|/g, '\\|')}\` | ${item.use} |`)
+  const rows = items.map((item) => `| \`${item.token}\` | ${tableCell(item.value)} | ${item.use} |`)
   return [
     '| Token | Value | Use |',
     '|---|---|---|',
