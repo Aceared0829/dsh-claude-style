@@ -1,4 +1,19 @@
 /* ---------- canvas + hairline structure ---------- */
+/* The one fade the skin paints at a transcript edge: four stops from the
+   canvas colour to transparent — a straight 100% -> 0% ramp reads as a haze
+   band, and color-mix keeps the paint theme-aware (docs/STYLE.md "Bottom
+   edge"). The composer's seat band reads it `to top`
+   (features/composer/inline.css), the header band below `to bottom`. Not a
+   tokens.json entry: the palette table states one colour per brand and theme,
+   while this ramp resolves per palette through --dsw-alias-bg-base itself. */
+body[data-dsh-claude-style] {
+  --dsh-claude-fade-stops:
+    var(--dsw-alias-bg-base, #FCFCFB) 0%,
+    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 82%, transparent) 32%,
+    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 40%, transparent) 68%,
+    transparent 100%;
+}
+
 /* Under the Claude palette the skin paints the columns; under "follow the
    host" they take the host's own tokens and only the hairline stays. While a
    wallpaper plugin shows one the columns are left unpainted, under the mask
@@ -272,15 +287,7 @@ body[data-dsh-claude-style] [class*="_header"]:has([class*="_tabs"])::after {
   right: 0;
   top: 100%;
   height: var(--dsh-transcript-fade-h, 28px);
-  /* Four stops: a straight ramp reads as a haze band, and color-mix keeps the
-     paint theme-aware. */
-  background: linear-gradient(
-    to bottom,
-    var(--dsw-alias-bg-base, #FCFCFB) 0%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 82%, transparent) 32%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 40%, transparent) 68%,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom, var(--dsh-claude-fade-stops));
   pointer-events: none;
   z-index: 1;
 }

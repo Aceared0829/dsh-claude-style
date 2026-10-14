@@ -46,6 +46,16 @@ function statsTimeRows(stats: HostSessionStatsProjection, chat: HostText, compac
 }
 
 /**
+ * One usage projection's billed tokens — the sum the provider charges for —
+ * or null while nothing billed and nothing came out: such a session shows no
+ * usage rows.
+ */
+function usageBilled(usage: HostTokenUsageProjection): number | null {
+  const billed = usage.uncachedInputTokens + usage.cacheReadTokens + usage.cacheWriteTokens
+  return billed > 0 || usage.outputTokens > 0 ? billed : null
+}
+
+/**
  * The block's sections, with the host's own row rules: a row appears
  * only when its input exists, so a session without tool time or without
  * a recorded first token shows fewer rows rather than zeros, and a
@@ -71,8 +81,8 @@ export function sessionStatsSections(read: StatsValueReader, chat: HostText, com
     }
     const usage = read<HostTokenUsageProjection>('tokenUsage')
     if (usage !== undefined && usage !== null) {
-      const billed = usage.uncachedInputTokens + usage.cacheReadTokens + usage.cacheWriteTokens
-      if (billed > 0 || usage.outputTokens > 0) {
+      const billed = usageBilled(usage)
+      if (billed !== null) {
         const hit = sessionStatsCacheHit(usage.cacheReadTokens, billed)
         if (hit !== null) rows.push({ label: chat('message.turnUsage.cacheHit'), value: `${hit}%` })
       }
@@ -86,8 +96,8 @@ export function sessionStatsSections(read: StatsValueReader, chat: HostText, com
   }
   const usage = read<HostTokenUsageProjection>('tokenUsage')
   if (usage !== undefined && usage !== null) {
-    const billed = usage.uncachedInputTokens + usage.cacheReadTokens + usage.cacheWriteTokens
-    if (billed > 0 || usage.outputTokens > 0) {
+    const billed = usageBilled(usage)
+    if (billed !== null) {
       const rows: StatsRow[] = []
       const hit = sessionStatsCacheHit(usage.cacheReadTokens, billed)
       if (hit !== null) rows.push({ label: chat('message.turnUsage.cacheHit'), value: `${hit}%` })

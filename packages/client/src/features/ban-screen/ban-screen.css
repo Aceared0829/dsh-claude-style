@@ -122,14 +122,14 @@ body[data-dsh-claude-style] .dsh-claude-ban-brand {
 }
 
 /* The page is Claude's own, so its lockup is the Claude one in every brand: the
-   ember starburst beside the wordmark, both masked over the page's ink. */
+   ember starburst beside the wordmark, both masked over the page's ink. The
+   artwork comes from the shared masked classes (shared/masked.css); the ink
+   and the box are the page's own. */
 body[data-dsh-claude-style] .dsh-claude-ban-mark {
   flex: none;
   width: 21px;
   height: 21px;
   background-color: var(--dsh-ban-mark);
-  -webkit-mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
-  mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-word {
@@ -137,8 +137,6 @@ body[data-dsh-claude-style] .dsh-claude-ban-word {
   width: 89px;
   height: 21px;
   background-color: var(--dsh-ban-word);
-  -webkit-mask: var(--dsh-claude-image-claude-word) center / contain no-repeat;
-  mask: var(--dsh-claude-image-claude-word) center / contain no-repeat;
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-bar-actions {
@@ -400,7 +398,9 @@ body[data-dsh-claude-style] .dsh-claude-ban-step-body {
   min-width: 0;
 }
 
-body[data-dsh-claude-style] .dsh-claude-ban-step-title {
+/* One title style for the numbered steps and the two account actions. */
+body[data-dsh-claude-style] .dsh-claude-ban-step-title,
+body[data-dsh-claude-style] .dsh-claude-ban-action-title {
   display: block;
   font-size: 15px;
   font-weight: 500;
@@ -478,14 +478,6 @@ body[data-dsh-claude-style] .dsh-claude-ban-action-text {
   display: block;
   flex: 1;
   min-width: 0;
-}
-
-body[data-dsh-claude-style] .dsh-claude-ban-action-title {
-  display: block;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--dsh-ban-text);
 }
 
 body[data-dsh-claude-style] .dsh-claude-ban-action-title-danger {

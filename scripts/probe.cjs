@@ -19,14 +19,7 @@
  * when the probe ends.
  */
 const { findChrome, launchChrome, connectTab } = require('./shared/chrome.cjs')
-
-const args = process.argv.slice(2)
-const argOf = (name) => {
-  const i = args.indexOf('--' + name)
-  return i === -1 ? undefined : args[i + 1]
-}
-const TOKEN = argOf('token') || process.env.DSH_WEB_TOKEN
-const BASE = (argOf('url') || 'http://127.0.0.1:3080').replace(/\/+$/, '')
+const { TOKEN, BASE } = require('./shared/probe-cli.cjs')
 
 if (!TOKEN) {
   console.error('usage: node scripts/probe.cjs --token <launch-token> [--url <base>]')

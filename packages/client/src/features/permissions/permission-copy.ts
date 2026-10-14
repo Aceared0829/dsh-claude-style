@@ -58,7 +58,3 @@ export const PERMISSION_SHIPPED_PRESETS = ['read-only', 'workspace-write', 'dang
  * reads that rather than the machine value.
  */
 export const PERMISSION_CURRENT_LABELS: Record<string, string> = { custom: 'Custom' }
-
-/** Skin-owned class names, so nothing couples to hashed CSS-module classes. */
-export const SEGMENTS_CLASS = 'dsh-claude-segments'
-export const SEGMENT_CLASS = 'dsh-claude-segment'

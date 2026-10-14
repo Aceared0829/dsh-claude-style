@@ -19,12 +19,13 @@ body[data-dsh-claude-style][data-dsh-claude-brand="claude"] :is([class*="brandMa
   background-size: contain;
 }
 
-/* Claude (default): starburst mark + the Claude wordmark. */
+/* Claude (default): starburst mark + the Claude wordmark. The mask values are
+   the shared ones (shared/masked.css). */
 body[data-dsh-claude-style][data-dsh-claude-brand="claude"] :is([class*="brandMark"], [class*="railMark"])::before {
   width: 18px;
   height: 18px;
-  -webkit-mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
-  mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
+  -webkit-mask: var(--dsh-claude-mask-claude-mark);
+  mask: var(--dsh-claude-mask-claude-mark);
 }
 
 body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [class*="brandIdentity"] > [class*="brandName"] > * {
@@ -45,8 +46,8 @@ body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [class*="brandIdenti
   width: calc(18px * 512.22 / 121.54);
   max-width: 100%;
   height: 18px;
-  -webkit-mask: var(--dsh-claude-image-claude-word) center / contain no-repeat;
-  mask: var(--dsh-claude-image-claude-word) center / contain no-repeat;
+  -webkit-mask: var(--dsh-claude-mask-claude-word);
+  mask: var(--dsh-claude-mask-claude-word);
 }
 
 /* DeepSeek: the host's own whale and wordmark in DeepSeek's brand blue. The
@@ -63,8 +64,10 @@ body[data-dsh-claude-style][data-dsh-claude-brand="deepseek"] :is([class*="brand
    re-seats this button as its own icon control, where a full-width plate would
    span the titlebar. The expanded state is read down from the app frame, which
    carries the collapsed marker and holds the sidebar column as a direct child —
-   `body:not(:has(collapsed))` made every DOM change re-match the document. */
-body[data-dsh-claude-style] [class*="_frame"]:not([data-sidebar-collapsed]) > [class*="_sidebarCol"] button[class*="newSession"] {
+   `body:not(:has(collapsed))` made every DOM change re-match the document.
+   The panel rows below share the same row metrics. */
+body[data-dsh-claude-style] [class*="_frame"]:not([data-sidebar-collapsed]) > [class*="_sidebarCol"] button[class*="newSession"],
+body[data-dsh-claude-style] button[class*="panelRow"] {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -120,29 +123,9 @@ body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionConte
   justify-content: flex-start;
 }
 /* The row's shortcut hint is the host's own key caps: one `kbd` per key with a
-   `+` between them. It takes the look the search box gives the same host
-   markup (features/search/search.css) — the box drops that separator too, so
-   the two hints read as the same pair of caps. */
-body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  box-sizing: border-box;
-  border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary, #787672);
-  font-family: var(--dsw-font-family);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1;
-}
-body[data-dsh-claude-style][data-ds-dark-theme] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
-  border-color: var(--dsw-alias-border-l3);
-}
+   `+` between them. The caps take the search box's keycap look, which lives
+   with the search palette (features/search/search.css); the `+` goes, the way
+   the box leaves it out. */
 body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd[class*="_separator"] {
   display: none;
 }
@@ -183,30 +166,9 @@ body[data-dsh-claude-style] nav[class*="panelList"] {
   gap: 0;
 }
 body[data-dsh-claude-style] button[class*="panelRow"] {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-  width: 100%;
-  box-sizing: border-box;
-  height: 28px;
-  /* The host floors this row at 36px with a min-height, which `height` alone
-     cannot beat. */
+  /* The host floors this row at 36px with a min-height, which the `height` in
+     the shared row rule above cannot beat. */
   min-height: 28px;
-  line-height: 28px;
-  padding: 0 8px;
-  margin: 0 0 6px 0;
-  border: none !important;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--dsw-alias-label-primary, #141413);
-  font-family: var(--dsw-font-family);
-  font-size: 13px;
-  font-weight: 500;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: none;
-  transition: background-color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] button[class*="panelRow"]:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));

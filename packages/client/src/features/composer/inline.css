@@ -72,16 +72,9 @@ body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="acti
   right: 0;
   bottom: 100%;
   height: var(--dsh-composer-fade-h, 40px);
-  /* Four stops, matching the transcript's top band in reverse: a straight
-     100% -> 0% ramp reads as a haze band, so hold near-opaque against the card
-     and ease out upward. color-mix keeps it theme-aware. */
-  background: linear-gradient(
-    to top,
-    var(--dsw-alias-bg-base, #FCFCFB) 0%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 82%, transparent) 32%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FCFCFB) 40%, transparent) 68%,
-    transparent 100%
-  );
+  /* The stops are --dsh-claude-fade-stops (theme/chrome.css): the same ramp
+     the transcript's top band runs, in reverse. */
+  background: linear-gradient(to top, var(--dsh-claude-fade-stops));
   pointer-events: none;
 }
 /* Message body clearance: the transcript ends where the fade band begins (same
@@ -320,9 +313,11 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   pointer-events: none;
   user-select: none;
 }
-/* Pinned send button inside input box */
+/* Pinned send and stop buttons inside input box */
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="send"],
-body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="send"] {
+body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="send"],
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="stop"],
+body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="stop"] {
   position: absolute;
   bottom: 40px;
   right: 8px;
@@ -337,6 +332,9 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
   align-items: center;
   justify-content: center;
   z-index: var(--dsh-claude-layer-control);
+}
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="send"],
+body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="send"] {
   box-shadow: none;
   background: transparent;
   color: var(--dsw-alias-label-caption);
@@ -373,20 +371,6 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
 /* Pinned stop button inside input box */
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="stop"],
 body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] button[data-dsh-claude-control="stop"] {
-  position: absolute;
-  bottom: 40px;
-  right: 8px;
-  top: auto;
-  left: auto;
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
-  padding: 0;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--dsh-claude-layer-control);
   /* Claude's stop control is a bare ink circle with a filled square inside; the
      plate is hover only, and the glyph is the interface ink — not the accent. */
   background: transparent;

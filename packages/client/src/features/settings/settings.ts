@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATTR, SETTINGS_SECTION_SLOT, USERNAME_MAX } from '../../constants'
-import { SEGMENT_CLASS } from '../permissions/permission-copy'
+import { SEGMENT_CLASS } from '../../shared/segment-control'
 import { settingsCopy } from '../../core/i18n'
 import { loadModelCopy, onModelCopyLoaded } from '../../core/model-copy'
 import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'

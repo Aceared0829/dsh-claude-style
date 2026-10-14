@@ -8,8 +8,8 @@
  * (numbers are stable and a retired one stays citable, D48; drafts carry the
  * D00 placeholder, allowed locally and rejected under CI), every repository
  * path prose names exists, no feature module reaches past the handles its
- * manifest declares (D42), and no pair of files holds more copied code than the
- * baseline records (jscpd). Everything else a tool could enforce is already a
+ * manifest declares (D42), and no pair of files holds a copied stretch
+ * (jscpd). Everything else a tool could enforce is already a
  * build check (D44, D51), the type check or a smoke case.
  *
  * Usage: node scripts/lint.mjs
@@ -17,6 +17,7 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { filesUnder } from './shared/file-walk.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DECISIONS = path.join(ROOT, 'docs', 'decisions')
@@ -37,23 +38,6 @@ const problems = []
  * repository's own files.
  */
 const SKIPPED_DIRS = new Set(['.git', '.debug', '.claude', 'node_modules'])
-
-/** Every file under `dir`, by extension, skipping what the rule does not govern. */
-function filesUnder(dir, extensions) {
-  const found = []
-  const walk = (at) => {
-    for (const entry of fs.readdirSync(at, { withFileTypes: true })) {
-      const full = path.join(at, entry.name)
-      if (entry.isDirectory()) {
-        if (!SKIPPED_DIRS.has(entry.name)) walk(full)
-        continue
-      }
-      if (extensions.some((extension) => entry.name.endsWith(extension))) found.push(full)
-    }
-  }
-  if (fs.existsSync(dir)) walk(dir)
-  return found
-}
 
 const relative = (file) => path.relative(ROOT, file).replace(/\\/g, '/')
 
@@ -106,8 +90,8 @@ function decisionNumbers() {
 
 // 1. The stop line.
 const sources = [
-  ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js']),
-  ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js']),
+  ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js'], SKIPPED_DIRS),
+  ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js'], SKIPPED_DIRS),
 ].filter((file) => !/\.test\.ts$/.test(file) && !/\.d\.ts$/.test(file))
 for (const file of sources) {
   const lines = fs.readFileSync(file, 'utf8').split('\n').length
@@ -121,7 +105,7 @@ for (const file of sources) {
 
 // 2. Links in the committed Markdown.
 const markdown = [
-  ...filesUnder(ROOT, ['.md']).filter((file) => !relative(file).startsWith('.debug/') && !relative(file).startsWith('node_modules/')),
+  ...filesUnder(ROOT, ['.md'], SKIPPED_DIRS).filter((file) => !relative(file).startsWith('.debug/') && !relative(file).startsWith('node_modules/')),
 ]
 let links = 0
 for (const file of markdown) {
@@ -193,7 +177,7 @@ for (const file of prose) {
 // handles the manifest `reads` (D42). The whole registry type is the entry's
 // and the scheduler's; a feature module importing it would read any handle
 // with nothing declared.
-const featureModules = filesUnder(path.join(ROOT, 'packages', 'client', 'src', 'features'), ['.ts']).filter((file) => !/\.(test|manifest)\.ts$/.test(file))
+const featureModules = filesUnder(path.join(ROOT, 'packages', 'client', 'src', 'features'), ['.ts'], SKIPPED_DIRS).filter((file) => !/\.(test|manifest)\.ts$/.test(file))
 let featureUiChecked = 0
 for (const file of featureModules) {
   const text = fs.readFileSync(file, 'utf8')
@@ -202,23 +186,19 @@ for (const file of featureModules) {
 }
 
 // 6. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy
-// is where it moves into the shared layer. The copies written before the rule
-// are fingerprinted in its baseline, waiting for that move; any other copy
-// fails, and so does a scan that read nothing. `npx jscpd` lists every copy.
+// is where it moves into the shared layer, so any copy at all fails, and so
+// does a scan that read nothing. `npx jscpd` lists every copy.
 const copies = spawnSync(process.execPath, [
   path.join(ROOT, 'node_modules', 'jscpd', 'run-jscpd.js'),
-  '--fail-on-new-clones',
+  '--threshold', '0',
   '--fail-on-empty',
   '--reporters', 'console',
   '--no-colors',
 ], { cwd: ROOT, encoding: 'utf8' })
 if (copies.status !== 0) {
-  // The console report lists every copy; the ones past the baseline are marked
-  // [NEW], each followed by its two places.
-  const fresh = [...copies.stdout.matchAll(/^Clone found \([^)]*\) \[NEW\]\n.*\n.*$/gm)].map((match) => match[0])
-  problems.push(`copied code the jscpd baseline does not hold; move the shared part into the shared layer (npx jscpd lists every copy):\n${fresh.length > 0 ? fresh.join('\n') : `${copies.stdout}${copies.stderr}`}`)
+  // The console report lists every copy, each followed by its two places.
+  problems.push(`copied code; move the shared part into the shared layer (npx jscpd lists every copy):\n${copies.stdout}${copies.stderr}`)
 }
-const copyBaseline = Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts', 'jscpd-baseline.json'), 'utf8')).fingerprints).length
 
 // A rule whose pattern stopped matching anything would pass forever: each of the
 // rules has to have looked at something.
@@ -232,5 +212,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code beyond the ${copyBaseline} the jscpd baseline holds)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }

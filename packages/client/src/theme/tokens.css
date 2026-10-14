@@ -21,11 +21,6 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-
   background-color: var(--dsh-claude-canvas);
 }
 
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme]):not([data-we-wallpaper]) :is([data-pane="sidebar"], [class*="sidebarCol"], .dshDesktopSidebarSurface) {
-  --dsw-specific-sidebar-fill: var(--dsh-claude-sidebar-canvas);
-  background: var(--dsh-claude-sidebar-canvas);
-}
-
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([data-pane="sidebar"], [class*="sidebarCol"], .dshDesktopSidebarSurface) {
   border-right: 1px solid var(--dsw-alias-border-l1);
 }

@@ -8,18 +8,26 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"
   display: none !important;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before {
+/* The custom mark is drawn the same on the sidebar and on the hero hitbox: one
+   image rule and one tint rule cover both seats; each seat's own box is stated
+   where the seat is (the hero's under "hero mark" below). */
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::before {
   content: "";
-  display: block;
   flex: none;
-  width: 18px;
-  height: 18px;
   background: var(--dsh-claude-custom-mark) center / contain no-repeat;
   -webkit-mask: none;
   mask: none;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([class*="brandMark"], [class*="railMark"])::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([class*="brandMark"], [class*="railMark"])::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [class*="fishHitbox"]::before {
   background: currentColor;
   -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
   mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
@@ -74,25 +82,15 @@ body[data-dsh-claude-style][data-dsh-claude-custom-word="text"] [class*="brandId
 
 /* ---------- Custom brand: hero mark ---------- */
 /* The new-conversation hero takes the same mark at the size the Claude mark
-   stands there (theme/hero.css); React keeps owning the hitbox's children. */
+   stands there (theme/hero.css); React keeps owning the hitbox's children. The
+   image and tint rules are the merged ones under "sidebar mark" above. */
 body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"] > * {
   display: none !important;
 }
 
 body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::before {
-  content: "";
-  flex: none;
   width: 42.5px;
   height: 42.5px;
-  background: var(--dsh-claude-custom-mark) center / contain no-repeat;
-  -webkit-mask: none;
-  mask: none;
-}
-
-body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [class*="fishHitbox"]::before {
-  background: currentColor;
-  -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
-  mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
 }
 
 /* ---------- Custom brand: accent colour ---------- */
@@ -103,32 +101,27 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-
    brand.ts picked for contrast. These blocks weigh the same as the DeepSeek
    brand's and come after them, so the custom colour holds under either brand;
    under "follow the host" none of them apply (D30). */
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent]:not([data-ds-dark-theme]) {
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent] {
   --dsw-alias-brand-primary: var(--dsh-claude-custom-accent);
   --dsw-alias-brand-primary-new-colorprimary-new-color: var(--dsh-claude-custom-accent);
   --dsw-alias-button-primary-fill: var(--dsh-claude-custom-accent);
   --dsw-alias-button-info-fill: var(--dsh-claude-custom-accent);
   --dsw-alias-state-business-primary: var(--dsh-claude-custom-accent);
-  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
-  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
-  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
   --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--dsh-claude-custom-accent) 30%, transparent);
   --dsw-alias-brand-text: var(--dsh-claude-custom-accent-ink);
   --dsw-alias-label-primary-foreground: var(--dsh-claude-custom-accent-ink);
 }
 
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent]:not([data-ds-dark-theme]) {
+  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+}
+
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent][data-ds-dark-theme] {
-  --dsw-alias-brand-primary: var(--dsh-claude-custom-accent);
-  --dsw-alias-brand-primary-new-colorprimary-new-color: var(--dsh-claude-custom-accent);
-  --dsw-alias-button-primary-fill: var(--dsh-claude-custom-accent);
-  --dsw-alias-button-info-fill: var(--dsh-claude-custom-accent);
-  --dsw-alias-state-business-primary: var(--dsh-claude-custom-accent);
   --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
   --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
   --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
-  --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--dsh-claude-custom-accent) 30%, transparent);
-  --dsw-alias-brand-text: var(--dsh-claude-custom-accent-ink);
-  --dsw-alias-label-primary-foreground: var(--dsh-claude-custom-accent-ink);
 }
 
 /* The DeepSeek brand inks its whale and wordmark in the brand colour; a custom

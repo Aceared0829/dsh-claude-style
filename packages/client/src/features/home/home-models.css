@@ -165,17 +165,8 @@ body[data-dsh-claude-style] .dsh-claude-home-model-share {
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-models-more {
-  appearance: none;
   align-self: flex-start;
-  margin: 0;
   padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
-  font-family: inherit;
-  font-size: 12px;
-  line-height: 18px;
-  cursor: pointer;
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-models-more:hover {

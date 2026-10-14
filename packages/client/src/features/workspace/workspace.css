@@ -7,22 +7,10 @@
 /* The section label gives way to a two-state segment control (the skin's own
    markup, built by packages/client/src/features/workspace/workspace-view.ts); the archived state swaps
    the host's tree for the skin's list, and the list's rows carry a delete
-   button. The label and the control cross-fade by opacity further down. */
-body[data-dsh-claude-style] .dsh-claude-ws-segments {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 7px;
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.06));
-  flex: none;
-}
-body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-ws-segments {
-  /* The skin's light plate token resolves too faintly on the warm black canvas;
-     pin the dark pair so the control matches the sidebar's own rows. */
-  background: rgba(255, 255, 255, 0.08);
-}
-/* The control is a mode switch, not furniture: while 进行中 is the state it steps
+   button. The label and the control cross-fade by opacity further down.
+   The control's look is the shared small segment look (shared/segment-control.css);
+   this sheet keeps its placement over the label and the crossfade.
+   The control is a mode switch, not furniture: while 进行中 is the state it steps
    aside for the plain 工作区 heading and comes back as soon as the pointer is in
    the section — the header itself or the tree below it. In 已归档 it stays put,
    because it is the way back.
@@ -69,54 +57,13 @@ body[data-dsh-claude-style] [class*="sectionHeader"]:hover [class*="sectionLabel
   opacity: 0 !important;
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment {
-  /* A click must never start a text selection in the heading behind the control. */
-  user-select: none;
-  -webkit-user-select: none;
-  appearance: none;
-  border: none !important;
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
-  font-family: var(--dsw-font-family);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
   padding: 0 8px;
   height: 20px;
-  border-radius: 5px;
-  cursor: pointer;
+  /* The checked plate cross-fades here, where the view tabs only fade their ink. */
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment:hover {
   color: var(--dsw-alias-label-primary, #141413) !important;
-}
-body[data-dsh-claude-style] .dsh-claude-ws-segment[aria-checked="true"] {
-  background: var(--dsw-alias-bg-overlay, #ffffff);
-  color: var(--dsw-alias-label-primary, #141413);
-  box-shadow: 0 1px 2px rgba(20, 20, 19, 0.10);
-}
-body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-ws-segment[aria-checked="true"] {
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--dsh-claude-ink-strong);
-  box-shadow: none;
-}
-/* The control's sliding pill (shared/sliding-pill.css places and moves it;
-   the control is absolutely placed, so it already anchors the pill): the raised
-   box the checked segment wore above, which the segment gives up while the pill
-   is there. */
-body[data-dsh-claude-style] .dsh-claude-ws-segments[data-dsh-claude-pill]::before {
-  top: 2px;
-  bottom: 2px;
-  border-radius: 5px;
-  background: var(--dsw-alias-bg-overlay, #ffffff);
-  box-shadow: 0 1px 2px rgba(20, 20, 19, 0.10);
-}
-body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-ws-segments[data-dsh-claude-pill]::before {
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: none;
-}
-body[data-dsh-claude-style] .dsh-claude-ws-segments[data-dsh-claude-pill] > .dsh-claude-ws-segment[aria-checked="true"] {
-  background: transparent;
-  box-shadow: none;
 }
 /* ---------- workspace view: the skin's own archived list ---------- */
 /* 已归档 is the skin's list (packages/client/src/features/workspace/workspace-view.ts), flat on purpose:

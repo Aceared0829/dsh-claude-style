@@ -5,6 +5,12 @@ const { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonC
 const CLAUDE_SHELL = ['body', 'sidebar', 'conversation']
 const CLAUDE_FILLS = [['body', 'rgb(252, 252, 251)'], ['sidebar', 'rgb(251, 251, 249)'], ['conversation', 'rgb(252, 252, 251)']]
 
+/** The context popover's left edge lines up with the meter's; the statistics cases read the same two marks. */
+const checkPanelEdge = (r) =>
+  check('the skin hands the stylesheet the left edge that lines the panel up with the meter',
+    r.context.aligned === true && r.context.edgeAligned === true,
+    JSON.stringify({ aligned: r.context.aligned, edgeAligned: r.context.edgeAligned }))
+
 module.exports = {
   // The skin's own Claude palette: the ivory and warm-black canvases, the clay
   // accent and the raised card fill, read from the live custom properties.
@@ -254,9 +260,7 @@ module.exports = {
       JSON.stringify(r.context.values))
     check('a projection frame rewrites the block while the popover is open',
       r.context.pushed === '1m1s', JSON.stringify(r.context.pushed))
-    check('the skin hands the stylesheet the left edge that lines the panel up with the meter',
-      r.context.aligned === true && r.context.edgeAligned === true,
-      JSON.stringify({ aligned: r.context.aligned, edgeAligned: r.context.edgeAligned }))
+    checkPanelEdge(r)
     check('leaving the meter closes the popover and takes the block with it',
       r.context.closedAfterLeave === true, JSON.stringify(r.context.closedAfterLeave))
     check('the meter\'s room survives a reading taken with no box',
@@ -300,9 +304,7 @@ module.exports = {
       JSON.stringify({ labels: r.context.labels, values: r.context.values }))
     check('the total is the model time plus the tool calls\'',
       r.context.pushed === '1m1s', JSON.stringify(r.context.pushed))
-    check('the skin hands the stylesheet the left edge that lines the panel up with the meter',
-      r.context.aligned === true && r.context.edgeAligned === true,
-      JSON.stringify({ aligned: r.context.aligned, edgeAligned: r.context.edgeAligned }))
+    checkPanelEdge(r)
     commonChecks(r)
   },
   // The numbers asked onto a line of their own: the host's statistics row and

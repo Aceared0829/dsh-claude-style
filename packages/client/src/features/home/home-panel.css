@@ -190,21 +190,28 @@ body[data-dsh-claude-style] .dsh-claude-home-ranges {
   gap: 2px;
 }
 
+/* The ghost button: the panel's tab and range pills and the models list's
+   "show more" row (home-models.css adds that row's own alignment). */
 body[data-dsh-claude-style] .dsh-claude-home-tab,
-body[data-dsh-claude-style] .dsh-claude-home-range {
+body[data-dsh-claude-style] .dsh-claude-home-range,
+body[data-dsh-claude-style] .dsh-claude-home-models-more {
   appearance: none;
   margin: 0;
-  padding: 1px 8px;
   border: 0;
-  /* Half of the full pill the 20px control would round to, matching Claude's
-     Overview chip. */
-  border-radius: 5px;
   background: transparent;
   color: var(--dsw-alias-label-tertiary, #8f8a7e);
   font-family: inherit;
   font-size: 12px;
   line-height: 18px;
   cursor: pointer;
+}
+
+body[data-dsh-claude-style] .dsh-claude-home-tab,
+body[data-dsh-claude-style] .dsh-claude-home-range {
+  padding: 1px 8px;
+  /* Half of the full pill the 20px control would round to, matching Claude's
+     Overview chip. */
+  border-radius: 5px;
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-tab:hover:not([data-active]),

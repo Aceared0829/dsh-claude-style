@@ -25,16 +25,10 @@
     var outlineFace = { getSnapshot: function () { return outline }, subscribe: function () { return function () {} } }
     return {
       conversation: { binding: function () { return { target: function () { return { getSnapshot: function () { return snapshot } } } } } },
-      sessions: {
-        list: {
-          getSnapshot: function () { return { current: undefined, phase: 'ready', ids: [], byId: {}, projectionsBySession: {} } },
-          subscribe: function () { return function () {} },
-        },
-        binding: function (id) {
-          if (id !== 'smoke-nav') return undefined
-          return { session: { projections: { faceOf: function (key) { return key === 'turnOutline' ? outlineFace : undefined } } } }
-        },
-      },
+      sessions: host.emptySessions(function (id) {
+        if (id !== 'smoke-nav') return undefined
+        return { session: { projections: { faceOf: function (key) { return key === 'turnOutline' ? outlineFace : undefined } } } }
+      }),
     }
   })() : undefined
   host.turnNav = turnNav

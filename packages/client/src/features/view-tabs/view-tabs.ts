@@ -1,5 +1,6 @@
 import { windowsDesktop } from '../../core/desktop-band'
 import { createStamp } from '../../shared/dom'
+import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
@@ -72,6 +73,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let titlebar = false
   /** The strip mark every strip rule in view-tabs.css keys on. */
   const stripStamp = createStamp('data-dsh-view-tabs')
+  /** The strip also wears the shared small segment look (shared/segment-control.css): a class, since the look is the control's own, not the mark's. */
+  let classedStrip: HTMLElement | null = null
+  function classStamp(strip: HTMLElement | null) {
+    if (classedStrip !== null && classedStrip !== strip) classedStrip.classList.remove(VIEW_SWITCH_CLASS)
+    classedStrip = strip
+    if (strip !== null) strip.classList.add(VIEW_SWITCH_CLASS)
+  }
   const pill = createSlidingPill('[aria-selected="true"]')
 
   /**
@@ -128,6 +136,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const header = document.querySelector(HEADER)
     const strip = header === null ? null : header.querySelector<HTMLElement>('[class*="_tabs"]')
     stripStamp.mark(strip)
+    classStamp(strip)
     pill.sync(strip)
     if (header === null || strip === null) return
     // Windows titlebar mode places the strip itself (view-tabs.css): it is
@@ -179,6 +188,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (strip !== null) strip.style.removeProperty('--dsh-view-tabs-shift')
     pill.release()
     stripStamp.release()
+    classStamp(null)
     last = null
     lastEl = null
     delete ui.viewTabs

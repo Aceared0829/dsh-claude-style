@@ -364,12 +364,6 @@ body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data
   animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle) !important;
 }
 
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-account-menu] {
-  background: var(--dsh-claude-raised) !important;
-  border-color: var(--dsw-alias-border-l2) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
 /* The host's rows. itemWrap is the shared Menu's row wrapper; the bare item
    fragment would reach unrelated class names, so the longest stable piece is
    used. */

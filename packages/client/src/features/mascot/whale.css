@@ -28,12 +28,6 @@ body[data-dsh-claude-style] .dsh-claude-deepy {
   pointer-events: none;
 }
 
-/* Hidden until the first sheet has drawn a frame: a host half that predates
-   the sheets leaves no empty box to click on. */
-body[data-dsh-claude-style] .dsh-claude-deepy:not([data-ready]) {
-  visibility: hidden;
-}
-
 /* A conversation's input area and the panels that take its card's place span
    the whole column, so the whale is set in from the edge of the card they
    centre: the composer card (its max width, inside the side clearance), or
@@ -57,11 +51,9 @@ body[data-dsh-claude-style] .dsh-claude-deepy-sprite {
   left: calc(var(--dsh-claude-deepy-x, 0) * 2px);
   top: calc(var(--dsh-claude-deepy-y, 0) * 2px);
   width: calc(var(--dsh-claude-deepy-w, 0) * 2px);
-  height: calc(var(--dsh-claude-deepy-h, 0) * 2px);
-  overflow: hidden;
 }
 
-/* The strip carries the whole sheet and is translated frame to frame: a
+/* The whole sheet lies on the strip; showing a frame translates it — a
    transform composites, where a background-position would repaint. Its box is
    the rebuilt vector's own box, so `--dsh-claude-deepy-cell-w` is one frame
    cell — the crop box plus the transparent margin each frame keeps there

@@ -335,6 +335,15 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
       }
     }
 
+    /** Answer with a promise's payload spread under `ok: true`; a rejection is a 500 carrying its message. */
+    const sendPayload = (res: DshResponse, answer: Promise<object>) => {
+      void answer.then((value: object) => {
+        sendJson(res, 200, { ok: true, ...value })
+      }, (error: unknown) => {
+        sendJson(res, 500, { ok: false, error: String((error as { message?: string } | null)?.message ?? String(error)) })
+      })
+    }
+
     register('model copy', {
       kind: 'prefix',
       path: ROUTE_PREFIX,
@@ -404,12 +413,10 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         // lives in.
         if (methodRefused(req, res, ['GET', 'HEAD'])) return
         if (fenceRefused(ctx, req, res)) return
-        hdsl.read().then((profile: HdslReading) => {
+        sendPayload(res, hdsl.read().then((profile: HdslReading) => {
           const { skinFile, ...account } = profile
-          sendJson(res, 200, { ok: true, ...account })
-        }, (error: unknown) => {
-          sendJson(res, 500, { ok: false, error: String((error as { message?: string } | null)?.message ?? String(error)) })
-        })
+          return account
+        }))
       },
     })
 
@@ -499,11 +506,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         const answer = query === ''
           ? sessionSearch.warm().then(() => ({ sessions: [] }))
           : sessionSearch.search(query)
-        void answer.then((value: object) => {
-          sendJson(res, 200, { ok: true, ...value })
-        }, (error: unknown) => {
-          sendJson(res, 500, { ok: false, error: String((error as { message?: string } | null)?.message ?? String(error)) })
-        })
+        sendPayload(res, answer)
       },
     })
 
@@ -520,11 +523,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         if (fenceRefused(ctx, req, res)) return
         peakrate.ensure()
         const answer = req.method === 'POST' ? peakrate.refresh().then(() => peakrate.payload()) : Promise.resolve(peakrate.payload())
-        void answer.then((payload) => {
-          sendJson(res, 200, { ok: true, ...payload })
-        }, (error: unknown) => {
-          sendJson(res, 500, { ok: false, error: String((error as { message?: string } | null)?.message ?? String(error)) })
-        })
+        sendPayload(res, answer)
       },
     })
 

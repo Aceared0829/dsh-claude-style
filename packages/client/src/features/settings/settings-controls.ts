@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../permissions/permission-copy'
+import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
 import { prefYielded, switchRowFeatures } from '../../core/feature'
 import { settingsCopy } from '../../core/i18n'
 import { createSlidingPill } from '../../shared/sliding-pill'
@@ -223,6 +223,16 @@ export function createSettingsControls() {
     return React.createElement(ClaudeStyleSwitch, { on, onPick, disabled })
   }
 
+  /** A row's text half: the title over the description. */
+  function rowText(title: string, description: React.ReactNode) {
+    return React.createElement(
+      'div',
+      { className: 'dsh-claude-settings-row-text' },
+      React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
+      React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
+    )
+  }
+
   /**
    * One row: title and description on the left, the control on the right.
    * A block row stacks its control under the text across the row's full
@@ -244,12 +254,7 @@ export function createSettingsControls() {
     return React.createElement(
       'div',
       { className: classes.join(' '), key, 'aria-disabled': disabled ? 'true' : undefined, 'data-disabled': disabled ? '' : undefined },
-      React.createElement(
-        'div',
-        { className: 'dsh-claude-settings-row-text' },
-        React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
-        React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
-      ),
+      rowText(title, description),
       named,
     )
   }
@@ -271,12 +276,7 @@ export function createSettingsControls() {
         'aria-disabled': enabled ? undefined : 'true',
         'data-disabled': enabled ? undefined : '',
       },
-      React.createElement(
-        'div',
-        { className: 'dsh-claude-settings-row-text' },
-        React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
-        React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
-      ),
+      rowText(title, description),
       named,
     )
   }

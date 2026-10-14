@@ -28,6 +28,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { chromium } = require('playwright')
 const chrome = require('../../scripts/shared/chrome.cjs')
+const { argOf } = require('./cli-args.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 /** The scratch host's home: build output, so it lives with the other debug artifacts. */
@@ -301,11 +302,6 @@ async function firstRunOverlayText(page) {
 module.exports = { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, DEFAULT_HOME }
 
 if (require.main === module) {
-  const args = process.argv.slice(2)
-  const argOf = (name) => {
-    const at = args.indexOf(`--${name}`)
-    return at === -1 ? undefined : args[at + 1]
-  }
   const home = argOf('home')
   start({ home, profile: argOf('profile'), port: argOf('port') === undefined ? 0 : Number(argOf('port')) }).then((instance) => {
     console.log(`dsh web: ${instance.url}\nDSH_HOME: ${instance.home}\nCtrl+C to stop.`)

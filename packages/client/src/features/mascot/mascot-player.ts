@@ -332,7 +332,9 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
     style.setProperty(`--${PREFIX}-x`, String(sheet.box[0]))
     style.setProperty(`--${PREFIX}-y`, String(sheet.box[1]))
     style.setProperty(`--${PREFIX}-w`, String(sheet.box[2]))
-    style.setProperty(`--${PREFIX}-h`, String(sheet.box[3]))
+    // The sprite's height is the one custom property both characters share:
+    // crab.css reads it in the merged sprite rule.
+    style.setProperty('--dsh-claude-mascot-h', String(sheet.box[3]))
     style.setProperty(`--${PREFIX}-cell-w`, String(cellWidth))
     style.setProperty(`--${PREFIX}-strip-h`, String(cellHeight * Math.ceil(sheet.frames / 8)))
     setAttributeIfChanged(root, 'data-animation', next.key)
@@ -380,16 +382,25 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
     react('drag', 'loop')
   }
 
-  /** A press let go: a lift ends, a click pokes the side it landed on — or tickles, the fourth in a row. */
-  function onPressEnd(event: PointerEvent) {
-    if (stage.press === null || event.pointerId !== stage.press.id) return
+  /**
+   * The tracked press is over — let go or cancelled: it is cleared, and a
+   * lift ends with it. Returns whether it had lifted, or null when the event
+   * is not the tracked press.
+   */
+  function endPress(event: PointerEvent): boolean | null {
+    if (stage.press === null || event.pointerId !== stage.press.id) return null
     const lifted = stage.press.lifted
     stage.press = null
     if (lifted) {
       stage.reaction = null
       step()
-      return
     }
+    return lifted
+  }
+
+  /** A press let go without a lift pokes the side it landed on — or tickles, the fourth in a row. */
+  function onPressEnd(event: PointerEvent) {
+    if (endPress(event) !== false) return
     const now = Date.now()
     if (stage.clicks.length > 0 && now - stage.clicks[stage.clicks.length - 1] > TICKLE_GAP_MS) stage.clicks = []
     stage.clicks.push(now)
@@ -402,14 +413,9 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
     react(event.clientX - box.left < box.width / 2 ? 'poke-left' : 'poke-right', 'once')
   }
 
+  /** A cancelled press never pokes; endPress has already ended a lift. */
   function onPressCancel(event: PointerEvent) {
-    if (stage.press === null || event.pointerId !== stage.press.id) return
-    const lifted = stage.press.lifted
-    stage.press = null
-    if (lifted) {
-      stage.reaction = null
-      step()
-    }
+    endPress(event)
   }
 
   /**

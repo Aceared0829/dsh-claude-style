@@ -43,17 +43,26 @@ const CALLS = CHANGES + 2
 const NEW_LINES = ['const first = 2', 'const second = 2', 'const third = 2', 'const fourth = 2']
 
 /**
- * Every file-change row on the page: which one stands for its file, its path,
- * its tail, whether it is visible, and the box the host drew for that call. A
- * figure rolls one character at a time, so its number is the digits in flow of
- * its own characters read in order.
+ * One row's two figures as the page reads them: a figure rolls one character
+ * at a time, so its number is the digits in flow of its own characters read in
+ * order. page.evaluate serializes the callback's own source and its extra
+ * arguments take JSON values only, so the readers below carry this helper into
+ * the page as its source, the way motion.cjs carries watchReveal.
  */
-const readRows = (page) => page.evaluate(() => {
-  const figuresOf = (root) => ['.dsh-claude-file-add', '.dsh-claude-file-del'].map((selector) => {
+function figuresOf(root) {
+  return ['.dsh-claude-file-add', '.dsh-claude-file-del'].map((selector) => {
     const figure = root.querySelector(selector)
     if (figure === null) return null
     return [...figure.querySelectorAll('.dsh-claude-file-roll-in')].map((span) => span.textContent).join('')
   })
+}
+
+/**
+ * Every file-change row on the page: which one stands for its file, its path,
+ * its tail, whether it is visible, and the box the host drew for that call.
+ */
+const readRows = (page) => page.evaluate((figuresSource) => {
+  const figuresOf = (0, eval)(`(${figuresSource})`)
   const centreOf = (element) => {
     if (element === null) return null
     const box = element.getBoundingClientRect()
@@ -86,21 +95,16 @@ const readRows = (page) => page.evaluate(() => {
       carrierHeight: box === null ? null : Math.round(box.getBoundingClientRect().height),
     }
   })
-})
+}, figuresOf.toString())
 
 /**
  * The row that stands for the changed file, sampled once: its figures, the
  * operation it wears, whether a character is leaving and a character rising,
  * whether a label swap is in flight, and how many rows of that file the reader
- * can see. A figure's number is the digits in flow of its own characters, read
- * in order.
+ * can see.
  */
-const readHead = (page, file) => page.evaluate((suffix) => {
-  const figuresOf = (root) => ['.dsh-claude-file-add', '.dsh-claude-file-del'].map((selector) => {
-    const figure = root.querySelector(selector)
-    if (figure === null) return null
-    return [...figure.querySelectorAll('.dsh-claude-file-roll-in')].map((span) => span.textContent).join('')
-  })
+const readHead = (page, file) => page.evaluate(([suffix, figuresSource]) => {
+  const figuresOf = (0, eval)(`(${figuresSource})`)
   const roots = [...document.querySelectorAll('.dsh-claude-file-root')]
   const ofFile = (root) => (root.querySelector('.dsh-claude-file-link, .dsh-claude-file-summary')?.textContent ?? '').endsWith(suffix)
   const mark = (root) => root.getAttribute('data-dsh-claude-file-merge')
@@ -140,7 +144,7 @@ const readHead = (page, file) => page.evaluate((suffix) => {
       .map((span) => Math.round(span.getBoundingClientRect().x)),
     visible: roots.filter((root) => ofFile(root) && root.checkVisibility()).length,
   }
-}, file)
+}, [file, figuresOf.toString()])
 
 /** One number out of a `+n` figure. */
 const count = (figure) => Number(String(figure ?? '').replace(/[^\d]/g, ''))

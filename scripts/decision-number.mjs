@@ -14,6 +14,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { filesUnder } from './shared/file-walk.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DECISIONS = path.join(ROOT, 'docs', 'decisions')
@@ -42,23 +43,6 @@ const relative = (file) => path.relative(ROOT, file).replace(/\\/g, '/')
 function fail(message) {
   console.error(`decision-number: ${message}`)
   process.exit(1)
-}
-
-/** Every file under `dir`, by extension, skipping what the sweep does not govern. */
-function filesUnder(dir, extensions) {
-  const found = []
-  const walk = (at) => {
-    for (const entry of fs.readdirSync(at, { withFileTypes: true })) {
-      const full = path.join(at, entry.name)
-      if (entry.isDirectory()) {
-        if (!SKIPPED_DIRS.has(entry.name)) walk(full)
-        continue
-      }
-      if (extensions.some((extension) => entry.name.endsWith(extension))) found.push(full)
-    }
-  }
-  if (fs.existsSync(dir)) walk(dir)
-  return found
 }
 
 const entries = fs.readdirSync(DECISIONS)
@@ -100,10 +84,10 @@ fs.renameSync(from, path.join(DECISIONS, toName))
 // Every citation the draft's change collected: code, styles, documents and the
 // pending changelog entries, except the files the sweep never reads.
 const targets = [
-  ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js']),
-  ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js']),
-  ...filesUnder(ROOT, ['.md']),
-  ...filesUnder(path.join(ROOT, 'docs', 'changes'), ['.json']),
+  ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js'], SKIPPED_DIRS),
+  ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js'], SKIPPED_DIRS),
+  ...filesUnder(ROOT, ['.md'], SKIPPED_DIRS),
+  ...filesUnder(path.join(ROOT, 'docs', 'changes'), ['.json'], SKIPPED_DIRS),
   path.join(ROOT, 'AGENTS.md'),
 ].filter((file, at, all) => all.indexOf(file) === at && fs.existsSync(file)
   && !MECHANISM_FILES.has(relative(file))

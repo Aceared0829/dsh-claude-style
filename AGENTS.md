@@ -98,8 +98,8 @@ The source is TypeScript ES modules under `strict` (D36). A module nothing impor
 npm install                                  # dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright, React types
 npm run build                                # type-checks src/, bundles it into lib/client.js and the deferred features' chunks under lib/assets/ with their source maps, runs the build checks, prints the build id
 npm run dev                                  # rebuild on every change to packages/client, assets, host, contracts and scripts/, each run with DSH_CLAUDE_STYLE_DEBUG=1
-npm run lint                                 # the rules that need no build: the stop line, Markdown links, decision citations, the repository paths prose names (D48), feature modules' ui (D42) and copied code past the jscpd baseline
-npx jscpd                                    # list every copied stretch the lint rule reads, as .jscpd.json scans them, the new ones marked [NEW]
+npm run lint                                 # the rules that need no build: the stop line, Markdown links, decision citations, the repository paths prose names (D48), feature modules' ui (D42) and copied code (jscpd)
+npx jscpd                                    # list every copied stretch the lint rule reads, as .jscpd.json scans them; any one fails the lint
 npm run features                             # write the feature docs' list from the feature manifests (D48)
 npm run features:check                       # fail when that list differs from the manifests; CI runs this
 npm run changelog                            # write the CHANGELOG's [Unreleased] section from docs/changes/ (D48)

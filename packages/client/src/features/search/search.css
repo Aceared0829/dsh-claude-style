@@ -411,14 +411,18 @@ body[data-dsh-claude-style] .dsh-claude-search-item[data-active] .dsh-claude-sea
   visibility: visible;
 }
 
-/* Keycaps: the action rows' shortcuts and the footer's hints. */
+/* Keycaps: the action rows' shortcuts and the footer's hints. The sidebar's
+   New session shortcut deliberately wears this same cap (theme/sidebar.css
+   drops the host's `+` separator, as the box does): one keycap look across the
+   sidebar (docs/STYLE.md "Sidebar box"). */
 body[data-dsh-claude-style] .dsh-claude-search-keys {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 3px;
 }
-body[data-dsh-claude-style] .dsh-claude-search-key {
+body[data-dsh-claude-style] .dsh-claude-search-key,
+body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -434,7 +438,12 @@ body[data-dsh-claude-style] .dsh-claude-search-key {
   font-size: 12px;
   line-height: 1;
 }
-body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key {
+/* The New session row's own weight is 500; its cap reads at the regular weight. */
+body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+  font-weight: 400;
+}
+body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key,
+body[data-dsh-claude-style][data-ds-dark-theme] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
   border-color: var(--dsw-alias-border-l3);
 }
 body[data-dsh-claude-style] .dsh-claude-search-foot {

@@ -26,6 +26,7 @@ const STAND_IN_PARTS = [
   'permissions.js',
   'turn-fixture.js',
   'locale-fixture.js',
+  'empty-sessions.js',
   'turn-nav.js',
   'mascot.js',
   'stats-projections.js',

@@ -5,6 +5,7 @@ import { SESSION_DELETE_ROUTE } from '../../constants'
 import { copyLabel } from '../../core/i18n'
 import { buildElement, closestFrom, createStamp } from '../../shared/dom'
 import { removeStrayNodes } from '../../shared/popover'
+import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import type { HostAnswer } from '../../shared/resource'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { HostContext, HostValue } from '../../core/host'
@@ -336,7 +337,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   function buildControl() {
-    const group = buildElement('div', 'dsh-claude-ws-segments')
+    // The shared small segment look (shared/segment-control.css); the feature
+    // class stays for the placement and label crossfade in workspace.css.
+    const group = buildElement('div', `${VIEW_SWITCH_CLASS} dsh-claude-ws-segments`)
     group.setAttribute('role', 'radiogroup')
     for (let i = 0; i < SEGMENTS.length; i++) {
       const item = buildElement('button', 'dsh-claude-ws-segment', '')

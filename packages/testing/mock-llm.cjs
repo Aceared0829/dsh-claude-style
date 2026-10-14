@@ -26,6 +26,7 @@
 const fs = require('node:fs')
 const http = require('node:http')
 const path = require('node:path')
+const { argOf } = require('./cli-args.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const DEFAULT_LOG = path.join(ROOT, '.debug', 'e2e', 'mock')
@@ -411,11 +412,6 @@ async function startMockLlm(options = {}) {
 module.exports = { startMockLlm, SCRIPTS, DEFAULT_LOG, MESSAGES_PATH }
 
 if (require.main === module) {
-  const args = process.argv.slice(2)
-  const argOf = (name) => {
-    const at = args.indexOf(`--${name}`)
-    return at === -1 ? undefined : args[at + 1]
-  }
   startMockLlm({
     port: argOf('port') === undefined ? 0 : Number(argOf('port')),
     log: argOf('log'),

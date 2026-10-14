@@ -19,8 +19,8 @@ body[data-dsh-claude-style] button[data-dsh-section="claude-style"]::before {
   width: 16px;
   height: 16px;
   background-color: currentColor;
-  -webkit-mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
-  mask: var(--dsh-claude-image-claude-mark) center / contain no-repeat;
+  -webkit-mask: var(--dsh-claude-mask-claude-mark);
+  mask: var(--dsh-claude-mask-claude-mark);
 }
 
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-section="claude-style"]::before {
@@ -488,12 +488,12 @@ body[data-dsh-claude-style] .dsh-claude-settings-switch[data-moved]:not([data-on
   80%, 100% { translate: 0 0; }
 }
 
-/* Custom username input: same row rhythm as the switch/segments, but wide
-   enough to read a name and narrow enough not to push the description. */
-body[data-dsh-claude-style] .dsh-claude-settings-input {
-  flex: none;
-  width: 180px;
-  max-width: 45%;
+/* The row's three bordered controls — the username input, the quick-provider
+   trigger and the custom brand rows' buttons — share one plate; each rule
+   below adds only its own sizing and cursor. */
+body[data-dsh-claude-style] .dsh-claude-settings-input,
+body[data-dsh-claude-style] .dsh-claude-settings-picker,
+body[data-dsh-claude-style] .dsh-claude-settings-button {
   box-sizing: border-box;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 8px;
@@ -503,6 +503,14 @@ body[data-dsh-claude-style] .dsh-claude-settings-input {
   font: inherit;
   font-size: 13px;
   line-height: 18px;
+}
+
+/* Custom username input: same row rhythm as the switch/segments, but wide
+   enough to read a name and narrow enough not to push the description. */
+body[data-dsh-claude-style] .dsh-claude-settings-input {
+  flex: none;
+  width: 180px;
+  max-width: 45%;
   outline: none;
 }
 
@@ -521,15 +529,6 @@ body[data-dsh-claude-style] .dsh-claude-settings-picker {
   flex: none;
   min-width: 140px;
   max-width: 45%;
-  box-sizing: border-box;
-  border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  padding: 6px 10px;
-  font: inherit;
-  font-size: 13px;
-  line-height: 18px;
   text-align: left;
   cursor: pointer;
 }
@@ -544,15 +543,6 @@ body[data-dsh-claude-style] .dsh-claude-settings-picker[aria-expanded="true"] {
    family as the input and the picker trigger, sized to their label. */
 body[data-dsh-claude-style] .dsh-claude-settings-button {
   flex: none;
-  box-sizing: border-box;
-  border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  padding: 6px 10px;
-  font: inherit;
-  font-size: 13px;
-  line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
 }

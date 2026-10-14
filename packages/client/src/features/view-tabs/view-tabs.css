@@ -1,26 +1,21 @@
 /* ---------- conversation view tabs: the skin's own segment control ---------- */
-/* The host's tab strip (ConversationRoot's .tabs / .tab / .tabActive) gets
-   the same shape as the sidebar's 进行中 / 已归档 control: a 7px pill shell with a
-   raised pill for the active tab, instead of the shipped underline. Scoped to the
-   strip packages/client/src/features/view-tabs/view-tabs.ts stamps data-dsh-view-tabs on — the one in the
+/* The host's tab strip (ConversationRoot's .tabs / .tab / .tabActive) wears
+   the shared small segment look (packages/client/src/shared/segment-control.css,
+   stamped by view-tabs.ts) — a 7px pill shell with a raised pill for the
+   active tab, instead of the shipped underline. Scoped to the strip
+   packages/client/src/features/view-tabs/view-tabs.ts stamps data-dsh-view-tabs on — the one in the
    conversation header — so the settings page's own tabs keep their look. The
    stamp stands in for `header:has(tabs) tabs`, which made every DOM change
-   re-match the whole document. */
+   re-match the whole document. This sheet keeps the strip's placement and
+   reveal; the control's look is the shared sheet's. */
 body[data-dsh-claude-style] [data-dsh-view-tabs] {
-  display: inline-flex;
   /* Hug the tabs. The host's strip is a full-width flex row, so without this the
      pill shell stretches across the whole header: the "groove" reads as one long
      empty bar and clicks to the right of the last tab land on nothing — which is
      what made switching feel unresponsive. */
   width: fit-content;
   max-width: 100%;
-  flex: none;
   align-self: flex-start;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 7px;
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.06));
   /* Horizontally centred in the header (the strip already spans grid-column 1/-1,
      so justify-self alone does it). The vertical shift is MEASURED, not fixed: the
      title's row also carries the header actions, so whether the strip can rise onto
@@ -44,59 +39,9 @@ body[data-dsh-claude-style] [data-dsh-view-tabs] {
 body[data-dsh-claude-style] [class*="centerCol"]:hover [data-dsh-view-tabs] {
   opacity: 1;
 }
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-view-tabs] {
-  background: rgba(255, 255, 255, 0.08);
-}
 body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"] {
-  appearance: none;
-  border: none !important;
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
-  font-family: var(--dsw-font-family);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
   height: 22px;
   padding: 0 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: color var(--dsh-claude-timing-feedback);
-}
-body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"]:hover {
-  color: var(--dsw-alias-label-primary, #141413);
-}
-body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"][aria-selected="true"],
-body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"][class*="Active"] {
-  background: var(--dsw-alias-bg-overlay, #ffffff);
-  color: var(--dsw-alias-label-primary, #141413);
-  box-shadow: 0 1px 2px rgba(20, 20, 19, 0.10);
-}
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-view-tabs] > [class*="_tab"][aria-selected="true"],
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-view-tabs] > [class*="_tab"][class*="Active"] {
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--dsh-claude-ink-strong);
-  box-shadow: none;
-}
-/* The strip's sliding pill (shared/sliding-pill.css places and moves it):
-   the raised box the active tab wore above, which the tab gives up while the
-   pill is there. */
-body[data-dsh-claude-style] [data-dsh-view-tabs][data-dsh-claude-pill]::before {
-  top: 2px;
-  bottom: 2px;
-  border-radius: 5px;
-  background: var(--dsw-alias-bg-overlay, #ffffff);
-  box-shadow: 0 1px 2px rgba(20, 20, 19, 0.10);
-}
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-view-tabs][data-dsh-claude-pill]::before {
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: none;
-}
-body[data-dsh-claude-style] [data-dsh-view-tabs][data-dsh-claude-pill] > [class*="_tab"][aria-selected="true"],
-body[data-dsh-claude-style] [data-dsh-view-tabs][data-dsh-claude-pill] > [class*="_tab"][class*="Active"] {
-  background: transparent;
-  box-shadow: none;
 }
 /* The shipped active-tab underline has no place in a pill. */
 body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"]::after {
