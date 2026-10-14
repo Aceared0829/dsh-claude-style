@@ -7,14 +7,19 @@
  * browser several times over. This file is the only place the gates are
  * started; a session asks it and reads its answer.
  *
- *   one entry  the build, the unit tests, the smoke and the end-to-end lane,
- *              in the order they depend on each other, from one command.
+ *   one entry  the checks, the build, the unit tests, the smoke and the
+ *              end-to-end lane, in the order they depend on each other, from
+ *              one command.
  *   serial     `.debug/verify.lock/` holds one run at a time. A request that
  *              arrives during a run waits for it rather than starting a second
  *              browser, and asks for its own key again when the lock is free.
  *   reuse      a run records its verdict under the hash of the tree it read and
  *              the gates it ran. A later request for the same pair reads that
  *              record instead of starting anything, and says it did.
+ *   honest     the build output the browser gates read is hashed when the build
+ *              gate ends and again when the run ends: a rebuild behind
+ *              `npm run dev` takes no lock, so it can swap the page under the
+ *              gates, and a run that saw two different outputs files no verdict.
  *
  * A verdict in the cache is one a run produced. A request whose gates were
  * never run — another tier, a narrower selection, one file changed — is another
@@ -32,12 +37,19 @@
 import { spawn } from 'node:child_process'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
 import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
 
+const require = createRequire(import.meta.url)
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CACHE = path.join(ROOT, '.debug', 'verify-cache')
+/**
+ * Vitest's own entry, resolved from the installed package: a nested copy of
+ * vitest answers the same way the hoisted one does.
+ */
+const VITEST = path.join(path.dirname(require.resolve('vitest/package.json')), 'vitest.mjs')
 /** Bumped when a recorded verdict stops meaning what this file reads it as. */
 const FORMAT = 1
 /**
@@ -133,8 +145,15 @@ function gatesFor(request) {
   if (request.cases.length > 0) smoke.push('--case', request.cases.join(','))
   if (request.features.length > 0) smoke.push('--feature', request.features.join(','))
   const gates = [
+    // The cloud's fast tier starts with the checks that need no build, so the
+    // same set answers here and a document mistake fails in seconds.
+    { id: 'lint', script: 'scripts/lint.mjs', args: [] },
+    { id: 'features', script: 'scripts/features.mjs', args: ['--check'] },
+    { id: 'docs', script: 'scripts/decisions-index.mjs', args: ['--check'] },
+    { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
+    { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
-    { id: 'unit', script: 'node_modules/vitest/vitest.mjs', args: ['run'] },
+    { id: 'unit', script: VITEST, args: ['run'] },
     { id: 'smoke', script: 'packages/testing/smoke.cjs', args: smoke },
   ]
   if (request.e2e) {
