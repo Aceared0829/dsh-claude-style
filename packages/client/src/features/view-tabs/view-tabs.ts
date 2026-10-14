@@ -73,7 +73,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Whether the last pass saw the host's Windows titlebar marker. */
   let titlebar = false
   /** The strip mark every strip rule in view-tabs.css keys on. */
-  const stripStamp = createStamp('data-dsh-view-tabs')
+  const stripStamp = createStamp<HTMLElement>('data-dsh-view-tabs')
   /** The strip also wears the shared small segment look (shared/segment-control.css): a class, since the look is the control's own, not the mark's. */
   let classedStrip: HTMLElement | null = null
   function classStamp(strip: HTMLElement | null) {
@@ -123,27 +123,34 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The header found last time, kept while it is still in the document and
-   * still holds the strip (D9): the header query carries a `:has()` over the
-   * whole document, and the header outlives every pass of one conversation.
+   * The header holding the strip, and the strip with it.
+   *
+   * The header is the FIRST `[class*="_header"]` carrying a strip in document
+   * order, so a header mounted before the one found last time takes that answer
+   * while leaving the old header connected, and a kept one would go on stamping
+   * and placing a strip the page no longer reads as the conversation's. The pair
+   * is resolved on every pass (D9); the boxes inside it are read once each.
    */
-  let header: Element | null = null
   function findStrip() {
-    let strip = header !== null && header.isConnected ? header.querySelector<HTMLElement>(STRIP) : null
-    if (strip === null) {
-      header = document.querySelector(HEADER)
-      strip = header === null ? null : header.querySelector<HTMLElement>(STRIP)
-    }
-    return strip
+    const header = document.querySelector(HEADER)
+    if (header === null) return null
+    const strip = header.querySelector<HTMLElement>(STRIP)
+    return strip === null ? null : { header, strip }
   }
 
   function sync() {
     syncTitlebar()
-    const strip = findStrip()
+    const found = findStrip()
+    if (found === null) {
+      stripStamp.mark(null)
+      classStamp(null)
+      pill.sync(null)
+      return
+    }
+    const { header, strip } = found
     stripStamp.mark(strip)
     classStamp(strip)
     pill.sync(strip)
-    if (header === null || strip === null) return
     // Windows titlebar mode places the strip itself (view-tabs.css): it is
     // fixed there, so neither the measured shift nor the fallback applies.
     if (titlebar) return
@@ -182,14 +189,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       document.body.removeAttribute(TITLEBAR_ATTR)
       titlebar = false
     }
-    const strip = findStrip()
+    // The strip the passes wrote to: the placement belongs to the element the
+    // last pass held, and the page may have moved on since.
+    const strip = stripStamp.current()
     if (strip !== null) strip.style.removeProperty('--dsh-view-tabs-shift')
     pill.release()
     stripStamp.release()
     classStamp(null)
     last = null
     lastEl = null
-    header = null
     delete ui.viewTabs
   }
 }
