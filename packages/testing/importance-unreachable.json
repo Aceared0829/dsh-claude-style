@@ -524,9 +524,11 @@
       ]
     },
     {
-      "reason": "深色形态里没有搜索按键：走查的深色页面形态不含这一行",
+      "reason": "设置页的提示行：走查在本机页面上跑，远端只读的提示与分页自己的提示都不在",
       "selectors": [
-        "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key"
+        "body[data-dsh-claude-style] .dsh-claude-settings-notice",
+        "body[data-dsh-claude-style] .dsh-claude-settings-tab-notice",
+        "body[data-dsh-claude-style] .dsh-claude-settings-tab-notice+.dsh-claude-settings-row"
       ]
     }
   ]

@@ -121,9 +121,12 @@ function onRowCheck(shown) {
  * last frame called a row that had not appeared yet invisible, and found no
  * frame to say the stand-in had landed on it. The page keeps sampling after
  * that read, so the frames past it are read here, together with the last frame
- * carrying a row, which is the row the reader is left with.
+ * carrying a row, which is the row the reader is left with. What is read here
+ * is written back into the run's context: the exported trace has to carry the
+ * frames the checks judged, or a failure cannot be read from the artifact.
  */
-async function handoverFrames(page, trace) {
+async function handoverFrames(context) {
+  const { page, trace } = context
   await page.waitForSelector(SKIN.sendGhost, { state: 'detached', timeout: 15000 }).catch(() => {})
   await page.waitForTimeout(300)
   const later = await page.evaluate(() => window.__e2eTrace ?? [])
@@ -132,6 +135,7 @@ async function handoverFrames(page, trace) {
   for (let at = frames.length - 1; at >= 0; at -= 1) {
     if (frames[at].rows > 0) { settled = frames[at]; break }
   }
+  context.trace = frames
   return { frames, settled }
 }
 
