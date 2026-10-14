@@ -284,6 +284,7 @@ edit the JSON, not the table.
 | `--dsh-claude-period-spin` | `850ms` | one turn of the background-work ring in the sidebar |
 | `--dsh-claude-period-landed` | `1400ms` | the mark on the turn the conversation navigator landed on |
 | `--dsh-claude-period-hold` | `840ms` | how long the reasoning window's text stands between two steps |
+| `--dsh-claude-period-dot-bounce` | `500ms` | one bounce of the waiting line's loader dots under the Claude brand, and the period each dot's own start is measured against |
 | `--dsh-claude-ease-standard` | `ease` | feedback and surfaces: the default curve |
 | `--dsh-claude-ease-out` | `ease-out` | something arriving and settling: a fold's door, content entering the chat area, the landing mark |
 | `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
@@ -577,9 +578,15 @@ together over 0.14s before the modal unmounts.
 
 ## The waiting line · 模型正在做什么的那一行
 
-The host's running row — its whale tail, its divider and its live region — stays
-as the host draws it; the host's own shimmering words step aside for the skin's
-line beside the whale: the wording in the secondary label at 14px on a 24px line,
+The host's running row, its divider and its live region stay as the host draws
+them. Its whale tail is DeepSeek's own character, so under the Claude brand the
+skin hides it and leads the line with its own loader: three 4px dots of the
+accent in force in an 18 × 14 box, resting on the floor, each rising the skin's
+8px and flattening against the floor as it leaves, half a second a bounce with
+the second dot starting two fifths of the period behind the first and the third
+three fifths; under the other brands the host's whale stands. The host's own
+shimmering words step aside for the skin's line beside it: the wording in the
+secondary label at 14px on a 24px line,
 the turn's clock 8px later in the caption at 13px with tabular figures, and the
 "No response yet" badge 8px after that (11px on a 16px line, 0 6px padding, a 5px
 radius, the warning label over 16% of itself). The wording wears one of two

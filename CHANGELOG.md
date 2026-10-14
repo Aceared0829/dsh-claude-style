@@ -28,6 +28,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 首页的品牌标志与问候语原来直接出现。现在首页打开时标志先升起、问候语晚一拍跟上，两者都从下方 12 像素处穿过一点模糊落到原位（约 0.5 秒）；动画设为「减弱」时直接出现。
 - 工作室首页的用量面板在数字算好之前画着占位条，数字到达时占位一下子变成数字。现在占位的底色淡去、数字从模糊里显出来，热力图的格子从占位色渐变到各自的颜色，模型列表与图表整体淡入（约 0.3 秒）；打开时数字已经算好的面板不播这一段。
 - 等待行的「暂未响应」徽标原来直接出现、直接消失。现在它从左下方滑上这一行，同时从无到有弹出来（约 0.5 秒），模型一开口就缩回消失（约 0.12 秒），消失之前不改变这一行的排版。
+- Claude 品牌下，轮次进行中那一行开头的鲸鱼尾换成主题自己的加载点：三枚 4px 圆点用当时生效的主题色，各自弹起 8 像素并在离地时压扁，半秒一次，第二枚与第三枚分别错开五分之二与五分之三个周期，三枚依次起跳形成波浪；这些点不带阴影。DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变——加载点对读屏隐藏。
 
 ### 问题修复
 
@@ -67,6 +68,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The home page's brand mark and greeting used to appear at once. Opening the home page now raises the mark and then, a beat behind, the greeting, each from 12px below through a short blur (about 0.5 s); with Animation set to Reduced they appear at once.
 - The studio home's usage panel draws placeholders until its figures are ready, and the figures used to replace them at once. The placeholders' fills now fade while the figures come out of a blur, the heat map's cells shade from the placeholder tone into their own colours, and the model list and chart fade in (about 0.3 s); a panel whose figures are ready when it opens skips this.
 - The waiting line's "No response yet" badge used to appear and vanish at once. It now slides onto the line from below and to the left while it pops out of nothing (about 0.5 s), and shrinks away as soon as the model speaks (about 0.12 s), keeping the line's layout until it is gone.
+- Under the Claude brand the whale tail at the head of the running row gives way to the skin's own loading dots: three 4px dots in the accent in force, each rising 8px and flattening as it leaves the floor, half a second a bounce, with the second and third starting two fifths and three fifths of the period behind the first so the three rise in a wave. The dots carry no shadow. Under the DeepSeek brand the host's whale tail stands as before, and the host's screen-reader announcement is unchanged — the dots are hidden from it.
 
 ### Bug Fixes
 

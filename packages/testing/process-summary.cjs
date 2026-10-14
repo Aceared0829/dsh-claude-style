@@ -30,7 +30,12 @@ const readWait = (page) => page.evaluate(() => {
   const line = row === null ? null : row.querySelector('.dsh-claude-chat-wait')
   const words = row === null ? null : row.querySelector(':scope > span > :not([aria-hidden="true"])')
   if (line === null) return { row: row !== null, line: false }
-  const [label, clock, badge] = line.children
+  // The line's parts are read by their own names rather than by position: the
+  // loader leads them (chat-wait.css), and where each of the rest sits is the
+  // stylesheet's business.
+  const label = line.querySelector('.dsh-claude-chat-wait-label')
+  const clock = line.querySelector('.dsh-claude-chat-wait-clock')
+  const badge = line.querySelector('.dsh-claude-chat-wait-badge')
   return {
     row: true,
     line: true,

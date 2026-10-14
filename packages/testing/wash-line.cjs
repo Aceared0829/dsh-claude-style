@@ -23,16 +23,20 @@ const readPaint = (page) => page.evaluate(() => {
   const row = document.querySelector('[data-chat-running]')
   const line = row === null ? null : row.querySelector('.dsh-claude-chat-wait')
   if (line === null) return { row: row !== null, line: false }
-  const label = line.firstElementChild
+  // The line's parts are read by their own names rather than by position: the
+  // loader leads them (chat-wait.css), and where each of the rest sits is the
+  // stylesheet's business.
+  const label = line.querySelector('.dsh-claude-chat-wait-label')
   const copies = label === null ? [] : label.querySelectorAll('.dsh-claude-swap-copy')
   const copy = copies.length === 0 ? null : copies[copies.length - 1]
   const paint = copy === null ? null : getComputedStyle(copy, '::before')
+  const clock = line.querySelector('.dsh-claude-chat-wait-clock')
   return {
     row: true,
     line: true,
     statusMotion: document.body.getAttribute('data-dsh-claude-status-motion'),
     word: label.dataset.text ?? '',
-    clock: line.children[1].checkVisibility() ? line.children[1].textContent : null,
+    clock: clock !== null && clock.checkVisibility() ? clock.textContent : null,
     // The band's own box carries the class; the wash rides the same box, so the
     // reading is which animations the pseudo-element runs and how many washes
     // its background really holds.

@@ -288,6 +288,15 @@ module.exports = {
     const working = wait.working || {}
     check('the running row takes the skin\'s line beside the host\'s words, which step aside',
       working.marked === true && working.besideWords === true && working.wordsShown === false, JSON.stringify(working))
+    const loader = working.loader || {}
+    check('under the Claude brand the line leads with the skin\'s loading dots in the accent, and the host\'s whale tail steps aside',
+      loader.shown === true && loader.dots === 3 && loader.animation === 'dsh-claude-wait-dot' &&
+        loader.duration === '0.5s' && loader.delay === '0.3s' && loader.background === 'rgb(217, 119, 87)' &&
+        loader.shadow === 'none' && working.whaleShown === false,
+      JSON.stringify({ loader, whaleShown: working.whaleShown }))
+    check('the DeepSeek brand keeps the host\'s whale tail and stands the skin\'s dots down',
+      wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true,
+      JSON.stringify(wait.deepseek))
     check('only the host words are marked and a third-party line stays visible before or after the waiting line mounts',
       working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
       JSON.stringify({ working, after: wait.foreignAfter }))
@@ -366,7 +375,7 @@ module.exports = {
       JSON.stringify(reduced))
     check('words that settle shorter take the box down with them, so the clock sits right after them',
       reduced.box?.sizer?.text === reduced.word && reduced.box.width === reduced.box.sizer.width &&
-        reduced.box.clockLeft - reduced.box.lineLeft - reduced.box.width <= 10,
+        reduced.box.clockLeft - reduced.box.labelLeft - reduced.box.width <= 10,
       JSON.stringify({ word: reduced.word, box: reduced.box }))
     const off = wait.off || {}
     check('switching the chat-area animations off takes the line down and gives the host\'s words back',

@@ -315,3 +315,33 @@ License: Apache-2.0.
    See the License for the specific language governing permissions and
    limitations under the License.
 ```
+
+## Uiverse — "Loader" by mobinkakei
+
+The loader the waiting line leads with under the Claude brand (`packages/client/src/features/chat-wait/chat-wait.ts` and the `dsh-claude-chat-wait-loader` rules in its stylesheet) is ported from a Uiverse loader: its three dots, its squash-and-stretch keyframes (the flat-bottomed radius the dot lands with, the round pose two fifths into the bounce, the travel to the top), its half-second period and the phase each dot starts behind the one before it — renamed into this package's own classes, read from its own motion tokens and painted with the accent in force. The snippet's three shadow ellipses are left out, so the loader carries no shadow at all.
+
+Source: <https://uiverse.io/mobinkakei/grumpy-turtle-41>
+
+```
+MIT License
+
+Copyright - 2026 mobinkakei (Mobeen)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

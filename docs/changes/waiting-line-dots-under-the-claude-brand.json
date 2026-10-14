@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-13",
+  "group": "improvements",
+  "order": 13,
+  "external": false,
+  "zh": "Claude 品牌下，轮次进行中那一行开头的鲸鱼尾换成主题自己的加载点：三枚 4px 圆点用当时生效的主题色，各自弹起 8 像素并在离地时压扁，半秒一次，第二枚与第三枚分别错开五分之二与五分之三个周期，三枚依次起跳形成波浪；这些点不带阴影。DeepSeek 品牌下宿主的鲸鱼尾照旧，读屏播报也不变——加载点对读屏隐藏。",
+  "en": "Under the Claude brand the whale tail at the head of the running row gives way to the skin's own loading dots: three 4px dots in the accent in force, each rising 8px and flattening as it leaves the floor, half a second a bounce, with the second and third starting two fifths and three fifths of the period behind the first so the three rise in a wave. The dots carry no shadow. Under the DeepSeek brand the host's whale tail stands as before, and the host's screen-reader announcement is unchanged — the dots are hidden from it."
+}

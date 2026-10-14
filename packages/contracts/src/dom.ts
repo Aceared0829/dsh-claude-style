@@ -120,6 +120,13 @@ export const PROCESS_HEADER_LABEL_SELECTOR = ':scope > :not([aria-hidden="true"]
  */
 export const CHAT_RUNNING_TEXT_SELECTOR = `:scope > span > [${SHIMMER_ATTRIBUTE}], :scope > span > [${SHIMMER_LEGACY_ATTRIBUTE}]`
 /**
+ * The host's own running indicator — the whale tail it leads the row with —
+ * beside the skin's waiting line. It carries no attribute of its own, so the
+ * stable part of its hashed class name is matched (D3), scoped to the running
+ * row so no other row's icon can be hit.
+ */
+export const CHAT_RUNNING_ICON_SELECTOR = '[class*="_runningIcon"]'
+/**
  * The turn rail (ui-chat's TurnNavigator): a nav at the conversation's
  * right edge with one mark per turn, absent below two turns and hidden
  * when the conversation is narrow. It is the one nav in the chat frame.

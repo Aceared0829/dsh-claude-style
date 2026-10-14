@@ -17,19 +17,27 @@
       waitSession.setAttribute('data-conversation-session', 'smoke-session')
       waitSession.innerHTML = '<div data-chat-flow="">' +
         '<div data-chat-running="true" style="display:flex"><span role="status">Deep diving</span><span aria-hidden="true"></span>' +
-        '<span style="display:flex;min-width:0"><span aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
+        '<span style="display:flex;min-width:0"><span class="_c_runningIcon_1" aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
         '</div>'
       document.body.appendChild(waitSession)
       var row = waitSession.querySelector('[data-chat-running]')
       var words = document.getElementById('debugRunningWords')
+      var whale = row.querySelector('[class*="_runningIcon"]')
       var foreignLine = document.createElement('div')
       foreignLine.textContent = 'Third-party status'
       words.parentElement.appendChild(foreignLine)
       var lineOf = function () {
         var line = row.querySelector('.dsh-claude-chat-wait')
         if (line === null) return null
-        var parts = line.children
-        var label = parts[0]
+        // The line's parts are read by their own names rather than by position:
+        // the loader leads them, and where each of the rest sits is the
+        // stylesheet's business (chat-wait.css).
+        var loader = line.querySelector('.dsh-claude-chat-wait-loader')
+        var label = line.querySelector('.dsh-claude-chat-wait-label')
+        var clock = line.querySelector('.dsh-claude-chat-wait-clock')
+        var badge = line.querySelector('.dsh-claude-chat-wait-badge')
+        var dots = loader.children
+        var dotStyle = getComputedStyle(dots[0])
         // The words swap over two copies (shared/swapping-text.ts): the one
         // leaving keeps the words it came with, the one arriving carries the
         // new ones, and the reading below is taken off whichever of them is
@@ -66,8 +74,22 @@
           sweepOnLabel: label.classList.contains('dsh-claude-swap-shimmer'),
           filter: movingStyle === null ? 'none' : movingStyle.filter,
           opacity: movingStyle === null ? '1' : movingStyle.opacity,
-          clock: parts[1].hidden ? null : parts[1].textContent,
-          badge: parts[2].hidden ? null : parts[2].textContent,
+          clock: clock.hidden ? null : clock.textContent,
+          badge: badge.hidden ? null : badge.textContent,
+          // The loader the Claude brand leads the line with, and the host's own
+          // whale tail it stands in for: the dots are the accent in force, they
+          // bounce on the snippet's own period with the second and third
+          // staggered behind the first, and they carry no shadow.
+          loader: {
+            shown: getComputedStyle(loader).display !== 'none',
+            dots: dots.length,
+            animation: dotStyle.animationName,
+            duration: dotStyle.animationDuration,
+            delay: getComputedStyle(dots[2]).animationDelay,
+            background: dotStyle.backgroundColor,
+            shadow: dotStyle.boxShadow,
+          },
+          whaleShown: getComputedStyle(whale).display !== 'none',
           // The box the swap runs in, and where the clock beside it sits: the
           // hidden sizer holds the wider half while words change, so neither may
           // move during a swap, and comes down onto the words standing once they
@@ -77,7 +99,8 @@
           box: {
             width: label.getBoundingClientRect().width,
             height: label.getBoundingClientRect().height,
-            clockLeft: parts[1].getBoundingClientRect().left,
+            clockLeft: clock.getBoundingClientRect().left,
+            labelLeft: label.getBoundingClientRect().left,
             lineLeft: line.getBoundingClientRect().left,
             lineWidth: line.getBoundingClientRect().width,
             lineRight: line.getBoundingClientRect().right,
@@ -133,6 +156,14 @@
         }
       }
       r.wait = { working: await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 }) }
+      // The whale tail is DeepSeek's own character: under that brand the host's
+      // icon comes back and the skin's dots stand down, and the Claude brand
+      // takes them up again.
+      window.__pushForm({ brand: 'deepseek' })
+      await sleep(250)
+      r.wait.deepseek = lineOf()
+      window.__pushForm({ brand: 'claude' })
+      await sleep(250)
       // The silence that triggers the swap, with the entry's own frames sampled
       // by the browser rather than by a polling loop: the window between the
       // incoming copy's rest pose and its release is shorter than a 10 ms poll

@@ -58,6 +58,76 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
   white-space: nowrap;
 }
 
+/* The host leads its running row with a whale tail, which is DeepSeek's own
+   character. Under the Claude brand the skin hides it and stands its own loader
+   where it was: the line's first child, ahead of the wording, so the row reads
+   loader, words, clock. The snippet the loader is ported from is recorded in
+   THIRD_PARTY_NOTICES.md. */
+body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [data-chat-running][data-dsh-claude-wait] [class*="_runningIcon"] {
+  display: none;
+}
+
+/* Hidden under every other brand, where the host's own whale tail stands. */
+body[data-dsh-claude-style] .dsh-claude-chat-wait-loader {
+  display: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-brand="claude"] .dsh-claude-chat-wait-loader {
+  display: inline-flex;
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+/* A dot rests on the loader's floor and the animation lifts it the skin's own
+   8px; the squash at either end is what reads as a bounce. The colour is the
+   accent in force, so the loader follows the palette the reader picked. */
+body[data-dsh-claude-style] .dsh-claude-chat-wait-dot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dsw-alias-brand-primary, #d97757);
+  transform-origin: 50% 100%;
+  animation: dsh-claude-wait-dot var(--dsh-claude-period-dot-bounce) var(--dsh-claude-ease-standard) infinite alternate;
+}
+
+/* The snippet's own phase: the second dot starts two fifths of the period
+   behind the first and the third three fifths, which is the wave the three make
+   as each hands the bounce to the next. */
+body[data-dsh-claude-style] .dsh-claude-chat-wait-dot:nth-child(2) {
+  left: 7px;
+  animation-delay: calc(var(--dsh-claude-period-dot-bounce) * 2 / 5);
+}
+
+body[data-dsh-claude-style] .dsh-claude-chat-wait-dot:nth-child(3) {
+  left: 14px;
+  animation-delay: calc(var(--dsh-claude-period-dot-bounce) * 3 / 5);
+}
+
+/* The dot flattens against the floor as it leaves and rounds out on the way up
+   (the snippet's three stops), the flat-bottomed radius it lands with kept. */
+@keyframes dsh-claude-wait-dot {
+  0% {
+    translate: 0 0;
+    scale: 1.7 0.25;
+    border-radius: 50px 50px 25px 25px;
+  }
+
+  40% {
+    scale: 1;
+    border-radius: 50%;
+  }
+
+  100% {
+    translate: 0 calc(-1 * var(--dsh-claude-distance-travel));
+  }
+}
+
 /* The words sweep under a highlight band: a copy of them laid over the words
    and clipped to their glyphs, so the words themselves keep their own colour.
    The band and its cadence are the host's own TextShimmer's — the period, the
