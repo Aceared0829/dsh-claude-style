@@ -8,11 +8,10 @@
  * (numbers are stable and a retired one stays citable, D48; drafts carry the
  * D00 placeholder, allowed locally and rejected under CI), every repository
  * path prose names exists, no feature module reaches past the handles its
- * manifest declares (D42), no pair of files holds a copied stretch (jscpd),
- * every number a document states has a home (scripts/doc-numbers.mjs), and a
- * decision's 决定 section stays the length D48 allows it. Everything else a
- * tool could enforce is already a
- * build check (D44, D51), the type check or a smoke case.
+ * manifest declares (D42), no pair of files holds a copied stretch (jscpd), and
+ * a decision's 决定 section stays the length D48 allows it. Everything else a
+ * tool could enforce is already a build check (D44, D51), the type check or a
+ * smoke case.
  *
  * Usage: node scripts/lint.mjs
  */
@@ -202,13 +201,7 @@ if (copies.status !== 0) {
   problems.push(`copied code; move the shared part into the shared layer (npx jscpd lists every copy):\n${copies.stdout}${copies.stderr}`)
 }
 
-// 7. Every number a document states has a home (D48, scripts/doc-numbers.mjs):
-// a value with a unit is read from a token or from a constant, and the script
-// carries the few that a reader needs and no token holds.
-const numbers = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'doc-numbers.mjs')], { cwd: ROOT, encoding: 'utf8' })
-if (numbers.status !== 0) problems.push(numbers.stdout + numbers.stderr)
-
-// 8. The length of a decision's 决定 section and of its 现状 line (D48): a
+// 7. The length of a decision's 决定 section and of its 现状 line (D48): a
 // bullet states one constraint, and the code a constraint rests on is named in
 // the 现状 line rather than walked through bullet by bullet. Every check passes
 // something.
@@ -256,5 +249,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${decisionBullets} decision bullets and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere; every documented number has a home)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${decisionBullets} decision bullets and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }

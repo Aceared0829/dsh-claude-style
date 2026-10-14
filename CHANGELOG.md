@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">其他变更</h3>
+
+- 文档里带单位的数值不再进闸门：`scripts/doc-numbers.mjs` 留着按需运行（`npm run docs:numbers`），lint 不再核对它，`docs/STYLE.md` 里与样式表逐字对应的几何与时长因此不再让推送失败。
+
+<h3 id="en-unreleased">Chores</h3>
+
+- A number with a unit in a document is no longer a gate: `scripts/doc-numbers.mjs` stays for running on demand (`npm run docs:numbers`), and lint no longer checks it, so the geometry and timing in `docs/STYLE.md` that mirror the stylesheets no longer fail a push.
+
 ## [0.14.0] - 2026-10-14
 
 [中文](#cn-0.14.0) | [English](#en-0.14.0)

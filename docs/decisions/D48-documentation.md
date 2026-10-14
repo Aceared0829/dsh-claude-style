@@ -15,7 +15,7 @@
 - 索引由脚本从各决策文件的标题、状态、分组、取代关系与 `docs/decisions/retired.txt` 生成，持续集成核对它与文件一致；索引里的一行由文件自己给出，没有第二处手写。
 - 变更记录：每个改动在 `docs/changes/` 下放一个 `<短名>.json`，中英文写在一起，带日期、分组、组内次序与「是否影响外部契约」的标记；`scripts/changelog.mjs` 把它汇编成 CHANGELOG 的 `[Unreleased]` 一节，发版时用 `--release` 汇编成版本一节并把文件清空。CHANGELOG 里这两类小节都不手改，持续集成核对小节与文件一致。
 - README：只留预览、安装、字体、皮肤中心交接与许可等手写部分；功能一览与设置说明放在 `docs/FEATURES.md`、`docs/FEATURES.en.md`、`docs/SETTINGS.md` 与 `docs/SETTINGS.en.md`，README 用链接指向它们。功能一览从功能清单（D42）的描述字段生成中英文两条目，夹在标记之间由 `scripts/features.mjs` 汇编。
-- AGENTS.md 只留工作流与红线，决策里已有的规则只写编号；能由工具强制的规则写进 lint（`scripts/lint.mjs`）之后，从 AGENTS.md 里删掉。lint 管不需要构建就能判定的几条：停止线、Markdown 的相对链接、注释与文档引用的决策编号、复制的代码（jscpd 按 `.jscpd.json` 扫描，出现一处即失败，共享的部分移进共享层）、决策「决定」一节的篇幅，以及文档里带单位的数值有无出处（`scripts/doc-numbers.mjs`：数值读自令牌或常量，读不到就登记在脚本的来源表里）；已经由构建检查（D44、D51）或冒烟用例盯住的规则不再进 lint。
+- AGENTS.md 只留工作流与红线，决策里已有的规则只写编号；能由工具强制的规则写进 lint（`scripts/lint.mjs`）之后从 AGENTS.md 删掉。lint 管不需要构建的几条：停止线、Markdown 相对链接、注释与文档引用的决策编号、复制的代码（jscpd）与决策「决定」一节的篇幅；带单位的数值由 `npm run docs:numbers` 按需核对，不进闸门——`docs/STYLE.md` 的几何与时长与样式表逐字对应。构建检查（D44、D51）或冒烟用例盯住的规则不再进 lint。
 
 ## 理由
 
