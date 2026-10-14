@@ -5,7 +5,7 @@
    This sheet comes after theme/sidebar.css and theme/hero.css, so where a rule
    here meets the Claude brand's at the same specificity, this one wins. */
 body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"]) > * {
-  display: none !important;
+  display: none;
 }
 
 /* The custom mark is drawn the same on the sidebar and on the hero hitbox: one
@@ -38,7 +38,7 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-
    width read through the proportions brand.ts measured; with no image, the
    brand name is set in the brand face. */
 body[data-dsh-claude-style][data-dsh-claude-custom-word] [class*="brandIdentity"] > [class*="brandName"] > * {
-  display: none !important;
+  display: none;
 }
 
 body[data-dsh-claude-style][data-dsh-claude-custom-word="image"] [class*="brandIdentity"] > [class*="brandName"]::before {

@@ -411,15 +411,13 @@ body[data-dsh-claude-style] [class*="sessionRow"] [class*="_slot"] > [data-slot]
   box-sizing: border-box;
 }
 
-/* Session status ongoing indicator: a circular progress ring. The ring's
-   geometry needs no weight of its own: these selectors already outrank the
-   host's class rules. The track is a plain shorthand on purpose: it sets all
-   four sides, and the head the longhand paints on top of it is what the
-   rotation carries, so the head takes `!important` in both palettes — an
-   important shorthand here beats a plain longhand and leaves the ring one even
-   circle, which turns without any of it showing. */
+/* Session status ongoing indicator: a circular progress ring. Nothing here needs
+   weight: these selectors already outrank the host's class rules, and the light
+   overrides below outrank this rule by their `:not()` part alone. The track is a
+   plain shorthand on purpose: it sets all four sides, and the head the longhand
+   paints on top of it is what the rotation carries. */
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) svg[data-state="ongoing"] {
-  border-color: rgba(20, 20, 19, 0.12) !important;
+  border-color: rgba(20, 20, 19, 0.12);
 }
 body[data-dsh-claude-style] svg[data-state="ongoing"] {
   width: 10px;
@@ -438,7 +436,7 @@ body[data-dsh-claude-style] svg[data-state="ongoing"] {
   background: transparent;
 }
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) svg[data-state="ongoing"] {
-  border-top-color: var(--dsw-alias-label-secondary) !important;
+  border-top-color: var(--dsw-alias-label-secondary);
 }
 body[data-dsh-claude-style] svg[data-state="ongoing"] * {
   display: none;

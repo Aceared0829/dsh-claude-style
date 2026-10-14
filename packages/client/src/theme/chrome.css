@@ -300,6 +300,6 @@ body[data-dsh-claude-style] [class*="_header"]:has([class*="_tabs"])::after {
    controls' sliding pill and the background-work ring (theme/sidebar.css). */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [class*="dsh-claude-"] {
   animation-duration: var(--dsh-claude-duration-reduced) !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: var(--dsh-claude-duration-reduced) !important;
+  animation-iteration-count: 1;
+  transition-duration: var(--dsh-claude-duration-reduced);
 }
