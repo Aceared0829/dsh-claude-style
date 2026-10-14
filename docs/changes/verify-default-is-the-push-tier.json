@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "zh": "`npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。",
+  "en": "A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s."
+}

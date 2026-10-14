@@ -25,14 +25,20 @@
  * never run — another tier, a narrower selection, one file changed — is another
  * key and runs; `--force` re-runs a key that has an answer.
  *
- * Usage: node scripts/verify.mjs [--quick] [--no-e2e] [--force]
- *        [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]]
- *        [--scenario <name>[,<name>…]]
- *        --quick is the iteration tier: the smoke's quick tier and no
- *        end-to-end lane (it is the minutes-long part, and the lane has no
- *        per-feature selection to narrow it with). --case and --feature reach
- *        the smoke as they do on its own command line; --scenario reaches the
- *        end-to-end lane.
+ * Usage: node scripts/verify.mjs [--quick] [--e2e] [--scenario <name>[,<name>…]]
+ *        [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--full]
+ *        [--no-e2e] [--force]
+ *        A bare run is the stretch before a push: the checks, the build, the
+ *        unit tests and the smoke's quick tier, with no end-to-end lane. The
+ *        full smoke walk and the lane are the minutes-long parts, so a run
+ *        takes them when they are what the push needs judged: --case and
+ *        --feature name the smoke's cases as they do on its own command line
+ *        (naming them drops the quick tier, which leaves the motion cases
+ *        out), --e2e and --scenario add the lane, --full walks the whole smoke
+ *        and the lane's default table, and --no-e2e leaves the lane out of
+ *        either. A request for everything the tool holds prints
+ *        `请确认你正处于发布流程。` before its gates start: the whole smoke and
+ *        the lane's default table are the cloud's release gate.
  */
 import { spawn } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -60,7 +66,7 @@ const TREES = ['packages', 'scripts', 'locale', 'docs']
 /** What no walk enters: the build output, the local scratch and the worktrees under `.claude/`. */
 const SKIPPED = new Set(['.git', '.debug', '.claude', 'node_modules', 'lib'])
 /** The flags a request may carry, without their dashes; the three name-taking ones carry values. */
-const FLAGS = new Set(['quick', 'no-e2e', 'force', 'case', 'feature', 'scenario'])
+const FLAGS = new Set(['quick', 'full', 'e2e', 'no-e2e', 'force', 'case', 'feature', 'scenario'])
 
 /** The run in flight, so an interrupt can take it down with this process. */
 let running = null
@@ -147,17 +153,43 @@ function parseRequest() {
     values[flag].push(...value.split(',').map((name) => name.trim()).filter(Boolean))
   }
   const sorted = (names) => [...new Set(names)].sort()
-  const quick = args.includes('--quick')
+  const cases = sorted(values.case)
+  const features = sorted(values.feature)
   const scenarios = sorted(values.scenario)
-  if (quick && scenarios.length > 0) bad('--quick leaves the end-to-end lane out; drop --scenario or drop --quick')
-  return {
-    quick,
-    force: args.includes('--force'),
-    cases: sorted(values.case),
-    features: sorted(values.feature),
-    scenarios,
-    e2e: !quick && !args.includes('--no-e2e'),
+  const full = args.includes('--full')
+  const askLane = args.includes('--e2e')
+  const noLane = args.includes('--no-e2e')
+  const named = cases.length + features.length + scenarios.length > 0
+  // The two ways to spend minutes are named and never inherited: a bare request
+  // is the stretch before a push, and each of these is asked for by name.
+  if (full && named) bad('--full walks the whole smoke and the lane\'s every scenario; drop the names')
+  if (askLane && noLane) bad('--e2e and --no-e2e say opposite things; keep one')
+  if (args.includes('--quick') && (full || askLane || scenarios.length > 0)) {
+    bad('--quick is the smoke\'s quick tier on its own; --e2e, --scenario and --full name the longer walks')
   }
+  return {
+    // The smoke's quick tier unless the request names cases or features (a motion
+    // case is not in the quick tier) or asks for the whole smoke.
+    quick: args.includes('--quick') || (!full && cases.length === 0 && features.length === 0),
+    force: args.includes('--force'),
+    cases,
+    features,
+    scenarios,
+    e2e: !noLane && (full || askLane || scenarios.length > 0),
+  }
+}
+
+/**
+ * Whether a request walks everything the tool holds: the whole smoke and the
+ * end-to-end lane's default table. That pair is the cloud's release gate, so a
+ * request for it is asked to say what it is before the minutes start.
+ */
+function walksEverything(request) {
+  return !request.quick
+    && request.cases.length === 0
+    && request.features.length === 0
+    && request.e2e
+    && request.scenarios.length === 0
 }
 
 /** The gates this request runs, in the order each depends on the one before it. */
@@ -283,6 +315,9 @@ async function main() {
     report(before, 'cache')
     process.exit(before.exitCode)
   }
+  // A verdict already filed answers in a moment and says nothing; a run that is
+  // about to spend the release gate's minutes asks before it starts.
+  if (walksEverything(request)) say('verify: warning — 请确认你正处于发布流程。')
   const release = await takeLock('verify', key.slice(0, 12))
   holding = release
   // The gates run under this lock: they must not ask for it again.

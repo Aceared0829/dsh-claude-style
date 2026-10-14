@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "improvements",
+  "order": 2,
+  "external": false,
+  "zh": "`npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。",
+  "en": "`npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in."
+}
