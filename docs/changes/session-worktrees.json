@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "chores",
+  "order": 0,
+  "external": false,
+  "zh": "新增 `npm run session`：会话在自己的工作树与 `session/` 分支上开工、收尾与清理，`node_modules/` 经联接复用主树；并行会话的改动、测试锁与云端失败归属不再互相交叉。",
+  "en": "New `npm run session`: a session opens, finishes and sweeps its own worktree on a `session/` branch, reusing the main tree's `node_modules/` through a junction; parallel sessions' edits, test locks and cloud-failure ownership no longer cross."
+}
