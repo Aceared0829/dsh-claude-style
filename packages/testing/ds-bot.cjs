@@ -141,17 +141,13 @@ function dsBotScenario({ check }) {
       })
       await page.waitForTimeout(1000)
       notes.desktop = await read(page)
-      // The host's own chord, dispatched at the page: a headless runner's window
-      // manager swallows Control+Alt combinations, so the keystroke never reaches
-      // the host there and the rail stays open.
-      await page.evaluate(() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', {
-          key: 'b', code: 'KeyB', ctrlKey: true, altKey: true, bubbles: true,
-        }))
-      })
+      // The sidebar narrowed until its column cannot hold the switch: a headless
+      // runner's window manager swallows the host's Control+Alt chord, so the
+      // keystroke never reaches the host there and the rail stays open.
+      await page.setViewportSize({ width: 420, height: 800 })
       // The collapse has to be in the layout before the box means anything:
       // re-read until the column is gone. The assertion below still judges what
-      // the last read saw, so a collapse that never happens fails there.
+      // the last read saw, so a column that never goes fails there.
       notes.rail = await read(page)
       for (let tries = 0; tries < 20 && (notes.rail.box?.columnRight ?? 0) !== 0; tries += 1) {
         await page.waitForTimeout(250)
