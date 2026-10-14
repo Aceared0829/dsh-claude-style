@@ -65,6 +65,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 36 段登记在册的复制代码全部清零：分段控件、品牌图蒙版、弹层暗色卡片与表单盒型等收进共享样式表，脚本与测试工具的公共启动代码收进 `scripts/shared/` 与 `packages/testing/`，jscpd 基线文件随之删除，lint 对任何新复制段直接拒绝。
 - 压过宿主界面的 z-index 改由 `packages/client/src/theme/tokens.json` 的 `layer` 一组给出，`docs/STYLE.md` 里的层级表由同一份数据生成，构建拒绝样式表里 9 以上的 z-index 字面值与 TS 里内联写出的层级。
 - npm 包不再携带 source map 与 `docs/decisions/` 决策文档，包体积从 2.3 MB 降到 1.6 MB。
+- 新增 `npm run session`：会话在自己的工作树与 `session/` 分支上开工、收尾与清理，`node_modules/` 经联接复用主树；并行会话的改动、测试锁与云端失败归属不再互相交叉。
 - 冒烟架、临时宿主、脚本化模型、端到端通道与三个在线探针全部住进 `packages/testing/`，共用一套 Playwright 浏览器栈，`scripts/` 只剩构建与文档工具。
 - 构建对浏览器半边源码的检查改在 TypeScript 语法树上进行（`scripts/source-tree.mjs`）：样式表读到的 `data-dsh-*` 属性必须真的有代码写入，经变量、联合类型与辅助函数转手也追得到，注释里的同名写法不再误报；流式淡入的 24 条 `::highlight()` 规则与首页热度图的四档规则由构建按 `constants.ts` 里的取值写出，步数、档数与规则出自同一处。
 - 三个微型功能并入它们服务的功能——选区镜像与输入框的空白提示并入输入区、首页问候语并入首页版面、亮暗切换的过渡抑制并入设置页——功能数量从 28 降到 25。
@@ -137,6 +138,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The 36 tracked copied stretches are gone — the segment controls, the masked brand-mark idiom, the dark popover card and the form-control boxes now live in shared sheets, and the scripts' and testing tools' bootstrap moved into `scripts/shared/` and `packages/testing/`; the jscpd baseline is deleted with them and lint refuses any new copied stretch.
 - A z-index that has to clear the host's interface comes from the `layer` group of `packages/client/src/theme/tokens.json`, the layer table in `docs/STYLE.md` is generated from the same data, and the build refuses a z-index literal above 9 in a stylesheet and a stacking level written inline in TypeScript.
 - The npm package no longer carries source maps or the `docs/decisions/` documents, taking it from 2.3 MB to 1.6 MB.
+- New `npm run session`: a session opens, finishes and sweeps its own worktree on a `session/` branch, reusing the main tree's `node_modules/` through a junction; parallel sessions' edits, test locks and cloud-failure ownership no longer cross.
 - The smoke harness, the scratch host, the scripted model service, the end-to-end lane and the three live probes all live in `packages/testing/` on one Playwright stack, leaving `scripts/` with the build and document tools.
 - The build's checks on the browser half's source read its TypeScript syntax tree (`scripts/source-tree.mjs`): every `data-dsh-*` attribute a stylesheet reads must really be written by code, found through a variable, a union or a helper parameter, and the same spelling in a comment no longer trips the check; the 24 `::highlight()` rules behind the streaming fade and the home heat grid's four levels are written by the build from `constants.ts`, so the counts and the rules have one source.
 - Three micro-features fold into the features they serve — the window-blur selection mirror and the composer's idle hint into the composer, the home greeting into the home layout, the theme flip's transition suppression into the settings page — taking the feature count from 28 to 25.
