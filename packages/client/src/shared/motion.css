@@ -155,3 +155,20 @@ body[data-dsh-claude-style][data-dsh-claude-status-motion="wash"] .dsh-claude-ch
   background-size: var(--dsh-claude-wash-sizes);
   animation: dsh-claude-wash-hue var(--dsh-claude-period-wash-hue) linear infinite, dsh-claude-wash-drift var(--dsh-claude-period-wash-drift) var(--dsh-claude-ease-in-out) infinite;
 }
+
+/* The reader's animation choice (D26): the band is left out and the wash holds
+   its still frame. A pseudo-element is no element for the reduced net in
+   theme/chrome.css to reach, so each paint answers the choice itself — for the
+   preview cards wearing the look class and for the line's own copies alike. The
+   band has nothing to show once it stops, while the wash's own first frame is
+   the pose it rests in, so holding it there is a pause rather than a rewrite. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-sweep::before,
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"][data-dsh-claude-status-motion="sweep"] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
+  animation: none;
+  background-image: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-wash::before,
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"][data-dsh-claude-status-motion="wash"] .dsh-claude-chat-wait .dsh-claude-swap-shimmer::before {
+  animation-play-state: paused;
+}
