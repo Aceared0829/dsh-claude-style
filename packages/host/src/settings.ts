@@ -83,7 +83,7 @@ function volatileField(field: SchemaField | null | undefined) {
  * form, no client bundle. The browser half reads either shape
  * (packages/client/src/core/prefs.ts).
  */
-const PREFS_WITH_EARLIER_TYPE: readonly string[] = ['autoPopover', 'chatAnimations']
+const PREFS_WITH_EARLIER_TYPE: readonly string[] = ['autoPopover', 'chatAnimations', 'statusDetail']
 
 /**
  * One typed Config field for one preference. The default's own type picks the
