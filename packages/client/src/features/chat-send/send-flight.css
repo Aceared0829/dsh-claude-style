@@ -7,6 +7,24 @@ body[data-dsh-claude-style] [data-dsh-claude-send-flight] {
   visibility: hidden;
 }
 
+/* The other answer (constants.ts MESSAGE_ENTER_MODES, constants.ts
+   MESSAGE_ENTER_ATTR): the message grows where it lands. A transform only, so
+   the row keeps its box, the transcript does not reflow, and nothing beside the
+   message moves — the corner it grows about is its own bottom-right one, the
+   side the message was sent from. The mark is written only on a row that
+   replaced the echo of a submission the reader just made (send-grow.ts), and
+   the growth is the only thing it does. */
+body[data-dsh-claude-style] [data-dsh-claude-message-enter] {
+  transform-origin: 100% 100%;
+  animation: dsh-claude-enter-grow var(--dsh-claude-duration-enter) var(--dsh-claude-ease-enter) both;
+}
+
+/* The reader's animation choice (D26): the mark is not written on a still page,
+   and this is the second net for one written before the choice changed. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-message-enter] {
+  animation: none;
+}
+
 /* The stand-in flies over the whole window: nothing the page stacks may cut
    across the bubble on its way to its row (send-morph.ts builds it). */
 body[data-dsh-claude-style] [data-dsh-claude-send-ghost] {

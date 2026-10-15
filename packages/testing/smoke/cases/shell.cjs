@@ -512,7 +512,7 @@ module.exports = {
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'viewTabs', 'headerBand'],
-      motion: ['motion', 'statusMotion', 'caretMotion', 'chatReveal'],
+      motion: ['motion', 'statusMotion', 'caretMotion', 'chatReveal', 'messageEnter'],
     }
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window.

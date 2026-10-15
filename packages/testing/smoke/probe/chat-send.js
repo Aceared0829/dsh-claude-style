@@ -165,6 +165,55 @@
       reducedEcho.remove()
       window.__pushForm({ motion: 'system' })
       await sleep(150)
+      // The other answer to the same question (constants.ts MESSAGE_ENTER_MODES,
+      // send-grow.ts): the message grows where it lands. Nothing is measured and
+      // no stand-in goes up; the echo waits hidden, and the row that replaces it
+      // is marked so the stylesheet grows it.
+      window.__pushForm({ messageEnter: 'grow' })
+      await sleep(150)
+      if (sendInput !== null) sendInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))
+      await sleep(60)
+      var growEcho = document.createElement('div')
+      growEcho.setAttribute('data-submission-echo', '')
+      growEcho.innerHTML = '<div style="width:220px;height:44px;background:rgb(240,240,240);border-radius:18px"></div>'
+      sendFlow.appendChild(growEcho)
+      await sleep(120)
+      // Read while the echo is still the row the watcher is holding: as soon as
+      // the real row is appended the mark moves off it.
+      var growWaiting = growEcho.hasAttribute('data-dsh-claude-send-flight')
+      // The host swaps the echo for the real row a level down, which is the one
+      // the growth is played on.
+      var growRow = document.createElement('div')
+      growRow.setAttribute('data-chat-flow-kind', 'user')
+      growRow.innerHTML = '<div style="width:220px;height:44px;background:rgb(240,240,240);border-radius:18px;padding:8px 12px">grown here</div>'
+      sendFlow.appendChild(growRow)
+      growEcho.remove()
+      await sleep(80)
+      var growStyle = getComputedStyle(growRow)
+      var grow = {
+        waiting: growWaiting,
+        ghost: document.querySelector('[data-dsh-claude-send-ghost]') !== null,
+        marked: growRow.hasAttribute('data-dsh-claude-message-enter'),
+        animation: growStyle.animationName,
+        duration: growStyle.animationDuration,
+        visibility: growStyle.visibility,
+      }
+      // How the growth moves: with the animation playing the box is smaller, and
+      // the corner it grows about is the one that does not move. The comparison
+      // is between the box now and the box the animation has taken it from — a
+      // transform moves what getBoundingClientRect() answers, so the second read
+      // is taken with the animation off.
+      var growEarly = growRow.getBoundingClientRect()
+      growRow.style.animation = 'none'
+      var growFull = growRow.getBoundingClientRect()
+      grow.grownLeft = growEarly.left - growFull.left
+      grow.grownTop = growEarly.top - growFull.top
+      grow.grownRight = growFull.right - growEarly.right
+      grow.grownBottom = growFull.bottom - growEarly.bottom
+      r.send.grow = grow
+      growRow.remove()
+      window.__pushForm({ messageEnter: 'flight' })
+      await sleep(150)
       sendFlow.remove()
     })
   })

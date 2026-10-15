@@ -39,5 +39,6 @@ export const PREFS_DEFAULT = Object.freeze({
   chatAnimations: true,
   chatReveal: 'off',
   caretMotion: 'typing',
+  messageEnter: 'flight',
 })
 

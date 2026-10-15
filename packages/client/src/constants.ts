@@ -161,6 +161,20 @@ export const CHAT_REVEAL_ON = 'on'
 export const CHAT_REVEAL_MODES = [CHAT_REVEAL_ON, CHAT_REVEAL_OFF]
 
 /**
+ * How a message the reader sends arrives on screen
+ * (packages/client/src/features/chat-send/): `flight` — the shipped answer —
+ * carries a stand-in of the composer card up to the row while the real row
+ * waits hidden, so the words read as leaving the box they were typed in;
+ * `grow` writes the row in place and lets it grow out of its own bottom-right
+ * corner. The reader picks between two preview cards on the Motion tab, so the
+ * choice carries the two values the cards write. Read in JS on every send
+ * (packages/client/src/core/prefs.ts); no attribute carries it.
+ */
+export const MESSAGE_ENTER_FLIGHT = 'flight'
+export const MESSAGE_ENTER_GROW = 'grow'
+export const MESSAGE_ENTER_MODES = [MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW]
+
+/**
  * Who paints the colours, and who sets the type. `claude` is the skin's own
  * palette (or typefaces); `host` leaves the host's colour (or font) tokens
  * to the host and to whatever other theme plugin writes them — a wallpaper
@@ -359,6 +373,12 @@ export const CHAT_REVEAL_COLOR_VAR = '--dsh-claude-run-color'
  */
 export const CHAT_FLYING_ATTR = 'data-dsh-claude-send-flight'
 /**
+ * On the row of a message just sent while it grows in place
+ * (packages/client/src/features/chat-send/): the stylesheet hangs the entrance
+ * animation off it, so that row animates once — a row rendered by a restored
+ * session never carries the mark and never animates.
+ */
+export const MESSAGE_ENTER_ATTR = 'data-dsh-claude-message-enter'/**
  * On a node the skin owns purely for its own bookkeeping — the caret
  * motion's probe container and the caret it draws. The shared scheduler
  * ignores mutations against such a node (D40), so measuring or redrawing
@@ -610,6 +630,7 @@ export interface Prefs {
   headerBand: boolean
   chatAnimations: boolean
   chatReveal: string
+  messageEnter: string
 }
 
 /** Every preference's shipped default, from the table both halves share (packages/contracts/src/prefs.ts, D46). */
@@ -632,6 +653,7 @@ export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
   sidebarLayout: SIDEBAR_LAYOUTS,
   caretMotion: CARET_MOTIONS,
   chatReveal: CHAT_REVEAL_MODES,
+  messageEnter: MESSAGE_ENTER_MODES,
   statsPosition: STATS_POSITIONS,
 }
 /** Longest accepted custom username; core/prefs.ts trims the stored value to it. */

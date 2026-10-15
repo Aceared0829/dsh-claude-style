@@ -448,5 +448,15 @@ module.exports = {
     check('the animation choice reaches it too: Reduced flies nothing and leaves the row visible (D26)',
       sendReduced.ghost === false && sendReduced.hidden === false && sendReduced.visibility === 'visible',
       JSON.stringify(sendReduced))
+    // The row's own entrance (send-grow.ts, the Motion tab's other card): the
+    // echo waits hidden, no stand-in goes up, and the row that takes the echo's
+    // place is marked with the growth the stylesheet hangs off it.
+    const grow = send.grow || {}
+    check('the other entrance flies nothing: the echo waits hidden and no stand-in goes up',
+      grow.waiting === true && grow.ghost === false, JSON.stringify(grow))
+    check('the row that takes the echo\'s place grows about its own bottom-right corner, and can be seen from the first frame',
+      grow.marked === true && grow.animation === 'dsh-claude-enter-grow' && grow.duration !== '0s' && grow.visibility === 'visible' &&
+        grow.grownLeft > 2 && grow.grownLeft + grow.grownTop > 4 * (grow.grownRight + grow.grownBottom),
+      JSON.stringify(grow))
   },
 }

@@ -1,8 +1,10 @@
 import { subscribeMutations } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
-import { CHAT_FLYING_ATTR } from '../../constants'
-import { motionReduced } from '../../core/prefs'
+import { CHAT_FLYING_ATTR, MESSAGE_ENTER_GROW } from '../../constants'
+import { motionReduced, readPrefs } from '../../core/prefs'
 import { startMorph } from './send-morph'
+import { CHAT_USER_ROW_SELECTOR, currentRow, lastUserRow, takeFreshEcho, touchesUserRow } from './send-rows'
+import { watchGrowEnter } from './send-grow'
 import { CHAT_FLIGHT_MS, CHAT_LANDING_MS } from './send-shape'
 import { chatSendAlpha, snapshotComposer } from './send-snapshot'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, FLOW_KIND_ATTRIBUTE, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
@@ -104,11 +106,7 @@ export const CHAT_ARRIVED_CEILING_MS = 500
  */
 export const CHAT_ARRIVED_FRAMES = 8
 
-/** A settled user row. It and the echo row are two faces of one component, a level apart. */
-export const CHAT_USER_ROW_SELECTOR = `${CHAT_FLOW_SELECTOR} [${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]`
-
-/** The two kinds of row a flight watches for, asked in one query: the real user row and the echo before it. */
-export const CHAT_ROW_SELECTOR = CHAT_USER_ROW_SELECTOR + ', ' + CHAT_ECHO_SELECTOR
+/** A settled user row. It and the echo row are two faces of one component, a level apart (send-rows.ts). */
 
 /**
  * The send bubble's take-off, ported from dsh-chat-ux.
@@ -468,6 +466,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // without a reload, and the resolved answer is what the rest of the skin
     // reads — the media query cannot express "always play".
     if (motionReduced()) return
+    // Growing into place needs no origin: the echo alone says a message was
+    // sent, and snapshotting the card would only cost a clone (send-grow.ts).
+    if (readPrefs().messageEnter === MESSAGE_ENTER_GROW) return
     const input = document.querySelector(COMPOSER_INPUT_SELECTOR)
     if (!(input instanceof HTMLElement)) return
     const card = input.closest(COMPOSER_CARD_SELECTOR)
@@ -499,10 +500,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   document.addEventListener('keydown', onKeyDown, true)
   document.addEventListener('click', onClick, true)
+  // The other answer to the same question (constants.ts MESSAGE_ENTER_MODES):
+  // the message grows where it lands instead of flying, and that path needs no
+  // origin snapshot at all. Both run; whichever the reader picked does the work.
+  const stopGrow = watchGrowEnter()
 
   return () => {
     document.removeEventListener('keydown', onKeyDown, true)
     document.removeEventListener('click', onClick, true)
+    stopGrow()
     unwatchEcho()
     unwatchRows()
     origin = null
@@ -580,31 +586,6 @@ export function followTarget(value: Flight, snap = false) {
  * and the rest are noted too, or they would be treated as new in later frames
  * and fly again.
  */
-export function takeFreshEcho(handled: WeakSet<Element>) {
-  const fresh: Element[] = []
-  for (const echo of document.querySelectorAll(CHAT_ECHO_SELECTOR)) {
-    if (!handled.has(echo)) fresh.push(echo)
-  }
-  if (fresh.length === 0) return null
-  for (const echo of fresh) handled.add(echo)
-  const latest = fresh.at(-1)
-  return latest instanceof HTMLElement ? latest : null
-}
-
-/** The row to hide right now: the echo while it is there, and the real row once it has been swapped in. */
-export function currentRow(previous: HTMLElement | null) {
-  const echo = document.querySelector(CHAT_ECHO_SELECTOR)
-  if (echo instanceof HTMLElement && echo !== previous) return echo
-  const row = lastUserRow()
-  return row === previous ? null : row
-}
-
-/** The last user row in the chat flow. */
-export function lastUserRow() {
-  const rows = document.querySelectorAll(CHAT_USER_ROW_SELECTOR)
-  const last = rows.item(rows.length - 1)
-  return last instanceof HTMLElement ? last : null
-}
 
 /**
  * The element inside a user row that really paints a fill, which is the bubble.
@@ -624,32 +605,6 @@ export function findBubble(row: Element) {
     for (const child of node.children) queue.push(child)
   }
   return null
-}
-
-/**
- * Whether this batch of DOM changes touched a user row or an echo row.
- *
- * Only the added and removed nodes themselves are looked at: both marks sit on
- * the row element, and finding the row needs no subtree walk — on a long
- * session one walk is thousands of nodes.
- * @returns true when a row is worth recognising.
- */
-export function touchesUserRow(records: MutationRecord[]) {
-  for (const record of records) {
-    for (const node of record.addedNodes) {
-      if (isRowNode(node)) return true
-    }
-    for (const node of record.removedNodes) {
-      if (isRowNode(node)) return true
-    }
-  }
-  return false
-}
-
-/** Whether a node, or the subtree it brings, holds a user row or an echo row. */
-export function isRowNode(node: Node) {
-  return node instanceof HTMLElement
-    && (node.matches(CHAT_ROW_SELECTOR) || node.querySelector(CHAT_ROW_SELECTOR) !== null)
 }
 
 /**

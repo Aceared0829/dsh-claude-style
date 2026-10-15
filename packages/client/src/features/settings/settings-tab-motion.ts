@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { CARET_MOTION_OFF, CARET_MOTION_TYPING, CHAT_REVEAL_OFF, CHAT_REVEAL_ON, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
+import { CARET_MOTION_OFF, CARET_MOTION_TYPING, CHAT_REVEAL_OFF, CHAT_REVEAL_ON, MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
 import { prefYielded } from '../../core/feature'
 import { copyLabel, hostChatCopy, settingsCopy } from '../../core/i18n'
 import { motionMs } from '../../shared/motion'
@@ -180,6 +180,105 @@ export function createSettingsMotionTab(): SettingsTab {
     )
   }
 
+  /**
+   * How a message the reader sends arrives, as the two effects themselves
+   * (constants.ts MESSAGE_ENTER_MODES). Both cards hold the same short
+   * conversation of the reader's own messages, and every turn appends one new
+   * message and lifts the column by the row that message takes: the messages
+   * already there are pushed up and the top one leaves through the card's own
+   * edge, the way the transcript does it, so what the reader watches is a
+   * message arriving and never one bubble replaying. The turn is
+   * --dsh-claude-period-preview-enter (settings-cards.css).
+   */
+  function MessageEnterPicker(props: { prefs: Prefs, write: SettingsView['write'], disabled: boolean }) {
+    // What the reader watches arrive, in the order the card takes turns: one
+    // message asking for a star, one for an issue, one for a pull request.
+    const texts = [
+      settingsCopy('messageEnterSampleStar', '帮我给dsh-claude-style点个star'),
+      settingsCopy('messageEnterSampleIssue', '帮我给dsh-claude-style提个issue'),
+      settingsCopy('messageEnterSamplePr', '帮我给dsh-claude-style提个pr'),
+    ]
+    const pickerRef = React.useRef<HTMLDivElement | null>(null)
+    // The messages standing on the cards, by their own number rather than by
+    // their words: the number is also the React key, so the message just
+    // appended is a new node — which is what lets it play its arrival — while
+    // the ones already there keep theirs.
+    const [shown, setShown] = React.useState([0, 1])
+    const nextId = React.useRef(shown.length)
+    React.useEffect(() => {
+      const timer = window.setInterval(() => {
+        const id = nextId.current
+        nextId.current += 1
+        setShown(previous => previous.length >= 3 ? [...previous.slice(1), id] : [...previous, id])
+      }, motionMs('--dsh-claude-period-preview-enter'))
+      return () => window.clearInterval(timer)
+    }, [])
+    // The lift: appending a message has already moved the column up a row, so
+    // the column is pushed back down first and then slides to where it belongs
+    // — the same flip the conversation's own entrance needs, without which the
+    // messages would jump.
+    const first = React.useRef(true)
+    React.useLayoutEffect(() => {
+      const picker = pickerRef.current
+      if (picker === null) return
+      if (first.current) {
+        first.current = false
+        return
+      }
+      for (const stack of picker.querySelectorAll<HTMLElement>('.dsh-claude-enter-stack')) {
+        const row = Number.parseFloat(getComputedStyle(stack).getPropertyValue('--dsh-claude-enter-row')) || 28
+        stack.style.transition = 'none'
+        stack.style.transform = `translateY(${row}px)`
+        void stack.offsetWidth
+        stack.style.transition = ''
+        stack.style.transform = ''
+      }
+    }, [shown])
+    const options = [
+      { value: MESSAGE_ENTER_GROW, label: settingsCopy('messageEnterGrow', 'Grows into its place') },
+      { value: MESSAGE_ENTER_FLIGHT, label: settingsCopy('messageEnterFlight', 'Flies up from the composer') },
+    ]
+    return React.createElement(
+      'div',
+      { className: 'dsh-claude-enter-picker', role: 'group', ref: pickerRef },
+      options.map(option => React.createElement(
+        'button',
+        {
+          key: option.value,
+          type: 'button',
+          className: 'dsh-claude-enter-card',
+          // The effect this card shows, which is also the value it writes
+          // (settings-cards.css).
+          'data-enter': option.value,
+          disabled: props.disabled,
+          'data-active': option.value === props.prefs.messageEnter ? '' : undefined,
+          'aria-pressed': option.value === props.prefs.messageEnter ? 'true' : 'false',
+          'aria-label': option.label,
+          onClick: () => { if (option.value !== props.prefs.messageEnter) props.write({ messageEnter: option.value }) },
+        },
+        React.createElement(
+          'span',
+          { className: 'dsh-claude-enter-sample', 'aria-hidden': 'true' },
+          React.createElement(
+            'span',
+            { className: 'dsh-claude-enter-stack' },
+            ...shown.map((id, at) => React.createElement(
+              'span',
+              {
+                key: id,
+                className: 'dsh-claude-enter-bubble',
+                // The messages already standing arrived in earlier turns and
+                // stay as they are; the last one is the one arriving now.
+                'data-standing': at < shown.length - 1 ? '' : undefined,
+              },
+              texts[id % texts.length],
+            )),
+          ),
+        ),
+      )),
+    )
+  }
+
   function rows(view: SettingsView) {
     const prefs = view.prefs
     const write = view.write
@@ -190,6 +289,7 @@ export function createSettingsMotionTab(): SettingsTab {
     ]
     const caretYielded = prefYielded('caretMotion')
     const revealYielded = prefYielded('chatReveal')
+    const messageEnterYielded = prefYielded('messageEnter')
     return [
       {
         rank: 5,
@@ -230,6 +330,17 @@ export function createSettingsMotionTab(): SettingsTab {
           revealYielded ? managedDesc('', true) : null,
           React.createElement(RevealPicker, { prefs, write, disabled: revealYielded }),
           { block: true, disabled: revealYielded },
+        ),
+      },
+      {
+        rank: 40,
+        node: view.controls.row(
+          'messageEnter',
+          settingsCopy('messageEnterTitle', 'Sent message entrance'),
+          // The preview cards are the description; only a yielded control still needs a line (D32).
+          messageEnterYielded ? managedDesc('', true) : null,
+          React.createElement(MessageEnterPicker, { prefs, write, disabled: messageEnterYielded }),
+          { block: true, disabled: messageEnterYielded },
         ),
       },
     ]
