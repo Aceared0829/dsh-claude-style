@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 25,
+  "external": false,
+  "zh": "实时匹配表按批次扫描新增节点，同一批次里已被更早的载体带进来的节点不再单独匹配与查询：一次生成期间每秒新增的 13.2 个节点中有 9.2 个属于这种重复，扫描次数由每秒 13.2 次降为 4.0 次。",
+  "en": "The live-match registry scans a batch's added nodes once, so a node an earlier carrier in the same batch already holds is neither matched nor searched again: across one streaming turn 9.2 of the 13.2 nodes added per second are such repeats, and the scans fall from 13.2 to 4.0 per second."
+}

@@ -53,12 +53,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const STRIP = '[data-dsh-claude-part~="view-tabs"]'
   const HEADER = `[data-dsh-claude-part~="conversation-header"]:has(${STRIP})`
   /**
-   * The title's TEXT, not its row or cluster: `.titleRow` is a flex row and the
-   * cluster takes up the slack, so testing against them reported a clash on
+   * The title's TEXT, not its row or cluster: the title row is a flex row and
+   * the cluster takes up the slack, so testing against them reported a clash on
    * every window and the strip never lifted. The crumb is the content-sized
-   * element that actually draws the words.
+   * element that actually draws the words; the cluster is the fallback for a
+   * header whose crumb the host does not render.
    */
-  const TITLE = '[data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="title-cluster"]'
+  const TITLE = '[data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="title-cluster"]'
   const ACTIONS = '[data-dsh-claude-part~="header-actions"], [data-dsh-claude-part~="header-utilities"]'
   /** The stylesheet's fallback: the strip's own row, 10px up from y=50. */
   const FALLBACK = -10

@@ -16,10 +16,14 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 工作区段落在当前视图上悬停时恢复的三个属性、以及工作区段按钮悬停时的文字颜色，去掉多余的 `!important`：它们所在的规则本来就比被压过的规则多一个伪类，靠层叠顺序就能赢。`importance` 场景逐条丢弃实测之后，577 处 `!important` 里只有这 4 处可以去掉，其余 16 处被证明需要，余下的在走查的页面形态里从未匹配到元素、只在短暂标记下生效或属于第三方应答。
 - 进程摘要的隐藏量宽元素按措辞与字体缓存，同一句措辞不再重写它并为它触发布局：该项在会话切换中的盒模型读取由 3 轮 11 次、94.5 毫秒降为零。
 - 滑动高亮与推理档位按钮的定位改在读阶段取读数：`createSlidingPill` 分出 `measure` 与 `sync` 两个入口，会话标签、权限分段、工作区分段、搜索过滤条与设置分段五处分别在各自阶段调用；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件在自身写入之后发生的盒模型读取由 231 次、370 至 578 毫秒降到 245 次、178 至 214 毫秒，单次由 1.6 至 2.5 毫秒降到 0.73 至 0.87 毫秒。
+- 等待行的三个圆点在关键帧里不再写圆角：那些取值在 4px 的盒子上每一帧都取整到圆点本就带的同一条曲线，去掉之后动画只含 `scale` 与 `translate`，圆点不再逐帧重绘。
+- 权限菜单的选中标记改用只写存在的写法，状态未变时不再落笔：一次生成期间该属性的写入由每秒 7.7 次降为 0.1 次。
+- 实时匹配表按批次扫描新增节点，同一批次里已被更早的载体带进来的节点不再单独匹配与查询：一次生成期间每秒新增的 13.2 个节点中有 9.2 个属于这种重复，扫描次数由每秒 13.2 次降为 4.0 次。
 
 ### 问题修复
 
 - 手机远程访问（`@linxin666/dsh-remote-web-ui` 的竖屏适配）下，输入区底行不再错位：发送与停止按钮回到输入行内并完整落在卡片里；档位选择器与上下文圆环之间只隔 16px，和桌面一致；模型名称在行内还有空间时完整显示，只有真的放不下才以省略号收尾。上下文圆环的预留宽度变化时（流式输出期间也会发生），档位选择器当帧就跟着重新定位，不再停在旧位置。
+- 工作区分栏控件回到原样：进行中时它让位给「工作区」标题，指针进入该段才浮现，切到已归档才常驻。此前按类名片段定位列表区域时，片段同时命中了列表区域的外层容器，区间标记因此落在会话树自身的容器上，样式表里那对交叉淡入的两条规则都读不到它。现在按部件读列表区域，标记重新落在整个区段的根元素上。
 
 ### 移除
 
@@ -44,10 +48,14 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The three properties that bring the workspace segment group back on hover, and the segment button's hover ink, drop their `!important`: the rules already carry one pseudo-class more than the rule they beat, so the cascade settles it. Dropping each one on the real page showed four of the skin's 577 `!important` declarations to be unnecessary; sixteen are proven needed, and the rest never match an element in the walk's page states, hold only under a transient mark, or answer another plugin.
 - The process summary's hidden measuring span is cached by wording and face, so a repeated sentence neither rewrites it nor lays it out again: its box readings across a conversation switch fall from 11 calls and 94.5 ms per 3 rounds to none.
 - The sliding highlight and the reasoning-level trigger take their readings in the read phase: `createSlidingPill` splits into `measure` and `sync`, called from the conversation tabs, the permission segments, the workspace segments, the search filter bar and the settings segments in their own phases; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings taken after its own writes fall from 231 calls and 370–578 ms to 245 calls and 178–214 ms, each from 1.6–2.5 ms to 0.73–0.87 ms.
+- The waiting line's three dots no longer write a corner radius in their keyframes: on a 4px box every one of those stops clamps to the same curve the dot already carries, and without them the animation carries only `scale` and `translate`, so the dots stop repainting every frame.
+- The permission menu's check mark uses a presence-only write and leaves the attribute alone while its state matches: across one streaming turn its writes fall from 7.7 to 0.1 per second.
+- The live-match registry scans a batch's added nodes once, so a node an earlier carrier in the same batch already holds is neither matched nor searched again: across one streaming turn 9.2 of the 13.2 nodes added per second are such repeats, and the scans fall from 13.2 to 4.0 per second.
 
 ### Bug Fixes
 
 - On a phone via the mobile remote plugin (`@linxin666/dsh-remote-web-ui`, portrait adaptation) the composer's bottom line no longer slips out of place: the send and stop buttons sit back on the input's own line and inside the card, the tier trigger stands 16px from the context ring as it does on a desktop, and the model name is shown whole whenever the row has room for it, ending in an ellipsis only when it does not. When the room the context ring reserves changes — which also happens while an answer streams — the tier trigger is placed again in that same frame instead of holding its old position.
+- The workspace section's segmented control behaves as before: in 进行中 it steps aside for the plain 工作区 heading and returns when the pointer enters the section, and it stays put in 已归档. Locating the list area by a class-name fragment also took that area's own outer container, so the view mark landed on the conversation tree's container instead of the section root and neither half of the stylesheet's cross-fade could read it. The list area is now read by its part, and the mark rides the section root again.
 
 ### Removals
 

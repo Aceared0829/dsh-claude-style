@@ -78,23 +78,35 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The workspace section's label: the skin's own part for it (D3), which the
-   * pass writes only on the host element the host itself calls by that name. A
-   * host that renames the local name leaves the part unwritten, and the section
-   * keeps its plain label — the feature stays off rather than mounting on a
-   * section that happens to be first.
+   * The workspace section's label: the skin's own part for it (D3), kept only
+   * where the section around it holds a list area — the label's parent is the
+   * header and the header's parent is the section root, where the view mark and
+   * the control go. A host that renames the local name leaves the part
+   * unwritten, and the section keeps its plain label: the feature stays off
+   * rather than mounting on a section that happens to be first.
    */
   function findSection() {
-    return document.querySelector('[data-dsh-claude-part~="section-label"]')
+    const labels = document.querySelectorAll('[data-dsh-claude-part~="section-label"]')
+    for (let i = 0; i < labels.length; i++) {
+      const root = labels[i].parentElement?.parentElement
+      if (root !== null && root !== undefined && root.querySelector('[data-dsh-claude-part~="list-area"]') !== null) return labels[i]
+    }
+    return null
   }
 
   /** The tree's rows: the host's own row key, or either row part. */
   const TREE_ROW_SELECTOR = '[data-row-key], [data-dsh-claude-part~="session-row"], [data-dsh-claude-part~="project-row"]'
 
+  /**
+   * The section's list area, which is what the view mark rides: the mark goes on
+   * the list area's PARENT (sync below), and the header is that parent's other
+   * child, so the stylesheet's cross-fade reads both (D3). The list area holds
+   * the tree and its rows, which is how it is told apart from the header.
+   */
   function findTree(label: Element) {
     let region = label.parentElement
     while (region !== null && region !== document.body) {
-      const tree = region.querySelector('[role="tree"], [data-dsh-claude-part~="list"]')
+      const tree = region.querySelector('[data-dsh-claude-part~="list-area"]')
       if (tree !== null && tree.querySelector(TREE_ROW_SELECTOR) !== null) return tree
       region = region.parentElement
     }

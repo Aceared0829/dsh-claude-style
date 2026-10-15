@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 23,
+  "external": false,
+  "zh": "等待行的三个圆点在关键帧里不再写圆角：那些取值在 4px 的盒子上每一帧都取整到圆点本就带的同一条曲线，去掉之后动画只含 `scale` 与 `translate`，圆点不再逐帧重绘。",
+  "en": "The waiting line's three dots no longer write a corner radius in their keyframes: on a 4px box every one of those stops clamps to the same curve the dot already carries, and without them the animation carries only `scale` and `translate`, so the dots stop repainting every frame."
+}

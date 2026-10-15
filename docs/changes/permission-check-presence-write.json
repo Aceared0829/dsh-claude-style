@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 24,
+  "external": false,
+  "zh": "权限菜单的选中标记改用只写存在的写法，状态未变时不再落笔：一次生成期间该属性的写入由每秒 7.7 次降为 0.1 次。",
+  "en": "The permission menu's check mark uses a presence-only write and leaves the attribute alone while its state matches: across one streaming turn its writes fall from 7.7 to 0.1 per second."
+}
