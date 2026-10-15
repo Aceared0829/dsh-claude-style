@@ -40,6 +40,20 @@ const MIN_GAP_MS = 850
 const APP = 'const first = 1\n'
 
 /**
+ * The loader's motions, each with the lane it plays in, how many dots it draws,
+ * the animation its first dot runs and that animation's own turn
+ * (features/chat-wait/chat-wait.css). `wait-loader.ts` hands the row over from
+ * one to the next every `--dsh-claude-period-dot-rotate`, so any of the three may
+ * be the one standing when the head is read; the smoke case reads the same three
+ * (cases/chat.cjs).
+ */
+const MOTIONS = [
+  { lane: 'is-bounce', dots: 3, animation: 'dsh-claude-wait-dot', duration: '0.5s' },
+  { lane: 'is-line', dots: 3, animation: 'dsh-claude-wait-dot-line', duration: '1.25s' },
+  { lane: 'is-orbit', dots: 4, animation: 'dsh-claude-wait-dot-orbit-1', duration: '2.4s' },
+]
+
+/**
  * The head of the running row on the real host: the skin's own loader where the
  * host draws its whale tail, which is what the Claude brand stands in for it,
  * and the seat the loader takes — the row it stands in, and the wording's own
@@ -72,10 +86,10 @@ const readHead = (page) => page.evaluate(() => {
   return {
     dots: lane === null ? 0 : lane.children.length,
     shown: loader !== null && getComputedStyle(loader).display !== 'none',
-    // Which of the loader's two motions is standing: the dots bounce while the
-    // turn thinks, and walk their own lines while it works. The reading beside it
-    // is the animation that motion runs, so the two are checked against each
-    // other.
+    // Which of the loader's three motions stands: the dots bounce while the
+    // turn thinks, walk their own lines while it works, or swap the corners of
+    // their own rectangle. The reading beside it is the animation that motion
+    // runs, so the two are checked against each other.
     motion: lane === null ? '' : lane.className,
     animation: dotStyle === null ? null : dotStyle.animationName,
     duration: dotStyle === null ? null : dotStyle.animationDuration,
@@ -165,10 +179,10 @@ function waitLineScenario({ check }) {
         check('一个说法锁住一秒：状态换得再快，这一行也只一秒换一次',
           gaps.length > 0 && gaps.every((gap) => gap >= MIN_GAP_MS),
           JSON.stringify({ gaps, words })),
-        check('Claude 品牌下这一行开头换成插件自己的加载点，宿主的鲸鱼尾让位，三点不带阴影，走的是这一轮该走的那套动作',
-          head !== null && head.shown === true && head.dots === 3 && head.shadow === 'none' && head.iconShown === false &&
-            ((head.motion.includes('is-bounce') && head.animation === 'dsh-claude-wait-dot' && head.duration === '0.5s') ||
-              (head.motion.includes('is-line') && head.animation === 'dsh-claude-wait-dot-line' && head.duration === '1.25s')),
+        check('Claude 品牌下这一行开头换成插件自己的加载点，宿主的鲸鱼尾让位，加载点不带阴影，走的是这一轮该走的那套动作',
+          head !== null && head.shown === true && head.shadow === 'none' && head.iconShown === false &&
+            MOTIONS.some((motion) => head.motion.includes(motion.lane) && head.dots === motion.dots &&
+              head.animation === motion.animation && head.duration === motion.duration),
           JSON.stringify(head)),
         check('加载点站在那一行里、落在说法的行上，不探出行外',
           seats !== null && seats.loader.top >= seats.row.top && seats.loader.bottom <= seats.row.bottom &&
