@@ -4,6 +4,18 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 端到端通道让每个场景声明的浏览器开关真正生效：远端设置走查改用一台带名字映射（`--host-resolver-rules`）的浏览器，不论整条通道是否共用一个浏览器都跑到底。
+- 重要性台账记下两种判定都算数的记录（`either`）：一行只在某一帧里存在，或由宿主的运行平台决定画不画，这一趟抓到与否都算数，检查不再要求把它划掉；台账同时按云端与本机两次判定重算。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- The end-to-end lane honours the browser switches a scenario declares: the remote-settings walk opens its page under the mapped name whether or not the lane shares one browser between scenarios.
+- The importance ledger records the rows the walk cannot decide either way (`either`) — a row that lives inside one animation frame, or one the host's own platform decides to draw: whether this run catches it is right both ways, so the check no longer asks for it to be struck. The list is recomputed from the cloud run and this machine's run together.
+
 ## [0.14.1] - 2026-10-15
 
 [中文](#cn-0.14.1) | [English](#en-0.14.1)

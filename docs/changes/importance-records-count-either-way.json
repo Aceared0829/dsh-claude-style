@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 2,
+  "external": false,
+  "zh": "重要性台账记下两种判定都算数的记录（`either`）：一行只在某一帧里存在，或由宿主的运行平台决定画不画，这一趟抓到与否都算数，检查不再要求把它划掉；台账同时按云端与本机两次判定重算。",
+  "en": "The importance ledger records the rows the walk cannot decide either way (`either`) — a row that lives inside one animation frame, or one the host's own platform decides to draw: whether this run catches it is right both ways, so the check no longer asks for it to be struck. The list is recomputed from the cloud run and this machine's run together."
+}

@@ -1,5 +1,5 @@
 {
-  "note": "The selectors the importance scenario's walk cannot match an element with, each under the reason it is out of reach. A selector the sheet writes that is neither matched in a page state nor recorded here fails the scenario, and a recorded one that starts matching fails it too: the list is a debt, and it only shrinks. Regenerate it from importance-verdicts.json's sweep.dead after a run, and review every line.",
+  "note": "The selectors the importance scenario's walk cannot match an element with, each under the reason it is out of reach. A selector the sheet writes that is neither matched in a page state nor recorded here fails the scenario, and a recorded one that starts matching fails it too: the list is a debt, and it only shrinks. A group may carry \"either\": true when the walk's own answer depends on the moment or on the machine it runs on — a rule that paints inside one animation frame, a row the host renders on some platforms only. Such a record counts whether the walk catches it or not, so the check never asks for it to be struck. Regenerate the rest from importance-verdicts.json's sweep.dead after a run, and review every line.",
   "groups": [
     {
       "reason": "首页用量面板：临时宿主里没有用量数据，面板画的是空状态",
@@ -221,7 +221,6 @@
         "body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role=menu][data-menu-material][data-dsh-claude-account-ready]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item]>[role=menuitem]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item]>[role=menuitem]:not(:disabled)",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=row-selected]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-label]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-icon]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-icon] svg",
@@ -236,7 +235,8 @@
         "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-popover",
         "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-menu]",
         "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-area] :is(button,[data-dsh-claude-part~=settings-trigger]):not([data-dsh-claude-account-host-row]):not(:has([data-dsh-claude-account-host-row]))",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-host-row]"
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-host-row]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-selected]"
       ]
     },
     {
@@ -414,14 +414,14 @@
     },
     {
       "reason": "换字动画的中间帧：走查把页面停住，帧已经落下",
-      "transient": true,
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-status-motion=wash] .dsh-claude-chat-wait .dsh-claude-swap-shimmer",
         "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start",
         "body[data-dsh-claude-style] .dsh-claude-swap-copy.is-exit",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-copy",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-swap-label"
-      ]
+      ],
+      "either": true
     },
     {
       "reason": "宿主留空的插槽：临时宿主没有渲染它",
@@ -485,10 +485,12 @@
       ]
     },
     {
-      "reason": "高峰费率表的时段：走查跑的时候不在高峰时段",
+      "reason": "高峰费率表：宿主拿到费率档时才画这颗标，画的是哪个时段随时机而变",
+      "either": true,
       "selectors": [
         "body[data-dsh-claude-style] .dsh-claude-peakrate[data-period=peak]",
-        "body[data-dsh-claude-style] .dsh-claude-peakrate[data-period=campaign]"
+        "body[data-dsh-claude-style] .dsh-claude-peakrate[data-period=campaign]",
+        "body[data-dsh-claude-style] .dsh-claude-peakrate[data-period=offPeak]"
       ]
     },
     {
@@ -516,10 +518,6 @@
       ]
     },
     {
-      "reason": "宿主的会话按钮没有按键提示：临时宿主没有渲染 newSessionShortcut 里的按键",
-      "selectors": []
-    },
-    {
       "reason": "设置页的提示行：走查在本机页面上跑，远端只读的提示与分页自己的提示都不在",
       "selectors": [
         "body[data-dsh-claude-style] .dsh-claude-settings-notice",
@@ -528,54 +526,11 @@
       ]
     },
     {
-      "reason": "深色形态里没有搜索按键：走查的深色页面形态不含这一行",
-      "selectors": []
-    },
-    {
       "reason": "皮肤自己的归档视图与设置分区：走查没有打开归档视图，也没有走到设置页的这一项",
       "selectors": [
-        "body[data-dsh-claude-style] [data-dsh-claude-ws-view=active] .dsh-claude-ws-segments",
-        "body[data-dsh-claude-style] [data-dsh-claude-ws-view=active] [data-dsh-claude-part~=section-label][data-dsh-claude-ws-label]",
         "body[data-dsh-claude-style] button[data-dsh-section=claude-style] [data-dsh-claude-part~=nav-icon]",
         "body[data-dsh-claude-style] button[data-dsh-section=claude-style]",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-section=claude-style]"
-      ]
-    },
-    {
-      "reason": "首页用量面板在工作室布局下的形态：走查把首页停在经典形态，工作室的席位与面板都没有渲染",
-      "selectors": [
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=scroll-body]",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=composer-seat]",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=composer-stack][data-dsh-claude-part~=composer-hero]",
-        "body[data-dsh-claude-style][data-dsh-claude-home-layout=studio] [data-dsh-claude-part~=composer-hero]>:is([data-slot=\"conversation.input.dock\"],.dsh-claude-home-seat)>*",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-workspace-row] :is(button,[role=button])",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-workspace-row] :is(button,[role=button]):not(:disabled)",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline]",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline] [data-dsh-claude-part~=hero-title-group]",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline] [data-dsh-claude-part~=hero-title-group]>span",
-        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-mark]",
-        "body[data-dsh-claude-style] .dsh-claude-home-panel",
-        "body[data-dsh-claude-style][data-dsh-claude-home-layout=studio] [data-dsh-claude-part~=composer-hero]>:is([data-slot=\"conversation.input.dock\"],.dsh-claude-home-seat)>.dsh-claude-home-panel",
-        "body[data-dsh-claude-style] .dsh-claude-home-panel-head",
-        "body[data-dsh-claude-style] .dsh-claude-home-tabs",
-        "body[data-dsh-claude-style] .dsh-claude-home-ranges",
-        "body[data-dsh-claude-style] .dsh-claude-home-tab",
-        "body[data-dsh-claude-style] .dsh-claude-home-range",
-        "body[data-dsh-claude-style] .dsh-claude-home-tab:not([data-active])",
-        "body[data-dsh-claude-style] .dsh-claude-home-range:not([data-active])",
-        "body[data-dsh-claude-style] .dsh-claude-home-tab[data-active]",
-        "body[data-dsh-claude-style] .dsh-claude-home-range[data-active]",
-        "body[data-dsh-claude-style] .dsh-claude-home-panel-side",
-        "body[data-dsh-claude-style] .dsh-claude-home-stats",
-        "body[data-dsh-claude-style] .dsh-claude-home-stat",
-        "body[data-dsh-claude-style] .dsh-claude-home-stat-label",
-        "body[data-dsh-claude-style] .dsh-claude-home-stat-value",
-        "body[data-dsh-claude-style] .dsh-claude-home-stat[data-stat=model] .dsh-claude-home-stat-value",
-        "body[data-dsh-claude-style] .dsh-claude-home-heat",
-        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell",
-        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip]",
-        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=start]",
-        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=end]"
       ]
     },
     {
@@ -583,6 +538,22 @@
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced][data-dsh-claude-status-motion=sweep] .dsh-claude-chat-wait .dsh-claude-swap-shimmer",
         "body[data-dsh-claude-style][data-dsh-claude-motion=reduced][data-dsh-claude-status-motion=wash] .dsh-claude-chat-wait .dsh-claude-swap-shimmer"
+      ]
+    },
+    {
+      "reason": "宿主的按键提示按运行平台给出：这台浏览器上宿主没有为新建会话给出按键，newSessionShortcut 里没有 kbd",
+      "either": true,
+      "selectors": [
+        "body[data-dsh-claude-style] button[data-dsh-claude-part~=new-session] [data-dsh-claude-part~=new-session-shortcut] kbd[data-dsh-claude-part~=key-separator]",
+        "body[data-dsh-claude-style] button[data-dsh-claude-part~=new-session] [data-dsh-claude-part~=new-session-shortcut] kbd:not([data-dsh-claude-part~=key-separator])",
+        "body[data-dsh-claude-style][data-ds-dark-theme] button[data-dsh-claude-part~=new-session] [data-dsh-claude-part~=new-session-shortcut] kbd:not([data-dsh-claude-part~=key-separator])"
+      ]
+    },
+    {
+      "reason": "宿主的按键提示按运行平台给出：这台浏览器上宿主没有给出搜索快捷键，深色形态里没有这一行",
+      "either": true,
+      "selectors": [
+        "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key"
       ]
     }
   ]
