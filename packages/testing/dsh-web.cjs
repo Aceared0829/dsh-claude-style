@@ -269,6 +269,44 @@ async function waitForSkin(page, timeoutMs = 30000) {
 }
 
 /**
+ * Press one button of the topmost overlay, read and press in the page in one
+ * synchronous step: the shell's overlays open and close on their own, so a
+ * locator read can find the dialog that answered a count already gone when it
+ * resolves, and the read then waits out its default 30s and fails the scenario
+ * (a loaded runner failed the release walk exactly there). No frame can run
+ * inside one `evaluate`, so nothing can be taken away between the two, and the
+ * press needs no hit test, which the shell's mask would never let settle.
+ *
+ * @param page - the page to press in.
+ * @param tried - how many buttons of each dialog, keyed by its text, are spent.
+ * @returns which overlay was answered — a dialog with the button's place in it,
+ *     a presentation root, its escape, or nothing open to press.
+ */
+const pressOverlay = (page, tried) => page.evaluate((spent) => {
+  const shown = (element) => element.checkVisibility() && element.getBoundingClientRect().width > 0
+  const top = (selector) => {
+    const found = Array.from(document.querySelectorAll(selector)).filter(shown)
+    return found[found.length - 1]
+  }
+  const dialog = top('[role="dialog"]')
+  if (dialog !== undefined) {
+    const text = dialog.innerText
+    const buttons = Array.from(dialog.querySelectorAll('button')).filter(shown)
+    const at = spent[text] ?? 0
+    if (buttons.length > at) {
+      buttons[at].click()
+      return { pressed: 'dialog', text, at }
+    }
+  }
+  const layer = top('[role="presentation"]')
+  if (layer === undefined) return { pressed: 'none' }
+  const button = Array.from(layer.querySelectorAll('button')).filter(shown)[0]
+  if (button === undefined) return { pressed: 'escape' }
+  button.click()
+  return { pressed: 'layer' }
+}, tried)
+
+/**
  * Close the shell's own first-run overlays so a lane can reach the composer: a
  * fresh `$DSH_HOME` opens them in turn (the preview notice, then the credentials
  * form) behind a full-page mask that takes the pointer events aimed at the page
@@ -280,8 +318,8 @@ async function waitForSkin(page, timeoutMs = 30000) {
  * merely focuses a field, a form whose submit is refused while empty — gets the
  * next button on the following pass. A dialog whose every button was pressed and
  * which is still there is not going away, and the loop reports that rather than
- * pressing them again. Clicks are forced: the mask sits over the page, so the hit
- * test the default click performs never settles.
+ * pressing them again; the press itself is `pressOverlay`, which reads and
+ * presses in one step.
  *
  * The pass keeps going until nothing has been open for `quietMs`, because the
  * overlay that follows the one just closed mounts a moment later: a check made
@@ -307,27 +345,11 @@ async function dismissOverlays(page, options = {}) {
   let answered = 0
   while (Date.now() - started < settleMs) {
     if (answered < limit * 3) {
-      const dialogs = byText()
-      if (await dialogs.count() > 0) {
-        const dialog = dialogs.last()
-        const text = await dialog.innerText()
-        const buttons = dialog.locator('button:visible')
-        const count = await buttons.count()
-        const tried = pressed.get(text) ?? 0
-        if (count > 0 && tried < count) {
-          pressed.set(text, tried + 1)
-          answered += 1
-          await buttons.nth(tried).click({ force: true })
-          await page.waitForTimeout(500)
-          continue
-        }
-      }
-      const layer = roots()
-      if (await layer.count() > 0) {
-        const button = layer.last().locator('button:visible').first()
+      const hit = await pressOverlay(page, Object.fromEntries(pressed))
+      if (hit.pressed !== 'none') {
+        if (hit.pressed === 'dialog') pressed.set(hit.text, hit.at + 1)
         answered += 1
-        if (await button.count() > 0) await button.click({ force: true })
-        else await page.keyboard.press('Escape')
+        if (hit.pressed === 'escape') await page.keyboard.press('Escape')
         await page.waitForTimeout(500)
         continue
       }
