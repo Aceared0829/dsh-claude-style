@@ -98,12 +98,13 @@ const readRows = (page) => page.evaluate((figuresSource) => {
 }, figuresOf.toString())
 
 /**
- * The row that stands for the changed file, sampled once: its figures, the
+ * The row that stands for the changed file, as one sample: its figures, the
  * operation it wears, whether a character is leaving and a character rising,
  * whether a label swap is in flight, and how many rows of that file the reader
- * can see.
+ * can see. The recorder below carries this same reader into the page, the way
+ * `figuresOf` is carried, so both sides read a sample the same way.
  */
-const readHead = (page, file) => page.evaluate(([suffix, figuresSource]) => {
+const HEAD_FACTS = ([suffix, figuresSource]) => {
   const figuresOf = (0, eval)(`(${figuresSource})`)
   const roots = [...document.querySelectorAll('.dsh-claude-file-root')]
   const ofFile = (root) => (root.querySelector('.dsh-claude-file-link, .dsh-claude-file-summary')?.textContent ?? '').endsWith(suffix)
@@ -144,7 +145,29 @@ const readHead = (page, file) => page.evaluate(([suffix, figuresSource]) => {
       .map((span) => Math.round(span.getBoundingClientRect().x)),
     visible: roots.filter((root) => ofFile(root) && root.checkVisibility()).length,
   }
-}, [file, figuresOf.toString()])
+}
+
+/**
+ * Record every sample the page itself writes (D66): a runner loaded by the
+ * other scenarios is starved for as long as they hold the machine, and a change
+ * that lands inside that stall is a change no reading from here ever saw — the
+ * tail's number, the roll it turns with and the label swapping in are each
+ * caught only if the page is read at the moment it writes them. Only the file
+ * rows' own writing is a sample: the answer streaming beside them mutates the
+ * page constantly and says nothing about a row.
+ */
+const startRecording = (page, file) => page.evaluate(([suffix, factsSource, figuresSource]) => {
+  const facts = (0, eval)(`(${factsSource})`)
+  const figuresOf = (0, eval)(`(${figuresSource})`)
+  const ofRow = (node) => node instanceof Element &&
+    (node.closest('.dsh-claude-file-root') !== null || node.querySelector('.dsh-claude-file-root') !== null)
+  window.__fileMergeSamples = []
+  new MutationObserver((records) => {
+    if (!records.some((record) => ofRow(record.target) || [...record.addedNodes].some(ofRow))) return
+    const sample = facts([suffix, figuresSource])
+    if (sample !== null) window.__fileMergeSamples.push(sample)
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true })
+}, [file, HEAD_FACTS.toString(), figuresOf.toString()])
 
 /** One number out of a `+n` figure. */
 const count = (figure) => Number(String(figure ?? '').replace(/[^\d]/g, ''))
@@ -169,19 +192,17 @@ function fileMergeScenario({ check }) {
       // The file the script only reads, and the leftovers of an earlier run.
       fs.writeFileSync(path.join(workspace, 'plain.md'), PLAIN)
       for (const name of ['notes.md', 'only.md']) fs.rmSync(path.join(workspace, name), { force: true })
+      await startRecording(context.page, 'app.js')
     },
-    /** Follow the row that stands while the changes land, and what the reader can see of that file's rows. */
+    /** Hold the turn, then take the page's own record of the row that stands in it. */
     async duringTurn(context) {
       const { page } = context
-      const samples = []
       const deadline = Date.now() + 60000
       while (Date.now() < deadline) {
-        const sample = await readHead(page, 'app.js')
-        if (sample !== null) samples.push(sample)
         if (await page.evaluate(() => document.querySelector('[data-chat-running]') === null)) break
         await page.waitForTimeout(100)
       }
-      context.notes.samples = samples
+      context.notes.samples = await page.evaluate(() => window.__fileMergeSamples ?? [])
     },
     async afterTurn(context) {
       const { page } = context

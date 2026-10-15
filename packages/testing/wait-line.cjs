@@ -31,18 +31,13 @@ const READ_WORD = /^(Reading app\.js|正在读取 app\.js)$/
 /**
  * How close together two wordings may be read. The line locks a wording for a
  * second (WORD_LOCK_MS), so a turn that moves through several states that fast
- * still changes at most once a second; the reading itself trails by up to one
- * sampler step (80 ms), which is what the slack covers.
+ * still changes at most once a second; the record is stamped by the page when it
+ * writes the wording, so the slack covers only a change landing between two
+ * frames of that write.
  */
 const MIN_GAP_MS = 850
 /** The file the scripted read opens: written before the turn, so the call has something to read. */
 const APP = 'const first = 1\n'
-
-/** The words the line is heading for, read off its label. */
-const readWord = (page) => page.evaluate(() => {
-  const label = document.querySelector('[data-chat-running] .dsh-claude-chat-wait-label')
-  return label === null ? null : (label.dataset.text ?? null)
-})
 
 /**
  * The head of the running row on the real host: the skin's own loader where the
@@ -95,6 +90,7 @@ function waitLineScenario({ check }) {
       // reads is the snapshot, and this is what the host drew beside it.
       await context.page.evaluate(() => {
         window.__waitCalls = []
+        window.__waitWords = []
         const seen = new Map()
         const record = () => {
           for (const row of document.querySelectorAll('[data-chat-call-id]')) {
@@ -106,31 +102,43 @@ function waitLineScenario({ check }) {
             window.__waitCalls.push(key)
           }
         }
-        new MutationObserver(record).observe(document.body, { subtree: true, childList: true, attributes: true })
+        // The line's own wording, recorded where the page writes it. The lock
+        // the wording is held under is the skin's own timer, and a wording read
+        // from the runner's side is read whenever that side is scheduled again:
+        // on a loaded machine the reading lands late and measures a shorter gap
+        // than the lock held, so the record is taken here and stamped with the
+        // page's clock.
+        const recordWord = () => {
+          const label = document.querySelector('[data-chat-running] .dsh-claude-chat-wait-label')
+          const word = label === null ? null : (label.dataset.text ?? null)
+          const last = window.__waitWords[window.__waitWords.length - 1]
+          if (word === null || last?.word === word) return
+          window.__waitWords.push({ word, at: performance.now() })
+        }
+        new MutationObserver(() => {
+          record()
+          recordWord()
+        }).observe(document.body, { subtree: true, childList: true, attributes: true })
         record()
+        recordWord()
       })
     },
-    /** Follow the line while the turn runs: every wording it stands on, with when it was read. */
+    /** Hold the turn while the row stands, and take the page's own record of the words it stood on. */
     async duringTurn(context) {
       const { page } = context
-      const seen = []
       let head = null
       const deadline = Date.now() + 60000
       while (Date.now() < deadline) {
-        const word = await readWord(page)
-        if (word === null) {
-          // The running row is gone: the turn is over, and the last wording has
-          // been read off it.
-          if (seen.length > 0) break
-        } else if (seen[seen.length - 1]?.word !== word) seen.push({ word, at: Date.now() })
+        const words = await page.evaluate(() => window.__waitWords ?? [])
         // The row's head is read once, off the row the host itself mounted.
         if (head === null) head = await readHead(page)
         // The call's own words are the last state of the turn's work here: once
-        // they have stood, every wording before them has been sampled.
-        if (seen.some((entry) => READ_WORD.test(entry.word))) break
+        // they have stood, every wording before them has been recorded.
+        if (words.some((entry) => READ_WORD.test(entry.word))) break
+        if (words.length > 0 && await page.evaluate(() => document.querySelector('[data-chat-running]') === null)) break
         await page.waitForTimeout(80)
       }
-      context.notes.seen = seen
+      context.notes.seen = await page.evaluate(() => window.__waitWords ?? [])
       context.notes.head = head
     },
     async assert({ page, session, notes }) {
