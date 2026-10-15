@@ -13,7 +13,7 @@ export default {
   switchRow: {
     tab: 'motion',
     rank: 50,
-    title: { key: 'messageEnterTitle', fallback: 'Sent message entrance' },
+    title: { key: 'messageEnterTitle', fallback: 'Message bubble animation' },
   },
   cases: ['chat-send'],
   description: {

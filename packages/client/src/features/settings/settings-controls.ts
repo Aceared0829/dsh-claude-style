@@ -259,6 +259,10 @@ export function createSettingsControls() {
     const classes = ['dsh-claude-settings-row']
     if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
+    // A row with neither title nor description is the option that belongs to
+    // the switch above it: the stylesheet keeps the two as one group, with no
+    // hairline between them (settings.css).
+    if (title === null && description === null) classes.push('dsh-claude-settings-row-sub')
     // The switch has no text of its own; its name is this row's title.
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
       ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title ?? '' })

@@ -375,7 +375,7 @@
     },
     "chatAnimationsTitle": { "zh": "聊天区滚动动画", "en": "Chat-area scrolling animation" },
     "chatAnimationsDesc": {
-      "zh": "聊天区里随内容滚动的那几样：跟随末尾、行与过程组的开合、文件操作行；关闭后这三样交回宿主。状态行与发出消息的进场各有自己的开关。",
+      "zh": "聊天区里随内容滚动的那几样：跟随末尾、行与过程组的开合、文件操作行；关闭后这三样交回宿主。状态行与消息气泡动画各有自己的开关。",
       "en": "The parts of the conversation that move with its content: following the end, rows and groups folding open and shut, and the file operation rows. Off hands those three back to the host; the waiting line and the sent message's entrance carry switches of their own."
     },
     "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
@@ -394,7 +394,7 @@
     "chatRevealOn": { "zh": "淡入", "en": "Fade in" },
     "chatRevealOff": { "zh": "直接出现", "en": "Appears at once" },
     "chatRevealSample": { "zh": "新到的字先淡后实", "en": "New characters fade in" },
-    "messageEnterTitle": { "zh": "发出消息的进场", "en": "Sent message entrance" },
+    "messageEnterTitle": { "zh": "消息气泡动画", "en": "Message bubble animation" },
     "messageEnterGrow": { "zh": "在原地长出来", "en": "Grows into its place" },
     "messageEnterFlight": { "zh": "从输入框飞上来", "en": "Flies up from the composer" },
     "messageEnterSampleStar": { "zh": "帮我给dsh-claude-style点个star", "en": "Star dsh-claude-style for me" },
