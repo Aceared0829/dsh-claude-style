@@ -6,6 +6,7 @@ export default {
   contracts: ['chat.scroller', 'composer.dialog-trigger', 'composer.input', 'composer.mobile-portrait', 'composer.mobile-stats', 'composer.placeholder', 'composer.seat', 'composer.stack', 'composer.variant', 'shell.phase'],
   pref: 'composerScope',
   stylesheets: [
+    { file: 'vars.css', rank: 78 },
     { file: 'card.css', rank: 80, gate: true },
     { file: 'inline.css', rank: 90, gate: true },
     { file: 'inline-bar.css', rank: 100, gate: true },

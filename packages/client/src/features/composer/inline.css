@@ -59,9 +59,6 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-c
    `--dsh-composer-fade-h` is the single knob: it is the band's height AND the
    transcript's bottom clearance below, so the last turn always comes to rest
    exactly at the band's top edge. */
-body[data-dsh-claude-style] {
-  --dsh-composer-fade-h: 40px;
-}
 body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat] {
   background: var(--dsw-alias-bg-base);
 }

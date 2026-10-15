@@ -335,15 +335,6 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
   }
   100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
 }
-body[data-dsh-claude-style] {
-  --dsh-claude-digit-dur: var(--dsh-claude-duration-pop);
-  --dsh-claude-digit-distance: var(--dsh-claude-distance-travel);
-  --dsh-claude-digit-stagger: var(--dsh-claude-duration-stagger);
-  --dsh-claude-digit-blur: var(--dsh-claude-blur-soft);
-  --dsh-claude-digit-ease: var(--dsh-claude-ease-spring);
-  --dsh-claude-digit-dir-x: 0;
-  --dsh-claude-digit-dir-y: 1;
-}
 body[data-dsh-claude-style] .dsh-claude-digit-group {
   display: inline-flex;
   align-items: baseline;
@@ -363,28 +354,7 @@ body[data-dsh-claude-style] .dsh-claude-digit[data-stagger="2"] {
 /* After dsh-chat-ux's design: one band of seven tones, a reading placed between
    two of them and the browser mixing the two in OKLCH (features/context-stats/
    stats-ramp.ts names the segment and where inside it the reading sits). The
-   band is semantic — a low cache share is red wherever the reader's palette
-   comes from — so its values are the skin's own and not the host's tokens. Each
-   tone keeps its hue and lightness at about three fifths of its hue's chroma, so
-   the band stays with the skin's palette; a new tone is derived the same way. */
-body[data-dsh-claude-style] {
-  --dsh-claude-tone-red: #d5746a;
-  --dsh-claude-tone-red-orange: #d38469;
-  --dsh-claude-tone-orange: #cb936c;
-  --dsh-claude-tone-yellow: #c09f66;
-  --dsh-claude-tone-lime: #b0c988;
-  --dsh-claude-tone-green-light: #a2dda4;
-  --dsh-claude-tone-green: #6faf73;
-}
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) {
-  --dsh-claude-tone-red: #af514d;
-  --dsh-claude-tone-red-orange: #af6045;
-  --dsh-claude-tone-orange: #af784e;
-  --dsh-claude-tone-yellow: #8b6d42;
-  --dsh-claude-tone-lime: #779756;
-  --dsh-claude-tone-green-light: #6da173;
-  --dsh-claude-tone-green: #46784e;
-}
+   values stand in features/composer/vars.css, outside the composer gate. */
 /* The cache share: red below 90%, orange, yellow and lime through the nineties,
    dark green from 99% on. */
 body[data-dsh-claude-style] [data-dsh-claude-ramp="cache"][data-dsh-claude-ramp-span="low"] {
