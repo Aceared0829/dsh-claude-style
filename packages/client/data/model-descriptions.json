@@ -373,10 +373,10 @@
       "zh": "重绘对话导航区域。",
       "en": "Hover the turn marks at the conversation's right edge to open a list of every turn; the wheel scrolls it, a click jumps over. Alt+↑ / Alt+↓ jump between turns. Off restores the host's turn marks."
     },
-    "chatAnimationsTitle": { "zh": "聊天区动画效果", "en": "Chat-area animations" },
+    "chatAnimationsTitle": { "zh": "聊天区滚动动画", "en": "Chat-area scrolling animation" },
     "chatAnimationsDesc": {
-      "zh": "聊天区的一整套动效：跟随、折叠、文字淡入、文件变更行、发送气泡、过程计数与状态行；关闭后交回宿主。",
-      "en": "The conversation area's motion set: follow, folding, text fade, file change rows, send flight, counters and the waiting line. Off hands the area back to the host."
+      "zh": "聊天区里随内容滚动的那几样：跟随末尾、行与过程组的开合、文件操作行；关闭后这三样交回宿主。状态行与发出消息的进场各有自己的开关。",
+      "en": "The parts of the conversation that move with its content: following the end, rows and groups folding open and shut, and the file operation rows. Off hands those three back to the host; the waiting line and the sent message's entrance carry switches of their own."
     },
     "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
     "statsLineLabel": { "zh": "对话统计信息", "en": "Conversation statistics" },

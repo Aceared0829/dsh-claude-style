@@ -190,19 +190,28 @@ body[data-dsh-claude-style] .dsh-claude-caret-sample-bar.dsh-claude-caret-off {
   transition: none;
 }
 
-/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D26):
-   both wordings would come to rest on the cell's own frame, one painted over
-   the other, so one wording stands — the way the line writes its own words at
-   once on this setting — and the sample line stands whole with both carets
-   holding the frame the drawn one holds (features/caret/caret.css). The hidden
-   wording keeps its place in the cell, so the card is the same size in every
-   setting. */
+/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D26): the
+   paint is held still, and the two wordings still take turns — the line keeps
+   changing its wording on this setting, writing the new words at once
+   (shared/swapping-text.ts), so the card cuts from one to the other. The cut is
+   handed over by the picker's own attribute rather than by an animation of its
+   own, because chrome.css presses every skin animation to a single 0.01 ms pass
+   on this setting and a loop here would never come round again. Both wordings
+   keep their cell, so the card is the same size in every setting. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word {
   animation: none;
 }
 
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word + .dsh-claude-motion-word {
   visibility: hidden;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-word-alt] .dsh-claude-motion-word {
+  visibility: hidden;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-word-alt] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  visibility: visible;
 }
 
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-caret-piece {

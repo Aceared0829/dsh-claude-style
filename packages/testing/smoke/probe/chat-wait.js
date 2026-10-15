@@ -361,10 +361,10 @@
       words.style.removeProperty('display')
       await sleep(400)
       r.wait.hostRestored = ownership()
-      window.__pushForm({ chatAnimations: false })
+      window.__pushForm({ chatWait: false })
       await sleep(300)
       words.style.display = 'none'
-      window.__pushForm({ chatAnimations: true })
+      window.__pushForm({ chatWait: true })
       await sleep(400)
       r.wait.existingOwner = ownership()
       foreignLine.remove()
@@ -372,7 +372,7 @@
       await sleep(400)
       r.wait.ownerRemoved = ownership()
       words.parentElement.appendChild(foreignLine)
-      window.__pushForm({ chatAnimations: false })
+      window.__pushForm({ chatWait: false })
       await sleep(300)
       r.wait.off = {
         line: row.querySelector('.dsh-claude-chat-wait') !== null,
@@ -381,7 +381,7 @@
         wordsMarked: words.hasAttribute('data-dsh-claude-wait-words'),
         foreignShown: getComputedStyle(foreignLine).display !== 'none',
       }
-      window.__pushForm({ chatAnimations: true })
+      window.__pushForm({ chatWait: true })
       await sleep(300)
       waitSession.remove()
       await sleep(300)

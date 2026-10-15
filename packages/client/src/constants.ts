@@ -630,6 +630,8 @@ export interface Prefs {
   viewTabs: boolean
   headerBand: boolean
   chatAnimations: boolean
+  chatWait: boolean
+  chatSend: boolean
   chatReveal: string
   messageEnter: string
 }

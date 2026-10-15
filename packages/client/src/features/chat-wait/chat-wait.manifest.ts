@@ -4,9 +4,17 @@ export default {
   id: 'chatWait',
   order: 205,
   contracts: ['chat.following-tail-attribute', 'chat.running', 'chat.running-icon', 'chat.running-text', 'conversation.session', 'conversation.session-attribute'],
-  pref: 'chatAnimations',
+  pref: 'chatWait',
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ file: 'chat-wait.css', rank: 175 }],
+  // The line has its own switch on the Motion tab, with the paint it wears as
+  // the option under it (settings-tab-motion.ts): the row says what the switch
+  // turns on and off, and the cards show the two paints.
+  switchRow: {
+    tab: 'motion',
+    rank: 15,
+    title: { key: 'statusMotionTitle', fallback: 'Waiting-line animation' },
+  },
   cases: ['chat-wait'],
   description: {
     zh: {

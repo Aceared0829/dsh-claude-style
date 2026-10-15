@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { CARET_MOTION_OFF, CARET_MOTION_TYPING, CHAT_REVEAL_OFF, CHAT_REVEAL_ON, MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
 import { prefYielded } from '../../core/feature'
+import { motionReduced } from '../../core/prefs'
 import { copyLabel, hostChatCopy, settingsCopy } from '../../core/i18n'
 import { motionMs } from '../../shared/motion'
 import { waitingWord } from '../../shared/turn-activity'
@@ -42,15 +43,40 @@ export function createSettingsMotionTab(): SettingsTab {
    * the stored value, which is also the shared look's own class
    * (`dsh-claude-sweep`, `dsh-claude-wash`), so a new paint is one option here
    * plus one rule in shared/motion.css.
+   *
+   * The two wordings are the CSS loop's own turn-taking (settings-cards.css).
+   * On the still page the loop cannot run — chrome.css presses every skin
+   * animation to a single 0.01 ms pass — and the line itself keeps changing its
+   * wording there, writing the new words at once (shared/swapping-text.ts). So
+   * the turn is handed over here instead, by an attribute the stylesheet reads:
+   * the sample cuts from one wording to the other, with nothing moving.
    */
-  function statusMotionPicker(prefs: Prefs, write: SettingsView['write']) {
+  function StatusMotionPicker(props: { prefs: Prefs, write: SettingsView['write'], disabled: boolean }) {
+    const pickerRef = React.useRef<HTMLDivElement | null>(null)
+    const [alt, setAlt] = React.useState(false)
+    React.useEffect(() => {
+      let phase = false
+      const timer = window.setInterval(() => {
+        phase = !phase
+        setAlt(phase)
+      }, motionMs('--dsh-claude-period-preview-swap') / 2)
+      return () => window.clearInterval(timer)
+    }, [])
+    React.useLayoutEffect(() => {
+      const picker = pickerRef.current
+      if (picker === null) return
+      // Only the still page needs the hand-over: with motion the CSS loop is
+      // already taking turns, and the attribute would cut across it.
+      if (motionReduced() && alt) picker.setAttribute('data-dsh-claude-word-alt', '')
+      else picker.removeAttribute('data-dsh-claude-word-alt')
+    }, [alt])
     // What the line says, in the two wordings the card takes turns between: the
     // word the brand in force waits on (shared/turn-activity.ts) and the state it
     // says while a call runs. The card shows the wording swap as the line runs it
     // (settings-cards.css), so a reader sees both what the line says and how it
     // painted.
     const words = [
-      waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
+      waitingWord(props.prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
       copyLabel('chatWaitTools', 'Running tools…'),
     ]
     const options = [
@@ -59,17 +85,18 @@ export function createSettingsMotionTab(): SettingsTab {
     ]
     return React.createElement(
       'div',
-      { className: 'dsh-claude-motion-picker', role: 'group' },
+      { className: 'dsh-claude-motion-picker', role: 'group', ref: pickerRef },
       options.map(option => React.createElement(
         'button',
         {
           key: option.value,
           type: 'button',
           className: 'dsh-claude-motion-card',
-          'data-active': option.value === prefs.statusMotion ? '' : undefined,
-          'aria-pressed': option.value === prefs.statusMotion ? 'true' : 'false',
+          disabled: props.disabled,
+          'data-active': option.value === props.prefs.statusMotion ? '' : undefined,
+          'aria-pressed': option.value === props.prefs.statusMotion ? 'true' : 'false',
           'aria-label': option.label,
-          onClick: () => { if (option.value !== prefs.statusMotion) write({ statusMotion: option.value }) },
+          onClick: () => { if (option.value !== props.prefs.statusMotion) props.write({ statusMotion: option.value }) },
         },
         // Each wording wears the card's paint by carrying the shared look's own
         // class (shared/motion.css), so the band or the wash rides the words
@@ -273,6 +300,11 @@ export function createSettingsMotionTab(): SettingsTab {
     const nextId = React.useRef(shown.length)
     React.useEffect(() => {
       const timer = window.setInterval(() => {
+        // The reader's animation choice is read each turn (D26): on a still page
+        // the card stands on the messages already there, the way the line writes
+        // its words at once, instead of a new message appearing without its
+        // arrival and the column jumping a row.
+        if (motionReduced()) return
         const id = nextId.current
         nextId.current += 1
         setShown(previous => previous.length >= 3 ? [...previous.slice(1), id] : [...previous, id])
@@ -355,7 +387,8 @@ export function createSettingsMotionTab(): SettingsTab {
     ]
     const caretYielded = prefYielded('caretMotion')
     const revealYielded = prefYielded('chatReveal')
-    const messageEnterYielded = prefYielded('messageEnter')
+    const waitYielded = prefYielded('chatWait')
+    const sendYielded = prefYielded('chatSend')
     return [
       {
         rank: 5,
@@ -367,13 +400,16 @@ export function createSettingsMotionTab(): SettingsTab {
         ),
       },
       {
-        rank: 10,
+        // The option under the line's own switch (chat-wait.manifest.ts): the
+        // cards are the whole row, and the switch above them is what turns the
+        // line on and off.
+        rank: 16,
         node: view.controls.row(
           'statusMotion',
-          settingsCopy('statusMotionTitle', 'Waiting-line animation'),
           null,
-          statusMotionPicker(prefs, write),
-          { block: true },
+          null,
+          React.createElement(StatusMotionPicker, { prefs, write, disabled: waitYielded }),
+          { block: true, disabled: waitYielded },
         ),
       },
       {
@@ -388,7 +424,7 @@ export function createSettingsMotionTab(): SettingsTab {
         ),
       },
       {
-        rank: 30,
+        rank: 40,
         node: view.controls.row(
           'chatReveal',
           settingsCopy('chatRevealTitle', 'New-text fade'),
@@ -399,14 +435,15 @@ export function createSettingsMotionTab(): SettingsTab {
         ),
       },
       {
-        rank: 40,
+        // The option under the sent message's own switch (send-flight.manifest.ts):
+        // the two answers are the whole row.
+        rank: 51,
         node: view.controls.row(
           'messageEnter',
-          settingsCopy('messageEnterTitle', 'Sent message entrance'),
-          // The preview cards are the description; only a yielded control still needs a line (D32).
-          messageEnterYielded ? managedDesc('', true) : null,
-          React.createElement(MessageEnterPicker, { prefs, write, disabled: messageEnterYielded }),
-          { block: true, disabled: messageEnterYielded },
+          null,
+          null,
+          React.createElement(MessageEnterPicker, { prefs, write, disabled: sendYielded }),
+          { block: true, disabled: sendYielded },
         ),
       },
     ]

@@ -111,7 +111,8 @@ export interface FeatureSwitchRow {
   /** Position among the tab's rows, shared with the rows the tab writes itself. */
   rank: number
   title: SettingsCopyLine
-  desc: SettingsCopyLine
+  /** The line under the title; a switch whose option below it is the explanation carries none. */
+  desc?: SettingsCopyLine
   /** The choices of a segmented control; without them the row is an on/off switch. */
   choices?: FeatureSwitchChoice[]
   /** The preference the feature only works under (D29). */

@@ -37,6 +37,8 @@ export const PREFS_DEFAULT = Object.freeze({
   viewTabs: true,
   headerBand: true,
   chatAnimations: true,
+  chatWait: true,
+  chatSend: true,
   chatReveal: 'off',
   caretMotion: 'typing',
   messageEnter: 'flight',

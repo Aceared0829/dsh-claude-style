@@ -9,10 +9,12 @@ export default {
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ file: 'chat-follow.css', rank: 160 }],
   switchRow: {
-    tab: 'conversation',
-    rank: 30,
-    title: { key: 'chatAnimationsTitle', fallback: 'Chat-area animations' },
-    desc: { key: 'chatAnimationsDesc', fallback: 'The conversation area\'s motion set: follow, folding, text fade, file change rows, send flight, counters and the waiting line. Off hands the area back to the host.' },
+    // The Motion tab's own row: what is left of the chat-area switch after the
+    // waiting line and the sent message's entrance took switches of their own.
+    tab: 'motion',
+    rank: 10,
+    title: { key: 'chatAnimationsTitle', fallback: 'Chat-area scrolling animation' },
+    desc: { key: 'chatAnimationsDesc', fallback: 'Following the end of the conversation, folding rows and groups open and shut, and the file operation rows. Off hands those back to the host.' },
   },
   cases: ['chat-follow'],
   description: {

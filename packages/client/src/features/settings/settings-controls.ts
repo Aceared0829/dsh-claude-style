@@ -105,14 +105,19 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
         write,
         yielded || unmet,
       )
-    const text = settingsCopy(row.desc.key, row.desc.fallback)
+    const text = row.desc === undefined ? '' : settingsCopy(row.desc.key, row.desc.fallback)
     const note = waits ?? (offWindows ? settingsCopy('windowsOnlyNote', 'Takes effect in the Windows desktop window only.') : null)
+    // A yielded row says who manages it even when it carries no description of
+    // its own: the switch rows over the preview cards have none.
+    const description = yielded
+      ? managedDesc(text, true)
+      : (row.desc === undefined && note === null ? null : noteDesc(text, note))
     return {
       rank: row.rank,
       node: controls.row(
         pref,
         settingsCopy(row.title.key, row.title.fallback),
-        yielded ? managedDesc(text, true) : noteDesc(text, note),
+        description,
         control,
         { disabled: unmet },
       ),
@@ -245,20 +250,24 @@ export function createSettingsControls() {
    * the next line when it does not (settings.css). A disabled row is announced
    * as such; its control is built disabled by the caller and its description
    * says why.
+   *
+   * A row with neither title nor description is the control alone, across the
+   * row: the option under the switch that turns it on (the Motion tab's
+   * preview cards), whose own controls carry their accessible names.
    */
-  function row(key: string, title: string, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean }) {
+  function row(key: string, title: string | null, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean }) {
     const classes = ['dsh-claude-settings-row']
     if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
     // The switch has no text of its own; its name is this row's title.
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
-      ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title })
+      ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title ?? '' })
       : control
     const disabled = options?.disabled === true
     return React.createElement(
       'div',
       { className: classes.join(' '), key, 'aria-disabled': disabled ? 'true' : undefined, 'data-disabled': disabled ? '' : undefined },
-      rowText(title, description),
+      title === null && description === null ? null : rowText(title ?? '', description),
       named,
     )
   }
