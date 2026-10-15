@@ -108,11 +108,6 @@ export const CONVERSATION_PARTS: PartTable = {
   scrollBody: 'scroll-body',
   composerSeat: 'composer-seat',
   composerStack: 'composer-stack',
-  markdown: 'markdown',
-  tableScroll: 'table-scroll',
-  fileMention: 'file-mention',
-  fileLink: 'file-link',
-  linkIcon: 'link-icon',
   runningIcon: 'running-icon',
   runningContent: 'running-content',
   callRow: 'call-row',
@@ -209,6 +204,12 @@ export const MENU_PARTS: PartTable = {
  * brings the name back.
  */
 export const PAGE_PARTS: PartTable = {
+  // The host renders its markdown renderer's own names wherever a transcript,
+  // a search hit or a preview shows one, so they are read page-wide (D3).
+  markdown: 'markdown',
+  tableScroll: 'table-scroll',
+  fileMention: 'file-mention',
+  fileLink: 'file-link',
   title: 'text-title',
   headline: 'text-headline',
   caption: 'text-caption',
