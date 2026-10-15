@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.15.0] - 2026-10-15
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.15.0) | [English](#en-0.15.0)
+
+<h3 id="cn-0.15.0">新增功能</h3>
 
 - 设置页「动效」页新增「新文字淡入」一行：流式回答里新出现的字符是否先淡后实（约 0.12 秒）由它决定，两档各带一张预览卡，同一句样品在卡里逐字到达，「淡入」那张每个字先落到最淡的一档再亮起来，「直接出现」那张把字一个个直接交出来；这一项默认关闭，关闭时新到的字符立即是本色。
 - 设置页「动效」页新增「消息气泡动画」一行：自己发的消息落到对话里时怎么出现由它决定，两张卡片各演各的——「在原地长出来」让气泡在自己的位置上从零长到满（只改大小，旁边的东西不动），「从输入框飞上来」是原来那一下，输入框卡片被抬到消息那一行。默认仍是飞上来。
@@ -30,7 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 侧栏收起成图标栏后，「进行中 / 已归档」控件与已归档列表随分区标题一起离开页面，宿主自己的分区按钮留在原处；侧栏重新展开时两者照旧回来。
 - 「停止生成」按钮里的方块在任何显示缩放下都落在圆环正中：125% 与 150% 这类非整数缩放下，它不再偏出半个像素。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.15.0">New Features</h3>
 
 - The Motion tab gains a New-text fade row, deciding whether the characters arriving in a streaming answer start faint and settle over about 0.12 s; its two cards each hold the same sample line arriving character by character, the Fade in card landing each character at its faintest step before it brightens and the Appears at once card handing each one over as it is. The row ships off, and with it off arriving characters are solid at once.
 - The Motion tab gains a Message bubble animation row, deciding how a message the reader sends arrives in the conversation: its two cards each show their own answer, Grows into its place taking the bubble from nothing at its own corner while nothing beside it moves, and Flies up from the composer carrying the answer that was already there. The row ships on the flight.

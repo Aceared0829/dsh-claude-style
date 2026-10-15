@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "new",
-  "order": 20,
-  "external": true,
-  "zh": "设置页「输入区」页「重绘模型选择器」下面多一项「模型描述」，默认开启：开着时一级列表的每个模型名下面写一行说明，关掉后每一行只剩模型名。",
-  "en": "The Composer tab gains a Model descriptions switch under Redraw the model picker, on by default: while it is on each model in the picker's first level carries a line under its name saying what the model is, and off leaves every row with the model's name alone."
-}

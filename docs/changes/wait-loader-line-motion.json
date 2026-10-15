@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 30,
-  "external": false,
-  "zh": "状态行开头的加载点现在跟着这一轮在做什么换动作：模型思考时三颗点照旧弹跳，这一轮改去写回答或调用工具时它们各沿一条直线来回——三条直线彼此相差 120°、其中一条反着走，球在两端最大、过中点最小，去程与回程一样长；两套动作之间不硬切：旧的那一列各自淡出、新的那一列各自淡入，每颗球都在自己动作里的那一拍上开始——跳球从落地回弹那一刻开始淡出、到最高点淡完，从最高点开始淡入、到落地淡完；走路从线的一端开始淡出、到中点淡完，从中点开始淡入、到另一端淡完，没有哪颗球被挪到别的动作的位置上；一个动作站满 2 秒才允许下一套接手，这段时间里来了又走的状态不打扰它。",
-  "en": "The loader at the head of the status line now changes with what the turn is doing: the three dots bounce while the model thinks, and once the turn writes or works they each walk a line of their own — three lines 120° apart with one of them run the other way, the dot largest at either end and smallest as it crosses the middle, going out and coming back over the same stretch of time; the two motions never cut: the lane leaving fades each of its dots out where its own motion next turns back — off the floor for a bounce, off a far end for a walk — and the lane arriving fades each of its dots in where that motion next carries it, each fade over one of its own legs, so no dot is ever moved to a pose its motion does not carry; a motion stands for 2 s before the next may take it over, so a state that comes and goes inside that stretch leaves it standing."
-}

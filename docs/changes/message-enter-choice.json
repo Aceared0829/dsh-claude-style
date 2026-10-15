@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "new",
-  "order": 20,
-  "external": false,
-  "zh": "设置页「动效」页新增「消息气泡动画」一行：自己发的消息落到对话里时怎么出现由它决定，两张卡片各演各的——「在原地长出来」让气泡在自己的位置上从零长到满（只改大小，旁边的东西不动），「从输入框飞上来」是原来那一下，输入框卡片被抬到消息那一行。默认仍是飞上来。",
-  "en": "The Motion tab gains a Message bubble animation row, deciding how a message the reader sends arrives in the conversation: its two cards each show their own answer, Grows into its place taking the bubble from nothing at its own corner while nothing beside it moves, and Flies up from the composer carrying the answer that was already there. The row ships on the flight."
-}

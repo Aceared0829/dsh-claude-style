@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 20,
-  "external": false,
-  "zh": "状态行换词时不再空一拍：旧词向上淡出、模糊的同时，新词从下方升入，两段动画重叠着走完，整次换词收在 0.2 秒内，途中行里始终有字，计时仍贴着词尾。",
-  "en": "The status line hands its wording over without standing empty in between: the words leaving fade and blur upward while the ones arriving rise from below, the two halves travelling together and the change done inside 0.2 s, with words in the line throughout and the clock still sitting right after them."
-}
