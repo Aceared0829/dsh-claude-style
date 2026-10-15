@@ -18,7 +18,7 @@ export function createSettingsGeneralTab(): SettingsTab {
    * The theme style renders as a grid of large cards, each carrying the
    * brand's own mark: brands are presets, not sibling tiers of one setting.
    * The stylesheet picks the mark off the logo's data-brand, so a new brand
-   * is one option here plus one rule in settings.css.
+   * is one option here plus one rule in settings-cards.css.
    */
   function themePicker(prefs: Prefs, write: SettingsView['write']) {
     const brandOptions = [

@@ -1,0 +1,256 @@
+/* ---------- The settings page's pickers: one card per choice ---------- */
+/* The rows whose control is the effect itself (D32): a grid of cards spanning
+   the row, each card carrying a sample that wears the choice it stands for, so
+   the control needs no label and the row needs no description. They stand
+   apart from settings.css because they are a responsibility of their own — a
+   new choice is one card here plus one option in a settings-tab-*.ts — while
+   the row shell, the switches, the brand editor and the tab strip are the
+   other. */
+
+body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker) {
+  align-self: stretch;
+}
+
+/* The settings page's pickers are one control: a grid of cards, one per choice,
+   spanning the row it sits in. The theme style's cards carry the brand's mark
+   over its name; the waiting line's paint cards carry the line's words wearing
+   the paint itself, which is why both read shared/motion.css; the caret's cards
+   carry a sample line with the caret doing what the choice says; the reveal's
+   carry a sample line whose characters arrive one after another. The brand
+   marks are the same assets the sidebar and hero paint — Claude's clay
+   starburst, DeepSeek's whale in brand blue — inlined as CSS data URIs, so they
+   read in full colour on either theme: a new brand is one option in
+   settings-tab-general.ts and one [data-brand] rule here. */
+body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 8px;
+}
+
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card) {
+  appearance: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color var(--dsh-claude-timing-feedback);
+}
+
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card):hover {
+  border-color: var(--dsw-alias-border-l2);
+}
+
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card):focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
+  outline-offset: 1px;
+}
+
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card)[data-active] {
+  border-color: var(--dsw-alias-brand-primary, #d97757);
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-logo {
+  width: 32px;
+  height: 32px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-logo[data-brand="claude"] {
+  background-image: var(--dsh-claude-image-claude-mark-clay);
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-logo[data-brand="deepseek"] {
+  background-image: var(--dsh-claude-image-deepseek-mark);
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* A paint card holds nothing but the words, centred: the card gives a preview
+   the room a line's words need, whatever the sample is. The sample stands on
+   the line's own metrics and never wraps, so the cards stay one height and a
+   longer sample is cut where the line cuts it. */
+body[data-dsh-claude-style] .dsh-claude-motion-card {
+  min-height: 64px;
+  padding: 14px 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* A paint card's sample is the line's own wording taking turns: one wording
+   stands, leaves the way a wording leaves the line, and the other rises in its
+   place, on a loop. Both stand in one grid cell, so the box is as wide as the
+   longer wording and neither the card nor the clock's place beside it would
+   move when they change (settings-tab-motion.ts writes the two). */
+body[data-dsh-claude-style] .dsh-claude-motion-sample {
+  display: grid;
+  font-size: 14px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+/* One turn of the cycle per wording: it stands for a little under half of it,
+   leaves upward through the blur in a twentieth, waits out of sight, and rises
+   from below at the end — the swap's own travel, blur and curve
+   (shared/motion.css), on the preset card's period. The second wording is
+   offset half a turn, so the two are never on the card together. */
+body[data-dsh-claude-style] .dsh-claude-motion-word {
+  grid-area: 1 / 1;
+  justify-self: center;
+  animation: dsh-claude-motion-word var(--dsh-claude-period-preview-swap) var(--dsh-claude-swap-ease) infinite;
+}
+
+body[data-dsh-claude-style] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  animation-delay: calc(-0.5 * var(--dsh-claude-period-preview-swap));
+}
+
+@keyframes dsh-claude-motion-word {
+  0%, 45% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  50% { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(calc(-1 * var(--dsh-claude-swap-distance))); }
+  95% { opacity: 0; filter: blur(var(--dsh-claude-swap-blur)); transform: translateY(var(--dsh-claude-swap-distance)); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+/* A caret card previews the choice itself on one sample line: on walks the
+   caret the line's length and back, standing at each end; off stands the caret
+   at the line's head. The padding at the line's head is where a caret before
+   the first character stands. */
+body[data-dsh-claude-style] .dsh-claude-caret-card {
+  min-height: 64px;
+  padding: 14px 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-caret-sample {
+  position: relative;
+  display: inline-block;
+  padding-left: 6px;
+  font-size: 14px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+body[data-dsh-claude-style] .dsh-claude-caret-sample-bar {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+/* Both choices blink on the native caret's own cycle (caret.css's keyframes);
+   the walk rides the preview period the paint cards already set. The walking
+   caret is lit for the whole walk and blinks only while it stands: the drawn
+   caret restarts its blink on every move (features/caret/caret.ts), so a reader
+   who is typing never sees it dark. */
+body[data-dsh-claude-style] .dsh-claude-caret-sample-bar.dsh-claude-caret-typing {
+  animation: dsh-claude-caret-glide var(--dsh-claude-period-preview-swap) var(--dsh-claude-ease-standard) infinite,
+    dsh-claude-caret-rest-blink var(--dsh-claude-period-preview-swap) step-end infinite;
+}
+
+body[data-dsh-claude-style] .dsh-claude-caret-sample-bar.dsh-claude-caret-off {
+  animation: dsh-claude-caret-blink var(--dsh-claude-period-blink) step-end infinite;
+}
+
+/* A quarter of the preview period each: one walk out, one stand, one walk back,
+   one stand, so a stand lasts a whole native cycle. */
+@keyframes dsh-claude-caret-glide {
+  0%, 25% { left: 0; }
+  50%, 75% { left: calc(100% - 2px); }
+  100% { left: 0; }
+}
+
+/* One native cycle inside a stand: half of the 1 s cycle lit, half dark
+   (tokens.json --dsh-claude-period-blink against
+   --dsh-claude-period-preview-swap). */
+@keyframes dsh-claude-caret-rest-blink {
+  0% { opacity: 1; }
+  12.5% { opacity: 0; }
+  25% { opacity: 1; }
+  62.5% { opacity: 0; }
+  75%, 100% { opacity: 1; }
+}
+
+/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D26):
+   both wordings would come to rest on the cell's own frame, one painted over
+   the other, so one wording stands — the way the line writes its own words at
+   once on this setting — and both carets hold the frame the drawn one holds
+   (features/caret/caret.css). The hidden wording keeps its place in the cell, so
+   the card is the same size in every setting. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word {
+  animation: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  visibility: hidden;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-caret-sample-bar:is(.dsh-claude-caret-typing, .dsh-claude-caret-off) {
+  animation: none;
+}
+
+/* A reveal card holds one sample line whose characters arrive one after
+   another, centred and never wrapped. The fade card fades each character in as
+   it is handed its turn; the other hands it over with nothing between, which is
+   what the conversation looks like while the fade is off. */
+body[data-dsh-claude-style] .dsh-claude-reveal-card {
+  min-height: 64px;
+  padding: 14px 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-reveal-sample {
+  display: block;
+  font-size: 14px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+/* One character of the sample: unseen until its turn comes, holding its box
+   while it waits so the line is the same width from the first frame. */
+body[data-dsh-claude-style] .dsh-claude-reveal-piece {
+  opacity: 0;
+}
+
+body[data-dsh-claude-style] .dsh-claude-reveal-card:not([data-fade]) .dsh-claude-reveal-piece[data-in] {
+  opacity: 1;
+}
+
+/* The fade card's character arrives the way a streamed one does: it lands on
+   the reveal's own faintest step and settles over the reveal's own duration
+   (constants.ts CHAT_REVEAL_MIN_OPACITY, tokens.json
+   --dsh-claude-duration-reveal). An animation rather than a transition, because
+   the piece is handed its turn by an attribute and the frame it lands on has to
+   be the faint one rather than a step along the way. */
+body[data-dsh-claude-style] .dsh-claude-reveal-card[data-fade] .dsh-claude-reveal-piece[data-in] {
+  opacity: 1;
+  animation: dsh-claude-reveal-piece var(--dsh-claude-duration-reveal) linear both;
+}
+
+@keyframes dsh-claude-reveal-piece {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+/* The reader's animation choice (D26): both samples stand whole, which is what
+   the conversation does while the fade is held still. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-piece {
+  opacity: 1;
+  animation: none;
+}
