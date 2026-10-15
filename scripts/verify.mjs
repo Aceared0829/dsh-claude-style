@@ -46,6 +46,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
+import { SKIPPED, TREES, treeHash } from './shared/tree-hash.mjs'
 import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
 
 const require = createRequire(import.meta.url)
@@ -58,13 +59,6 @@ const CACHE = path.join(ROOT, '.debug', 'verify-cache')
 const VITEST = path.join(path.dirname(require.resolve('vitest/package.json')), 'vitest.mjs')
 /** Bumped when a recorded verdict stops meaning what this file reads it as. */
 const FORMAT = 1
-/**
- * The directories whose bytes decide a verdict. `lib/` is the build's own
- * output and `.debug/` is what the runs write, so neither is an input.
- */
-const TREES = ['packages', 'scripts', 'locale', 'docs']
-/** What no walk enters: the build output, the local scratch and the worktrees under `.claude/`. */
-const SKIPPED = new Set(['.git', '.debug', '.claude', 'node_modules', 'lib'])
 /** The flags a request may carry, without their dashes; the three name-taking ones carry values. */
 const FLAGS = new Set(['quick', 'full', 'e2e', 'no-e2e', 'force', 'case', 'feature', 'scenario'])
 
@@ -80,33 +74,6 @@ const say = (line) => process.stdout.write(`${line}\n`)
 function bad(message) {
   console.error(`verify: ${message}`)
   process.exit(2)
-}
-
-/**
- * Every file a gate can read, as root-relative paths in one fixed order: the
- * directories above, and the files at the root that hold the scripts, the
- * lockfile and the configuration they read.
- */
-function treeFiles() {
-  const files = []
-  // An empty extension matches every name, which is what hashing the tree wants.
-  for (const dir of TREES) files.push(...filesUnder(path.join(ROOT, dir), [''], SKIPPED))
-  for (const entry of fs.readdirSync(ROOT, { withFileTypes: true })) {
-    if (entry.isFile()) files.push(path.join(ROOT, entry.name))
-  }
-  return files.map((file) => path.relative(ROOT, file).replace(/\\/g, '/')).sort()
-}
-
-/** The hash of the tree a verdict belongs to: each file's own path and content hash. */
-function treeHash() {
-  const files = treeFiles()
-  const digest = crypto.createHash('sha256')
-  for (const file of files) {
-    digest.update(file)
-    digest.update('\0')
-    digest.update(crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, file))).digest())
-  }
-  return { hash: digest.digest('hex'), files: files.length }
 }
 
 /**
@@ -307,7 +274,7 @@ function report(record, source) {
 
 async function main() {
   const request = parseRequest()
-  const tree = treeHash()
+  const tree = treeHash(ROOT)
   const key = keyOf(tree.hash, request)
   say(`verify: tree ${tree.hash.slice(0, 12)} (${tree.files} files under ${TREES.join(', ')} and the root), gates ${gatesFor(request).map((gate) => gate.id).join(', ')}`)
   const before = request.force ? null : cached(key)

@@ -6,7 +6,9 @@
  * is stored under the hash of everything it is computed from, the code that
  * computes it included, so a hit hands back the very bytes a fresh run would
  * produce: `lib/` is the same with the cache or without it. The directory sits
- * in `.debug/` (gitignored); a fresh clone and CI start empty and compute all.
+ * in `.debug/` (gitignored); a fresh clone starts empty and computes all, and
+ * the continuous integration run restores what the run over the same tree saved
+ * (D69).
  */
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'

@@ -20,9 +20,11 @@
  * Every scenario runs against its own scratch instance, so nothing a scenario
  * writes can reach another.
  *
- * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--headed] [--out <dir>] [--delay <ms>]
+ * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--shard <index>:<total>] [--headed] [--out <dir>] [--delay <ms>]
  *        --scenario names what to run; without it the walk is every scenario in
  *        the table (packages/testing/scenarios.cjs) but the parked pair below.
+ *        --shard takes one slice of that walk, so several runs hold the whole
+ *        of it between them (D66).
  */
 'use strict'
 const fs = require('node:fs')
@@ -295,6 +297,21 @@ async function runScenario(name, options) {
   }
 }
 
+/**
+ * One slice of a walk: every `<total>`th name from `<index>`. The scenarios of a
+ * walk are independent of one another, so slices taken this way cover the walk
+ * exactly once between them however many runners hold it (D66).
+ */
+function shardOf(names, spec) {
+  const at = spec.indexOf(':')
+  const index = at === -1 ? NaN : Number(spec.slice(0, at))
+  const total = at === -1 ? NaN : Number(spec.slice(at + 1))
+  if (!Number.isInteger(index) || !Number.isInteger(total) || total < 1 || index < 0 || index >= total) {
+    throw new Error(`--shard takes <index>:<total> with 0 <= index < total, not "${spec}"`)
+  }
+  return names.filter((name, position) => position % total === index)
+}
+
 async function main() {
   const args = process.argv.slice(2)
   const argOf = (flag) => {
@@ -317,6 +334,12 @@ async function main() {
     throw new Error(`the lane parks ${parked.join(', ')}, which packages/testing/scenarios.cjs does not hold`)
   }
   const names = (argOf('scenario') ?? E2E_SCENARIOS.filter((name) => !PARKED.has(name)).join(',')).split(',').map((name) => name.trim()).filter(Boolean)
+  const shard = argOf('shard')
+  if (shard !== undefined && argOf('scenario') !== undefined) {
+    throw new Error('--shard takes one slice of the default walk; --scenario names the scenarios itself')
+  }
+  const walked = shard === undefined ? names : shardOf(names, shard)
+  if (walked.length === 0) throw new Error(`--shard ${shard} of ${names.length} scenarios has nothing to run`)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
   const options = {
     headed: args.includes('--headed'),
@@ -328,12 +351,12 @@ async function main() {
   // The first boot of the scratch host installs this checkout into the scratch
   // profile, which on a cold machine outlasts the waits a scenario makes on the
   // page. Booting once up front keeps that cost out of the first scenario.
-  if (names.length > 1) {
+  if (walked.length > 1) {
     const warm = await start({ home: options.home, env: {}, resetState: false })
     warm.stop()
   }
   const results = []
-  for (const name of names) {
+  for (const name of walked) {
     const result = await runScenario(name, options)
     fs.writeFileSync(path.join(out, `${name}.json`), `${JSON.stringify(result, null, 2)}\n`)
     results.push(result)
