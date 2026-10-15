@@ -292,7 +292,16 @@ async function runScenario(name, options) {
   let expired = false
   const timer = setTimeout(() => { expired = true }, SCENARIO_DEADLINE_MS)
   try {
-    session = await openPage(host.url, { browser: options.browser, headless: options.headed !== true, args: scenario.browserArgs, initScript: scenario.initScript, ...scenario.viewport })
+    // `args` are launch switches, and the walk's shared browser was started
+    // without them: a scenario that carries any starts a browser of its own,
+    // which its own `close` takes down again.
+    session = await openPage(host.url, {
+      browser: scenario.browserArgs === undefined ? options.browser : undefined,
+      headless: options.headed !== true,
+      args: scenario.browserArgs,
+      initScript: scenario.initScript,
+      ...scenario.viewport,
+    })
     const { page } = session
     const body = (async () => {
       step('waiting for the skin')
