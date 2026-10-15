@@ -154,17 +154,17 @@
       coldStack.remove()
       accessParent.appendChild(access)
       await sleep(200)
-      r.homeHero = { onHero: document.body.hasAttribute('data-dsh-claude-home-hero') }
+      r.homeHero = { onHero: heroRoot.hasAttribute('data-dsh-claude-home-hero') }
       // The studio rules reach the hero stack through that mark: the stack
       // takes the studio column's 720px cap.
       var studioStack = document.createElement('div')
       studioStack.className = '_x_composerStack_1 _x_composerHero_1'
-      document.body.appendChild(studioStack)
+      heroRoot.appendChild(studioStack)
       r.homeHero.stackMaxWidth = getComputedStyle(studioStack).maxWidth
       studioStack.remove()
       heroRoot.remove()
       await sleep(200)
-      r.homeHero.offHero = document.body.hasAttribute('data-dsh-claude-home-hero')
+      r.homeHero.offHero = document.querySelector('[data-dsh-claude-home-hero]') !== null
       r.mascot.afterHero = document.querySelector('.dsh-claude-crab') !== null
       // The stylesheet alone decides where a panel may draw: under the hero
       // stack's dock it shows, and the moment the host drops the stack's hero

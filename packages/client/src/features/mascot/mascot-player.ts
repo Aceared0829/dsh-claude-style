@@ -1,4 +1,3 @@
-import { COMPOSER_HIDDEN_ATTR } from '../../constants'
 import { COMPOSER_STACK, conversationSessionId, findComposerSeat, findConversationSession } from '../../core/host'
 import { motionReduced } from '../../core/prefs'
 import { createMascotSignals } from './mascot-signals'
@@ -167,7 +166,7 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
     const heroCard = ui.composer ? ui.composer.heroCard() : null
     if (heroCard !== null) return { element: heroCard, session: null, place: 'card' }
     if (!conversation) return null
-    if (document.body.hasAttribute(COMPOSER_HIDDEN_ATTR)) return null
+    if (ui.composer !== undefined && ui.composer.isChatHidden()) return null
     const content = findConversationSession()
     const seat = content === null ? null : findComposerSeat(content)
     if (seat === null) return null

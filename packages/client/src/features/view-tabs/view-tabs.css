@@ -51,15 +51,15 @@ body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"]::after {
 /* ---------- Windows titlebar mode: the strip moves into the titlebar ---------- */
 /* The desktop shell marks <html> with data-windows-titlebar and draws the
    titlebar strip with the frame's ::before; packages/client/src/features/view-tabs/view-tabs.ts mirrors
-   the marker onto <body>. There the strip leaves its own row and sits fixed in
-   the titlebar, horizontally centred in the window — the same row the host
-   gives the collapsed sidebar's new-session button. The measured
-   --dsh-view-tabs-shift is not written in this mode, so the base transform
-   gives way.
+   the marker onto the header holding the strip. There the strip leaves its
+   own row and sits fixed in the titlebar, horizontally centred in the window —
+   the same row the host gives the collapsed sidebar's new-session button. The
+   measured --dsh-view-tabs-shift is not written in this mode, so the base
+   transform gives way.
    macOS has no such block: its shell leaves the frame unpadded, so the
    conversation header draws its first row inside the strip and the measured
    shift seats the tabs on the row beneath it (view-tabs.ts). */
-body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
+body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
   position: fixed !important;
   top: calc(var(--dsh-windows-titlebar-height, 40px) / 2) !important;
   left: 50% !important;
@@ -78,20 +78,21 @@ body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
   opacity: 0 !important;
   transition: opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard) !important;
 }
-body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs]:hover {
+body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]:hover {
   opacity: 1 !important;
 }
 /* The pane-hover reveal above cannot outweigh this mode's own resting opacity,
    which is stated with `!important` because the strip is fixed over the caption
    row; without this the strip only answers the pointer once it is already in
-   that row. */
-body[data-dsh-claude-style][data-dsh-titlebar-tabs] [class*="centerCol"]:hover [data-dsh-view-tabs] {
+   that row. The pane is the header's ancestor, so the compound order turns
+   around: the hovered pane, then the marked header, then the strip. */
+body[data-dsh-claude-style] [class*="centerCol"]:hover [data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
   opacity: 1 !important;
 }
 /* The strip's row is gone from the flow, so the header takes the shape it has
    when it owns no tab strip: no min-height, and the bottom padding the host
    gives that shape. */
-body[data-dsh-claude-style][data-dsh-titlebar-tabs] [class*="_header"]:has([class*="_tabs"]) {
+body[data-dsh-claude-style] [class*="_header"][data-dsh-titlebar-tabs]:has([class*="_tabs"]) {
   min-height: 0 !important;
   padding-bottom: 10px !important;
 }

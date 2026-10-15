@@ -80,7 +80,7 @@
       edgeProbe.remove()
       var marks = function () {
         return {
-          band: document.body.getAttribute('data-dsh-header-band'),
+          band: header.getAttribute('data-dsh-header-band'),
           row: row.hasAttribute('data-dsh-header-row'),
           title: title.hasAttribute('data-dsh-header-title'),
           utilities: utilities.hasAttribute('data-dsh-header-actions'),

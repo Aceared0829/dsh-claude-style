@@ -117,9 +117,9 @@ async function probe(page) {
   check('clears back to one line', s2.inputH === 24, 'inputH=' + s2.inputH)
 
   // The model trigger and the context meter share the row's right end: the
-  // trailing cluster keeps the meter's room free through the body variable the
-  // composer pass writes, and while the composer is shown the two must not
-  // overlap.
+  // trailing cluster keeps the meter's room free through the variable the
+  // composer pass writes on the card's parent, and while the composer is shown
+  // the two must not overlap.
   const clearance = () => page.evaluate(`(() => {
     const card = document.querySelector('[data-composer-card]')
     const trailing = card === null ? null : card.querySelector('[class*="_row"] > [class*="_trailing"]')
@@ -131,7 +131,7 @@ async function probe(page) {
       clear: t.right <= m.left + 1,
       trailingRight: Math.round(t.right),
       meterLeft: Math.round(m.left),
-      room: document.body.style.getPropertyValue('--dsh-claude-meter-room') || '(unset)',
+      room: card.parentElement === null ? '(unset)' : card.parentElement.style.getPropertyValue('--dsh-claude-meter-room') || '(unset)',
     }
   })()`)
 

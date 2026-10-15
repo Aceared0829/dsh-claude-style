@@ -27,8 +27,8 @@ import type manifest from './view-tabs.manifest'
  * Windows titlebar mode is the one case where no measurement is needed: the
  * desktop shell marks <html> with `data-windows-titlebar` and the strip is
  * placed fixed in the titlebar row, centred (view-tabs.css). This mirrors that
- * marker onto <body> so the stylesheet can switch, and skips the measured
- * shift entirely there.
+ * marker onto the header holding the strip so the stylesheet can switch, and
+ * skips the measured shift entirely there.
  *
  * macOS keeps the measured path. Its shell hands the top of the window to
  * the traffic lights and pads no content around them: the host sets
@@ -69,10 +69,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let last: number | null = null
   /** The element last was written to: a re-rendered strip must be told again. */
   let lastEl: HTMLElement | null = null
-  /** The body marker the stylesheet reads for the fixed titlebar placement. */
+  /** The header marker the stylesheet reads for the fixed titlebar placement. */
   const TITLEBAR_ATTR = 'data-dsh-titlebar-tabs'
   /** Whether the last pass saw the host's Windows titlebar marker. */
   let titlebar = false
+  /** The header carrying TITLEBAR_ATTR right now, or null. */
+  let titlebarHost: HTMLElement | null = null
   /** The strip mark every strip rule in view-tabs.css keys on. */
   const stripStamp = createStamp<HTMLElement>('data-dsh-view-tabs')
   /** The strip also wears the shared small segment look (shared/segment-control.css): a class, since the look is the control's own, not the mark's. */
@@ -85,18 +87,27 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const pill = createSlidingPill('[aria-selected="true"]')
 
   /**
-   * Mirror the host's Windows titlebar marker onto <body>, the way D9 moves
-   * structure-sensitive branches from CSS to a JS-written attribute. The
-   * observer's attributeFilter is aria-* only, so this write cannot feed
-   * itself another pass; value-change only, so an unchanged mode writes
-   * nothing.
+   * Read the host's Windows titlebar marker; the write that publishes it
+   * happens in sync, on the header holding the strip. The mode is a shell
+   * fact, so it flips only with the window's chrome.
    */
   function syncTitlebar() {
-    const next = windowsDesktop()
-    if (next === titlebar) return
-    titlebar = next
-    if (next) document.body.setAttribute(TITLEBAR_ATTR, '')
-    else document.body.removeAttribute(TITLEBAR_ATTR)
+    titlebar = windowsDesktop()
+  }
+
+  /**
+   * Publish the mode on the header holding the strip — the mark's every
+   * reader is that header or the strip inside it, and a header-level write
+   * keeps a flip from invalidating the document (D9). The observer's
+   * attributeFilter is aria-* only, so this write cannot feed itself another
+   * pass.
+   */
+  function markTitlebar(header: HTMLElement | null) {
+    const host = titlebar ? header : null
+    if (host === titlebarHost) return
+    titlebarHost?.removeAttribute(TITLEBAR_ATTR)
+    titlebarHost = host
+    host?.setAttribute(TITLEBAR_ATTR, '')
   }
 
   function rect(el: Element | null | undefined) {
@@ -183,12 +194,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     syncTitlebar()
     const found = findStrip()
     if (found === null) {
+      markTitlebar(null)
       stripStamp.mark(null)
       classStamp(null)
       pill.sync(null)
       return
     }
     const { header, strip } = found
+    markTitlebar(header)
     stripStamp.mark(strip)
     classStamp(strip)
     pill.sync(strip)
@@ -230,10 +243,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   ui.viewTabs = { measure, sync, skipOnContentOnly: true }
 
   return () => {
-    if (titlebar) {
-      document.body.removeAttribute(TITLEBAR_ATTR)
-      titlebar = false
-    }
+    titlebar = false
+    markTitlebar(null)
     // The strip the passes wrote to: the placement belongs to the element the
     // last pass held, and the page may have moved on since.
     const strip = stripStamp.current()
