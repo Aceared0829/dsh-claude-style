@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 1,
-  "external": false,
-  "zh": "端到端通道让每个场景声明的浏览器开关真正生效：远端设置走查改用一台带名字映射（`--host-resolver-rules`）的浏览器，不论整条通道是否共用一个浏览器都跑到底。",
-  "en": "The end-to-end lane honours the browser switches a scenario declares: the remote-settings walk opens its page under the mapped name whether or not the lane shares one browser between scenarios."
-}
