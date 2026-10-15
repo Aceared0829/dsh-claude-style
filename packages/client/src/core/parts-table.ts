@@ -159,10 +159,6 @@ export const CONVERSATION_PARTS: PartTable = {
   workspaceLabel: 'workspace-chip-label',
   clearButton: 'clear-button',
   navList: 'nav-list',
-  // The host's own `root` inside the conversation area: the hero page's root,
-  // the composer's root and the model seat's root all answer to that name, so a
-  // rule that wants one of them qualifies this part with the host's own marker.
-  root: 'conversation-root',
 }
 
 /** The right sidebar's docked panels. */
@@ -210,6 +206,11 @@ export const PAGE_PARTS: PartTable = {
   tableScroll: 'table-scroll',
   fileMention: 'file-mention',
   fileLink: 'file-link',
+  // The host's own `root` of whatever component an element belongs to: the hero
+  // page's root sits in the centre column, the composer's and the model seat's
+  // sit in the conversation, so the name is read page-wide and a rule that wants
+  // one of them qualifies it with that component's own marker.
+  root: 'host-root',
   title: 'text-title',
   headline: 'text-headline',
   caption: 'text-caption',

@@ -58,7 +58,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * qualifies the host's phase marker because the draft editor and the
    * connection indicator carry a `data-phase` of their own (D3).
    */
-  const heroRoot = cacheFirstMatch<HTMLElement>(`[data-dsh-claude-part~="conversation-root"][${PHASE_ATTRIBUTE}="hero"]`)
+  const heroRoot = cacheFirstMatch<HTMLElement>(`[data-dsh-claude-part~="host-root"][${PHASE_ATTRIBUTE}="hero"]`)
 
   let layout = PREF_DEFAULTS.homeLayout
   /** Whether the last pass saw the new-conversation hero, as of that reading. */

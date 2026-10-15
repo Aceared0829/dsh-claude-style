@@ -4,7 +4,7 @@
    named by their exact place in the seat, so a menu another plugin nests
    inside the seat keeps its own layout, and the seat root the picker hides is
    never matched — a display here would outrank the hide rule below. */
-body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > [data-dsh-claude-part~="conversation-root"] > [data-dsh-claude-part~="trigger"],
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > [data-dsh-claude-part~="host-root"] > [data-dsh-claude-part~="trigger"],
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > .dsh-claude-model-btn {
   display: inline-flex;
   align-items: center;
