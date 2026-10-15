@@ -63,11 +63,15 @@ export function createHostAccountMenu(options: { close(): void }) {
    * The host's settings button, a dialog trigger in the footer, or null. The
    * desktop has none: its account menu took that slot and carries 设置
    * itself, and "any button that is not a menu anchor" there is the update
-   * pill beside it — the settings row read "Retry update" and clicked it.
+   * pill beside it — the settings row read "Retry update" and clicked it. The
+   * account trigger matches the settings area's own shape, so it is turned
+   * away here: pressing it opens that menu, never the dialog.
    */
   function hostSettingsTrigger() {
     const foot = findFootArea()
-    return foot === null ? null : foot.querySelector<HTMLElement>(SETTINGS_BUTTON_SELECTOR)
+    if (foot === null) return null
+    const trigger = foot.querySelector<HTMLElement>(SETTINGS_BUTTON_SELECTOR)
+    return trigger !== null && trigger === hostAccountTrigger() ? null : trigger
   }
 
   /**
