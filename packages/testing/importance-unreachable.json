@@ -547,6 +547,26 @@
       ]
     },
     {
+      "reason": "减少动效配上加载点：走查写动画偏好时那一轮已经落定，状态行没有加载点",
+      "selectors": [
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-chat-wait-lane .dsh-claude-chat-wait-dot"
+      ]
+    },
+    {
+      "reason": "加载点换动作的中间帧：走查把页面停住，退出中的那一列已经淡完",
+      "either": true,
+      "selectors": [
+        "body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-leaving .dsh-claude-chat-wait-dot"
+      ]
+    },
+    {
+      "reason": "消息气泡动画选「在原地长出来」：走查的发送按出厂默认飞上来，这一档不在它的轮次里",
+      "selectors": [
+        "body[data-dsh-claude-style] [data-dsh-claude-message-enter]",
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-message-enter]"
+      ]
+    },
+    {
       "reason": "宿主的按键提示按运行平台给出：这台浏览器上宿主没有为新建会话给出按键，newSessionShortcut 里没有 kbd",
       "either": true,
       "selectors": [
