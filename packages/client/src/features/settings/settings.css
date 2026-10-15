@@ -323,6 +323,9 @@ body[data-dsh-claude-style] .dsh-claude-settings-switch {
   padding: 2px;
   box-sizing: border-box;
   border-radius: 10px;
+  /* A strict capsule: the page inherits superellipse corners from <html>, which
+     squarish the track's caps away from the knob's true circle. */
+  corner-shape: round;
   background: var(--dsw-specific-selector);
   transition: background-color var(--dsh-claude-timing-feedback);
 }
