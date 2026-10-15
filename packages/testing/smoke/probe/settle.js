@@ -18,12 +18,26 @@
     // exactly 2 passes in the first page's eight cases. Ask for frames here
     // instead, through the rAF the stand-in did not wrap, and wait for a run of
     // them that carries none of the page's own.
+    //
+    // A run of quiet frames is not enough on its own: a timer that came due just
+    // behind them asks for its frame a few milliseconds later, and a loaded
+    // runner then reads that single frame inside the measured second (nine page
+    // loads read exactly 1 pass at 8ms). The wait therefore holds until the
+    // frames have been quiet AND no pass has come for a stretch of wall clock.
     var quietFrames = 0
+    var quietMs = 250
+    var lastPass = performance.now()
     var started = performance.now()
-    while (quietFrames < 8 && performance.now() - started < 8000) {
+    while (performance.now() - started < 8000) {
       var before = window.__passes
       await new Promise(function (done) { window.__nativeRaf(function () { done() }) })
-      quietFrames = window.__passes === before ? quietFrames + 1 : 0
+      if (window.__passes === before) {
+        quietFrames += 1
+      } else {
+        quietFrames = 0
+        lastPass = performance.now()
+      }
+      if (quietFrames >= 8 && performance.now() - lastPass >= quietMs) break
     }
     if (window.SMOKE_TIER !== 'quick') {
       var from = window.__passes
