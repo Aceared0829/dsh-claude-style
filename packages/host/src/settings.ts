@@ -83,22 +83,19 @@ function volatileField(field: SchemaField | null | undefined) {
  * form, no client bundle. The browser half reads either shape
  * (packages/client/src/core/prefs.ts).
  */
-const PREFS_WITH_EARLIER_TYPE: readonly string[] = ['autoPopover', 'chatAnimations', 'statusDetail']
-
 /**
- * One typed Config field for one preference. The default's own type picks the
- * field type (an array is an array of strings), and a preference whose stored
- * value may carry an earlier type takes a union, so PREFS_DEFAULT stays the
- * only field list.
+ * One Config field for one preference, permissive on purpose: it takes the
+ * shapes a stored value may have carried — a string, a boolean or an array of
+ * strings — and keeps PREFS_DEFAULT's value as its default. A value an older
+ * build stored therefore never fails the host's own validation and never keeps
+ * the package from starting; the browser half clamps what it reads and falls
+ * back to the default (packages/client/src/core/prefs.ts).
  */
 function prefsField(Schema: SchemaFactory, key: keyof typeof PREFS_DEFAULT) {
   const value = PREFS_DEFAULT[key]
-  const field = PREFS_WITH_EARLIER_TYPE.includes(key)
-    ? Schema.union([Schema.boolean(), Schema.string()])
-    : Array.isArray(value)
-      ? Schema.array(Schema.string())
-      : typeof value === 'boolean' ? Schema.boolean() : Schema.string()
-  return field.default(value)
+  return Schema
+    .union([Schema.string(), Schema.boolean(), Schema.array(Schema.string())])
+    .default(value)
 }
 
 /**
@@ -114,12 +111,11 @@ function prefsField(Schema: SchemaFactory, key: keyof typeof PREFS_DEFAULT) {
  * host that cannot resolve schemastery must still load the skin — it just
  * loses the settings form.
  *
- * Field types stay permissive (plain string / boolean / array) on purpose: the
- * accepted sets are enforced where they are consumed — the browser half clamps
- * everything it reads — so a set declared here would only narrow what a stored
- * value may keep. The preferences an earlier build stored under another type
- * take both shapes (PREFS_WITH_EARLIER_TYPE above): a stored value the Config
- * refuses keeps the host from starting this package at all.
+ * Field types stay permissive on purpose: the accepted sets are enforced where
+ * they are consumed — the browser half clamps everything it reads and falls
+ * back to the shipped default — so a set declared here would only narrow what a
+ * stored value may keep, and a value the Config refuses keeps the host from
+ * starting this package at all (prefsField above).
  */
 export const Config = SchemaFactory === null
   ? undefined
