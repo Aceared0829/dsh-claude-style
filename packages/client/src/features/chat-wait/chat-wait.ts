@@ -9,6 +9,7 @@ import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { ACTIVITY_THINKING, activityWords, waitingWord } from '../../shared/turn-activity'
+import { setWaitLoaderMotion, releaseWaitLoader } from './wait-loader'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
@@ -21,6 +22,7 @@ import type manifest from './chat-wait.manifest'
 /** One row's line: its box, and the parts every pass writes into it. */
 interface WaitLine {
   line: HTMLElement
+  loader: HTMLElement
   label: HTMLElement
   clock: HTMLElement
   badge: HTMLElement
@@ -166,9 +168,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const clock = buildElement('span', 'dsh-claude-chat-wait-clock')
     const badge = buildElement('span', 'dsh-claude-chat-wait-badge')
     badge.hidden = true
-    line.append(buildLoader(), label, clock, badge)
+    const loader = buildLoader()
+    line.append(loader, label, clock, badge)
     words.after(line)
-    const parts = { line, label, clock, badge }
+    const parts = { line, loader, label, clock, badge }
     lines.set(row, parts)
     return parts
   }
@@ -190,7 +193,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const snapshot = target === null ? null : target.getSnapshot() ?? null
     const turn = snapshot === null ? undefined : openTurn(snapshot)
     const line = lineOf(row, words)
-    const { label, clock, badge } = line
+    const { loader, label, clock, badge } = line
     // What the turn is doing, and the one word its brand waits on for a turn
     // whose state cannot be read (D32): the line says the model's work, never a
     // guess.
@@ -221,6 +224,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }, wording.get(row), now)
     wording.set(row, pass.row)
     setSwappingText(label, pass.word, true)
+    // The loader says the same thing the words do, in a second channel: the dots
+    // bounce while the turn is thinking, and walk their own lines while it
+    // writes or works (wait-loader.ts). A state nothing can be read from is the
+    // model thinking, and a clause the model wrote is its reasoning.
+    const thinking = activity === null || activity.key === null || activity.key === ACTIVITY_THINKING.key
+    setWaitLoaderMotion(loader, thinking ? 'bounce' : 'line')
     clock.hidden = turn === undefined || turn.start === undefined
     if (turn !== undefined && turn.start !== undefined) writeText(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false
@@ -265,6 +274,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const parts = lines.get(row)
     if (parts !== undefined) {
       releaseSwappingText(parts.label)
+      releaseWaitLoader(parts.loader)
       parts.line.remove()
     }
     lines.delete(row)

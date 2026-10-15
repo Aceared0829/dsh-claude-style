@@ -80,6 +80,11 @@
           sweep: copies.length > 0
             ? getComputedStyle(copies[copies.length - 1], '::before').animationName
             : 'none',
+          // Whether that paint is running or held: the Reduced choice freezes
+          // it, and a pressed animation left running would flicker.
+          sweepState: copies.length > 0
+            ? getComputedStyle(copies[copies.length - 1], '::before').animationPlayState
+            : 'none',
           statusMotion: document.body.getAttribute('data-dsh-claude-status-motion'),
           sweepOnLabel: label.classList.contains('dsh-claude-swap-shimmer'),
           filter: movingStyle === null ? 'none' : movingStyle.filter,
@@ -88,8 +93,10 @@
           badge: badge.hidden ? null : badge.textContent,
           // The loader the Claude brand leads the line with, and the host's own
           // whale tail it stands in for: the dots are the accent in force, they
-          // bounce on the snippet's own period with the second and third
-          // staggered behind the first, and they carry no shadow.
+          // carry no shadow, and which motion they play follows what the turn is
+          // doing — the snippet's bounce while it thinks, the dots' own lines
+          // while it works (features/chat-wait/wait-loader.ts). The pose is read
+          // off the first dot, whose line is the vertical one.
           loader: {
             shown: getComputedStyle(loader).display !== 'none',
             dots: dots.length,
@@ -98,6 +105,13 @@
             delay: getComputedStyle(dots[2]).animationDelay,
             background: dotStyle.backgroundColor,
             shadow: dotStyle.boxShadow,
+            motion: loader.className,
+            arriving: Array.from(loader.classList).some(function (name) { return name.indexOf('is-arriving-') === 0 }),
+            translate: dotStyle.translate,
+            scale: dotStyle.scale,
+            // Each dot's own start in its motion: the phase a dot stands at,
+            // which is what tells two dots doing the same walk apart.
+            delays: Array.prototype.map.call(dots, function (one) { return getComputedStyle(one).animationDelay }),
           },
           whaleShown: getComputedStyle(whale).display !== 'none',
           // The box the swap runs in, and where the clock beside it sits: the
@@ -180,11 +194,53 @@
       words.parentElement.appendChild(foreignLine)
       await sleep(300)
       r.wait.foreignAfter = lineOf()
+      // The loader changes motion with the turn's state, at once, where the
+      // wording below waits out its own second-long lock: watched as the tool
+      // call arrives, so the gather the change runs through is sampled — it is
+      // shorter than the lock and a reading at either end would miss it.
+      var watchLoader = async function (want) {
+        var frames = []
+        for (var round = 0; round < 40; round += 1) {
+          var reading = lineOf()
+          frames.push(reading === null ? null : reading.loader)
+          if (reading !== null && want(reading.loader)) break
+          await sleep(20)
+        }
+        return frames
+      }
+      // One dot's walk read off the animation itself: the three dots run the
+      // same clock, so stepping that clock through a whole period — all three
+      // together, which keeps them a third of a period apart — reads the walk's
+      // own curve rather than what the display happened to render, and reads it
+      // at even steps with no frame timing in them. The clock is handed back
+      // where it stood once the readings are in.
+      var WALK_STEP = 25
+      var watchWalk = async function () {
+        var line = row.querySelector('.dsh-claude-chat-wait')
+        var loader = line === null ? null : line.querySelector('.dsh-claude-chat-wait-loader')
+        if (loader === null) return null
+        var dots = Array.prototype.slice.call(loader.children)
+        var running = dots.map(function (dot) { return dot.getAnimations()[0] })
+        if (running.some(function (animation) { return animation === undefined })) return null
+        var stood = running[0].currentTime
+        var began = performance.now()
+        var frames = []
+        for (var round = 0; round < 50; round += 1) {
+          var at = round * WALK_STEP
+          running.forEach(function (animation) { animation.currentTime = at })
+          var style = getComputedStyle(dots[0])
+          frames.push({ at: at, translate: style.translate, scale: style.scale })
+        }
+        running.forEach(function (animation) { animation.currentTime = stood + (performance.now() - began) })
+        return { step: WALK_STEP, frames: frames }
+      }
       // A tool call in flight is a state of its own, with no block streaming.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
       var calls = window.__dshSmokeHost.turnFixtureCalls
       calls.push({ turn: 2 })
+      r.wait.loaderChange = await watchLoader(function (loader) { return loader.animation === 'dsh-claude-wait-dot-line' })
       r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
+      r.wait.walk = await watchWalk()
       // A call that has its arguments names the file it works on; one whose
       // arguments are still arriving names nothing yet.
       calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
@@ -233,7 +289,13 @@
       })
       calls.length = 0
       window.__dshSmokeHost.turnFixtureRunning.steps = []
+      // The turn going back to thinking changes the loader's motion the other
+      // way, and its wording at the same time: the loader's own change is
+      // watched alongside the swap below rather than after it, since the swap's
+      // frames are the ones that have to be caught whole.
+      var loaderBack = watchLoader(function (loader) { return loader.animation === 'dsh-claude-wait-dot' })
       r.wait.silent = await watchSwap()
+      r.wait.loaderBack = await loaderBack
       r.wait.enterFrames = await waitForEnter
       // Reasoning the line can take words from: the model's own clause, the
       // participle first, up to the sentence's end.
@@ -250,6 +312,11 @@
       await sleep(200)
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: '先看清工作区。' }] } : undefined } } }]
       r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
+      // The dots under that choice: read twice a tenth of a second apart, so a
+      // motion that never settles shows up as the two readings differing.
+      var still = lineOf()
+      await sleep(120)
+      r.wait.reducedStill = { first: still, second: lineOf() }
       window.__pushForm({ motion: 'system' })
       await sleep(200)
       // The Motion tab's second paint: the words take the colour wash and its

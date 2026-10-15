@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 30,
+  "external": false,
+  "zh": "状态行开头的加载点现在跟着这一轮在做什么换动作：模型思考时三颗点照旧弹跳，这一轮改去写回答或调用工具时它们各沿一条直线来回——三条直线彼此相差 120°、其中一条反着走，球在两端最大、过中点最小，去程与回程一样长；两套动作之间不硬切，也没有哪颗球停在原地等着轮到自己：每颗球各自走到下一套动作里它自己的位置（0.22 秒），下一套就从那个位置接着走。",
+  "en": "The loader at the head of the status line now changes with what the turn is doing: the three dots bounce while the model thinks, and once the turn writes or works they each walk a line of their own — three lines 120° apart with one of them run the other way, the dot largest at either end and smallest as it crosses the middle, going out and coming back over the same stretch of time; the two motions never cut and no dot waits its turn, each one travelling to its own place in the next motion over 0.22 s, which opens on the pose it arrived at."
+}

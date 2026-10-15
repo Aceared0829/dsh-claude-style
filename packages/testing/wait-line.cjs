@@ -68,6 +68,11 @@ const readHead = (page) => page.evaluate(() => {
   return {
     dots: loader === null ? 0 : loader.children.length,
     shown: loader !== null && getComputedStyle(loader).display !== 'none',
+    // Which of the loader's two motions is standing (features/chat-wait/wait-loader.ts
+    // writes the class): the dots bounce while the turn thinks, and walk their
+    // own lines while it works. The reading beside it is the animation that
+    // motion runs, so the two are checked against each other.
+    motion: loader === null ? '' : loader.className,
     animation: dotStyle === null ? null : dotStyle.animationName,
     duration: dotStyle === null ? null : dotStyle.animationDuration,
     shadow: dotStyle === null ? null : dotStyle.boxShadow,
@@ -156,9 +161,10 @@ function waitLineScenario({ check }) {
         check('一个说法锁住一秒：状态换得再快，这一行也只一秒换一次',
           gaps.length > 0 && gaps.every((gap) => gap >= MIN_GAP_MS),
           JSON.stringify({ gaps, words })),
-        check('Claude 品牌下这一行开头换成插件自己的加载点，宿主的鲸鱼尾让位，三点不带阴影',
-          head !== null && head.shown === true && head.dots === 3 && head.animation === 'dsh-claude-wait-dot' &&
-            head.duration === '0.5s' && head.shadow === 'none' && head.iconShown === false,
+        check('Claude 品牌下这一行开头换成插件自己的加载点，宿主的鲸鱼尾让位，三点不带阴影，走的是这一轮该走的那套动作',
+          head !== null && head.shown === true && head.dots === 3 && head.shadow === 'none' && head.iconShown === false &&
+            ((head.motion.includes('is-bounce') && head.animation === 'dsh-claude-wait-dot' && head.duration === '0.5s') ||
+              (head.motion.includes('is-line') && head.animation === 'dsh-claude-wait-dot-line' && head.duration === '1.25s')),
           JSON.stringify(head)),
         check('加载点站在那一行里、落在说法的行上，不探出行外',
           seats !== null && seats.loader.top >= seats.row.top && seats.loader.bottom <= seats.row.bottom &&

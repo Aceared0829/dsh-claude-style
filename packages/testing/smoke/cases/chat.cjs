@@ -294,9 +294,105 @@ module.exports = {
     const loader = working.loader || {}
     check('under the Claude brand the line leads with the skin\'s loading dots in the accent, and the host\'s whale tail steps aside',
       loader.shown === true && loader.dots === 3 && loader.animation === 'dsh-claude-wait-dot' &&
-        loader.duration === '0.5s' && loader.delay === '0.3s' && loader.background === 'rgb(217, 119, 87)' &&
-        loader.shadow === 'none' && working.whaleShown === false,
+        loader.duration === '0.5s' && loader.delay === '-0.2s' && loader.background === 'rgb(217, 119, 87)' &&
+        loader.shadow === 'none' && String(loader.motion).includes('is-bounce') && working.whaleShown === false,
       JSON.stringify({ loader, whaleShown: working.whaleShown }))
+    // While the turn works the dots leave the snippet's bounce for their own
+    // lines (features/chat-wait/wait-loader.ts): three lines 120° apart, walked
+    // as a damped simple harmonic, and the dot is its own size at either end, so
+    // no frame of it may draw larger than the bouncing dot.
+    const workingLoader = wait.tools?.loader || {}
+    check('while the turn works the dots walk their own lines, and none of them draws larger than the bouncing dot',
+      workingLoader.shown === true && workingLoader.animation === 'dsh-claude-wait-dot-line' &&
+        workingLoader.duration === '1.25s' && String(workingLoader.motion).includes('is-line') &&
+        Number(String(workingLoader.scale).split(' ')[0]) <= 1,
+      JSON.stringify(workingLoader))
+    // A phase is where a dot stands in its own walk, read off its delay. Two
+    // dots at the same phase draw the same motion, and two a half period apart
+    // draw it mirrored — and on the two lines that are mirrors of each other
+    // that mirrored pair reads as one motion twice.
+    const period = 1.25
+    const phaseOf = (delay) => {
+      const seconds = Number(String(delay).replace('s', ''))
+      return ((-seconds % period) + period) % period / period
+    }
+    const phases = (workingLoader.delays || []).map(phaseOf)
+    const clash = phases.some((one, at) => phases.some((two, other) => other > at &&
+      (Math.abs(one - two) < 0.02 || Math.abs(Math.abs(one - two) - 0.5) < 0.02)))
+    check('三颗球各自站在不同的相位上，也没有两颗相差半个周期：相差半个周期就是把同一个动作镜像过去',
+      phases.length === 3 && !clash,
+      JSON.stringify({ phases, delays: workingLoader.delays }))
+    // The hand-over is per dot and never a cut: the motion standing goes off,
+    // each dot travels to its own place in the next motion, and that motion's
+    // own opening frame is the pose it arrived at. Sampled every 20 ms across
+    // the change — shorter than the wording's own lock, so a reading at either
+    // end would miss it — and the two frames around the swap have to agree.
+    const change = wait.loaderChange || []
+    const seen = change.filter((frame) => frame !== null)
+    const before = seen[0] || {}
+    const after = seen[seen.length - 1] || {}
+    const poses = new Set(seen.map((frame) => `${frame.translate} ${frame.scale}`))
+    const travelling = seen.filter((frame) => frame.arriving === true)
+    const at = seen.map((frame) => frame.arriving === true).lastIndexOf(true)
+    const handover = at === -1 ? [] : [seen[at], seen[at + 1]]
+    // Both frames carry the same pose up to the sampling grid: the travel ends
+    // where the motion opens, and the frame after the swap is already a few
+    // milliseconds into that motion (more than that on a loaded machine). A dot
+    // cut to its place would move by its lane or its reach, which is eight
+    // pixels or more.
+    const numbers = (text) => (String(text).match(/-?[\d.]+/g) || []).map(Number)
+    const close = (one, two, tolerance) => {
+      const a = numbers(one)
+      const b = numbers(two)
+      return a.length > 0 && a.length === b.length && a.every((value, index) => Math.abs(value - b[index]) <= tolerance)
+    }
+    check('the two loader motions hand each dot over where it stands: it travels to its own place in the next motion, which opens on the pose it arrived at',
+      before.animation === 'dsh-claude-wait-dot' && after.animation === 'dsh-claude-wait-dot-line' &&
+        travelling.length > 0 && poses.size >= 4 && handover.length === 2 &&
+        handover[0] !== undefined && handover[1] !== undefined &&
+        close(handover[0].translate, handover[1].translate, 3) && close(handover[0].scale, handover[1].scale, 0.2),
+      JSON.stringify({ frames: change.length, travelling: travelling.length, poses: poses.size, before: before.animation, after: after.animation, handover: handover.map((frame) => frame === undefined ? null : `${frame.translate} ${frame.scale}`) }))
+    // And the same the other way: the bounce takes over where its own wave puts
+    // each dot — none of them starts from the frame the snippet opens on.
+    const back = (wait.loaderBack || []).filter((frame) => frame !== null)
+    const backAt = back.map((frame) => frame.arriving === true).lastIndexOf(true)
+    const backHandover = backAt === -1 ? [] : [back[backAt], back[backAt + 1]]
+    check('从走路切回跳球时，每颗球落在自己那一拍上，没有一颗是从跳动动画的第一帧开始的',
+      back.length > 0 && back[0].animation === 'dsh-claude-wait-dot-line' &&
+        back[back.length - 1].animation === 'dsh-claude-wait-dot' &&
+        back.some((frame) => frame.arriving === true) && backHandover.length === 2 &&
+        backHandover[0] !== undefined && backHandover[1] !== undefined &&
+        Number(String(backHandover[1].translate).match(/-?[\d.]+/g)[1]) < 0 &&
+        close(backHandover[0].translate, backHandover[1].translate, 3) && close(backHandover[0].scale, backHandover[1].scale, 0.2),
+      JSON.stringify({ frames: back.length, handover: backHandover.map((frame) => frame === undefined ? null : `${frame.translate} ${frame.scale}`) }))
+    // A walk's four legs are a quarter of the period each, so the second half
+    // of the walk is the first half mirrored: half a period on, a dot stands
+    // the same distance on the other side of its line's middle, at the same
+    // size. The readings come off the animation's own clock at even steps
+    // across one period (the probe seeks it), so what is compared is the curve
+    // the stylesheet states, and a walk whose legs are not all one length
+    // drifts out of that mirror.
+    const walk = wait.walk || {}
+    const frames = (walk.frames || []).filter((frame) => frame !== null && frame.translate !== null)
+    const trace = frames.map((frame) => numbers(frame.translate)[1])
+    const sizes = frames.map((frame) => numbers(frame.scale)[0])
+    const lowest = trace.length === 0 ? 0 : Math.min(...trace)
+    const highest = trace.length === 0 ? 0 : Math.max(...trace)
+    const middle = (lowest + highest) / 2
+    const half = Math.floor(trace.length / 2)
+    const place = trace.slice(0, half).map((one, at) => Math.abs(one + trace[at + half] - 2 * middle))
+    const size = sizes.slice(0, half).map((one, at) => Math.abs(one - sizes[at + half]))
+    const drift = place.length === 0 ? Infinity : Math.max(...place)
+    const sizeDrift = size.length === 0 ? Infinity : Math.max(...size)
+    check('简谐运动的去程与回程是同一条曲线：过半个周期后球落在中点另一侧、离中点的距离与大小都一样',
+      trace.length >= 40 && (walk.step || 0) * trace.length >= 1250 && highest - lowest >= 7 &&
+        drift <= 0.5 && sizeDrift <= 0.05,
+      JSON.stringify({
+        readings: trace.length,
+        travel: Number((highest - lowest).toFixed(2)),
+        drift: Number(drift.toFixed(2)),
+        sizeDrift: Number(sizeDrift.toFixed(3)),
+      }))
     check('the DeepSeek brand keeps the host\'s whale tail, stands the skin\'s dots down and waits on the host\'s own word',
       wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true && wait.deepseek?.word === 'Deep diving',
       JSON.stringify(wait.deepseek))
@@ -390,6 +486,21 @@ module.exports = {
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
       reduced.word === 'Thinking…' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Thinking…',
       JSON.stringify(reduced))
+    // Reduced presses every skin animation to a hundredth of a millisecond but
+    // leaves its iteration count alone, so an animation left running strobes
+    // instead of settling: the loader's dots have to be held, and the words'
+    // own paint is already either left out under the choice or held by
+    // shared/motion.css. Two readings a tenth of a second apart say so.
+    const still = wait.reducedStill || {}
+    const held = (reading) => reading !== null && reading !== undefined && reading.loader !== undefined &&
+      (reading.sweep === 'none' || reading.sweepState === 'paused')
+    const stillSame = (one, two) => one !== undefined && one !== null && two !== undefined && two !== null &&
+      one.loader !== undefined && two.loader !== undefined &&
+      one.loader.translate === two.loader.translate && one.loader.scale === two.loader.scale &&
+      held(one) && held(two)
+    check('「减弱」时加载点的球停在一个帧上、字上的画法也停住：相隔十分之一秒的两次读数一致',
+      stillSame(still.first, still.second),
+      JSON.stringify({ first: { loader: still.first?.loader, sweep: still.first?.sweep, sweepState: still.first?.sweepState }, second: { loader: still.second?.loader, sweep: still.second?.sweep, sweepState: still.second?.sweepState } }))
     check('words that settle shorter take the box down with them, so the clock sits right after them',
       reduced.box?.sizer?.text === reduced.word && reduced.box.width === reduced.box.sizer.width &&
         reduced.box.clockLeft - reduced.box.labelLeft - reduced.box.width <= 10,
