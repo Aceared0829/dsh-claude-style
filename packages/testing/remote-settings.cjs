@@ -16,6 +16,7 @@
  */
 'use strict'
 const { waitForSkin, dismissOverlays } = require('./dsh-web.cjs')
+const { openSkinSettings, SETTINGS_PAGE } = require('./settings-route.cjs')
 
 /** The non-loopback name the remote page is opened under; the browser maps it onto 127.0.0.1. */
 const REMOTE_NAME = 'remote.test'
@@ -23,7 +24,7 @@ const REMOTE_NAME = 'remote.test'
 /** The skin's marks this scenario reads (packages/client/src/constants.ts and the settings page). */
 const SKIN = {
   brand: 'data-dsh-claude-brand', // BRAND_ATTR
-  page: '.dsh-claude-settings',
+  page: SETTINGS_PAGE,
   rows: 'fieldset.dsh-claude-settings-rows',
   notice: '.dsh-claude-settings-notice',
   error: '.dsh-claude-settings-error',
@@ -42,22 +43,6 @@ const reaches = (page, brand) => page.waitForFunction(
   { attribute: SKIN.brand, wanted: brand },
   { timeout: FOLLOW_TIMEOUT_MS },
 ).then(() => true, () => false)
-
-/** Open the host's settings dialog on the skin's section, by the host's own shortcut. */
-async function openSkinSettings(page) {
-  await page.keyboard.press('Control+Alt+Comma')
-  // The newer host answers this shortcut with its account menu, the settings
-  // dialog standing behind the menu's own first entry; the older one opens the
-  // dialog itself (packages/testing/importance.cjs does the same).
-  await page.waitForTimeout(1500)
-  const entry = page.locator('[role="menu"] [role="menuitem"]').first()
-  if (await entry.count() > 0) {
-    await entry.click({ force: true })
-    await page.waitForTimeout(800)
-  }
-  await page.getByText('Claude Style', { exact: true }).first().click({ force: true })
-  await page.locator(SKIN.page).first().waitFor({ timeout: FOLLOW_TIMEOUT_MS })
-}
 
 /** What the open settings page says about its own input. */
 const readSettingsPage = (page) => page.evaluate((skin) => {

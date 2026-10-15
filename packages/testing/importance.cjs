@@ -20,6 +20,7 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const { createImportanceAudit, planImportance, dropImportance, ROOT } = require('./importance-audit.cjs')
+const { openSkinSettings } = require('./settings-route.cjs')
 
 /**
  * The selectors this walk cannot reach, each under the reason it is out of
@@ -171,18 +172,7 @@ function importanceScenario(lane) {
    * choices behind.
    */
   const withSettings = async (page, audit) => {
-    await page.keyboard.press('Control+Alt+Comma')
-    // The newer host answers this shortcut with its account menu, the settings
-    // dialog standing behind the menu's own first entry; the older one opens the
-    // dialog itself. Either way the walk enters the dialog from here.
-    await page.waitForTimeout(1500)
-    const entry = page.locator('[role="menu"] [role="menuitem"]').first()
-    if (await entry.count() > 0) {
-      await entry.click({ force: true })
-      await page.waitForTimeout(800)
-    }
-    await page.getByText('Claude Style', { exact: true }).first().click({ force: true })
-    await page.locator('.dsh-claude-settings').first().waitFor({ timeout: 20000 })
+    await openSkinSettings(page)
     await page.waitForTimeout(600)
     await audit.state('settings')
     const tabs = page.locator('.dsh-claude-settings-tabs [role="tab"]')
