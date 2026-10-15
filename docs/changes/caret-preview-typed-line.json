@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 10,
+  "external": false,
+  "zh": "设置页「动效」页「光标动画」的两张预览卡改成逐字打出 `Hello World!`，光标跟着这行字往前走：打字期间一直亮着，打完停住才按原生节奏闪，与真光标一致——真光标每移动一次就把闪的节奏从头开始，打字时看不到它灭。两档的分别在于光标怎么到达下一个位置：「开」的那张滑过去，「关」的那张直接跳过去。",
+  "en": "On the Motion tab's Composer caret motion row, both preview cards now type `Hello World!` out character by character with the caret following the line: it stays lit for the whole time the line is being typed and blinks on the native cycle once the line stands, matching the drawn caret, which restarts its blink on every move and is therefore never seen dark while typing. The two cards differ in how the caret reaches each new place: it glides there, or arrives at once."
+}
