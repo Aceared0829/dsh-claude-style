@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-20",
-  "group": "improvements",
-  "order": 10,
-  "external": false,
-  "zh": "皮肤不再按宿主类名的片段匹配界面：`core/parts.ts` 每次页面结构变化时把宿主自己声明的类名（`_2H3hWW_root` 这类带哈希的名字）读成自己的部件名，写在元素上，样式表只按 [data-dsh-claude-part] 整词匹配。原来 45 个样式表里的 565 处子串选择器与 31 处 TypeScript 子串查询全部改完：匹配变得精确（`row` 不再命中 `grow`，`rail` 不再命中 `trailing`），宿主改名时对应的规则直接静默而不误伤邻居，别的插件也不会再被这些规则扫到。",
-  "en": "The skin stops matching the interface by fragments of the host's class names: `core/parts.ts` reads the local part of every hashed host class name (`_2H3hWW_root` and the like) into the skin's own part name, writes it onto the element on each structural change, and the stylesheets match one whole [data-dsh-claude-part] token. All 565 substring selectors across 45 stylesheets and all 31 TypeScript substring queries are gone: a match is exact (`row` no longer takes `grow`, `rail` no longer takes `trailing`), a host rename leaves the rule quiet instead of wrong, and no other plugin's class names are swept up."
-}

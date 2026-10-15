@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "chores",
-  "order": 12,
-  "external": false,
-  "zh": "发版工作流在把这一版转正之前跑完快档那批检查、Windows 上的完整冒烟与端到端通道，与 pull request 判定的内容一致。",
-  "en": "The release workflow runs the fast tier's checks, the full smoke on Windows and the end-to-end lane before it promotes a version, the same set a pull request is judged on."
-}

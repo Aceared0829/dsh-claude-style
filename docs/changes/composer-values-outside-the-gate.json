@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 23,
-  "external": false,
-  "zh": "输入框之外也被读取的三个取值——渐隐带高度、数字入场参数与用量色调——移到输入框门控之外（features/composer/vars.css）：等待行与面板在输入框重绘关闭时同样拿到这些值。",
-  "en": "The three sets of values the rest of the page reads — the fade band's height, the digits' entrance and the usage tones — move outside the composer gate (features/composer/vars.css), so the wait row and the panels hold them with the composer restyle off as well."
-}

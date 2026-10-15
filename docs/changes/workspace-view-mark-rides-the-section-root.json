@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-20",
-  "group": "fixes",
-  "order": 30,
-  "external": false,
-  "zh": "工作区分栏控件回到原样：进行中时它让位给「工作区」标题，指针进入该段才浮现，切到已归档才常驻。此前按类名片段定位列表区域时，片段同时命中了列表区域的外层容器，区间标记因此落在会话树自身的容器上，样式表里那对交叉淡入的两条规则都读不到它。现在按部件读列表区域，标记重新落在整个区段的根元素上。",
-  "en": "The workspace section's segmented control behaves as before: in 进行中 it steps aside for the plain 工作区 heading and returns when the pointer enters the section, and it stays put in 已归档. Locating the list area by a class-name fragment also took that area's own outer container, so the view mark landed on the conversation tree's container instead of the section root and neither half of the stylesheet's cross-fade could read it. The list area is now read by its part, and the mark rides the section root again."
-}

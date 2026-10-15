@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-20",
-  "group": "fixes",
-  "order": 40,
-  "external": false,
-  "zh": "首页用量面板回来了：英雄页的根元素在中间列里，不在会话滚动区之内，按会话区域登记「root」这个局部名就读不到它，页面布局与工作室标记因此双双落空。该名字改为整页读取，规则再用宿主自己的 data-phase 限定到英雄页。",
-  "en": "The home page's usage panel is back: the hero page's root sits in the centre column rather than inside the conversation's scroll region, so registering the host's `root` local name with that region never wrote it, and the page's layout and the studio mark both fell through. The name is read page-wide now, and a rule narrows it to the hero page with the host's own data-phase."
-}

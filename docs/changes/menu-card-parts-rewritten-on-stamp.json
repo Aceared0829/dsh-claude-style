@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-20",
-  "group": "fixes",
-  "order": 50,
-  "external": false,
-  "zh": "宿主菜单卡片的部件重新写上：皮肤给菜单卡片打上自己的标记之后，只重读了那个元素本身，卡片里的行没有重读，于是账号弹层与英雄页的两个选择弹层按宿主原本的样子绘制，账号弹层因此出现了滚动条。元素因标记或类名变化成为区域锚点时，整棵子树一并重读。同一处顺带修正：账号弹层里选中行读的是侧栏的部件名，改为菜单区域自己的名字。",
-  "en": "A host menu card's parts are written again: when the skin stamped its own mark on the card, only that element was re-read and the rows inside it were not, so the account card and the hero page's two pickers drew the host's own way — which is where the account card's scrollbar came from. An element that becomes a region's anchor through a stamp or a class rewrite now has its whole subtree re-read. The selected row in the account card read the sidebar's part name; it reads the menu region's own name now."
-}

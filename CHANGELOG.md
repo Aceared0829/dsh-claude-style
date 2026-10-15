@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.14.1] - 2026-10-15
 
-<h3 id="cn-unreleased">体验优化</h3>
+[中文](#cn-0.14.1) | [English](#en-0.14.1)
+
+<h3 id="cn-0.14.1">体验优化</h3>
 
 - 会话切换更顺滑：皮肤在使用中会反复翻转的页面标记（首页形态、页头提升、页签栏置顶、竖屏适配、阅读暂停、输入区随页签隐藏，以及上下文圆盘的尺寸读数）从 `<body>` 下移到最近的公共祖先元素上。此前这些属性上悬挂着一千二百余条选择器，每写一次整个文档都要重新参与样式匹配；实测改版后，会话之间、会话与首页之间的切换对 `<body>` 的属性与内联样式写入降为零，样式失效范围收敛到对应子树。
 - 测试入口按档给结论：`npm run verify` 不带参数时同时跑那批检查、构建与工作树改动触及的单元测试，本机 5 秒上下返回；`--full` 加上整份冒烟，页面按 `--jobs` 一起驱动（看动效的页面一次两个），整份冒烟由 251 秒降到 50 秒上下；端到端通道的场景也并发起跑，整条通道共用一个浏览器、每个场景一份临时 home。
@@ -42,7 +44,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。
 - 持续集成先由一个任务按改动的路径定下范围：只改了文档、语言包或工作流的推送跳过读页面的通道，改动落在一个功能目录内时冒烟只走那个目录的用例，其余改动才走完整冒烟；端到端的行为场景与截图捕获按矩阵分成四份并行跑，构建的慢步骤按树内容的散列在运行之间取回，每个分钟级的步骤都有时限，分支规则只登记一个汇总任务。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-0.14.1">Improvements</h3>
 
 - Smoother conversation switches: the page marks the skin flips during normal use (the home layout's hero mark, the header band lift, the titlebar tabs, the mobile portrait adaptation, the reader's scroll hold, the composer hiding with the conversation tab, and the context meter's measured numbers) moved from `<body>` to the nearest element that ancestors every styled target. Over twelve hundred selectors used to hang off those body attributes, so every write re-matched the whole document; measured on this build, a switch between conversations or between a conversation and the home page now writes zero attributes and zero inline styles on `<body>`, and style invalidation stays inside the subtree that changed.
 - The test entry answers by tier: a bare `npm run verify` runs the checks, the build and the tests the working tree's change reaches at once and answers in about five seconds on this machine; `--full` adds the whole smoke walk, whose pages are driven `--jobs` at a time (the motion ones two at a time), taking that walk from 251 s to about 50 s; the end-to-end lane's scenarios likewise run several at once, over one browser for the whole lane and a scratch home each.

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "chores",
-  "order": 14,
-  "external": false,
-  "zh": "持续集成先由一个任务按改动的路径定下范围：只改了文档、语言包或工作流的推送跳过读页面的通道，改动落在一个功能目录内时冒烟只走那个目录的用例，其余改动才走完整冒烟；端到端的行为场景与截图捕获按矩阵分成四份并行跑，构建的慢步骤按树内容的散列在运行之间取回，每个分钟级的步骤都有时限，分支规则只登记一个汇总任务。",
-  "en": "Continuous integration now settles its scope first, from the paths a push changed: a push holding only documents, locale files or the workflow skips the lanes that read a page, a change inside one feature directory walks that directory's smoke cases, and anything else walks the whole smoke. The end-to-end behaviour scenarios and screenshot captures run as four parallel shards, the build's slow steps are restored from a cache keyed on the tree's hash, every minutes-long step carries a limit, and a branch rule names a single aggregate job."
-}

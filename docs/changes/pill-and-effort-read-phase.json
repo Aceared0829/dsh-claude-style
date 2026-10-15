@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-15",
-  "group": "improvements",
-  "order": 22,
-  "external": false,
-  "zh": "滑动高亮与推理档位按钮的定位改在读阶段取读数：`createSlidingPill` 分出 `measure` 与 `sync` 两个入口，会话标签、权限分段、工作区分段、搜索过滤条与设置分段五处分别在各自阶段调用；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件在自身写入之后发生的盒模型读取由 231 次、370 至 578 毫秒降到 245 次、178 至 214 毫秒，单次由 1.6 至 2.5 毫秒降到 0.73 至 0.87 毫秒。",
-  "en": "The sliding highlight and the reasoning-level trigger take their readings in the read phase: `createSlidingPill` splits into `measure` and `sync`, called from the conversation tabs, the permission segments, the workspace segments, the search filter bar and the settings segments in their own phases; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings taken after its own writes fall from 231 calls and 370–578 ms to 245 calls and 178–214 ms, each from 1.6–2.5 ms to 0.73–0.87 ms."
-}
