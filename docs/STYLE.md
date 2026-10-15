@@ -275,7 +275,8 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-pop` | `500ms` | something popping into place: a changed digit of the session numbers, the overtime badge's own pill |
 | `--dsh-claude-duration-rise` | `500ms` | a line of the home greeting rising into place |
 | `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the last two popping digits, the greeting's second line |
-| `--dsh-claude-duration-dot-handover` | `220ms` | the waiting line's loader: each dot travelling from the pose it stands in to its own place in the next motion, which then opens on the pose it arrived at |
+| `--dsh-claude-period-dot-orbit` | `2400ms` | one turn of the waiting line's loader dots that swap corners: four quarter-turns of the two pairs, which leaves every dot where it started |
+| `--dsh-claude-period-dot-rotate` | `10s` | how long one of the waiting line's loader motions stands before another takes its place, the next one picked so a motion never follows itself |
 | `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
 | `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the highlight band across the waiting line's words and a running process group's header |
 | `--dsh-claude-period-preview-swap` | `4000ms` | one turn of the settings page's waiting-line preview: one wording standing, leaving, and standing again |
@@ -620,9 +621,12 @@ writes or works they leave that bounce and walk three lines through one point,
 harmonic along its own line, the whole line taken in 1.25s, dwelling at either
 end at the dot's own size and shrinking to 0.55 as it crosses the middle, so no
 frame of the line motion draws a dot larger than the bouncing one. The two never
-cut and no dot waits its turn: the standing motion is taken off the dots, each
-one travels to its own place in the next motion over 220ms, and that motion
-opens on the pose it arrived at. Under the
+cut: the lane leaving fades each of its dots out over one of its own legs,
+starting where that motion next turns back — off the floor for a bounce, off a
+far end for a walk — and the lane arriving fades each of its dots in over one of
+its own legs, starting where that motion next carries it, so no dot is ever moved
+to a pose its motion does not carry; a motion stands for 2s before the next may
+take it over. Under the
 other brands the host's whale stands. The host's own
 shimmering words step aside for the skin's line beside it: the wording in the
 secondary label at 14px on a 24px line,
