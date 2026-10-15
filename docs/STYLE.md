@@ -259,6 +259,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-instant` | `80ms` | the composer caret following the insertion point |
 | `--dsh-claude-duration-feedback` | `120ms` | a control answering hover, press or focus: its colour, background, border, shadow, or a small turn or slide of its own parts |
 | `--dsh-claude-duration-reveal` | `120ms` | content entering the chat area: an opened row's body, and each streamed piece of the answer |
+| `--dsh-claude-duration-enter` | `320ms` | one message the reader sends growing into its row, and the same growth on the Motion tab's card |
 | `--dsh-claude-duration-surface` | `150ms` | a floating surface or a group of controls appearing: popover cards, menus, panels, the search dialog, a toast, a strip fading in |
 | `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal: a menu or a dialog closing, the overtime badge leaving |
 | `--dsh-claude-duration-open` | `250ms` | a surface growing out of its anchor: a menu out of its trigger, a full-window dialog out of the centre, a settings page sliding in, the overtime badge sliding onto its line |
@@ -274,10 +275,13 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-pop` | `500ms` | something popping into place: a changed digit of the session numbers, the overtime badge's own pill |
 | `--dsh-claude-duration-rise` | `500ms` | a line of the home greeting rising into place |
 | `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the last two popping digits, the greeting's second line |
+| `--dsh-claude-duration-dot-handover` | `220ms` | the waiting line's loader: each dot travelling from the pose it stands in to its own place in the next motion, which then opens on the pose it arrived at |
 | `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
 | `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the highlight band across the waiting line's words and a running process group's header |
 | `--dsh-claude-period-preview-swap` | `4000ms` | one turn of the settings page's waiting-line preview: one wording standing, leaving, and standing again |
 | `--dsh-claude-period-preview-reveal` | `4000ms` | one turn of the settings page's new-text fade preview: the sample arriving character by character, then standing before the next wipe |
+| `--dsh-claude-period-preview-caret` | `4000ms` | one turn of the settings page's caret preview: the sample line typed out, then standing whole before the next turn |
+| `--dsh-claude-period-preview-enter` | `2600ms` | one turn of the Motion tab's message-entrance card: one message arriving, standing, and giving way to the next |
 | `--dsh-claude-period-wash-hue` | `4000ms` | one turn of the hue rotation the waiting line's colour wash runs through |
 | `--dsh-claude-period-wash-drift` | `5000ms` | one orbit of the colour washes around the waiting line's glyph box |
 | `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |
@@ -287,16 +291,20 @@ edit the JSON, not the table.
 | `--dsh-claude-period-landed` | `1400ms` | the mark on the turn the conversation navigator landed on |
 | `--dsh-claude-period-hold` | `840ms` | how long the reasoning window's text stands between two steps |
 | `--dsh-claude-period-dot-bounce` | `500ms` | one bounce of the waiting line's loader dots under the Claude brand, and the period each dot's own start is measured against |
+| `--dsh-claude-period-dot-line` | `1250ms` | one round trip of the waiting line's loader dots along their own lines, the motion the dots take while the turn is not thinking |
 | `--dsh-claude-ease-standard` | `ease` | feedback and surfaces: the default curve |
 | `--dsh-claude-ease-out` | `ease-out` | something arriving and settling: a fold's door, content entering the chat area, the landing mark |
+| `--dsh-claude-ease-enter` | `cubic-bezier(0.34, 1.3, 0.64, 1)` | a message the reader sends growing into its row: the slight overshoot as it takes its full size |
 | `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
 | `--dsh-claude-ease-glide` | `cubic-bezier(0.22, 0.61, 0.36, 1)` | travel along a track: the sliding highlight, the reasoning slider, the search dialog's entrance, the reasoning window's step, the wording box's width |
 | `--dsh-claude-ease-roll` | `cubic-bezier(0.4, 0, 0.2, 1)` | digits rolling over: the file rows' tail and the process group header's counts |
 | `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the session numbers' digits and the overtime badge popping in, a switch's knob bouncing past its end |
 | `--dsh-claude-ease-settle` | `cubic-bezier(0.22, 1, 0.36, 1)` | a surface or a page settling into place out of its anchor: menus and dialogs opening and closing, a settings page sliding, the overtime badge sliding onto its line, the greeting's lines rising |
 | `--dsh-claude-ease-host-sweep` | `steps(48, end)` | the band across the waiting line's words and a running process group's header |
+| `--dsh-claude-ease-damped-out` | `cubic-bezier(0.33, 1, 0.68, 1)` | a loader dot slowing into the end of its line: the damping the line motion carries, so a dot dwells at its turning point before it comes back |
+| `--dsh-claude-ease-damped-in` | `cubic-bezier(0.32, 0, 0.67, 0)` | a loader dot leaving the end of its line and gathering speed towards the middle |
 | `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, and a small row's wording swap travels |
-| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, the distance a popping digit comes from, a settings page's slide, the overtime badge's sideways slide |
+| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, the distance a popping digit comes from, a settings page's slide, the overtime badge's sideways slide, and both directions of the waiting line's loader dots: the lift off their floor and the reach along their own lines |
 | `--dsh-claude-distance-rise` | `12px` | how far below its place a line of the home greeting starts, and the overtime badge's upward slide |
 | `--dsh-claude-blur-soft` | `2px` | the blur words, digits and badges pass through while they swap or pop in, and a placeholder passes through as it hands its place over |
 | `--dsh-claude-blur-enter` | `3px` | the blur a settings page or a line of the home greeting passes through as it slides or rises in |
@@ -304,6 +312,7 @@ edit the JSON, not the table.
 | `--dsh-claude-scale-dropdown` | `0.97` | the scale a menu grows from out of its trigger |
 | `--dsh-claude-scale-dropdown-exit` | `0.99` | the scale a menu shrinks to while it fades on closing |
 | `--dsh-claude-scale-dialog` | `0.96` | the scale a full-window dialog grows from and returns to |
+| `--dsh-claude-scale-dot-mid` | `0.55` | how small a loader dot is while it crosses the middle of its line; at either end it is the dot's own size, so the line motion never draws a dot larger than the bouncing one |
 | `--dsh-claude-timing-feedback` | `var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard)` | shorthand: a control's state change, written after the property in a transition |
 | `--dsh-claude-timing-surface` | `var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard)` | shorthand: a surface appearing, written after the property or the keyframes' name |
 <!-- /generated:motion -->
@@ -601,10 +610,20 @@ transition, since the press hands the whole page to the other side.
 The host's running row, its divider and its live region stay as the host draws
 them. Its whale tail is DeepSeek's own character, so under the Claude brand the
 skin hides it and leads the line with its own loader: three 4px dots of the
-accent in force in an 18 × 14 box, resting on the floor, each rising the skin's
-8px and flattening against the floor as it leaves, half a second a bounce with
-the second dot starting two fifths of the period behind the first and the third
-three fifths; under the other brands the host's whale stands. The host's own
+accent in force in an 18 × 14 box, resting on the floor, and the motion they
+play follows what the turn is doing (`features/chat-wait/wait-loader.ts`). While
+the model thinks they bounce — each rising the skin's 8px and flattening against
+the floor as it leaves, half a second a bounce with the second dot starting two
+fifths of the period behind the first and the third three fifths. While the turn
+writes or works they leave that bounce and walk three lines through one point,
+120° apart with the second line run the other way: each dot is a damped simple
+harmonic along its own line, the whole line taken in 1.25s, dwelling at either
+end at the dot's own size and shrinking to 0.55 as it crosses the middle, so no
+frame of the line motion draws a dot larger than the bouncing one. The two never
+cut and no dot waits its turn: the standing motion is taken off the dots, each
+one travels to its own place in the next motion over 220ms, and that motion
+opens on the pose it arrived at. Under the
+other brands the host's whale stands. The host's own
 shimmering words step aside for the skin's line beside it: the wording in the
 secondary label at 14px on a 24px line,
 the turn's clock 8px later in the caption at 13px with tabular figures, and the
