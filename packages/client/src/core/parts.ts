@@ -61,14 +61,17 @@ function partsOf(element: Element, lookups: readonly RegionLookup[], rootParts: 
   return parts === null ? null : [...parts].join(' ')
 }
 
-/** Write one element's parts, or take the attribute off when it plays none. */
+/** Write one element's parts, or take the attribute off when it plays none. @returns whether the element's mark changed. */
 function writeParts(element: Element, lookups: readonly RegionLookup[], rootParts: Map<string, string> | null) {
   const parts = partsOf(element, lookups, rootParts)
   if (parts === null) {
-    if (element.hasAttribute(PART_ATTR)) element.removeAttribute(PART_ATTR)
-    return
+    if (!element.hasAttribute(PART_ATTR)) return false
+    element.removeAttribute(PART_ATTR)
+    return true
   }
+  if (element.getAttribute(PART_ATTR) === parts) return false
   setAttributeIfChanged(element, PART_ATTR, parts)
+  return true
 }
 
 /**
@@ -100,7 +103,7 @@ function contextAt(element: Element): { lookups: RegionLookup[], roots: Map<stri
  * the host puts the subtree's box — and nowhere deeper: a local name as common
  * as `root` belongs to rows and tooltips further in.
  */
-function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<string, string> | null) {
+function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<string, string> | null): boolean {
   let lookups = inherited
   let childRoots: Map<string, string> | null = null
   if (element.matches(ANCHOR_SELECTOR)) {
@@ -110,8 +113,9 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
       if (lookup.rootParts !== null) childRoots = lookup.rootParts
     }
   }
-  writeParts(element, lookups, roots)
-  for (const child of element.children) walk(child, lookups, childRoots)
+  let changed = writeParts(element, lookups, roots)
+  for (const child of element.children) if (walk(child, lookups, childRoots)) changed = true
+  return changed
 }
 
 /** Take every part mark off, for the teardown. */
@@ -135,10 +139,17 @@ export function markParts(root: Element) {
  * changed. A part is written only where it differs, and the attribute the pass
  * writes is not one it watches, so it never feeds itself (D9).
  *
+ * A part a feature reads can move that feature's own measurement — which rows a
+ * menu card holds, what height it draws — so a batch that wrote anything asks
+ * for one more pass, through `onMarked`. The next pass writes nothing (every
+ * mark already holds) and the walk settles.
+ *
+ * @param onMarked - called once per batch that changed a mark.
  * @returns teardown.
  */
-export function installParts() {
-  walk(document.body, [], null)
+export function installParts(onMarked?: () => void) {
+  const settle = () => { if (onMarked !== undefined) onMarked() }
+  if (walk(document.body, [], null)) settle()
   const stop = subscribeMutations(document.body, {
     childList: true,
     subtree: true,
@@ -148,6 +159,7 @@ export function installParts() {
     attributeFilter: ['class', ACCOUNT_MENU_ATTR, HERO_MENU_ATTR],
     skipQuiet: true,
   }, (records) => {
+    let changed = false
     for (const record of records) {
       if (record.type === 'attributes') {
         if (record.target instanceof Element) {
@@ -156,17 +168,20 @@ export function installParts() {
           // anchor, which is how a menu card portalled to `<body>` becomes one;
           // the rows under it are read inside that region, so the whole subtree
           // is walked. A plain class rewrite only moves the element's own parts.
-          if (record.target.matches(ANCHOR_SELECTOR)) walk(record.target, lookups, roots)
-          else writeParts(record.target, lookups, roots)
+          const moved = record.target.matches(ANCHOR_SELECTOR)
+            ? walk(record.target, lookups, roots)
+            : writeParts(record.target, lookups, roots)
+          if (moved) changed = true
         }
         continue
       }
       for (const node of record.addedNodes) {
         if (!(node instanceof Element)) continue
         const { lookups, roots } = contextAt(node)
-        walk(node, lookups, roots)
+        if (walk(node, lookups, roots)) changed = true
       }
     }
+    if (changed) settle()
   })
   return () => {
     stop()

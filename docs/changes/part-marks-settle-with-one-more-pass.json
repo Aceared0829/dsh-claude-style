@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-20",
+  "group": "fixes",
+  "order": 60,
+  "external": false,
+  "zh": "部件落定之后多跑一遍标记：菜单卡片的样式决定了卡片的实际高度，而卡片的位置是量出高度之后才写下的，标记与位置因此在同一帧里互相追赶。写下新部件的那一批结束后主动请求再走一遍，下一遍不再写任何部件，遍历随即停下。",
+  "en": "A batch that writes part marks asks for one more pass: a menu card's height is what its styled rows draw, and the card's position is written from a measurement taken before those rows were marked, so the two chased each other inside one frame. The next pass writes nothing — every mark already holds — and the walk settles."
+}

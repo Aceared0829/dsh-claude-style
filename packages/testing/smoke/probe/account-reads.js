@@ -119,10 +119,16 @@
       '<div class="_menu_m_1"><div class="_providerModelMenu_p_1"></div></div></div></div></div>'
     modelHolder.appendChild(modelCard)
     document.body.appendChild(modelHolder)
-    await sleep(80)
+    // The parts land on the pass after the subtree arrives, and the rule they
+    // unlock is what this reads: wait for the trigger's own display (D3).
+    var modelTrigger = modelCard.querySelector('._trigger_m_1')
+    for (var seatWait = 0; seatWait < 100 && getComputedStyle(modelTrigger).display !== 'inline-flex'; seatWait++) await sleep(50)
     var modelSeatRoot = modelCard.querySelector('._root_m_1')
     r.modelSeat = {
-      trigger: getComputedStyle(modelCard.querySelector('._trigger_m_1')).display,
+      // The rule that seats the trigger is composer-gated, so it is read — and
+      // asserted — only while the restyle is on (the shared checks gate on it).
+      active: document.body.hasAttribute('data-dsh-claude-composer-active'),
+      trigger: getComputedStyle(modelTrigger).display,
       nestedMenu: getComputedStyle(modelCard.querySelector('._providerModelMenu_p_1')).display,
     }
     modelSeatRoot.setAttribute('data-dsh-claude-model-host', '')

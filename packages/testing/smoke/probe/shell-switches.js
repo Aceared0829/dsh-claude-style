@@ -19,14 +19,15 @@
       switchSidebar.innerHTML = '<div class="_root_n_1"><div class="_logoRow_n_1" data-window-drag="true">' +
         '<button type="button" class="_brand_n_1 _wide_n_1" aria-label="New session">brand</button>' +
         '<button type="button" class="_iconButton_n_1 _toggle_n_1" aria-label="Collapse sidebar">toggle</button></div>' +
-        // One hash prefix for the section, its header, its label and its list
-        // area, the way the host's CSS modules name them (the skin finds the
-        // workspace section by that shared prefix, never by the label text).
-        '<div class="_w1_root"><div class="_w1_sectionHeader"><span class="_w1_sectionLabel _w1_wide">Workspaces</span></div>' +
-        '<div role="tree" class="_w1_listArea"><div data-row-key="w1" class="_w1_projectRow">project</div></div></div></div>'
+        // One hash suffix for the section, its header, its label and its list
+        // area, the way the host's CSS modules name them.
+        '<div class="_root_w1_1"><div class="_sectionHeader_w1_1"><span class="_sectionLabel_w1_1 _wide_w1_1">Workspaces</span></div>' +
+        '<div role="tree" class="_listArea_w1_1"><div data-row-key="w1" class="_projectRow_w1_1">project</div></div></div></div>'
       document.body.appendChild(switchSidebar)
       var switchHeader = document.createElement('div')
       switchHeader.className = '_header_c_1'
+      // The host's own header anchor: the strip's parts are read inside it (D3).
+      switchHeader.setAttribute('data-slot', 'conversation.header')
       switchHeader.innerHTML = '<div class="_tabs_c_1" role="tablist" data-conversation-tabs="">' +
         '<button type="button" role="tab" aria-selected="true" class="_tab_c_1 _tabActive_c_1">Chat</button>' +
         '<button type="button" role="tab" aria-selected="false" class="_tab_c_1">Trajectory</button></div>'

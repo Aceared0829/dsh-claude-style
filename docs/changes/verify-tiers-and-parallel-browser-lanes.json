@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "zh": "测试入口按档给结论：`npm run verify` 不带参数时同时跑那批检查、构建与工作树改动触及的单元测试，本机 5 秒上下返回；`--full` 加上整份冒烟，页面按 `--jobs` 一起驱动（看动效的页面一次两个），整份冒烟由 251 秒降到 50 秒上下；端到端通道的场景也并发起跑，整条通道共用一个浏览器、每个场景一份临时 home。",
+  "en": "The test entry answers by tier: a bare `npm run verify` runs the checks, the build and the tests the working tree's change reaches at once and answers in about five seconds on this machine; `--full` adds the whole smoke walk, whose pages are driven `--jobs` at a time (the motion ones two at a time), taking that walk from 251 s to about 50 s; the end-to-end lane's scenarios likewise run several at once, over one browser for the whole lane and a scratch home each."
+}

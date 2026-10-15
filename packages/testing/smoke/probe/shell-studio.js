@@ -17,6 +17,11 @@
       var heroRoot = document.createElement('div')
       heroRoot.className = '_root_x_1'
       heroRoot.setAttribute('data-phase', 'hero')
+      // The host's conversation anchor sits inside the hero root on the home
+      // page, and the composer stack and the panel seat are read inside it (D3).
+      var heroScroll = document.createElement('div')
+      heroScroll.setAttribute('data-conversation-scroll', '')
+      heroRoot.appendChild(heroScroll)
       // Arriving on the hero draws the yardstick book; the draw is pinned to the
       // last book on the shelf, which no window here has passed, so the line has
       // to step down to the longest book each window did pass.
@@ -130,7 +135,7 @@
       coldStack.className = '_composerStack_x_1 _composerHero_x_1'
       coldStack.innerHTML = '<div data-composer-card class="_card_x_1 _cardWorkspaceTrigger_x_1">' +
         '<div class="_row_x_1"><div class="_tools_x_1"><div class="_modes_x_1"></div></div></div></div>'
-      heroRoot.appendChild(coldStack)
+      heroScroll.appendChild(coldStack)
       await sleep(200)
       var coldSeat = coldStack.querySelector(':scope > .dsh-claude-home-seat')
       var coldRoot = window.__roots.filter(function (root) { return root.element === coldSeat })[0]
@@ -159,7 +164,9 @@
       // takes the studio column's 720px cap.
       var studioStack = document.createElement('div')
       studioStack.className = '_composerStack_x_1 _composerHero_x_1'
-      heroRoot.appendChild(studioStack)
+      heroScroll.appendChild(studioStack)
+      // The stack's parts land on the pass after it arrives (D3).
+      for (var studioWait = 0; studioWait < 40 && !studioStack.hasAttribute('data-dsh-claude-part'); studioWait++) await sleep(50)
       r.homeHero.stackMaxWidth = getComputedStyle(studioStack).maxWidth
       studioStack.remove()
       heroRoot.remove()
@@ -168,8 +175,12 @@
       r.mascot.afterHero = document.querySelector('.dsh-claude-crab') !== null
       // The stylesheet alone decides where a panel may draw: under the hero
       // stack's dock it shows, and the moment the host drops the stack's hero
-      // class (the first message sent) it is gone, before any pass runs.
-      function panelDisplay(stackClass, coldStart) {
+      // class (the first message sent) it is gone, before any pass runs. The
+      // stack's parts land on the pass after the subtree arrives, so each state
+      // is read once they are there (D3).
+      async function panelDisplay(stackClass, coldStart) {
+        var holder = document.createElement('div')
+        holder.setAttribute('data-conversation-scroll', '')
         var stack = document.createElement('div')
         stack.className = stackClass
         var dock = document.createElement('div')
@@ -179,16 +190,20 @@
         panel.className = 'dsh-claude-home-panel'
         dock.appendChild(panel)
         stack.appendChild(dock)
-        document.body.appendChild(stack)
+        holder.appendChild(stack)
+        document.body.appendChild(holder)
+        for (var wait = 0; wait < 40 && !stack.hasAttribute('data-dsh-claude-part'); wait++) await sleep(50)
         var display = getComputedStyle(panel).display
-        stack.remove()
+        holder.remove()
         return display
       }
       r.panelDisplay = {
-        hero: panelDisplay('_composerStack_x_1 _composerHero_x_1'),
-        coldStart: panelDisplay('_composerStack_x_1 _composerHero_x_1', true),
-        conversation: panelDisplay('_composerStack_x_1'),
+        hero: await panelDisplay('_composerStack_x_1 _composerHero_x_1'),
+        coldStart: await panelDisplay('_composerStack_x_1 _composerHero_x_1', true),
+        conversation: await panelDisplay('_composerStack_x_1'),
       }
     })
   })
 })()
+
+

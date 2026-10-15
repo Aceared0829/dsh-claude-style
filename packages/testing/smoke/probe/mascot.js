@@ -56,9 +56,12 @@
       }
       document.body.removeAttribute('data-ds-dark-theme')
       var deepyHero = document.createElement('div')
+      deepyHero.className = '_root_h_1'
       deepyHero.setAttribute('data-phase', 'hero')
       document.body.appendChild(deepyHero)
-      await sleep(500)
+      // The mascot mounts on a pass, so wait for its node rather than for a time.
+      for (var mountWait = 0; mountWait < 40 && document.querySelector('.dsh-claude-' + mascotName) === null; mountWait++) await sleep(50)
+      await sleep(400)
       r.states.home = whaleNow()
       r.states.crab = document.querySelector('.dsh-claude-crab') !== null
       // Frames change on the whale's own node, and no frame wakes a pass. The
@@ -67,16 +70,17 @@
       await sleep(250)
       var deepyPasses = window.__passes
       await sleep(600)
-      r.states.idle = { before: r.states.home && r.states.home.frame, after: whaleNow().frame, passes: window.__passes - deepyPasses }
+      var nowFrame = function () { var state = whaleNow(); return state === null ? null : state.frame }
+      r.states.idle = { before: r.states.home && r.states.home.frame, after: nowFrame(), passes: window.__passes - deepyPasses }
       if (mascotName === 'deepy') {
         // The motion choice holds the playing sheet's still frame: a looping
         // animation stops advancing, while a one-shot (the poke below) plays out.
         window.__pushForm({ motion: 'reduced' })
         await sleep(150)
         r.states.stillAttr = document.body.getAttribute('data-dsh-claude-motion')
-        var whaleStill = whaleNow().frame
+        var whaleStill = nowFrame()
         await sleep(400)
-        r.states.still = { before: whaleStill, after: whaleNow().frame }
+        r.states.still = { before: whaleStill, after: nowFrame() }
         window.__pushForm({ motion: 'full' })
         await sleep(150)
         r.states.alwaysAttr = document.body.getAttribute('data-dsh-claude-motion')
@@ -106,6 +110,9 @@
       // the composer stack inside it.
       var deepyConversation = document.createElement('div')
       deepyConversation.setAttribute('data-phase', 'active')
+      // The host's conversation anchor: the seat and the stack inside it are
+      // read by their parts, which are written inside this subtree (D3).
+      deepyConversation.setAttribute('data-conversation-scroll', '')
       deepyConversation.innerHTML = '<div data-conversation-content data-conversation-session="smoke-deepy"><div data-composer-seat>' +
         '<div data-slot="conversation.composer" style="display:contents">' +
         '<div data-chain-overlay-fallback="conversation.composer" style="display:contents">' +
@@ -169,9 +176,9 @@
       window.__pushForm({ motion: 'reduced' })
       await sleep(150)
       r.states.stillAttr = document.body.getAttribute('data-dsh-claude-motion')
-      var stillBefore = whaleNow().frame
+      var stillBefore = nowFrame()
       await sleep(400)
-      r.states.still = { before: stillBefore, after: whaleNow().frame }
+      r.states.still = { before: stillBefore, after: nowFrame() }
       window.__pushForm({ motion: 'full' })
       await sleep(150)
       r.states.alwaysAttr = document.body.getAttribute('data-dsh-claude-motion')
@@ -241,3 +248,4 @@
     })
   })
 })()
+

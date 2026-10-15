@@ -9,7 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 会话切换更顺滑：皮肤在使用中会反复翻转的页面标记（首页形态、页头提升、页签栏置顶、竖屏适配、阅读暂停、输入区随页签隐藏，以及上下文圆盘的尺寸读数）从 `<body>` 下移到最近的公共祖先元素上。此前这些属性上悬挂着一千二百余条选择器，每写一次整个文档都要重新参与样式匹配；实测改版后，会话之间、会话与首页之间的切换对 `<body>` 的属性与内联样式写入降为零，样式失效范围收敛到对应子树。
-- `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
+- 测试入口按档给结论：`npm run verify` 不带参数时同时跑那批检查、构建与工作树改动触及的单元测试，本机 5 秒上下返回；`--full` 加上整份冒烟，页面按 `--jobs` 一起驱动（看动效的页面一次两个），整份冒烟由 251 秒降到 50 秒上下；端到端通道的场景也并发起跑，整条通道共用一个浏览器、每个场景一份临时 home。
 - `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
 - 皮肤不再按宿主类名的片段匹配界面：`core/parts.ts` 每次页面结构变化时把宿主自己声明的类名（`_2H3hWW_root` 这类带哈希的名字）读成自己的部件名，写在元素上，样式表只按 [data-dsh-claude-part] 整词匹配。原来 45 个样式表里的 565 处子串选择器与 31 处 TypeScript 子串查询全部改完：匹配变得精确（`row` 不再命中 `grow`，`rail` 不再命中 `trailing`），宿主改名时对应的规则直接静默而不误伤邻居，别的插件也不会再被这些规则扫到。
 - 输入光标的测量移到帧的读阶段，探针读数按内容、光标位置、End 倾向、复制样式与字体代次缓存，输入框自身的盒子每次测量只读一次；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件的盒模型读取由 470 至 680 毫秒降到 297 至 402 毫秒。
@@ -26,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 工作区分栏控件回到原样：进行中时它让位给「工作区」标题，指针进入该段才浮现，切到已归档才常驻。此前按类名片段定位列表区域时，片段同时命中了列表区域的外层容器，区间标记因此落在会话树自身的容器上，样式表里那对交叉淡入的两条规则都读不到它。现在按部件读列表区域，标记重新落在整个区段的根元素上。
 - 首页用量面板回来了：英雄页的根元素在中间列里，不在会话滚动区之内，按会话区域登记「root」这个局部名就读不到它，页面布局与工作室标记因此双双落空。该名字改为整页读取，规则再用宿主自己的 data-phase 限定到英雄页。
 - 宿主菜单卡片的部件重新写上：皮肤给菜单卡片打上自己的标记之后，只重读了那个元素本身，卡片里的行没有重读，于是账号弹层与英雄页的两个选择弹层按宿主原本的样子绘制，账号弹层因此出现了滚动条。元素因标记或类名变化成为区域锚点时，整棵子树一并重读。同一处顺带修正：账号弹层里选中行读的是侧栏的部件名，改为菜单区域自己的名字。
+- 部件落定之后多跑一遍标记：菜单卡片的样式决定了卡片的实际高度，而卡片的位置是量出高度之后才写下的，标记与位置因此在同一帧里互相追赶。写下新部件的那一批结束后主动请求再走一遍，下一遍不再写任何部件，遍历随即停下。
 
 ### 移除
 
@@ -43,7 +44,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Smoother conversation switches: the page marks the skin flips during normal use (the home layout's hero mark, the header band lift, the titlebar tabs, the mobile portrait adaptation, the reader's scroll hold, the composer hiding with the conversation tab, and the context meter's measured numbers) moved from `<body>` to the nearest element that ancestors every styled target. Over twelve hundred selectors used to hang off those body attributes, so every write re-matched the whole document; measured on this build, a switch between conversations or between a conversation and the home page now writes zero attributes and zero inline styles on `<body>`, and style invalidation stays inside the subtree that changed.
-- A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
+- The test entry answers by tier: a bare `npm run verify` runs the checks, the build and the tests the working tree's change reaches at once and answers in about five seconds on this machine; `--full` adds the whole smoke walk, whose pages are driven `--jobs` at a time (the motion ones two at a time), taking that walk from 251 s to about 50 s; the end-to-end lane's scenarios likewise run several at once, over one browser for the whole lane and a scratch home each.
 - `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
 - The skin stops matching the interface by fragments of the host's class names: `core/parts.ts` reads the local part of every hashed host class name (`_2H3hWW_root` and the like) into the skin's own part name, writes it onto the element on each structural change, and the stylesheets match one whole [data-dsh-claude-part] token. All 565 substring selectors across 45 stylesheets and all 31 TypeScript substring queries are gone: a match is exact (`row` no longer takes `grow`, `rail` no longer takes `trailing`), a host rename leaves the rule quiet instead of wrong, and no other plugin's class names are swept up.
 - The composer caret's measurement runs in the frame's read phase, and what its probe yields is remembered per content, caret offset, End leaning, copied styles and face generation, so the input's own box is read once per measurement; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings fall from 470–680 ms to 297–402 ms.
@@ -60,6 +61,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The workspace section's segmented control behaves as before: in 进行中 it steps aside for the plain 工作区 heading and returns when the pointer enters the section, and it stays put in 已归档. Locating the list area by a class-name fragment also took that area's own outer container, so the view mark landed on the conversation tree's container instead of the section root and neither half of the stylesheet's cross-fade could read it. The list area is now read by its part, and the mark rides the section root again.
 - The home page's usage panel is back: the hero page's root sits in the centre column rather than inside the conversation's scroll region, so registering the host's `root` local name with that region never wrote it, and the page's layout and the studio mark both fell through. The name is read page-wide now, and a rule narrows it to the hero page with the host's own data-phase.
 - A host menu card's parts are written again: when the skin stamped its own mark on the card, only that element was re-read and the rows inside it were not, so the account card and the hero page's two pickers drew the host's own way — which is where the account card's scrollbar came from. An element that becomes a region's anchor through a stamp or a class rewrite now has its whole subtree re-read. The selected row in the account card read the sidebar's part name; it reads the menu region's own name now.
+- A batch that writes part marks asks for one more pass: a menu card's height is what its styled rows draw, and the card's position is written from a measurement taken before those rows were marked, so the two chased each other inside one frame. The next pass writes nothing — every mark already holds — and the walk settles.
 
 ### Removals
 

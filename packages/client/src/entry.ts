@@ -327,8 +327,15 @@ export function apply(ctx: HostContext) {
     // release(); the features install onto a page that already wears it.
     if (stopStylesheet === null) stopStylesheet = mountStylesheet()
     // Before the features: every rule they and the theme's own sheets write
-    // reads the part names this pass puts on the host's elements (D3).
-    if (stopParts === null) stopParts = installParts()
+    // reads the part names this pass puts on the host's elements (D3). A batch
+    // that moved a mark asks for one more pass, so a feature that measures what
+    // the marks style reads the settled numbers; the scheduler is installed
+    // below, so `schedule` is looked up when the batch runs.
+    if (stopParts === null) {
+      stopParts = installParts(() => {
+        if (typeof ui.schedule === 'function') ui.schedule()
+      })
+    }
     for (const feature of FEATURES) {
       if (failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) continue
       if (isLive(feature)) applySwitch(feature)

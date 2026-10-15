@@ -381,7 +381,9 @@ ${footer}
     </div>
   </div>
 </div>
+${chatArea}
 <div data-conversation-scroll>
+<div class="_composerStack_h_1">
 <div data-composer-card${name === 'automode-hero' ? ' data-phase="hero"' : ''}>
 ${heroRow}
   ${name === 'chat-send' ? '<div data-input-scroll style="overflow:auto;max-height:120px">' : ''}
@@ -397,9 +399,9 @@ ${heroRow}
 </div>
 ${dock}
 </div>
+</div>
 ${heroLayout}
 ${hostControls}
-${chatArea}
 ${caretArea}
 ${dockArea}
 ${foldArea}
