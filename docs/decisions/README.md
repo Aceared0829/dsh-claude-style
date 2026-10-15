@@ -82,6 +82,7 @@
 | [D48](D48-documentation.md) | 文档流程 | 已实施 |
 | [D66](D66-testing.md) | 三层测试、单一入口与闸门的发起时机 | 已实施 |
 | [D68](D68-session-worktree.md) | 会话工作树：每个会话在自己的树与分支上工作 | 待实施 |
+| [D69](D69-continuous-integration.md) | 持续集成的构成与发起时机 | 已实施 |
 
 ## 作废的编号
 

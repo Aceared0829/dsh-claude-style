@@ -1,37 +1,75 @@
 name: CI
 
-# A branch push runs the fast tier — the checks, the build, the unit tests and
-# the smoke on both systems — and a pull request, a push to master or a manual
-# run adds the end-to-end lane and the host-alpha contract warning (D66). The
-# fast tier is the answer a session asks for by pushing its own commit, and the
-# full matrix is what a change is merged on. `branches` keeps tag pushes out:
-# the release workflow owns those.
+# A push to master runs the whole matrix — the checks, the build, the unit tests
+# and the smoke on both systems, the end-to-end lane and the host-alpha contract
+# warning — and a pull request or a merge-queue entry runs the same matrix, so a
+# merge is judged before it lands (D69). A session's own branch is not judged in
+# the cloud: its work is merged and the push that carries it onto master is what
+# runs. `branches` keeps session branches out, and tag pushes with them: the
+# release workflow owns tags.
 on:
   push:
-    branches: ['**']
+    branches: [master]
   pull_request:
+  # The queue a branch rule sends a merge through (D69): the entry is judged here
+  # before it reaches master, so a red run never lands.
+  merge_group:
   workflow_dispatch:
 
 # One group per event and commit, so a series of pushes each finish with a
 # verdict instead of cancelling one another, and a pull request does not cancel
 # the push run it came from. A repeat of the same event on the same commit — the
-# pull request a push already opened — is the duplicate this drops.
+# pull request a push already opened — is the duplicate this drops. A queue entry
+# is never cancelled: it is the run a merge waits on.
 concurrency:
   group: CI-${{ github.event_name }}-${{ github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'merge_group' }}
 
 permissions:
   contents: read
 
 jobs:
-  # The gates that need no host: the build checks, the unit tests in a real
-  # browser, the decisions index against the files it lists, and the smoke's
-  # stand-in page plus the host half's routes.
-  verify:
+  # What this event changed, so a push holding only documents skips the lanes
+  # that read a built page and a change inside one feature directory names that
+  # directory instead of walking every case. `scripts/ci-scope.mjs` prints the
+  # answers as job outputs, and the directory names it prints are checked against
+  # the table the feature manifests produce, so the smoke accepts them.
+  changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.scope.outputs.code }}
+      smoke: ${{ steps.scope.outputs.smoke }}
+      tree: ${{ steps.scope.outputs.tree }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The token is not left in `.git/config` for the steps that follow.
+          persist-credentials: false
+          # The diff needs the base commit and, on a new branch, master's.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      # The scope reads the feature manifests, which esbuild bundles (D42), so
+      # the dependencies are installed here as well.
+      - run: npm ci
+      - id: scope
+        run: node scripts/ci-scope.mjs --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
+
+  # The gates that need no build: the lint rules, the feature list, the decisions
+  # index against the files it lists, the changelog and AGENTS.md's command
+  # table. A change to a document is exactly what these answer for, so this job
+  # runs on every event — and it runs while the `changed` job above is still
+  # reading the diff, which the lanes below wait on.
+  checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -42,79 +80,166 @@ jobs:
       - run: npm run docs:check
       - run: npm run changelog:check
       - run: npm run agents:check
+
+  # The build, the unit tests in a real browser and the smoke over the built
+  # plugin. The smoke's scope comes from the `changed` job: a change inside one
+  # feature directory walks that directory's cases, anything the map cannot place
+  # walks the whole stand-in page.
+  build-unit-smoke:
+    needs: [changed, checks]
+    if: needs.changed.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # The build's slow pure steps — Deepy's sheets and the brotli'd text assets
+      # — are stored under the hash of their inputs, so the key is the tree hash
+      # the `changed` job printed (scripts/build-cache.mjs). A miss computes
+      # everything and saves the entry for the next run over the same tree.
+      - uses: actions/cache@v6
+        with:
+          path: .debug/build-cache
+          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
       - run: npm run build
+        timeout-minutes: 15
       - run: npm test
-      - run: npm run smoke
+        timeout-minutes: 15
+      # The entry is called directly: the selection `changed` printed carries a
+      # flag, and npm would read a flag of its own rather than pass it on.
+      - run: node packages/testing/smoke.cjs ${{ needs.changed.outputs.smoke }}
+        timeout-minutes: 30
 
   # The readers' desktop runs on Windows, and the host half reads session
-  # directories, drive-letter paths and file times there (D45).
+  # directories, drive-letter paths and file times there (D69).
   smoke-windows:
+    needs: [changed, checks]
+    if: needs.changed.outputs.code == 'true'
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      # A cache entry is per platform, so this one is the Windows half of the
+      # same tree hash.
+      - uses: actions/cache@v6
+        with:
+          path: .debug/build-cache
+          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
       - run: npm run build
+        timeout-minutes: 15
       - run: npm run smoke
+        timeout-minutes: 30
 
   # The assembled host: a scratch `dsh web` with this checkout's plugin and the
-  # scripted model service, driven through a real conversation (D45).
+  # scripted model service, driven through a real conversation (D66). The walk is
+  # one slice per shard — the scenarios are independent of one another — so the
+  # whole table is covered in the time the longest single scenario takes, and
+  # each shard uploads its own traces under its own name.
   e2e:
     # The full lane is what a change is merged on: a branch push answers with the
-    # fast tier above, and a pull request, master or a manual run walks it.
-    if: github.event_name != 'push' || github.ref == 'refs/heads/master'
+    # fast tier above, and a pull request, master, a queue entry or a manual run
+    # walks it.
+    needs: [changed, checks]
+    if: needs.changed.outputs.code == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/master')
+    strategy:
+      # One shard's failure is evidence about that shard; the others finish and
+      # report their own.
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     runs-on: ubuntu-latest
-    needs: verify
-    # The lane boots a host per scenario and walks every one the table holds but
-    # the parked pair, each laying out a page and driving at least one turn
-    # (`shots` captures both palettes). The budget covers the whole walk and
-    # leaves room for a slow runner.
-    timeout-minutes: 60
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/cache@v6
+        with:
+          path: .debug/build-cache
+          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
       - run: npm run build
+        timeout-minutes: 15
       # The lane boots the host's own CLI, which needs pnpm to install a
       # profile's plugins.
       - run: npm install --global pnpm@11 @deepseek-ai/dsh@0.2.1-alpha.1
-      - run: node packages/testing/e2e.cjs
+        timeout-minutes: 10
+      # A named scenario takes its own deadline; this is the shard's backstop.
+      - run: node packages/testing/e2e.cjs --shard ${{ matrix.shard }}:4
+        timeout-minutes: 25
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: e2e-traces
+          name: e2e-traces-${{ matrix.shard }}
           path: .debug/e2e/out
           if-no-files-found: ignore
 
   # The host's newest prerelease against the contract the skin reads, ahead of
   # the pinned version above: a selector or entry that stopped holding shows up
-  # here before the pin moves. Advisory, it holds no merge back (D45).
+  # here before the pin moves. Advisory, it holds no merge back (D69).
   contract-host-alpha:
-    if: github.event_name != 'push' || github.ref == 'refs/heads/master'
+    needs: [changed, checks]
+    if: needs.changed.outputs.code == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
-    needs: verify
     continue-on-error: true
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/cache@v6
+        with:
+          path: .debug/build-cache
+          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
       - run: npm run build
+        timeout-minutes: 15
       - run: npm install --global pnpm@11 @deepseek-ai/dsh@alpha
+        timeout-minutes: 10
       - run: node packages/testing/e2e.cjs --scenario contract
+        timeout-minutes: 15
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-traces-host-alpha
           path: .debug/e2e/out
           if-no-files-found: ignore
+
+  # The one check a branch rule names (D69). Every job above reports into it —
+  # a skipped job counts as passed, which is what lets a document-only push and a
+  # branch push finish green — so the rule survives a job being added, renamed or
+  # removed, and no job can be left out of it.
+  required:
+    if: always()
+    needs: [changed, checks, build-unit-smoke, smoke-windows, e2e, contract-host-alpha]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: node scripts/ci-required.mjs '${{ toJson(needs) }}'
