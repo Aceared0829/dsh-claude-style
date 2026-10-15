@@ -26,7 +26,7 @@ const { spawn, spawnSync } = require('node:child_process')
 const { randomUUID } = require('node:crypto')
 const fs = require('node:fs')
 const path = require('node:path')
-const { openBrowser } = require('./browser.cjs')
+const { newContextOn, openBrowser } = require('./browser.cjs')
 const { argOf } = require('./cli-args.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -206,16 +206,22 @@ async function start(options = {}) {
  * @param options.width/height - the viewport.
  * @param options.initScript - a function the page runs before any of its own
  *     scripts, for a reading that has to be in place before the first frame.
+ * @param options.browser - a browser to open the page on, from
+ *     packages/testing/browser.cjs; a lane that drives several pages at once
+ *     starts one browser and passes it, and `close()` then closes this page's
+ *     own context alone.
  * @returns `{ page, context, browser, close() }`.
  */
 async function openPage(url, options = {}) {
-  const opened = await openBrowser({
-    headless: options.headless,
-    args: options.args,
-    width: options.width,
-    height: options.height,
-    initScript: options.initScript,
-  })
+  const opened = options.browser === undefined
+    ? await openBrowser({
+      headless: options.headless,
+      args: options.args,
+      width: options.width,
+      height: options.height,
+      initScript: options.initScript,
+    })
+    : await sharedOn(options.browser, options)
   const problems = []
   opened.page.on('console', (message) => {
     if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
@@ -223,6 +229,13 @@ async function openPage(url, options = {}) {
   opened.page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
   await opened.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
   return { page: opened.page, context: opened.context, browser: opened.browser, problems, close: opened.close }
+}
+
+/** One page in a context of its own on a browser the caller owns. */
+async function sharedOn(browser, options) {
+  const context = await newContextOn(browser, options)
+  const page = await context.newPage()
+  return { page, context, browser, close: () => context.close() }
 }
 
 /** Wait until the skin has taken the page (its build id is on `<body>`). */

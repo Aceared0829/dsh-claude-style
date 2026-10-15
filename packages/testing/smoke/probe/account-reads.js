@@ -120,9 +120,15 @@
     modelHolder.appendChild(modelCard)
     document.body.appendChild(modelHolder)
     // The parts land on the pass after the subtree arrives, and the rule they
-    // unlock is what this reads: wait for the trigger's own display (D3).
+    // unlock is what this reads: wait for the trigger's own display (D3). The
+    // card's variant is held at the inline one the rule names: the skin rewrites
+    // every composer card for the page it is on, so on the hero page this card
+    // would otherwise be read as the hero's and the rule would not apply.
     var modelTrigger = modelCard.querySelector('._trigger_m_1')
-    for (var seatWait = 0; seatWait < 100 && getComputedStyle(modelTrigger).display !== 'inline-flex'; seatWait++) await sleep(50)
+    for (var seatWait = 0; seatWait < 400 && getComputedStyle(modelTrigger).display !== 'inline-flex'; seatWait++) {
+      if (modelCard.getAttribute('data-composer-variant') !== 'inline') modelCard.setAttribute('data-composer-variant', 'inline')
+      await sleep(50)
+    }
     var modelSeatRoot = modelCard.querySelector('._root_m_1')
     r.modelSeat = {
       // The rule that seats the trigger is composer-gated, so it is read — and

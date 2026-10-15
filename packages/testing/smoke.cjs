@@ -46,20 +46,25 @@
  * stand-in page), the stand-in/ and probe/ parts (the scripts that page runs
  * before and after the bundle) and cases.cjs (what each case's report must show).
  *
- * Usage: node packages/testing/smoke.cjs [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--quick]
- *        (CHROME_PATH overrides the browser lookup)
+ * Usage: node packages/testing/smoke.cjs [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--quick] [--jobs <n>]
+ *        (CHROME_PATH overrides the browser lookup, DSH_SMOKE_JOBS the page count)
  *        --case runs the named browser cases alone, --feature the cases that
  *        cover the named directories under packages/client/src/features/; both may be repeated,
  *        combined, and neither means every case. --quick leaves out the cases
  *        and the checks that watch motion (TIMING_CASES in packages/testing/smoke/
  *        shared.cjs). Cases that share a stand-in configuration and a markup
  *        run in one page load (PAGES in shared.cjs), and the log names the pages
- *        it loaded. The Node host half runs either way.
+ *        it loaded. The pages are independent of one another — each carries its
+ *        own context, markup and probe — so they are driven several at a time
+ *        (JOBS below, `--jobs` or DSH_SMOKE_JOBS to change it) and the pages
+ *        that watch motion run two at a time at the end, over a quiet browser.
+ *        The Node host half runs either way.
  * Exit:  0 every check passed · 1 a check failed · 2 the browser half could not run
  */
 'use strict'
 const fs = require('fs')
 const http = require('http')
+const { availableParallelism } = require('os')
 const path = require('path')
 const { findChrome, openBrowser } = require('./browser.cjs')
 const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
@@ -86,6 +91,42 @@ function bad(message) {
 }
 
 /**
+ * How many page loads the run drives at once. A page spends most of its time
+ * waiting — the skin's first pass, a debounce, a dwell — while its own context,
+ * markup and probe are private to it, so the pages wait beside one another; the
+ * count stays at half the machine's cores at most, because the pages that watch
+ * motion depend on the browser keeping its frame rate.
+ */
+const DEFAULT_JOBS = Math.max(2, Math.min(10, Math.floor(availableParallelism() / 2)))
+
+/**
+ * How many of the pages that watch motion run at once. Their readings follow a
+ * dwell, a glide or a frame sequence, which a browser short of frames answers
+ * differently, so they are kept away from the pool above; two of them on one
+ * machine still leave the renderer its frames and halve the tier's longest wait.
+ */
+const MOTION_JOBS = 2
+
+/**
+ * Run `each` over every item, at most `jobs` of them at once, and answer the
+ * results in the items' own order.
+ */
+async function mapAtOnce(items, jobs, each) {
+  const results = new Array(items.length)
+  let next = 0
+  const worker = async () => {
+    while (next < items.length) {
+      const at = next
+      next += 1
+      results[at] = await each(items[at])
+    }
+  }
+  const workers = Math.max(1, Math.min(jobs, items.length))
+  await Promise.all(Array.from({ length: workers }, () => worker()))
+  return results
+}
+
+/**
  * What the command line asked for: `--case a,b` names cases, `--feature dir`
  * names a directory under packages/client/src/features/ and stands for the cases the table
  * gives it, `--quick` picks the tier. Both name flags may be repeated and
@@ -96,10 +137,17 @@ function selection() {
   const cases = []
   const args = process.argv.slice(2)
   let quick = false
+  let jobs = DEFAULT_JOBS
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
     if (arg === '--quick') {
       quick = true
+      continue
+    }
+    if (arg === '--jobs' || arg.startsWith('--jobs=')) {
+      const value = arg.includes('=') ? arg.slice(arg.indexOf('=') + 1) : args[++i]
+      if (value === undefined || !/^\d+$/.test(value.trim()) || Number(value) < 1) bad(`--jobs takes how many pages to drive at once, not "${value}"`)
+      jobs = Number(value)
       continue
     }
     const flag = arg === '--case' || arg.startsWith('--case=') ? 'case'
@@ -121,7 +169,7 @@ function selection() {
       cases.push(...FEATURE_CASES[name])
     }
   }
-  return { cases: [...new Set(cases)], quick }
+  return { cases: [...new Set(cases)], quick, jobs }
 }
 
 /**
@@ -177,15 +225,30 @@ function plan(only, quick) {
   return { cases, leftOut, total: all.length }
 }
 
-async function browserHalf(planned) {
+async function browserHalf(planned, jobs) {
   const { cases, leftOut, total } = planned
   const pages = pagesFor(cases)
   const browser = findChrome()
   if (!browser) {
     console.log('\nbrowser half — skipped: no Chrome/Edge found (set CHROME_PATH)')
     return { ran: false, scope: '' }
-  }  /** The page being served; the picture route answers for it. */
+  }  /** The page whose HTML was served last; the pages run at once, so a request is answered for the page named in its referer. */
   let current = null
+  /**
+   * Which page a request belongs to. Every request a page makes — the bundle,
+   * the routed assets, the launcher's pictures — carries that page's own URL as
+   * its referer, which is what keeps the pages apart while several of them are
+   * being driven. A request with none is answered for the last page served.
+   */
+  const fromPage = (req) => {
+    const referer = req.headers.referer
+    if (referer === undefined) return current
+    try {
+      return new URL(referer).pathname.slice(1)
+    } catch {
+      return current
+    }
+  }
   const server = http.createServer((req, res) => {
     const name = new URL(req.url, 'http://x').pathname.slice(1)
     if (name === 'client.js') {
@@ -195,7 +258,7 @@ async function browserHalf(planned) {
       // The launcher's atlas, which the skin loads outside `fetch`, so the
       // page-side stand-in cannot answer it. `hdsl-broken` models a file the
       // player removed after the launcher wrote the contract.
-      if (SKIN_CASES.indexOf(current) === -1) {
+      if (SKIN_CASES.indexOf(fromPage(req)) === -1) {
         res.writeHead(404, { 'cache-control': 'no-store' })
         res.end()
         return
@@ -206,7 +269,7 @@ async function browserHalf(planned) {
       // The custom-brand case's images, loaded outside `fetch` like the
       // launcher's atlas: a one-pixel mark, and a wordmark whose only size is
       // a 4:1 viewBox, so the measured proportions are observable.
-      if (current !== 'custom-brand') {
+      if (fromPage(req) !== 'custom-brand') {
         res.writeHead(404, { 'cache-control': 'no-store' })
         res.end()
         return
@@ -226,7 +289,7 @@ async function browserHalf(planned) {
       const asset = ASSETS[file]
       // The chunk-fault case's route carries none of the feature chunks, the
       // way a host still serving the bundle it read before an update answers (D39).
-      const chunkRefused = current === 'chunk-fault' && file.endsWith('.js')
+      const chunkRefused = fromPage(req) === 'chunk-fault' && file.endsWith('.js')
       if (asset === undefined || chunkRefused) {
         res.writeHead(404)
         res.end()
@@ -264,11 +327,30 @@ async function browserHalf(planned) {
   // with no reduced-motion request, and a probe that needs one asks for it itself.
   const instance = await openBrowser({ width: 1280, height: 800, reducedMotion: 'no-preference' })
   try {
-    console.log(`\nbrowser half — tier ${tierName()} — ${cases.length} of ${total} cases in ${pages.length} page loads: ${cases.join(', ')}`)
+    // A page that watches motion reads it frame by frame, so it runs alone over
+    // an idle browser; every other page is independent of its neighbours and
+    // runs in the pool.
+    const timing = new Set(TIMING_CASES)
+    const alone = pages.filter((entry) => entry.cases.some((name) => timing.has(name)))
+    const together = pages.filter((entry) => !alone.includes(entry))
+    console.log(`\nbrowser half — tier ${tierName()} — ${cases.length} of ${total} cases in ${pages.length} page loads${alone.length === 0 ? '' : `, ${alone.length} of them ${MOTION_JOBS} at a time`}: ${cases.join(', ')}`)
     if (leftOut.length) console.log(`browser half — left out as timing: ${leftOut.join(', ')}`)
+    const reports = new Map()
+    const spent = new Map()
+    const read = async ({ page: pageName }) => {
+      const at = Date.now()
+      reports.set(pageName, await runPage(instance, base, pageName))
+      spent.set(pageName, Date.now() - at)
+    }
+    console.log(`browser half — ${together.length} pages ${jobs} at a time, then ${alone.length} at ${MOTION_JOBS}`)
+    const started = Date.now()
+    await mapAtOnce(together, jobs, read)
+    await mapAtOnce(alone, MOTION_JOBS, read)
+    const slowest = [...spent].sort((left, right) => right[1] - left[1]).slice(0, 3)
+    console.log(`browser half — ${pages.length} page loads in ${((Date.now() - started) / 1000).toFixed(1)} s; slowest: ${slowest.map(([name, ms]) => `${name} ${(ms / 1000).toFixed(1)}s`).join(', ')}`)
     for (const { page: pageName, cases: pageCases } of pages) {
       if (pageCases.length > 1) console.log(`\nbrowser half — page ${pageName} — ${pageCases.join(', ')}`)
-      const report = await runPage(instance, base, pageName)
+      const report = reports.get(pageName)
       for (const name of pageCases) {
         console.log(`\nbrowser half — ${name}`)
         CASES[name](report)
@@ -282,12 +364,12 @@ async function browserHalf(planned) {
 }
 
 async function main() {
-  const { cases, quick } = selection()
+  const { cases, quick, jobs } = selection()
   checkFeatureTable()
   const planned = plan(cases, quick)
   setTier(quick ? 'quick' : 'full')
   await hostHalf()
-  const { ran, scope } = await browserHalf(planned)
+  const { ran, scope } = await browserHalf(planned, jobs)
   const skipped = skips() === 0 ? '' : `, ${skips()} timing checks skipped`
   console.log(failures() === 0
     ? `\nsmoke: all checks passed (${scope}${skipped})${ran ? '' : ' (browser half skipped)'}`

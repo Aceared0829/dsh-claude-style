@@ -18,17 +18,22 @@
  * once per frame while the turn runs, and writes the evidence of a failure. The
  * scenarios are the table in packages/testing/scenarios.cjs.
  * Every scenario runs against its own scratch instance, so nothing a scenario
- * writes can reach another.
+ * writes can reach another. The instances stand beside each other: the walk runs
+ * several scenarios at once (DEFAULT_JOBS, `--jobs` to change it), each in a
+ * scratch home of its own, over one browser the lane starts for the whole walk.
  *
- * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--shard <index>:<total>] [--headed] [--out <dir>] [--delay <ms>]
+ * Usage: node packages/testing/e2e.cjs [--scenario <name>[,<name>…]] [--shard <index>:<total>] [--jobs <n>] [--headed] [--out <dir>] [--delay <ms>]
  *        --scenario names what to run; without it the walk is every scenario in
  *        the table (packages/testing/scenarios.cjs) but the parked pair below.
  *        --shard takes one slice of that walk, so several runs hold the whole
- *        of it between them (D66).
+ *        of it between them (D66); a slice runs one scenario at a time, since
+ *        the cloud's own parallelism is the shards.
  */
 'use strict'
 const fs = require('node:fs')
+const { availableParallelism } = require('node:os')
 const path = require('node:path')
+const { launchBrowser } = require('./browser.cjs')
 const { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, DEFAULT_HOME } = require('./dsh-web.cjs')
 const { MARKS } = require('./lane.cjs')
 const { SCENARIOS } = require('./scenarios.cjs')
@@ -48,6 +53,36 @@ const DEFAULT_OUT = path.join(ROOT, '.debug', 'e2e', 'out')
 const SCENARIO_DEADLINE_MS = Number(process.env.DSH_E2E_DEADLINE_MS ?? '') || 3 * 60 * 1000
 
 /**
+ * How many scenarios the walk runs at once. Each one boots its own host and
+ * drives its own page, and the scenarios that read the page frame by frame —
+ * the tail's follow, the flight's landing, the doors' pin, the frame cost of a
+ * long session — are the ones a loaded machine disturbs, so the count stays
+ * well under the machine's cores. `--jobs` or `DSH_E2E_JOBS` says another.
+ */
+const DEFAULT_JOBS = Math.max(2, Math.min(4, Math.floor(availableParallelism() / 5)))
+
+/** How many scenarios to run at once: the flag or the environment, else DEFAULT_JOBS. */
+function jobsOf(value) {
+  const asked = value ?? process.env.DSH_E2E_JOBS
+  if (asked === undefined) return DEFAULT_JOBS
+  const count = Number(asked)
+  if (!Number.isInteger(count) || count < 1) throw new Error(`--jobs takes how many scenarios to run at once, not "${asked}"`)
+  return count
+}
+
+/**
+ * One scratch home per scenario running at once: `dsh-web.cjs` clears a home's
+ * sessions and puts its settings layer back before every boot, so two scenarios
+ * in one home would clear each other's state mid-turn. A walk of one scenario
+ * uses the home itself, so `--home` keeps meaning what it says.
+ */
+function workerHomes(base, jobs, total) {
+  const root = path.resolve(base ?? DEFAULT_HOME)
+  const wanted = Math.max(1, Math.min(jobs, total))
+  return wanted === 1 ? [root] : Array.from({ length: wanted }, (_, at) => `${root}-${at}`)
+}
+
+/**
  * The scenarios the default walk leaves out: the two that read the host's own
  * statistics surfaces on a page the reader has moved (stats-position.cjs,
  * stats-overlay.cjs). This list is the only place a scenario is parked — the
@@ -63,7 +98,7 @@ const PARKED = new Set(['statsPosition', 'statsOverlay'])
  * value, the host flow rows that did appear, any overlay still open. The lane
  * writes these into its output directory, which CI keeps as an artifact.
  */
-async function captureFailure(session, out, name) {
+async function captureFailure(session, out, name, say) {
   const { page } = session
   const file = path.join(out, `${name}-failure.png`)
   await page.screenshot({ path: file }).catch(() => {})
@@ -89,7 +124,7 @@ async function captureFailure(session, out, name) {
     `state: ${JSON.stringify(state, null, 2)}`,
   ].join('\n')
   fs.writeFileSync(path.join(out, `${name}-failure.txt`), `${report}\n`)
-  process.stdout.write(`  failure evidence: ${file}\n`)
+  say(`  failure evidence: ${file}\n`)
 }
 
 /**
@@ -218,6 +253,16 @@ async function startTrace(page) {
 async function runScenario(name, options) {
   const scenario = SCENARIOS[name]
   if (scenario === undefined) throw new Error(`no scenario named "${name}" (${Object.keys(SCENARIOS).join(', ')})`)
+  /** This scenario's own log lines, handed to the runner as one block when it is done. */
+  const lines = []
+  const say = (line) => lines.push(line)
+  const flush = () => {
+    if (lines.length === 0) return
+    const block = lines.join('')
+    lines.length = 0
+    if (options.say === undefined) process.stdout.write(block)
+    else options.say(block)
+  }
   // The scratch home is known before the host boots, and a scripted tool call
   // needs it: the model service fills the script's `{{workspace}}` slots with it
   // (packages/testing/mock-llm.cjs), and the scenario writes files beside them.
@@ -228,7 +273,9 @@ async function runScenario(name, options) {
   // home starts empty on every run, since the reset below clears the host's
   // sessions and leaves the other plugin's own store pointing at them.
   const sharedHome = path.resolve(options.home ?? DEFAULT_HOME)
-  const home = scenario.plugins === undefined ? sharedHome : path.join(path.dirname(sharedHome), `home-${name}`)
+  const home = scenario.plugins === undefined
+    ? sharedHome
+    : path.join(path.dirname(sharedHome), `home-${name}${options.worker === undefined ? '' : `-${options.worker}`}`)
   if (scenario.plugins !== undefined) fs.rmSync(home, { recursive: true, force: true })
   const workspace = path.join(home, 'workspace')
   const mock = await startMockLlm({
@@ -238,14 +285,14 @@ async function runScenario(name, options) {
   })
   const patch = ['- id: llm-deepseek', '  config:', `    baseURL: ${mock.url}`, '    apiKeyEnv: DSH_E2E_MOCK_KEY', ...scenario.patch ?? []].join('\n')
   const host = await start({ patch, args: scenario.hostArgs, env: { DSH_E2E_MOCK_KEY: 'mock' }, home, plugins: scenario.plugins, resetState: true })
-  process.stdout.write(`\n== ${name} ==  mock ${mock.url}  host ${host.url}\n`)
+  say(`\n== ${name} ==  mock ${mock.url}  host ${host.url}\n`)
   /** Where the scenario is, so a hang in the log says which step it never left. */
-  const step = (label) => process.stdout.write(`  · ${label}\n`)
+  const step = (label) => say(`  · ${label}\n`)
   let session
   let expired = false
   const timer = setTimeout(() => { expired = true }, SCENARIO_DEADLINE_MS)
   try {
-    session = await openPage(host.url, { headless: options.headed !== true, args: scenario.browserArgs, initScript: scenario.initScript, ...scenario.viewport })
+    session = await openPage(host.url, { browser: options.browser, headless: options.headed !== true, args: scenario.browserArgs, initScript: scenario.initScript, ...scenario.viewport })
     const { page } = session
     const body = (async () => {
       step('waiting for the skin')
@@ -272,18 +319,19 @@ async function runScenario(name, options) {
       }
       step('asserting')
       const checks = await scenario.assert(context)
-      for (const item of checks) process.stdout.write(`  ${item.ok ? '✓' : '✗'} ${item.name}${item.detail === '' ? '' : `  — ${item.detail}`}\n`)
+      for (const item of checks) say(`  ${item.ok ? '✓' : '✗'} ${item.name}${item.detail === '' ? '' : `  — ${item.detail}`}\n`)
       const failed = checks.filter((item) => !item.ok).length
       if (expired) throw new Error(`scenario "${name}" overran its ${SCENARIO_DEADLINE_MS / 1000} s deadline`)
       return { scenario: name, checks, failed, requested: mock.requests.length, trace: context.trace, notes: context.notes }
     })()
     return await body
   } catch (error) {
-    if (session !== undefined) await captureFailure(session, options.out, name).catch(() => {})
+    if (session !== undefined) await captureFailure(session, options.out, name, say).catch(() => {})
     if (expired) {
       // The hung step is still holding the page; the run stops here with the
       // evidence written above instead of waiting on the runner's own limit.
-      process.stdout.write(`  scenario "${name}" passed its ${SCENARIO_DEADLINE_MS / 1000} s deadline; stopping the run\n`)
+      say(`  scenario "${name}" passed its ${SCENARIO_DEADLINE_MS / 1000} s deadline; stopping the run\n`)
+      flush()
       host.stop()
       await mock.stop().catch(() => {})
       process.exit(1)
@@ -294,6 +342,9 @@ async function runScenario(name, options) {
     if (session !== undefined) await session.close()
     host.stop()
     await mock.stop()
+    // The lines of a scenario that failed are printed before its error leaves
+    // this function, so the evidence and the step it hung on stay together.
+    flush()
   }
 }
 
@@ -341,6 +392,11 @@ async function main() {
   const walked = shard === undefined ? names : shardOf(names, shard)
   if (walked.length === 0) throw new Error(`--shard ${shard} of ${names.length} scenarios has nothing to run`)
   const out = path.resolve(argOf('out') ?? DEFAULT_OUT)
+  // A shard is one slice of a walk the cloud holds between several machines, and
+  // its own parallelism is the shards; a slice driven several at a time on a
+  // small runner is what its frame readings do not survive. `--jobs` says
+  // otherwise, and everywhere else the machine's own core count answers.
+  const jobs = shard !== undefined && argOf('jobs') === undefined ? 1 : jobsOf(argOf('jobs'))
   const options = {
     headed: args.includes('--headed'),
     delayMs: argOf('delay') === undefined ? undefined : Number(argOf('delay')),
@@ -348,19 +404,46 @@ async function main() {
     out,
   }
   fs.mkdirSync(out, { recursive: true })
-  // The first boot of the scratch host installs this checkout into the scratch
-  // profile, which on a cold machine outlasts the waits a scenario makes on the
-  // page. Booting once up front keeps that cost out of the first scenario.
+  const homes = workerHomes(options.home, jobs, walked.length)
+  // The first boot of a scratch home installs this checkout into its profile,
+  // which on a cold machine outlasts the waits a scenario makes on the page.
+  // Every home pays that once, up front and beside the others. The home the
+  // plugin's own scenarios use is made when their scenario runs (`runScenario`).
   if (walked.length > 1) {
-    const warm = await start({ home: options.home, env: {}, resetState: false })
-    warm.stop()
+    await Promise.all(homes.map(async (home) => {
+      const warm = await start({ home, env: {}, resetState: false })
+      warm.stop()
+    }))
   }
-  const results = []
-  for (const name of walked) {
-    const result = await runScenario(name, options)
-    fs.writeFileSync(path.join(out, `${name}.json`), `${JSON.stringify(result, null, 2)}\n`)
-    results.push(result)
+  // One browser for the whole walk: a scenario's page lives in a context of its
+  // own, so what the browser start costs is paid once instead of per scenario.
+  const browser = await launchBrowser({ headless: options.headed !== true })
+  const queue = [...walked]
+  const finished = new Map()
+  /** The first scenario that threw, kept until every instance has stopped. */
+  let broke = null
+  const say = (block) => process.stdout.write(block)
+  try {
+    await Promise.all(homes.map(async (home, worker) => {
+      // A scenario that throws ends the walk the way a serial one does — the
+      // scenarios still in flight finish, none is started after it, and what it
+      // threw is raised once its instance is down.
+      while (queue.length > 0 && broke === null) {
+        const name = queue.shift()
+        try {
+          const result = await runScenario(name, { ...options, home, worker, browser, say })
+          fs.writeFileSync(path.join(out, `${name}.json`), `${JSON.stringify(result, null, 2)}\n`)
+          finished.set(name, result)
+        } catch (error) {
+          broke = error
+        }
+      }
+    }))
+  } finally {
+    await browser.close()
   }
+  if (broke !== null) throw broke
+  const results = walked.map((name) => finished.get(name))
   const failed = results.reduce((sum, result) => sum + result.failed, 0)
   process.stdout.write(`\n${failed === 0 ? 'E2E PASS' : 'E2E FAIL'} — ${results.length} scenarios, ${failed} failed checks; traces in ${out}\n`)
   // A scenario leaves a handle behind on a slow runner — the CI job walked every

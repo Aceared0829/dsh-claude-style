@@ -8,8 +8,12 @@
  * started; a session asks it and reads its answer.
  *
  *   one entry  the checks, the build, the unit tests, the smoke and the
- *              end-to-end lane, in the order they depend on each other, from
- *              one command.
+ *              end-to-end lane, from one command.
+ *   staged     a gate starts as soon as what it reads exists: the checks, the
+ *              build and the unit lane answer about the sources and run
+ *              together, and the two browser lanes read the build's output and
+ *              run together once it is written. What the run costs is the
+ *              slowest gate of each stage rather than their sum.
  *   serial     `.debug/verify.lock/` holds one run at a time. A request that
  *              arrives during a run waits for it rather than starting a second
  *              browser, and asks for its own key again when the lock is free.
@@ -28,19 +32,17 @@
  * Usage: node scripts/verify.mjs [--quick] [--e2e] [--scenario <name>[,<name>…]]
  *        [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--full]
  *        [--no-e2e] [--force]
- *        A bare run is the stretch before a push: the checks, the build, the
- *        unit tests and the smoke's quick tier, with no end-to-end lane. The
- *        full smoke walk and the lane are the minutes-long parts, so a run
- *        takes them when they are what the push needs judged: --case and
- *        --feature name the smoke's cases as they do on its own command line
- *        (naming them drops the quick tier, which leaves the motion cases
- *        out), --e2e and --scenario add the lane, --full walks the whole smoke
- *        and the lane's default table, and --no-e2e leaves the lane out of
- *        either. A request for everything the tool holds prints
- *        `请确认你正处于发布流程。` before its gates start: the whole smoke and
- *        the lane's default table are the cloud's release gate.
+ *        A bare run is the iteration tier: the checks, the build and the tests
+ *        the working tree's change reaches, at once, and nothing that starts a
+ *        browser. --quick adds the smoke's quick tier (its motion cases left
+ *        out), --case and --feature name the smoke's cases as they do on its own
+ *        command line (naming them runs the motion cases too), --full walks the
+ *        whole smoke, and --e2e and --scenario add the end-to-end lane.
+ *        --no-e2e leaves the lane out of either. A request for the whole smoke
+ *        and the lane's default table together prints `请确认你正处于发布流程。`
+ *        before its gates start: that pair is the cloud's release gate.
  */
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
@@ -62,8 +64,8 @@ const FORMAT = 1
 /** The flags a request may carry, without their dashes; the three name-taking ones carry values. */
 const FLAGS = new Set(['quick', 'full', 'e2e', 'no-e2e', 'force', 'case', 'feature', 'scenario'])
 
-/** The run in flight, so an interrupt can take it down with this process. */
-let running = null
+/** The gates in flight, so an interrupt can take them down with this process. */
+const running = new Set()
 /** The release of the lock this process holds, or null while it holds none. */
 let holding = null
 
@@ -74,6 +76,47 @@ const say = (line) => process.stdout.write(`${line}\n`)
 function bad(message) {
   console.error(`verify: ${message}`)
   process.exit(2)
+}
+
+/** The directories the unit lane reads: what a change under them can reach a test through. */
+const UNIT_SOURCES = ['packages/client/src', 'packages/contracts/src']
+
+/**
+ * Every path the working tree has changed under those sources, as `git status`
+ * reports them: a session edits files and runs the iteration tier long before it
+ * commits, so the working tree is the change the tier answers about. Untracked
+ * files count — a test written beside its module has to run.
+ */
+function changedUnderSources() {
+  const out = execFileSync('git', ['status', '--porcelain', '-z', '--', ...UNIT_SOURCES], { cwd: ROOT, encoding: 'utf8' })
+  const parts = out.split('\0')
+  const paths = []
+  for (let at = 0; at < parts.length; at += 1) {
+    const entry = parts[at]
+    if (entry.length === 0) continue
+    const status = entry.slice(0, 2)
+    const file = entry.slice(3)
+    // A file the change removed has nothing for the lane to read; its tests are
+    // reached through whatever still imports it.
+    if (file !== '' && fs.existsSync(path.join(ROOT, file))) paths.push(file)
+    // A rename or a copy states its original path in the part after this one.
+    if (status.includes('R') || status.includes('C')) at += 1
+  }
+  return paths
+}
+
+/**
+ * The unit gate of a request: the whole lane, or — for the iteration tier — the
+ * tests the working tree's change reaches, which is what makes that tier answer
+ * in seconds while a session is editing. A tree with no change under the
+ * sources runs the lane whole: a bare request on a still tree still answers for
+ * every test.
+ */
+function unitGate(iteration) {
+  if (!iteration) return { id: 'unit', script: VITEST, args: ['run'] }
+  const changed = changedUnderSources()
+  if (changed.length === 0) return { id: 'unit', script: VITEST, args: ['run'] }
+  return { id: 'unit', script: VITEST, args: ['related', ...changed] }
 }
 
 /**
@@ -134,15 +177,27 @@ function parseRequest() {
   if (args.includes('--quick') && (full || askLane || scenarios.length > 0)) {
     bad('--quick is the smoke\'s quick tier on its own; --e2e, --scenario and --full name the longer walks')
   }
+  // The iteration tier is the bare request: the checks, the build and the tests
+  // the change reaches, with no browser at all. Everything else runs the smoke,
+  // and the whole walk is asked for by name.
+  const iteration = !full && !args.includes('--quick') && !askLane && !noLane
+    && cases.length === 0 && features.length === 0 && scenarios.length === 0
   return {
-    // The smoke's quick tier unless the request names cases or features (a motion
-    // case is not in the quick tier) or asks for the whole smoke.
-    quick: args.includes('--quick') || (!full && cases.length === 0 && features.length === 0),
+    // The smoke's walk: the whole walk under --full, the named cases or features
+    // when the request names them, the quick tier otherwise.
+    smoke: iteration ? null
+      : full ? []
+        : cases.length + features.length > 0
+          ? [...(cases.length > 0 ? ['--case', cases.join(',')] : []), ...(features.length > 0 ? ['--feature', features.join(',')] : [])]
+          : ['--quick'],
+    iteration,
     force: args.includes('--force'),
     cases,
     features,
     scenarios,
-    e2e: !noLane && (full || askLane || scenarios.length > 0),
+    // The lane is named: `--full` is the whole smoke walk, and the release gate
+    // is that walk with the lane beside it (`--full --e2e`).
+    e2e: !noLane && (askLane || scenarios.length > 0),
   }
 }
 
@@ -152,19 +207,13 @@ function parseRequest() {
  * request for it is asked to say what it is before the minutes start.
  */
 function walksEverything(request) {
-  return !request.quick
-    && request.cases.length === 0
-    && request.features.length === 0
+  return request.smoke !== null && request.smoke.length === 0
     && request.e2e
     && request.scenarios.length === 0
 }
 
-/** The gates this request runs, in the order each depends on the one before it. */
+/** The gates this request runs. */
 function gatesFor(request) {
-  const smoke = []
-  if (request.quick) smoke.push('--quick')
-  if (request.cases.length > 0) smoke.push('--case', request.cases.join(','))
-  if (request.features.length > 0) smoke.push('--feature', request.features.join(','))
   const gates = [
     // The cloud's fast tier starts with the checks that need no build, so the
     // same set answers here and a document mistake fails in seconds.
@@ -174,9 +223,9 @@ function gatesFor(request) {
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
-    { id: 'unit', script: VITEST, args: ['run'] },
-    { id: 'smoke', script: 'packages/testing/smoke.cjs', args: smoke },
+    unitGate(request.iteration),
   ]
+  if (request.smoke !== null) gates.push({ id: 'smoke', script: 'packages/testing/smoke.cjs', args: request.smoke })
   if (request.e2e) {
     gates.push({
       id: 'e2e',
@@ -185,6 +234,22 @@ function gatesFor(request) {
     })
   }
   return gates
+}
+
+/**
+ * Those gates grouped by what waits for what. The checks and the build stand
+ * first: the build writes what the browser lanes read, and the checks answer in
+ * moments. The unit lane answers about the sources and waits for nothing, so it
+ * runs beside the browser lanes rather than in front of them — the slow stage
+ * starts a couple of seconds earlier for it. Each stage costs its slowest gate
+ * instead of the sum of its gates.
+ */
+function stagesFor(request) {
+  const gates = gatesFor(request)
+  const browser = gates.filter((gate) => gate.id === 'smoke' || gate.id === 'e2e')
+  if (browser.length === 0) return [gates]
+  const beside = [...gates.filter((gate) => gate.id === 'unit'), ...browser]
+  return [gates.filter((gate) => beside.indexOf(gate) === -1), beside]
 }
 
 /** The key a verdict is filed under: this tree, these gates. */
@@ -205,13 +270,30 @@ function cached(key) {
 function runGate(gate) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [gate.script, ...gate.args], { cwd: ROOT, stdio: 'inherit' })
-    running = child
+    running.add(child)
     child.on('error', reject)
     child.on('close', (code) => {
-      running = null
+      running.delete(child)
       resolve(code ?? 1)
     })
   })
+}
+
+/**
+ * Run the gates of one stage beside each other. The gates of a stage read what
+ * the stages before them wrote and nothing the stage itself produces, so what
+ * the stage costs is its slowest gate.
+ */
+async function runStage(stage) {
+  say(`\nverify: ${stage.length === 1 ? stage[0].id : `${stage.map((gate) => gate.id).join(', ')} together`}`)
+  for (const gate of stage) say(`verify:   ${gate.id} — node ${gate.script}${gate.args.length === 0 ? '' : ` ${gate.args.join(' ')}`}`)
+  return Promise.all(stage.map(async (gate) => {
+    const at = Date.now()
+    const code = await runGate(gate)
+    const ms = Date.now() - at
+    say(`verify: ${gate.id} ${code === 0 ? 'ok' : `exit ${code}`} (${seconds(ms)})`)
+    return { id: gate.id, code, ms }
+  }))
 }
 
 /** Run every gate of this request, file the verdict, and return the record. */
@@ -223,19 +305,15 @@ async function runAll(request, tree, key) {
   let exitCode = 0
   /** The build output the build gate left behind; null before that gate runs. */
   let built = null
-  for (const gate of gatesFor(request)) {
-    say(`\nverify: ${gate.id} — node ${gate.script}${gate.args.length === 0 ? '' : ` ${gate.args.join(' ')}`}`)
-    const at = Date.now()
-    const code = await runGate(gate)
-    gates.push({ id: gate.id, code, ms: Date.now() - at })
-    say(`verify: ${gate.id} ${code === 0 ? 'ok' : `exit ${code}`} (${seconds(Date.now() - at)})`)
-    if (code !== 0) {
-      // A failed gate ends the run: the lanes after it read what it produces, and
-      // the fix comes before their minutes are spent.
+  for (const stage of stagesFor(request)) {
+    gates.push(...await runStage(stage))
+    if (stage.some((gate) => gate.id === 'build')) built = libHash()
+    if (gates.some((gate) => gate.code !== 0)) {
+      // A failed gate ends the run before the next stage: the lanes above it read
+      // what it produces, and the fix comes before their minutes are spent.
       exitCode = 1
       break
     }
-    if (gate.id === 'build') built = libHash()
   }
   const swapped = exitCode === 0 && libHash() !== built
   const record = {
@@ -304,7 +382,7 @@ async function main() {
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
-    if (running !== null) running.kill(signal)
+    for (const child of running) child.kill(signal)
     // Only the lock this process holds is released: a request still waiting for
     // the lock must leave the run it is waiting for alone.
     if (holding !== null) holding()
