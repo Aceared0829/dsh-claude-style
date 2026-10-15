@@ -128,17 +128,17 @@ body[data-dsh-claude-style] .dsh-claude-archive-row:is(:hover, :focus-visible) {
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-archive-row:is(:hover, :focus-visible) {
   color: var(--dsh-claude-ink-strong) !important;
 }
-/* The leading slot the host's rows carry (a 5px circle centred in 14px), so the
+/* The leading slot the host's rows carry (a 6px circle centred in 14px), so the
    two lists start their titles at the same x. */
 body[data-dsh-claude-style] .dsh-claude-archive-row::before {
   content: "" !important;
   flex: none !important;
-  width: 5px !important;
-  height: 5px !important;
-  margin: 0 4.5px !important;
+  width: 6px !important;
+  height: 6px !important;
+  margin: 0 4px !important;
   border-radius: 50% !important;
   corner-shape: round !important;
-  border: 1.2px solid var(--dsw-alias-label-caption, #a6a094) !important;
+  border: 1px solid var(--dsw-alias-label-caption, #a6a094) !important;
   box-sizing: border-box !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-row:hover {

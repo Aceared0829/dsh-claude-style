@@ -411,24 +411,24 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="session-row"] [data-dsh-clau
 body[data-dsh-claude-style] [data-dsh-claude-part~="session-row"] [data-dsh-claude-part~="row-slot"] > [data-slot]:empty::after {
   content: "";
   display: inline-block;
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   corner-shape: round;
-  border: 1.2px solid var(--dsw-alias-label-caption, #a6a094);
+  border: 1px solid var(--dsw-alias-label-caption, #a6a094);
   box-sizing: border-box;
 }
 
 /* Session status ongoing indicator: the host's own spinner, repainted as a grey
    light breathing in place. The host's glyph is a `<g>` of two circles and is
-   hidden below, so the box itself is the whole paint. The idle seat's circle
-   stands 5px hollow in the caption neutral, so the light is a filled dot a shade
-   larger in the row's stronger neutral: filled against hollow is what reads a
-   row as running, and the breath is what tells it from a state the host paints
-   filled and still. */
+   hidden below, so the box itself is the whole paint. The light stands the same
+   6px as the idle seat's hollow circle and in the row's stronger neutral, so the
+   two marks differ by fill alone: filled and breathing is what reads a row as
+   running, and the breath is what tells it from a state the host paints filled
+   and still. */
 body[data-dsh-claude-style] svg[data-state="ongoing"] {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   box-sizing: border-box;
   border: none;
   border-radius: 50%;

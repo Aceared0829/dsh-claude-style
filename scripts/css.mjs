@@ -69,9 +69,10 @@ const LOCAL_LAYER = /^(?:auto|-1|[0-9])$/
 
 /**
  * A time and an easing curve as a declaration's value spells them (D65). A
- * name such as `--dsh-claude-ease-out` or `win11-spin` is no match: the
- * character before must not continue an identifier or a number. `linear` and
- * the step functions are mechanical timing, not a style choice, and stay.
+ * name such as `--dsh-claude-ease-out` is no match, and neither is a digit
+ * inside an identifier: the character before must not continue an identifier or
+ * a number. `linear` and the step functions are mechanical timing, not a style
+ * choice, and stay.
  */
 const TIME_PATTERN = /(?<![\w.#-])(\d*\.?\d+)(ms|s)(?![\w-])/g
 const EASE_PATTERN = /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out)(?![\w-])|cubic-bezier\(/

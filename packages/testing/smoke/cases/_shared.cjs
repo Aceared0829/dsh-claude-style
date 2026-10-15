@@ -44,7 +44,7 @@ function commonChecks(r) {
       contrast(r.topUpInk, r.topUpFill) >= 3,
     JSON.stringify({ ink: r.topUpInk, fill: r.topUpFill }))
   check('the idle session seat draws the status circle through the slot outlet',
-    r.seatIdle !== null && r.seatIdle.content !== 'none' && r.seatIdle.width === '5px',
+    r.seatIdle !== null && r.seatIdle.content !== 'none' && r.seatIdle.width === '6px',
     JSON.stringify(r.seatIdle))
   check('a seat carrying the running status dot draws no circle',
     r.seatRunning !== null && r.seatRunning.content === 'none' && r.seatRunning.svgs > 0,

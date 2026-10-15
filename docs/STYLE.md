@@ -204,7 +204,7 @@ and scrolls to its end.
   11px, the permission and workspace segments' 7px, the view tabs' 5px, the
   peak-rate and file pills' 999px.
 - Borders: 1px warm hairline. The same host copies keep their own stroke: the
-  sidebar's 1.5px session-row ring, the inline composer's 1.6px stop square.
+  inline composer's 1.6px stop square.
 - Spacing: 4 px rhythm.
 - Bottom edge: the transcript never fades behind the composer by shadow. The
   composer seat paints an opaque `var(--dsw-alias-bg-base)` bar across its own
@@ -238,13 +238,14 @@ edit; the build refuses a time or a curve written anywhere else.
   slider).
 - The swap, its gap and the roll of a figure's digits come from the transitions
   this skin ports; `THIRD_PARTY_NOTICES.md` names each one.
-- Loop periods are separate from durations: a sweep, a pulse, a blink, a spin.
+- Loop periods are separate from durations: a sweep, a pulse, a blink, a breath.
 - Open: a menu growing out of its trigger, a dialog out of the centre, a
   settings page sliding in — the transitions.dev surfaces, settling on their own
   curve and closing on the exit duration.
 - The presets these tokens feed live in `packages/client/src/shared/motion.css`:
   a surface arriving or leaving, a menu growing out of its trigger, a plain
-  fade, one half of a wording swap, the placeholder pulse, and the two paints
+  fade, one half of a wording swap, the pulse a placeholder and the sidebar's
+  ongoing light share, and the two paints
   the waiting line's words can wear (a highlight band and a colour wash). A
   feature that needs its own effect reads the tokens and keeps its own
   keyframes.
@@ -281,7 +282,7 @@ edit the JSON, not the table.
 | `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |
 | `--dsh-claude-period-flash` | `1450ms` | one flash of the reasoning slider's top-rung matrix |
 | `--dsh-claude-period-blink` | `1000ms` | one blink of the composer caret |
-| `--dsh-claude-period-spin` | `850ms` | one turn of the background-work ring in the sidebar |
+| `--dsh-claude-period-breathe` | `2400ms` | one breath of the sidebar's ongoing-conversation light |
 | `--dsh-claude-period-landed` | `1400ms` | the mark on the turn the conversation navigator landed on |
 | `--dsh-claude-period-hold` | `840ms` | how long the reasoning window's text stands between two steps |
 | `--dsh-claude-period-dot-bounce` | `500ms` | one bounce of the waiting line's loader dots under the Claude brand, and the period each dot's own start is measured against |

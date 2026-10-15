@@ -8,7 +8,7 @@
 
 - 令牌：`packages/client/src/theme/tokens.json` 新增 `motion` 一组，与配色、字体同一份数据（D51），每条带 `use`，按作用命名、不按数值命名：
   - 时长 `--dsh-claude-duration-<作用>`：即时、反馈、内容进场、浮层进场、退场、展开（菜单从触发点长出、整窗对话框从中心长出、设置页滑入、超时徽标滑上行）、换词与换词间隔、数字滚动、移动、滑动、渐隐、开关回弹、起飞、步进、弹入、升起（首页问候语）、错开，以及「减弱」时压到的一瞬（D26）。
-  - 循环周期 `--dsh-claude-period-<作用>`：宿主扫光（状态行与过程组头部同档，跟宿主自己的 TextShimmer）、脉冲、闪动、光标闪烁、转圈、落点高亮、推理窗口停留。
+  - 循环周期 `--dsh-claude-period-<作用>`：宿主扫光（状态行与过程组头部同档，跟宿主自己的 TextShimmer）、脉冲、闪动、光标闪烁、呼吸、落点高亮、推理窗口停留。
   - 曲线 `--dsh-claude-ease-<名>`：标准、减速、缓入缓出、滑行、滚动、回弹、落定（transitions.dev 的 smooth-out，菜单、对话框、设置页、徽标与问候语都用它停到位）、宿主扫光。
   - 位移、模糊与缩放：`--dsh-claude-distance-nudge` / `-travel` / `-rise`、`--dsh-claude-blur-soft` / `-enter`、`--dsh-claude-scale-surface` / `-dropdown` / `-dropdown-exit` / `-dialog`。
   - 简写 `--dsh-claude-timing-feedback` / `-surface`：时长加曲线，直接写进 `transition` / `animation` 的简写。
