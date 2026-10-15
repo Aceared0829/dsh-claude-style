@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "侧边栏的工作区名字过长时让位给行尾的悬停操作（名字以省略号收尾），工作区菜单与新建会话两个按钮始终留在栏内并可点击。",
+  "en": "A workspace name too long for the sidebar now yields to the hover actions at the end of its row (the label ends in an ellipsis), so the workspace menu and the new-session button stay inside the column and stay clickable."
+}
