@@ -418,47 +418,37 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="session-row"] [data-dsh-clau
   box-sizing: border-box;
 }
 
-/* Session status ongoing indicator: a circular progress ring. Nothing here needs
-   weight: these selectors already outrank the host's class rules, and the light
-   overrides below outrank this rule by their `:not()` part alone. The track is a
-   plain shorthand on purpose: it sets all four sides, and the head the longhand
-   paints on top of it is what the rotation carries. */
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) svg[data-state="ongoing"] {
-  border-color: rgba(20, 20, 19, 0.12);
-}
+/* Session status ongoing indicator: the host's own spinner, repainted as a grey
+   light breathing in place. The host's glyph is a `<g>` of two circles and is
+   hidden below, so the box itself is the whole paint. The idle seat's circle
+   stands 5px hollow in the caption neutral, so the light is a filled dot a shade
+   larger in the row's stronger neutral: filled against hollow is what reads a
+   row as running, and the breath is what tells it from a state the host paints
+   filled and still. */
 body[data-dsh-claude-style] svg[data-state="ongoing"] {
-  width: 10px;
-  height: 10px;
+  width: 7px;
+  height: 7px;
   box-sizing: border-box;
+  border: none;
   border-radius: 50%;
   corner-shape: round;
-  border: 1.5px solid rgba(255, 255, 255, 0.18);
-  border-top-color: var(--dsw-alias-label-primary);
-  animation: var(--dsh-claude-period-spin) linear infinite dsh-claude-win11-spin;
-  transform-origin: center center;
+  background: var(--dsw-alias-label-secondary);
+  /* The shared pulse, whose whole motion is opacity: a light that changes size
+     with its brightness reads as a growing dot, not as a lamp. */
+  animation: dsh-claude-pulse var(--dsh-claude-period-breathe) var(--dsh-claude-ease-in-out) infinite;
   display: inline-block;
   flex: none;
   color: transparent;
   fill: none;
-  background: transparent;
-}
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) svg[data-state="ongoing"] {
-  border-top-color: var(--dsw-alias-label-secondary);
 }
 body[data-dsh-claude-style] svg[data-state="ongoing"] * {
   display: none;
 }
-@keyframes dsh-claude-win11-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-/* The ring spins in EVERY motion setting, deliberately: a 0.85s rotation is the
-   whole signal that background work is alive, and a frozen ring reads as broken
-   rather than as calm. Neither the system setting (D26) nor the settings page's
-   own choice governs it. */
-@media (prefers-reduced-motion: reduce) {
-  body[data-dsh-claude-style] svg[data-state="ongoing"] {
-    animation: var(--dsh-claude-period-spin) linear infinite dsh-claude-win11-spin !important;
-    animation-play-state: running !important;
-  }
+/* The reader's animation choice (D26): Reduced holds the light at its bright
+   pose, which is still the lit dot a running row is read by, so this indicator
+   needs none of the exception the ring before it carried. The system's own
+   setting needs no rule here either: the host's reduced-motion block reaches its
+   spinner's `<g>` and arc, both hidden by the rule above, and never this box. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] svg[data-state="ongoing"] {
+  animation: none;
 }
