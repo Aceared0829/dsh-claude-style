@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "zh": "工作区树模式下，行的层级缩进回来了：每一层比它的上一层再向右让出 `depth * 12px`，扁平列表与按工作区分组的列表都保持原来的 6px。",
+  "en": "In the workspace tree a row's level indentation is back: each level stands `depth * 12px` further right than its parent, while the flat list and the group-by-workspace list keep the 6px they have today."
+}

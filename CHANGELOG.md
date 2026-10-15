@@ -20,6 +20,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - 手机远程访问（`@linxin666/dsh-remote-web-ui` 的竖屏适配）下，输入区底行不再错位：发送与停止按钮回到输入行内并完整落在卡片里；档位选择器与上下文圆环之间只隔 16px，和桌面一致；模型名称在行内还有空间时完整显示，只有真的放不下才以省略号收尾。上下文圆环的预留宽度变化时（流式输出期间也会发生），档位选择器当帧就跟着重新定位，不再停在旧位置。
+- 工作区树模式下，行的层级缩进回来了：每一层比它的上一层再向右让出 `depth * 12px`，扁平列表与按工作区分组的列表都保持原来的 6px。
 
 ### 移除
 
@@ -48,6 +49,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - On a phone via the mobile remote plugin (`@linxin666/dsh-remote-web-ui`, portrait adaptation) the composer's bottom line no longer slips out of place: the send and stop buttons sit back on the input's own line and inside the card, the tier trigger stands 16px from the context ring as it does on a desktop, and the model name is shown whole whenever the row has room for it, ending in an ellipsis only when it does not. When the room the context ring reserves changes — which also happens while an answer streams — the tier trigger is placed again in that same frame instead of holding its old position.
+- In the workspace tree a row's level indentation is back: each level stands `depth * 12px` further right than its parent, while the flat list and the group-by-workspace list keep the 6px they have today.
 
 ### Removals
 
