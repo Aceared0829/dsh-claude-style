@@ -160,11 +160,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     const standing = lines.get(row)
     if (standing !== undefined && standing.line.isConnected) return standing
-    // The host rebuilds its running row between passes, so the map can miss a
-    // line this skin put up for the same words: whatever already stands beside
-    // them goes before the new one, or every pass would leave another line —
-    // and another loader — in the row.
-    for (const stray of Array.from(words.parentElement?.querySelectorAll(':scope > .dsh-claude-chat-wait') ?? [])) stray.remove()
     const line = buildElement('span', 'dsh-claude-chat-wait')
     line.setAttribute(QUIET_ATTR, '')
     // The host's own words are hidden while this line stands in for them
@@ -180,11 +175,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const loader = buildLoader()
     line.append(loader, label, clock, badge)
     words.after(line)
+    const parts = { line, loader, label, clock, badge }
+    // The line is recorded before its loader starts. wait-loader.ts refuses to
+    // start a motion the stylesheet leaves without a lane, a fade length or a
+    // turn to hand over; thrown from here, with the record not yet written, every
+    // pass would put up another line and another set of dots beside the words —
+    // and the wording, the swap and the paint below would never run at all.
+    lines.set(row, parts)
     // The loader's motions rotate on their own clock, not on what the turn is
     // doing: it is set going here, with the line, and lets go when the row does.
     startWaitLoader(loader)
-    const parts = { line, loader, label, clock, badge }
-    lines.set(row, parts)
     return parts
   }
 
