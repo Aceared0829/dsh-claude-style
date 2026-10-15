@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "zh": "侧栏里正在进行的对话不再转圈，改成一盏呼吸的灰灯：亮着的实心圆点每 2.4 秒从半亮到全亮一个来回，位置与大小都不动，旁边的空圈仍是空闲对话。设置的「动画效果」选「减弱」时它停在最亮的那一帧。",
+  "en": "A conversation that is running now breathes instead of spinning: the sidebar's indicator is a lit grey dot whose light rises from half to full and back once every 2.4 seconds, neither moving nor changing size, while an idle conversation keeps its hollow circle. Under the Animation setting's Reduced it holds its brightest frame."
+}
