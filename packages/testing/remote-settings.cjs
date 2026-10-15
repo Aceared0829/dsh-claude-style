@@ -46,6 +46,15 @@ const reaches = (page, brand) => page.waitForFunction(
 /** Open the host's settings dialog on the skin's section, by the host's own shortcut. */
 async function openSkinSettings(page) {
   await page.keyboard.press('Control+Alt+Comma')
+  // The newer host answers this shortcut with its account menu, the settings
+  // dialog standing behind the menu's own first entry; the older one opens the
+  // dialog itself (packages/testing/importance.cjs does the same).
+  await page.waitForTimeout(1500)
+  const entry = page.locator('[role="menu"] [role="menuitem"]').first()
+  if (await entry.count() > 0) {
+    await entry.click({ force: true })
+    await page.waitForTimeout(800)
+  }
   await page.getByText('Claude Style', { exact: true }).first().click({ force: true })
   await page.locator(SKIN.page).first().waitFor({ timeout: FOLLOW_TIMEOUT_MS })
 }
