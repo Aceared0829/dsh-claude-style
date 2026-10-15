@@ -435,6 +435,24 @@ body[data-dsh-claude-style] .dsh-claude-caret-sample-bar.dsh-claude-caret-off {
   85%, 100% { left: 0; }
 }
 
+/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D26):
+   both wordings would come to rest on the cell's own frame, one painted over
+   the other, so one wording stands — the way the line writes its own words at
+   once on this setting — and both carets hold the frame the drawn one holds
+   (features/caret/caret.css). The hidden wording keeps its place in the cell, so
+   the card is the same size in every setting. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word {
+  animation: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  visibility: hidden;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-caret-sample-bar:is(.dsh-claude-caret-typing, .dsh-claude-caret-off) {
+  animation: none;
+}
+
 /* The row title is UI text in the host's row metrics: the sans face, not the
    serif display face theme/typography.css gives every class naming a title. */
 body[data-dsh-claude-style] .dsh-claude-settings-row-title {
