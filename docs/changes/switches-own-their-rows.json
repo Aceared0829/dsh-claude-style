@@ -3,6 +3,6 @@
   "order": 10,
   "at": "2026-10-15",
   "external": true,
-  "zh": "设置页「动效」页里，状态行与发出消息的进场各自得到一个开关，原先统管这两者的「聊天区动画效果」不再管它们；两张画法卡片移到各自开关下面，作为不带标题与说明的选项，开关关闭时置灰。「聊天区动画效果」改名为「聊天区滚动动画」并搬到「动效」页，只管跟随末尾、行与过程组的开合、文件操作行这三样。",
-  "en": "On the Motion tab the waiting line and the sent message's entrance each carry a switch of their own, and the chat-area switch no longer governs either of them; the preview cards stand under their switch as an option that carries no title or description and greys out while the switch is off. The chat-area switch is now Chat-area scrolling animation, moved to the Motion tab, and governs following the end, rows and groups folding, and the file operation rows."
+  "zh": "设置页「动效」页里，状态行与消息气泡动画各自得到一个开关，原先统管这两者的「聊天区动画效果」不再管它们；两张画法卡片移到各自开关下面，作为不带标题与说明的子选项，与开关之间不再有分隔线，开关关闭时置灰。「聊天区动画效果」改名为「聊天区滚动动画」并搬到「动效」页，只管跟随末尾、行与过程组的开合、文件操作行这三样。",
+  "en": "On the Motion tab the waiting line and the message bubble animation each carry a switch of their own, and the chat-area switch no longer governs either of them; the preview cards stand under their switch as a sub-option that carries no title or description and no dividing line from the switch, and greys out while the switch is off. The chat-area switch is now Chat-area scrolling animation, moved to the Motion tab, and governs following the end, rows and groups folding, and the file operation rows."
 }

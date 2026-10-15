@@ -9,14 +9,14 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">新增功能</h3>
 
 - 设置页「动效」页新增「新文字淡入」一行：流式回答里新出现的字符是否先淡后实（约 0.12 秒）由它决定，两档各带一张预览卡，同一句样品在卡里逐字到达，「淡入」那张每个字先落到最淡的一档再亮起来，「直接出现」那张把字一个个直接交出来；这一项默认关闭，关闭时新到的字符立即是本色。
-- 设置页「动效」页新增「发出消息的进场」一行：自己发的消息落到对话里时怎么出现由它决定，两张卡片各演各的——「在原地长出来」让气泡在自己的位置上从零长到满（只改大小，旁边的东西不动），「从输入框飞上来」是原来那一下，输入框卡片被抬到消息那一行。默认仍是飞上来。
+- 设置页「动效」页新增「消息气泡动画」一行：自己发的消息落到对话里时怎么出现由它决定，两张卡片各演各的——「在原地长出来」让气泡在自己的位置上从零长到满（只改大小，旁边的东西不动），「从输入框飞上来」是原来那一下，输入框卡片被抬到消息那一行。默认仍是飞上来。
 - 设置页「输入区」页「重绘模型选择器」下面多一项「模型描述」，默认开启：开着时一级列表的每个模型名下面写一行说明，关掉后每一行只剩模型名。
 
 ### 体验优化
 
 - 侧栏里对话的状态标记换了一副样子：正在进行的对话不再转圈，改成一盏呼吸的灰灯，实心圆点每 2.4 秒从半亮到全亮一个来回，位置与大小都不动；空闲对话的空心圆与它同样 6px，圈线是 1px 发丝、颜色更淡，两枚标记只靠实心与空心区分，已归档列表里的那枚空心圆跟着一起改，两栏的标题仍从同一处开始。设置的「动画效果」选「减弱」时灯停在最亮的那一帧。
 - 设置页「动效」页「光标动画」的两张预览卡改成逐字打出 `Hello World!`，光标跟着这行字往前走：打字期间一直亮着，打完停住才按原生节奏闪，与真光标一致——真光标每移动一次就把闪的节奏从头开始，打字时看不到它灭。两档的分别在于光标怎么到达下一个位置：「开」的那张滑过去，「关」的那张直接跳过去。
-- 设置页「动效」页里，状态行与发出消息的进场各自得到一个开关，原先统管这两者的「聊天区动画效果」不再管它们；两张画法卡片移到各自开关下面，作为不带标题与说明的选项，开关关闭时置灰。「聊天区动画效果」改名为「聊天区滚动动画」并搬到「动效」页，只管跟随末尾、行与过程组的开合、文件操作行这三样。
+- 设置页「动效」页里，状态行与消息气泡动画各自得到一个开关，原先统管这两者的「聊天区动画效果」不再管它们；两张画法卡片移到各自开关下面，作为不带标题与说明的子选项，与开关之间不再有分隔线，开关关闭时置灰。「聊天区动画效果」改名为「聊天区滚动动画」并搬到「动效」页，只管跟随末尾、行与过程组的开合、文件操作行这三样。
 - 状态行换词时不再空一拍：旧词向上淡出、模糊的同时，新词从下方升入，两段动画重叠着走完，整次换词收在 0.2 秒内，途中行里始终有字，计时仍贴着词尾。
 - 每趟刷新少做整份文档的查找：侧栏搜索的位置与宿主搜索按钮、工作区分区的标题、输入区的首屏阶段标记都改为记住上一次的答案，宿主没有换掉那个元素就不再重新查找。同一条流式回答期间量了同一个回合：整份文档的查找从 2792 次降到 2026 次，其中查不到任何东西的从 1516 次降到 1351 次。
 - 状态行开头的加载点现在跟着这一轮在做什么换动作：模型思考时三颗点照旧弹跳，这一轮改去写回答或调用工具时它们各沿一条直线来回——三条直线彼此相差 120°、其中一条反着走，球在两端最大、过中点最小，去程与回程一样长；两套动作之间不硬切，也没有哪颗球停在原地等着轮到自己：每颗球各自走到下一套动作里它自己的位置（0.22 秒），下一套就从那个位置接着走。
@@ -31,14 +31,14 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">New Features</h3>
 
 - The Motion tab gains a New-text fade row, deciding whether the characters arriving in a streaming answer start faint and settle over about 0.12 s; its two cards each hold the same sample line arriving character by character, the Fade in card landing each character at its faintest step before it brightens and the Appears at once card handing each one over as it is. The row ships off, and with it off arriving characters are solid at once.
-- The Motion tab gains a Sent message entrance row, deciding how a message the reader sends arrives in the conversation: its two cards each show their own answer, Grows into its place taking the bubble from nothing at its own corner while nothing beside it moves, and Flies up from the composer carrying the answer that was already there. The row ships on the flight.
+- The Motion tab gains a Message bubble animation row, deciding how a message the reader sends arrives in the conversation: its two cards each show their own answer, Grows into its place taking the bubble from nothing at its own corner while nothing beside it moves, and Flies up from the composer carrying the answer that was already there. The row ships on the flight.
 - The Composer tab gains a Model descriptions switch under Redraw the model picker, on by default: while it is on each model in the picker's first level carries a line under its name saying what the model is, and off leaves every row with the model's name alone.
 
 ### Improvements
 
 - A conversation's status mark in the sidebar is drawn differently: a running conversation breathes instead of spinning, a lit grey dot whose light rises from half to full and back once every 2.4 seconds while it neither moves nor changes size, and an idle conversation keeps a hollow circle of the same 6px with a 1px hairline stroke in the quieter neutral, so the two marks differ by fill alone; the archived list's circle follows them and both lists still start their titles at the same place. Under the Animation setting's Reduced the light holds its brightest frame.
 - On the Motion tab's Composer caret motion row, both preview cards now type `Hello World!` out character by character with the caret following the line: it stays lit for the whole time the line is being typed and blinks on the native cycle once the line stands, matching the drawn caret, which restarts its blink on every move and is therefore never seen dark while typing. The two cards differ in how the caret reaches each new place: it glides there, or arrives at once.
-- On the Motion tab the waiting line and the sent message's entrance each carry a switch of their own, and the chat-area switch no longer governs either of them; the preview cards stand under their switch as an option that carries no title or description and greys out while the switch is off. The chat-area switch is now Chat-area scrolling animation, moved to the Motion tab, and governs following the end, rows and groups folding, and the file operation rows.
+- On the Motion tab the waiting line and the message bubble animation each carry a switch of their own, and the chat-area switch no longer governs either of them; the preview cards stand under their switch as a sub-option that carries no title or description and no dividing line from the switch, and greys out while the switch is off. The chat-area switch is now Chat-area scrolling animation, moved to the Motion tab, and governs following the end, rows and groups folding, and the file operation rows.
 - The status line hands its wording over without standing empty in between: the words leaving fade and blur upward while the ones arriving rise from below, the two halves travelling together and the change done inside 0.2 s, with words in the line throughout and the clock still sitting right after them.
 - A pass now re-reads fewer things across the whole document: the sidebar search's box and the host's search button, the workspace section's label and the composer's hero-phase marker are all kept from the pass before while the host has not replaced the element. Measured over one streaming turn: document-wide queries fall from 2792 to 2026, and those that match nothing from 1516 to 1351.
 - The loader at the head of the status line now changes with what the turn is doing: the three dots bounce while the model thinks, and once the turn writes or works they each walk a line of their own — three lines 120° apart with one of them run the other way, the dot largest at either end and smallest as it crosses the middle, going out and coming back over the same stretch of time; the two motions never cut and no dot waits its turn, each one travelling to its own place in the next motion over 0.22 s, which opens on the pose it arrived at.
