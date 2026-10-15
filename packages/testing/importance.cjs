@@ -171,6 +171,15 @@ function importanceScenario(lane) {
    */
   const withSettings = async (page, audit) => {
     await page.keyboard.press('Control+Alt+Comma')
+    // The newer host answers this shortcut with its account menu, the settings
+    // dialog standing behind the menu's own first entry; the older one opens the
+    // dialog itself. Either way the walk enters the dialog from here.
+    await page.waitForTimeout(1500)
+    const entry = page.locator('[role="menu"] [role="menuitem"]').first()
+    if (await entry.count() > 0) {
+      await entry.click({ force: true })
+      await page.waitForTimeout(800)
+    }
     await page.getByText('Claude Style', { exact: true }).first().click({ force: true })
     await page.locator('.dsh-claude-settings').first().waitFor({ timeout: 20000 })
     await page.waitForTimeout(600)
