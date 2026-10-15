@@ -37,7 +37,7 @@
     sleep: sleep,
     attrs: attrs,
     pillState: pillState,
-    report: { applyError: window.__applyError, teardownRegistered: typeof window.__dispose === 'function' },
+    report: { applyError: window.__applyError, teardownRegistered: typeof window.__dispose === 'function', preludeRan: 1 },
     steps: [],
     // The view-tab strip and the search root the shell cases build, and the
     // sibling's sheet the page carried before the bundle ran: the teardown step

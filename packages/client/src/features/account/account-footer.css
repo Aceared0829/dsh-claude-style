@@ -147,7 +147,14 @@ body[data-dsh-claude-style] .dsh-claude-account-popover::after {
    strip is the inner row, so the hover plate covers the name and not the divider
    that follows it. With the easter egg switched off the row carries no button
    role and stays a plain name, without the pointer or the plate (rows.ts). */
+/* The row's content is the name alone, a plain block: the row itself is the
+   centring box, and its box model matches the shared popover item — `border-box`
+   with the height as a minimum — so the hover plate is the whole row and the
+   name sits in the middle of it rather than against its top edge. */
 body[data-dsh-claude-style] .dsh-claude-account-popover-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   min-height: 32px;
   padding: 2px 7px;
   border-radius: 6px;
@@ -163,10 +170,11 @@ body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"]:focus
 }
 
 /* The rule under the account name belongs to the POPOVER, not to the row: it
-   spans the panel's full width (the negative inline margins cancel the popover's
-   6px padding) and sits outside the hover plate above. */
+   spans the panel's full width and sits outside the hover plate above. Its
+   margins are the header's own inline padding plus the popover's 6px inset —
+   the two boxes the full bleed has to cancel. */
 body[data-dsh-claude-style] .dsh-claude-account-popover-header .dsh-claude-account-popover-divider {
-  margin: 0 -6px;
+  margin: 0 -12px;
 }
 
 
@@ -429,14 +437,20 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] .dsh-claude-account-i
 
 
 /* ---------- The account popover's header, divider and body ---------- */
-/* Popover Header. Vertical padding only: the clickable account row carries its
-   own inline padding (the row rules above), and the divider below is a
-   full-bleed rule that must not be inset by this box. */
+/* Popover Header. The block hangs on the card's own 6px inset like every other
+   row: the header's inline padding is that inset negated, so the hover plate
+   below is as wide as the card's inner box, with the name standing 7px inside
+   it — where a menu label stands. The vertical padding is the remainder of the
+   card's own inset, so the name sits as far from the card's top edge as the
+   first row's label sits from the divider, and the divider's margin leaves the
+   hairline of air the rows below carry. The rule itself stays full-bleed: its
+   margins are the distance the row carries the plate plus the card's inset. */
 body[data-dsh-claude-style] .dsh-claude-account-popover-header {
-  padding: 6px 0;
+  padding: 4px 6px;
+  margin: 0 -6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 body[data-dsh-claude-style] .dsh-claude-account-popover-name {
   font-size: 14px;

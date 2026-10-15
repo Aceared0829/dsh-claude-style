@@ -191,6 +191,11 @@ module.exports = {
     check('the injected header names the same user as the host account row',
       r.injectName !== null && r.injectName === r.hostRowText,
       JSON.stringify({ header: r.injectName, row: r.hostRowText }))
+    check('the account row\'s hover plate is the row itself, with the name centred in it',
+      !!r.accountRowPlate && r.accountRowPlate.box === 'border-box' &&
+        r.accountRowPlate.content >= 32 &&
+        Math.abs(r.accountRowPlate.top - r.accountRowPlate.bottom) <= 0.5,
+      JSON.stringify(r.accountRowPlate))
     check('the account width variable is the account row box width',
       r.accountWidthVar === Math.round(r.hostRowWidth) + 'px',
       JSON.stringify({ variable: r.accountWidthVar, row: r.hostRowWidth }))
