@@ -19,12 +19,16 @@
         id: 'deepseek-official',
         name: 'DeepSeek',
         models: [
-          { id: 'deepseek-flash', name: 'V4.1 Flash' },
+          // Every model carries the catalog's own description: that is the
+          // third source the picker's description line draws from (the copy
+          // document is not served to this page), and it is what makes the
+          // switch's effect readable on these rows.
+          { id: 'deepseek-flash', name: 'V4.1 Flash', description: 'The small, quick one.' },
           // No profile claims this one, so its row carries no meter.
-          { id: 'kimi-k3', name: 'Kimi K3' },
+          { id: 'kimi-k3', name: 'Kimi K3', description: 'The long-context one.' },
         ],
       },
-      { id: 'zai', name: 'Z.ai', models: [{ id: 'glm-5.3', name: 'GLM-5.3' }] },
+      { id: 'zai', name: 'Z.ai', models: [{ id: 'glm-5.3', name: 'GLM-5.3', description: 'The flagship one.' }] },
     ],
   }
   var directory = {

@@ -5,13 +5,13 @@ import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's Composer tab: the composer restyle's scope, the model
- * picker with its quick providers and the peak rate meter, and the permission
- * control. The effort slider rides the model picker: the host keeps its own
- * effort choice inside its own model menu, so the two go together.
+ * picker with its descriptions, its quick providers and the peak rate meter, and
+ * the permission control. The effort slider rides the model picker: the host
+ * keeps its own effort choice inside its own model menu, so the two go together.
  *
  * The picker and the permission control are drawn into the restyled composer,
  * so their rows wait for the restyle (their manifests' `requires`), and the
- * picker's two sub-rows wait for it as well as for the picker.
+ * picker's three sub-rows wait for it as well as for the picker.
  */
 export function createSettingsComposerTab(): SettingsTab {
   /** What the quick-provider trigger reads: how many, or nothing chosen. */
@@ -40,6 +40,18 @@ export function createSettingsComposerTab(): SettingsTab {
           settingsCopy('composerTitle', 'Composer restyle'),
           settingsCopy('composerDesc', 'Which input area the skin restyles: the new-conversation page, the conversation, or both. Off restores the host\'s composer.'),
           controls.segment(scopeOptions, prefs.composerScope, value => { write({ composerScope: value }) }),
+        ),
+      },
+      {
+        // The description line is the picker's own first level, so its row
+        // belongs to the picker row and waits for it.
+        rank: 35,
+        node: controls.subRow(
+          'modelDescriptions',
+          settingsCopy('modelDescriptionsTitle', 'Model descriptions'),
+          settingsCopy('modelDescriptionsDesc', 'A line under each model in the picker\'s first level saying what it is. Off leaves every row with the model\'s name alone.'),
+          controls.toggle(prefs.modelDescriptions !== false, value => { write({ modelDescriptions: value }) }, !pickerOn),
+          pickerOn,
         ),
       },
       {

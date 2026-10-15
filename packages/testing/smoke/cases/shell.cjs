@@ -509,7 +509,7 @@ module.exports = {
     const expected = {
       general: ['brand', 'username', 'autoPopover'],
       appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
-      composer: ['composerScope', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
+      composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'viewTabs', 'headerBand'],
       motion: ['motion', 'statusMotion', 'caretMotion', 'chatReveal'],
@@ -533,14 +533,14 @@ module.exports = {
         JSON.stringify(onWindows.disabled) === '[]' && JSON.stringify(onWindows.notes) === '[]',
       JSON.stringify(onWindows))
     const off = settings.parentsOff || {}
-    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
+    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["brandAccent","mascotScope"]' &&
-        !!off.composer && JSON.stringify(off.composer.disabled) === '["quickProviders","peakrate"]' &&
+        !!off.composer && JSON.stringify(off.composer.disabled) === '["modelDescriptions","quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))
     const unmet = settings.requirementsOff || {}
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
-      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","quickProviders","peakrate","permissionsControl"]' &&
+      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","modelDescriptions","quickProviders","peakrate","permissionsControl"]' &&
         JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
         !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","headerBand"]' &&
         JSON.stringify(unmet.conversation.notes) === '["statsPosition","headerBand"]' &&

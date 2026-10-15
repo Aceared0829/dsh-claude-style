@@ -203,6 +203,11 @@
       "zh": "重绘对话框区域的模型菜单。",
       "en": "Replace the composer's model menu with the two-level Claude-style menu. Off restores the host's model menu."
     },
+    "modelDescriptionsTitle": { "zh": "模型描述", "en": "Model descriptions" },
+    "modelDescriptionsDesc": {
+      "zh": "一级列表的每个模型下面写一行说明，讲这个模型是什么。关闭后每一行只剩模型名。",
+      "en": "A line under each model in the picker's first level saying what it is. Off leaves every row with the model's name alone."
+    },
     "peakrateTitle": { "zh": "峰谷电表", "en": "Peak rate meter" },
     "peakrateDesc": {
       "zh": "给模型菜单的每一行标出此刻的峰价、谷价或限时活动，以及距离切换还有多久。关闭后各行只显示模型名。",

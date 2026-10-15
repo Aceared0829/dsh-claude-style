@@ -55,5 +55,11 @@ module.exports = {
     check('with the hover preference on, a press on the open model menu keeps it up',
       press.opened === true && press.kept === true,
       JSON.stringify({ opened: press.opened, kept: press.kept }))
+    const descriptions = r.modelDescriptions || {}
+    check('every row of the first level carries a line saying what the model is while Model descriptions is on, and turning it off takes the line off that level alone',
+      descriptions.listed === 3 && descriptions.lines === 3 &&
+        descriptions.bareListed === 3 && descriptions.bareLines === 0 &&
+        descriptions.secondLevelLines === 0 && descriptions.bareSecondLevelLines === 0,
+      JSON.stringify(descriptions))
   },
 }

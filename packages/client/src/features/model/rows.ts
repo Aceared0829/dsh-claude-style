@@ -90,8 +90,10 @@ export function createModelRows(options: {
     // catalog, short enough that the line is what tells the models apart,
     // while "More models" is every provider's full catalog and reads better
     // as names alone. One line, in the shell's language — the copy document is
-    // localized rather than stacked, so a row never carries two languages.
-    const desc = withDescription ? modelDescription(ctx, group.id, model) : ''
+    // localized rather than stacked, so a row never carries two languages. The
+    // line has its own switch under the picker's settings row, and a row built
+    // without it is the same row with the copy block left as the name alone.
+    const desc = withDescription && readPrefs().modelDescriptions !== false ? modelDescription(ctx, group.id, model) : ''
     if (desc) copy.appendChild(buildElement('span', 'dsh-claude-model-desc', desc))
     // The peak rate meter rides in front of the check: the row is compared by
     // its rate before it is picked, and a model whose provider bills on no

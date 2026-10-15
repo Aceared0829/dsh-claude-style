@@ -16,6 +16,7 @@ export const PREFS_DEFAULT = Object.freeze({
   autoPopover: 'all',
   composerScope: 'all',
   modelPicker: true,
+  modelDescriptions: true,
   peakrate: true,
   quickProviders: [],
   username: '',

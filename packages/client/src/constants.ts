@@ -587,6 +587,7 @@ export interface Prefs {
   autoPopover: string
   composerScope: string
   modelPicker: boolean
+  modelDescriptions: boolean
   peakrate: boolean
   quickProviders: string[]
   username: string

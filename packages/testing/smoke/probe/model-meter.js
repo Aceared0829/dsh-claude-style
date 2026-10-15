@@ -33,12 +33,14 @@
           var meter = option.querySelector('.dsh-claude-peakrate')
           var check = option.querySelector('.dsh-claude-popover-check')
           var name = option.querySelector('.dsh-claude-model-name')
+          var desc = option.querySelector('.dsh-claude-model-desc')
           var value = meter === null ? null : meter.querySelector('.dsh-claude-peakrate-value')
           var countdown = meter === null ? null : meter.querySelector('.dsh-claude-peakrate-countdown')
           var box = option.getBoundingClientRect()
           var style = getComputedStyle(option)
           rows.push({
             name: name === null ? '' : name.textContent,
+            desc: desc === null ? null : desc.textContent,
             current: option.getAttribute('aria-checked') === 'true',
             // The shape every row shares: a row built apart from the others
             // shows up here before it is visible as a difference.
@@ -95,6 +97,26 @@
         // not list, so the picker adds that row under the list.
         currentRow: levelOne.length === 0 ? null : levelOne[levelOne.length - 1],
         levelTwo: readRows(document.querySelector('.dsh-claude-model-popover-sub')),
+      }
+      // The description line has a switch of its own under the picker's row, and
+      // the card repaints on a preference change: the same page reads its rows
+      // once with the line on and once with it off.
+      var lineCount = function (rows) {
+        return rows.filter(function (row) { return row.desc !== null && row.desc !== '' }).length
+      }
+      window.__pushForm({ modelDescriptions: false })
+      await sleep(250)
+      var bareLevelOne = readRows(document.querySelector('.dsh-claude-model-popover:not(.dsh-claude-model-popover-sub)'))
+      var bareLevelTwo = readRows(document.querySelector('.dsh-claude-model-popover-sub'))
+      window.__pushForm({ modelDescriptions: true })
+      await sleep(250)
+      r.modelDescriptions = {
+        listed: levelOne.length,
+        lines: lineCount(levelOne),
+        bareListed: bareLevelOne.length,
+        bareLines: lineCount(bareLevelOne),
+        secondLevelLines: lineCount(r.modelMeter.levelTwo),
+        bareSecondLevelLines: lineCount(bareLevelTwo),
       }
       card.remove()
     })

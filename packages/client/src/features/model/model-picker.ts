@@ -284,7 +284,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const status = snap ? snap.status : 'idle'
     const groups = (snap && snap.groups) || []
     const current = modelCatalog.current(snap)
-    let sig = [status, activeLocale(), current ? `${current.group.id}/${current.model.id}` : '', readPrefs().quickProviders.join(','), rateSignature()].join('|')
+    let sig = [status, activeLocale(), current ? `${current.group.id}/${current.model.id}` : '', readPrefs().quickProviders.join(','), readPrefs().modelDescriptions !== false, rateSignature()].join('|')
     for (let g = 0; g < groups.length; g++) sig += `;${groups[g].id}:${groups[g].models.length}`
     if (sig === modelBodySig) {
       return
