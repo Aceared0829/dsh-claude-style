@@ -97,7 +97,16 @@ export function createSettingsMotionTab(): SettingsTab {
       }, motionMs('--dsh-claude-period-preview-swap') / preciseWords.length)
       return () => window.clearInterval(timer)
     }, [props.prefs.statusDetail, preciseWords.length])
-    const words = props.prefs.statusDetail ? [preciseWords[preciseTurn] ?? preciseWords[0]] : plainWords
+    // The precise line swaps one specific for the next, so the card runs the
+    // line's own two halves (settings-cards.css): the word leaving rises with a
+    // blur while the one arriving rises in from below. Both are rendered, and
+    // re-keyed each turn so the halves play again.
+    const words = props.prefs.statusDetail
+      ? [
+        preciseWords[(preciseTurn + preciseWords.length - 1) % preciseWords.length] ?? preciseWords[0],
+        preciseWords[preciseTurn % preciseWords.length] ?? preciseWords[0],
+      ]
+      : plainWords
     const options = [
       { value: STATUS_MOTION_SWEEP, label: settingsCopy('statusMotionSweep', 'Highlight sweep') },
       { value: STATUS_MOTION_WASH, label: settingsCopy('statusMotionWash', 'Colour wash') },
@@ -123,9 +132,12 @@ export function createSettingsMotionTab(): SettingsTab {
         React.createElement(
           'span',
           { className: 'dsh-claude-motion-sample', 'aria-hidden': 'true' },
-          words.map(word => React.createElement('span', {
-            key: word,
-            className: `dsh-claude-motion-word dsh-claude-${option.value}`,
+          words.map((word, at) => React.createElement('span', {
+            // Each turn re-keys the pair, which is what makes the two halves
+            // play again on the precise line.
+            key: props.prefs.statusDetail ? `${preciseTurn}-${at}` : word,
+            className: `dsh-claude-motion-word dsh-claude-${option.value}`
+              + (props.prefs.statusDetail ? (at === 0 ? ' dsh-claude-word-out' : ' dsh-claude-word-in') : ''),
             'data-text': word,
           }, word)),
         ),

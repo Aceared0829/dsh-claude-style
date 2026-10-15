@@ -274,13 +274,22 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal
 }
 
 /* The precise status line writes the specifics one at a time, so the card holds
-   one wording and the picker hands the turn over itself: no leave, no rise, and
-   no second wording standing behind it. The reader's animation choice above
-   keeps its own say. */
+   one wording at a time, and the card runs the line's own two halves for each
+   swap: the word leaving rises with a blur, the one arriving rises in from
+   below (shared/motion.css), the picker re-keying the pair every turn. The
+   reader's animation choice above keeps its own say. */
 body[data-dsh-claude-style] [data-dsh-claude-precise] .dsh-claude-motion-word,
 body[data-dsh-claude-style] [data-dsh-claude-precise] .dsh-claude-motion-word + .dsh-claude-motion-word {
   animation: none;
   visibility: visible;
+}
+
+body[data-dsh-claude-style]:not([data-dsh-claude-motion="reduced"]) [data-dsh-claude-precise] .dsh-claude-word-out {
+  animation: dsh-claude-swap-out var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease) forwards;
+}
+
+body[data-dsh-claude-style]:not([data-dsh-claude-motion="reduced"]) [data-dsh-claude-precise] .dsh-claude-word-in {
+  animation: dsh-claude-swap-in var(--dsh-claude-swap-duration) var(--dsh-claude-swap-ease) both;
 }
 
 /* A message-entrance card holds a two-row conversation of the reader's own
