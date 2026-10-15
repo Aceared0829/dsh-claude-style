@@ -110,18 +110,19 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-dot:nth-child(3) {
   animation-delay: calc(var(--dsh-claude-period-dot-bounce) * 3 / 5);
 }
 
-/* The dot flattens against the floor as it leaves and rounds out on the way up
-   (the snippet's three stops), the flat-bottomed radius it lands with kept. */
+/* The dot flattens against the floor as it leaves and rounds out on the way up.
+   The snippet's own radius stops are left out: on a 4px box every one of them
+   clamps to the same curve the dot already carries, so a radius among the
+   keyframes would be no part of the motion and would keep the whole animation
+   off the compositor, repainting the dot every frame. */
 @keyframes dsh-claude-wait-dot {
   0% {
     translate: 0 0;
     scale: 1.7 0.25;
-    border-radius: 50px 50px 25px 25px;
   }
 
   40% {
     scale: 1;
-    border-radius: 50%;
   }
 
   100% {
