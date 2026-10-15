@@ -13,6 +13,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
 - `npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。
 - 皮肤不再按宿主类名的片段匹配界面：`core/parts.ts` 每次页面结构变化时把宿主自己声明的类名（`_2H3hWW_root` 这类带哈希的名字）读成自己的部件名，写在元素上，样式表只按 [data-dsh-claude-part] 整词匹配。原来 45 个样式表里的 565 处子串选择器与 31 处 TypeScript 子串查询全部改完：匹配变得精确（`row` 不再命中 `grow`，`rail` 不再命中 `trailing`），宿主改名时对应的规则直接静默而不误伤邻居，别的插件也不会再被这些规则扫到。
+- 工作区段落在当前视图上悬停时恢复的三个属性、以及工作区段按钮悬停时的文字颜色，去掉多余的 `!important`：它们所在的规则本来就比被压过的规则多一个伪类，靠层叠顺序就能赢。`importance` 场景逐条丢弃实测之后，577 处 `!important` 里只有这 4 处可以去掉，其余 16 处被证明需要，余下的在走查的页面形态里从未匹配到元素、只在短暂标记下生效或属于第三方应答。
 
 ### 问题修复
 
@@ -35,6 +36,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
 - `npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud.
 - The skin stops matching the interface by fragments of the host's class names: `core/parts.ts` reads the local part of every hashed host class name (`_2H3hWW_root` and the like) into the skin's own part name, writes it onto the element on each structural change, and the stylesheets match one whole [data-dsh-claude-part] token. All 565 substring selectors across 45 stylesheets and all 31 TypeScript substring queries are gone: a match is exact (`row` no longer takes `grow`, `rail` no longer takes `trailing`), a host rename leaves the rule quiet instead of wrong, and no other plugin's class names are swept up.
+- The three properties that bring the workspace segment group back on hover, and the segment button's hover ink, drop their `!important`: the rules already carry one pseudo-class more than the rule they beat, so the cascade settles it. Dropping each one on the real page showed four of the skin's 577 `!important` declarations to be unnecessary; sixteen are proven needed, and the rest never match an element in the walk's page states, hold only under a transient mark, or answer another plugin.
 
 ### Bug Fixes
 

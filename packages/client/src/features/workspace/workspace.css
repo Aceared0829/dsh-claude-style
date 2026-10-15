@@ -36,9 +36,11 @@ body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] .dsh-claude-ws-se
 }
 body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"]:hover .dsh-claude-ws-segments,
 body[data-dsh-claude-style] [data-dsh-claude-part~="section-header"]:hover .dsh-claude-ws-segments {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
+  /* The hover rule outranks the hidden state above on specificity alone: it
+     carries one pseudo-class more (D51). */
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 body[data-dsh-claude-style] [data-dsh-claude-part~="section-label"][data-dsh-claude-ws-label] {
   /* The heading is a label, not a target: it must not swallow clicks aimed at the
@@ -63,7 +65,7 @@ body[data-dsh-claude-style] .dsh-claude-ws-segment {
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment:hover {
-  color: var(--dsw-alias-label-primary, #141413) !important;
+  color: var(--dsw-alias-label-primary, #141413);
 }
 /* ---------- workspace view: the skin's own archived list ---------- */
 /* 已归档 is the skin's list (packages/client/src/features/workspace/workspace-view.ts), flat on purpose:
