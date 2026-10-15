@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 20,
+  "external": true,
+  "zh": "设置页的「状态行描述」从「对话」页搬到「动效」页，落在状态行动画的开关与它的画法卡片之间，改名「精确状态行」并由分段控件改成开关：开着时状态行写具体在做什么，关掉只写状态本身，早先存下的「简洁 / 精确」照旧读得出来；开着时预览卡轮换的三条样例改成「正在阅读README.md」「Checking out current tree」「正在思考」。",
+  "en": "The Waiting-line detail row moves from the Conversation tab to the Motion tab, standing between the waiting line's switch and its paint cards: it is now Precise status line and an on/off switch, where on writes the specifics of a moment and off the bare states alone, with a value an earlier build stored as Simple or Precise still reading; with it on, the preview card takes turns between three samples: 正在阅读README.md, Checking out current tree and 正在思考."
+}
