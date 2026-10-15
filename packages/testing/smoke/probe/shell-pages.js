@@ -119,11 +119,25 @@
       // class namespace, read as whole class tokens.
       var accessButton = document.querySelector('[data-slot="conversation.input.permission"] button:not([class^="dsh-claude-"], [class*=" dsh-claude-"])')
       r.controls = { commands: controlOf('commands'), send: controlOf('send'), access: accessButton && accessButton.getAttribute('data-dsh-claude-control') }
-      var sendSvg = document.querySelector('#send svg')
+      var sendButton = document.getElementById('send')
+      var sendSvg = sendButton.querySelector('svg')
       var sendGlyph = sendSvg.innerHTML
       sendSvg.innerHTML = '<rect x="3" y="3" width="10" height="10"></rect>'
       await sleep(60)
       r.controls.stopping = controlOf('send')
+      // The stop glyph is the skin's own: the host's square is a scaled SVG glyph
+      // whose rasterization lands on a subpixel phase of its own, so the ring and
+      // the square are drawn as two boxes the browser snaps alike.
+      var ring = getComputedStyle(sendButton, '::before')
+      var square = getComputedStyle(sendButton, '::after')
+      r.stopGlyph = {
+        hostGlyph: getComputedStyle(sendSvg).display,
+        ring: ring.width,
+        squareWidth: square.width,
+        squareHeight: square.height,
+        fill: square.backgroundColor,
+        ink: getComputedStyle(sendButton).color,
+      }
       sendSvg.innerHTML = sendGlyph
       await sleep(60)
       r.controls.back = controlOf('send')

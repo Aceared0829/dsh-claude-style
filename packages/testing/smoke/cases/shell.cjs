@@ -154,6 +154,11 @@ module.exports = {
       controls.commands === 'commands' && controls.access === 'access' && controls.send === 'send', JSON.stringify(controls))
     check('the submit button\'s mark follows its glyph to stop and back',
       controls.stopping === 'stop' && controls.back === 'send', JSON.stringify(controls))
+    const glyph = r.stopGlyph || {}
+    check('the stop mark is drawn by the skin: a whole-pixel square filled with the button\'s ink under a 16px ring, the host\'s scaled glyph unpainted',
+      glyph.hostGlyph === 'none' && glyph.ring === '16px' && glyph.squareWidth === '4px' &&
+        glyph.squareHeight === '4px' && glyph.fill === glyph.ink,
+      JSON.stringify(glyph))
     check('teardown takes the draft marks off the composer cards', r.leftDraftMarks === 0, `${r.leftDraftMarks} left`)
     check('teardown takes the control marks off the host controls', r.leftControlMarks === 0, `${r.leftControlMarks} left`)
     check('Enter on an open composer menu reaches the host', same(r.keys, ['host picked the menu item']), JSON.stringify(r.keys))
