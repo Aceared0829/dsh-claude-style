@@ -678,6 +678,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   ui.permissions = {
+    /**
+     * The pass's read phase: the segment control's own box, taken before this
+     * frame's writes. A pass that builds the segments measures them in the
+     * write phase instead (sliding-pill).
+     */
+    measure() {
+      if (segments !== null && segments.isConnected) segmentPill.measure(segments)
+    },
     sync() {
       if (autoPresetError !== null) throw autoPresetError
       if (submitError !== null) throw submitError

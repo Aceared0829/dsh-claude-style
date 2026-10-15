@@ -14,6 +14,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - `npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。
 - 输入光标的测量移到帧的读阶段，探针读数按内容、光标位置、End 倾向、复制样式与字体代次缓存，输入框自身的盒子每次测量只读一次；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件的盒模型读取由 470 至 680 毫秒降到 297 至 402 毫秒。
 - 进程摘要的隐藏量宽元素按措辞与字体缓存，同一句措辞不再重写它并为它触发布局：该项在会话切换中的盒模型读取由 3 轮 11 次、94.5 毫秒降为零。
+- 滑动高亮与推理档位按钮的定位改在读阶段取读数：`createSlidingPill` 分出 `measure` 与 `sync` 两个入口，会话标签、权限分段、工作区分段、搜索过滤条与设置分段五处分别在各自阶段调用；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件在自身写入之后发生的盒模型读取由 231 次、370 至 578 毫秒降到 245 次、178 至 214 毫秒，单次由 1.6 至 2.5 毫秒降到 0.73 至 0.87 毫秒。
 
 ### 问题修复
 
@@ -37,6 +38,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - `npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud.
 - The composer caret's measurement runs in the frame's read phase, and what its probe yields is remembered per content, caret offset, End leaning, copied styles and face generation, so the input's own box is read once per measurement; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings fall from 470–680 ms to 297–402 ms.
 - The process summary's hidden measuring span is cached by wording and face, so a repeated sentence neither rewrites it nor lays it out again: its box readings across a conversation switch fall from 11 calls and 94.5 ms per 3 rounds to none.
+- The sliding highlight and the reasoning-level trigger take their readings in the read phase: `createSlidingPill` splits into `measure` and `sync`, called from the conversation tabs, the permission segments, the workspace segments, the search filter bar and the settings segments in their own phases; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings taken after its own writes fall from 231 calls and 370–578 ms to 245 calls and 178–214 ms, each from 1.6–2.5 ms to 0.73–0.87 ms.
 
 ### Bug Fixes
 

@@ -627,7 +627,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   registerPopover('search', closePalette)
 
-  ui.search = { sync, onFocusIn }
+  /**
+   * The pass's read phase: the filter bar's own box, taken before this frame's
+   * writes. A bar the pass builds measures itself in the write phase instead
+   * (sliding-pill).
+   */
+  function measure() {
+    if (filterBar !== null) filterPill.measure(filterBar)
+  }
+
+  ui.search = { measure, sync, onFocusIn }
 
   return () => {
     disposed = true

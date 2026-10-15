@@ -133,40 +133,33 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The measurements behind the trigger's placement, as of the last positioning. */
   const effortPlace = { left: -1, top: -1, need: 0, widthLabel: '', height: 0 }
 
-  /** Pin the body-mounted trigger beside the model trigger (every pass: the
-   * seat moves with the window and the composer's own growth). The label is
-   * read off the button so the reposition hook gets the same cache the sync
-   * pass does. */
-  function positionEffortTrigger() {
-    if (effortBtn === null) return
-    const modelBtn = modelTrigger()
-    if (modelBtn === null) {
-      effortBtn.style.display = 'none'
+  /** What the read phase resolved for this frame's placement of the trigger. */
+  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, need: number, height: number, marginChanged: boolean } | null | 'hide' | 'none' = null
+
+  /**
+   * The pass's read phase: where the seat stands, and how much room this
+   * trigger needs on its right edge. The seat moves with the window and with
+   * the composer's own growth, so it is read every pass — before this frame's
+   * writes, which is where a read of it is cheap.
+   */
+  function measureEffortTrigger() {
+    if (effortBtn === null) {
+      effortPlan = 'none'
       return
     }
-    // The row's own rhythm is the 12px flex gap (8px in narrow cards) the
-    // host puts between the trailing cluster's children: sit 2px past the
-    // model trigger, and with its 8px right padding and this trigger's 2px
-    // left padding the two texts land 12px apart — the same 12 the meter's
-    // ring (8px into its pill) and the send icon then keep. The model
-    // trigger is OUR element, so the effort picker reserves room for itself
-    // on its right edge (a margin on it shifts the trigger left, out from
-    // under the context meter / send button) and then sits in that reserved
-    // space: the row's 12px gap covers 12 of the needed width+2, the margin
-    // covers the rest. Measured, not a magic number: the width follows the
-    // current level's name.
+    const modelBtn = modelTrigger()
+    if (modelBtn === null) {
+      effortPlan = 'hide'
+      return
+    }
     // A seat the host keeps in the DOM without laying it out (another view is
     // up, or an ancestor is hidden) reports a zero box; pinning to it put the
     // trigger in the window's top-left corner. No box, no trigger.
-    const seatBox = modelBtn.getBoundingClientRect()
-    if (seatBox.width === 0 || seatBox.height === 0) {
-      hideEffortTrigger()
+    const box = modelBtn.getBoundingClientRect()
+    if (box.width === 0 || box.height === 0) {
+      effortPlan = 'hide'
       return
     }
-    // Show it BEFORE measuring: a trigger coming back from the hidden state
-    // (its seat returned) would otherwise read offsetWidth 0, reserve no
-    // room for that one pass and overlap the control that follows.
-    if (effortBtn.style.display !== 'inline-flex') effortBtn.style.display = 'inline-flex'
     // The trigger's size follows its label: re-measure only when it moved
     // (offsetWidth/offsetHeight force a layout the pass would rather not pay).
     const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
@@ -176,15 +169,44 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       effortPlace.need = Math.max(0, effortBtn.offsetWidth - 6)
       effortPlace.height = effortBtn.offsetHeight
     }
-    const need = effortPlace.need
-    const marginChanged = modelBtn.style.marginRight !== `${need}px`
+    effortPlan = { modelBtn, box, need: effortPlace.need, height: effortPlace.height, marginChanged: modelBtn.style.marginRight !== `${effortPlace.need}px` }
+  }
+
+  /**
+   * Pin the body-mounted trigger beside the model trigger from that reading.
+   *
+   * The row's own rhythm is the 12px flex gap (8px in narrow cards) the host
+   * puts between the trailing cluster's children: sit 2px past the model
+   * trigger, and with its 8px right padding and this trigger's 2px left
+   * padding the two texts land 12px apart — the same 12 the meter's ring (8px
+   * into its pill) and the send icon then keep. The model trigger is OUR
+   * element, so the effort picker reserves room for itself on its right edge (a
+   * margin on it shifts the trigger left, out from under the context meter /
+   * send button) and then sits in that reserved space: the row's 12px gap
+   * covers 12 of the needed width+2, the margin covers the rest. Measured, not
+   * a magic number: the width follows the current level's name.
+   */
+  function applyEffortTrigger() {
+    const plan = effortPlan
+    effortPlan = null
+    if (plan === null || plan === 'none') return
+    if (plan === 'hide') {
+      hideEffortTrigger()
+      return
+    }
+    const { modelBtn, box, need, height, marginChanged } = plan
+    // Show it BEFORE placing: a trigger coming back from the hidden state (its
+    // seat returned) would otherwise read offsetWidth 0, reserve no room for
+    // that one pass and overlap the control that follows.
+    if (effortBtn === null) return
+    if (effortBtn.style.display !== 'inline-flex') effortBtn.style.display = 'inline-flex'
     if (marginChanged) modelBtn.style.marginRight = `${need}px`
-    // An unchanged margin leaves the box at the seatBox just read: a second
-    // getBoundingClientRect after the write would force a reflow for the
-    // same numbers every pass.
-    const shifted = marginChanged ? modelBtn.getBoundingClientRect() : seatBox
+    // An unchanged margin leaves the box at the one just read: a second
+    // getBoundingClientRect after the write would force a reflow for the same
+    // numbers every pass.
+    const shifted = marginChanged ? modelBtn.getBoundingClientRect() : box
     const left = Math.round(shifted.right + 2)
-    const top = Math.round(shifted.top + (shifted.height - effortPlace.height) / 2)
+    const top = Math.round(shifted.top + (shifted.height - height) / 2)
     if (left !== effortPlace.left) {
       effortPlace.left = left
       effortBtn.style.left = `${left}px`
@@ -193,6 +215,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       effortPlace.top = top
       effortBtn.style.top = `${top}px`
     }
+  }
+
+  /**
+   * The immediate path — a viewport or composer-card change, which the
+   * scheduler calls outside a pass: read and write in the same call, as
+   * `reposition` has to land in the frame of the CSS reflow.
+   */
+  function positionEffortTrigger() {
+    measureEffortTrigger()
+    applyEffortTrigger()
   }
 
   /** The slider, built once; the card holds this node for its whole life. */
@@ -342,7 +374,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const aria = `${copyLabel('effortLabel', MODEL_EFFORT_LABEL)} ${info.label}`
     setAttributeIfChanged(effortBtn, 'aria-label', aria)
     if (effortSlider !== null) effortSlider.update()
-    positionEffortTrigger()
+    applyEffortTrigger()
 
     if (effortPop !== null && effortPop.getAttribute('data-open') === 'true') positionEffortPopover()
   }
@@ -373,6 +405,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   registerPopover('effort', closeEffortPopover)
 
   ui.effort = {
+    measure: measureEffortTrigger,
     sync: syncEffortControl,
     // The trigger sits on the composer, outside the column a streaming batch
     // touches, so such a batch skips this pass (D40).

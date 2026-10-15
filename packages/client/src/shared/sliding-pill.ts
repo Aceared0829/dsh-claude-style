@@ -24,9 +24,12 @@ import { observeSize } from '../core/bus'
  * so the control is also watched by a ResizeObserver.
  *
  * @param activeSelector - the active item, relative to the control.
- * @returns `{ sync(control), release() }`: `sync` places the pill on
- *   `control` (a different control takes the placement off the previous
- *   one; null just takes it off); `release` takes it off and stops watching.
+ * @returns `{ measure(control), sync(control), release() }`: `measure` takes
+ *   the reading in the pass's read phase and `sync` places the pill from it in
+ *   the write phase; a `sync` whose pass took no reading measures then, which
+ *   is what a control built during the write phase needs. A different control
+ *   takes the placement off the previous one, null just takes it off;
+ *   `release` takes it off and stops watching.
  */
 export function createSlidingPill(activeSelector: string) {
   const PILL_ATTR = 'data-dsh-claude-pill'
@@ -38,6 +41,11 @@ export function createSlidingPill(activeSelector: string) {
   let lastH: number | null = null
   /** Stops watching the current control's size. */
   let stopSize: (() => void) | null = null
+  /** What the read phase measured: the item's box against the control's. */
+  let reading: { x: number, y: number, w: number, h: number } | null = null
+  /** The control that reading belongs to, and whether a pass took one. */
+  let measured: HTMLElement | null = null
+  let taken = false
 
   function clear(el: HTMLElement) {
     el.removeAttribute(PILL_ATTR)
@@ -51,31 +59,63 @@ export function createSlidingPill(activeSelector: string) {
     lastH = null
   }
 
-  function place(control: HTMLElement) {
-    const active = control.querySelector(activeSelector)
-    const box = control.getBoundingClientRect()
-    const itemBox = active === null ? null : active.getBoundingClientRect()
-    if (box.width === 0 || itemBox === null || itemBox.width === 0) {
-      if (control.hasAttribute(PILL_ATTR)) clear(control)
+  /** The pass's read phase: where the active item sits inside the control. */
+  function measure(next: HTMLElement | null) {
+    taken = true
+    measured = next
+    if (next === null) {
+      reading = null
       return
     }
-    const x = Math.round((itemBox.left - box.left - control.clientLeft) * 100) / 100
-    const y = Math.round((itemBox.top - box.top - control.clientTop) * 100) / 100
-    const w = Math.round(itemBox.width * 100) / 100
-    const h = Math.round(itemBox.height * 100) / 100
-    if (x === lastX && y === lastY && w === lastW && h === lastH && control.hasAttribute(PILL_ATTR)) return
+    const active = next.querySelector(activeSelector)
+    const box = next.getBoundingClientRect()
+    const itemBox = active === null ? null : active.getBoundingClientRect()
+    if (box.width === 0 || itemBox === null || itemBox.width === 0) {
+      reading = null
+      return
+    }
+    reading = {
+      x: Math.round((itemBox.left - box.left - next.clientLeft) * 100) / 100,
+      y: Math.round((itemBox.top - box.top - next.clientTop) * 100) / 100,
+      w: Math.round(itemBox.width * 100) / 100,
+      h: Math.round(itemBox.height * 100) / 100,
+    }
+  }
+
+  /** The write phase: the control's four custom properties, from that reading. */
+  function place(next: HTMLElement, measured: { x: number, y: number, w: number, h: number } | null) {
+    // A fresh placement is measured here. The control's own feature stamps it in
+    // this same task, and those stamps can move it: a reading taken before them
+    // would place the pill a step off and slide it there on the next pass. One
+    // task computes its styles once, so the values written after the attribute
+    // is on are the ones it is first drawn with — no slide.
+    const fresh = !next.hasAttribute(PILL_ATTR)
+    if (fresh) {
+      measure(next)
+      measured = reading
+    }
+    if (measured === null) {
+      if (next.hasAttribute(PILL_ATTR)) clear(next)
+      return
+    }
+    const { x, y, w, h } = measured
+    if (x === lastX && y === lastY && w === lastW && h === lastH && next.hasAttribute(PILL_ATTR)) return
     lastX = x
     lastY = y
     lastW = w
     lastH = h
-    control.style.setProperty('--dsh-claude-pill-x', `${x}px`)
-    control.style.setProperty('--dsh-claude-pill-y', `${y}px`)
-    control.style.setProperty('--dsh-claude-pill-w', `${w}px`)
-    control.style.setProperty('--dsh-claude-pill-h', `${h}px`)
-    if (!control.hasAttribute(PILL_ATTR)) control.setAttribute(PILL_ATTR, '')
+    next.style.setProperty('--dsh-claude-pill-x', `${x}px`)
+    next.style.setProperty('--dsh-claude-pill-y', `${y}px`)
+    next.style.setProperty('--dsh-claude-pill-w', `${w}px`)
+    next.style.setProperty('--dsh-claude-pill-h', `${h}px`)
+    if (!next.hasAttribute(PILL_ATTR)) next.setAttribute(PILL_ATTR, '')
   }
 
   function sync(next: HTMLElement | null) {
+    // A pass that took its reading places from it; one that did not — the
+    // control was built in this frame's write phase — measures here.
+    if (!taken || measured !== next) measure(next)
+    taken = false
     if (next !== control) {
       if (stopSize !== null) stopSize()
       stopSize = null
@@ -83,10 +123,15 @@ export function createSlidingPill(activeSelector: string) {
       control = next
       if (control === null) return
       stopSize = observeSize(control, () => {
-        if (control !== null) place(control)
+        if (control !== null) {
+          measure(control)
+          taken = false
+          place(control, reading)
+        }
       })
     }
-    if (control !== null) place(control)
+    if (control === null) return
+    place(control, reading)
   }
 
   function release() {
@@ -94,7 +139,10 @@ export function createSlidingPill(activeSelector: string) {
     stopSize = null
     if (control !== null) clear(control)
     control = null
+    reading = null
+    measured = null
+    taken = false
   }
 
-  return { sync, release }
+  return { measure, sync, release }
 }

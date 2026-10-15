@@ -188,6 +188,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const found = findStrip()
     measuredStrip = found === null ? null : found.strip
     reading = found === null ? null : takeReading(found.header, found.strip)
+    pill.measure(measuredStrip)
   }
 
   function sync() {

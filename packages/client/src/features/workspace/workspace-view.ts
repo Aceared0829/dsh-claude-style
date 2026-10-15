@@ -409,7 +409,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     viewStamp.mark(host, view)
   }
 
-  ui.workspace = { sync }
+  /**
+   * The pass's read phase: the segment control's own box, taken before this
+   * frame's writes. A pass that builds the control measures it in the write
+   * phase instead (sliding-pill).
+   */
+  function measure() {
+    if (control !== null && control.parentElement !== null) segmentPill.measure(control)
+  }
+
+  ui.workspace = { measure, sync }
 
   return () => {
     disposed = true
