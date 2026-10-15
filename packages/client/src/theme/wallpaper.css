@@ -28,11 +28,11 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-ds-dark-theme
 
 /* ---------- the shell stands down ---------- */
 /* Each of these paints the canvas over the whole window or a whole column. */
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] :is([class*="_frame"]:has(> [class*="_sidebarCol"]), [class*="centerCol"], [class*="_rightbarCol"], [data-phase]:has([data-conversation-scroll])) {
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] :is([data-dsh-claude-part~="layout-frame"]:has(> [data-dsh-claude-part~="sidebar-column"]), [data-dsh-claude-part~="center-column"], [data-dsh-claude-part~="rightbar-column"], [data-phase]:has([data-conversation-scroll])) {
   background: transparent;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] :is([data-pane="sidebar"], [class*="sidebarCol"]) {
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] :is([data-pane="sidebar"], [data-dsh-claude-part~="sidebar-column"]) {
   --dsw-specific-sidebar-fill: transparent;
   background: transparent;
 }
@@ -48,7 +48,7 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper]
 }
 
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat]::before,
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] [class*="_header"]:has([class*="_tabs"])::after {
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] [data-dsh-claude-part~="conversation-header"]:has([data-dsh-claude-part~="view-tabs"])::after {
   display: none;
 }
 

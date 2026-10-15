@@ -98,20 +98,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * The attachment rails inside a card (ui-attachment): the shell rail and
    * its scrolling inner rail, both `_rail`.
    */
-  const ATTACHMENT_RAIL = '[class*="_rail"]'
+  const ATTACHMENT_RAIL = '[data-dsh-claude-part~="attachment-rail"]'
   /**
    * Anything in a card that means it carries attachments: an image tile
    * (`_imageItem`, `_thumbnail`), or any item, image or file card
    * (FileCard's `_card`) on a rail.
    */
-  const ATTACHMENT_PRESENT = `[class*="_imageItem"], [class*="_thumbnail"], ${ATTACHMENT_RAIL} :is([class*="_item"], img, [class*="_card"])`
+  const ATTACHMENT_PRESENT = `[data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], ${ATTACHMENT_RAIL} :is([data-dsh-claude-part~="attachment-item"], img, [data-dsh-claude-part~="composer-card-box"])`
   /**
    * The attachment tiles the stylesheet reshapes into thumbnails. They are
    * found here once per pass and marked, so the rules read one attribute
    * instead of re-running this list, with its structural :has(img), on
    * every DOM change.
    */
-  const ATTACHMENT_TILES = `${ATTACHMENT_RAIL} :is([class*="_imageItem"], [class*="_thumbnail"], [class*="_item"]:has(img), [class*="_card"]:has(img))`
+  const ATTACHMENT_TILES = `${ATTACHMENT_RAIL} :is([data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], [data-dsh-claude-part~="attachment-item"]:has(img), [data-dsh-claude-part~="composer-card-box"]:has(img))`
   const ATTACHMENT_TILE_ATTR = 'data-dsh-claude-attachment'
 
   /** Mark the cards that carry attachments, and the tiles inside them. */
@@ -154,9 +154,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function syncControls(cards: readonly HTMLElement[]) {
     for (const card of cards) {
-      const commands = card.querySelector('[class*="_tools"] button[aria-haspopup="listbox"]')
+      const commands = card.querySelector('[data-dsh-claude-part~="tools"] button[aria-haspopup="listbox"]')
       if (commands !== null) setAttributeIfChanged(commands, CONTROL_ATTR, 'commands')
-      for (const button of card.querySelectorAll('[class*="_trailing"] button[class*="_primary"]')) {
+      for (const button of card.querySelectorAll('[data-dsh-claude-part~="trailing"] button[data-dsh-claude-part~="composer-primary"]')) {
         setAttributeIfChanged(button, CONTROL_ATTR, button.querySelector('svg rect') !== null ? 'stop' : 'send')
       }
     }
@@ -254,7 +254,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function stampMeterRow(card: HTMLElement | undefined, meter: HTMLElement | null) {
     const row = card === undefined || !active || readPrefs().statsPosition !== STATS_POSITION_CONTEXT || meter === null
       ? null
-      : card.querySelector('[class*="_trailing"]')?.parentElement ?? null
+      : card.querySelector('[data-dsh-claude-part~="trailing"]')?.parentElement ?? null
     const stack = row === null ? null : closestFrom(row, COMPOSER_STACK)
     // The band a mobile plugin's strip took is measured on every pass: the strip
     // appears and leaves without any size of this row changing, so the row's own
@@ -326,7 +326,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function liftDockLine(card: HTMLElement | undefined) {
     const dock = card?.nextElementSibling ?? null
-    const strip = dock === null || !dock.matches('[class*="_dock"]') ? null : dock.querySelector(MOBILE_STATS_SELECTOR)
+    const strip = dock === null || !dock.matches('[data-dsh-claude-part~="composer-dock"]') ? null : dock.querySelector(MOBILE_STATS_SELECTOR)
     if (dock === null || strip === null) {
       releaseMobileStats()
       return

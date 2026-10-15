@@ -4,8 +4,10 @@
    rail stays laid out but unseen: its marks are what a jump presses. */
 
 /* The host's rail, while the skin's stands in for it. Hidden, not removed: a
-   jump scrolls it and presses its marks, and both need its layout. */
-body[data-dsh-claude-style] [data-conversation-scroll] nav[class*="_frame"][data-dsh-claude-turn-nav-replaced] {
+   jump scrolls it and presses its marks, and both need its layout. The skin's
+   own stamp is the whole anchor: the pass that sets it is the one place the
+   host's rail is recognised (D3). */
+body[data-dsh-claude-style] [data-conversation-scroll] nav[data-dsh-claude-turn-nav-replaced] {
   visibility: hidden;
   pointer-events: none;
 }

@@ -3,8 +3,9 @@
    host's trigger when the picker preference hands the seat back. Both are
    named by their exact place in the seat, so a menu another plugin nests
    inside the seat keeps its own layout, and the seat root the picker hides is
-   never matched — a display here would outrank the hide rule below. */
-body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > [class*="_root"] > [class*="_trigger"],
+   never matched — a display here would outrank the hide rule below. The seat
+   root is the skin's own stamp on the host's seat (features/model). */
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > [data-dsh-claude-model-host] > [data-dsh-claude-part~="trigger"],
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > .dsh-claude-model-btn {
   display: inline-flex;
   align-items: center;
@@ -22,7 +23,7 @@ body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"]
 body[data-dsh-claude-style] [data-dsh-claude-model-host] {
   display: none;
 }
-body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn {
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -40,20 +41,20 @@ body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn {
   box-sizing: border-box;
   min-width: 0;
 }
-body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn-label.dsh-claude-model-btn-loading {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn-label.dsh-claude-model-btn-loading {
   color: var(--dsw-alias-label-caption, #a6a094) !important;
 }
-body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn:hover {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
   color: var(--dsw-alias-label-primary);
 }
 
 /* Only the whole trigger gets the hover plate; its label/effort spans stay
    transparent so no smaller inner background appears. */
-body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn > * {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn > * {
   background: transparent;
 }
-body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn-label {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn-label {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
@@ -61,8 +62,8 @@ body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn-label {
 }
 /* (The effort trigger's styles live in features/effort/effort-picker.css: the
    trigger is body-mounted and JS-pinned beside the model trigger — it never
-   sits under [class*="_trailing"], so the rules drafted for that seat were dead
-   and have been removed.) */
+   sits under the composer's `trailing` part, so the rules drafted for that seat
+   were dead and have been removed.) */
 
 /* The host's dock line — the context meter and the stats pills — laid over the
    toolbar row while the numbers live in the context popover. Both stay in their
@@ -80,10 +81,10 @@ body[data-dsh-claude-style] [class*="_trailing"] .dsh-claude-model-btn-label {
    here are this window's own fallbacks, for the frames before the first
    reading. With the numbers asked onto a line of their own the dock keeps the
    host's own placement instead, and every rule here stands aside. */
-body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) {
   position: relative;
 }
-body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] {
   position: absolute;
   /* The line sits in the band the dock's height and offset measure out, and the
      lift a mobile plugin's statistics strip cost moves it up by exactly that
@@ -111,7 +112,7 @@ body[data-dsh-claude-style] [data-dsh-claude-mobile-stats] {
   flex: 0 0 auto;
   pointer-events: none;
 }
-body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] > * {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] > * {
   pointer-events: auto;
 }
 /* The meter holds the row's right end, inside the row's own 4px inset, after
@@ -119,14 +120,14 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
    (--dsh-claude-meter-room, measured by the permissions pass). Centred by
    stretching over the dock's height, never by a transform — the meter's panel
    is position: fixed, and a transform here would anchor it to the meter. */
-body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] > [data-dsh-claude-context-meter] {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] > [data-dsh-claude-context-meter] {
   position: absolute;
   top: 0;
   bottom: 0;
   right: 4px;
   align-items: center;
 }
-body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] [class*="_row"] > [class*="_trailing"] {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
   margin-right: var(--dsh-claude-meter-room, 0px);
 }
 /* A portrait mobile plugin reserves that same band with padding of its own: 38px
@@ -135,7 +136,7 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
    (the row is one line, features/composer/inline.css) and the meter's room above
    covers the second, so the padding only took the width the model name and the
    tier trigger needed. */
-body[data-dsh-claude-style] [data-composer-card][data-dsh-claude-mobile-portrait] [class*="_row"] > [class*="_trailing"] {
+body[data-dsh-claude-style] [data-composer-card][data-dsh-claude-mobile-portrait] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
   padding-left: 0;
   padding-right: 0;
 }
@@ -162,8 +163,8 @@ body[data-dsh-claude-style] [data-composer-stat] {
    because the host sets its own colour and size on that button. */
 body[data-dsh-claude-style] [data-dsh-claude-context-meter],
 body[data-dsh-claude-style] [data-dsh-claude-context-meter] button,
-body[data-dsh-claude-style] [class*="_composerStack"] [data-composer-stats],
-body[data-dsh-claude-style] [data-composer-card] [class*="_row"] .dsh-claude-model-btn {
+body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"] [data-composer-stats],
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row"] .dsh-claude-model-btn {
   font-family: var(--dsw-font-family);
   font-size: 13px;
   font-weight: 500;
@@ -496,14 +497,14 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
    position attribute the overlay carries, or the rule it has to beat would
    outrank it and the reserve would stand at this width after all. */
 @media (max-width: 480px) {
-  body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] [class*="_row"] > [class*="_trailing"] {
+  body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
     flex: 0 1 auto;
     min-width: 0;
   }
   body[data-dsh-claude-style] [data-dsh-claude-context-meter] button > span {
     display: none;
   }
-  body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_composerStack"]:not([data-composer-variant="hero"]) [data-composer-card] + [class*="_dock"] {
+  body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] {
     padding: 0;
   }
 }

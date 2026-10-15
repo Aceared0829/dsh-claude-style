@@ -247,7 +247,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     requestFrame({
       write() {
         if (disposed) return
-        const clear = document.querySelector<HTMLElement>(`${HOST_SEARCH} [class*="_clearButton"]`)
+        const clear = document.querySelector<HTMLElement>(`${HOST_SEARCH} [data-dsh-claude-part~="clear-button"]`)
         if (clear !== null) {
           clear.click()
           return

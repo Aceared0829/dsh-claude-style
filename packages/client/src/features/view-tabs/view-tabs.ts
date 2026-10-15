@@ -50,16 +50,16 @@ import type manifest from './view-tabs.manifest'
  * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
-  const STRIP = '[class*="_tabs"]'
-  const HEADER = `[class*="_header"]:has(${STRIP})`
+  const STRIP = '[data-dsh-claude-part~="view-tabs"]'
+  const HEADER = `[data-dsh-claude-part~="conversation-header"]:has(${STRIP})`
   /**
    * The title's TEXT, not its row or cluster: `.titleRow` is a flex row and the
    * cluster takes up the slack, so testing against them reported a clash on
    * every window and the strip never lifted. The crumb is the content-sized
    * element that actually draws the words.
    */
-  const TITLE = '[class*="crumbCurrent"], [class*="_crumb"], [class*="titleCluster"]'
-  const ACTIONS = '[class*="headerActions"], [class*="headerUtilities"]'
+  const TITLE = '[data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="title-cluster"]'
+  const ACTIONS = '[data-dsh-claude-part~="header-actions"], [data-dsh-claude-part~="header-utilities"]'
   /** The stylesheet's fallback: the strip's own row, 10px up from y=50. */
   const FALLBACK = -10
   /** The header's own top inset; the lifted strip may not enter it. */
@@ -137,7 +137,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * The header holding the strip, and the strip with it.
    *
-   * The header is the FIRST `[class*="_header"]` carrying a strip in document
+   * The header is the FIRST `[data-dsh-claude-part~="conversation-header"]` carrying a strip in document
    * order, so a header mounted before the one found last time takes that answer
    * while leaving the old header connected, and a kept one would go on stamping
    * and placing a strip the page no longer reads as the conversation's. The pair

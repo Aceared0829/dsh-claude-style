@@ -1,6 +1,6 @@
 /* ---------- Claude Code layout: account row & floating popover ---------- */
 /* footArea positioning with crisp hairline border spanning entire sidebar */
-body[data-dsh-claude-style] [class*="footArea"] {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] {
   position: relative;
   overflow: visible;
   margin: 0 calc(-1 * var(--dsh-sidebar-inline-padding, 12px)) -6px;
@@ -9,7 +9,7 @@ body[data-dsh-claude-style] [class*="footArea"] {
   background: transparent;
   box-sizing: border-box;
 }
-body[data-dsh-claude-style][data-ds-dark-theme] [class*="footArea"] {
+body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-part~="foot-area"] {
   border-top-color: var(--dsw-alias-border-l2);
 }
 
@@ -292,12 +292,12 @@ body[data-dsh-claude-style] [data-dsh-claude-account-host-row]::after {
 /* The host wraps its row in its own slot markup. Every branch on the way to the
    marked row becomes a full-width flex box, so the row can fill the footer
    whatever the host's hashed wrapper classes are. */
-body[data-dsh-claude-style] [class*="footArea"] [class*="triggerRow"]:has([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"]:has([data-dsh-claude-account-host-row]) {
   display: flex !important;
   align-items: center !important;
   width: 100% !important;
 }
-body[data-dsh-claude-style] [class*="footArea"] [class*="triggerRow"] :has([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] :has([data-dsh-claude-account-host-row]) {
   display: flex !important;
   align-items: center !important;
   flex: 1 1 auto !important;
@@ -367,7 +367,7 @@ body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data
 /* The host's rows. itemWrap is the shared Menu's row wrapper; the bare item
    fragment would reach unrelated class names, so the longest stable piece is
    used. */
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemWrap"] > [role="menuitem"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
   min-height: 32px !important;
   padding: 2px 7px !important;
   gap: 8px !important;
@@ -378,25 +378,25 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemWrap"] >
   color: var(--dsw-alias-label-primary, #141413) !important;
   transition: background-color var(--dsh-claude-timing-feedback) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemWrap"] > [role="menuitem"]:hover:not(:disabled),
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemWrap"] > [role="menuitem"]:focus-visible:not(:disabled) {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled),
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:focus-visible:not(:disabled) {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
 }
 /* The selected row keeps the skin's fill rather than the host's stronger
    accent: the account menu's rows are actions, not a persistent choice. */
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="_selected"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="row-selected"] {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemLabel"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-label"] {
   font-size: 13px !important;
   line-height: 20px !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemIcon"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-icon"] {
   width: 16px !important;
   height: 16px !important;
   color: var(--dsw-alias-label-secondary, #787672) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="itemIcon"] svg {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-icon"] svg {
   width: 16px !important;
   height: 16px !important;
 }
@@ -411,11 +411,11 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [role="separator"] {
 
 /* The list and its pinned footer sit inside the card's 6px padding; the footer
    keeps a hairline but takes the skin's spacing. */
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="_viewport"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-viewport"] {
   padding: 0 !important;
   overflow-x: hidden !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*="_footer"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-footer"] {
   margin-top: 2px !important;
   padding-top: 2px !important;
   border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc) !important;

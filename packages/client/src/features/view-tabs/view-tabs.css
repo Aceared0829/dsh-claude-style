@@ -36,15 +36,15 @@ body[data-dsh-claude-style] [data-dsh-view-tabs] {
 /* `centerCol` is the pane holding the header AND the transcript, so hovering the
    strip itself keeps it up, while the right sidebar — which sits outside it —
    does not bring it back. */
-body[data-dsh-claude-style] [class*="centerCol"]:hover [data-dsh-view-tabs] {
+body[data-dsh-claude-style] [data-dsh-claude-part~="center-column"]:hover [data-dsh-view-tabs] {
   opacity: 1;
 }
-body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"] {
+body[data-dsh-claude-style] [data-dsh-view-tabs] > [data-dsh-claude-part~="view-tab"] {
   height: 22px;
   padding: 0 10px;
 }
 /* The shipped active-tab underline has no place in a pill. */
-body[data-dsh-claude-style] [data-dsh-view-tabs] > [class*="_tab"]::after {
+body[data-dsh-claude-style] [data-dsh-view-tabs] > [data-dsh-claude-part~="view-tab"]::after {
   display: none;
 }
 
@@ -86,13 +86,13 @@ body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]:hover 
    row; without this the strip only answers the pointer once it is already in
    that row. The pane is the header's ancestor, so the compound order turns
    around: the hovered pane, then the marked header, then the strip. */
-body[data-dsh-claude-style] [class*="centerCol"]:hover [data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
+body[data-dsh-claude-style] [data-dsh-claude-part~="center-column"]:hover [data-dsh-titlebar-tabs] [data-dsh-view-tabs] {
   opacity: 1 !important;
 }
 /* The strip's row is gone from the flow, so the header takes the shape it has
    when it owns no tab strip: no min-height, and the bottom padding the host
    gives that shape. */
-body[data-dsh-claude-style] [class*="_header"][data-dsh-titlebar-tabs]:has([class*="_tabs"]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"][data-dsh-titlebar-tabs]:has([data-dsh-claude-part~="view-tabs"]) {
   min-height: 0 !important;
   padding-bottom: 10px !important;
 }

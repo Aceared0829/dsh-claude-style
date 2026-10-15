@@ -1,14 +1,14 @@
 /* ---------- Settings dialog: modal panel background ---------- */
 /* In light mode, the host dialog defaults to var(--dsw-alias-bg-layer-2);
    align the dialog card with the main canvas (#fcfcfb). */
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([class*="settingsArea"] [class*="_panel"], [class*="settingsArea"] [role="dialog"], [class*="_overlay"] > [class*="_panel"]) {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([data-dsh-claude-part~="settings-area"] [data-dsh-claude-part~="panel"], [data-dsh-claude-part~="settings-area"] [role="dialog"], [data-dsh-claude-part~="overlay"] > [data-dsh-claude-part~="panel"]) {
   background: var(--dsw-alias-bg-base);
 }
 
 /* ---------- Settings dialog: Claude Style tab icon ---------- */
 /* Replace the host's default settings gear icon on the Claude Style nav tab
    with the monochrome Claude starburst icon (black in light mode). */
-body[data-dsh-claude-style] button[data-dsh-section="claude-style"] [class*="_navIcon"] {
+body[data-dsh-claude-style] button[data-dsh-section="claude-style"] [data-dsh-claude-part~="nav-icon"] {
   display: none;
 }
 

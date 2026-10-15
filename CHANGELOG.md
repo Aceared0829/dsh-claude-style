@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
 - `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
 - `npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。
+- 皮肤不再按宿主类名的片段匹配界面：`core/parts.ts` 每次页面结构变化时把宿主自己声明的类名（`_2H3hWW_root` 这类带哈希的名字）读成自己的部件名，写在元素上，样式表只按 [data-dsh-claude-part] 整词匹配。原来 45 个样式表里的 565 处子串选择器与 31 处 TypeScript 子串查询全部改完：匹配变得精确（`row` 不再命中 `grow`，`rail` 不再命中 `trailing`），宿主改名时对应的规则直接静默而不误伤邻居，别的插件也不会再被这些规则扫到。
 
 ### 问题修复
 
@@ -33,6 +34,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
 - `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
 - `npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud.
+- The skin stops matching the interface by fragments of the host's class names: `core/parts.ts` reads the local part of every hashed host class name (`_2H3hWW_root` and the like) into the skin's own part name, writes it onto the element on each structural change, and the stylesheets match one whole [data-dsh-claude-part] token. All 565 substring selectors across 45 stylesheets and all 31 TypeScript substring queries are gone: a match is exact (`row` no longer takes `grow`, `rail` no longer takes `trailing`), a host rename leaves the rule quiet instead of wrong, and no other plugin's class names are swept up.
 
 ### Bug Fixes
 

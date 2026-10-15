@@ -129,7 +129,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function positionAccountPopover() {
     if (!accountPopover || !accountBtn) return
-    if (accountBtn.closest('[class*="_collapsed"]') === null) {
+    if (accountBtn.closest('[data-dsh-claude-part~="sidebar-collapsed"]') === null) {
       accountPopover.style.removeProperty('left')
       accountPopover.style.removeProperty('top')
       return

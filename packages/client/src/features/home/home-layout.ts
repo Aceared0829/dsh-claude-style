@@ -52,13 +52,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** On the usage panel while its numbers take over from its placeholders. */
   const HOME_REVEALING_ATTR = 'data-dsh-claude-revealing'
   /** The hero composer's stack, kept while it stays the first match (D40). */
-  const heroStack = cacheFirstMatch<HTMLElement>(`${COMPOSER_STACK}[class*="_composerHero"]`)
+  const heroStack = cacheFirstMatch<HTMLElement>(`${COMPOSER_STACK}[data-dsh-claude-part~="composer-hero"]`)
   /**
-   * The hero page's root, kept while it stays the first match. The element
-   * test is qualified by `_root` because the draft editor and the connection
-   * indicator carry a `data-phase` of their own.
+   * The hero page's root, kept while it stays the first match. The `root` part
+   * qualifies the host's phase marker because the draft editor and the
+   * connection indicator carry a `data-phase` of their own (D3).
    */
-  const heroRoot = cacheFirstMatch<HTMLElement>(`[class*="_root"][${PHASE_ATTRIBUTE}="hero"]`)
+  const heroRoot = cacheFirstMatch<HTMLElement>(`[data-dsh-claude-part~="conversation-root"][${PHASE_ATTRIBUTE}="hero"]`)
 
   let layout = PREF_DEFAULTS.homeLayout
   /** Whether the last pass saw the new-conversation hero, as of that reading. */

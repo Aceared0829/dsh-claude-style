@@ -125,15 +125,15 @@ export const CHAT_RUNNING_TEXT_SELECTOR = `:scope > span > [${SHIMMER_ATTRIBUTE}
  * stable part of its hashed class name is matched (D3), scoped to the running
  * row so no other row's icon can be hit.
  */
-export const CHAT_RUNNING_ICON_SELECTOR = '[class*="_runningIcon"]'
+export const CHAT_RUNNING_ICON_SELECTOR = '[data-dsh-claude-part~="running-icon"]'
 /**
  * The turn rail (ui-chat's TurnNavigator): a nav at the conversation's
  * right edge with one mark per turn, absent below two turns and hidden
  * when the conversation is narrow. It is the one nav in the chat frame.
  */
-export const TURN_RAIL_SELECTOR = `${CONVERSATION_SCROLL_SELECTOR} nav[class*="_frame"]`
+export const TURN_RAIL_SELECTOR = `${CONVERSATION_SCROLL_SELECTOR} nav[data-dsh-claude-part~="rail-frame"]`
 /** The rail's own scroller, its first child: the marks scroll inside it. */
-export const TURN_RAIL_SCROLLER_SELECTOR = ':scope > [class*="_scroller"]'
+export const TURN_RAIL_SCROLLER_SELECTOR = ':scope > [data-dsh-claude-part~="rail-scroller"]'
 /**
  * One mark: a button carrying its position in the rail's list, not its
  * turn number. The rail renders only the marks near its scroll position.
@@ -175,7 +175,7 @@ export const CONVERSATION_SESSION_ATTRIBUTE = 'data-conversation-session'
 /** The page's own phase: `hero` before a session is chosen, `active` once one is shown. */
 export const PHASE_ATTRIBUTE = 'data-phase'
 /** The composer card and the stack of cards above it. */
-export const COMPOSER_STACK_SELECTOR = '[class*="_composerStack"]'
+export const COMPOSER_STACK_SELECTOR = '[data-dsh-claude-part~="composer-stack"]'
 /** The placeholder the host's own editor draws inside the draft. */
 export const COMPOSER_PLACEHOLDER_SELECTOR = '[data-composer-placeholder]'
 /**
@@ -209,28 +209,32 @@ export const MOBILE_PORTRAIT_SELECTOR = 'body.dsh-remote-portrait'
 export const CONTEXT_METER_FILL_SELECTOR = '[data-dsh-claude-context-meter] circle[stroke-dasharray]'
 /** The composer variant the host puts on the card (`hero` / `default`). */
 export const COMPOSER_VARIANT_ATTRIBUTE = 'data-composer-variant'
-/** The host's own access-mode trigger inside its permission slot, skipping the skin's buttons. */
-export const PERMISSION_TRIGGER_SELECTOR = '[data-slot="conversation.input.permission"] button:not([class*="dsh-claude"])'
+/**
+ * The host's own access-mode trigger inside its permission slot, skipping the
+ * skin's own control: the skin's elements carry the `dsh-claude-` namespace as
+ * whole class tokens, so no substring match is involved (D3).
+ */
+export const PERMISSION_TRIGGER_SELECTOR = '[data-slot="conversation.input.permission"] button:not([class^="dsh-claude-"], [class*=" dsh-claude-"])'
 /** A host button that opens a dialog: the model and effort pickers in the composer stack. */
 export const DIALOG_TRIGGER_SELECTOR = 'button[aria-haspopup="dialog"]'
 /** The sidebar footer block; the skin's account entry lives inside it. */
-export const FOOT_AREA_SELECTOR = '[class*="footArea"]'
+export const FOOT_AREA_SELECTOR = '[data-dsh-claude-part~="foot-area"]'
 /**
  * The host's own sidebar search: a button and an input in the workspace
  * section's header. The skin's box stands in for it, and the `icon` style
  * leaves the host's button in place with its click taken over, so both read
  * this slot.
  */
-export const SIDEBAR_SEARCH_SLOT_SELECTOR = '[data-slot="sidebar"] [class*="_searchSlot"]'
+export const SIDEBAR_SEARCH_SLOT_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="search-slot"]'
 /** The sidebar's own column box, whose width follows the collapse and the reader's drag. */
-export const SIDEBAR_ROOT_SELECTOR = '[data-slot="sidebar"] > [class*="_root"]'
+export const SIDEBAR_ROOT_SELECTOR = '[data-slot="sidebar"] > [data-dsh-claude-part~="sidebar-root"]'
 /** The wide brand in the sidebar's top row; the collapsed rail has none. */
-export const SIDEBAR_BRAND_SELECTOR = '[data-slot="sidebar"] [class*="_logoRow"] > [class*="_brand"]'
+export const SIDEBAR_BRAND_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="logo-row"] > [data-dsh-claude-part~="brand-button"]'
 /**
  * The sidebar's collapse toggle, inside the top row. The desktop shells fix it
  * into the caption strip; the web leaves it the row's last cell.
  */
-export const SIDEBAR_TOGGLE_SELECTOR = '[data-slot="sidebar"] [class*="_logoRow"] > [class*="_toggle"]'
+export const SIDEBAR_TOGGLE_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="logo-row"] > [data-dsh-claude-part~="sidebar-toggle"]'
 /** The host's own composer is replaced by a panel of its own choice; this is that panel's seat. */
 export const CHAIN_OVERLAY_FALLBACK_ATTRIBUTE = 'data-chain-overlay-fallback'
 /** The host's own open menus and modal dialogs: the foreground the skin must not walk over. */
@@ -241,11 +245,22 @@ export const MENU_LIST_SELECTOR = '[role="presentation"]'
 /** The host's account trigger in the sidebar footer. */
 export const ACCOUNT_TRIGGER_SELECTOR = '[aria-haspopup="menu"][data-signed-out]'
 /** The host's settings button in the footer. */
-export const SETTINGS_BUTTON_SELECTOR = '[class*="settingsArea"] button[aria-haspopup="dialog"]'
+export const SETTINGS_BUTTON_SELECTOR = '[data-dsh-claude-part~="settings-area"] button[aria-haspopup="dialog"]'
 /** The sidebar's action list, whose entries the skin mirrors into its drawer. */
-export const FOOTER_ACTIONS_SELECTOR = '[class*="footerActions"]'
+export const FOOTER_ACTIONS_SELECTOR = '[data-dsh-claude-part~="footer-actions"]'
 /** A slot anchor; its children are the host's real entries. */
 export const SLOT_ANCHOR_SELECTOR = '[data-slot]'
+/**
+ * The three slot anchors the skin's part walk reads as regions (D3): each names
+ * a host subtree the skin restyles, and the walk enters a region where its
+ * anchor matches rather than climbing to the document for every element.
+ */
+export const SIDEBAR_SLOT_SELECTOR = '[data-slot="sidebar"]'
+export const CONVERSATION_HEADER_SLOT_SELECTOR = '[data-slot="conversation.header"]'
+/** The root slot: the shell frame is its own element child, and the three columns are inside. */
+export const ROOT_SLOT_SELECTOR = '[data-slot="root"]'
+/** The right sidebar's own column: the host marks it, and its docked panels are the skin's cards. */
+export const RIGHTBAR_COLUMN_SELECTOR = '[data-rightbar-col]'
 
 /* ---------- the conversation header's own row ---------- */
 
@@ -256,25 +271,25 @@ export const SLOT_ANCHOR_SELECTOR = '[data-slot]'
  * sidebar's panels, so a reader takes the one carrying a title or the
  * utilities rather than the first match.
  */
-export const HEADER_TITLE_ROW_SELECTOR = '[class*="titleRow"]'
+export const HEADER_TITLE_ROW_SELECTOR = '[data-dsh-claude-part~="title-row"]'
 /**
  * The session title's breadcrumb nav: the words themselves, not the flex
  * cluster that lays them out (the cluster stretches, so it says nothing about
  * where the title ends).
  */
-export const HEADER_TITLE_SELECTOR = '[class*="_crumbs"]'
+export const HEADER_TITLE_SELECTOR = '[data-dsh-claude-part~="header-title"]'
 /** The header's utilities cluster: the workspace opener, the overflow menu, the bottom-panel toggle. */
-export const HEADER_UTILITIES_SELECTOR = '[class*="headerUtilities"]'
+export const HEADER_UTILITIES_SELECTOR = '[data-dsh-claude-part~="header-utilities"]'
 /** The corner seat beside the utilities, carrying the right-sidebar toggle. */
-export const HEADER_CORNER_SELECTOR = '[class*="headerCorner"]'
+export const HEADER_CORNER_SELECTOR = '[data-dsh-claude-part~="header-corner"]'
 /**
  * The conversation header itself, resolved with `closest` from the title row:
  * the same substring names a dozen other bars (the sidebar's action row, the
  * background-task chip), so it is never queried document-wide.
  */
-export const CONVERSATION_HEADER_SELECTOR = '[class*="_header"]'
+export const CONVERSATION_HEADER_SELECTOR = '[data-dsh-claude-part~="conversation-header"]'
 /** The view-tab strip inside the header, whose box the band placement keeps clear of. */
-export const VIEW_TABS_STRIP_SELECTOR = '[class*="_tabs"]'
+export const VIEW_TABS_STRIP_SELECTOR = '[data-dsh-claude-part~="view-tabs"]'
 
 /* ---------- the document, the shell and the browser API ---------- */
 

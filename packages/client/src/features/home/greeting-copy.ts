@@ -24,7 +24,7 @@ export function createGreetingCopy() {
         : pickHeroGreeting(getUsername(), draw)
       // The host renders one title group per hero variant; the first span of
       // each is the greeting (a preview badge may sit before it).
-      const groups = document.querySelectorAll('[class*="titleGroup"]')
+      const groups = document.querySelectorAll('[data-dsh-claude-part~="hero-title-group"]')
       for (let i = 0; i < groups.length; i++) {
         const spans = groups[i].children
         for (let j = 0; j < spans.length; j++) {

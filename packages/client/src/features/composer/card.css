@@ -29,7 +29,7 @@ body[data-dsh-claude-style] [data-composer-card] {
    --dsh-composer-text-max-height before it starts scrolling. Both hooks are
    ancestors of the field, so :is() also keeps the tall field through the
    settling frame, while an active composer matches neither. */
-body[data-dsh-claude-style] :is([class*="composerHero"], [data-phase="hero"]) [data-composer-input] {
+body[data-dsh-claude-style] :is([data-dsh-claude-part~="composer-hero"], [data-phase="hero"]) [data-composer-input] {
   min-height: 86px;
 }
 
@@ -61,11 +61,10 @@ body[data-dsh-claude-style] [data-composer-card][data-composer-variant="hero"] [
   user-select: none !important;
 }
 
-/* Tight bottom padding below the button controls row. The selector must
-   be `[class*="_row"]`: a bare `[class*="row"]` substring-matches the
-   shipped input growth wrapper `.p_FcLG_grow` ("grow" contains "row"),
-   which pins the composer field to the toolbar-row metrics. */
-body[data-dsh-claude-style] [data-composer-card] [class*="_row"] {
+/* Tight bottom padding below the button controls row. The part names the host's
+   own `row` and nothing else: the shipped input growth wrapper is `grow`, a
+   different local name, so it cannot take the toolbar-row metrics (D3). */
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row"] {
   padding-bottom: 2px;
 }
 
@@ -103,11 +102,11 @@ body[data-dsh-claude-style][data-ds-dark-theme] [data-composer-card]:focus-withi
    comes before the card in the stack, so no sibling selector reaches it from
    the card; focus inside the stack but not inside the row itself is the card's
    (`:has(card:focus-within)` made every DOM change re-match the document). */
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) [class*="_composerStack"]:focus-within > [class*="heroWorkspaceRow"]:not(:focus-within) {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-dsh-claude-part~="composer-stack"]:focus-within > [data-dsh-claude-part~="hero-workspace-row"]:not(:focus-within) {
   border-color: rgba(20, 20, 19, 0.18);
 }
 
-body[data-dsh-claude-style][data-ds-dark-theme] [class*="_composerStack"]:focus-within > [class*="heroWorkspaceRow"]:not(:focus-within) {
+body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-part~="composer-stack"]:focus-within > [data-dsh-claude-part~="hero-workspace-row"]:not(:focus-within) {
   border-color: rgba(250, 249, 245, 0.22);
 }
 
@@ -143,16 +142,16 @@ body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-con
    same 7px corners; its chevron is dropped while the click target and the
    menu it opens stay exactly as shipped. Its shipped hover token is only a
    ~6% tint, so the hover plate matches the composer tool buttons. */
-body[data-dsh-claude-style] [data-composer-card] [class*="_trigger"] {
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="trigger"] {
   font-size: 14px;
   border-radius: 7px;
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-composer-card] [class*="_trigger"]:hover:not(:disabled) {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-composer-card] [data-dsh-claude-part~="trigger"]:hover:not(:disabled) {
   background: var(--dsh-claude-chip);
 }
 
-body[data-dsh-claude-style] [data-composer-card] [class*="_chevron"] {
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row-chevron"] {
   display: none;
 }
 
@@ -167,23 +166,23 @@ body[data-dsh-claude-style] [data-composer-card] [class*="_chevron"] {
    (features/home/home-panel.css) places the workspace row as a plain context row
    above the card and the usage panel between them, so every rule below is
    scoped away from it. */
-body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [class*="_composerStack"][data-composer-variant="hero"] {
+body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] {
   --dsh-claude-bar-h: 96px;
 }
 
-body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [class*="_composerStack"][data-composer-variant="hero"] *:has([data-composer-card]) {
+body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] *:has([data-composer-card]) {
   order: 1;
   padding-bottom: 0 !important;
 }
 
-body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [class*="_composerStack"][data-composer-variant="hero"] [data-composer-card] {
+body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] [data-composer-card] {
   gap: 8px !important;
   padding-bottom: 2px !important;
   min-height: 0 !important;
   height: auto !important;
 }
 
-body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [class*="_composerStack"][data-composer-variant="hero"] > [class*="heroWorkspaceRow"] {
+body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] > [data-dsh-claude-part~="hero-workspace-row"] {
   order: 2;
   position: relative;
   z-index: 1;
@@ -206,14 +205,14 @@ body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [class*=
 }
 
 /* Muted typography and 7px corners for footer controls */
-body[data-dsh-claude-style] [class*="heroWorkspaceRow"] :is(button, [role="button"]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="hero-workspace-row"] :is(button, [role="button"]) {
   font-size: 13px;
   color: var(--dsw-alias-label-secondary);
   border-radius: 7px;
 }
 
 /* Hide chevrons in the footer tray for a clean, minimal Claude Code look */
-body[data-dsh-claude-style] [class*="heroWorkspaceRow"] :is([class*="_chevron"], [class*="Chevron"]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="hero-workspace-row"] :is([data-dsh-claude-part~="row-chevron"], [data-dsh-claude-part~="trigger-chevron"]) {
   display: none;
 }
 

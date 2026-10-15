@@ -324,7 +324,7 @@ export function ClaudeStyleBundleConfig(props: { view?: string }) {
  * can replace the host's default settings gear with the black Claude mark.
  */
 export function syncSettingsNav() {
-  const navList = document.querySelector(':is([class*="settingsArea"], [class*="_overlay"], [class*="SettingsRoot"]) [class*="_navList"]')
+  const navList = document.querySelector(':is([data-dsh-claude-part~="settings-area"], [data-dsh-claude-part~="overlay"], [class*="SettingsRoot"]) [data-dsh-claude-part~="nav-list"]')
   if (!navList) return
   if (navList.querySelector(`[data-dsh-section="${SETTINGS_SECTION_ID}"]`) !== null) return
   // The section's position among the slot's entries is the nav cell's

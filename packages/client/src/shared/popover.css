@@ -184,6 +184,6 @@ body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-sta
 }
 
 /* Ensure popover items only display inside the popover */
-body[data-dsh-claude-style] [class*="footArea"] > .dsh-claude-popover-item {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] > .dsh-claude-popover-item {
   display: none !important;
 }

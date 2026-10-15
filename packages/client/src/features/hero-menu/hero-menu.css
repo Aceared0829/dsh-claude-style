@@ -44,7 +44,7 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] {
 }
 
 /* One row height, one radius, one hover plate for both pickers. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemWrap_"] > [role="menuitem"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
   min-height: 32px;
   padding: 2px 7px;
   gap: 8px;
@@ -54,47 +54,47 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemWrap_"] > 
   color: var(--dsw-alias-label-primary, #141413);
   transition: background-color var(--dsh-claude-timing-feedback);
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemWrap_"] > [role="menuitem"]:hover:not(:disabled) {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled) {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemWrap_"] > [role="menuitem"]:disabled {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemIcon_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-icon"] {
   width: 16px;
   height: 16px;
   color: var(--dsw-alias-label-secondary, #787672);
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemIcon_"] svg {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-icon"] svg {
   width: 16px;
   height: 16px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemLabel_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-label"] {
   font-size: 13px;
   line-height: 20px;
 }
 /* The current row is marked by the accent, as in the model picker. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_check_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-check"] {
   flex: none;
   color: var(--dsw-alias-brand-primary, #d97757);
 }
 
 /* The preset rows are two lines (name + description), so the height above is a
    floor rather than a cap. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemName"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-name"] {
   font-size: 13px;
   font-weight: 500;
   line-height: 16px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_itemDesc"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-desc"] {
   font-size: 11px;
   line-height: 14px;
   color: var(--dsw-alias-label-tertiary, #8f8d84);
 }
 
 /* Heading and separator rows. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [class*="_viewport_"] > [role="presentation"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [data-dsh-claude-part~="menu-viewport"] > [role="presentation"] {
   padding: 6px 7px 2px !important;
   font-size: 11px !important;
   font-weight: 600 !important;
@@ -111,7 +111,7 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [role="separator"] {
 
 /* The pinned footer ("添加工作区…") keeps the host's spacing with the skin's
    hairline. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [class*="_footer_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [data-dsh-claude-part~="menu-footer"] {
   margin-top: 4px;
   padding-top: 4px;
   border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
@@ -128,29 +128,29 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] {
   padding: 4px;
   gap: 4px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [class*="_itemWrap_"] > [role="menuitem"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
   min-height: 26px;
   padding: 3px 10px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [class*="_itemIcon_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [data-dsh-claude-part~="menu-item-icon"] {
   display: none;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [class*="_check_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] [data-dsh-claude-part~="menu-check"] {
   width: 14px;
   height: 14px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] > [class*="_footer_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] > [data-dsh-claude-part~="menu-footer"] {
   margin-top: 0;
   padding-top: 4px;
 }
 
 /* The card's padding is the skin's 6px rather than the host's 4px, so a side
    card moves with it: 6px pad + 6px gap. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_submenu_"] {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-submenu"] {
   bottom: -6px !important;
   left: calc(100% + 12px) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [class*="_submenu_"]::before {
+body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-submenu"]::before {
   left: -12px !important;
   width: 12px !important;
 }

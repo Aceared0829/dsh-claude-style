@@ -3,7 +3,7 @@
    toolview; its non-mirror fallback ships an unstyled header (two bare spans,
    not even a gap) and a bare pre. Give the header the tool-row rhythm, the
    tool name the skin's technical-meta mono voice (overriding the editorial
-   serif the `[class*="title"]` rule lends it), the variant label a real
+   serif the host's title rule lends it), the variant label a real
    pill, and the code preview card padding. */
 body[data-dsh-claude-style] .agy-tv-header {
   display: flex;
@@ -47,16 +47,16 @@ body[data-dsh-claude-style] .agy-tv-pre {
    whichever way round they were opened. Gated on the dock-look attribute like
    the card itself: flush panes need no seam taken in, and the dock's own
    resting line is the only thing left between them. */
-body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [class*="_rightbarCol"] [data-dockkit-split] > [data-dockkit-column] > [data-dockkit-pane] {
+body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-part~="rightbar-column"] [data-dockkit-split] > [data-dockkit-column] > [data-dockkit-pane] {
   margin: 6px !important;
 }
-body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [class*="_rightbarCol"] [data-dockkit-split] > [data-dockkit-column="0"] > [data-dockkit-pane] {
+body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-part~="rightbar-column"] [data-dockkit-split] > [data-dockkit-column="0"] > [data-dockkit-pane] {
   margin-right: 3px !important;
 }
-body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [class*="_rightbarCol"] [data-dockkit-split] > [data-dockkit-column="1"] > [data-dockkit-pane] {
+body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-part~="rightbar-column"] [data-dockkit-split] > [data-dockkit-column="1"] > [data-dockkit-pane] {
   margin-left: 3px !important;
 }
-body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [class*="_rightbarCol"] [data-dockkit-split] > [class*="_divider_"]::before {
+body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-part~="rightbar-column"] [data-dockkit-split] > [data-dsh-claude-part~="dock-divider"]::before {
   background: transparent !important;
 }
 

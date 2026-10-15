@@ -46,7 +46,7 @@ body[data-dsh-claude-style] [data-dsh-header-band~="title"] [data-dsh-header-row
    width, which protects the title when the two share it. In the caption row the
    title takes no width, so the row has room and the control would only be
    missing; the label stays. */
-body[data-dsh-claude-style] [data-dsh-header-band~="title"] [data-dsh-header-row] [class*="_label"] {
+body[data-dsh-claude-style] [data-dsh-header-band~="title"] [data-dsh-header-row] [data-dsh-claude-part~="header-label"] {
   display: flex !important;
 }
 

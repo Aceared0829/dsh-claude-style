@@ -17,7 +17,7 @@
    The two swap by opacity rather than display, so they cross-fade; the control
    is laid over the label's own slot (absolute, same 16px) so neither the header's
    height nor the actions' position moves while they swap. */
-body[data-dsh-claude-style] [class*="sectionHeader"] {
+body[data-dsh-claude-style] [data-dsh-claude-part~="section-header"] {
   position: relative;
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segments {
@@ -35,12 +35,12 @@ body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] .dsh-claude-ws-se
   pointer-events: none;
 }
 body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"]:hover .dsh-claude-ws-segments,
-body[data-dsh-claude-style] [class*="sectionHeader"]:hover .dsh-claude-ws-segments {
+body[data-dsh-claude-style] [data-dsh-claude-part~="section-header"]:hover .dsh-claude-ws-segments {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
 }
-body[data-dsh-claude-style] [class*="sectionLabel"][data-dsh-claude-ws-label] {
+body[data-dsh-claude-style] [data-dsh-claude-part~="section-label"][data-dsh-claude-ws-label] {
   /* The heading is a label, not a target: it must not swallow clicks aimed at the
      control laid over it, nor start a selection drag. */
   pointer-events: none;
@@ -49,11 +49,11 @@ body[data-dsh-claude-style] [class*="sectionLabel"][data-dsh-claude-ws-label] {
   opacity: 0;
   transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
-body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] [class*="sectionLabel"][data-dsh-claude-ws-label] {
+body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] [data-dsh-claude-part~="section-label"][data-dsh-claude-ws-label] {
   opacity: 1;
 }
-body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"]:hover [class*="sectionLabel"][data-dsh-claude-ws-label],
-body[data-dsh-claude-style] [class*="sectionHeader"]:hover [class*="sectionLabel"][data-dsh-claude-ws-label] {
+body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"]:hover [data-dsh-claude-part~="section-label"][data-dsh-claude-ws-label],
+body[data-dsh-claude-style] [data-dsh-claude-part~="section-header"]:hover [data-dsh-claude-part~="section-label"][data-dsh-claude-ws-label] {
   opacity: 0 !important;
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment {

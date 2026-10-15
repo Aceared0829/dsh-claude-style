@@ -25,10 +25,10 @@ body[data-dsh-claude-style] [data-dsh-claude-search-row] {
   padding: 0;
   margin-bottom: 6px;
 }
-body[data-dsh-claude-style] [data-dsh-claude-search-row] > :is([class*="_brand"], .dsh-claude-search-trigger) {
+body[data-dsh-claude-style] [data-dsh-claude-search-row] > :is([data-dsh-claude-part~="brand-button"], .dsh-claude-search-trigger) {
   grid-area: 1 / 1;
 }
-body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"] {
+body[data-dsh-claude-style] [data-dsh-claude-search-row] > [data-dsh-claude-part~="brand-button"] {
   transition: opacity var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard), visibility var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard);
 }
 body[data-dsh-claude-style] .dsh-claude-search-trigger {
@@ -65,8 +65,8 @@ body[data-dsh-claude-style] [data-dsh-claude-search-row] > .dsh-claude-search-tr
   visibility: visible;
   pointer-events: auto;
 }
-body[data-dsh-claude-style] [data-slot="sidebar"]:hover [data-dsh-claude-search-row] > [class*="_brand"],
-body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"]:has(~ .dsh-claude-search-trigger:focus-visible) {
+body[data-dsh-claude-style] [data-slot="sidebar"]:hover [data-dsh-claude-search-row] > [data-dsh-claude-part~="brand-button"],
+body[data-dsh-claude-style] [data-dsh-claude-search-row] > [data-dsh-claude-part~="brand-button"]:has(~ .dsh-claude-search-trigger:focus-visible) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -114,7 +114,7 @@ body[data-dsh-claude-style][data-dsh-claude-search-style="standalone"][data-dsh-
    offset: the host pads nothing around the traffic lights, and its own
    `_topStrip + _logoRow` margin (-12px) already seats the row's content where
    the 48px it declares for --dsh-frame-top-clearance wants it. */
-html[data-windows-titlebar] body[data-dsh-claude-style] [data-slot="sidebar"] [class*="_logoRow"] {
+html[data-windows-titlebar] body[data-dsh-claude-style] [data-slot="sidebar"] [data-dsh-claude-part~="logo-row"] {
   margin-top: -6px !important;
 }
 /* Where no desktop shell owns the column's top — a browser page — the row is the
@@ -129,7 +129,7 @@ html:not([data-windows-titlebar]):not([data-platform="darwin"]) body[data-dsh-cl
    under the Windows caption row; the row's zeroed padding drops both, so the
    brand takes the row's 8px and its mark's left edge lands on the new-session
    chip's. */
-html:not([data-windows-titlebar]):not([data-platform="darwin"]) body[data-dsh-claude-style] [data-dsh-claude-search-row] > [class*="_brand"] {
+html:not([data-windows-titlebar]):not([data-platform="darwin"]) body[data-dsh-claude-style] [data-dsh-claude-search-row] > [data-dsh-claude-part~="brand-button"] {
   padding-left: 8px;
 }
 /* On both desktop shells the host's toggle takes no cell in the row: macOS
@@ -148,10 +148,10 @@ html[data-platform=darwin] body[data-dsh-claude-style] [data-dsh-claude-search-r
    The header packs its children to the right and relied on that slot's flex to
    hold the heading at the left, so the heading now takes the free space
    itself. */
-body[data-dsh-claude-style] [data-slot="sidebar"] [class*="_sectionHeader"] > [class*="_sectionLabel"] {
+body[data-dsh-claude-style] [data-slot="sidebar"] [data-dsh-claude-part~="section-header"] > [data-dsh-claude-part~="section-label"] {
   margin-right: auto;
 }
-body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slot="sidebar"] [class*="_searchSlot"] {
+body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slot="sidebar"] [data-dsh-claude-part~="search-slot"] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -164,7 +164,7 @@ body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slo
 /* Expanding that search would clear the header's actions (view options, add
    workspace) out of its way for the moment before the palette folds it back;
    with the search out of sight they have nothing to make room for. */
-body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slot="sidebar"] [class*="_headerActionsHidden"] {
+body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slot="sidebar"] [data-dsh-claude-part~="section-actions-hidden"] {
   opacity: 1 !important;
   visibility: visible !important;
   max-width: 60px !important;
@@ -215,7 +215,7 @@ body[data-dsh-claude-style] .dsh-claude-search-dialog {
 body[data-dsh-claude-style] [data-dsh-claude-search-closing] > .dsh-claude-search-dialog {
   animation: dsh-claude-surface-out var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard) forwards !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-search-closing] > [class*="_mask"] {
+body[data-dsh-claude-style] [data-dsh-claude-search-closing] > [data-dsh-claude-part~="mask"] {
   animation: dsh-claude-fade-out var(--dsh-claude-duration-exit) var(--dsh-claude-ease-standard) forwards !important;
 }
 body[data-dsh-claude-style] [data-dsh-claude-search-closing] {
@@ -433,7 +433,7 @@ body[data-dsh-claude-style] .dsh-claude-search-keys {
   gap: 3px;
 }
 body[data-dsh-claude-style] .dsh-claude-search-key,
-body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+body[data-dsh-claude-style] button[data-dsh-claude-part~="new-session"] [data-dsh-claude-part~="new-session-shortcut"] kbd:not([data-dsh-claude-part~="key-separator"]) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -450,11 +450,11 @@ body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShort
   line-height: 1;
 }
 /* The New session row's own weight is 500; its cap reads at the regular weight. */
-body[data-dsh-claude-style] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+body[data-dsh-claude-style] button[data-dsh-claude-part~="new-session"] [data-dsh-claude-part~="new-session-shortcut"] kbd:not([data-dsh-claude-part~="key-separator"]) {
   font-weight: 400;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key,
-body[data-dsh-claude-style][data-ds-dark-theme] button[class*="newSession"] [class*="newSessionShortcut"] kbd:not([class*="_separator"]) {
+body[data-dsh-claude-style][data-ds-dark-theme] button[data-dsh-claude-part~="new-session"] [data-dsh-claude-part~="new-session-shortcut"] kbd:not([data-dsh-claude-part~="key-separator"]) {
   border-color: var(--dsw-alias-border-l3);
 }
 body[data-dsh-claude-style] .dsh-claude-search-foot {
