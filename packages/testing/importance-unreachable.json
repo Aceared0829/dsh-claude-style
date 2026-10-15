@@ -577,6 +577,13 @@
         "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=start]",
         "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=end]"
       ]
+    },
+    {
+      "reason": "减少动效配上等待行的状态动效：走查把动画偏好与等待行的状态动效分开走",
+      "selectors": [
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced][data-dsh-claude-status-motion=sweep] .dsh-claude-chat-wait .dsh-claude-swap-shimmer",
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced][data-dsh-claude-status-motion=wash] .dsh-claude-chat-wait .dsh-claude-swap-shimmer"
+      ]
     }
   ]
 }
