@@ -268,8 +268,8 @@
     "brandAccentReset": { "zh": "恢复品牌强调色", "en": "Use the brand's accent" },
     "motionTitle": { "zh": "动画效果", "en": "Animation" },
     "motionDesc": {
-      "zh": "「随系统」跟随系统的动画设置；「减弱」把动画停在代表帧；「总是」始终播放。",
-      "en": "Follow the system, hold animations on a still frame, or always play them."
+      "zh": "请按需调整动画效果。动画会给设备带来渲染压力。",
+      "en": "Adjust the animation as you need: animations put rendering pressure on the device."
     },
     "motionSystem": { "zh": "随系统", "en": "Follow the system" },
     "motionReduced": { "zh": "减弱", "en": "Reduced" },

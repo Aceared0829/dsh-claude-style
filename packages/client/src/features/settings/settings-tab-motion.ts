@@ -395,7 +395,7 @@ export function createSettingsMotionTab(): SettingsTab {
         node: view.controls.row(
           'motion',
           settingsCopy('motionTitle', 'Animation'),
-          settingsCopy('motionDesc', 'Follow the system, hold animations on a still frame, or always play them.'),
+          settingsCopy('motionDesc', 'Adjust the animation as you need: animations put rendering pressure on the device.'),
           view.controls.segment(motionOptions, prefs.motion, value => { write({ motion: value }) }),
         ),
       },
