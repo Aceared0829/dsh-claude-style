@@ -2,8 +2,8 @@ import { CARET_ATTR, CARET_HOST_ATTR, CARET_LAYER_ATTR, CARET_MOTION_OFF, CARET_
 import { subscribeMutations } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
-import { caretClipToField, caretMeasurePlain, caretMeasureRich } from './caret-measure'
-import type { CaretBox } from './caret-measure'
+import { caretClipToField, caretMeasurePlain, caretMeasureRich, noteFacesLoaded } from './caret-measure'
+import type { CaretBox, CaretReading } from './caret-measure'
 import { COMPOSER_INPUT_SELECTOR, COMPOSER_TEXTAREA_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
@@ -116,13 +116,18 @@ export function createCaretMotion(read: () => string) {
   const queue = () => {
     if (disposed || queued) return
     queued = true
-    // Measuring builds probes and reads them, then draws: write phase (D40).
+    // The measurement is a read and the drawing is a write: the pass's read
+    // phase takes it, before any feature writes this frame (D40). A read taken
+    // after them pays for the layout they dirtied.
     cancelFrame = requestFrame({
+      read() {
+        resolve()
+      },
       write() {
         cancelFrame = null
         queued = false
         if (disposed) return
-        sync()
+        apply()
       },
     })
   }
@@ -286,17 +291,19 @@ export function createCaretMotion(read: () => string) {
 
   /**
    * Put the drawn caret on this viewport box.
+   * @param hostRect - the host's box, read in the pass's read phase; null when
+   * the layer was rebuilt onto another host and it has to be read here.
    */
-  const drawCaret = (layer: CaretLayer, box: CaretBox) => {
+  const drawCaret = (layer: CaretLayer, box: CaretBox, hostRect: DOMRect | null) => {
     // Absolute positioning goes by the container's padding box and follows
     // its own scroll: the border comes off the difference and the scrolled
     // distance goes back on.
-    const hostRect = layer.host.getBoundingClientRect()
+    const rect = hostRect ?? layer.host.getBoundingClientRect()
     // Snapped to whole pixels. The native caret sits on the pixel grid, and a
     // box landing on a fraction gets antialiased into a grey fringe that reads
     // as a different caret. The cost is up to half a pixel, which is invisible.
-    const left = Math.round(box.left - hostRect.left - layer.host.clientLeft + layer.host.scrollLeft)
-    const top = Math.round(box.top - hostRect.top - layer.host.clientTop + layer.host.scrollTop)
+    const left = Math.round(box.left - rect.left - layer.host.clientLeft + layer.host.scrollLeft)
+    const top = Math.round(box.top - rect.top - layer.host.clientTop + layer.host.scrollTop)
 
     // The frame that lands without a transition has to arrive instantly; the
     // transition comes back on the next one.
@@ -328,14 +335,23 @@ export function createCaretMotion(read: () => string) {
     }
   }
 
-  /** Whose caret this frame's is. */
-  const sync = () => {
-    const mode = read()
+  /** What the read phase resolved, for the write phase of the same frame. */
+  let plan: {
+    /** The motion is off: every drawn caret goes, and the mark with it. */
+    off: boolean
+    target: HTMLElement | null
+    host: HTMLElement | null
+    hostRect: DOMRect | null
+    reading: CaretReading | null
+  } | null = null
+
+  /** The pass's read phase: whose caret this frame draws, and where it sits. */
+  const resolve = () => {
+    plan = null
     // off is absolute: the drawn caret and the mark go away together and the
     // native caret comes back. Keeping them only leaves the reader with none.
-    if (mode === CARET_MOTION_OFF) {
-      for (const [input, layer] of layers) release(input, layer)
-      layers.clear()
+    if (read() === CARET_MOTION_OFF) {
+      plan = { off: true, target: null, host: null, hostRect: null, reading: null }
       return
     }
     const selection = document.getSelection()
@@ -361,6 +377,30 @@ export function createCaretMotion(read: () => string) {
     if (kind === 'plain' && active instanceof HTMLTextAreaElement && active.selectionStart === active.selectionEnd) {
       target = active
     }
+    if (target === null) {
+      plan = { off: false, target: null, host: null, hostRect: null, reading: null }
+      return
+    }
+    const reading = target instanceof HTMLTextAreaElement
+      ? caretMeasurePlain(target, endKeyed, probeHome)
+      : range === null ? null : caretMeasureRich(target, range, probeHome)
+    // The layer's host is the surface's parent, and the drawn caret is placed
+    // against its box: read here for the same reason the caret is.
+    const host = target.parentElement instanceof HTMLElement ? target.parentElement : null
+    plan = { off: false, target, host, hostRect: host === null ? null : host.getBoundingClientRect(), reading }
+  }
+
+  /** The pass's write phase: the caret the read phase resolved is drawn. */
+  const apply = () => {
+    const pending = plan
+    plan = null
+    if (pending === null) return
+    if (pending.off) {
+      for (const [input, layer] of layers) release(input, layer)
+      layers.clear()
+      return
+    }
+    const target = pending.target
     for (const [input, layer] of layers) {
       // A session switch replaces the whole input area, and answering a
       // question card or saving a queued row unmounts one whole; the caret
@@ -387,14 +427,11 @@ export function createCaretMotion(read: () => string) {
     if (target === null) return
     const layer = layerFor(target)
     if (layer === null) return
-    const measured = target instanceof HTMLTextAreaElement
-      ? caretMeasurePlain(target, endKeyed, probeHome)
-      : range === null ? null : caretMeasureRich(target, range, probeHome)
     // The mark is written only after a caret was really drawn. A measurement
     // that fails gives the native caret back: a transparent native caret
     // beside no drawn one is the one failure that really hurts a reader, so
     // every failed measurement returns to the start rather than holding on.
-    if (measured === null) {
+    if (pending.reading === null) {
       target.removeAttribute(CARET_ATTR)
       hide(layer)
       return
@@ -402,10 +439,13 @@ export function createCaretMotion(read: () => string) {
     if (!target.hasAttribute(CARET_ATTR)) adoptCaretColor(target, layer)
     // A plain surface's own scrolled-away part is not drawn. That is not a
     // failed measurement — the native caret is invisible there too — so the
-    // mark still stands.
-    const box = target instanceof HTMLTextAreaElement ? caretClipToField(target, measured) : measured
+    // mark still stands. The clip goes by the box the measurement read.
+    const reading = pending.reading
+    const box = reading.field === null ? reading.box : caretClipToField(target, reading.field, reading.box)
+    // The layer may have been rebuilt onto another host since the read, in
+    // which case its box was not read and is read here.
     if (box === null) hide(layer)
-    else drawCaret(layer, box)
+    else drawCaret(layer, box, layer.host === pending.host ? pending.hostRect : null)
     target.setAttribute(CARET_ATTR, '')
   }
 
@@ -419,8 +459,14 @@ export function createCaretMotion(read: () => string) {
   document.addEventListener('pointerdown', clearEndKey, true)
   document.addEventListener('scroll', followPlainScroll, { capture: true, passive: true })
   window.addEventListener('resize', queue)
-  // The shipped faces arrive after the first frame and wrap differently, so the caret is measured again.
-  document.fonts.addEventListener('loadingdone', queue)
+  // The shipped faces arrive after the first frame and wrap differently, so the
+  // caret is measured again — and every probe reading taken before them is
+  // dropped, since the same words now measure differently.
+  const onFacesLoaded = () => {
+    noteFacesLoaded()
+    queue()
+  }
+  document.fonts.addEventListener('loadingdone', onFacesLoaded)
 
   return {
     resync: queue,
@@ -438,7 +484,7 @@ export function createCaretMotion(read: () => string) {
       document.removeEventListener('pointerdown', clearEndKey, true)
       document.removeEventListener('scroll', followPlainScroll, true)
       window.removeEventListener('resize', queue)
-      document.fonts.removeEventListener('loadingdone', queue)
+      document.fonts.removeEventListener('loadingdone', onFacesLoaded)
       for (const stop of watchedSurfaces.values()) stop()
       watchedSurfaces.clear()
       for (const [input, layer] of layers) release(input, layer)

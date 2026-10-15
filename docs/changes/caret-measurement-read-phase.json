@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 20,
+  "external": false,
+  "zh": "输入光标的测量移到帧的读阶段，探针读数按内容、光标位置、End 倾向、复制样式与字体代次缓存，输入框自身的盒子每次测量只读一次；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件的盒模型读取由 470 至 680 毫秒降到 297 至 402 毫秒。",
+  "en": "The composer caret's measurement runs in the frame's read phase, and what its probe yields is remembered per content, caret offset, End leaning, copied styles and face generation, so the input's own box is read once per measurement; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings fall from 470–680 ms to 297–402 ms."
+}

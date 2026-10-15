@@ -185,6 +185,14 @@ export function createProcessSummary() {
   /** Cancels the frame the pending groups wait on. */
   let cancelFrame: (() => void) | null = null
 
+  /**
+   * What the hidden span measured for a wording, under the face it was
+   * measured in. The span is out of flow and nowrap, so its width answers the
+   * words alone: the same sentence measures the same width in every header,
+   * and asking again would write the span's text and lay it out again (D9).
+   */
+  const fitWidths = new Map<string, number>()
+
   /** One figure's count, rolled from the one it showed. */
   function setCount(roll: HTMLElement, count: number) {
     const text = String(count)
@@ -251,14 +259,30 @@ export function createProcessSummary() {
   }
 
   /**
+   * The hidden span's width for this sentence.
+   *
+   * The span is the only thing that can answer it, and writing it costs a
+   * layout of its own: what it says for a wording under one face is kept, so a
+   * repeated sentence — the same counts across turns — reads nothing at all.
+   */
+  function fitWidthOf(fit: HTMLElement, sentence: string): number {
+    const style = getComputedStyle(fit)
+    const key = `${sentence}\u0000${style.fontSize}\u0000${style.fontFamily}\u0000${style.fontWeight}\u0000${style.letterSpacing}`
+    const known = fitWidths.get(key)
+    if (known !== undefined) return known
+    if (fit.textContent !== sentence) fit.textContent = sentence
+    const width = fit.getBoundingClientRect().width
+    fitWidths.set(key, width)
+    return width
+  }
+
+  /**
    * The wording this header has room for. The hidden span holds the sentence,
    * which is what the header shows while there is room for it; a header inside
    * a folded turn measures nothing and keeps the sentence until it is opened.
    */
   function formOf(header: HTMLElement, summary: HTMLElement, sentence: string): SummaryForm {
-    const fit = fitOf(summary)
-    if (fit.textContent !== sentence) fit.textContent = sentence
-    return summaryForm(fit.getBoundingClientRect().width, availableWidth(header, summary))
+    return summaryForm(fitWidthOf(fitOf(summary), sentence), availableWidth(header, summary))
   }
 
   /** What the group holds, or null for a group with nothing counted. */
@@ -419,6 +443,13 @@ export function createProcessSummary() {
   })
   for (const group of document.querySelectorAll(PROCESS_GROUP_SELECTOR)) queue(group)
 
+  // A face arriving changes what a wording measures: nothing measured under the
+  // faces of the first frame stands past them.
+  const onFacesLoaded = () => {
+    fitWidths.clear()
+  }
+  document.fonts.addEventListener('loadingdone', onFacesLoaded)
+
   return {
     /** The shell language changed: every summary is written again in it. */
     rewrite() {
@@ -434,6 +465,8 @@ export function createProcessSummary() {
       queued = false
       pending.clear()
       stopMutations()
+      document.fonts.removeEventListener('loadingdone', onFacesLoaded)
+      fitWidths.clear()
       for (const [digit, timer] of leaving) {
         window.clearTimeout(timer)
         digit.remove()
