@@ -282,14 +282,14 @@ export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF]
  * value outside that set runs the feature's teardown, which hands its surface
  * back to the host.
  *
- * `statsPosition` and `banLocale` are the choices among them; `chatAnimations`
- * is the switch covering the ported chat-area effects — the follow, the
- * automatic folding with its rolling door, the file change rows, the send
- * flight, the counted process headers and the waiting line — and belongs here
- * rather than among the live-read preferences because two of those cannot be
- * stopped by reading a preference: the file change rows take the host's two
- * seat keys over (D32), and a seat registration only comes back when the
- * feature is torn down whole. `statsPosition` answers where the session's
+ * `statsPosition` and `banLocale` are the choices among them; the waiting line
+ * and the sent message's entrance each carry a switch of their own beside
+ * `chatAnimations`, which is what is left of the chat-area set — the follow, the
+ * automatic folding with its rolling door and the file change rows. Those three
+ * belong here rather than among the live-read preferences because two of them
+ * cannot be stopped by reading a preference: the file change rows take the
+ * host's two seat keys over (D32), and a seat registration only comes back when
+ * the feature is torn down whole. `statsPosition` answers where the session's
  * numbers show: one value writes them on a line of their own under the card,
  * the other fills the context popover with them and leaves that line to the
  * host's meter. `banLocale` names the easter egg's language, and `off` takes
@@ -308,6 +308,8 @@ export const FEATURE_PREF_DEFAULTS = {
   viewTabs: true,
   headerBand: true,
   chatAnimations: true,
+  chatWait: true,
+  chatSend: true,
   chatReveal: CHAT_REVEAL_OFF,
   peakrate: true,
 }
