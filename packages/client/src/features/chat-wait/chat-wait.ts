@@ -160,6 +160,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     const standing = lines.get(row)
     if (standing !== undefined && standing.line.isConnected) return standing
+    // The host rebuilds its running row between passes, so the map can miss a
+    // line this skin put up for the same words: whatever already stands beside
+    // them goes before the new one, or every pass would leave another line —
+    // and another loader — in the row.
+    for (const stray of Array.from(words.parentElement?.querySelectorAll(':scope > .dsh-claude-chat-wait') ?? [])) stray.remove()
     const line = buildElement('span', 'dsh-claude-chat-wait')
     line.setAttribute(QUIET_ATTR, '')
     // The host's own words are hidden while this line stands in for them
