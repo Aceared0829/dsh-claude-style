@@ -14,7 +14,7 @@ export default {
     tab: 'motion',
     rank: 10,
     title: { key: 'chatAnimationsTitle', fallback: 'Chat-area scrolling animation' },
-    desc: { key: 'chatAnimationsDesc', fallback: 'Following the end of the conversation, folding rows and groups open and shut, and the file operation rows. Off hands those back to the host.' },
+    desc: { key: 'chatAnimationsDesc', fallback: 'Scrolls the assistant\'s messages into view and makes them easier to read' },
   },
   cases: ['chat-follow'],
   description: {
