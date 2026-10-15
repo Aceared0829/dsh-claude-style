@@ -88,7 +88,7 @@ body[data-dsh-claude-style] [class*="viewArea"] {
    should only show on the chat tab — drop the whole bottom area otherwise.
    Hiding the seat also zeroes the host's --dsh-composer-height, so the
    trajectory ledger's bottom clearance collapses with it. */
-body[data-dsh-claude-style][data-dsh-claude-composer-hidden] [data-composer-seat] {
+body[data-dsh-claude-style] [data-dsh-claude-composer-hidden] [data-composer-seat] {
   display: none !important;
 }
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"]:not([data-has-attachments="true"]) [class*="_rail"],
@@ -340,8 +340,8 @@ body[data-dsh-claude-style] [class*="_composerStack"]:not([data-composer-variant
    out through its top edge. The skin's own `bottom` is what holds the button on
    the input line, so the leftover transform goes while that layer owns the
    page. */
-body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] button[data-dsh-claude-control="send"],
-body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] button[data-dsh-claude-control="stop"] {
+body[data-dsh-claude-style] [data-composer-card][data-dsh-claude-mobile-portrait] button[data-dsh-claude-control="send"],
+body[data-dsh-claude-style] [data-composer-card][data-dsh-claude-mobile-portrait] button[data-dsh-claude-control="stop"] {
   transform: none;
 }
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] button[data-dsh-claude-control="send"],

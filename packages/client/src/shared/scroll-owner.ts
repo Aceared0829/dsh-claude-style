@@ -37,10 +37,11 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  *   - while the reader's animation choice means "no animation", an ease is
  *     its destination written at once.
  * The reader's own wheel is the browser's: this module only records that he
- * moved (noteIntent), so the following sources stand down. The container he
- * holds carries READER_HOLD_ATTR while he does, and the live status line's pin
- * hangs on that mark: it stands only while the follow is the one moving the
- * position, never over content the reader scrolled back to.
+ * moved (noteIntent), so the following sources stand down. The conversation
+ * scroller above the container he holds carries READER_HOLD_ATTR while he
+ * does, and the live status line's pin hangs on that mark: it stands only
+ * while the follow is the one moving the position, never over content the
+ * reader scrolled back to.
  *
  * The host's side of the follow is handed over here too: the pin a frame of
  * streaming writes is taken back (takeBackHostPin), the host's follow is lit
@@ -113,8 +114,8 @@ const easeSources = new WeakMap<Element, ScrollSource>()
 const held = new Set<Element>()
 /** The held containers the reader has since moved toward the end of: his own way back to it. */
 const heldTowardEnd = new WeakSet<Element>()
-/** How many containers the reader holds; the page's root carries the mark while any is held. */
-let heldCount = 0
+/** The conversation scrollers carrying the hold mark, so leaving the owner can take every one off again. */
+const markedScrollers = new Set<Element>()
 /** When the reader last made a moving intent, for movedSince. */
 let lastMovingIntentAt = 0
 /** Until this moment the stream glide stands down: the reader's own message just arrived. */
@@ -130,27 +131,46 @@ let members = 0
 let stopSubmissionWatch: (() => void) | null = null
 
 /**
+ * Publish the hold on the container's conversation scroller: the waiting
+ * line's pin hangs on that mark (chat-wait.css), and the line lives under the
+ * scroller, so a flip there invalidates the conversation's subtree rather
+ * than the document (D9). Every container the chat page can hold sits under
+ * that scroller — a capped process body included. A held container with no
+ * conversation scroller above it (the settings page's own) marks nothing: no
+ * line this pin governs is on that page.
+ */
+function syncHoldMark(container: Element) {
+  const scroller = container.closest(CONVERSATION_SCROLL_SELECTOR)
+  if (scroller === null) return
+  let anyHeld = false
+  for (const candidate of held) {
+    if (candidate === scroller || scroller.contains(candidate)) {
+      anyHeld = true
+      break
+    }
+  }
+  if (anyHeld) {
+    scroller.setAttribute(READER_HOLD_ATTR, '')
+    markedScrollers.add(scroller)
+    return
+  }
+  scroller.removeAttribute(READER_HOLD_ATTR)
+  markedScrollers.delete(scroller)
+}
+
+/**
  * Put a container's hold down or take it up, with the mark the page can read:
  * the waiting line's pin hangs on it (chat-wait.css). Every change of
  * `held` goes through here, so the two cannot say different things.
  */
 function setHeld(container: Element, holding: boolean) {
   if (holding === held.has(container)) return
-  if (holding) {
-    held.add(container)
-    heldCount += 1
-    container.setAttribute(READER_HOLD_ATTR, '')
-    // The stylesheet that stands the status line's pin down reads the mark on the
-    // page's own root: the container is not an ancestor of the line, and a reader
-    // holding anything on the page is enough for it to stand down.
-    document.body.setAttribute(READER_HOLD_ATTR, '')
-    return
+  if (holding) held.add(container)
+  else {
+    held.delete(container)
+    heldTowardEnd.delete(container)
   }
-  held.delete(container)
-  heldCount -= 1
-  heldTowardEnd.delete(container)
-  container.removeAttribute(READER_HOLD_ATTR)
-  if (heldCount <= 0) document.body.removeAttribute(READER_HOLD_ATTR)
+  syncHoldMark(container)
 }
 
 /** The ease running on a container now, and the source it serves. */
@@ -344,13 +364,10 @@ export function joinScrollOwner() {
     window.removeEventListener('scroll', noteScroll, true)
     if (stopSubmissionWatch !== null) stopSubmissionWatch()
     stopSubmissionWatch = null
-    for (const container of held) {
-      container.removeAttribute(READER_HOLD_ATTR)
-      heldTowardEnd.delete(container)
-    }
+    for (const scroller of markedScrollers) scroller.removeAttribute(READER_HOLD_ATTR)
+    markedScrollers.clear()
+    for (const container of held) heldTowardEnd.delete(container)
     held.clear()
-    heldCount = 0
-    document.body.removeAttribute(READER_HOLD_ATTR)
     releaseFollowButton()
     seen = null
   }

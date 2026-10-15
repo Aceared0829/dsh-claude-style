@@ -135,7 +135,7 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [class*="_
    (the row is one line, features/composer/inline.css) and the meter's room above
    covers the second, so the padding only took the width the model name and the
    tier trigger needed. */
-body[data-dsh-claude-style][data-dsh-claude-mobile-portrait] [data-composer-card] [class*="_row"] > [class*="_trailing"] {
+body[data-dsh-claude-style] [data-composer-card][data-dsh-claude-mobile-portrait] [class*="_row"] > [class*="_trailing"] {
   padding-left: 0;
   padding-right: 0;
 }

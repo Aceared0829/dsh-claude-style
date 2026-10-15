@@ -1,18 +1,18 @@
 /* ---------- home layout: the studio (dashboard) form and its usage panel ---------- */
 /* The hero's own markup is the host's either way; this file only rearranges it and
    draws the panel the dock slot carries. Both are keyed on the attributes
-   packages/client/src/features/home/home-layout.ts writes — the layout, and `data-dsh-claude-home-hero`
-   while the studio layout owns the new-conversation page — so the classic
-   layout is untouched.
+   packages/client/src/features/home/home-layout.ts writes — the layout on <body>, and
+   `data-dsh-claude-home-hero` on the hero root while the studio layout owns the
+   new-conversation page — so the classic layout is untouched.
    The two tab bodies live in home-overview.css and home-models.css. */
 
 /* The scroll body centres the hero stack; the studio form starts at the top and
    lets the seat take the rest of the column, so the card lands on the bottom edge. */
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_scrollBody"] {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_scrollBody"] {
   justify-content: flex-start;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_composerSeat"] {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_composerSeat"] {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -22,7 +22,7 @@ body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_composerSeat"] 
    and fills the seat, so the context row and the card rest on the bottom edge.
    The composer keeps the 720px column, while the greeting and the dashboard
    card read as a 480px block against its left edge. */
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_composerStack"][class*="_composerHero"] {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_composerStack"][class*="_composerHero"] {
   /* The conversation form's own rule pins this stack to its content height; the
      studio column has to fill the seat for the card to reach the bottom edge.
      Naming the stack by both its classes matches that gated rule's weight, and
@@ -82,7 +82,7 @@ body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [class*="_comp
 /* The context row's triggers wear Claude's chip: a hairline box on the canvas
    rather than a bare label. The target list is the composer card's own for these
    triggers, so the chip carries the same weight and, coming later, wins. */
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_heroWorkspaceRow"] :is(button, [role="button"]) {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_heroWorkspaceRow"] :is(button, [role="button"]) {
   box-sizing: border-box;
   height: 28px;
   padding: 0 10px;
@@ -91,7 +91,7 @@ body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_heroWorkspaceRo
   background: transparent;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_heroWorkspaceRow"] :is(button, [role="button"]):hover:not(:disabled) {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_heroWorkspaceRow"] :is(button, [role="button"]):hover:not(:disabled) {
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 5%, transparent);
 }
 
@@ -102,11 +102,11 @@ body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [class*="_comp
 /* Claude Code's home greeting is a 20px sans line with a small brand mark.
    The serif display rule (theme/typography.css) reaches the headline AND the
    titleGroup inside it — the class name contains "title" — so both elements
-   have to leave it behind, and the two extra body attributes plus the root
+   have to leave it behind, and the extra attribute on the root plus the root
    qualifier carry past the hero's own 44.2px size as well. */
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_headline"],
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_headline"] [class*="titleGroup"],
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_headline"] [class*="titleGroup"] > span {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_headline"],
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_headline"] [class*="titleGroup"],
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_headline"] [class*="titleGroup"] > span {
   justify-content: flex-start;
   font-family: var(--dsw-font-family);
   font-size: 20px;
@@ -115,13 +115,13 @@ body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_headline"] [cla
   color: var(--dsw-alias-label-primary, #141413);
 }
 
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="_headline"] {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="_headline"] {
   gap: 8px;
 }
 
 /* The mark shrinks with the line: Claude's home asterisk stands a hair taller
    than the greeting's own cap height, not twice it. */
-body[data-dsh-claude-style][data-dsh-claude-home-hero] [class*="fishHitbox"]::before {
+body[data-dsh-claude-style] [data-dsh-claude-home-hero] [class*="fishHitbox"]::before {
   width: 21px;
   height: 21px;
 }

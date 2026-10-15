@@ -17,6 +17,8 @@ export interface ComposerHandle extends FeatureHandle {
   isHero(): boolean
   heroCard(): HTMLElement | null
   isActive(): boolean
+  isStudioHome(): boolean
+  isChatHidden(): boolean
 }
 
 /**
@@ -209,27 +211,42 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The band-carrying spacer the dock's line is lifted by. */
   const MOBILE_STATS_ATTR = 'data-dsh-claude-mobile-stats'
   let mobileStatsLift = ''
-  /** The room the meter takes at the toolbar row's right end, as the row carries it. */
+  /** The dock carrying MOBILE_STATS_LIFT right now, or null. */
+  let liftHost: HTMLElement | null = null
+  /** The room the meter takes at the toolbar row's right end, as the card's parent carries it. */
   let meterRoom = ''
+  /** The element carrying --dsh-claude-meter-room right now, or null. */
+  let roomHost: HTMLElement | null = null
   /** The meter node the room was measured from, and the reading and scope it had then. */
   let meterNode: HTMLElement | null = null
   let meterReading = ''
   let meterMeasuredActive = false
   let meterWidth = 0
-  /** The toolbar row's own box as <body> carries it (`"offset height"`), and the box it was read from. */
+  /** The toolbar row's own box as the card's parent carries it (`"offset height"`), and the box it was read from. */
   let meterRow = ''
   let meterRowBox: Element | null = null
   let meterRowStack: Element | null = null
+  /** The element carrying METER_ROW_OFFSET / METER_ROW_HEIGHT right now, or null. */
+  let meterRowHost: HTMLElement | null = null
   let stopMeterRow: (() => void) | null = null
+  /** The conversation root carrying COMPOSER_HIDDEN_ATTR right now, or null. */
+  let hiddenRoot: Element | null = null
+  /** Whether the composer is restyled but the chat tab is not up, as of the last pass. */
+  let chatHidden = false
+  /** The cards carrying MOBILE_PORTRAIT_ATTR right now. */
+  const portraitCards = new Set<HTMLElement>()
 
   /**
-   * Copy the toolbar row's own box onto <body> for the window overlay: the row's
-   * height, and how far its bottom stands above the box the dock is placed in
-   * (that box is the composer stack, which the stylesheet makes the containing
-   * block — inline-bar.css). Both belong to the host, and a host whose card
-   * leaves a different gap under the row, or a taller row, puts the meter off
-   * that row's line: the overlay reads these two numbers instead of assuming the
-   * 28px and the 4px this host leaves.
+   * Copy the toolbar row's own box onto the card's parent for the window
+   * overlay: the row's height, and how far its bottom stands above the box
+   * the dock is placed in (that box is the composer stack, which the
+   * stylesheet makes the containing block — inline-bar.css). Both belong to
+   * the host, and a host whose card leaves a different gap under the row, or
+   * a taller row, puts the meter off that row's line: the overlay reads these
+   * two numbers instead of assuming the 28px and the 4px this host leaves.
+   * The parent carries them because every reader — the card's trailing
+   * cluster and the dock beside it — sits under it, so a write invalidates
+   * the composer's subtree rather than the document (D9).
    *
    * The reading is taken when the row or the stack changes size, never on every
    * pass: the same caching the room below keeps, and for the same reason.
@@ -252,8 +269,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         stopMeterRow()
         stopMeterRow = null
       }
-      document.body.style.removeProperty(METER_ROW_OFFSET)
-      document.body.style.removeProperty(METER_ROW_HEIGHT)
+      meterRowHost?.style.removeProperty(METER_ROW_OFFSET)
+      meterRowHost?.style.removeProperty(METER_ROW_HEIGHT)
+      meterRowHost = null
       return
     }
     if (meterRowBox !== row || meterRowStack !== stack) {
@@ -274,8 +292,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const round = (value: number) => Math.round(value * 100) / 100
     meterRow = `${round(stackBox.bottom - rowBox.bottom)} ${round(rowBox.height)}`
     const [offset, height] = meterRow.split(' ')
-    document.body.style.setProperty(METER_ROW_OFFSET, `${offset}px`)
-    document.body.style.setProperty(METER_ROW_HEIGHT, `${height}px`)
+    // The row was found inside the card, so the card is defined, connected and parented.
+    const host = card!.parentElement!
+    if (meterRowHost !== null && meterRowHost !== host) {
+      meterRowHost.style.removeProperty(METER_ROW_OFFSET)
+      meterRowHost.style.removeProperty(METER_ROW_HEIGHT)
+    }
+    host.style.setProperty(METER_ROW_OFFSET, `${offset}px`)
+    host.style.setProperty(METER_ROW_HEIGHT, `${height}px`)
+    meterRowHost = host
   }
 
   /**
@@ -311,27 +336,30 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const sharesBand = stripBox.height > 0 && stripBox.top < dockBox.bottom && stripBox.bottom > dockBox.top
     const lift = sharesBand ? Math.round(stripBox.height * 100) / 100 : 0
     const next = lift <= 0 ? '' : `${lift}px`
-    if (next === mobileStatsLift) return
-    mobileStatsLift = next
+    if (next === mobileStatsLift && dock === liftHost) return
     if (next === '') {
       releaseMobileStats()
       return
     }
+    mobileStatsLift = next
     const host = dock as HTMLElement
     const spacer = dock.querySelector<HTMLElement>(`[${MOBILE_STATS_ATTR}]`) ?? document.createElement('div')
     if (spacer.parentElement !== host || spacer.previousElementSibling !== null) host.insertBefore(spacer, host.firstChild)
     spacer.setAttribute(MOBILE_STATS_ATTR, '')
     spacer.style.height = next
-    document.body.style.setProperty(MOBILE_STATS_LIFT, next)
+    if (liftHost !== null && liftHost !== host) liftHost.style.removeProperty(MOBILE_STATS_LIFT)
+    host.style.setProperty(MOBILE_STATS_LIFT, next)
+    liftHost = host
     // The dock's own line moved, and its box is where the row's height was read.
     meterRow = ''
   }
 
   /** Take the lift and its spacer back: the strip is gone, or the line left the dock. */
   function releaseMobileStats() {
-    if (mobileStatsLift === '') return
+    if (mobileStatsLift === '' && liftHost === null) return
     mobileStatsLift = ''
-    document.body.style.removeProperty(MOBILE_STATS_LIFT)
+    liftHost?.style.removeProperty(MOBILE_STATS_LIFT)
+    liftHost = null
     for (const spacer of document.querySelectorAll(`[${MOBILE_STATS_ATTR}]`)) spacer.remove()
   }
 
@@ -405,17 +433,27 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     meterNode = meter
     stampMeterRow(card, meter)
-    const written = document.body.style.getPropertyValue('--dsh-claude-meter-room')
+    // The room rides the card's parent: the trailing cluster and the dock
+    // that read it are both its children, so a write invalidates the
+    // composer's subtree rather than the document (D9).
+    const host = card === undefined ? null : card.parentElement
+    if (roomHost !== null && roomHost !== host) {
+      roomHost.style.removeProperty('--dsh-claude-meter-room')
+      roomHost = null
+    }
+    const written = host === null ? '' : host.style.getPropertyValue('--dsh-claude-meter-room')
     if (room === written) {
       meterRoom = room
+      roomHost = room === '' ? null : host
       return
     }
     meterRoom = room
-    if (room === '') document.body.style.removeProperty('--dsh-claude-meter-room')
-    else document.body.style.setProperty('--dsh-claude-meter-room', room)
+    roomHost = host
+    if (room === '') host?.style.removeProperty('--dsh-claude-meter-room')
+    else host!.style.setProperty('--dsh-claude-meter-room', room)
     // The room moves the trailing cluster, and the effort trigger is pinned to
     // the model trigger's box in a pass of its own (features/effort). Ask for
-    // that pass here: this write is a body style, which the scheduler's
+    // that pass here: this write is an inline style, which the scheduler's
     // observer does not watch, and a streaming (content-only) pass skips the
     // pinning feature, so the pin would otherwise trail the controls it sits
     // between until some later page-wide pass.
@@ -425,8 +463,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * The composer is chat-view-only. The host mounts the seat inside the
    * conversation root on every tab (轨迹 / 上下文 even reserve room for
-   * it), so the skin reflects the active view on <body> and CSS drops the
-   * whole bottom area unless the chat tab is selected.
+   * it), so the skin reflects the active view on that root and CSS drops the
+   * whole bottom area unless the chat tab is selected. The mark rides the
+   * root rather than <body>, so a tab switch invalidates the conversation's
+   * subtree alone (D9).
    *
    * Scope: the conversation tablist lives in the panel header, which is
    * the root's first child — any other tablist (the trajectory detail
@@ -440,18 +480,28 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const list = root === null ? null : root.querySelector('[role="tablist"]')
     const first = list === null ? null : list.querySelector('[role="tab"]')
     const chatActive = first === null || first.getAttribute('aria-selected') === 'true'
-    document.body.toggleAttribute(COMPOSER_HIDDEN_ATTR, active && !chatActive)
+    chatHidden = active && !chatActive
+    if (root !== hiddenRoot) {
+      hiddenRoot?.removeAttribute(COMPOSER_HIDDEN_ATTR)
+      hiddenRoot = root
+    }
+    hiddenRoot?.toggleAttribute(COMPOSER_HIDDEN_ATTR, chatHidden)
   }
 
   /**
    * The portrait layer a mobile remote plugin applies to the desktop GUI (D44):
    * it floats the composer's controls with transforms of its own, so the
    * stylesheet scopes the skin's own placement of the send and stop buttons by
-   * this mark. Read every pass — the layer installs and reverts with the
-   * viewport.
+   * this mark, carried on the cards themselves. Read every pass — the layer
+   * installs and reverts with the viewport.
    */
-  function syncMobilePortrait() {
-    document.body.toggleAttribute(MOBILE_PORTRAIT_ATTR, active && document.body.matches(MOBILE_PORTRAIT_SELECTOR))
+  function syncMobilePortrait(found: readonly HTMLElement[]) {
+    const portrait = active && document.body.matches(MOBILE_PORTRAIT_SELECTOR)
+    const next = new Set(portrait ? found : [])
+    for (const card of portraitCards) if (!next.has(card)) card.removeAttribute(MOBILE_PORTRAIT_ATTR)
+    for (const card of next) card.toggleAttribute(MOBILE_PORTRAIT_ATTR, true)
+    portraitCards.clear()
+    for (const card of next) portraitCards.add(card)
   }
 
   function syncComposer() {
@@ -460,7 +510,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     heroCard = hero && found.length > 0 ? found[0] : null
     syncVariant(found)
     document.body.toggleAttribute(COMPOSER_ATTR, active)
-    syncMobilePortrait()
+    syncMobilePortrait(found)
     syncAttachments(found)
     // Before the draft mark: the hint the skin adds is part of what "empty"
     // means to the stylesheet's `card:has(placeholder)` rules.
@@ -507,6 +557,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     heroCard() { return heroCard },
     /** Whether the composer restyle applies to the page shown, as of this pass. */
     isActive() { return active },
+    /** Whether the studio home layout owns the hero page, as of this pass. */
+    isStudioHome() { return studioHome },
+    /** Whether the composer is restyled but the chat tab is not up, as of this pass. */
+    isChatHidden() { return chatHidden },
     /** A copy source changed, the composer-scope preference among them: read again now. */
     onCopyChange: readState,
     /** A composer input or composition event: the hint's synthetic placeholder may have changed. */
@@ -527,16 +581,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     cards.release()
     placeholders.release()
     document.body.removeAttribute(COMPOSER_ATTR)
-    document.body.removeAttribute(COMPOSER_HIDDEN_ATTR)
-    document.body.removeAttribute(MOBILE_PORTRAIT_ATTR)
+    hiddenRoot?.removeAttribute(COMPOSER_HIDDEN_ATTR)
+    hiddenRoot = null
+    chatHidden = false
+    for (const card of portraitCards) card.removeAttribute(MOBILE_PORTRAIT_ATTR)
+    portraitCards.clear()
     const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR, 'data-dsh-claude-context-meter']
     for (const mark of marks) {
       for (const marked of document.querySelectorAll(`[${mark}]`)) marked.removeAttribute(mark)
     }
-    if (meterRoom !== '') {
-      meterRoom = ''
-      document.body.style.removeProperty('--dsh-claude-meter-room')
-    }
+    meterRoom = ''
+    roomHost?.style.removeProperty('--dsh-claude-meter-room')
+    roomHost = null
     if (stopMeterRow !== null) {
       stopMeterRow()
       stopMeterRow = null
@@ -544,8 +600,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     meterRow = ''
     meterRowBox = null
     meterRowStack = null
-    document.body.style.removeProperty(METER_ROW_OFFSET)
-    document.body.style.removeProperty(METER_ROW_HEIGHT)
+    meterRowHost?.style.removeProperty(METER_ROW_OFFSET)
+    meterRowHost?.style.removeProperty(METER_ROW_HEIGHT)
+    meterRowHost = null
     releaseMobileStats()
     meterNode = null
     meterReading = ''

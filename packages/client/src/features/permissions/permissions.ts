@@ -1,5 +1,5 @@
 import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { AUTO_POPOVER_ALL, HOME_HERO_ATTR, PERMISSIONS_ATTR } from '../../constants'
+import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
 import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
 import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
 import { activeLocale, copyLabel } from '../../core/i18n'
@@ -598,9 +598,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const preset = coldStart ? defaultPreset : session === null ? null : currentPreset(session)
     // The segment group is the classic hero's own shape. The studio hero draws
     // its composer in the conversation's single-line form, where this control is
-    // the conversation's trigger and card; the home layout marks that page on
-    // the document (packages/client/src/features/home/home-layout.ts).
-    const segmentsHere = isHero && !document.body.hasAttribute(HOME_HERO_ATTR)
+    // the conversation's trigger and card; the composer pass reads the home
+    // layout's answer (packages/client/src/features/composer/composer.ts).
+    const segmentsHere = isHero && !ui.composer!.isStudioHome()
 
     if (segmentsHere) {
       for (let i = 0; i < existingPermContainers.length; i++) {

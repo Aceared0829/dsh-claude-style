@@ -8,6 +8,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
+- 会话切换更顺滑：皮肤在使用中会反复翻转的页面标记（首页形态、页头提升、页签栏置顶、竖屏适配、阅读暂停、输入区随页签隐藏，以及上下文圆盘的尺寸读数）从 `<body>` 下移到最近的公共祖先元素上。此前这些属性上悬挂着一千二百余条选择器，每写一次整个文档都要重新参与样式匹配；实测改版后，会话之间、会话与首页之间的切换对 `<body>` 的属性与内联样式写入降为零，样式失效范围收敛到对应子树。
 - `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
 - `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
 - `npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。
@@ -28,6 +29,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="en-unreleased">Improvements</h3>
 
+- Smoother conversation switches: the page marks the skin flips during normal use (the home layout's hero mark, the header band lift, the titlebar tabs, the mobile portrait adaptation, the reader's scroll hold, the composer hiding with the conversation tab, and the context meter's measured numbers) moved from `<body>` to the nearest element that ancestors every styled target. Over twelve hundred selectors used to hang off those body attributes, so every write re-matched the whole document; measured on this build, a switch between conversations or between a conversation and the home page now writes zero attributes and zero inline styles on `<body>`, and style invalidation stays inside the subtree that changed.
 - A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
 - `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
 - `npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud.

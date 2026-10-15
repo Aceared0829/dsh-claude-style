@@ -23,7 +23,7 @@ import type manifest from './home-layout.manifest'
  * body. `studio` is the dashboard form — the greeting moves to the top left,
  * the composer hugs the window's bottom edge, and the space between them
  * carries a usage panel. The two differ only in arrangement, so the switch
- * is one body attribute the stylesheet branches on; the host keeps owning the
+ * is one attribute the stylesheet branches on; the host keeps owning the
  * hero's markup either way.
  *
  * The panel's own seat is `conversation.input.dock`, the host's list slot
@@ -53,10 +53,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const HOME_REVEALING_ATTR = 'data-dsh-claude-revealing'
   /** The hero composer's stack, kept while it stays the first match (D40). */
   const heroStack = cacheFirstMatch<HTMLElement>(`${COMPOSER_STACK}[class*="_composerHero"]`)
+  /**
+   * The hero page's root, kept while it stays the first match. The element
+   * test is qualified by `_root` because the draft editor and the connection
+   * indicator carry a `data-phase` of their own.
+   */
+  const heroRoot = cacheFirstMatch<HTMLElement>(`[class*="_root"][${PHASE_ATTRIBUTE}="hero"]`)
 
   let layout = PREF_DEFAULTS.homeLayout
   /** Whether the last pass saw the new-conversation hero, as of that reading. */
   let lastHero = false
+  /** The hero root carrying HOME_HERO_ATTR right now, or null. */
+  let markedRoot: HTMLElement | null = null
   /**
    * The yardstick book's draw. It is held here, not in the panel: the dock
    * seat keeps the panel mounted inside a conversation too, and the draw is
@@ -78,35 +86,35 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    *
    * The dock seat renders in both phases — the host puts it above the
    * composer inside a conversation too — so the layout alone is not enough:
-   * the panel belongs to the home page, and only the hero phase is home. The
-   * conversation root carries the phase (`data-phase="hero"`); the same
-   * marker the composer feature reads, and the element test is qualified by
-   * `_root` because the draft editor and the connection indicator carry a
-   * `data-phase` of their own.
+   * the panel belongs to the home page, and only the hero phase is home.
    */
   function heroPhase() {
-    return document.querySelector(`[class*="_root"][${PHASE_ATTRIBUTE}="hero"]`) !== null
+    return heroRoot() !== null
   }
 
   /**
-   * Mark the document while the studio layout owns the page shown: the
+   * Mark the hero root while the studio layout owns the page shown: the
    * studio rules key on this one attribute instead of each re-reading the
-   * host's phase marker.
+   * host's phase marker. The mark rides the root itself, so the flip on a
+   * home switch invalidates the hero page's subtree rather than the document
+   * (D9).
    */
-  function writeHeroAttr(hero: boolean) {
-    const studioHero = layout === HOME_LAYOUT_STUDIO && hero
-    if (studioHero === document.body.hasAttribute(HOME_HERO_ATTR)) return
-    if (studioHero) document.body.setAttribute(HOME_HERO_ATTR, '')
-    else document.body.removeAttribute(HOME_HERO_ATTR)
+  function syncRootMark() {
+    const root = heroRoot()
+    if (root !== markedRoot) {
+      markedRoot?.removeAttribute(HOME_HERO_ATTR)
+      markedRoot = root
+    }
+    markedRoot?.toggleAttribute(HOME_HERO_ATTR, layout === HOME_LAYOUT_STUDIO)
   }
 
   /** Write the layout onto the document and start loading when it needs data. */
   function setLayout(next: string) {
     layout = next
-    lastHero = heroPhase()
     if (next === HOME_LAYOUT_STUDIO) document.body.setAttribute(HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO)
     else document.body.removeAttribute(HOME_LAYOUT_ATTR)
-    writeHeroAttr(lastHero)
+    syncRootMark()
+    lastHero = heroPhase()
     if (next === HOME_LAYOUT_STUDIO) usage.load(false)
     usage.notify()
   }
@@ -240,7 +248,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * is re-mounted on the new stack.
    */
   function syncColdSeat() {
-    const stack = document.body.hasAttribute(HOME_HERO_ATTR) ? heroStack() : null
+    const stack = markedRoot !== null && markedRoot.hasAttribute(HOME_HERO_ATTR) ? heroStack() : null
     if (stack === null || stack.querySelector(`:scope > [data-slot="${DOCK_SLOT}"]`) !== null) {
       unmountColdSeat()
       return
@@ -266,9 +274,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The hero/active phase flips without any preference change (opening a
     // session, or the new-session row), and the panel's visibility follows
     // it — so the flip has to reach the component, and the stylesheet's
-    // studio rules follow it through the document mark.
+    // studio rules follow it through the root's mark.
+    syncRootMark()
     const hero = heroPhase()
-    writeHeroAttr(hero)
     if (hero !== lastHero) {
       lastHero = hero
       if (hero) bookPick = Math.random()
@@ -291,7 +299,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     unmountColdSeat()
     usage.stop()
     document.body.removeAttribute(HOME_LAYOUT_ATTR)
-    document.body.removeAttribute(HOME_HERO_ATTR)
+    markedRoot?.removeAttribute(HOME_HERO_ATTR)
+    markedRoot = null
     if (slotsFiber !== null) {
       if (typeof slotsFiber.dispose === 'function') slotsFiber.dispose()
       slotsFiber = null

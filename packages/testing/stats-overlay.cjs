@@ -27,7 +27,8 @@ const readOverlay = (page) => page.evaluate(() => {
     const b = el.getBoundingClientRect()
     return { left: Math.round(b.left * 100) / 100, right: Math.round(b.right * 100) / 100, top: Math.round(b.top * 100) / 100, bottom: Math.round(b.bottom * 100) / 100, height: Math.round(b.height * 100) / 100 }
   }
-  const style = getComputedStyle(document.body)
+  // The row's box rides the card's parent, the ancestor both readers share.
+  const style = getComputedStyle(card?.parentElement ?? document.body)
   const clusterBox = box(cluster)
   const pillBox = box(trigger)
   return {

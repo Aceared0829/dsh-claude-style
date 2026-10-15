@@ -43,9 +43,9 @@ import type manifest from './header-band.manifest'
  * macOS is left alone: its shell pads no content and the header already draws
  * its first line inside the traffic-light strip, so there is nothing to lift.
  *
- * The marks: `data-dsh-header-band` on <body> carries which parts left the row
- * (`title`, `actions`, or both) and header-band.css keys every rule on it; the
- * three element stamps keep the stylesheet free of host class names.
+ * The marks: `data-dsh-header-band` on the header carries which parts left the
+ * row (`title`, `actions`, or both) and header-band.css keys every rule on it;
+ * the three element stamps keep the stylesheet free of host class names.
  *
  * @param ctx - client context.
  * @param ui - shared handle table.
@@ -112,6 +112,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Every candidate title row, kept current by the bus (D40), and the one this pass took. */
   const titleRows = observeMatches<HTMLElement>(HEADER_TITLE_ROW_SELECTOR)
   let keptRow: HTMLElement | null = null
+  /** The header carrying BAND_ATTR right now, or null. */
+  let bandHost: Element | null = null
 
   /**
    * The header's title row: the one carrying a title or the utilities. The
@@ -162,7 +164,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     actionsStamp.release()
     cornerStamp.release()
     tabsStamp.release()
-    document.body.removeAttribute(BAND_ATTR)
+    bandHost?.removeAttribute(BAND_ATTR)
+    bandHost = null
   }
 
   /**
@@ -340,9 +343,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     tabsStamp.mark(stripInBand ? stripEl : null)
 
+    // The tokens ride the header itself: they change on every page the row
+    // appears on or leaves, and a body write would invalidate the whole
+    // document each time (D9). Every stamped piece sits under the header.
     const tokens = `${liftTitle ? TITLE_TOKEN : ''} ${liftActions ? ACTIONS_TOKEN : ''}`.trim()
-    if (tokens === '') document.body.removeAttribute(BAND_ATTR)
-    else setAttributeIfChanged(document.body, BAND_ATTR, tokens)
+    const header = current.header
+    if (tokens === '' || header === null) {
+      bandHost?.removeAttribute(BAND_ATTR)
+      bandHost = null
+    } else {
+      if (bandHost !== null && bandHost !== header) bandHost.removeAttribute(BAND_ATTR)
+      bandHost = header
+      setAttributeIfChanged(header, BAND_ATTR, tokens)
+    }
   }
 
   // The row it reads lives in the conversation header, never inside the column

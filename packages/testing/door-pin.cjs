@@ -59,7 +59,7 @@ function watch(page) {
         pinned: row !== null && getComputedStyle(row).position === 'sticky',
         overflowing: scroller !== null && scroller.scrollHeight > scroller.clientHeight,
         rolling: document.querySelector(marks.rolling) !== null,
-        reader: document.body.matches(marks.readerHold),
+        reader: scroller !== null && scroller.matches(marks.readerHold),
       })
       if (trace.length < 6000) requestAnimationFrame(sample)
     }

@@ -93,8 +93,8 @@
     r.lateSheetClaimable = lateSheet.matches('style:not([data-plugin])')
     lateSheet.remove()
     // This stand-in host never carries the Windows titlebar marker, so the
-    // skin must leave the body marker off and keep its measured placement.
-    r.titlebarTabs = document.body.hasAttribute('data-dsh-titlebar-tabs')
+    // skin must mark no header with it and keep its measured placement.
+    r.titlebarTabs = document.querySelector('[data-dsh-titlebar-tabs]') !== null
     r.footerTakeover = document.body.hasAttribute('data-dsh-claude-footer-takeover')
     r.homeLayoutAttr = document.body.getAttribute('data-dsh-claude-home-layout')
     r.homeLayoutExpected = window.SMOKE_CASE === 'studio' ? 'studio' : null

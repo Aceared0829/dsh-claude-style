@@ -334,15 +334,15 @@
     {
       "reason": "视图页签与页头：走查没有切到另一个视图",
       "selectors": [
-        "body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
-        "body[data-dsh-claude-style][data-dsh-titlebar-tabs] [class*=centerCol] [data-dsh-view-tabs]",
-        "body[data-dsh-claude-style][data-dsh-titlebar-tabs] [class*=_header]:has([class*=_tabs])",
-        "body[data-dsh-claude-style][data-dsh-header-band~=title] [data-dsh-header-title]",
-        "body[data-dsh-claude-style][data-dsh-titlebar-tabs] [data-dsh-header-band-tabs]",
-        "body[data-dsh-claude-style][data-dsh-header-band~=title] [data-dsh-header-row]",
-        "body[data-dsh-claude-style][data-dsh-header-band~=title] [data-dsh-header-row] [class*=_label]",
-        "body[data-dsh-claude-style][data-dsh-header-band~=actions] [data-dsh-header-actions]",
-        "body[data-dsh-claude-style][data-dsh-header-band~=actions] [data-dsh-header-corner]"
+        "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
+        "body[data-dsh-claude-style] [class*=centerCol] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
+        "body[data-dsh-claude-style] [class*=_header][data-dsh-titlebar-tabs]:has([class*=_tabs])",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-title]",
+        "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-header-band-tabs]",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-row]",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-row] [class*=_label]",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=actions] [data-dsh-header-actions]",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=actions] [data-dsh-header-corner]"
       ]
     },
     {

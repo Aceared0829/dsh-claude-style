@@ -108,7 +108,7 @@
       // so the row keeps its room and the pass after the box returns measures
       // again. Taking the room away here left the trigger under the ring until
       // the reading itself moved.
-      r.context.roomBefore = document.body.style.getPropertyValue('--dsh-claude-meter-room')
+      r.context.roomBefore = statsCard.parentElement.style.getPropertyValue('--dsh-claude-meter-room')
       // The host rewrites the reading beside the ring (ContextMeter's `<span>`).
       var meterReading = statsMeter === null ? null : statsMeter.querySelector('button > span')
       if (statsMeter !== null) statsMeter.style.display = 'none'
@@ -118,7 +118,7 @@
       if (statsMeter !== null) statsMeter.style.display = ''
       statsCard.appendChild(document.createElement('span'))
       await sleep(400)
-      r.context.roomAfter = document.body.style.getPropertyValue('--dsh-claude-meter-room')
+      r.context.roomAfter = statsCard.parentElement.style.getPropertyValue('--dsh-claude-meter-room')
 
       // Another plugin's statistics strip shares the dock's band with the skin's
       // overlay (issue #47). The strip's height is what the line above it has to
@@ -126,7 +126,7 @@
       // the strip is gone again.
       var readBand = function () {
         var strip = statsDock.querySelector('[data-mobile-nav="stats"]')
-        var lift = document.body.style.getPropertyValue('--dsh-claude-mobile-stats-lift')
+        var lift = statsDock.style.getPropertyValue('--dsh-claude-mobile-stats-lift')
         if (strip === null) return { lift: lift, gone: true }
         var stripBox = strip.getBoundingClientRect()
         var lowest = null
