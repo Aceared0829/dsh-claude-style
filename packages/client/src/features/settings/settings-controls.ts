@@ -253,16 +253,19 @@ export function createSettingsControls() {
    *
    * A row with neither title nor description is the control alone, across the
    * row: the option under the switch that turns it on (the Motion tab's
-   * preview cards), whose own controls carry their accessible names.
+   * preview cards), whose own controls carry their accessible names. `sub`
+   * marks a titled row that belongs to the row above it the same way, so the
+   * group keeps no hairline between its members.
    */
-  function row(key: string, title: string | null, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean }) {
+  function row(key: string, title: string | null, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean, sub?: boolean }) {
     const classes = ['dsh-claude-settings-row']
     if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
     // A row with neither title nor description is the option that belongs to
-    // the switch above it: the stylesheet keeps the two as one group, with no
-    // hairline between them (settings.css).
-    if (title === null && description === null) classes.push('dsh-claude-settings-row-sub')
+    // the switch above it, and `sub` is the same belonging for a titled row
+    // (the precise status line under that switch): the stylesheet keeps the
+    // group's members together, with no hairline between them (settings.css).
+    if (options?.sub === true || (title === null && description === null)) classes.push('dsh-claude-settings-row-sub')
     // The switch has no text of its own; its name is this row's title.
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
       ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title ?? '' })

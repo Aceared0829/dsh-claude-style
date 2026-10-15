@@ -428,6 +428,8 @@ export function createSettingsMotionTab(): SettingsTab {
           settingsCopy('statusDetailTitle', 'Precise status line'),
           null,
           view.controls.toggle(prefs.statusDetail, value => { write({ statusDetail: value }) }),
+          // It belongs to the switch above it: no hairline between the two.
+          { sub: true },
         ),
       },
       {
