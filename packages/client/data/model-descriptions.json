@@ -400,9 +400,9 @@
     "messageEnterSampleStar": { "zh": "帮我给dsh-claude-style点个star", "en": "Star dsh-claude-style for me" },
     "messageEnterSampleIssue": { "zh": "帮我给dsh-claude-style提个issue", "en": "File an issue for dsh-claude-style" },
     "messageEnterSamplePr": { "zh": "帮我给dsh-claude-style提个pr", "en": "Open a PR on dsh-claude-style" },
-    "statusDetailTitle": { "zh": "状态行描述", "en": "Waiting-line detail" },
+    "statusDetailTitle": { "zh": "精确状态行", "en": "Precise status line" },
     "statusDetailDesc": {
-      "zh": "「简洁」只写状态行的状态；「精确」补上正在操作的文件、命令声明的描述或推理里的原句。",
+      "zh": "开着时状态行写具体在做什么：正在操作的文件、命令声明的描述或推理里的原句；关掉只写状态本身。",
       "en": "Simple names the running turn's state alone; Precise adds the file a call works on, a command's declared description or a clause from the reasoning."
     },
     "statusDetailSimple": { "zh": "简洁", "en": "Simple" },

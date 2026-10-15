@@ -1,4 +1,4 @@
-import { QUIET_ATTR, STATUS_DETAIL_PRECISE } from '../../constants'
+import { QUIET_ATTR } from '../../constants'
 import { observeMatches } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
@@ -9,7 +9,7 @@ import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { ACTIVITY_THINKING, activityWords, waitingWord } from '../../shared/turn-activity'
-import { setWaitLoaderMotion, releaseWaitLoader } from './wait-loader'
+import { startWaitLoader, releaseWaitLoader } from './wait-loader'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
@@ -130,19 +130,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /**
    * The loader the Claude brand leads the row with, where the host draws its
-   * whale tail: three dots of the accent in force, each bouncing out of a squash
-   * and starting behind the one before it (chat-wait.css). The dots are
-   * decorative — the host's live region is what a reader hears — so they are
-   * hidden from the reader's own tree.
+   * whale tail: one lane of dots of the accent in force for each of the loader's
+   * three motions (chat-wait.css) — three hopping, three walking their own lines,
+   * four swapping the corners of a 45 : 55 rectangle. Every motion is built up
+   * front, so taking one out of play and another in is a hand-over rather than a
+   * redraw. The dots are decorative — the host's live region is what a reader
+   * hears — so they are hidden from the reader's own tree; which lane is in play,
+   * and when it is swapped for another, is features/chat-wait/wait-loader.ts's.
    */
   function buildLoader() {
     const loader = buildElement('span', 'dsh-claude-chat-wait-loader')
     loader.setAttribute('aria-hidden', 'true')
-    loader.append(
-      buildElement('span', 'dsh-claude-chat-wait-dot'),
-      buildElement('span', 'dsh-claude-chat-wait-dot'),
-      buildElement('span', 'dsh-claude-chat-wait-dot'),
-    )
+    const laneDots: [string, number][] = [['is-bounce', 3], ['is-line', 3], ['is-orbit', 4]]
+    for (const [lane, count] of laneDots) {
+      const dots = buildElement('span', `dsh-claude-chat-wait-lane ${lane}`)
+      for (let dot = 0; dot < count; dot += 1) dots.append(buildElement('span', 'dsh-claude-chat-wait-dot'))
+      loader.append(dots)
+    }
     return loader
   }
 
@@ -171,6 +175,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const loader = buildLoader()
     line.append(loader, label, clock, badge)
     words.after(line)
+    // The loader's motions rotate on their own clock, not on what the turn is
+    // doing: it is set going here, with the line, and lets go when the row does.
+    startWaitLoader(loader)
     const parts = { line, loader, label, clock, badge }
     lines.set(row, parts)
     return parts
@@ -205,7 +212,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // that fast, and only the newest one after the lock is worth showing; a
     // call's own words are the one thing that waits for it.
     const prefs = readPrefs()
-    const precise = prefs.statusDetail === STATUS_DETAIL_PRECISE
+    const precise = prefs.statusDetail === true
     const activity = activityWords(snapshot, turn, precise)
     // One word stands for the model thinking and for a wait nothing can be read
     // from (shared/turn-activity): the skin's own under the Claude brand, the
@@ -224,12 +231,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }, wording.get(row), now)
     wording.set(row, pass.row)
     setSwappingText(label, pass.word, true)
-    // The loader says the same thing the words do, in a second channel: the dots
-    // bounce while the turn is thinking, and walk their own lines while it
-    // writes or works (wait-loader.ts). A state nothing can be read from is the
-    // model thinking, and a clause the model wrote is its reasoning.
-    const thinking = activity === null || activity.key === null || activity.key === ACTIVITY_THINKING.key
-    setWaitLoaderMotion(loader, thinking ? 'bounce' : 'line')
+    // The loader no longer follows that wording: its three motions rotate on
+    // their own clock (wait-loader.ts), set going once with the line itself.
     clock.hidden = turn === undefined || turn.start === undefined
     if (turn !== undefined && turn.start !== undefined) writeText(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false

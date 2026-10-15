@@ -348,6 +348,18 @@ export function resolveMascot(current: Prefs) {
  * the retired choice reads as on, except the one that meant off; an unreadable
  * value reads as the default.
  */
+/**
+ * The waiting line's detail as an on/off choice: an earlier build stored the
+ * two words under it, and `precise` is what the switch being on means. An
+ * unreadable value reads as the default.
+ */
+function normalizeStatusDetail(value: unknown) {
+  if (value === 'precise') return true
+  if (value === 'simple') return false
+  if (typeof value === 'boolean') return value
+  return PREF_DEFAULTS.statusDetail
+}
+
 function normalizeChatAnimations(value: unknown) {
   if (typeof value === 'boolean') return value
   if (typeof value === 'string') return value !== CHAT_ANIMATIONS_OFF
@@ -372,6 +384,7 @@ export function normalizePrefs(value: unknown): Prefs {
   out.brand = normalizeBrand(section.brand)
   out.autoPopover = normalizeAutoPopover(section.autoPopover)
   out.chatAnimations = normalizeChatAnimations(section.chatAnimations)
+  out.statusDetail = normalizeStatusDetail(section.statusDetail)
   out.quickProviders = normalizeQuickProviders(section.quickProviders)
   out.username = typeof section.username === 'string' ? section.username.trim().slice(0, USERNAME_MAX) : ''
   out.brandName = typeof section.brandName === 'string' ? section.brandName.trim().slice(0, BRAND_NAME_MAX) : ''

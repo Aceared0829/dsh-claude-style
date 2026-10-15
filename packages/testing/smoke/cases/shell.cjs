@@ -511,8 +511,8 @@ module.exports = {
       appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'statusDetail', 'statsPosition', 'viewTabs', 'headerBand'],
-      motion: ['motion', 'chatAnimations', 'chatWait', 'statusMotion', 'caretMotion', 'chatReveal', 'chatSend', 'messageEnter'],
+      conversation: ['turnNav', 'statsPosition', 'viewTabs', 'headerBand'],
+      motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'chatReveal', 'chatSend', 'messageEnter'],
     }
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window.

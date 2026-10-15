@@ -126,17 +126,13 @@ export const STATUS_MOTIONS = [STATUS_MOTION_SWEEP, STATUS_MOTION_WASH]
 export const STATUS_MOTION_ATTR = 'data-dsh-claude-status-motion'
 
 /**
- * How much the waiting line says about what the turn is doing
- * (packages/client/src/features/chat-wait/): `precise` (the default) writes the
- * specifics the moment carries — the file a call works on, the description a
- * command call declares for itself, the model's own clause out of its
- * reasoning — while `simple` writes the bare states alone. The choice is read
- * in JS on every pass (packages/client/src/core/prefs.ts), so no attribute
- * carries it.
+ * Whether the waiting line says the specifics of what the turn is doing
+ * (packages/client/src/features/chat-wait/): on writes the file a call works on,
+ * the description a command call declares for itself and the model's own clause
+ * out of its reasoning; off writes the bare states alone. It became an on/off
+ * row of the Motion tab, so the value an earlier build stored as `precise` or
+ * `simple` is mapped over in core/prefs.ts; no attribute carries it.
  */
-export const STATUS_DETAIL_SIMPLE = 'simple'
-export const STATUS_DETAIL_PRECISE = 'precise'
-export const STATUS_DETAILS = [STATUS_DETAIL_SIMPLE, STATUS_DETAIL_PRECISE]
 
 /**
  * The composer caret's motion (packages/client/src/features/caret/caret.ts): `typing`
@@ -605,7 +601,7 @@ export interface Prefs {
   brandAccent: string
   motion: string
   statusMotion: string
-  statusDetail: string
+  statusDetail: boolean
   collapseFooter: boolean
   autoPopover: string
   composerScope: string
@@ -646,7 +642,6 @@ export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
   brandInk: BRAND_INKS,
   motion: MOTION_MODES,
   statusMotion: STATUS_MOTIONS,
-  statusDetail: STATUS_DETAILS,
   composerScope: COMPOSER_SCOPES,
   banLocale: BAN_LOCALES,
   homeLayout: HOME_LAYOUTS,

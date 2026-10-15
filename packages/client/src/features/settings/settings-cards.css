@@ -273,6 +273,16 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal
   animation: none;
 }
 
+/* The precise status line writes the specifics one at a time, so the card holds
+   one wording and the picker hands the turn over itself: no leave, no rise, and
+   no second wording standing behind it. The reader's animation choice above
+   keeps its own say. */
+body[data-dsh-claude-style] [data-dsh-claude-precise] .dsh-claude-motion-word,
+body[data-dsh-claude-style] [data-dsh-claude-precise] .dsh-claude-motion-word + .dsh-claude-motion-word {
+  animation: none;
+  visibility: visible;
+}
+
 /* A message-entrance card holds a two-row conversation of the reader's own
    messages. Each turn the picker appends one new message to the column — with
    the arrival the card stands for — and lifts the column by the row the message

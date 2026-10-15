@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, STATUS_MOTION_WASH, STATUS_DETAIL_SIMPLE, USERNAME_MAX } from '../constants'
+import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, STATUS_MOTION_WASH, USERNAME_MAX } from '../constants'
 import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
 import { normalizePrefs, resolveMascot } from './prefs'
 
@@ -21,7 +21,8 @@ test('a choice outside its set reads as its default', () => {
   expect(normalizePrefs({ motion: 1 }).motion).toBe(PREF_DEFAULTS.motion)
   expect(normalizePrefs({ statusMotion: STATUS_MOTION_WASH }).statusMotion).toBe(STATUS_MOTION_WASH)
   expect(normalizePrefs({ statusMotion: 'glow' }).statusMotion).toBe(PREF_DEFAULTS.statusMotion)
-  expect(normalizePrefs({ statusDetail: STATUS_DETAIL_SIMPLE }).statusDetail).toBe(STATUS_DETAIL_SIMPLE)
+  expect(normalizePrefs({ statusDetail: 'simple' }).statusDetail).toBe(false)
+  expect(normalizePrefs({ statusDetail: 'precise' }).statusDetail).toBe(true)
   expect(normalizePrefs({ statusDetail: 'verbose' }).statusDetail).toBe(PREF_DEFAULTS.statusDetail)
 })
 

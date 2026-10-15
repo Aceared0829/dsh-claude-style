@@ -69,16 +69,35 @@ export function createSettingsMotionTab(): SettingsTab {
       // already taking turns, and the attribute would cut across it.
       if (motionReduced() && alt) picker.setAttribute('data-dsh-claude-word-alt', '')
       else picker.removeAttribute('data-dsh-claude-word-alt')
-    }, [alt])
-    // What the line says, in the two wordings the card takes turns between: the
-    // word the brand in force waits on (shared/turn-activity.ts) and the state it
-    // says while a call runs. The card shows the wording swap as the line runs it
-    // (settings-cards.css), so a reader sees both what the line says and how it
-    // painted.
-    const words = [
+      // The precise line writes the specifics one at a time, so the card's own
+      // paint loop stands down and the picker above hands the turn over.
+      if (props.prefs.statusDetail) picker.setAttribute('data-dsh-claude-precise', '')
+      else picker.removeAttribute('data-dsh-claude-precise')
+    }, [alt, props.prefs.statusDetail])
+    // What the line says, in the wordings the card takes turns between. With the
+    // precise status line on, the line writes the specifics a moment carries, so
+    // the card takes turns between the three shapes those arrive in — a file
+    // being read, a tree being checked out, the model thinking — one at a time,
+    // because three wordings cannot share the two-word paint loop
+    // (settings-cards.css reads data-dsh-claude-precise).
+    const preciseWords = [
+      settingsCopy('statusDetailSampleRead', '正在阅读README.md'),
+      settingsCopy('statusDetailSampleCheckout', 'Checking out current tree'),
+      settingsCopy('statusDetailSampleThinking', '正在思考'),
+    ]
+    const plainWords = [
       waitingWord(props.prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
       copyLabel('chatWaitTools', 'Running tools…'),
     ]
+    const [preciseTurn, setPreciseTurn] = React.useState(0)
+    React.useEffect(() => {
+      if (!props.prefs.statusDetail) return
+      const timer = window.setInterval(() => {
+        setPreciseTurn(turn => (turn + 1) % preciseWords.length)
+      }, motionMs('--dsh-claude-period-preview-swap') / preciseWords.length)
+      return () => window.clearInterval(timer)
+    }, [props.prefs.statusDetail, preciseWords.length])
+    const words = props.prefs.statusDetail ? [preciseWords[preciseTurn] ?? preciseWords[0]] : plainWords
     const options = [
       { value: STATUS_MOTION_SWEEP, label: settingsCopy('statusMotionSweep', 'Highlight sweep') },
       { value: STATUS_MOTION_WASH, label: settingsCopy('statusMotionWash', 'Colour wash') },
@@ -400,10 +419,22 @@ export function createSettingsMotionTab(): SettingsTab {
         ),
       },
       {
+        // The waiting line's detail choice, moved here from the Conversation
+        // tab so it sits between the line's switch and the line's paint: on
+        // writes the specifics a moment carries, off the bare states alone.
+        rank: 16,
+        node: view.controls.row(
+          'statusDetail',
+          settingsCopy('statusDetailTitle', 'Precise status line'),
+          null,
+          view.controls.toggle(prefs.statusDetail, value => { write({ statusDetail: value }) }),
+        ),
+      },
+      {
         // The option under the line's own switch (chat-wait.manifest.ts): the
         // cards are the whole row, and the switch above them is what turns the
         // line on and off.
-        rank: 16,
+        rank: 17,
         node: view.controls.row(
           'statusMotion',
           null,
