@@ -553,6 +553,14 @@
       ]
     },
     {
+      "reason": "减少动效配上状态行预览的换字标记：这个标记由偏好写入的那一帧落下，走查读到与否要看当时停在哪个页面形态上",
+      "either": true,
+      "selectors": [
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-word-alt] .dsh-claude-motion-word",
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-word-alt] .dsh-claude-motion-word+.dsh-claude-motion-word"
+      ]
+    },
+    {
       "reason": "加载点换动作的中间帧：走查把页面停住，退出中的那一列已经淡完",
       "either": true,
       "selectors": [
