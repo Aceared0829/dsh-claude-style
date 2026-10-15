@@ -14,21 +14,22 @@
  *                                                    junction its `node_modules/`
  *   node scripts/session.mjs status                  which tree this is, which
  *                                                    session trees are still open
- *   node scripts/session.mjs finish [--no-push]      take this tree's pre-push
- *                                                    verdict (a bare verify run,
- *                                                    instant when the tree is
- *                                                    unchanged), then push this
- *                                                    session's branch, replacing
- *                                                    what it pushed before a
- *                                                    rebase; the cloud judges it
+ *   node scripts/session.mjs finish [--no-push]      merge this tree's branch into
+ *                                                    master in the main tree, take
+ *                                                    the push's verdict there (a bare
+ *                                                    verify run, instant when that
+ *                                                    tree is unchanged), then push
+ *                                                    master
  *   node scripts/session.mjs sweep                   remove worktrees left by a
- *                                                    session that is gone: no
- *                                                    live owner, no uncommitted
- *                                                    change, nothing unpushed
+ *                                                    session that is gone: no live
+ *                                                    owner, no uncommitted change,
+ *                                                    nothing the merge did not carry
  *
  * `start` and `sweep` run from the main tree; `finish` runs from inside the
- * session worktree. A session worktree never runs `npm install` or `npm ci`:
- * through the junction either one would delete the main tree's real
+ * session worktree. The worktree and its branch coordinate one session's
+ * change; they are never pushed (D68), so the gate and the push belong to the
+ * main tree, after the merge. A session worktree never runs `npm install` or
+ * `npm ci`: through the junction either one would delete the main tree's real
  * directory. `start` refuses when the lock file differs between the trees —
  * the junction would serve dependencies the session's sources do not match —
  * and `--deps` is the explicit override for the session whose task is the
@@ -80,21 +81,6 @@ function exists(ref) {
 function between(from, to, cwd = ROOT) {
   if (!exists(from) || !exists(to)) return ''
   return runner(cwd)('git', ['log', '--format=%h %s', `${from}..${to}`])
-}
-
-/**
- * The commits the tree at `cwd` holds that its upstream does not, or null when
- * the branch has never been pushed. This is what sweep reads to tell a session
- * that finished from one whose work exists nowhere else.
- */
-function unpushed(cwd) {
-  let upstream = null
-  try {
-    upstream = runner(cwd)('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'])
-  } catch {
-    return null
-  }
-  return Number(runner(cwd)('git', ['rev-list', '--count', `${upstream}..HEAD`]))
 }
 
 /** The worktrees of this repository, as porcelain records; the main tree first. */
@@ -169,9 +155,13 @@ function holding(tree) {
   if (owner !== null && Number.isInteger(owner.pid) && alive(owner.pid)) parts.push(`owner pid ${owner.pid} is running`)
   const changed = git(['status', '--porcelain', '--untracked-files=no'], tree.path)
   if (changed !== '') parts.push('uncommitted changes')
-  const pending = unpushed(tree.path)
-  if (pending === null) parts.push('no upstream — nothing pushed yet')
-  else if (pending > 0) parts.push(`${pending} commit(s) not pushed`)
+  // A session branch stays local (D68): what tells a finished session from one
+  // still holding work is whether master carries its commits, not whether they
+  // were pushed.
+  if (tree.branch !== undefined && tree.branch.startsWith('session/')) {
+    const pending = between('master', tree.branch)
+    if (pending !== '') parts.push(`${pending.split('\n').length} commit(s) not merged into master`)
+  }
   return parts
 }
 
@@ -269,33 +259,43 @@ function cmdStatus() {
 
 function cmdFinish(push) {
   const own = ownTree(CWD)
-  if (canonical(own.path) === canonical(mainTree())) bad('finish runs inside the session worktree; the main tree has no session branch to push')
+  const main = mainTree()
+  if (canonical(own.path) === canonical(main)) bad('finish runs inside the session worktree; the main tree has nothing to merge')
   const branch = own.branch
   if (branch === undefined || !branch.startsWith('session/')) bad(`this tree is on ${branch ?? '(detached)'}, not a session/ branch`)
   const changed = git(['status', '--porcelain', '--untracked-files=no'], CWD)
   if (changed !== '') bad(`uncommitted changes remain — commit them into ${branch} first:\n${changed}`)
+  if (git(['symbolic-ref', '--short', 'HEAD'], main) !== 'master') bad(`the main tree (${main}) is not on master — check master out there and finish again`)
+  const mainChanged = git(['status', '--porcelain', '--untracked-files=no'], main)
+  if (mainChanged !== '') bad(`the main tree has uncommitted changes — commit or drop them before the merge:\n${mainChanged}`)
   const behind = between('HEAD', 'origin/master', CWD)
-  if (behind !== '') console.log(`session: origin/master is ahead — rebase onto it so the cloud judges this work on the current base:\n${behind}`)
-  if (push) {
-    // The push carries this tree's pre-push verdict (D66): a bare verify run is
-    // that tier, and its cache answers instantly when the tree is unchanged
-    // since the run that filed it. A failed verdict refuses the push — the fix
-    // comes before the cloud's minutes are spent on a run whose failure the
-    // machine already knew.
-    const verdict = spawnSync(process.execPath, ['scripts/verify.mjs'], { cwd: CWD, stdio: 'inherit' })
-    if (verdict.error !== undefined) throw verdict.error
-    if (verdict.status !== 0) bad(`the pre-push verdict failed (exit ${verdict.status ?? verdict.signal}) — the push is refused; fix what the gates named and finish again`)
-    // The branch belongs to this session alone, and a session rebases it onto
-    // origin/master before finishing, so its commits replace the ones this
-    // branch already carries. The lease refuses the push when the remote moved
-    // since this tree last fetched.
-    git(['push', '--force-with-lease', '--set-upstream', 'origin', branch], CWD)
-    console.log(`session: pushed ${branch}; its cloud run is the verdict on these commits`)
+  if (behind !== '') console.log(`session: origin/master is ahead — rebase onto it so the merge carries the current base:\n${behind}`)
+  // The merge is the delivery (D68): the branch is this session's own and stays
+  // local, so what carries the work is the merge commit on master. Its title is
+  // the branch's last subject without that commit's own prefix, the shape the
+  // merges into master already carry.
+  const subject = git(['log', '-1', '--format=%s', branch], CWD)
+  const title = subject.replace(/^[a-z]+(\([^)]*\))?: /, '')
+  git(['merge', '--no-ff', branch, '-m', `merge: ${title}（${branch}）`], main)
+  console.log(`session: merged ${branch} into master in ${main}`)
+  if (!push) {
+    console.log('session: --no-push given — master holds the merge and nothing was pushed')
+    return
   }
-  // The tree stays where it is: this process's caller still stands in it, and
-  // a removal would meet an access-denied. Sweep on the main tree collects it
-  // once the session is gone and nothing is left uncommitted or unpushed.
-  console.log(`session: done — the main tree's sweep removes this worktree once this session is gone; branch ${branch} stays for the merge`)
+  // The pre-push verdict belongs to the tree the push carries (D66): master in
+  // the main tree, never the session branch. A bare verify run is that tier, and
+  // its cache answers instantly when that tree is unchanged since the run that
+  // filed it. A failed verdict refuses the push — the fix comes before the
+  // cloud's minutes are spent on a run whose failure the machine already knew.
+  const verdict = spawnSync(process.execPath, ['scripts/verify.mjs'], { cwd: main, stdio: 'inherit' })
+  if (verdict.error !== undefined) throw verdict.error
+  if (verdict.status !== 0) bad(`the pre-push verdict failed (exit ${verdict.status ?? verdict.signal}) — the push is refused; fix it in ${main} and push, or drop the merge there`)
+  git(['push', 'origin', 'master'], main)
+  console.log('session: pushed master; its cloud run is the verdict on these commits')
+  // The tree stays where it is: this process's caller still stands in it, and a
+  // removal would meet an access-denied. Sweep on the main tree collects it and
+  // deletes the merged branch once this session is gone.
+  console.log(`session: done — run \`npm run session -- sweep\` from ${main} to remove this worktree and delete ${branch}`)
 }
 
 function cmdSweep() {
@@ -313,7 +313,7 @@ function cmdSweep() {
     }
     removeTree(tree.path)
     if (tree.branch !== undefined && tree.branch.startsWith('session/')) git(['branch', '-D', tree.branch])
-    console.log(`session: swept ${name}`)
+    console.log(`session: swept ${name}${tree.branch === undefined ? '' : ` and deleted ${tree.branch}`}`)
   }
 }
 

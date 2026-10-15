@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "chores",
+  "order": 30,
+  "external": false,
+  "zh": "会话的工作树与 `session/` 分支只用于协调改动：分支不推送远端（向外部项目提 PR 除外），会话树里不跑测试；`npm run session -- finish` 改为在主树把分支合并进 master、在那里取推送前判定并推送 master，`npm run session -- sweep` 收走工作树并删除已合入的分支。",
+  "en": "A session's worktree and its `session/` branch only coordinate the change: the branch is never pushed (a pull request to an outside project aside) and no test runs in the tree; `npm run session -- finish` now merges the branch into master in the main tree, takes the pre-push verdict there and pushes master, and `npm run session -- sweep` collects the worktree and deletes the merged branch."
+}

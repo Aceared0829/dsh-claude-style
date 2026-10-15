@@ -30,6 +30,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 发版工作流在把这一版转正之前跑完快档那批检查、Windows 上的完整冒烟与端到端通道，与 pull request 判定的内容一致。
 - 一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。
 - 持续集成先由一个任务按改动的路径定下范围：只改了文档、语言包或工作流的推送跳过读页面的通道，改动落在一个功能目录内时冒烟只走那个目录的用例，其余改动才走完整冒烟；端到端的行为场景与截图捕获按矩阵分成四份并行跑，构建的慢步骤按树内容的散列在运行之间取回，每个分钟级的步骤都有时限，分支规则只登记一个汇总任务。会话自己的分支不再触发云端，判定留给把这份工作带进 master 的那次推送。
+- 会话的工作树与 `session/` 分支只用于协调改动：分支不推送远端（向外部项目提 PR 除外），会话树里不跑测试；`npm run session -- finish` 改为在主树把分支合并进 master、在那里取推送前判定并推送 master，`npm run session -- sweep` 收走工作树并删除已合入的分支。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -55,6 +56,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - The release workflow runs the fast tier's checks, the full smoke on Windows and the end-to-end lane before it promotes a version, the same set a pull request is judged on.
 - A run whose build output a rebuild behind `npm run dev` swapped files no verdict and reads as failed, so a recorded verdict belongs to the output that run actually drove.
 - Continuous integration now settles its scope first, from the paths a push changed: a push holding only documents, locale files or the workflow skips the lanes that read a page, a change inside one feature directory walks that directory's smoke cases, and anything else walks the whole smoke. The end-to-end behaviour scenarios and screenshot captures run as four parallel shards, the build's slow steps are restored from a cache keyed on the tree's hash, every minutes-long step carries a limit, and a branch rule names a single aggregate job. A push to a session's own branch no longer starts a run: the verdict belongs to the push that carries the work onto master.
+- A session's worktree and its `session/` branch only coordinate the change: the branch is never pushed (a pull request to an outside project aside) and no test runs in the tree; `npm run session -- finish` now merges the branch into master in the main tree, takes the pre-push verdict there and pushes master, and `npm run session -- sweep` collects the worktree and deletes the merged branch.
 
 ## [0.14.0] - 2026-10-14
 
