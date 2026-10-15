@@ -14,10 +14,13 @@
  *                                                    junction its `node_modules/`
  *   node scripts/session.mjs status                  which tree this is, which
  *                                                    session trees are still open
- *   node scripts/session.mjs finish [--no-push]      push this session's branch,
- *                                                    replacing what it pushed
- *                                                    before a rebase; the cloud
- *                                                    judges it
+ *   node scripts/session.mjs finish [--no-push]      take this tree's pre-push
+ *                                                    verdict (a bare verify run,
+ *                                                    instant when the tree is
+ *                                                    unchanged), then push this
+ *                                                    session's branch, replacing
+ *                                                    what it pushed before a
+ *                                                    rebase; the cloud judges it
  *   node scripts/session.mjs sweep                   remove worktrees left by a
  *                                                    session that is gone: no
  *                                                    live owner, no uncommitted
@@ -32,6 +35,7 @@
  * lock file change itself. The junction also goes before the tree does: a
  * recursive delete that meets it walks into the main tree (removeTree below).
  */
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { runner } from './shared/run.mjs'
@@ -273,6 +277,14 @@ function cmdFinish(push) {
   const behind = between('HEAD', 'origin/master', CWD)
   if (behind !== '') console.log(`session: origin/master is ahead — rebase onto it so the cloud judges this work on the current base:\n${behind}`)
   if (push) {
+    // The push carries this tree's pre-push verdict (D66): a bare verify run is
+    // that tier, and its cache answers instantly when the tree is unchanged
+    // since the run that filed it. A failed verdict refuses the push — the fix
+    // comes before the cloud's minutes are spent on a run whose failure the
+    // machine already knew.
+    const verdict = spawnSync(process.execPath, ['scripts/verify.mjs'], { cwd: CWD, stdio: 'inherit' })
+    if (verdict.error !== undefined) throw verdict.error
+    if (verdict.status !== 0) bad(`the pre-push verdict failed (exit ${verdict.status ?? verdict.signal}) — the push is refused; fix what the gates named and finish again`)
     // The branch belongs to this session alone, and a session rebases it onto
     // origin/master before finishing, so its commits replace the ones this
     // branch already carries. The lease refuses the push when the remote moved
