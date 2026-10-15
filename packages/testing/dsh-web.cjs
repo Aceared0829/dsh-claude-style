@@ -79,6 +79,30 @@ function run(command, options = {}) {
 }
 
 /**
+ * Give the signed-in user control of a scratch home, with the entry inherited
+ * by everything written under it.
+ *
+ * The host provisions its sandbox inside `$DSH_HOME`: it grants the workspace
+ * to the sandbox with SetNamedSecurityInfoW, which needs the user to hold
+ * WRITE_OWNER on that directory. A directory carries only the inherited
+ * `Modify` entry, and Windows does not derive WRITE_OWNER from it, so the
+ * host's own grant fails there (Win32 5, `grantWrite(<home>\workspace)`) and a
+ * program the model runs never starts. The lane owns the home, so the lane
+ * makes it one the host can provision — inherited, so a workspace the host or a
+ * scenario creates under it later is covered too.
+ */
+function provisionHome(home) {
+  if (process.platform !== 'win32') return
+  const { USERDOMAIN, USERNAME } = process.env
+  if (!USERNAME) throw new Error(`cannot tell which account owns ${home}: USERNAME is unset`)
+  const account = USERDOMAIN ? `${USERDOMAIN}\\${USERNAME}` : USERNAME
+  const granted = spawnSync('icacls', [home, '/grant:r', `${account}:(OI)(CI)F`], { stdio: 'pipe', encoding: 'utf8' })
+  if (granted.status !== 0) {
+    throw new Error(`icacls could not give ${account} control of ${home} (exit ${granted.status}): ${granted.stderr.trim()}`)
+  }
+}
+
+/**
  * Boot one scratch host.
  *
  * @param options.home - the scratch `$DSH_HOME` (created when absent).
@@ -113,6 +137,7 @@ async function start(options = {}) {
   const port = options.port ?? 0
   const timeoutMs = options.timeoutMs ?? 120000
   fs.mkdirSync(home, { recursive: true })
+  provisionHome(home)
   // The Anthropic faces are the reader's own download and never ship in the
   // package (D11): the lane plants this checkout's copies in the scratch home's
   // drop point, so a capture shows the intended typography instead of falling
