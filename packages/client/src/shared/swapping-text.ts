@@ -4,8 +4,10 @@ import { motionMs, motionValue } from './motion'
 /**
  * One line of words that swaps in place, after transitions.dev's "Text states
  * swap" (MIT), by way of its "Thinking states" composition: the wording leaving
- * rises out through a small blur, the wording arriving comes up from below, and
- * the box neither resizes nor jumps mid-swap.
+ * rises out through a small blur, the wording arriving comes up from below while
+ * the one leaving is still on its way out — the arriving copy stands parked and
+ * is released one gap after the leaving one started — and the box neither
+ * resizes nor jumps mid-swap.
  *
  * The box's width belongs to a hidden sizer, which is the recipe's own answer to
  * the problem the swap would otherwise cause: the copies are absolutely
@@ -34,15 +36,14 @@ const SIZER_CLASS = 'dsh-claude-swap-sizer'
 const COPY_CLASS = 'dsh-claude-swap-copy'
 
 /**
- * The word a swap is handing over to, the exit in flight, whether this element
- * has ever been written, and the width its box is on its way to. The written
- * mark matters: a line that already carries its words when it is first handed
- * over must not swap them for the identical words. The travel matters for the
- * same reason the other two do: a write heading for the width already being
- * travelled to leaves that move running.
+ * The swap in flight, whether this element has ever been written, and the width
+ * its box is on its way to. The written mark matters: a line that already
+ * carries its words when it is first handed over must not swap them for the
+ * identical words. The travel matters for the same reason the other two do: a
+ * write heading for the width already being travelled to leaves that move
+ * running.
  */
 const swapped = new WeakMap<HTMLElement, {
-  pending: string | null
   timer: number | null
   written: boolean
   travel: { target: number, timer: number } | null
@@ -51,7 +52,7 @@ const swapped = new WeakMap<HTMLElement, {
 function stateOf(element: HTMLElement) {
   let state = swapped.get(element)
   if (state === undefined) {
-    state = { pending: null, timer: null, written: false, travel: null }
+    state = { timer: null, written: false, travel: null }
     swapped.set(element, state)
   }
   return state
@@ -77,6 +78,18 @@ function wordsIn(element: HTMLElement) {
   for (const copy of element.querySelectorAll(`.${COPY_CLASS}`)) texts.push(copy.textContent ?? '')
   texts.push(element.dataset.text ?? '')
   return texts
+}
+
+/**
+ * The copy the words are arriving on, while a swap runs: the one that is not on
+ * its way out. A newer wording is rewritten onto it before the swap settles, so
+ * it is found by what the box holds rather than by a reference kept beside it.
+ */
+function enteringOf(element: HTMLElement): HTMLElement | null {
+  for (const copy of element.querySelectorAll<HTMLElement>(`.${COPY_CLASS}`)) {
+    if (!copy.classList.contains('is-exit')) return copy
+  }
+  return null
 }
 
 /**
@@ -207,7 +220,6 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   state.written = true
 
   if (first || motionReduced()) {
-    state.pending = null
     if (state.timer !== null) {
       window.clearTimeout(state.timer)
       state.timer = null
@@ -236,10 +248,32 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   // The box takes the widest of the words going into it, the arriving one
   // included: nothing laid out beside the line moves while the two halves do.
   holdWidest(element, [...wordsIn(element), text])
-  state.pending = text
-  if (state.timer !== null) return
-  // The copy left behind is the one holding the words now: it starts leaving at
-  // once while the words arriving get a copy of their own underneath it.
+  const swap = motionMs('--dsh-claude-duration-swap')
+  const gap = motionMs('--dsh-claude-duration-swap-gap')
+
+  // A swap already in flight: the words arriving take these ones and the two
+  // halves keep moving. A wording that changes again inside a swap is one call's
+  // own words cutting in ahead of the wording lock (wait-state.ts), and the line
+  // settles on the newest of them rather than playing the ones in between back.
+  const arriving = state.timer === null ? null : enteringOf(element)
+  if (arriving !== null) {
+    arriving.textContent = text
+    arriving.setAttribute('data-text', text)
+    element.dataset.text = text
+    return
+  }
+  // A swap whose copies are no longer in the box is dropped: the settle timer it
+  // left would bring the box down in the middle of the swap started below.
+  if (state.timer !== null) {
+    window.clearTimeout(state.timer)
+    state.timer = null
+  }
+
+  // The two halves travel together: the copy holding the words leaves upward at
+  // once, and the copy arriving stands parked below it until the gap has passed.
+  // Both are in the box for the rest of the swap, so the line never stands empty
+  // the way it does when the words leaving have finished before the arriving
+  // ones start.
   const leaving = document.createElement('span')
   leaving.className = COPY_CLASS + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
   leaving.textContent = was ?? ''
@@ -249,35 +283,29 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   element.appendChild(leaving)
   void leaving.offsetWidth
   leaving.classList.add('is-exit')
-  const swap = motionMs('--dsh-claude-duration-swap')
-  const gap = motionMs('--dsh-claude-duration-swap-gap')
+  const entering = document.createElement('span')
+  entering.className = COPY_CLASS + ' is-enter-start' + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
+  entering.textContent = text
+  entering.setAttribute('data-text', text)
+  entering.setAttribute('aria-hidden', 'true')
+  element.appendChild(entering)
+  element.dataset.text = text
+  // The parked pose has to be committed before the class comes off: a copy the
+  // browser reads only on the next frame travels from where it already stands,
+  // which is no move at all.
+  void entering.offsetWidth
+  if (gap > 0) window.setTimeout(() => entering.classList.remove('is-enter-start'), gap)
+  else entering.classList.remove('is-enter-start')
+  // The copy that left is taken down once the arriving one has settled: the
+  // sizer holds the box through the whole swap, so nothing depends on it any
+  // more. The words left standing take the box over there, which is what brings
+  // the clock back to sit right after them.
   state.timer = window.setTimeout(() => {
     state.timer = null
-    const next = state.pending
-    state.pending = null
-    if (next === null || !element.isConnected) return
-    // The recipe's three phases: the outgoing copy has been leaving since the
-    // swap began, the incoming one is parked at its rest pose below it, and
-    // only a committed reflow releases it — so both halves move at once.
-    const entering = document.createElement('span')
-    entering.className = COPY_CLASS + ' is-enter-start' + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
-    entering.textContent = next
-    entering.setAttribute('data-text', next)
-    entering.setAttribute('aria-hidden', 'true')
-    element.appendChild(entering)
-    element.dataset.text = next
-    void entering.offsetWidth
-    if (gap > 0) window.setTimeout(() => entering.classList.remove('is-enter-start'), gap)
-    else entering.classList.remove('is-enter-start')
-    // The copy that left is taken down once its fade is over: the sizer holds
-    // the box through the whole swap, so nothing depends on it any more. The
-    // words left standing take the box over there, which is what brings the
-    // clock back to sit right after them.
-    window.setTimeout(() => {
-      leaving.remove()
-      holdWidest(element, wordsIn(element))
-    }, swap + gap)
-  }, swap)
+    if (!element.isConnected) return
+    leaving.remove()
+    holdWidest(element, wordsIn(element))
+  }, swap + gap)
 }
 
 /**

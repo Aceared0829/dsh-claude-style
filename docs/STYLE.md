@@ -263,7 +263,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal: a menu or a dialog closing, the overtime badge leaving |
 | `--dsh-claude-duration-open` | `250ms` | a surface growing out of its anchor: a menu out of its trigger, a full-window dialog out of the centre, a settings page sliding in, the overtime badge sliding onto its line |
 | `--dsh-claude-duration-swap` | `150ms` | each half of a wording swap: the old words leaving, the new ones arriving |
-| `--dsh-claude-duration-swap-gap` | `50ms` | the pause between the two halves of a wording swap |
+| `--dsh-claude-duration-swap-gap` | `50ms` | the offset the words arriving start after the words leaving, so the two halves of a wording swap travel together |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
 | `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
 | `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight (D20), a sidebar icon's quarter turn, and the wording box taking the width of the words arriving |
@@ -616,10 +616,10 @@ resting the last third of it, in the host's shimmer tint — or a colour wash, t
 seven radial washes of `packages/client/src/shared/motion.css` over a grey ramp,
 orbiting the glyph box (5s an orbit while the hue turns a full circle over 4s),
 which is the effect transitions.dev ships as its Pro gradient text. A wording that
-changes runs the three-phase
-swap over 0.15s: the old one leaves upward with a 2px blur, the new one enters
-from 4px below; under Reduced motion the band is left out, the wash holds its
-still frame, and the wording is written at once. The Motion tab's preview cards
+changes runs both halves of the swap at once and is over in 0.2s: the old one
+leaves upward with a 2px blur while the new one, parked one gap, enters from 4px
+below; under Reduced motion the band is left out, the wash holds its still frame,
+and the wording is written at once. The Motion tab's preview cards
 wear these same two paints (`packages/client/src/features/settings/settings.css`)
 and take turns between a state word and the host's own word for a wait, so a card
 shows the wording swap as well as the paint.

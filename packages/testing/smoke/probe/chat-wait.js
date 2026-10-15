@@ -134,11 +134,12 @@
           foreignShown: getComputedStyle(foreignLine).display !== 'none',
         }
       }
-      // The wording swaps with transitions.dev's three phases: the old one leaves
-      // upward with a blur, the text changes once it has gone, and the new one
-      // enters from below. Sampled across the swap, rather than once at the end:
-      // the leave lasts 150ms, so the grid has to be far finer than it for the
-      // last leave frame to read as gone.
+      // The two halves of the wording swap travel together: the old one leaves
+      // upward with a blur while the new one stands parked below and is released
+      // one gap later, so both copies are in the box for the rest of the swap.
+      // Sampled across the swap, rather than once at the end: the leave lasts
+      // 150ms, so the grid has to be far finer than it for the last leave frame
+      // to read as gone.
       var watchSwap = async function () {
         var frames = []
         for (var round = 0; round < 48; round += 1) {

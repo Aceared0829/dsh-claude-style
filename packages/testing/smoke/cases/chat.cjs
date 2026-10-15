@@ -326,10 +326,15 @@ module.exports = {
         Number(leaving[0].opacity) > 0.5 && Number(leaving[leaving.length - 1].opacity) < 0.1 &&
         leaving.some((frame) => blurOf(frame) > 0.5),
       JSON.stringify({ frames: silent.length, leaving: leaving.map((frame) => [frame.opacity, frame.filter]) }))
-    check('the two halves overlap: both copies are in the box while the swap runs, and the band keeps sweeping throughout',
-      silent.filter((frame) => frame.copies > 1).length > 2 &&
+    // Every frame holding both copies is a frame the leaving one is still in the
+    // box for: while it fades it is the copy the reading is taken off, so a swap
+    // that only starts the arriving copy once the leaving one has gone shows the
+    // leave's own frames alone and never both at a readable opacity.
+    const overlap = silent.filter((frame) => frame.copies > 1)
+    check('the two halves overlap: both copies stand in the box across the leaving one\'s whole fade, and the band keeps sweeping throughout',
+      overlap.length > 2 && overlap.some((frame) => Number(frame.opacity) > 0.3) && overlap.some((frame) => Number(frame.opacity) < 0.3) &&
         silent.every((frame) => frame.sweep === 'dsh-claude-sweep'),
-      JSON.stringify({ overlapping: silent.filter((frame) => frame.copies > 1).length, sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-sweep').length }))
+      JSON.stringify({ overlapping: overlap.length, opacities: overlap.map((frame) => frame.opacity), sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-sweep').length }))
     const enter = wait.enterFrames || []
     check('the wording arriving rises from below through a blur, its opacity climbing to rest',
       enter.length > 3 && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&
