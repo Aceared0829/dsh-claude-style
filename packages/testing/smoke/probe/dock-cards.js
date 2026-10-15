@@ -18,7 +18,7 @@
         return { margin: s.margin, radius: s.borderRadius, border: s.borderTopWidth, shadow: s.boxShadow, overflow: s.overflow }
       }
       var divider = function () {
-        var line = document.querySelector('[data-dockkit-split] > [class*="_divider_"]')
+        var line = document.querySelector('[data-dockkit-split] > [data-dsh-claude-part~="dock-divider"]')
         return getComputedStyle(line, '::before').backgroundColor
       }
       var snapshot = function () {

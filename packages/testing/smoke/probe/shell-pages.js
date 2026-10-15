@@ -32,19 +32,24 @@
       // The classic hero's welcome is drawn on arrival and holds between
       // passes: the draw pinned to either end of its pool gives two different
       // lines, and a further pass leaves the drawn one alone.
+      // The classic hero's welcome sits in the host's conversation anchor, the
+      // subtree the skin reads its hero parts inside (D3).
+      var greetHolder = document.createElement('div')
+      greetHolder.setAttribute('data-conversation-scroll', '')
       var greetRoot = document.createElement('div')
-      greetRoot.className = '_x_root_1'
+      greetRoot.className = '_root_x_1'
       greetRoot.setAttribute('data-phase', 'hero')
       var greetGroup = document.createElement('div')
-      greetGroup.className = '_x_titleGroup_1'
+      greetGroup.className = '_titleGroup_x_1'
       var greetSpan = document.createElement('span')
       greetSpan.textContent = 'Host greeting'
       greetGroup.appendChild(greetSpan)
       greetRoot.appendChild(greetGroup)
+      greetHolder.appendChild(greetRoot)
       var greetRandom = Math.random
       var arrive = async function (draw) {
         Math.random = function () { return draw }
-        document.body.appendChild(greetRoot)
+        document.body.appendChild(greetHolder)
         await sleep(150)
         Math.random = greetRandom
         return greetSpan.textContent
@@ -53,7 +58,7 @@
       // The classic hero's permission control is the segment group; the studio
       // hero's is the conversation's trigger
       // (packages/client/src/features/permissions/permissions.ts).
-      var heroModes = document.querySelector('[data-composer-card] [class*="_modes"]')
+      var heroModes = document.querySelector('[data-composer-card] [data-dsh-claude-part~="modes"]')
       r.classicSegments = heroModes === null ? null
         : Array.prototype.map.call(heroModes.querySelectorAll('.dsh-claude-segments > .dsh-claude-segment'), function (item) { return item.textContent })
       r.classicPermTrigger = heroModes !== null && heroModes.querySelector('.dsh-claude-perm-btn') !== null
@@ -62,10 +67,10 @@
       document.body.appendChild(document.createElement('i'))
       await sleep(150)
       r.greeting.held = greetSpan.textContent
-      greetRoot.remove()
+      greetHolder.remove()
       await sleep(150)
       r.greeting.high = await arrive(0.999)
-      greetRoot.remove()
+      greetHolder.remove()
       await sleep(150)
     })
     await probe.onlyFor(['view-tabs'], async function () {
@@ -74,20 +79,23 @@
       // switch selects. The strip stays until the teardown, which must take the
       // pill back off it.
       var viewHeader = document.createElement('div')
-      viewHeader.className = '_c_header_1'
-      viewHeader.innerHTML = '<div class="_c_tabs_1" role="tablist" data-conversation-tabs="">' +
-        '<button type="button" role="tab" aria-selected="true" class="_c_tab_1 _c_tabActive_1">Chat</button>' +
-        '<button type="button" role="tab" aria-selected="false" class="_c_tab_1">Trajectory</button>' +
-        '<button type="button" role="tab" aria-selected="false" class="_c_tab_1">Context</button></div>'
+      viewHeader.className = '_header_c_1'
+      // The host's own header anchor: the skin reads the tab strip's parts
+      // inside it (D3).
+      viewHeader.setAttribute('data-slot', 'conversation.header')
+      viewHeader.innerHTML = '<div class="_tabs_c_1" role="tablist" data-conversation-tabs="">' +
+        '<button type="button" role="tab" aria-selected="true" class="_tab_c_1 _tabActive_c_1">Chat</button>' +
+        '<button type="button" role="tab" aria-selected="false" class="_tab_c_1">Trajectory</button>' +
+        '<button type="button" role="tab" aria-selected="false" class="_tab_c_1">Context</button></div>'
       document.body.appendChild(viewHeader)
       await sleep(150)
       probe.viewStrip = viewHeader.firstChild
       var viewTabs = probe.viewStrip.children
       r.viewPill = { stamped: probe.viewStrip.hasAttribute('data-dsh-view-tabs'), first: pillState(probe.viewStrip, viewTabs[0]) }
       viewTabs[0].setAttribute('aria-selected', 'false')
-      viewTabs[0].className = '_c_tab_1'
+      viewTabs[0].className = '_tab_c_1'
       viewTabs[2].setAttribute('aria-selected', 'true')
-      viewTabs[2].className = '_c_tab_1 _c_tabActive_1'
+      viewTabs[2].className = '_tab_c_1 _tabActive_c_1'
       await sleep(60)
       r.viewPill.switched = pillState(probe.viewStrip, viewTabs[2])
       // The slide plays whatever the system's motion setting: no reduced-motion
@@ -107,7 +115,9 @@
       // the host's structure; the submit button turning into stop (its glyph
       // becomes a rect) moves its mark with it.
       var controlOf = function (id) { var el = document.getElementById(id); return el && el.getAttribute('data-dsh-claude-control') }
-      var accessButton = document.querySelector('[data-slot="conversation.input.permission"] button:not([class*="dsh-claude"])')
+      // The host's own access button, skipping the skin's controls by their own
+      // class namespace, read as whole class tokens.
+      var accessButton = document.querySelector('[data-slot="conversation.input.permission"] button:not([class^="dsh-claude-"], [class*=" dsh-claude-"])')
       r.controls = { commands: controlOf('commands'), send: controlOf('send'), access: accessButton && accessButton.getAttribute('data-dsh-claude-control') }
       var sendSvg = document.querySelector('#send svg')
       var sendGlyph = sendSvg.innerHTML
@@ -128,23 +138,23 @@
       // host's own search button back with the click taken over.
       var sidebarSlot = document.createElement('div')
       sidebarSlot.setAttribute('data-slot', 'sidebar')
-      sidebarSlot.innerHTML = '<div class="_n_root_1"><div class="_n_logoRow_1" data-window-drag="true">' +
-        '<button type="button" class="_n_brand_1 _n_wide_1" aria-label="New session">brand</button>' +
-        '<button type="button" class="_n_iconButton_1 _n_toggle_1" aria-label="Collapse sidebar">toggle</button></div>' +
+      sidebarSlot.innerHTML = '<div class="_root_n_1"><div class="_logoRow_n_1" data-window-drag="true">' +
+        '<button type="button" class="_brand_n_1 _wide_n_1" aria-label="New session">brand</button>' +
+        '<button type="button" class="_iconButton_n_1 _toggle_n_1" aria-label="Collapse sidebar">toggle</button></div>' +
         // The row under the brand row, with the host's own shortcut markup: one
         // `kbd` per key and a `+` between them.
-        '<button type="button" class="_n_newSession_1" aria-keyshortcuts="Control+N">' +
-        '<span class="_n_newSessionLabelMask_1"><span class="_n_newSessionContent_1">' +
-        '<span class="_n_newSessionLabel_1 _n_wide_1">New session</span></span></span>' +
-        '<span class="_n_newSessionShortcut_1"><span class="_n_keys_1">' +
-        '<kbd class="_n_key_1">Ctrl</kbd><kbd class="_n_separator_1">+</kbd><kbd class="_n_key_1">K</kbd>' +
+        '<button type="button" class="_newSession_n_1" aria-keyshortcuts="Control+N">' +
+        '<span class="_newSessionLabelMask_n_1"><span class="_newSessionContent_n_1">' +
+        '<span class="_newSessionLabel_n_1 _wide_n_1">New session</span></span></span>' +
+        '<span class="_newSessionShortcut_n_1"><span class="_keys_n_1">' +
+        '<kbd class="_key_n_1">Ctrl</kbd><kbd class="_separator_n_1">+</kbd><kbd class="_key_n_1">K</kbd>' +
         '</span></span></button>' +
-        '<div class="_n_sectionHeader_1"><span class="_n_sectionLabel_1">Workspaces</span>' +
-        '<div class="_n_searchSlot_1"><button type="button" class="_n_searchButton_1" aria-label="Search sessions">search</button>' +
-        '<input class="_n_searchInput_1" type="text" tabindex="-1"></div></div></div>'
+        '<div class="_sectionHeader_n_1"><span class="_sectionLabel_n_1">Workspaces</span>' +
+        '<div class="_searchSlot_n_1"><button type="button" class="_searchButton_n_1" aria-label="Search sessions">search</button>' +
+        '<input class="_searchInput_n_1" type="text" tabindex="-1"></div></div></div>'
       document.body.appendChild(sidebarSlot)
       await sleep(150)
-      var logoRow = sidebarSlot.querySelector('[class*="_logoRow"]')
+      var logoRow = sidebarSlot.querySelector('[data-dsh-claude-part~="logo-row"]')
       var searchTrigger = logoRow.querySelector('.dsh-claude-search-trigger')
       var rootsBefore = window.__roots.length
       if (searchTrigger) searchTrigger.click()
@@ -158,7 +168,7 @@
         await sleep(200)
         var box = document.querySelector('.dsh-claude-search-trigger')
         var ownRow = document.querySelector('.dsh-claude-search-bar')
-        var slot = sidebarSlot.querySelector('[class*="_searchSlot"]')
+        var slot = sidebarSlot.querySelector('[data-dsh-claude-part~="search-slot"]')
         return {
           triggerInRow: !!logoRow.querySelector('.dsh-claude-search-trigger'),
           rowMarked: logoRow.hasAttribute('data-dsh-claude-search-row'),
@@ -182,7 +192,7 @@
       // The host's own button is live again in the icon style; a listener on an
       // ancestor stands in for the host's own click handling, which the skin's
       // takeover must keep from running.
-      var hostButton = sidebarSlot.querySelector('[class*="_searchButton"]')
+      var hostButton = sidebarSlot.querySelector('[data-dsh-claude-part~="search-button"]')
       var reachedHost = 0
       var countHost = function () { reachedHost++ }
       sidebarSlot.addEventListener('click', countHost)
@@ -209,7 +219,7 @@
       sample.className = 'dsh-claude-search-key'
       sample.textContent = 'Ctrl'
       sidebarSlot.appendChild(sample)
-      var shortcutCaps = [].slice.call(sidebarSlot.querySelectorAll('[class*="newSessionShortcut"] kbd'))
+      var shortcutCaps = [].slice.call(sidebarSlot.querySelectorAll('[data-dsh-claude-part~="new-session-shortcut"] kbd'))
       r.search.keycaps = {
         shortcut: shortcutCaps.filter(function (cap) { return !/separator/.test(cap.className) }).map(capStyle),
         separators: shortcutCaps.filter(function (cap) { return /separator/.test(cap.className) }).map(function (cap) { return getComputedStyle(cap).display }),

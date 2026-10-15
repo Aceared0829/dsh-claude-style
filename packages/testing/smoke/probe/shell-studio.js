@@ -15,7 +15,7 @@
       // the dock seat would: a throw here is the slot's error boundary on the
       // live page, which leaves the new-conversation page without its panel.
       var heroRoot = document.createElement('div')
-      heroRoot.className = '_x_root_1'
+      heroRoot.className = '_root_x_1'
       heroRoot.setAttribute('data-phase', 'hero')
       // Arriving on the hero draws the yardstick book; the draw is pinned to the
       // last book on the shelf, which no window here has passed, so the line has
@@ -28,7 +28,7 @@
       // The studio hero draws its composer in the conversation's form, so the
       // permission control there is the conversation's trigger and card: the
       // segment group belongs to the classic hero alone.
-      var heroModes = document.querySelector('[data-composer-card] [class*="_modes"]')
+      var heroModes = document.querySelector('[data-composer-card] [data-dsh-claude-part~="modes"]')
       var heroTrigger = heroModes === null ? null : heroModes.querySelector('.dsh-claude-perm-btn')
       var heroLabel = heroTrigger === null ? null : heroTrigger.querySelector('.dsh-claude-perm-label')
       r.heroPerm = {
@@ -127,19 +127,19 @@
       var accessParent = access.parentElement
       access.remove()
       var coldStack = document.createElement('div')
-      coldStack.className = '_x_composerStack_1 _x_composerHero_1'
-      coldStack.innerHTML = '<div data-composer-card class="_x_card_1 _x_cardWorkspaceTrigger_1">' +
-        '<div class="_x_row_1"><div class="_x_tools_1"><div class="_x_modes_1"></div></div></div></div>'
+      coldStack.className = '_composerStack_x_1 _composerHero_x_1'
+      coldStack.innerHTML = '<div data-composer-card class="_card_x_1 _cardWorkspaceTrigger_x_1">' +
+        '<div class="_row_x_1"><div class="_tools_x_1"><div class="_modes_x_1"></div></div></div></div>'
       heroRoot.appendChild(coldStack)
       await sleep(200)
       var coldSeat = coldStack.querySelector(':scope > .dsh-claude-home-seat')
       var coldRoot = window.__roots.filter(function (root) { return root.element === coldSeat })[0]
-      var coldTrigger = coldStack.querySelector('._x_modes_1 > .dsh-claude-perm-container > .dsh-claude-perm-btn')
+      var coldTrigger = coldStack.querySelector('._modes_x_1 > .dsh-claude-perm-container > .dsh-claude-perm-btn')
       var coldLabel = coldTrigger === null ? null : coldTrigger.querySelector('.dsh-claude-perm-label')
       r.coldStart = {
         seat: coldSeat !== null,
         rendered: coldRoot !== undefined && coldRoot.renders > 0,
-        segments: coldStack.querySelectorAll('._x_modes_1 > .dsh-claude-segments').length,
+        segments: coldStack.querySelectorAll('._modes_x_1 > .dsh-claude-segments').length,
         trigger: coldTrigger === null ? null : { label: coldLabel === null ? null : coldLabel.textContent, disabled: coldTrigger.disabled },
         openCard: document.querySelectorAll('.dsh-claude-perm-popover[data-open="true"]').length,
       }
@@ -158,7 +158,7 @@
       // The studio rules reach the hero stack through that mark: the stack
       // takes the studio column's 720px cap.
       var studioStack = document.createElement('div')
-      studioStack.className = '_x_composerStack_1 _x_composerHero_1'
+      studioStack.className = '_composerStack_x_1 _composerHero_x_1'
       heroRoot.appendChild(studioStack)
       r.homeHero.stackMaxWidth = getComputedStyle(studioStack).maxWidth
       studioStack.remove()
@@ -185,9 +185,9 @@
         return display
       }
       r.panelDisplay = {
-        hero: panelDisplay('_x_composerStack_1 _x_composerHero_1'),
-        coldStart: panelDisplay('_x_composerStack_1 _x_composerHero_1', true),
-        conversation: panelDisplay('_x_composerStack_1'),
+        hero: panelDisplay('_composerStack_x_1 _composerHero_x_1'),
+        coldStart: panelDisplay('_composerStack_x_1 _composerHero_x_1', true),
+        conversation: panelDisplay('_composerStack_x_1'),
       }
     })
   })

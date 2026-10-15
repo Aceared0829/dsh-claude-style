@@ -27,7 +27,7 @@
     if (accountTrigger) accountTrigger.setAttribute('aria-expanded', 'false')
   }
   function openHostSettingsDialog() {
-    var area = document.querySelector('[class*="settingsArea"]')
+    var area = document.querySelector('[data-dsh-claude-part~="settings-area"]')
     if (!area) return
     var dialog = document.createElement('div')
     dialog.setAttribute('role', 'dialog')
@@ -55,25 +55,25 @@
     // LogoutIcon.tsx's geometry: a 16px relative box holding a 13.664x13.571 svg
     // at (1.168, 1.214) absolute.
     hostRowsHtml = CASE === 'desktop'
-      ? '<div class="itemWrap"><button type="button" role="menuitem" aria-keyshortcuts="Control+,">' +
+      ? '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem" aria-keyshortcuts="Control+,">' +
           '<svg viewBox="0 0 16 16" width="16" height="16"></svg>Settings</button></div>' +
-        '<div class="itemWrap"><button type="button" role="menuitem">' +
+        '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem">' +
           '<svg viewBox="0 0 16 16" width="16" height="16"></svg>Feedback</button></div>' +
-        '<div class="itemWrap"><button type="button" role="menuitem">' +
+        '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem">' +
           '<span style="position:relative;display:inline-block;width:16px;height:16px">' +
             '<svg viewBox="0 0 13.664 13.571" width="13.664" height="13.571" style="position:absolute;left:1.168px;top:1.214px">' +
               '<path d="M1 1 L12.664 12.571" fill="none" stroke="currentColor" stroke-width="1.4"></path>' +
             '</svg></span>Sign out</button></div>'
-      : '<div class="itemWrap"><button type="button" role="menuitem">Settings</button></div>' +
-        '<div class="itemWrap"><button type="button" role="menuitem">Feedback</button></div>' +
-        '<div class="itemWrap"><button type="button" role="menuitem">Sign out</button></div>'
+      : '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem">Settings</button></div>' +
+        '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem">Feedback</button></div>' +
+        '<div class="_itemWrap_smoke_1"><button type="button" role="menuitem">Sign out</button></div>'
     menu = document.createElement('div')
     menu.setAttribute('role', 'menu')
     // The host's shared menu card carries this material marker (ui-primitives'
     // Menu), which is what the skin's card rules are keyed on.
     menu.setAttribute('data-menu-material', '')
     menuViewport = document.createElement('div')
-    menuViewport.className = 'viewport'
+    menuViewport.className = '_viewport_smoke_1'
     menuViewport.setAttribute('role', 'presentation')
     menu.appendChild(menuViewport)
     fillHostRows()

@@ -18,11 +18,11 @@
     // The two host controls the skin's own colour rules must leave readable: the
     // chat's solid hover chip, and a filled anchor button whose ink comes from
     // the host's foreground token rather than from the link colour.
-    var chip = document.querySelector('._h_older_1 button')
+    var chip = document.querySelector('._older_h_1 button')
     var chipCS = chip ? getComputedStyle(chip) : null
     r.chipInk = chipCS ? chipCS.color : null
     r.chipFill = chipCS ? chipCS.backgroundColor : null
-    var topUp = document.querySelector('._h_balance_1 a')
+    var topUp = document.querySelector('._balance_h_1 a')
     var topUpCS = topUp ? getComputedStyle(topUp) : null
     r.topUpInk = topUpCS ? topUpCS.color : null
     r.topUpFill = topUpCS ? topUpCS.backgroundColor : null
@@ -56,7 +56,7 @@
       document.body.appendChild(document.createElement('i'))
       await sleep(200)
       r.passesAfterTeardown = window.__passes - before
-      r.leftNodes = document.querySelectorAll('[class*="dsh-claude-"]').length
+      r.leftNodes = document.querySelectorAll(':is([class^="dsh-claude-"], [class*=" dsh-claude-"])').length
       r.leftMarkers = document.querySelectorAll('[data-dsh-claude-footer-entry], [data-dsh-claude-footer-hidden], [data-dsh-claude-footer-overlay], [data-dsh-claude-model-host], [data-dsh-claude-account-host-row], [data-dsh-claude-context-stats], [data-dsh-claude-motion], [data-dsh-claude-wait], [data-dsh-claude-deepy-anchor], [data-dsh-claude-crab-anchor]').length
       r.leftAttrs = Array.prototype.filter.call(document.body.attributes, function (a) { return /^data-dsh-(claude|window)/.test(a.name) }).map(function (a) { return a.name })
       // The custom brand's values ride <body>'s own style (features/brand/brand.ts).

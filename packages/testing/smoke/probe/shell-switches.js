@@ -16,9 +16,9 @@
       // (workspace view) and the conversation's view-tab strip.
       var switchSidebar = document.createElement('div')
       switchSidebar.setAttribute('data-slot', 'sidebar')
-      switchSidebar.innerHTML = '<div class="_n_root_1"><div class="_n_logoRow_1" data-window-drag="true">' +
-        '<button type="button" class="_n_brand_1 _n_wide_1" aria-label="New session">brand</button>' +
-        '<button type="button" class="_n_iconButton_1 _n_toggle_1" aria-label="Collapse sidebar">toggle</button></div>' +
+      switchSidebar.innerHTML = '<div class="_root_n_1"><div class="_logoRow_n_1" data-window-drag="true">' +
+        '<button type="button" class="_brand_n_1 _wide_n_1" aria-label="New session">brand</button>' +
+        '<button type="button" class="_iconButton_n_1 _toggle_n_1" aria-label="Collapse sidebar">toggle</button></div>' +
         // One hash prefix for the section, its header, its label and its list
         // area, the way the host's CSS modules name them (the skin finds the
         // workspace section by that shared prefix, never by the label text).
@@ -26,10 +26,10 @@
         '<div role="tree" class="_w1_listArea"><div data-row-key="w1" class="_w1_projectRow">project</div></div></div></div>'
       document.body.appendChild(switchSidebar)
       var switchHeader = document.createElement('div')
-      switchHeader.className = '_c_header_1'
-      switchHeader.innerHTML = '<div class="_c_tabs_1" role="tablist" data-conversation-tabs="">' +
-        '<button type="button" role="tab" aria-selected="true" class="_c_tab_1 _c_tabActive_1">Chat</button>' +
-        '<button type="button" role="tab" aria-selected="false" class="_c_tab_1">Trajectory</button></div>'
+      switchHeader.className = '_header_c_1'
+      switchHeader.innerHTML = '<div class="_tabs_c_1" role="tablist" data-conversation-tabs="">' +
+        '<button type="button" role="tab" aria-selected="true" class="_tab_c_1 _tabActive_c_1">Chat</button>' +
+        '<button type="button" role="tab" aria-selected="false" class="_tab_c_1">Trajectory</button></div>'
       document.body.appendChild(switchHeader)
       var switchMarks = function () {
         return {

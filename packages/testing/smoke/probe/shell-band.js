@@ -49,23 +49,30 @@
         },
       })
       var header = document.createElement('header')
-      header.className = '_b_header_1'
+      header.className = '_header_b_1'
+      // The host's own header anchor: the skin reads the row's parts inside it (D3).
+      header.setAttribute('data-slot', 'conversation.header')
       header.style.cssText = 'position:fixed;left:' + ROW_LEFT + 'px;top:' + HEADER_TOP + 'px;width:900px;' +
         'padding-top:' + HEADER_INSET + 'px;display:block'
-      header.innerHTML = '<div class="_b_titleRow_1" style="display:flex;align-items:center;width:100%;height:30px">' +
-        '<div class="_b_titleCluster_1" style="display:flex;align-items:center;flex:1 1 0%;gap:10px">' +
-        '<nav class="_b_crumbs_1" style="display:flex;height:' + TITLE_HEIGHT + 'px;width:180px">Session title</nav>' +
-        '<div class="_b_headerActions_1" style="width:60px;height:' + TITLE_HEIGHT + 'px">Preset</div></div>' +
-        '<div class="_b_headerUtilities_1" style="display:flex;width:114px;height:28px"></div>' +
-        '<div class="_b_headerCorner_1" style="width:28px;height:28px"></div></div>' +
-        '<div class="_b_tabs_1" role="tablist" style="width:152px;height:26px"></div>'
+      header.innerHTML = '<div class="_titleRow_b_1" style="display:flex;align-items:center;width:100%;height:30px">' +
+        '<div class="_titleCluster_b_1" style="display:flex;align-items:center;flex:1 1 0%;gap:10px">' +
+        '<nav class="_crumbs_b_1" style="display:flex;height:' + TITLE_HEIGHT + 'px;width:180px">Session title</nav>' +
+        '<div class="_headerActions_b_1" style="width:60px;height:' + TITLE_HEIGHT + 'px">Preset</div></div>' +
+        '<div class="_headerUtilities_b_1" style="display:flex;width:114px;height:28px"></div>' +
+        '<div class="_headerCorner_b_1" style="width:28px;height:28px"></div></div>' +
+        '<div class="_tabs_b_1" role="tablist" style="width:152px;height:26px"></div>'
       document.body.insertBefore(header, document.body.firstChild)
-      var row = header.querySelector('[class*="_titleRow"]')
-      var title = header.querySelector('[class*="_crumbs"]')
-      var actions = header.querySelector('[class*="_headerActions"]')
-      var utilities = header.querySelector('[class*="_headerUtilities"]')
-      var corner = header.querySelector('[class*="_headerCorner"]')
-      var strip = header.querySelector('[class*="_tabs"]')
+      // The parts land on the pass after the subtree arrives (D3).
+      var row = null
+      for (var look = 0; look < 40 && row === null; look++) {
+        await sleep(50)
+        row = header.querySelector('[data-dsh-claude-part~="title-row"]')
+      }
+      var title = header.querySelector('[data-dsh-claude-part~="header-title"]')
+      var actions = header.querySelector('[data-dsh-claude-part~="header-actions"]')
+      var utilities = header.querySelector('[data-dsh-claude-part~="header-utilities"]')
+      var corner = header.querySelector('[data-dsh-claude-part~="header-corner"]')
+      var strip = header.querySelector('[data-dsh-claude-part~="view-tabs"]')
       var box = function (el) {
         var b = el.getBoundingClientRect()
         return { x: Math.round(b.x), y: Math.round(b.y), right: Math.round(b.right) }

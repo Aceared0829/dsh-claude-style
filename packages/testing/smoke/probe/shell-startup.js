@@ -18,7 +18,7 @@
       window.__dispose()
       await sleep(600)
       r.lateSlots = (window.__slots || []).map(function (entry) { return entry.key })
-      r.lateNodes = document.querySelectorAll('[class*="dsh-claude-"]').length
+      r.lateNodes = document.querySelectorAll(':is([class^="dsh-claude-"], [class*=" dsh-claude-"])').length
     })
     await probe.onlyFor(['late-forms'], async function () {
       // The directory has not answered yet: the skin holds the defaults.
@@ -41,7 +41,7 @@
       var presetTrigger = document.getElementById('hero-preset')
       function permUp() { return document.querySelectorAll('.dsh-claude-perm-popover[data-open="true"]').length }
       function drawerUp() { return document.querySelectorAll('.dsh-claude-account-popover[data-open="true"]').length }
-      function hostCards() { return document.querySelectorAll('body > [role="menu"]:not([class*="dsh-claude"])').length }
+      function hostCards() { return document.querySelectorAll('body > [role="menu"]:not(:is([class^="dsh-claude"], [class*=" dsh-claude"]))').length }
       // The dwell is 100 ms: at 50 ms a crossing pointer has opened nothing, and
       // by 250 ms a pointer that stayed has the card.
       permTrigger.dispatchEvent(new MouseEvent('mouseenter'))
@@ -104,7 +104,7 @@
       function heroCardShape() {
         var card = document.querySelector('[data-dsh-claude-hero-menu]')
         if (card === null) return null
-        var icons = card.querySelectorAll('[class*="_itemIcon_"]')
+        var icons = card.querySelectorAll('[data-dsh-claude-part~="menu-item-icon"]')
         var row = card.querySelector('[role="menuitem"]')
         return {
           kind: card.getAttribute('data-dsh-claude-hero-menu'),
@@ -140,7 +140,7 @@
       r.heroMenusLeft = window.__heroMenusOpen()
       // The row against the viewport's top edge leaves no room above: the card
       // flips below its trigger rather than leaving the screen.
-      var heroRow = document.querySelector('[class*="heroWorkspaceRow"]')
+      var heroRow = document.querySelector('[data-dsh-claude-part~="hero-workspace-row"]')
       heroRow.style.bottom = 'auto'
       heroRow.style.top = '0px'
       heroTrigger.click()

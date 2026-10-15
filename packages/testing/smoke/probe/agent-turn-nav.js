@@ -26,8 +26,8 @@
           ' style="position:absolute;left:0;right:0;height:10px;top:' + (1 + ni * 10) + 'px"></button>'
       }
       navPhase.innerHTML = '<div data-conversation-session="smoke-nav"><div data-conversation-scroll="" style="height:400px;overflow:auto">' +
-        '<div class="_t_slot_1" style="position:relative;height:300px"><nav class="_t_frame_1" style="position:fixed;right:12px;top:100px;width:28px">' +
-        '<div class="_t_scroller_1" style="position:relative;overflow:auto;max-height:200px"><div class="_t_marks_1" style="position:relative;height:52px">' + navMarks + '</div></div>' +
+        '<div class="_slot_t_1" style="position:relative;height:300px"><nav class="_frame_t_1" style="position:fixed;right:12px;top:100px;width:28px">' +
+        '<div class="_scroller_t_1" style="position:relative;overflow:auto;max-height:200px"><div class="_marks_t_1" style="position:relative;height:52px">' + navMarks + '</div></div>' +
         '<div role="tooltip">host preview</div></nav></div>' +
         '<div data-chat-flow="" style="display:flex;flex-direction:column">' +
         '<div data-chat-flow-kind="user" data-chat-turn="4">fourth question</div>' +

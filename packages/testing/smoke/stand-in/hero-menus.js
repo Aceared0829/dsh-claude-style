@@ -20,17 +20,17 @@
     // for the workspace picker the pinned add row in the footer. The row carries
     // the host's own border: none (Menu.module.css .item).
     function heroMenuRow(label) {
-      return '<div class="_x_itemWrap_1"><button type="button" role="menuitem" class="_x_item_1" style="border:none">' +
-        '<span class="_x_itemIcon_1"><svg viewBox="0 0 16 16" width="16" height="16"></svg></span>' +
-        '<span class="_x_itemLabel_1">' + label + '</span></button></div>'
+      return '<div class="_itemWrap_x_1"><button type="button" role="menuitem" class="_item_x_1" style="border:none">' +
+        '<span class="_itemIcon_x_1"><svg viewBox="0 0 16 16" width="16" height="16"></svg></span>' +
+        '<span class="_itemLabel_x_1">' + label + '</span></button></div>'
     }
     function bindHeroTrigger(id, label, footer) {
       document.getElementById(id).addEventListener('click', function () {
         if (heroMenus[id]) { closeHeroMenu(id); return }
         var menu = document.createElement('div')
         menu.setAttribute('role', 'menu')
-        menu.innerHTML = '<div class="_x_viewport_1" role="presentation">' + heroMenuRow(label) + '</div>' +
-          (footer ? '<div class="_x_footer_1" role="presentation">' + heroMenuRow(footer) + '</div>' : '')
+        menu.innerHTML = '<div class="_viewport_x_1" role="presentation">' + heroMenuRow(label) + '</div>' +
+          (footer ? '<div class="_footer_x_1" role="presentation">' + heroMenuRow(footer) + '</div>' : '')
         document.body.appendChild(menu)
         heroMenus[id] = menu
         document.getElementById(id).setAttribute('aria-expanded', 'true')

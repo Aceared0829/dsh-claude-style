@@ -109,7 +109,7 @@
       deepyConversation.innerHTML = '<div data-conversation-content data-conversation-session="smoke-deepy"><div data-composer-seat>' +
         '<div data-slot="conversation.composer" style="display:contents">' +
         '<div data-chain-overlay-fallback="conversation.composer" style="display:contents">' +
-        '<div class="_x_composerStack_1"><div class="_x_inputBar_1">input</div></div></div></div></div></div>'
+        '<div class="_composerStack_x_1"><div class="_inputBar_x_1">input</div></div></div></div></div></div>'
       document.body.appendChild(deepyConversation)
       // A pass moves the whale onto the conversation first: the home page reads
       // the whole workspace, where a running session is work.
