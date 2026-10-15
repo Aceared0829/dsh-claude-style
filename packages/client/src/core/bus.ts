@@ -197,25 +197,39 @@ function registryFor(selector: string): MatchRegistry {
     // Only added nodes are examined, and an element that left the document is
     // dropped by the next read: a removal needs no walk of the whole set. The
     // skin's quiet writes are heard too — its own synthetic placeholder is a
-    // match — and the check on them is one `matches` per added node.
+    // match — and the check on them is one `matches` per topmost added node.
     stop: () => {},
   }
   registry.stop = subscribeMutations(document.body, { childList: true, subtree: true }, records => {
     let changed = false
+    // The batch is one frame of the host's mounting, and a subtree usually
+    // arrives with its own children in the same batch: the additions are
+    // gathered here and each is asked once, so a node a carrier in this batch
+    // already holds is reached by that carrier's own walk instead of being
+    // matched and searched again. Work a stream pays for every token.
+    const batch = new Set<Element>()
     for (const record of records) {
       for (const node of record.addedNodes) {
-        if (!(node instanceof Element)) continue
-        if (node.matches(selector)) {
-          registry.items.add(node)
-          changed = true
-        }
-        const found = node.querySelectorAll(selector)
-        for (let index = 0; index < found.length; index += 1) {
-          registry.items.add(found[index])
-          changed = true
-        }
+        if (node instanceof Element) batch.add(node)
       }
       if (record.removedNodes.length > 0) changed = true
+    }
+    const added = [...batch]
+    for (let at = 0; at < added.length; at += 1) {
+      const node = added[at]
+      // Only an addition the batch already walked carries this one; a carrier
+      // that arrives later is walked after, and reaching this node twice costs
+      // one set insert.
+      if (added.some((other, index) => index < at && other.contains(node))) continue
+      if (node.matches(selector)) {
+        registry.items.add(node)
+        changed = true
+      }
+      const found = node.querySelectorAll(selector)
+      for (let index = 0; index < found.length; index += 1) {
+        registry.items.add(found[index])
+        changed = true
+      }
     }
     if (changed) registry.ordered = null
   })

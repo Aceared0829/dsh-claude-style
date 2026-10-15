@@ -186,6 +186,31 @@ test('a match registry hands out the current matches in document order and follo
   expect(matches.all()).toEqual([second])
 })
 
+test('a match carried into the page with its own subtree in one batch is registered', async () => {
+  const root = host()
+  const matches = observeMatches<HTMLElement>('[data-probe]')
+  cleanups.push(() => matches.release())
+  const carrier = document.createElement('section')
+  const inner = document.createElement('i')
+  inner.setAttribute('data-probe', '')
+  const sibling = document.createElement('b')
+  sibling.setAttribute('data-probe', '')
+  // One batch, as a mount is: the carrier joins the page, then its own children land in it.
+  root.append(carrier)
+  carrier.append(inner, sibling)
+  await settle()
+  expect(matches.all()).toEqual([inner, sibling])
+  // The carrier arrived after the node it holds; the node keeps its place.
+  const later = document.createElement('div')
+  const inside = document.createElement('u')
+  inside.setAttribute('data-probe', '')
+  root.append(inside)
+  later.append(inside)
+  root.append(later)
+  await settle()
+  expect(matches.all()).toEqual([inner, sibling, inside])
+})
+
 test('a match registry keeps the same array until a match changes', async () => {
   const root = host()
   const only = document.createElement('i')
