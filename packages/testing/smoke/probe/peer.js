@@ -36,6 +36,9 @@
         peerEditor.focus()
         document.dispatchEvent(new Event('selectionchange'))
       }
+      // The fade ships off, so the choice is turned on here: the reveal staying
+      // uninstalled below is then the hand-over rather than the default.
+      window.__pushForm({ chatReveal: 'on' })
       await sleep(300)
       r.peer = {
         marks: {
@@ -84,13 +87,18 @@
       }
       // What the row's control shows: a switch's state, or the pressed option of
       // a segmented control. The reader's own stored answer, not a forced off.
-      var peerAnswer = function (node) {
+      // A control that renders a subtree of its own (the new-text fade's preview
+      // cards carry a clock) is not in this element tree, so the answer it shows
+      // is read from the preference it was handed.
+      var peerAnswer = function (node, key) {
         var answer = { on: false, option: null, options: [] }
         peerWalk(node, function (child) {
           var props = child.props || {}
           if (props['data-on'] === '') answer.on = true
           if (typeof props.className === 'string' && props.className.split(' ').indexOf('dsh-claude-segment') !== -1) answer.options.push(props.key)
           if (props['aria-pressed'] === 'true') answer.option = props.key
+          var prefs = props.prefs
+          if (typeof prefs === 'object' && prefs !== null && typeof prefs[key] === 'string') answer.option = prefs[key]
         })
         return answer
       }
@@ -108,7 +116,7 @@
               page.rows.push(props.key)
               if (peerDisabled(props.children)) page.refusing.push(props.key)
               if (peerManages(props.children)) page.managed.push(props.key)
-              page.answers[props.key] = peerAnswer(props.children)
+              page.answers[props.key] = peerAnswer(props.children, props.key)
             }
           })
           r.peer.settings.tabs[tab] = page

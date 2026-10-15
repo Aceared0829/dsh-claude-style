@@ -1,24 +1,32 @@
 import * as React from 'react'
-import { CARET_MOTION_OFF, CARET_MOTION_TYPING, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
+import { CARET_MOTION_OFF, CARET_MOTION_TYPING, CHAT_REVEAL_OFF, CHAT_REVEAL_ON, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
 import { prefYielded } from '../../core/feature'
 import { copyLabel, hostChatCopy, settingsCopy } from '../../core/i18n'
+import { motionMs } from '../../shared/motion'
 import { waitingWord } from '../../shared/turn-activity'
 import { managedDesc } from './settings-controls'
 import type { Prefs } from '../../constants'
 import type { SettingsTab, SettingsView } from './settings-controls'
 
 /**
+ * The share of the reveal preview's period the sample takes to arrive; the
+ * rest of the period is the hold before the next wipe. A share rather than a
+ * time, so a longer sample resolves at the same pace of the card.
+ */
+const REVEAL_PREVIEW_ARRIVAL_SHARE = 0.45
+
+/**
  * The settings page's Motion tab: the animation choice every motion reads,
- * what the words on the running turn's line do, and the composer caret's
- * glide.
+ * what the words on the running turn's line do, the composer caret's glide and
+ * the fade of the characters arriving in a streaming answer.
  *
- * The paint and caret choices are shown as the effects themselves rather than
- * named — each card carries a sample wearing the effect it picks, and no
- * visible label, the way the theme style's cards carry the brands' own marks,
- * so a row whose control already shows what it does carries no description.
- * The waiting line's sample is the same look the line itself wears
- * (shared/motion.css), so a card is the effect and not a picture of it; the
- * card's accessible name is its only text.
+ * The paint, caret and reveal choices are shown as the effects themselves
+ * rather than named — each card carries a sample wearing the effect it picks,
+ * and no visible label, the way the theme style's cards carry the brands' own
+ * marks, so a row whose control already shows what it does carries no
+ * description. The waiting line's sample is the same look the line itself
+ * wears (shared/motion.css), so a card is the effect and not a picture of it;
+ * the card's accessible name is its only text.
  */
 export function createSettingsMotionTab(): SettingsTab {
   /**
@@ -31,7 +39,7 @@ export function createSettingsMotionTab(): SettingsTab {
     // What the line says, in the two wordings the card takes turns between: the
     // word the brand in force waits on (shared/turn-activity.ts) and the state it
     // says while a call runs. The card shows the wording swap as the line runs it
-    // (settings.css), so a reader sees both what the line says and how it is
+    // (settings-cards.css), so a reader sees both what the line says and how it
     // painted.
     const words = [
       waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
@@ -74,7 +82,7 @@ export function createSettingsMotionTab(): SettingsTab {
   /**
    * The caret's two choices as preview cards: the on card's caret glides along
    * the sample line the way the drawn one glides between positions, the off
-   * card's stands and blinks the browser's own way (settings.css).
+   * card's stands and blinks the browser's own way (settings-cards.css).
    */
   function caretPicker(prefs: Prefs, write: SettingsView['write'], disabled: boolean) {
     const options = [
@@ -106,6 +114,72 @@ export function createSettingsMotionTab(): SettingsTab {
     )
   }
 
+  /**
+   * The reveal's two answers as preview cards: the same sample line arrives in
+   * both, one through the fade and one at once, so the choice is shown rather
+   * than named (D32).
+   *
+   * The walk is the recipe's own (transitions.dev's "Streaming text", MIT): the
+   * sample stands unseen between cycles and every piece is handed its turn one
+   * after another, which is what makes the arrival read as arriving. The clock
+   * runs while the row is on the page and reads the preview's own period, so
+   * the sample is resolved inside the same share of it whatever its length.
+   */
+  function RevealPicker(props: { prefs: Prefs, write: SettingsView['write'], disabled: boolean }) {
+    const sample = settingsCopy('chatRevealSample', 'New characters fade in')
+    const [tick, setTick] = React.useState(0)
+    React.useEffect(() => {
+      const count = Array.from(sample).length
+      const period = motionMs('--dsh-claude-period-preview-reveal')
+      const arrival = Math.round(period * REVEAL_PREVIEW_ARRIVAL_SHARE)
+      const gap = Math.max(1, Math.round(arrival / count))
+      // The ticks the sample is on show before the next wipe: the rest of the
+      // period is the hold, which is what gives the reader time to read it.
+      const ticks = count + Math.max(0, Math.round((period - arrival) / gap))
+      let next = 0
+      setTick(0)
+      const timer = window.setInterval(() => {
+        next = next + 1 >= ticks ? 0 : next + 1
+        setTick(next)
+      }, gap)
+      return () => window.clearInterval(timer)
+    }, [sample])
+    const shown = Math.min(tick, Array.from(sample).length)
+    const options = [
+      { value: CHAT_REVEAL_ON, label: settingsCopy('chatRevealOn', 'Fade in') },
+      { value: CHAT_REVEAL_OFF, label: settingsCopy('chatRevealOff', 'Appears at once') },
+    ]
+    return React.createElement(
+      'div',
+      { className: 'dsh-claude-reveal-picker', role: 'group' },
+      options.map(option => React.createElement(
+        'button',
+        {
+          key: option.value,
+          type: 'button',
+          className: 'dsh-claude-reveal-card',
+          // The card whose pieces wear the fade (settings-cards.css); the other
+          // hands them their turn with nothing between.
+          'data-fade': option.value === CHAT_REVEAL_ON ? '' : undefined,
+          disabled: props.disabled,
+          'data-active': option.value === props.prefs.chatReveal ? '' : undefined,
+          'aria-pressed': option.value === props.prefs.chatReveal ? 'true' : 'false',
+          'aria-label': option.label,
+          onClick: () => { if (option.value !== props.prefs.chatReveal) props.write({ chatReveal: option.value }) },
+        },
+        React.createElement(
+          'span',
+          { className: 'dsh-claude-reveal-sample', 'aria-hidden': 'true' },
+          Array.from(sample).map((piece, index) => React.createElement(
+            'span',
+            { key: `${index}-${piece}`, className: 'dsh-claude-reveal-piece', 'data-in': index < shown ? '' : undefined },
+            piece,
+          )),
+        ),
+      )),
+    )
+  }
+
   function rows(view: SettingsView) {
     const prefs = view.prefs
     const write = view.write
@@ -115,6 +189,7 @@ export function createSettingsMotionTab(): SettingsTab {
       { value: MOTION_FULL, label: settingsCopy('motionFull', 'Always') },
     ]
     const caretYielded = prefYielded('caretMotion')
+    const revealYielded = prefYielded('chatReveal')
     return [
       {
         rank: 5,
@@ -144,6 +219,17 @@ export function createSettingsMotionTab(): SettingsTab {
           caretYielded ? managedDesc('', true) : null,
           caretPicker(prefs, write, caretYielded),
           { block: true, disabled: caretYielded },
+        ),
+      },
+      {
+        rank: 30,
+        node: view.controls.row(
+          'chatReveal',
+          settingsCopy('chatRevealTitle', 'New-text fade'),
+          // The preview cards are the description; only a yielded control still needs a line (D32).
+          revealYielded ? managedDesc('', true) : null,
+          React.createElement(RevealPicker, { prefs, write, disabled: revealYielded }),
+          { block: true, disabled: revealYielded },
         ),
       },
     ]

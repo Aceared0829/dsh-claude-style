@@ -385,6 +385,10 @@
     "caretOn": { "zh": "开", "en": "On" },
     "caretOff": { "zh": "关", "en": "Off" },
     "caretSample": { "zh": "在此输入", "en": "Type here" },
+    "chatRevealTitle": { "zh": "新文字淡入", "en": "New-text fade" },
+    "chatRevealOn": { "zh": "淡入", "en": "Fade in" },
+    "chatRevealOff": { "zh": "直接出现", "en": "Appears at once" },
+    "chatRevealSample": { "zh": "新到的字先淡后实", "en": "New characters fade in" },
     "statusDetailTitle": { "zh": "状态行描述", "en": "Waiting-line detail" },
     "statusDetailDesc": {
       "zh": "「简洁」只写状态行的状态；「精确」补上正在操作的文件、命令声明的描述或推理里的原句。",

@@ -277,6 +277,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
 | `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the highlight band across the waiting line's words and a running process group's header |
 | `--dsh-claude-period-preview-swap` | `4000ms` | one turn of the settings page's waiting-line preview: one wording standing, leaving, and standing again |
+| `--dsh-claude-period-preview-reveal` | `4000ms` | one turn of the settings page's new-text fade preview: the sample arriving character by character, then standing before the next wipe |
 | `--dsh-claude-period-wash-hue` | `4000ms` | one turn of the hue rotation the waiting line's colour wash runs through |
 | `--dsh-claude-period-wash-drift` | `5000ms` | one orbit of the colour washes around the waiting line's glyph box |
 | `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |

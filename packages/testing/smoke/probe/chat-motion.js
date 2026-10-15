@@ -506,6 +506,17 @@
         }
         return { total: total, steps: steps, mark: document.body.hasAttribute('data-dsh-claude-chat-reveal') }
       }
+      // The fade ships off: a container streaming before the choice is turned on
+      // gets nothing at all, which is the answer the row offers first.
+      var revealShippedContainer = document.createElement('div')
+      revealShippedContainer.setAttribute('data-streaming', '')
+      revealShippedContainer.textContent = 'Hello there'
+      document.body.appendChild(revealShippedContainer)
+      await sleep(80)
+      var revealShipped = revealPeek()
+      revealShippedContainer.remove()
+      window.__pushForm({ chatReveal: 'on' })
+      await sleep(150)
       var revealContainer = document.createElement('div')
       revealContainer.setAttribute('data-streaming', '')
       revealContainer.textContent = 'Hello there'
@@ -517,10 +528,10 @@
       var revealGrown = revealPeek()
       await sleep(450)
       var revealSettled = revealPeek()
-      window.__pushForm({ chatAnimations: false })
+      window.__pushForm({ chatReveal: 'off' })
       await sleep(150)
       var revealOff = revealPeek()
-      window.__pushForm({ chatAnimations: true })
+      window.__pushForm({ chatReveal: 'on' })
       await sleep(150)
       var revealBack = revealPeek()
       // The animation choice: "reduced" withdraws the engine the same way the
@@ -541,7 +552,7 @@
       var revealFlipBack = revealPeek()
       revealContainer.remove()
       r.reveal = {
-        opening: revealOpening, grown: revealGrown, settled: revealSettled, off: revealOff, back: revealBack,
+        shipped: revealShipped, opening: revealOpening, grown: revealGrown, settled: revealSettled, off: revealOff, back: revealBack,
         reduced: revealReduced, systemFlip: { reduced: revealFlipReduced, back: revealFlipBack },
       }
     })

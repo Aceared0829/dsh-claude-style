@@ -512,7 +512,7 @@ module.exports = {
       composer: ['composerScope', 'modelPicker', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'chatAnimations', 'statusDetail', 'statsPosition', 'viewTabs', 'headerBand'],
-      motion: ['motion', 'statusMotion', 'caretMotion'],
+      motion: ['motion', 'statusMotion', 'caretMotion', 'chatReveal'],
     }
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window.
@@ -590,9 +590,17 @@ module.exports = {
       caretCards.length === 2 && caretCards.every((card) => typeof card.label === 'string' && card.label.length > 0 && typeof card.bar === 'string') &&
         caretCards[0].active === true && caretCards[0].pressed === 'true' && caretCards[1].active === false && caretCards[1].pressed === 'false',
       JSON.stringify(caretCards))
-    check('the on card\'s caret glides and blinks; the off card\'s only blinks',
-      JSON.stringify(settings.caretPreview) === JSON.stringify(['dsh-claude-caret-glide, dsh-claude-caret-blink', 'dsh-claude-caret-blink']),
+    check('the on card\'s caret walks the line lit and blinks only where it stands; the off card\'s only blinks',
+      JSON.stringify(settings.caretPreview) === JSON.stringify(['dsh-claude-caret-glide, dsh-claude-caret-rest-blink', 'dsh-claude-caret-blink']),
       JSON.stringify(settings.caretPreview))
+    const revealPreview = settings.revealPreview || {}
+    const fade = revealPreview.fade || {}
+    const waiting = revealPreview.waiting || {}
+    const plain = revealPreview.plain || {}
+    check('the new-text fade row previews its two answers: the fade card\'s character lands faint and settles over the reveal\'s own duration, the other stands solid as it arrives, and a character waiting for its turn is unseen',
+      fade.animation === 'dsh-claude-reveal-piece' && Number.parseFloat(fade.duration) === 0.12 && fade.fill === 'both' &&
+        waiting.opacity === '0' && plain.animation === 'none' && plain.opacity === '1',
+      JSON.stringify(revealPreview))
     commonChecks(r)
   },
   'dock-cards'(r) {

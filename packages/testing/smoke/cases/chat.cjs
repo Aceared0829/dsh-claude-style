@@ -183,12 +183,15 @@ module.exports = {
   'chat-reveal'(r) {
     basicChecks(r)
     const reveal = r.reveal || {}
+    const shipped = reveal.shipped || {}
     const opening = reveal.opening || {}
     const grown = reveal.grown || {}
     const settled = reveal.settled || {}
     const off = reveal.off || {}
     const back = reveal.back || {}
     const reduced = reveal.reduced || {}
+    check('the fade ships off: a streaming container gets no step highlights and no mark until the choice is turned on',
+      shipped.total === 0 && shipped.mark === false, JSON.stringify(shipped))
     check('characters arriving in a streaming container are registered as step highlights from the faintest step',
       opening.mark === true && opening.total > 0 && opening.steps > 0, JSON.stringify(opening))
     check('more characters arriving join them', grown.total > 0 && grown.steps >= 1, JSON.stringify(grown))
@@ -278,7 +281,7 @@ module.exports = {
     check('the other plugin arriving mid-session takes the seat keys down',
       peerOn.seats === 0, JSON.stringify(peerOn))
     check('it takes the ported fold and reveal marks down with them',
-      peerOn.foldMark === false && peerOn.revealMark === false, JSON.stringify(peerOn))
+      peerOn.revealBeforePeer === true && peerOn.foldMark === false && peerOn.revealMark === false, JSON.stringify(peerOn))
     check('the other plugin leaving hands the seat keys back', peerOff.seats === 3, JSON.stringify(peerOff))
     check('leaving brings the fold mark back', peerOff.foldMark === true, JSON.stringify(peerOff))
   },

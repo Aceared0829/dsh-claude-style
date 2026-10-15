@@ -150,6 +150,17 @@ export const CARET_MOTION_TYPING = 'typing'
 export const CARET_MOTIONS = [CARET_MOTION_TYPING, CARET_MOTION_OFF]
 
 /**
+ * Whether the characters arriving in a streaming answer fade in
+ * (packages/client/src/features/chat-reveal/): `on` runs the token reveal, `off`
+ * — the shipped answer — leaves the arriving text solid. The reader picks
+ * between two preview cards on the Motion tab, so the choice carries the two
+ * values the cards write rather than a switch that only reads on and off.
+ */
+export const CHAT_REVEAL_OFF = 'off'
+export const CHAT_REVEAL_ON = 'on'
+export const CHAT_REVEAL_MODES = [CHAT_REVEAL_ON, CHAT_REVEAL_OFF]
+
+/**
  * Who paints the colours, and who sets the type. `claude` is the skin's own
  * palette (or typefaces); `host` leaves the host's colour (or font) tokens
  * to the host and to whatever other theme plugin writes them — a wallpaper
@@ -259,16 +270,19 @@ export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF]
  *
  * `statsPosition` and `banLocale` are the choices among them; `chatAnimations`
  * is the switch covering the ported chat-area effects — the follow, the
- * automatic folding with its rolling door, the text fade, the file change rows,
- * the send flight, the counted process headers and the waiting line — and
- * belongs here rather than among the live-read preferences because two of those
- * cannot be stopped by reading a preference: the file change rows take the
- * host's two seat keys over (D32), and a seat registration only comes back when
- * the feature is torn down whole. `statsPosition` answers where the session's
+ * automatic folding with its rolling door, the file change rows, the send
+ * flight, the counted process headers and the waiting line — and belongs here
+ * rather than among the live-read preferences because two of those cannot be
+ * stopped by reading a preference: the file change rows take the host's two
+ * seat keys over (D32), and a seat registration only comes back when the
+ * feature is torn down whole. `statsPosition` answers where the session's
  * numbers show: one value writes them on a line of their own under the card,
  * the other fills the context popover with them and leaves that line to the
  * host's meter. `banLocale` names the easter egg's language, and `off` takes
- * the easter egg away.
+ * the easter egg away. `chatReveal` is the token reveal's own choice, shipped
+ * off; it stands beside the chat-area switch rather than inside it because the
+ * fade is a taste of its own and its row carries the two answers as preview
+ * cards.
  */
 export const FEATURE_PREF_DEFAULTS = {
   permissionsControl: true,
@@ -280,6 +294,7 @@ export const FEATURE_PREF_DEFAULTS = {
   viewTabs: true,
   headerBand: true,
   chatAnimations: true,
+  chatReveal: CHAT_REVEAL_OFF,
   peakrate: true,
 }
 
@@ -593,6 +608,7 @@ export interface Prefs {
   viewTabs: boolean
   headerBand: boolean
   chatAnimations: boolean
+  chatReveal: string
 }
 
 /** Every preference's shipped default, from the table both halves share (packages/contracts/src/prefs.ts, D46). */
@@ -614,6 +630,7 @@ export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
   searchStyle: SEARCH_STYLES,
   sidebarLayout: SIDEBAR_LAYOUTS,
   caretMotion: CARET_MOTIONS,
+  chatReveal: CHAT_REVEAL_MODES,
   statsPosition: STATS_POSITIONS,
 }
 /** Longest accepted custom username; core/prefs.ts trims the stored value to it. */

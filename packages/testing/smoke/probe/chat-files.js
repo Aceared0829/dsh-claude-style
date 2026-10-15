@@ -146,12 +146,18 @@
       }
       var filePeerStyle = document.createElement('style')
       filePeerStyle.id = 'dsh-chat-ux-style'
+      // The fade ships off; it is turned on here so the mark going down below is
+      // the peer's doing rather than the default.
+      window.__pushForm({ chatReveal: 'on' })
+      await sleep(150)
+      var revealBeforePeer = document.body.hasAttribute('data-dsh-claude-chat-reveal')
       document.head.appendChild(filePeerStyle)
       await sleep(250)
       r.files.peerOn = {
         seats: fileSeats(),
         foldMark: document.body.hasAttribute('data-dsh-claude-chat-fold'),
         revealMark: document.body.hasAttribute('data-dsh-claude-chat-reveal'),
+        revealBeforePeer: revealBeforePeer,
       }
       filePeerStyle.remove()
       await sleep(250)

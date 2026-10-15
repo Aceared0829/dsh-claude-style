@@ -252,6 +252,40 @@
         document.body.appendChild(barHost)
         r.settings.caretPreview = bars.map(function (b) { return getComputedStyle(b).animationName })
         barHost.remove()
+        // The new-text fade row's cards: the fade card hands each character its
+        // turn and lets it land faint, settling over the reveal's own duration,
+        // while the other card's characters stand solid the moment they arrive
+        // and a character still waiting for its turn is unseen. The stand-in
+        // renders the page as a plain tree and the cards' clock lives in a
+        // component, so the pieces are stood up here with the classes and the
+        // attributes the cards carry and read through their own boxes.
+        var revealHost = document.createElement('div')
+        revealHost.style.cssText = 'position:absolute;left:-10000px;top:-10000px'
+        var revealCard = function (fade) {
+          var card = document.createElement('button')
+          card.className = 'dsh-claude-reveal-card'
+          if (fade) card.setAttribute('data-fade', '')
+          var piece = function (inTurn) {
+            var span = document.createElement('span')
+            span.className = 'dsh-claude-reveal-piece'
+            if (inTurn) span.setAttribute('data-in', '')
+            span.textContent = 'x'
+            card.appendChild(span)
+            return span
+          }
+          revealHost.appendChild(card)
+          return piece
+        }
+        var fadePiece = revealCard(true)(true)
+        var waitingPiece = revealCard(true)(false)
+        var plainPiece = revealCard(false)(true)
+        document.body.appendChild(revealHost)
+        var readPiece = function (piece) {
+          var style = getComputedStyle(piece)
+          return { opacity: style.opacity, animation: style.animationName, duration: style.animationDuration, fill: style.animationFillMode }
+        }
+        r.settings.revealPreview = { fade: readPiece(fadePiece), waiting: readPiece(waitingPiece), plain: readPiece(plainPiece) }
+        revealHost.remove()
         window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
         r.settings.parentsOff = { appearance: renderTab('appearance'), composer: renderTab('composer'), sidebar: renderTab('sidebar') }
         window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })

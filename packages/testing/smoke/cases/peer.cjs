@@ -23,14 +23,17 @@ module.exports = {
     // The rows the ported features own, each on the tab its manifest registers it
     // on (D32, D42). headerBand carries a note of its own on a page that is not
     // the Windows desktop, so its note says nothing about the peer plugin.
-    const ported = { conversation: ['chatAnimations'], motion: ['caretMotion'] }
+    const ported = { conversation: ['chatAnimations'], motion: ['caretMotion', 'chatReveal'] }
     const answers = (tab) => page(tab).answers || {}
     // The reader's own answer stays on show (the chat-area animations on, the
-    // caret on Typing) while the control refuses input and the accent line names
-    // the plugin that owns the behaviour.
+    // caret's own choice, the fade on) while the control refuses input and the
+    // accent line names the plugin that owns the behaviour. The fade ships off,
+    // so the probe turns it on before this walk: the row's answer is what that
+    // turn-on left, and the reveal's own absence below is the hand-over.
     const showsOwnAnswer = {
       chatAnimations: (answer) => answer.on === true,
       caretMotion: (answer) => answer.option === 'typing',
+      chatReveal: (answer) => answer.option === 'on',
     }
     const refusingIn = (tab) => page(tab).refusing || []
     const managedIn = (tab) => page(tab).managed || []
@@ -46,7 +49,7 @@ module.exports = {
       JSON.stringify(Object.keys(ported).map(tab => `${tab} refusing=${refusingIn(tab).join(',')} managed=${managedIn(tab).join(',')}`)))
     check('each ported control keeps showing the reader\'s own answer',
       Object.keys(ported).every(tab => ported[tab].every(key => showsOwnAnswer[key](answers(tab)[key] || {}))),
-      JSON.stringify({ chatAnimations: answers('conversation').chatAnimations, caretMotion: answers('motion').caretMotion }))
+      JSON.stringify({ chatAnimations: answers('conversation').chatAnimations, caretMotion: answers('motion').caretMotion, chatReveal: answers('motion').chatReveal }))
     check('the accent line names dsh-chat-ux',
       (settings.texts || []).some(text => text.includes('dsh-chat-ux')), JSON.stringify(settings.texts))
     check('the rows the other plugin does not own keep answering',

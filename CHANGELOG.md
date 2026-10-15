@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 设置页「动效」页新增「新文字淡入」一行：流式回答里新出现的字符是否先淡后实（约 0.12 秒）由它决定，两档各带一张预览卡，同一句样品在卡里逐字到达，「淡入」那张每个字先落到最淡的一档再亮起来，「直接出现」那张把字一个个直接交出来；这一项默认关闭，关闭时新到的字符立即是本色。
+
+### 体验优化
 
 - 侧栏里对话的状态标记换了一副样子：正在进行的对话不再转圈，改成一盏呼吸的灰灯，实心圆点每 2.4 秒从半亮到全亮一个来回，位置与大小都不动；空闲对话的空心圆与它同样 6px，圈线是 1px 发丝、颜色更淡，两枚标记只靠实心与空心区分，已归档列表里的那枚空心圆跟着一起改，两栏的标题仍从同一处开始。设置的「动画效果」选「减弱」时灯停在最亮的那一帧。
 
@@ -17,7 +21,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 工作区树模式下，行的层级缩进回来了：每一层比它的上一层再向右让出 `depth * 12px`，扁平列表与按工作区分组的列表都保持原来的 6px。
 - 侧栏收起成图标栏后，「进行中 / 已归档」控件与已归档列表随分区标题一起离开页面，宿主自己的分区按钮留在原处；侧栏重新展开时两者照旧回来。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- The Motion tab gains a New-text fade row, deciding whether the characters arriving in a streaming answer start faint and settle over about 0.12 s; its two cards each hold the same sample line arriving character by character, the Fade in card landing each character at its faintest step before it brightens and the Appears at once card handing each one over as it is. The row ships off, and with it off arriving characters are solid at once.
+
+### Improvements
 
 - A conversation's status mark in the sidebar is drawn differently: a running conversation breathes instead of spinning, a lit grey dot whose light rises from half to full and back once every 2.4 seconds while it neither moves nor changes size, and an idle conversation keeps a hollow circle of the same 6px with a 1px hairline stroke in the quieter neutral, so the two marks differ by fill alone; the archived list's circle follows them and both lists still start their titles at the same place. Under the Animation setting's Reduced the light holds its brightest frame.
 
