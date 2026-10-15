@@ -84,6 +84,20 @@ const settle = (page, side) => page.waitForFunction((chat) => {
 /** Press one side of the switch: its options are Chat, then Code. */
 const press = (page, side) => page.locator('.dsh-claude-surface-option').nth(side === 'chat' ? 0 : 1).click()
 
+/** The host's own collapse toggle, in the sidebar's brand row (packages/contracts/src/dom.ts). */
+const SIDEBAR_TOGGLE = '[data-slot="sidebar"] [class*="_logoRow"] > [class*="_toggle"]'
+
+/**
+ * Collapse the rail through the host's own control, for a runner whose host
+ * keeps the sidebar open at the narrow viewport. A host that has already
+ * collapsed it has hidden the toggle, and there is nothing to press.
+ */
+async function pressSidebarToggle(page) {
+  const toggle = page.locator(SIDEBAR_TOGGLE)
+  if (await toggle.count() === 0 || !await toggle.first().isVisible()) return
+  await toggle.first().click()
+}
+
 function dsBotScenario({ check }) {
   return {
     script: 'greeting',
@@ -143,13 +157,18 @@ function dsBotScenario({ check }) {
       notes.desktop = await read(page)
       // The sidebar narrowed until its column cannot hold the switch: a headless
       // runner's window manager swallows the host's Control+Alt chord, so the
-      // keystroke never reaches the host there and the rail stays open.
+      // narrow viewport is the reader's way there, and the host's own toggle is
+      // the other one on a runner whose host leaves the rail open at 420px.
       await page.setViewportSize({ width: 420, height: 800 })
-      // The collapse has to be in the layout before the box means anything:
-      // re-read until the column is gone. The assertion below still judges what
-      // the last read saw, so a column that never goes fails there.
+      // The collapse has to be in the layout before the box means anything, and
+      // the switch re-places itself in the frame after it: re-read until the
+      // column is gone and the box has left the band. The assertion below still
+      // judges what the last read saw, so a column that never goes, or a switch
+      // that never leaves, fails there.
       notes.rail = await read(page)
-      for (let tries = 0; tries < 20 && (notes.rail.box?.columnRight ?? 0) !== 0; tries += 1) {
+      for (let tries = 0; tries < 24; tries += 1) {
+        if ((notes.rail.box?.columnRight ?? 0) === 0 && notes.rail.box?.place !== 'band') break
+        if (tries === 6) await pressSidebarToggle(page)
         await page.waitForTimeout(250)
         notes.rail = await read(page)
       }

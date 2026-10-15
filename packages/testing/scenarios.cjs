@@ -110,13 +110,19 @@ const LANDING_GIVE = 4
  * the row's own foot, which reads as a line under the message. The host can move
  * the row between two samples (the transcript gliding to its tail) and the
  * flight re-pins the stand-in in its own frame, so a gap the next sample no
- * longer shows was never painted: only a gap that holds is judged.
+ * longer shows was never painted: only a gap that holds is judged. A row that
+ * moved between the two samples explains the gap by itself — the trace carries
+ * the frame the row moved in with the stand-in's position from before it — so
+ * the gap that holds over a row standing still is the one a reader saw.
  */
 function onRowCheck(shown) {
   const gaps = shown.map((frame) => flightGap(frame))
+  const rowBox = (frame) => `${frame.bubble[1]}/${frame.bubble[3]}`
   const apart = shown.filter((frame, at) => {
     if (gaps[at] <= LANDING_GIVE) return false
-    return gaps[at + 1] !== undefined && gaps[at + 1] > LANDING_GIVE
+    const next = shown[at + 1]
+    if (next === undefined || gaps[at + 1] <= LANDING_GIVE) return false
+    return rowBox(next) === rowBox(frame)
   })
   return check('真行显形期间替身一直落在它身上', shown.length > 0 && apart.length === 0,
     `frames with the row shown=${shown.length}, of them apart=${apart.length}${apart.length === 0 ? '' : `：${apart.slice(0, 3).map((frame) => `${flightGap(frame).toFixed(2)}px`).join(' | ')}`}`)
