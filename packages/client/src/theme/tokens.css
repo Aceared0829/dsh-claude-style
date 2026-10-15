@@ -39,14 +39,12 @@ body[data-dsh-claude-style]:not([data-ds-dark-theme]) a:not([data-dsh-claude-par
   color: var(--dsh-claude-link-hover);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="brand-button"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="composer-primary"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot="sidebar.settings"] > :is(button, [role="button"]) {
   background: var(--dsw-alias-button-primary-fill);
   color: var(--dsw-alias-label-primary-foreground, #faf9f5);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="brand-button"]:hover,
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="composer-primary"]:hover,
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot="sidebar.settings"] > :is(button, [role="button"]):hover {
   background: var(--dsw-alias-button-primary-hover);
