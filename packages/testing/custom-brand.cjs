@@ -64,9 +64,9 @@ async function readPainted(page) {
       return { image: before.backgroundImage, width: before.width, height: before.height }
     }
     return {
-      mark: art('[class*="brandMark"]'),
-      word: art('[class*="brandIdentity"] > [class*="brandName"]'),
-      hero: art('[class*="fishHitbox"]'),
+      mark: art('[data-dsh-claude-part~="brand-mark"]'),
+      word: art('[data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]'),
+      hero: art('[data-dsh-claude-part~="hero-mark"]'),
     }
   })
 }

@@ -425,7 +425,7 @@ const SCENARIOS = {
       await recordProbes(context, 'conversation')
       // Any host menu does: the account menu the skin keys on is not mounted by
       // this build, and every menu shares the role, the list and the foreground.
-      const trigger = context.page.locator('[aria-haspopup="menu"]:not([class*="dsh-claude"]):visible').first()
+      const trigger = context.page.locator('[aria-haspopup="menu"]:not(:is([class^="dsh-claude"], [class*=" dsh-claude"])):visible').first()
       if (await trigger.count() > 0) {
         await trigger.click()
         await recordProbes(context, 'menu', 3000)

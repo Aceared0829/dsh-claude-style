@@ -59,7 +59,7 @@ async function probe(page) {
   // opens the hero, which has no session composer, and sessions can sit under
   // collapsed projects.
   const openSession = `(() => {
-    const rows = Array.from(document.querySelectorAll('[class*="sessionRow"]'))
+    const rows = Array.from(document.querySelectorAll('[data-dsh-claude-part~="session-row"]'))
       .filter((r) => !/^(新会话|New session)$/i.test((r.textContent || '').trim()))
     if (!rows.length) return false
     const t = rows[0].closest('[role="treeitem"]') || rows[0]
@@ -72,7 +72,7 @@ async function probe(page) {
   })()`
   if (!(await page.evaluate(openSession))) {
     await page.evaluate(`(() => {
-      for (const p of document.querySelectorAll('[class*="projectRow"]')) {
+      for (const p of document.querySelectorAll('[data-dsh-claude-part~="project-row"]')) {
         if (p.getAttribute('aria-expanded') !== 'true') p.click()
       }
     })()`)
@@ -122,7 +122,7 @@ async function probe(page) {
   // the two must not overlap.
   const clearance = () => page.evaluate(`(() => {
     const card = document.querySelector('[data-composer-card]')
-    const trailing = card === null ? null : card.querySelector('[class*="_row"] > [class*="_trailing"]')
+    const trailing = card === null ? null : card.querySelector('[data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"]')
     const meter = document.querySelector('[data-dsh-claude-context-meter]')
     if (trailing === null || meter === null) return null
     const t = trailing.getBoundingClientRect()

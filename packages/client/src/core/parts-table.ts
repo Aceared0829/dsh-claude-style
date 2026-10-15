@@ -48,6 +48,7 @@ export const SIDEBAR_PARTS: PartTable = {
   separator: 'key-separator',
   panelList: 'panel-list',
   panelRow: 'panel-row',
+  panelGlyph: 'panel-glyph',
   regionArea: 'region-area',
   footArea: 'foot-area',
   footerActions: 'footer-actions',

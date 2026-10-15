@@ -141,7 +141,7 @@ function importanceScenario(lane) {
     }
   }
   /** The host's own menus and dialogs: every visible trigger the page offers. */
-  const HOST_TRIGGERS = '[aria-haspopup="menu"]:not([class*="dsh-claude"]), button[aria-haspopup="dialog"]:not([class*="dsh-claude"])'
+  const HOST_TRIGGERS = '[aria-haspopup="menu"]:not(:is([class^="dsh-claude"], [class*=" dsh-claude"])), button[aria-haspopup="dialog"]:not(:is([class^="dsh-claude"], [class*=" dsh-claude"]))'
   /**
    * Every control the open settings tab offers, one state each: a preference
    * that renders the skin's own markup (the studio home panel, the mascot, the
@@ -275,7 +275,7 @@ function importanceScenario(lane) {
       // The preferences the controls set render their own markup on the empty
       // page — the studio panel, the mascot, the hero menu — so the walk goes
       // back to it and audits what they put there.
-      const home = page.locator('button[class*="newSession"]').first()
+      const home = page.locator('button[data-dsh-claude-part~="new-session"]').first()
       if (await home.count() > 0 && await home.isVisible()) {
         await home.click({ force: true })
         await page.waitForTimeout(1500)

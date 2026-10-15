@@ -81,7 +81,7 @@ const readFit = (page) => Promise.race([
 const readEntrance = (page) => page.evaluate(() => {
   const line = document.querySelector('[data-dsh-claude-inline-stats]')
   const group = line?.querySelector('.dsh-claude-digit-group') ?? null
-  const scroller = document.querySelector('[class*="_scrollBody"]')
+  const scroller = document.querySelector('[data-dsh-claude-part~="scroll-body"]')
   if (group === null || scroller === null) return null
   const original = [...group.childNodes]
   const before = scroller.scrollHeight

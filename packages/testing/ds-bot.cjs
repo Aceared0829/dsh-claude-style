@@ -46,7 +46,7 @@ const read = (page) => page.evaluate(() => {
   const body = document.body
   const root = document.querySelector('.dsh-claude-surface-switch')
   // The sidebar column's own box: both the band placement and the collapse are read against it.
-  const column = document.querySelector('[data-slot="sidebar"] > [class*="_root"]')
+  const column = document.querySelector('[data-slot="sidebar"] > [data-dsh-claude-part~="sidebar-root"]')
   const switchBox = root === null ? null : root.getBoundingClientRect()
   return {
     theme: body.hasAttribute('data-dsh-claude-style'),
@@ -56,7 +56,7 @@ const read = (page) => page.evaluate(() => {
     themeSheet: document.getElementById('dsh-claude-style-style') !== null,
     surfaceSheet: document.getElementById('dsh-claude-style-surface') !== null,
     themeMarks: [...body.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith('data-dsh-claude') && name !== 'data-dsh-claude-surface'),
-    themeNodes: [...document.querySelectorAll('[class*="dsh-claude-"]')].filter((node) => root === null || !root.contains(node)).length,
+    themeNodes: [...document.querySelectorAll(':is([class^="dsh-claude-"], [class*=" dsh-claude-"])')].filter((node) => root === null || !root.contains(node)).length,
     checked: root === null ? [] : [...root.querySelectorAll('.dsh-claude-surface-option')].map((option) => option.getAttribute('aria-checked') === 'true'),
     switchShown: root !== null && root.isConnected && switchBox.width > 0 && getComputedStyle(root).visibility !== 'hidden',
     menu: document.querySelector('.bt-account-menu') !== null,

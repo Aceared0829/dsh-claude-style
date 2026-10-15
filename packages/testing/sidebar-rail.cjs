@@ -22,13 +22,13 @@
 
 /** The host's own classes this scenario reads, and the seat the skin keeps out of the row. */
 const RAIL = {
-  frame: '[class*="_frame"]',
-  column: '[class*="_sidebarCol"]',
-  toggle: 'button[class*="_toggle"]',
-  panelRow: '[class*="panelRow"]',
-  glyph: '[class*="panelGlyph"]',
-  newSession: 'button[class*="newSession"]',
-  seat: '[class*="newSessionLabelMask"]',
+  frame: '[data-dsh-claude-part~="layout-frame"]',
+  column: '[data-dsh-claude-part~="sidebar-column"]',
+  toggle: 'button[data-dsh-claude-part~="sidebar-toggle"]',
+  panelRow: '[data-dsh-claude-part~="panel-row"]',
+  glyph: '[data-dsh-claude-part~="panel-glyph"]',
+  newSession: 'button[data-dsh-claude-part~="new-session"]',
+  seat: '[data-dsh-claude-part~="new-session-mask"]',
 }
 
 /** How far a control's centre may stand from the column's own line and still read as on it. */
