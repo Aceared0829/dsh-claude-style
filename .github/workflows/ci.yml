@@ -3,9 +3,8 @@ name: CI
 # A push to master runs the whole matrix — the checks, the build, the unit tests
 # and the smoke on both systems, the end-to-end lane and the host-alpha contract
 # warning — and a pull request or a merge-queue entry runs the same matrix, so a
-# merge is judged before it lands (D69). A session's own branch is not judged in
-# the cloud: its work is merged and the push that carries it onto master is what
-# runs. `branches` keeps session branches out, and tag pushes with them: the
+# merge is judged before it lands (D69). `branches` keeps every other push out,
+# tag pushes with them: a branch is judged through its pull request, and the
 # release workflow owns tags.
 on:
   push:

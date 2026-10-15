@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "improvements",
-  "order": 3,
-  "external": false,
-  "zh": "`npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。",
-  "en": "`npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud."
-}

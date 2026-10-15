@@ -16,7 +16,7 @@ import { filesUnder } from './file-walk.mjs'
  */
 export const TREES = ['packages', 'scripts', 'locale', 'docs']
 
-/** What no walk enters: the build output, the local scratch and the worktrees under `.claude/`. */
+/** What no walk enters: the build output, the local scratch and the editor's own state under `.claude/`. */
 export const SKIPPED = new Set(['.git', '.debug', '.claude', 'node_modules', 'lib'])
 
 /**

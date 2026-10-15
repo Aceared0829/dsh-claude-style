@@ -23,7 +23,6 @@
     "features": "node scripts/features.mjs",
     "features:check": "node scripts/features.mjs --check",
     "probe": "node packages/testing/probe.cjs",
-    "session": "node scripts/session.mjs",
     "smoke": "node packages/testing/smoke.cjs",
     "test": "vitest run",
     "verify": "node scripts/verify.mjs",

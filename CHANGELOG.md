@@ -11,52 +11,52 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 会话切换更顺滑：皮肤在使用中会反复翻转的页面标记（首页形态、页头提升、页签栏置顶、竖屏适配、阅读暂停、输入区随页签隐藏，以及上下文圆盘的尺寸读数）从 `<body>` 下移到最近的公共祖先元素上。此前这些属性上悬挂着一千二百余条选择器，每写一次整个文档都要重新参与样式匹配；实测改版后，会话之间、会话与首页之间的切换对 `<body>` 的属性与内联样式写入降为零，样式失效范围收敛到对应子树。
 - `npm run verify` 不带参数时跑的就是推送前那一档：云端快档那批检查、构建、单元测试与冒烟的快档，端到端通道留到 `--e2e`、`--scenario` 或 `--full` 时跑，冒烟的完整走表由 `--case`、`--feature` 或 `--full` 点名；同一台机器上，一次本机判定的平均耗时从记录里的 413 秒降到快档的 29 秒。
 - `npm run verify` 在走整份冒烟与端到端通道那一档之前打印一句「请确认你正处于发布流程。」：这一档就是云端的发布闸门，起跑前先让发起的人确认自己在发布流程里。
-- `npm run session -- finish` 推送分支之前先拿到本次推送的本地判定：它自己请求一次不带参数的 `npm run verify`，树与上次运行相同时读已记录的结论即刻回答，闸门失败则拒绝推送——推送从此没有跳过本地判定、直接交给云端的入口。
 - 输入光标的测量移到帧的读阶段，探针读数按内容、光标位置、End 倾向、复制样式与字体代次缓存，输入框自身的盒子每次测量只读一次；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件的盒模型读取由 470 至 680 毫秒降到 297 至 402 毫秒。
 - 进程摘要的隐藏量宽元素按措辞与字体缓存，同一句措辞不再重写它并为它触发布局：该项在会话切换中的盒模型读取由 3 轮 11 次、94.5 毫秒降为零。
 - 滑动高亮与推理档位按钮的定位改在读阶段取读数：`createSlidingPill` 分出 `measure` 与 `sync` 两个入口，会话标签、权限分段、工作区分段、搜索过滤条与设置分段五处分别在各自阶段调用；同一次会话切换（3 轮，与 `@linxin666/dsh-web-all` 同装）中本插件在自身写入之后发生的盒模型读取由 231 次、370 至 578 毫秒降到 245 次、178 至 214 毫秒，单次由 1.6 至 2.5 毫秒降到 0.73 至 0.87 毫秒。
 
 ### 问题修复
 
-- `npm run session` 拆除会话工作树前先删掉它的 `node_modules` 联接：`git worktree remove` 把这个联接当目录走进去，再顺着主树 `node_modules` 里的工作区联接删掉主树 `packages/*` 的文件；现在先删联接再拆树，树里另有指向自己的链接时拒绝拆除并列出它们。
 - 手机远程访问（`@linxin666/dsh-remote-web-ui` 的竖屏适配）下，输入区底行不再错位：发送与停止按钮回到输入行内并完整落在卡片里；档位选择器与上下文圆环之间只隔 16px，和桌面一致；模型名称在行内还有空间时完整显示，只有真的放不下才以省略号收尾。上下文圆环的预留宽度变化时（流式输出期间也会发生），档位选择器当帧就跟着重新定位，不再停在旧位置。
+
+### 移除
+
+- `npm run session` 随它的会话工作树机制一并移除：会话直接在仓库主树开工，改动在主树提交与推送，`session/` 分支、`finish` 与 `sweep` 子命令不再存在。
 
 ### 其他变更
 
-- `node scripts/changelog.mjs --release <版本>` 在汇编版本一节之前核对 `session/` 分支：有未合并的会话分支时列出它们并终止发版。
 - 文档里带单位的数值不再进闸门：`scripts/doc-numbers.mjs` 留着按需运行（`npm run docs:numbers`），lint 不再核对它，`docs/STYLE.md` 里与样式表逐字对应的几何与时长因此不再让推送失败。
 - `npm run verify` 先跑云端快档那批检查（lint、特性清单、决策索引、变更记录、AGENTS 表），推送前的一次运行与云端判定同一批内容。
 - 端到端通道不带 `--scenario` 时走 `packages/contracts/src/timing.ts` 那张表里除停放的两个统计场景之外的全部条目，新加入表的场景默认进入云端判定，停放名单与场景表对不上时运行直接终止。
 - 发版工作流在把这一版转正之前跑完快档那批检查、Windows 上的完整冒烟与端到端通道，与 pull request 判定的内容一致。
 - 一次运行期间 `npm run dev` 的重建换掉了构建产物时，这次运行不写结论并判定为不通过，结论只对它真正跑过的那份产物成立。
-- 持续集成先由一个任务按改动的路径定下范围：只改了文档、语言包或工作流的推送跳过读页面的通道，改动落在一个功能目录内时冒烟只走那个目录的用例，其余改动才走完整冒烟；端到端的行为场景与截图捕获按矩阵分成四份并行跑，构建的慢步骤按树内容的散列在运行之间取回，每个分钟级的步骤都有时限，分支规则只登记一个汇总任务。会话自己的分支不再触发云端，判定留给把这份工作带进 master 的那次推送。
-- 会话的工作树与 `session/` 分支只用于协调改动：分支不推送远端（向外部项目提 PR 除外），会话树里不跑测试；`npm run session -- finish` 改为在主树把分支合并进 master、在那里取推送前判定并推送 master，`npm run session -- sweep` 收走工作树并删除已合入的分支。
+- 持续集成先由一个任务按改动的路径定下范围：只改了文档、语言包或工作流的推送跳过读页面的通道，改动落在一个功能目录内时冒烟只走那个目录的用例，其余改动才走完整冒烟；端到端的行为场景与截图捕获按矩阵分成四份并行跑，构建的慢步骤按树内容的散列在运行之间取回，每个分钟级的步骤都有时限，分支规则只登记一个汇总任务。
 
 <h3 id="en-unreleased">Improvements</h3>
 
 - Smoother conversation switches: the page marks the skin flips during normal use (the home layout's hero mark, the header band lift, the titlebar tabs, the mobile portrait adaptation, the reader's scroll hold, the composer hiding with the conversation tab, and the context meter's measured numbers) moved from `<body>` to the nearest element that ancestors every styled target. Over twelve hundred selectors used to hang off those body attributes, so every write re-matched the whole document; measured on this build, a switch between conversations or between a conversation and the home page now writes zero attributes and zero inline styles on `<body>`, and style invalidation stays inside the subtree that changed.
 - A bare `npm run verify` walks the tier the stretch before a push needs — the cloud's fast-tier checks, the build, the unit tests and the smoke's quick tier — and takes the end-to-end lane only when `--e2e`, `--scenario` or `--full` names it, with the smoke's full walk named by `--case`, `--feature` or `--full`; on this machine a local verdict averages 29 s where the recorded bare runs averaged 413 s.
 - `npm run verify` prints 请确认你正处于发布流程。 before a request that walks the whole smoke and the end-to-end lane's default table, so whoever starts the release gate's minutes confirms the release process is what they are in.
-- `npm run session -- finish` takes this push's local verdict before pushing the branch: it requests a bare `npm run verify` itself, which answers from the recorded verdict when the tree is unchanged, and refuses the push when a gate fails — a push no longer has a path that skips the local verdict and hands the question to the cloud.
 - The composer caret's measurement runs in the frame's read phase, and what its probe yields is remembered per content, caret offset, End leaning, copied styles and face generation, so the input's own box is read once per measurement; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings fall from 470–680 ms to 297–402 ms.
 - The process summary's hidden measuring span is cached by wording and face, so a repeated sentence neither rewrites it nor lays it out again: its box readings across a conversation switch fall from 11 calls and 94.5 ms per 3 rounds to none.
 - The sliding highlight and the reasoning-level trigger take their readings in the read phase: `createSlidingPill` splits into `measure` and `sync`, called from the conversation tabs, the permission segments, the workspace segments, the search filter bar and the settings segments in their own phases; across one conversation switch (3 rounds, with `@linxin666/dsh-web-all` installed) the plugin's box readings taken after its own writes fall from 231 calls and 370–578 ms to 245 calls and 178–214 ms, each from 1.6–2.5 ms to 0.73–0.87 ms.
 
 ### Bug Fixes
 
-- `npm run session` drops a session tree's `node_modules` junction before it removes the tree: `git worktree remove` walked into that junction and, through the workspace junctions in the main tree's `node_modules`, deleted the main tree's own `packages/*` files. The junction goes first now, and a tree holding any other link out of itself is listed and kept.
 - On a phone via the mobile remote plugin (`@linxin666/dsh-remote-web-ui`, portrait adaptation) the composer's bottom line no longer slips out of place: the send and stop buttons sit back on the input's own line and inside the card, the tier trigger stands 16px from the context ring as it does on a desktop, and the model name is shown whole whenever the row has room for it, ending in an ellipsis only when it does not. When the room the context ring reserves changes — which also happens while an answer streams — the tier trigger is placed again in that same frame instead of holding its old position.
+
+### Removals
+
+- `npm run session` goes with the session-worktree mechanism it drove: a session works in the repository's main tree and pushes from there, and the `session/` branch with the `finish` and `sweep` subcommands is gone.
 
 ### Chores
 
-- `node scripts/changelog.mjs --release <version>` checks the `session/` branches before it assembles the version's section: an unmerged session branch is listed and stops the release.
 - A number with a unit in a document is no longer a gate: `scripts/doc-numbers.mjs` stays for running on demand (`npm run docs:numbers`), and lint no longer checks it, so the geometry and timing in `docs/STYLE.md` that mirror the stylesheets no longer fail a push.
 - `npm run verify` starts with the checks the cloud's fast tier runs (lint, the feature list, the decisions index, the changelog and the AGENTS table), so the run before a push judges the same set.
 - The end-to-end lane without `--scenario` walks every entry of the table in `packages/contracts/src/timing.ts` but the two parked statistics scenarios, so a scenario added to the table is judged in the cloud by default, and a parked name the table does not hold stops the run.
 - The release workflow runs the fast tier's checks, the full smoke on Windows and the end-to-end lane before it promotes a version, the same set a pull request is judged on.
 - A run whose build output a rebuild behind `npm run dev` swapped files no verdict and reads as failed, so a recorded verdict belongs to the output that run actually drove.
-- Continuous integration now settles its scope first, from the paths a push changed: a push holding only documents, locale files or the workflow skips the lanes that read a page, a change inside one feature directory walks that directory's smoke cases, and anything else walks the whole smoke. The end-to-end behaviour scenarios and screenshot captures run as four parallel shards, the build's slow steps are restored from a cache keyed on the tree's hash, every minutes-long step carries a limit, and a branch rule names a single aggregate job. A push to a session's own branch no longer starts a run: the verdict belongs to the push that carries the work onto master.
-- A session's worktree and its `session/` branch only coordinate the change: the branch is never pushed (a pull request to an outside project aside) and no test runs in the tree; `npm run session -- finish` now merges the branch into master in the main tree, takes the pre-push verdict there and pushes master, and `npm run session -- sweep` collects the worktree and deletes the merged branch.
+- Continuous integration now settles its scope first, from the paths a push changed: a push holding only documents, locale files or the workflow skips the lanes that read a page, a change inside one feature directory walks that directory's smoke cases, and anything else walks the whole smoke. The end-to-end behaviour scenarios and screenshot captures run as four parallel shards, the build's slow steps are restored from a cache keyed on the tree's hash, every minutes-long step carries a limit, and a branch rule names a single aggregate job.
 
 ## [0.14.0] - 2026-10-14
 

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-14",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "`npm run session` 拆除会话工作树前先删掉它的 `node_modules` 联接：`git worktree remove` 把这个联接当目录走进去，再顺着主树 `node_modules` 里的工作区联接删掉主树 `packages/*` 的文件；现在先删联接再拆树，树里另有指向自己的链接时拒绝拆除并列出它们。",
-  "en": "`npm run session` drops a session tree's `node_modules` junction before it removes the tree: `git worktree remove` walked into that junction and, through the workspace junctions in the main tree's `node_modules`, deleted the main tree's own `packages/*` files. The junction goes first now, and a tree holding any other link out of itself is listed and kept."
-}

@@ -34,9 +34,9 @@ const problems = []
 
 /**
  * What the walk never enters: a directory of local scratch a rule does not
- * govern. `.claude/` holds worktrees of this repository (gitignored), and a
- * whole second copy of every document inside one would be read as the
- * repository's own files.
+ * govern. `.claude/` holds the editor's own state (gitignored), and a whole
+ * second copy of every document inside one would be read as the repository's
+ * own files.
  */
 const SKIPPED_DIRS = new Set(['.git', '.debug', '.claude', 'node_modules'])
 

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-14",
+  "group": "removals",
+  "order": 1,
+  "external": true,
+  "zh": "`npm run session` 随它的会话工作树机制一并移除：会话直接在仓库主树开工，改动在主树提交与推送，`session/` 分支、`finish` 与 `sweep` 子命令不再存在。",
+  "en": "`npm run session` goes with the session-worktree mechanism it drove: a session works in the repository's main tree and pushes from there, and the `session/` branch with the `finish` and `sweep` subcommands is gone."
+}
