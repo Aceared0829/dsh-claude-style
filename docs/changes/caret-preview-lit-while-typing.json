@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 10,
+  "external": false,
+  "zh": "设置页「动效」页「光标动画」那张「开」的预览卡里，光标在样例行上滑动期间保持常亮、停住时才闪，与真光标一致：真光标每移动一次就把闪的节奏从头开始，打字时看不到它灭。",
+  "en": "On the Motion tab's Composer caret motion row, the On preview card's caret stays lit for the whole walk along the sample line and blinks only where it stands, matching the drawn caret: it restarts its blink on every move, so a reader typing never sees it dark."
+}

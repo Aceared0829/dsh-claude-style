@@ -13,6 +13,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 体验优化
 
 - 侧栏里对话的状态标记换了一副样子：正在进行的对话不再转圈，改成一盏呼吸的灰灯，实心圆点每 2.4 秒从半亮到全亮一个来回，位置与大小都不动；空闲对话的空心圆与它同样 6px，圈线是 1px 发丝、颜色更淡，两枚标记只靠实心与空心区分，已归档列表里的那枚空心圆跟着一起改，两栏的标题仍从同一处开始。设置的「动画效果」选「减弱」时灯停在最亮的那一帧。
+- 设置页「动效」页「光标动画」那张「开」的预览卡里，光标在样例行上滑动期间保持常亮、停住时才闪，与真光标一致：真光标每移动一次就把闪的节奏从头开始，打字时看不到它灭。
 
 ### 问题修复
 
@@ -28,6 +29,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Improvements
 
 - A conversation's status mark in the sidebar is drawn differently: a running conversation breathes instead of spinning, a lit grey dot whose light rises from half to full and back once every 2.4 seconds while it neither moves nor changes size, and an idle conversation keeps a hollow circle of the same 6px with a 1px hairline stroke in the quieter neutral, so the two marks differ by fill alone; the archived list's circle follows them and both lists still start their titles at the same place. Under the Animation setting's Reduced the light holds its brightest frame.
+- On the Motion tab's Composer caret motion row, the On preview card's caret stays lit for the whole walk along the sample line and blinks only where it stands, matching the drawn caret: it restarts its blink on every move, so a reader typing never sees it dark.
 
 ### Bug Fixes
 
