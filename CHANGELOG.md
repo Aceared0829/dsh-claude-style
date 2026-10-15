@@ -8,10 +8,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">问题修复</h3>
 
+- 侧边栏的工作区名字过长时让位给行尾的悬停操作（名字以省略号收尾），工作区菜单与新建会话两个按钮始终留在栏内并可点击。
 - 侧栏品牌标识悬停时不再浮出一块陶土色底板：它此前被列在「发送」按钮这类填充式 CTA 的规则里，靠一条按类名匹配的排除条件才没被填色；排除条件换掉之后，悬停底色落到了品牌按钮上。品牌按钮从这两条规则里移出，它的外观由自己那条规则给全，深色下也不再多出一块底板。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
+- A workspace name too long for the sidebar now yields to the hover actions at the end of its row (the label ends in an ellipsis), so the workspace menu and the new-session button stay inside the column and stay clickable.
 - The sidebar brand mark no longer floats a clay plate under the pointer: it was listed among the filled CTAs beside the Send button, kept unpainted only by an exclusion written against a host class name, and once that exclusion went the hover fill landed on the brand button. The brand button leaves those two rules; its look comes from its own rule alone, and the dark theme no longer gains a plate either.
 
 ## [0.14.2] - 2026-10-15
@@ -23,10 +25,22 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 端到端通道让每个场景声明的浏览器开关真正生效：远端设置走查改用一台带名字映射（`--host-resolver-rules`）的浏览器，不论整条通道是否共用一个浏览器都跑到底。
 - 重要性台账记下两种判定都算数的记录（`either`）：一行只在某一帧里存在，或由宿主的运行平台决定画不画，这一趟抓到与否都算数，检查不再要求把它划掉；台账同时按云端与本机两次判定重算。
 
+<<<<<<< HEAD
 <h3 id="en-0.14.2">Improvements</h3>
+=======
+### 问题修复
+
+- 侧边栏的工作区名字过长时让位给行尾的悬停操作（名字以省略号收尾），工作区菜单与新建会话两个按钮始终留在栏内并可点击。
+
+<h3 id="en-unreleased">Improvements</h3>
+>>>>>>> f25e6c0 (fix(sidebar): 工作区名字过长时不再把行尾按钮挤出栏外)
 
 - The end-to-end lane honours the browser switches a scenario declares: the remote-settings walk opens its page under the mapped name whether or not the lane shares one browser between scenarios.
 - The importance ledger records the rows the walk cannot decide either way (`either`) — a row that lives inside one animation frame, or one the host's own platform decides to draw: whether this run catches it is right both ways, so the check no longer asks for it to be struck. The list is recomputed from the cloud run and this machine's run together.
+
+### Bug Fixes
+
+- A workspace name too long for the sidebar now yields to the hover actions at the end of its row (the label ends in an ellipsis), so the workspace menu and the new-session button stay inside the column and stay clickable.
 
 ## [0.14.1] - 2026-10-15
 
