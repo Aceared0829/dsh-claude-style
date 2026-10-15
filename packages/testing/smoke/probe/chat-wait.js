@@ -46,8 +46,6 @@
         var label = line.querySelector('.dsh-claude-chat-wait-label')
         var clock = line.querySelector('.dsh-claude-chat-wait-clock')
         var badge = line.querySelector('.dsh-claude-chat-wait-badge')
-        var dots = loader.children
-        var dotStyle = getComputedStyle(dots[0])
         // The words swap over two copies (shared/swapping-text.ts): the one
         // leaving keeps the words it came with, the one arriving carries the
         // new ones, and the reading below is taken off whichever of them is
@@ -92,27 +90,45 @@
           clock: clock.hidden ? null : clock.textContent,
           badge: badge.hidden ? null : badge.textContent,
           // The loader the Claude brand leads the line with, and the host's own
-          // whale tail it stands in for: the dots are the accent in force, they
-          // carry no shadow, and which motion they play follows what the turn is
-          // doing — the snippet's bounce while it thinks, the dots' own lines
-          // while it works (features/chat-wait/wait-loader.ts). The pose is read
-          // off the first dot, whose line is the vertical one.
-          loader: {
-            shown: getComputedStyle(loader).display !== 'none',
-            dots: dots.length,
-            animation: dotStyle.animationName,
-            duration: dotStyle.animationDuration,
-            delay: getComputedStyle(dots[2]).animationDelay,
-            background: dotStyle.backgroundColor,
-            shadow: dotStyle.boxShadow,
-            motion: loader.className,
-            arriving: Array.from(loader.classList).some(function (name) { return name.indexOf('is-arriving-') === 0 }),
-            translate: dotStyle.translate,
-            scale: dotStyle.scale,
-            // Each dot's own start in its motion: the phase a dot stands at,
-            // which is what tells two dots doing the same walk apart.
-            delays: Array.prototype.map.call(dots, function (one) { return getComputedStyle(one).animationDelay }),
-          },
+          // whale tail it stands in for: two lanes of three dots in the accent in
+          // force, one lane for each motion, of which the lane in play is drawn
+          // and the other waits out of the page
+          // (features/chat-wait/wait-loader.ts). A change between the motions
+          // fades one lane's dots out and the other's in, each on its own moment,
+          // so both lanes are read whole — their opacities, the poses their
+          // motions stand them at, and their own starts — and the animation
+          // beside them is the one the lane in play runs.
+          loader: (function () {
+            var lanes = Array.from(loader.children).map(function (lane) {
+              var laneDots = Array.from(lane.children)
+              return {
+                name: lane.className,
+                opacity: laneDots.map(function (one) { return Number(getComputedStyle(one).opacity) }),
+                translate: laneDots.map(function (one) { return getComputedStyle(one).translate }),
+                scale: laneDots.map(function (one) { return getComputedStyle(one).scale }),
+                delays: laneDots.map(function (one) { return getComputedStyle(one).animationDelay }),
+                animation: laneDots.length === 0 ? null : getComputedStyle(laneDots[0]).animationName,
+              }
+            })
+            var playing = loader.querySelector('.dsh-claude-chat-wait-lane.is-active')
+            var playingDots = playing === null ? [] : Array.from(playing.children)
+            var playingStyle = playingDots.length === 0 ? null : getComputedStyle(playingDots[0])
+            return {
+              shown: getComputedStyle(loader).display !== 'none',
+              lanes: lanes,
+              motion: playing === null ? null : playing.className,
+              animation: playingStyle === null ? null : playingStyle.animationName,
+              duration: playingStyle === null ? null : playingStyle.animationDuration,
+              delay: playingDots.length < 3 ? null : getComputedStyle(playingDots[2]).animationDelay,
+              background: playingStyle === null ? null : playingStyle.backgroundColor,
+              shadow: playingStyle === null ? null : playingStyle.boxShadow,
+              translate: playingStyle === null ? null : playingStyle.translate,
+              scale: playingStyle === null ? null : playingStyle.scale,
+              // Each dot's own start in its motion: the phase a dot stands at,
+              // which is what tells two dots doing the same walk apart.
+              delays: playingDots.map(function (one) { return getComputedStyle(one).animationDelay }),
+            }
+          })(),
           whaleShown: getComputedStyle(whale).display !== 'none',
           // The box the swap runs in, and where the clock beside it sits: the
           // hidden sizer holds the wider half while words change, so neither may
@@ -194,53 +210,92 @@
       words.parentElement.appendChild(foreignLine)
       await sleep(300)
       r.wait.foreignAfter = lineOf()
-      // The loader changes motion with the turn's state, at once, where the
-      // wording below waits out its own second-long lock: watched as the tool
-      // call arrives, so the gather the change runs through is sampled — it is
-      // shorter than the lock and a reading at either end would miss it.
-      var watchLoader = async function (want) {
+      // One hand-over of the loader's two lanes: both lanes are read every 20 ms
+      // for long enough that a whole one fits — the longest a dot can wait for its
+      // own moment is a full turn of its motion, and its fade is one leg of that
+      // turn on top (features/chat-wait/wait-loader.ts).
+      var watchLoader = async function () {
         var frames = []
-        for (var round = 0; round < 40; round += 1) {
+        for (var round = 0; round < 80; round += 1) {
           var reading = lineOf()
           frames.push(reading === null ? null : reading.loader)
-          if (reading !== null && want(reading.loader)) break
           await sleep(20)
         }
         return frames
       }
-      // One dot's walk read off the animation itself: the three dots run the
-      // same clock, so stepping that clock through a whole period — all three
-      // together, which keeps them a third of a period apart — reads the walk's
-      // own curve rather than what the display happened to render, and reads it
-      // at even steps with no frame timing in them. The clock is handed back
-      // where it stood once the readings are in.
-      var WALK_STEP = 25
-      var watchWalk = async function () {
+      // One lane's motion read off the animation itself: a lane's dots run the
+      // same clock, so stepping that clock through a whole turn — all of them
+      // together, which keeps their own phases — reads the motion's own curve
+      // rather than what the display happened to render, at even steps with no
+      // frame timing in them. The lane is put in play for the reading (the
+      // loader's own choice is put back afterwards, and the next rotation puts
+      // every lane back in its place anyway).
+      var watchLane = async function (laneName, rounds, step) {
         var line = row.querySelector('.dsh-claude-chat-wait')
         var loader = line === null ? null : line.querySelector('.dsh-claude-chat-wait-loader')
-        if (loader === null) return null
-        var dots = Array.prototype.slice.call(loader.children)
+        var lane = loader === null ? null : loader.querySelector('.dsh-claude-chat-wait-lane.' + laneName)
+        if (lane === null) return null
+        var lanes = Array.prototype.slice.call(loader.children)
+        var saved = lanes.map(function (one) { return one.className })
+        lanes.forEach(function (one) { one.classList.remove('is-active', 'is-leaving', 'is-resting') })
+        lane.classList.add('is-active')
+        var dots = Array.prototype.slice.call(lane.children)
         var running = dots.map(function (dot) { return dot.getAnimations()[0] })
-        if (running.some(function (animation) { return animation === undefined })) return null
+        var read = function () {
+          return dots.map(function (dot) { return getComputedStyle(dot) })
+        }
+        if (running.some(function (animation) { return animation === undefined })) {
+          lanes.forEach(function (one, at) { one.className = saved[at] })
+          return null
+        }
         var stood = running[0].currentTime
         var began = performance.now()
         var frames = []
-        for (var round = 0; round < 50; round += 1) {
-          var at = round * WALK_STEP
+        for (var round = 0; round < rounds; round += 1) {
+          var at = round * step
           running.forEach(function (animation) { animation.currentTime = at })
-          var style = getComputedStyle(dots[0])
-          frames.push({ at: at, translate: style.translate, scale: style.scale })
+          var styles = read()
+          frames.push({
+            at: at,
+            translate: styles.map(function (style) { return style.translate }),
+            scale: styles.map(function (style) { return style.scale }),
+            opacity: styles.map(function (style) { return Number(style.opacity) }),
+            delays: styles.map(function (style) { return style.animationDelay }),
+            animation: styles[0].animationName,
+            duration: styles[0].animationDuration,
+          })
         }
         running.forEach(function (animation) { animation.currentTime = stood + (performance.now() - began) })
-        return { step: WALK_STEP, frames: frames }
+        lanes.forEach(function (one, at) { one.className = saved[at] })
+        return { step: step, frames: frames }
+      }
+      // The rotation: the loader opens on one motion and takes up another every
+      // ten seconds, never the one already standing. Sampled with the moment of
+      // each reading, so the stretch one motion stood and the hand-over between
+      // two of them can both be read off it.
+      var watchRotation = async function (rounds) {
+        var frames = []
+        for (var round = 0; round < rounds; round += 1) {
+          var reading = lineOf()
+          frames.push({ at: performance.now(), loader: reading === null ? null : reading.loader })
+          await sleep(100)
+        }
+        return frames
       }
       // A tool call in flight is a state of its own, with no block streaming.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
       var calls = window.__dshSmokeHost.turnFixtureCalls
       calls.push({ turn: 2 })
-      r.wait.loaderChange = await watchLoader(function (loader) { return loader.animation === 'dsh-claude-wait-dot-line' })
+      r.wait.loaderChange = await watchLoader()
       r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
-      r.wait.walk = await watchWalk()
+      // Each lane's own motion, one at a time: the hopping wave reads a whole
+      // bounce, the walk a whole period, the corner swap a whole turn.
+      r.wait.bounceLane = await watchLane('is-bounce', 40, 25)
+      r.wait.lineLane = await watchLane('is-line', 50, 25)
+      r.wait.orbitLane = await watchLane('is-orbit', 61, 40)
+      // And the rotation itself: long enough for two changes to land, so the
+      // stretch between two of them can be timed.
+      r.wait.rotation = await watchRotation(220)
       // A call that has its arguments names the file it works on; one whose
       // arguments are still arriving names nothing yet.
       calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
@@ -293,7 +348,7 @@
       // way, and its wording at the same time: the loader's own change is
       // watched alongside the swap below rather than after it, since the swap's
       // frames are the ones that have to be caught whole.
-      var loaderBack = watchLoader(function (loader) { return loader.animation === 'dsh-claude-wait-dot' })
+      var loaderBack = watchLoader()
       r.wait.silent = await watchSwap()
       r.wait.loaderBack = await loaderBack
       r.wait.enterFrames = await waitForEnter

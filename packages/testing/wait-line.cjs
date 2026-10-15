@@ -49,7 +49,11 @@ const readHead = (page) => page.evaluate(() => {
   const row = document.querySelector('[data-chat-running]')
   if (row === null) return null
   const loader = row.querySelector('.dsh-claude-chat-wait-loader')
-  const dot = loader === null ? null : loader.firstElementChild
+  // The loader carries one lane of dots per motion, of which the lane in play is
+  // the one drawn and the one whose animation is running
+  // (features/chat-wait/wait-loader.ts).
+  const lane = loader === null ? null : loader.querySelector('.dsh-claude-chat-wait-lane.is-active')
+  const dot = lane === null ? null : lane.firstElementChild
   const icon = row.querySelector('[data-dsh-claude-part~="running-icon"]')
   const label = row.querySelector('.dsh-claude-chat-wait-label')
   const dotStyle = dot === null ? null : getComputedStyle(dot)
@@ -66,13 +70,13 @@ const readHead = (page) => page.evaluate(() => {
     text = box(range.getBoundingClientRect())
   }
   return {
-    dots: loader === null ? 0 : loader.children.length,
+    dots: lane === null ? 0 : lane.children.length,
     shown: loader !== null && getComputedStyle(loader).display !== 'none',
-    // Which of the loader's two motions is standing (features/chat-wait/wait-loader.ts
-    // writes the class): the dots bounce while the turn thinks, and walk their
-    // own lines while it works. The reading beside it is the animation that
-    // motion runs, so the two are checked against each other.
-    motion: loader === null ? '' : loader.className,
+    // Which of the loader's two motions is standing: the dots bounce while the
+    // turn thinks, and walk their own lines while it works. The reading beside it
+    // is the animation that motion runs, so the two are checked against each
+    // other.
+    motion: lane === null ? '' : lane.className,
     animation: dotStyle === null ? null : dotStyle.animationName,
     duration: dotStyle === null ? null : dotStyle.animationDuration,
     shadow: dotStyle === null ? null : dotStyle.boxShadow,
