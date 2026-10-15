@@ -244,8 +244,13 @@ export const MENU_ROLE_SELECTOR = '[role="menu"]'
 export const MENU_LIST_SELECTOR = '[role="presentation"]'
 /** The host's account trigger in the sidebar footer. */
 export const ACCOUNT_TRIGGER_SELECTOR = '[aria-haspopup="menu"][data-signed-out]'
-/** The host's settings button in the footer. */
-export const SETTINGS_BUTTON_SELECTOR = '[data-dsh-claude-part~="settings-area"] button[aria-haspopup="dialog"]'
+/**
+ * The popup-opening control in the footer's settings area, which the account
+ * menu rows open. The older host puts its settings dialog trigger there
+ * (`aria-haspopup="dialog"`); the newer one puts the account menu's own trigger
+ * (`aria-haspopup="menu"`), so the value is not part of the contract.
+ */
+export const SETTINGS_BUTTON_SELECTOR = '[data-dsh-claude-part~="settings-area"] button[aria-haspopup]'
 /** The sidebar's action list, whose entries the skin mirrors into its drawer. */
 export const FOOTER_ACTIONS_SELECTOR = '[data-dsh-claude-part~="footer-actions"]'
 /** A slot anchor; its children are the host's real entries. */
