@@ -541,6 +541,12 @@
       ]
     },
     {
+      "reason": "减少动效配上正在进行的会话行：走查写动画偏好时那一轮已经落定，侧栏里没有正在进行的会话",
+      "selectors": [
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] svg[data-state=ongoing]"
+      ]
+    },
+    {
       "reason": "宿主的按键提示按运行平台给出：这台浏览器上宿主没有为新建会话给出按键，newSessionShortcut 里没有 kbd",
       "either": true,
       "selectors": [
