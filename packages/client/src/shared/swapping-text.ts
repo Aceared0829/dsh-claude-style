@@ -299,13 +299,16 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   // The copy that left is taken down once the arriving one has settled: the
   // sizer holds the box through the whole swap, so nothing depends on it any
   // more. The words left standing take the box over there, which is what brings
-  // the clock back to sit right after them.
+  // the clock back to sit right after them. The box's own width travels at its
+  // own duration (--dsh-claude-duration-slide), which is longer than the two
+  // halves: letting the pin go before that move has landed drops the rest of it
+  // in one step, and the clock jumps instead of sliding.
   state.timer = window.setTimeout(() => {
     state.timer = null
     if (!element.isConnected) return
     leaving.remove()
     holdWidest(element, wordsIn(element))
-  }, swap + gap)
+  }, Math.max(swap + gap, motionMs('--dsh-claude-duration-slide')))
 }
 
 /**

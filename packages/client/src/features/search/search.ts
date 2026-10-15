@@ -4,7 +4,7 @@ import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SIDEBAR_BRAND_SELECTOR, SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
-import { conversationSessionId, findConversationSession, sessionOutline, turnForSeq } from '../../core/host'
+import { cacheFirstMatch, conversationSessionId, findConversationSession, sessionOutline, turnForSeq } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
@@ -17,6 +17,14 @@ import { createTurnNavHost } from '../turn-nav/turn-nav-host'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './search.manifest'
+
+/**
+ * The sidebar's brand row, the host element this feature reads every pass,
+ * kept while it stays the first match (D40). The host's search button is
+ * cached beside its own selector inside the install, which is where that
+ * selector is read.
+ */
+const SIDEBAR_BRAND = cacheFirstMatch<HTMLElement>(SIDEBAR_BRAND_SELECTOR)
 
 /**
  * Search: a box in the sidebar that opens a palette over the window, the way
@@ -102,6 +110,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const closingStamp = createStamp('data-dsh-claude-search-closing')
   /** The host's own sidebar search, which the palette stands in for. */
   const HOST_SEARCH = SIDEBAR_SEARCH_SLOT_SELECTOR
+  /**
+   * The button inside it, kept while it stays the first match (D40): the pass
+   * reads it every frame, and the listener follows whatever element React has
+   * mounted this time.
+   */
+  const hostSearchButton = cacheFirstMatch<HTMLElement>(`${HOST_SEARCH} button`)
   /** The palette's own nodes while it is open; `card` is the div the modal hands over. */
   let card: HTMLElement | null = null
   let input: HTMLInputElement | null = null
@@ -142,7 +156,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * re-render can replace it.
    */
   function syncHostButton() {
-    const found = document.querySelector<HTMLElement>(`${HOST_SEARCH} button`)
+    const found = hostSearchButton()
     if (found === hostButton) return
     if (hostButton !== null) hostButton.removeEventListener('click', onHostSearchClick)
     hostButton = found
@@ -173,7 +187,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * holds it — the host's logo row, or the skin's own row under it.
    */
   function syncTrigger() {
-    const brand = document.querySelector(SIDEBAR_BRAND_SELECTOR)
+    const brand = SIDEBAR_BRAND()
     const row = brand === null ? null : brand.parentElement
     const style = readPrefs().searchStyle
     // The brand is absent in the collapsed rail: no wide brand, no box.

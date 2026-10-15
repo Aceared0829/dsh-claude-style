@@ -1,7 +1,7 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '../../core/bus'
-import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, observeComposerCards, observeComposerPlaceholders } from '../../core/host'
+import { COMPOSER_STACK, cacheFirstMatch, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, observeComposerCards, observeComposerPlaceholders } from '../../core/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '../../core/host'
 import type { FeatureHandle } from '../../core/scheduler'
@@ -11,6 +11,13 @@ import { closestFrom, setAttributeIfChanged } from '../../shared/dom'
 import { writeScroll } from '../../shared/scroll-owner'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
+
+/**
+ * The host's hero-phase conversation root, kept while it stays the first
+ * match (D40). The composer reads it once per pass, and every other feature's
+ * reading of the page follows from that answer.
+ */
+const HERO_ROOT = cacheFirstMatch<HTMLElement>(`[${PHASE_ATTRIBUTE}="hero"]`)
 
 /** What other features read off the composer's reading (ui.composer). */
 export interface ComposerHandle extends FeatureHandle {
@@ -67,7 +74,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * page.
    */
   function readState() {
-    hero = document.querySelector(`[${PHASE_ATTRIBUTE}="hero"]`) !== null
+    // Read through the kept match: this runs on every pass, and on the
+    // conversation page the hero marker is absent, so a bare query re-walked
+    // the document every frame for an answer that only the host's own
+    // re-render can change (D9).
+    hero = HERO_ROOT() !== null
     const scope = readPrefs().composerScope
     active = !composerRestyleRetired && (scope === 'all' || (hero ? scope === 'hero' : scope === 'conversation'))
     studioHome = hero && readPrefs().homeLayout === HOME_LAYOUT_STUDIO

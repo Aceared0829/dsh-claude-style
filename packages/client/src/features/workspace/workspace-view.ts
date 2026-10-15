@@ -84,18 +84,41 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * the control go. A host that renames the local name leaves the part
    * unwritten, and the section keeps its plain label: the feature stays off
    * rather than mounting on a section that happens to be first.
+   *
+   * The answer is kept while it still stands: the section is a seat the host
+   * mounts once and replaces whole, and this runs on every pass — a document
+   * query and a walk of every label per frame for an answer the pass before it
+   * had already given (D9).
    */
+  let sectionLabel: HTMLElement | null = null
+  /** The section root a label sits in: the label's header, and that header's parent. */
+  function sectionRoot(label: Element) {
+    const header = label.parentElement
+    return header === null ? null : header.parentElement
+  }
+  /** The section root a label stands in, or null when that root keeps no list area. */
+  function sectionOf(label: Element) {
+    const root = sectionRoot(label)
+    if (root === null) return null
+    return root.querySelector(LIST_AREA_SELECTOR) === null ? null : root
+  }
   function findSection() {
-    const labels = document.querySelectorAll('[data-dsh-claude-part~="section-label"]')
+    const kept = sectionLabel
+    if (kept !== null && kept.isConnected && sectionOf(kept) !== null) return kept
+    const labels = document.querySelectorAll<HTMLElement>('[data-dsh-claude-part~="section-label"]')
     for (let i = 0; i < labels.length; i++) {
-      const root = labels[i].parentElement?.parentElement
-      if (root !== null && root !== undefined && root.querySelector('[data-dsh-claude-part~="list-area"]') !== null) return labels[i]
+      if (sectionOf(labels[i]) === null) continue
+      sectionLabel = labels[i]
+      return labels[i]
     }
+    sectionLabel = null
     return null
   }
 
   /** The tree's rows: the host's own row key, or either row part. */
   const TREE_ROW_SELECTOR = '[data-row-key], [data-dsh-claude-part~="session-row"], [data-dsh-claude-part~="project-row"]'
+  /** The section's list area, the sibling its header shares a parent with. */
+  const LIST_AREA_SELECTOR = '[data-dsh-claude-part~="list-area"]'
 
   /**
    * The section's list area, which is what the view mark rides: the mark goes on
@@ -106,7 +129,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function findTree(label: Element) {
     let region = label.parentElement
     while (region !== null && region !== document.body) {
-      const tree = region.querySelector('[data-dsh-claude-part~="list-area"]')
+      const tree = region.querySelector(LIST_AREA_SELECTOR)
       if (tree !== null && tree.querySelector(TREE_ROW_SELECTOR) !== null) return tree
       region = region.parentElement
     }

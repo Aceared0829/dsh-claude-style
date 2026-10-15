@@ -378,7 +378,8 @@ export const CHAT_FLYING_ATTR = 'data-dsh-claude-send-flight'
  * animation off it, so that row animates once — a row rendered by a restored
  * session never carries the mark and never animates.
  */
-export const MESSAGE_ENTER_ATTR = 'data-dsh-claude-message-enter'/**
+export const MESSAGE_ENTER_ATTR = 'data-dsh-claude-message-enter'
+/**
  * On a node the skin owns purely for its own bookkeeping — the caret
  * motion's probe container and the caret it draws. The shared scheduler
  * ignores mutations against such a node (D40), so measuring or redrawing

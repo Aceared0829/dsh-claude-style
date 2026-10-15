@@ -217,41 +217,63 @@
           }
           return out
         })()
-        // The caret row's preview cards: two cards, the stored choice active,
-        // each holding one sample line with one bar; the on bar glides and
-        // blinks, the off bar blinks alone. The stand-in renders the page as a
-        // plain tree, so the cards are read off a fresh render of the tab.
-        var react2 = window.__react
-        react2.rendering = true
-        react2.states = { general: 'motion' }
-        var motionTree = Section({})
-        react2.rendering = false
-        react2.states = null
-        var caretCards = []
-        walk(motionTree, function (el) {
-          var props = el.props || {}
-          if (typeof props.className === 'string' && /(^| )dsh-claude-caret-card( |$)/.test(props.className)) {
-            var barClass = null
-            walk(props.children, function (part) {
-              var partProps = part.props || {}
-              if (typeof partProps.className === 'string' && /(^| )dsh-claude-caret-sample-bar( |$)/.test(partProps.className)) barClass = partProps.className
-            })
-            caretCards.push({ label: props['aria-label'], active: props['data-active'] === '', pressed: props['aria-pressed'], bar: barClass })
-          }
-        })
-        r.settings.caretCards = caretCards
-        var barHost = document.createElement('div')
-        barHost.style.cssText = 'position:absolute;left:-10000px;top:-10000px'
-        var bars = []
-        for (var kb = 0; kb < 2; kb++) {
-          var caretBar = document.createElement('span')
-          caretBar.className = 'dsh-claude-caret-sample-bar dsh-claude-caret-' + (kb === 0 ? 'typing' : 'off')
-          barHost.appendChild(caretBar)
-          bars.push(caretBar)
+        // The caret row's preview cards: one line is typed out in both cards,
+        // character by character, with the caret standing where the last typed
+        // character ends — lit for the whole time the line is being typed and
+        // blinking on the native cycle once the line stands whole, the on card's
+        // caret gliding to each new place and the off card's arriving there at
+        // once. The stand-in renders the page as a plain tree and the cards'
+        // clock lives in a component, so the cards are stood up here with the
+        // classes and the attributes they carry and read through their own
+        // boxes.
+        var caretHost = document.createElement('div')
+        caretHost.style.cssText = 'position:absolute;left:-10000px;top:-10000px'
+        var caretCard = function (kind, typing) {
+          var card = document.createElement('span')
+          card.className = 'dsh-claude-caret-card'
+          var sample = document.createElement('span')
+          sample.className = 'dsh-claude-caret-sample'
+          sample.style.setProperty('--dsh-claude-caret-x', '34px')
+          var text = document.createElement('span')
+          text.className = 'dsh-claude-caret-sample-text'
+          var typed = document.createElement('span')
+          typed.className = 'dsh-claude-caret-piece'
+          typed.setAttribute('data-in', '')
+          typed.textContent = 'H'
+          var waiting = document.createElement('span')
+          waiting.className = 'dsh-claude-caret-piece'
+          waiting.textContent = 'i'
+          text.appendChild(typed)
+          text.appendChild(waiting)
+          var bar = document.createElement('span')
+          bar.className = 'dsh-claude-caret-sample-bar dsh-claude-caret-' + kind
+          if (typing) bar.setAttribute('data-typing', '')
+          sample.appendChild(text)
+          sample.appendChild(bar)
+          card.appendChild(sample)
+          caretHost.appendChild(card)
+          return { card: card, sample: sample, bar: bar, typed: typed, waiting: waiting }
         }
-        document.body.appendChild(barHost)
-        r.settings.caretPreview = bars.map(function (b) { return getComputedStyle(b).animationName })
-        barHost.remove()
+        document.body.appendChild(caretHost)
+        var typingCaret = caretCard('typing', true)
+        var standingCaret = caretCard('typing', false)
+        var offCaret = caretCard('off', false)
+        var caretRead = function (one) {
+          var barStyle = getComputedStyle(one.bar)
+          return {
+            typed: getComputedStyle(one.typed).visibility,
+            waiting: getComputedStyle(one.waiting).visibility,
+            x: Math.round(one.bar.getBoundingClientRect().left - one.sample.getBoundingClientRect().left),
+            animation: barStyle.animationName,
+            transition: barStyle.transitionDuration,
+          }
+        }
+        r.settings.caretPreview = {
+          typing: caretRead(typingCaret),
+          standing: caretRead(standingCaret),
+          off: caretRead(offCaret),
+        }
+        caretHost.remove()
         // The new-text fade row's cards: the fade card hands each character its
         // turn and lets it land faint, settling over the reveal's own duration,
         // while the other card's characters stand solid the moment they arrive

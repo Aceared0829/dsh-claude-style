@@ -359,7 +359,9 @@ function replyFor(script, request, state) {
  *
  * @param options.port - the port; 0 lets the OS pick one.
  * @param options.log - where requests are written (created when absent).
- * @param options.script - the script's name (SCRIPTS).
+ * @param options.script - the script's name (SCRIPTS), or a script of the
+ *     caller's own in the same shape: a reading that needs a reply of another
+ *     size keeps it beside its own assertions instead of in the table.
  * @param options.delayMs - the pause between streamed pieces.
  * @param options.vars - the values a script's `{{name}}` slots are filled from:
  *     the lane's scratch home is only known at run time (packages/testing/e2e.cjs).
@@ -368,9 +370,10 @@ function replyFor(script, request, state) {
  */
 async function startMockLlm(options = {}) {
   const log = options.log ?? DEFAULT_LOG
-  const name = options.script ?? 'greeting'
-  const script = SCRIPTS[name]
-  if (script === undefined) throw new Error(`mock-llm: no script named "${name}"`)
+  const script = typeof options.script === 'object' && options.script !== null
+    ? options.script
+    : SCRIPTS[options.script ?? 'greeting']
+  if (script === undefined) throw new Error(`mock-llm: no script named "${options.script}"`)
   const delayMs = options.delayMs ?? 50
   const vars = options.vars ?? {}
   fs.mkdirSync(log, { recursive: true })

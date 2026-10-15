@@ -585,14 +585,17 @@ module.exports = {
           preview.width === Math.max(...(preview.wordWidths || [0]))
       }),
       JSON.stringify(previews))
-    const caretCards = settings.caretCards || []
-    check('the caret row shows its choice as two preview cards, the stored one active, each holding one bar',
-      caretCards.length === 2 && caretCards.every((card) => typeof card.label === 'string' && card.label.length > 0 && typeof card.bar === 'string') &&
-        caretCards[0].active === true && caretCards[0].pressed === 'true' && caretCards[1].active === false && caretCards[1].pressed === 'false',
-      JSON.stringify(caretCards))
-    check('the on card\'s caret walks the line lit and blinks only where it stands; the off card\'s only blinks',
-      JSON.stringify(settings.caretPreview) === JSON.stringify(['dsh-claude-caret-glide, dsh-claude-caret-rest-blink', 'dsh-claude-caret-blink']),
-      JSON.stringify(settings.caretPreview))
+    const caretPreview = settings.caretPreview || {}
+    const typingCaret = caretPreview.typing || {}
+    const standingCaret = caretPreview.standing || {}
+    const offCaret = caretPreview.off || {}
+    check('the caret row previews its two answers on one typed line: a character waiting for its turn is unseen while the typed ones stand, the caret stands where the last typed character ends, and it is lit for the whole time the line is being typed and blinks on the native cycle once the line stands whole',
+      typingCaret.typed === 'visible' && typingCaret.waiting === 'hidden' && typingCaret.x === 34 &&
+        typingCaret.animation === 'none' && standingCaret.animation === 'dsh-claude-caret-blink',
+      JSON.stringify(caretPreview))
+    check('the on card\'s caret glides to each new place the line hands it and the off card\'s arrives there at once',
+      typingCaret.transition === '0.08s' && offCaret.animation === 'dsh-claude-caret-blink' && offCaret.transition === '0s',
+      JSON.stringify(caretPreview))
     const revealPreview = settings.revealPreview || {}
     const fade = revealPreview.fade || {}
     const waiting = revealPreview.waiting || {}

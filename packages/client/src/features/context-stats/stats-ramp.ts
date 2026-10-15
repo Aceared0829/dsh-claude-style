@@ -68,8 +68,12 @@ export function rampPosition(value: number, stops: readonly number[]): RampPosit
  */
 export function writeRamp(element: HTMLElement, kind: RampKind, position: RampPosition | null) {
   if (position === null) {
-    element.removeAttribute(RAMP_ATTRIBUTE)
-    element.removeAttribute(RAMP_SPAN_ATTRIBUTE)
+    // A removal writes whatever the element carried: this runs on every
+    // projection frame while a turn streams, and the reading is null for most
+    // of them, so an element that never carried a ramp would take a style
+    // invalidation per frame for nothing.
+    if (element.hasAttribute(RAMP_ATTRIBUTE)) element.removeAttribute(RAMP_ATTRIBUTE)
+    if (element.hasAttribute(RAMP_SPAN_ATTRIBUTE)) element.removeAttribute(RAMP_SPAN_ATTRIBUTE)
     if (element.style.getPropertyValue(RAMP_POSITION_VAR) !== '') element.style.removeProperty(RAMP_POSITION_VAR)
     return
   }

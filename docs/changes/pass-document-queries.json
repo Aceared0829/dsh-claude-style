@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-15",
+  "group": "improvements",
+  "order": 30,
+  "external": false,
+  "zh": "每趟刷新少做整份文档的查找：侧栏搜索的位置与宿主搜索按钮、工作区分区的标题、输入区的首屏阶段标记都改为记住上一次的答案，宿主没有换掉那个元素就不再重新查找。同一条流式回答期间量了同一个回合：整份文档的查找从 2792 次降到 2026 次，其中查不到任何东西的从 1516 次降到 1351 次。",
+  "en": "A pass now re-reads fewer things across the whole document: the sidebar search's box and the host's search button, the workspace section's label and the composer's hero-phase marker are all kept from the pass before while the host has not replaced the element. Measured over one streaming turn: document-wide queries fall from 2792 to 2026, and those that match nothing from 1516 to 1351."
+}
