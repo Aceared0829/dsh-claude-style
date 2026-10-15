@@ -351,6 +351,15 @@ export const CHAT_FLYING_ATTR = 'data-dsh-claude-send-flight'
  */
 export const QUIET_ATTR = 'data-dsh-claude-quiet'
 /**
+ * On a host element the stylesheet keys on, carrying the name of the part it
+ * plays (packages/client/src/core/parts.ts). Every rule that used to match a
+ * fragment of a hashed host class name reads this attribute instead, so a match
+ * is exact, a host upgrade that drops the element leaves the part unresolved
+ * rather than silently matching something else, and no other skin's class name
+ * can collide with these rules (D3).
+ */
+export const PART_ATTR = 'data-dsh-claude-part'
+/**
  * On the element the fold glide is pressing right now (packages/client/src/features/chat-fold/
  * fold-glide.ts): while it stands, the elements inside lay out at their
  * natural height instead of being squeezed by flex (fold-motion.css).

@@ -19,7 +19,7 @@
       var card = document.createElement('div')
       card.setAttribute('data-composer-card', '')
       card.innerHTML = '<div data-slot="conversation.input.model" style="display:contents">' +
-        '<div class="_m_root_1"><button type="button" class="_m_trigger_1">GLM-5.3</button></div></div>'
+        '<div class="_root_m_1"><button type="button" class="_trigger_m_1">GLM-5.3</button></div></div>'
       document.body.appendChild(card)
       await sleep(400)
 

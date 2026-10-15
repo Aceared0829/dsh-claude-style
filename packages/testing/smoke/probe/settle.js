@@ -47,7 +47,7 @@
     // slot outlet, so an idle row's seat is not :empty — the circle has to hang
     // on the empty outlet anchor. A seat carrying the running status dot keeps
     // its own paint and gets no circle.
-    var seats = document.querySelectorAll('[class*="sessionRow"] [class*="slot"]')
+    var seats = document.querySelectorAll('[data-dsh-claude-part~="session-row"] [data-dsh-claude-part~="row-slot"]')
     function seatState(seat) {
       if (!seat) return null
       var outlet = seat.querySelector(':scope > [data-slot]')

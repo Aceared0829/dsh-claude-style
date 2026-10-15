@@ -34,7 +34,7 @@
       // page shows beside the account row. (The first pass runs on a frame.)
       await sleep(500)
       r.footerEntriesBeforeOpen = Array.prototype.map.call(
-        document.querySelectorAll('[class*="footerActions"] [data-slot] > *'),
+        document.querySelectorAll('[data-dsh-claude-part~="footer-actions"] [data-slot] > *'),
         function (entry) {
           return {
             hidden: entry.hasAttribute('data-dsh-claude-footer-hidden'),
@@ -55,7 +55,7 @@
       r.hostRowDisplay = hostRow ? getComputedStyle(hostRow).display : null
       r.hostRowVisible = !!(hostRow && hostRow.getBoundingClientRect().width > 0)
       r.syntheticBtn = !!document.querySelector('.dsh-claude-account-btn')
-      var triggerRow = document.querySelector('[class*="footArea"] [class*="triggerRow"]')
+      var triggerRow = document.querySelector('[data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"]')
       r.triggerRowDisplay = triggerRow ? getComputedStyle(triggerRow).display : null
       r.hostRowText = hostRow ? (hostRow.textContent || '').trim() : null
       r.hostRowWidth = hostRow ? hostRow.getBoundingClientRect().width : null
@@ -223,7 +223,7 @@
       // Ctrl+, opens the host's settings dialog through the account menu.
       document.dispatchEvent(new KeyboardEvent('keydown', { key: ',', ctrlKey: true, bubbles: true, cancelable: true }))
       await sleep(700)
-      r.dialogAfterShortcut = document.querySelectorAll('[class*="settingsArea"] [role="dialog"]').length
+      r.dialogAfterShortcut = document.querySelectorAll('[data-dsh-claude-part~="settings-area"] [role="dialog"]').length
     })
   })
 })()

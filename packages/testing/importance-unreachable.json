@@ -165,22 +165,22 @@
       "selectors": [
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) blockquote",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) pre",
-        "body[data-dsh-claude-style] [class*=markdown] h1",
-        "body[data-dsh-claude-style] [class*=markdown] h2",
-        "body[data-dsh-claude-style] [class*=markdown] h3",
-        "body[data-dsh-claude-style] [class*=markdown] h4",
-        "body[data-dsh-claude-style] [class*=markdown] :is(th,td)",
-        "body[data-dsh-claude-style] [class*=tableScroll] thead th",
-        "body[data-dsh-claude-style] [class*=tableScroll] thead td",
-        "body[data-dsh-claude-style][data-ds-dark-theme] [class*=tableScroll] thead th",
-        "body[data-dsh-claude-style][data-ds-dark-theme] [class*=tableScroll] thead td",
-        "body[data-dsh-claude-style] [class*=tableScroll]",
-        "body[data-dsh-claude-style] [class*=tableScroll] table",
-        "body[data-dsh-claude-style] [class*=tableScroll] tr>:first-child",
-        "body[data-dsh-claude-style] [class*=tableScroll] tr>:last-child",
-        "body[data-dsh-claude-style] [class*=markdown] :is(h1,h2,h3)",
-        "body[data-dsh-claude-style] [class*=markdown] :is(h1,h2,h3)+:is(h1,h2,h3)",
-        "body[data-dsh-claude-style] [class*=markdown] :is(h4,h5,h6)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] h1",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] h2",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] h3",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] h4",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] :is(th,td)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll] thead th",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll] thead td",
+        "body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-part~=table-scroll] thead th",
+        "body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-part~=table-scroll] thead td",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll] table",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll] tr>:first-child",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=table-scroll] tr>:last-child",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] :is(h1,h2,h3)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] :is(h1,h2,h3)+:is(h1,h2,h3)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] :is(h4,h5,h6)",
         "body[data-dsh-claude-style] blockquote",
         "body[data-dsh-claude-style] .md-code-block",
         "body[data-dsh-claude-style] .md-code-block pre",
@@ -188,11 +188,11 @@
         "body[data-dsh-claude-style] pre",
         "body[data-dsh-claude-style] pre code",
         "body[data-dsh-claude-style] code:not(pre code)",
-        "body[data-dsh-claude-style] [class*=linkIcon]",
-        "body[data-dsh-claude-style] :is(code:not(pre code)>[class*=_fileMention],code:not(pre code)>a)",
-        "body[data-dsh-claude-style] [class*=markdown] :is(a,a)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=link-icon]",
+        "body[data-dsh-claude-style] :is(code:not(pre code)>[data-dsh-claude-part~=file-mention],code:not(pre code)>a)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=markdown] :is(a,a)",
         "body[data-dsh-claude-style] hr",
-        "body[data-dsh-claude-style] [class*=monoLabel]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=text-mono-label]",
         "body[data-dsh-claude-style] [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style][data-dsh-window-blur] [data-chat-flow] code:not(pre code)",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-chat-flow] code:not(pre code)",
@@ -212,43 +212,43 @@
         "body[data-dsh-claude-style] .dsh-claude-account-popover .dsh-claude-popover-item[aria-disabled=true]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-host-row]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-host-row] img",
-        "body[data-dsh-claude-style] [class*=footArea] [class*=triggerRow]:has([data-dsh-claude-account-host-row])",
-        "body[data-dsh-claude-style] [class*=footArea] [class*=triggerRow] :has([data-dsh-claude-account-host-row])",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-trigger]:has([data-dsh-claude-account-host-row])",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-trigger] :has([data-dsh-claude-account-host-row])",
         "body[data-dsh-claude-style] .dsh-claude-account-inject",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu]",
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude] [data-dsh-claude-account-menu]",
         "body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role=menu][data-menu-material]:not([data-dsh-claude-account-ready])",
         "body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role=menu][data-menu-material][data-dsh-claude-account-ready]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=itemWrap]>[role=menuitem]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=itemWrap]>[role=menuitem]:not(:disabled)",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=_selected]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=itemLabel]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=itemIcon]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=itemIcon] svg",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item]>[role=menuitem]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item]>[role=menuitem]:not(:disabled)",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=row-selected]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-label]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-icon]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-icon] svg",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [role=separator]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=_viewport]",
-        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [class*=_footer]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-viewport]",
+        "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-footer]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] .dsh-claude-account-inject",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [class*=footArea]>[class*=settingsArea]:has([data-dsh-claude-account-host-row])",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] .dsh-claude-account-btn",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] .dsh-claude-account-avatar",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] :is(.dsh-claude-account-label,.dsh-claude-account-chevron)",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] .dsh-claude-account-popover",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] [data-dsh-claude-account-menu]",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [class*=_root][class*=_collapsed] [class*=footArea] [class*=settingsArea] :is(button,[class*=triggerRow]):not([data-dsh-claude-account-host-row]):not(:has([data-dsh-claude-account-host-row]))",
-        "body[data-dsh-claude-style] [class*=_root][class*=_collapsed] [data-dsh-claude-account-host-row]"
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area]>[data-dsh-claude-part~=settings-area]:has([data-dsh-claude-account-host-row])",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-btn",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-avatar",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] :is(.dsh-claude-account-label,.dsh-claude-account-chevron)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-popover",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-menu]",
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-area] :is(button,[data-dsh-claude-part~=settings-trigger]):not([data-dsh-claude-account-host-row]):not(:has([data-dsh-claude-account-host-row]))",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-host-row]"
       ]
     },
     {
       "reason": "桌面端窗口独有：走查跑在浏览器里，页面没有窗口标题栏",
       "selectors": [
-        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [class*=_frame]:has(>[class*=_sidebarCol])",
-        "html[data-windows-titlebar] body[data-dsh-claude-style] [class*=_frame]:has(>[class*=_sidebarCol])",
+        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~=layout-frame]:has(>[data-dsh-claude-part~=sidebar-column])",
+        "html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-part~=layout-frame]:has(>[data-dsh-claude-part~=sidebar-column])",
         "html[data-windows-titlebar] body[data-dsh-claude-style]>span[style*=--dsw-specific-sidebar-fill]",
-        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [class*=_frame]>[class*=_sidebarCol]",
-        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [class*=_frame]>[class*=_centerCol]",
-        "html[data-windows-titlebar] body[data-dsh-claude-style] [class*=_frame]>[data-side=sidebar]",
-        "html[data-windows-titlebar] body[data-dsh-claude-style] [data-slot=sidebar] [class*=_logoRow]",
+        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~=layout-frame]>[data-dsh-claude-part~=sidebar-column]",
+        "html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~=layout-frame]>[data-dsh-claude-part~=center-column]",
+        "html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-part~=layout-frame]>[data-side=sidebar]",
+        "html[data-windows-titlebar] body[data-dsh-claude-style] [data-slot=sidebar] [data-dsh-claude-part~=logo-row]",
         "html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-search-row]",
         "body[data-dsh-claude-style] .dsh-claude-ban[data-dsh-ban-titlebar] .dsh-claude-ban-bar",
         "body[data-dsh-claude-style] .dsh-claude-ban[data-dsh-ban-titlebar][data-dsh-ban-controls=left] .dsh-claude-ban-bar",
@@ -322,11 +322,11 @@
       "selectors": [
         "body[data-dsh-claude-style] .dsh-claude-masked-mark",
         "body[data-dsh-claude-style] .dsh-claude-masked-word",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*=fishHitbox]",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([class*=brandMark],[class*=railMark])",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [class*=fishHitbox]",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-word=image][data-dsh-claude-custom-tint] [class*=brandIdentity]>[class*=brandName]",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*=fishHitbox]>*",
+        "body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~=hero-mark]",
+        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([data-dsh-claude-part~=brand-mark],[data-dsh-claude-part~=rail-mark])",
+        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [data-dsh-claude-part~=hero-mark]",
+        "body[data-dsh-claude-style][data-dsh-claude-custom-word=image][data-dsh-claude-custom-tint] [data-dsh-claude-part~=brand-identity]>[data-dsh-claude-part~=brand-name]",
+        "body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~=hero-mark]>*",
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-dsh-claude-accent][data-ds-dark-theme]",
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-dsh-claude-brand=deepseek][data-dsh-claude-accent]"
       ]
@@ -335,12 +335,12 @@
       "reason": "视图页签与页头：走查没有切到另一个视图",
       "selectors": [
         "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
-        "body[data-dsh-claude-style] [class*=centerCol] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
-        "body[data-dsh-claude-style] [class*=_header][data-dsh-titlebar-tabs]:has([class*=_tabs])",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=center-column] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=conversation-header][data-dsh-titlebar-tabs]:has([data-dsh-claude-part~=view-tabs])",
         "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-title]",
         "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-header-band-tabs]",
         "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-row]",
-        "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-row] [class*=_label]",
+        "body[data-dsh-claude-style] [data-dsh-header-band~=title] [data-dsh-header-row] [data-dsh-claude-part~=header-label]",
         "body[data-dsh-claude-style] [data-dsh-header-band~=actions] [data-dsh-header-actions]",
         "body[data-dsh-claude-style] [data-dsh-header-band~=actions] [data-dsh-header-corner]"
       ]
@@ -352,7 +352,7 @@
         "body[data-dsh-claude-style] .dsh-claude-popover-item-badge",
         "body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-stale .dsh-claude-popover-item-text",
         "body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-stale .dsh-claude-popover-item-badge",
-        "body[data-dsh-claude-style] [class*=footArea]>.dsh-claude-popover-item",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=foot-area]>.dsh-claude-popover-item",
         "body[data-dsh-claude-style] .dsh-claude-popover-embed",
         "body[data-dsh-claude-style] .dsh-claude-popover-embed[data-clickable]",
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) .dsh-claude-popover-embed"
@@ -361,13 +361,13 @@
     {
       "reason": "侧栏行的状态：菜单打开、选中、折叠的箭头",
       "selectors": [
-        "body[data-dsh-claude-style] [class*=selectLabel]",
-        "body[data-dsh-claude-style] [class*=groupSection]+[class*=groupSection]",
-        "body[data-dsh-claude-style][data-dsh-claude-sidebar-layout=compact] [class*=groupSection]+[class*=groupSection]",
-        "body[data-dsh-claude-style] [class*=sessionRow][class*=menuOpen]",
-        "body[data-dsh-claude-style] [class*=projectRow][class*=menuOpen]",
-        "body[data-dsh-claude-style] [class*=projectRow][class*=_selected]",
-        "body[data-dsh-claude-style] [class*=projectRow][aria-expanded=false] [class*=_chevron]"
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=text-select-label]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=group-section]+[data-dsh-claude-part~=group-section]",
+        "body[data-dsh-claude-style][data-dsh-claude-sidebar-layout=compact] [data-dsh-claude-part~=group-section]+[data-dsh-claude-part~=group-section]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=session-row][data-dsh-claude-part~=row-menu-open]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=project-row][data-dsh-claude-part~=row-menu-open]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=project-row][data-dsh-claude-part~=row-selected]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=project-row][aria-expanded=false] [data-dsh-claude-part~=row-chevron]"
       ]
     },
     {
@@ -396,10 +396,10 @@
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper]",
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-ds-dark-theme][data-we-wallpaper]",
-        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] :is([class*=_frame]:has(>[class*=_sidebarCol]),[class*=centerCol],[class*=_rightbarCol],[data-phase]:has([data-conversation-scroll]))",
-        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] :is([data-pane=sidebar],[class*=sidebarCol])",
+        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] :is([data-dsh-claude-part~=layout-frame]:has(>[data-dsh-claude-part~=sidebar-column]),[data-dsh-claude-part~=center-column],[data-dsh-claude-part~=rightbar-column],[data-phase]:has([data-conversation-scroll]))",
+        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] :is([data-pane=sidebar],[data-dsh-claude-part~=sidebar-column])",
         "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] :is([data-phase=active],[data-content-phase=active]) [data-composer-seat]",
-        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] [class*=_header]:has([class*=_tabs])"
+        "body[data-dsh-claude-style][data-dsh-claude-palette=claude][data-we-wallpaper] [data-dsh-claude-part~=conversation-header]:has([data-dsh-claude-part~=view-tabs])"
       ]
     },
     {
@@ -428,31 +428,31 @@
       "selectors": [
         "body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot=\"sidebar.settings\"]>:is(button,[role=button])",
         "body[data-dsh-claude-style] [data-slot=\"sidebar.settings\"]>:is(button,[role=button])",
-        "body[data-dsh-claude-style]:not([data-dsh-claude-search-style=icon]) [data-slot=sidebar] [class*=_headerActionsHidden]"
+        "body[data-dsh-claude-style]:not([data-dsh-claude-search-style=icon]) [data-slot=sidebar] [data-dsh-claude-part~=section-actions-hidden]"
       ]
     },
     {
       "reason": "宿主右栏的引导：临时宿主没有渲染它",
       "selectors": [
-        "body[data-dsh-claude-style] [class*=_rightbarCol] [class*=_guide]",
-        "body[data-dsh-claude-style] [class*=_rightbarCol] [class*=_guide]>:first-child",
-        "body[data-dsh-claude-style] [class*=_rightbarCol] [class*=_guide]>:last-child"
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=rightbar-column] [data-dsh-claude-part~=panel-guide]",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=rightbar-column] [data-dsh-claude-part~=panel-guide]>:first-child",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=rightbar-column] [data-dsh-claude-part~=panel-guide]>:last-child"
       ]
     },
     {
       "reason": "宿主品牌标志在首页上的形态：走查写品牌标记时不在首页",
       "selectors": [
-        "body[data-dsh-claude-style][data-dsh-claude-brand=deepseek] [class*=fishHitbox] svg",
-        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [class*=fishHitbox]",
-        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [class*=fishHitbox]+[class*=titleGroup]"
+        "body[data-dsh-claude-style][data-dsh-claude-brand=deepseek] [data-dsh-claude-part~=hero-mark] svg",
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-part~=hero-mark]",
+        "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-part~=hero-mark]+[data-dsh-claude-part~=hero-title-group]"
       ]
     },
     {
       "reason": "底部接管：临时宿主的页脚没有那些按钮",
       "selectors": [
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [class*=footArea]>[class*=footerActions] :is([class*=footerButtons],>button)",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [class*=footArea] [data-dsh-claude-footer-hidden]",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [class*=footArea] [data-dsh-claude-footer-entry]"
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area]>[data-dsh-claude-part~=footer-actions] :is([data-dsh-claude-part~=footer-buttons],>button)",
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-hidden]",
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-entry]"
       ]
     },
     {
@@ -466,8 +466,8 @@
     {
       "reason": "折叠的侧栏：走查没有折叠它",
       "selectors": [
-        "body[data-dsh-claude-style] [data-sidebar-collapsed] button[class*=newSession]",
-        "body[data-dsh-claude-style] [data-sidebar-collapsed] button[class*=newSession] [class*=newSessionLabelMask]"
+        "body[data-dsh-claude-style] [data-sidebar-collapsed] button[data-dsh-claude-part~=new-session]",
+        "body[data-dsh-claude-style] [data-sidebar-collapsed] button[data-dsh-claude-part~=new-session] [data-dsh-claude-part~=new-session-mask]"
       ]
     },
     {
@@ -494,7 +494,7 @@
     {
       "reason": "宿主会话行的标签：脚本回答里没有这一类行",
       "selectors": [
-        "body[data-dsh-claude-style] :is([class*=_tagSystem],[class*=_tagUser],[class*=_tagContext],[class*=_tagMessage],[class*=_tagTool],[class*=_tagSubtool],[class*=_kindTag]:not([class*=_kindTagIcon],[class*=_kindTagLabel]),[class*=_rowTag],[class*=_optionLine]>[class*=_badge],[class*=_attemptBadge],[class*=_keyBadge])"
+        "body[data-dsh-claude-style] :is([data-dsh-claude-part~=tag-system],[data-dsh-claude-part~=tag-user],[data-dsh-claude-part~=tag-context],[data-dsh-claude-part~=tag-message],[data-dsh-claude-part~=tag-tool],[data-dsh-claude-part~=tag-subtool],[data-dsh-claude-part~=kind-tag]:not([data-dsh-claude-part~=kind-tag-icon],[data-dsh-claude-part~=kind-tag-label]),[data-dsh-claude-part~=row-tag],[data-dsh-claude-part~=option-line]>[data-dsh-claude-part~=badge],[data-dsh-claude-part~=attempt-badge],[data-dsh-claude-part~=key-badge])"
       ]
     },
     {
@@ -517,11 +517,7 @@
     },
     {
       "reason": "宿主的会话按钮没有按键提示：临时宿主没有渲染 newSessionShortcut 里的按键",
-      "selectors": [
-        "body[data-dsh-claude-style] button[class*=newSession] [class*=newSessionShortcut] kbd[class*=_separator]",
-        "body[data-dsh-claude-style] button[class*=newSession] [class*=newSessionShortcut] kbd:not([class*=_separator])",
-        "body[data-dsh-claude-style][data-ds-dark-theme] button[class*=newSession] [class*=newSessionShortcut] kbd:not([class*=_separator])"
-      ]
+      "selectors": []
     },
     {
       "reason": "设置页的提示行：走查在本机页面上跑，远端只读的提示与分页自己的提示都不在",
@@ -533,8 +529,53 @@
     },
     {
       "reason": "深色形态里没有搜索按键：走查的深色页面形态不含这一行",
+      "selectors": []
+    },
+    {
+      "reason": "皮肤自己的归档视图与设置分区：走查没有打开归档视图，也没有走到设置页的这一项",
       "selectors": [
-        "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-key"
+        "body[data-dsh-claude-style] [data-dsh-claude-ws-view=active] .dsh-claude-ws-segments",
+        "body[data-dsh-claude-style] [data-dsh-claude-ws-view=active] [data-dsh-claude-part~=section-label][data-dsh-claude-ws-label]",
+        "body[data-dsh-claude-style] button[data-dsh-section=claude-style] [data-dsh-claude-part~=nav-icon]",
+        "body[data-dsh-claude-style] button[data-dsh-section=claude-style]",
+        "body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-section=claude-style]"
+      ]
+    },
+    {
+      "reason": "首页用量面板在工作室布局下的形态：走查把首页停在经典形态，工作室的席位与面板都没有渲染",
+      "selectors": [
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=scroll-body]",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=composer-seat]",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=composer-stack][data-dsh-claude-part~=composer-hero]",
+        "body[data-dsh-claude-style][data-dsh-claude-home-layout=studio] [data-dsh-claude-part~=composer-hero]>:is([data-slot=\"conversation.input.dock\"],.dsh-claude-home-seat)>*",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-workspace-row] :is(button,[role=button])",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-workspace-row] :is(button,[role=button]):not(:disabled)",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline]",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline] [data-dsh-claude-part~=hero-title-group]",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-headline] [data-dsh-claude-part~=hero-title-group]>span",
+        "body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~=hero-mark]",
+        "body[data-dsh-claude-style] .dsh-claude-home-panel",
+        "body[data-dsh-claude-style][data-dsh-claude-home-layout=studio] [data-dsh-claude-part~=composer-hero]>:is([data-slot=\"conversation.input.dock\"],.dsh-claude-home-seat)>.dsh-claude-home-panel",
+        "body[data-dsh-claude-style] .dsh-claude-home-panel-head",
+        "body[data-dsh-claude-style] .dsh-claude-home-tabs",
+        "body[data-dsh-claude-style] .dsh-claude-home-ranges",
+        "body[data-dsh-claude-style] .dsh-claude-home-tab",
+        "body[data-dsh-claude-style] .dsh-claude-home-range",
+        "body[data-dsh-claude-style] .dsh-claude-home-tab:not([data-active])",
+        "body[data-dsh-claude-style] .dsh-claude-home-range:not([data-active])",
+        "body[data-dsh-claude-style] .dsh-claude-home-tab[data-active]",
+        "body[data-dsh-claude-style] .dsh-claude-home-range[data-active]",
+        "body[data-dsh-claude-style] .dsh-claude-home-panel-side",
+        "body[data-dsh-claude-style] .dsh-claude-home-stats",
+        "body[data-dsh-claude-style] .dsh-claude-home-stat",
+        "body[data-dsh-claude-style] .dsh-claude-home-stat-label",
+        "body[data-dsh-claude-style] .dsh-claude-home-stat-value",
+        "body[data-dsh-claude-style] .dsh-claude-home-stat[data-stat=model] .dsh-claude-home-stat-value",
+        "body[data-dsh-claude-style] .dsh-claude-home-heat",
+        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell",
+        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip]",
+        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=start]",
+        "body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge=end]"
       ]
     }
   ]

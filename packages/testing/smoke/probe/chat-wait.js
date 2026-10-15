@@ -13,16 +13,26 @@
     // region, a divider, and a content span holding the whale and its words.
     // The fixture's running turn started 65 s ago and is still reasoning.
     await probe.onlyFor(['chat-wait'], async function () {
+      // The running row stands in the host's conversation anchor, where the
+      // skin reads its chat parts (D3).
+      var waitHolder = document.createElement('div')
+      waitHolder.setAttribute('data-conversation-scroll', '')
       var waitSession = document.createElement('div')
       waitSession.setAttribute('data-conversation-session', 'smoke-session')
       waitSession.innerHTML = '<div data-chat-flow="">' +
         '<div data-chat-running="true" style="display:flex"><span role="status">Deep diving</span><span aria-hidden="true"></span>' +
-        '<span style="display:flex;min-width:0"><span class="_c_runningIcon_1" aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
+        '<span style="display:flex;min-width:0"><span class="_runningIcon_c_1" aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
         '</div>'
-      document.body.appendChild(waitSession)
+      waitHolder.appendChild(waitSession)
+      document.body.appendChild(waitHolder)
       var row = waitSession.querySelector('[data-chat-running]')
       var words = document.getElementById('debugRunningWords')
-      var whale = row.querySelector('[class*="_runningIcon"]')
+      // The parts land on the pass after the subtree arrives (D3).
+      var whale = null
+      for (var look = 0; look < 40 && whale === null; look++) {
+        await sleep(50)
+        whale = row.querySelector('[data-dsh-claude-part~="running-icon"]')
+      }
       var foreignLine = document.createElement('div')
       foreignLine.textContent = 'Third-party status'
       words.parentElement.appendChild(foreignLine)

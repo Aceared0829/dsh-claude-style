@@ -55,7 +55,7 @@ const readHead = (page) => page.evaluate(() => {
   if (row === null) return null
   const loader = row.querySelector('.dsh-claude-chat-wait-loader')
   const dot = loader === null ? null : loader.firstElementChild
-  const icon = row.querySelector('[class*="_runningIcon"]')
+  const icon = row.querySelector('[data-dsh-claude-part~="running-icon"]')
   const label = row.querySelector('.dsh-claude-chat-wait-label')
   const dotStyle = dot === null ? null : getComputedStyle(dot)
   const box = (r) => ({ top: +r.top.toFixed(1), bottom: +r.bottom.toFixed(1), height: +r.height.toFixed(1) })

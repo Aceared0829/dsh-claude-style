@@ -4,15 +4,15 @@
    its own colours — or, under the tint choice, as a shape in the label colour.
    This sheet comes after theme/sidebar.css and theme/hero.css, so where a rule
    here meets the Claude brand's at the same specificity, this one wins. */
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"]) > * {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([data-dsh-claude-part~="brand-mark"], [data-dsh-claude-part~="rail-mark"]) > * {
   display: none;
 }
 
 /* The custom mark is drawn the same on the sidebar and on the hero hitbox: one
    image rule and one tint rule cover both seats; each seat's own box is stated
    where the seat is (the hero's under "hero mark" below). */
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before,
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([data-dsh-claude-part~="brand-mark"], [data-dsh-claude-part~="rail-mark"])::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~="hero-mark"]::before {
   content: "";
   flex: none;
   background: var(--dsh-claude-custom-mark) center / contain no-repeat;
@@ -20,14 +20,14 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::
   mask: none;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([class*="brandMark"], [class*="railMark"])::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] :is([data-dsh-claude-part~="brand-mark"], [data-dsh-claude-part~="rail-mark"])::before {
   display: block;
   width: 18px;
   height: 18px;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([class*="brandMark"], [class*="railMark"])::before,
-body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [class*="fishHitbox"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] :is([data-dsh-claude-part~="brand-mark"], [data-dsh-claude-part~="rail-mark"])::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] [data-dsh-claude-part~="hero-mark"]::before {
   background: currentColor;
   -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
   mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
@@ -37,11 +37,11 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-
 /* The wordmark image keeps the 18px cap height of the Claude wordmark, its
    width read through the proportions brand.ts measured; with no image, the
    brand name is set in the brand face. */
-body[data-dsh-claude-style][data-dsh-claude-custom-word] [class*="brandIdentity"] > [class*="brandName"] > * {
+body[data-dsh-claude-style][data-dsh-claude-custom-word] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"] > * {
   display: none;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-word="image"] [class*="brandIdentity"] > [class*="brandName"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]::before {
   content: "";
   display: block;
   flex: none;
@@ -53,13 +53,13 @@ body[data-dsh-claude-style][data-dsh-claude-custom-word="image"] [class*="brandI
   mask: none;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-word="image"][data-dsh-claude-custom-tint] [class*="brandIdentity"] > [class*="brandName"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"][data-dsh-claude-custom-tint] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]::before {
   background: currentColor;
   -webkit-mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
   mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-word="text"] [class*="brandIdentity"] > [class*="brandName"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-word="text"] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]::before {
   content: var(--dsh-claude-custom-name);
   display: block;
   flex: 0 1 auto;
@@ -84,11 +84,11 @@ body[data-dsh-claude-style][data-dsh-claude-custom-word="text"] [class*="brandId
 /* The new-conversation hero takes the same mark at the size the Claude mark
    stands there (theme/hero.css); React keeps owning the hitbox's children. The
    image and tint rules are the merged ones under "sidebar mark" above. */
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"] > * {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~="hero-mark"] > * {
   display: none !important;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-custom-mark] [class*="fishHitbox"]::before {
+body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~="hero-mark"]::before {
   width: 42.5px;
   height: 42.5px;
 }

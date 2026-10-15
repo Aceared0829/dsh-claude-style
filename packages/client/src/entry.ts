@@ -5,6 +5,7 @@ import { loadModelCopy } from './core/model-copy'
 import { adoptPrefs, adoptSettingsForm, clearPrefsAttributes, disposePrefsBinding, prefs, readPrefs, retireComposerRestyle, retireFooterTakeover, subscribePrefs } from './core/prefs'
 import { installScheduler, reportFeatureFailure } from './core/scheduler'
 import type { HandleName, Ui } from './core/scheduler'
+import { installParts } from './core/parts'
 import { mountStylesheet, parkForeignSheets } from './core/stylesheet'
 import { peerPresent, subscribePeerPresence } from './shared/peer-plugin'
 import { pageOwner, subscribePageOwner } from './shared/visual-owner'
@@ -73,6 +74,8 @@ export function apply(ctx: HostContext) {
   let offOwnerWatch: (() => void) | null = null
   /** Unmounts this generation's stylesheet; set once the sheet is mounted. */
   let stopStylesheet: (() => void) | null = null
+  /** Stops the part-marking pass; set once the page is taken (D3). */
+  let stopParts: (() => void) | null = null
   let disposed = false
   /** Who has the page while this theme stands down; null while the theme has it (D49). */
   let owner = pageOwner()
@@ -110,6 +113,12 @@ export function apply(ctx: HostContext) {
     if (stopStylesheet !== null) {
       stopStylesheet()
       stopStylesheet = null
+    }
+    // Last: the part marks name host elements for the sheet, and the features
+    // above may have stamped a menu card the pass had marked (D3).
+    if (stopParts !== null) {
+      stopParts()
+      stopParts = null
     }
   }
 
@@ -317,6 +326,9 @@ export function apply(ctx: HostContext) {
     // The sheet carries this package's own tags and is unmounted by
     // release(); the features install onto a page that already wears it.
     if (stopStylesheet === null) stopStylesheet = mountStylesheet()
+    // Before the features: every rule they and the theme's own sheets write
+    // reads the part names this pass puts on the host's elements (D3).
+    if (stopParts === null) stopParts = installParts()
     for (const feature of FEATURES) {
       if (failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) continue
       if (isLive(feature)) applySwitch(feature)

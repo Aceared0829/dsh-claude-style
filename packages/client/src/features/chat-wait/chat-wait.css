@@ -64,7 +64,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
    where it was: the line's first child, ahead of the wording, so the row reads
    loader, words, clock. The snippet the loader is ported from is recorded in
    THIRD_PARTY_NOTICES.md. */
-body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [data-chat-running][data-dsh-claude-wait] [class*="_runningIcon"] {
+body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [data-chat-running][data-dsh-claude-wait] [data-dsh-claude-part~="running-icon"] {
   display: none;
 }
 

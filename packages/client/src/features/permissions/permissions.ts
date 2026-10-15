@@ -587,7 +587,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // every other control on it.
     const coldStart = trigger === null && isHero && session === null
     const host = coldStart
-      ? document.querySelector(`${COMPOSER_CARD_SELECTOR}[class*="_cardWorkspaceTrigger"] [class*="_modes"]`)
+      ? document.querySelector(`${COMPOSER_CARD_SELECTOR}[data-dsh-claude-part~="card-workspace-trigger"] [data-dsh-claude-part~="modes"]`)
       : trigger === null ? null : trigger.parentElement
     // The default can change in Settings without a catalog event, so each
     // return to the cold start screen reads it again.

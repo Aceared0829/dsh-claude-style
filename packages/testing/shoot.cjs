@@ -70,8 +70,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 async function openDemoConversation(page, title) {
   if (!SESSION_NAMES.includes(title)) throw new Error(`"${title}" is not a stand-in title — refusing to open it`)
   const opened = await page.evaluate(`(() => {
-    const row = [...document.querySelectorAll('[class*="sessionRow"]')]
-      .find((el) => { const t = el.querySelector('[class*="title"]'); return t && t.textContent.trim() === ${JSON.stringify(title)} })
+    const row = [...document.querySelectorAll('[data-dsh-claude-part~="session-row"]')]
+      .find((el) => { const t = el.querySelector('[data-dsh-claude-part~="row-title"]'); return t && t.textContent.trim() === ${JSON.stringify(title)} })
     if (!row) return false
     row.click()
     return true
@@ -84,7 +84,7 @@ async function openDemoConversation(page, title) {
   if (!Array.isArray(prompts) || prompts.length === 0) throw new Error('the conversation shows no user message — is it the demo?')
   const foreign = prompts.filter((text) => text !== DEMO_PROMPT)
   if (foreign.length > 0) throw new Error(`the conversation holds user messages other than the demo prompt — refusing to screenshot it: ${JSON.stringify(foreign.map((t) => t.slice(0, 40)))}`)
-  await page.evaluate(`document.querySelectorAll('[class*="_scrollBody"]').forEach((el) => { el.scrollTop = 0 })`)
+  await page.evaluate(`document.querySelectorAll('[data-dsh-claude-part~="scroll-body"]').forEach((el) => { el.scrollTop = 0 })`)
   await sleep(500)
 }
 

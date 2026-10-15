@@ -20,8 +20,8 @@ const { openSkinSettings } = require('./remote-settings.cjs')
 
 /** The host's page markers this scenario reads. */
 const HOST = {
-  brandMark: '[class*="fishHitbox"]', // the hero's brand mark seat (theme/hero.css)
-  greeting: '[class*="fishHitbox"] + [class*="titleGroup"]', // the hero's greeting beside it
+  brandMark: '[data-dsh-claude-part~="hero-mark"]', // the hero's brand mark seat (theme/hero.css)
+  greeting: '[data-dsh-claude-part~="hero-mark"] + [data-dsh-claude-part~="hero-title-group"]', // the hero's greeting beside it
 }
 
 /** The skin's own marks (the stylesheets and modules each names). */

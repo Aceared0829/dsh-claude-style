@@ -69,7 +69,7 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
       const text = (input.textContent || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
       const isEmpty = text.length === 0
       let placeholder = findComposerPlaceholder(card)
-      const grow = input.closest ? input.closest('[class*="_grow"]') : input.parentElement
+      const grow = input.closest ? input.closest('[data-dsh-claude-part~="input-grow"]') : input.parentElement
 
       if (isEmpty) {
         if (!placeholder && grow) {

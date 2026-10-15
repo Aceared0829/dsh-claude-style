@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-20",
+  "group": "improvements",
+  "order": 20,
+  "external": false,
+  "zh": "工作区段落在当前视图上悬停时恢复的三个属性、以及工作区段按钮悬停时的文字颜色，去掉多余的 `!important`：它们所在的规则本来就比被压过的规则多一个伪类，靠层叠顺序就能赢。`importance` 场景逐条丢弃实测之后，577 处 `!important` 里只有这 4 处可以去掉，其余 16 处被证明需要，余下的在走查的页面形态里从未匹配到元素、只在短暂标记下生效或属于第三方应答。",
+  "en": "The three properties that bring the workspace segment group back on hover, and the segment button's hover ink, drop their `!important`: the rules already carry one pseudo-class more than the rule they beat, so the cascade settles it. Dropping each one on the real page showed four of the skin's 577 `!important` declarations to be unnecessary; sixteen are proven needed, and the rest never match an element in the walk's page states, hold only under a transient mark, or answer another plugin."
+}

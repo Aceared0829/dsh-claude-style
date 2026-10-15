@@ -44,6 +44,42 @@ export function closestFrom<E extends Element = HTMLElement>(node: EventTarget |
   return (node as Element).closest<E>(selector)
 }
 
+/** A local name: a camelCase identifier, which is what the host's CSS modules name their parts. */
+const LOCAL_NAME = /^[a-z][A-Za-z0-9]*$/
+
+/**
+ * The local name inside a host CSS-module class name, or null for a class that
+ * is not one (D3). The host writes two shapes — `<hash>_<local>` and
+ * `_<local>_<hash>_<n>` — and the hash's position and alphabet both move
+ * between releases, so the local name is the only stable part. Compared whole,
+ * never as a substring: `_grow` is not `row`, and a plugin's own class name is
+ * not a host one.
+ *
+ * The shapes overlap (`_2H3hWW_brand` and `_row_jhda5_16` both start with an
+ * underscore), so a segment counts as the local name when it is a camelCase
+ * identifier: a hash segment starts with a digit or an uppercase letter.
+ *
+ * @param token - one class token.
+ * @returns the local name, or null.
+ */
+export function localClassName(token: string): string | null {
+  const parts = token.split('_')
+  if (parts.length < 2) return null
+  const last = parts[parts.length - 1]
+  if (parts[0] !== '') return LOCAL_NAME.test(last) ? last : null
+  // `_<local>_<hash>_<n>`: the local name is the second segment; `_<hash>_<local>`:
+  // the hash holds the underscore, so the local name is the last segment.
+  return LOCAL_NAME.test(parts[1]) ? parts[1] : LOCAL_NAME.test(last) ? last : null
+}
+
+/** Whether `element` carries a host class whose local name is exactly `local`. */
+export function hasLocalClass(element: Element, local: string): boolean {
+  for (const token of element.classList) {
+    if (localClassName(token) === local) return true
+  }
+  return false
+}
+
 /**
  * One host element the skin marks for its stylesheet, followed across
  * re-renders. React replaces host nodes freely, so the mark has to move

@@ -36,6 +36,7 @@ import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 import { featureSheet } from './feature-sheets.mjs'
 import { minifyCss } from './shared/minify-css.cjs'
+import { loadModule } from './shared/ts-module.cjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'
@@ -77,6 +78,8 @@ const EASE_PATTERN = /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out)(?![\w-])|c
 
 /** The prefix of the attributes the skin writes; the host's own are read as contracts (D44). */
 const SKIN_ATTRIBUTE_PREFIX = 'data-dsh-'
+/** The attribute carrying the skin's own names for host elements; the one host anchor a rule reads (D3). */
+const PART_ATTRIBUTE = 'data-dsh-claude-part'
 
 /* ---------- selectors ---------- */
 
@@ -241,7 +244,7 @@ function sheetLabel(sheet) {
  * @param keyframes - signature → where, across the sheets, for the repeat check (D65).
  * @returns the sheet's text, comments and formatting kept.
  */
-function processSheet(sheet, text, gates, names, read, keyframes) {
+function processSheet(sheet, text, gates, names, read, parts, keyframes) {
   const label = sheetLabel(sheet)
   const root = postcss.parse(text, { from: label })
   const surface = sheet.scope === 'surface'
@@ -261,6 +264,8 @@ function processSheet(sheet, text, gates, names, read, keyframes) {
     const selectors = selectorParser().astSync(rule.selector)
     selectors.walkAttributes((attribute) => {
       if (attribute.attribute.startsWith(SKIN_ATTRIBUTE_PREFIX) && !read.has(attribute.attribute)) read.set(attribute.attribute, where)
+      if (attribute.attribute !== PART_ATTRIBUTE || attribute.operator !== '~=') return
+      if (typeof attribute.value === 'string' && !parts.has(attribute.value)) parts.set(attribute.value, where)
     })
     const stamp = markerEnd !== null && rule.source.start.offset > markerEnd
     for (const selector of selectors.nodes) {
@@ -484,6 +489,28 @@ function checkAttributes(read, sources) {
 }
 
 /**
+ * Hold every part name a selector reads to the table that defines it (D3).
+ *
+ * `[data-dsh-claude-part~="x"]` is the whole of a host anchor now, so a
+ * misspelt or retired name leaves a rule that matches nothing — the failure the
+ * substring selectors hid, made loud. The table is data
+ * (packages/client/src/core/parts-table.ts), so the build reads the same list the
+ * browser half walks.
+ *
+ * @param parts - part name → where a selector first reads it.
+ */
+function checkParts(parts) {
+  const { PART_NAMES } = loadModule('packages/client/src/core/parts-table.ts')
+  if (!Array.isArray(PART_NAMES) || PART_NAMES.length === 0) {
+    throw new Error('build: packages/client/src/core/parts-table.ts exports no PART_NAMES')
+  }
+  const known = new Set(PART_NAMES)
+  for (const [name, where] of parts) {
+    if (!known.has(name)) throw new Error(`build: ${where} reads the part "${name}", which packages/client/src/core/parts-table.ts does not define`)
+  }
+}
+
+/**
  * Every sheet in cascade order, checked, gated and joined.
  *
  * @param options.sheets - `{ file, rank, gate?, scope? }` or `{ generated, rank }` in cascade order (TOKEN_SHEET generated).
@@ -499,6 +526,7 @@ function checkAttributes(read, sources) {
 export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images, featureConstants }) {
   const names = { claude: new Set(), host: new Set() }
   const read = new Map()
+  const parts = new Map()
   const keyframes = new Map()
   const processed = sheets.map((sheet) => {
     const source = sheet.file === TOKEN_SHEET
@@ -506,13 +534,14 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
       : sheet.generated !== undefined
         ? featureSheet(sheet.generated, featureConstants)
         : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
-    return { sheet, text: processSheet(sheet, source, gates, names, read, keyframes).replace(/\n+$/, '') }
+    return { sheet, text: processSheet(sheet, source, gates, names, read, parts, keyframes).replace(/\n+$/, '') }
   })
   const joined = (surface) => processed.filter((item) => (item.sheet.scope === 'surface') === surface).map((item) => item.text).join('\n\n')
   for (const name of names.claude) {
     if (!names.host.has(name)) throw new Error(`build: ${name} is defined under the Claude palette or typeface but has no alias under the host's`)
   }
   checkAttributes(read, sources)
+  checkParts(parts)
   // The token sheet declares every token, so it is no reader of any: what reads
   // a token is another sheet, or another token's value (a shorthand).
   const readers = [

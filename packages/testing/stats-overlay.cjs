@@ -18,8 +18,8 @@
 /** The row's box, the dock's box, the pill's own box and the properties the overlay reads. */
 const readOverlay = (page) => page.evaluate(() => {
   const card = document.querySelector('[data-composer-card]')
-  const row = card?.querySelector('[class*="_trailing"]')?.parentElement ?? null
-  const cluster = card?.querySelector('[class*="_trailing"]') ?? null
+  const row = card?.querySelector('[data-dsh-claude-part~="trailing"]')?.parentElement ?? null
+  const cluster = card?.querySelector('[data-dsh-claude-part~="trailing"]') ?? null
   const meter = document.querySelector('[data-dsh-claude-context-meter]')
   const trigger = meter?.querySelector('button') ?? null
   const box = (el) => {

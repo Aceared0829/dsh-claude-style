@@ -28,11 +28,11 @@
       contextPanel.id = 'context-panel'
       contextPanel.setAttribute('role', 'dialog')
       contextPanel.setAttribute('aria-label', '上下文已用')
-      contextPanel.innerHTML = '<div class="_m_header_1"><span>上下文已用</span><span>84%</span></div>' +
-        '<dl class="_m_rows_1">' +
-          '<div class="_m_row_1"><dt>系统提示词</dt><dd>~1.5K</dd></div>' +
-          '<div class="_m_row_1"><dt>工具定义</dt><dd>~7.8K</dd></div>' +
-          '<div class="_m_row_1"><dt>对话消息</dt><dd>~242K</dd></div>' +
+      contextPanel.innerHTML = '<div class="_header_m_1"><span>上下文已用</span><span>84%</span></div>' +
+        '<dl class="_rows_m_1">' +
+          '<div class="_row_m_1"><dt>系统提示词</dt><dd>~1.5K</dd></div>' +
+          '<div class="_row_m_1"><dt>工具定义</dt><dd>~7.8K</dd></div>' +
+          '<div class="_row_m_1"><dt>对话消息</dt><dd>~242K</dd></div>' +
         '</dl>'
       document.body.appendChild(contextPanel)
     })

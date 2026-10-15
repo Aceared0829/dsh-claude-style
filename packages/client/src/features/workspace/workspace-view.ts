@@ -78,36 +78,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The workspace section's label, identified by structure, never by its
-   * text: the label's own CSS-module prefix is the section root's, and that
-   * root holds the session list area. A host that renames the label keeps
-   * matching; a host that restructures the sidebar stops matching, and the
-   * section keeps its plain label — the feature stays off rather than
-   * mounting on a section that happens to be first.
+   * The workspace section's label: the skin's own part for it (D3), which the
+   * pass writes only on the host element the host itself calls by that name. A
+   * host that renames the local name leaves the part unwritten, and the section
+   * keeps its plain label — the feature stays off rather than mounting on a
+   * section that happens to be first.
    */
   function findSection() {
-    const labels = document.querySelectorAll('[class*="sectionLabel"]')
-    for (let i = 0; i < labels.length; i++) {
-      const label = labels[i]
-      const match = /([^\s]+)_sectionLabel(?:\s|$)/.exec(label.className || '')
-      if (match === null) continue
-      const root = label.closest(`[class*="${match[1]}_root"]`)
-      if (root !== null && root.querySelector(`[class*="${match[1]}_listArea"]`) !== null) return label
-    }
-    return null
+    return document.querySelector('[data-dsh-claude-part~="section-label"]')
   }
 
-  /**
-   * The tree's rows. `data-row-key` is what the host stamps on them; the row
-   * CLASSES are the stable fallback, and the skin's own stylesheet already
-   * keys off them.
-   */
-  const TREE_ROW_SELECTOR = '[data-row-key], [class*="sessionRow"], [class*="projectRow"]'
+  /** The tree's rows: the host's own row key, or either row part. */
+  const TREE_ROW_SELECTOR = '[data-row-key], [data-dsh-claude-part~="session-row"], [data-dsh-claude-part~="project-row"]'
 
   function findTree(label: Element) {
     let region = label.parentElement
     while (region !== null && region !== document.body) {
-      const tree = region.querySelector('[role="tree"], [class*="_list"]')
+      const tree = region.querySelector('[role="tree"], [data-dsh-claude-part~="list"]')
       if (tree !== null && tree.querySelector(TREE_ROW_SELECTOR) !== null) return tree
       region = region.parentElement
     }

@@ -52,7 +52,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Air between the trigger and its card, as the skin's other pickers take. */
   const GAP = 6
   /** The two triggers, and the card once it is stamped. */
-  const TRIGGER_SELECTOR = '[class*="heroWorkspaceRow"] [aria-haspopup="menu"]'
+  const TRIGGER_SELECTOR = '[data-dsh-claude-part~="hero-workspace-row"] [aria-haspopup="menu"]'
   const CARD_SELECTOR = `[${HERO_MENU_ATTR}]`
   /** The open card, marked with the picker it belongs to, and the trigger it was stamped for. */
   const cardStamp = createStamp<HTMLElement>(HERO_MENU_ATTR)
@@ -205,8 +205,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * the agent-preset seat.
    */
   function pickerKind(trigger: HTMLElement) {
-    if (trigger.querySelector('[class*="_workspaceLabel"]') !== null) return 'workspace'
-    if (closestFrom(trigger, '[class*="cardWorkspaceTrigger"]') !== null) return 'workspace'
+    if (trigger.querySelector('[data-dsh-claude-part~="workspace-chip-label"]') !== null) return 'workspace'
+    if (closestFrom(trigger, '[data-dsh-claude-part~="card-workspace-trigger"]') !== null) return 'workspace'
     return 'preset'
   }
 
@@ -217,7 +217,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** The hero row's open pickers: the workspace chip and the preset seat. */
   function rowTriggers() {
-    const nodes = document.querySelectorAll<HTMLElement>('[class*="heroWorkspaceRow"] [aria-haspopup="menu"][aria-expanded="true"]')
+    const nodes = document.querySelectorAll<HTMLElement>('[data-dsh-claude-part~="hero-workspace-row"] [aria-haspopup="menu"][aria-expanded="true"]')
     const found: HTMLElement[] = []
     for (let i = 0; i < nodes.length; i++) found.push(nodes[i])
     return found
@@ -233,7 +233,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function openTriggers() {
     const row = rowTriggers()
     if (row.length > 0) return row
-    const card = document.querySelector<HTMLElement>('[class*="cardWorkspaceTrigger"] [aria-expanded="true"]')
+    const card = document.querySelector<HTMLElement>('[data-dsh-claude-part~="card-workspace-trigger"] [aria-expanded="true"]')
     return card === null ? [] : [card]
   }
 
@@ -293,9 +293,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       clearStamp()
       return
     }
-    // The skin's own popovers carry their own classes, so excluding them
-    // leaves the host's menus only.
-    const cards = document.querySelectorAll<HTMLElement>(`body > ${MENU_ROLE_SELECTOR}:not([class*="dsh-claude"])`)
+    // The skin's own popovers carry a `dsh-claude-` class token, so excluding
+    // that namespace as whole tokens leaves the host's menus only.
+    const cards = document.querySelectorAll<HTMLElement>(`body > ${MENU_ROLE_SELECTOR}:not([class^="dsh-claude-"], [class*=" dsh-claude-"])`)
     if (cards.length !== 1) {
       clearStamp()
       return

@@ -21,33 +21,33 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-
   background-color: var(--dsh-claude-canvas);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([data-pane="sidebar"], [class*="sidebarCol"], .dshDesktopSidebarSurface) {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([data-pane="sidebar"], [data-dsh-claude-part~="sidebar-column"], .dshDesktopSidebarSurface) {
   border-right: 1px solid var(--dsw-alias-border-l1);
 }
 
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme]):not([data-we-wallpaper]) :is([data-pane="conversation"], [class*="centerCol"]) {
+body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme]):not([data-we-wallpaper]) :is([data-pane="conversation"], [data-dsh-claude-part~="center-column"]) {
   background: var(--dsh-claude-canvas);
 }
 
 /* The light half of the anchor ink in theme/chrome.css; both leave a host button
    class (`_linkButton`) to the ink that class states for itself. */
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) a:not([class*="_linkButton"]) {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) a:not([data-dsh-claude-part~="link-button"]) {
   color: var(--dsw-alias-link);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) a:not([class*="_linkButton"]):hover {
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) a:not([data-dsh-claude-part~="link-button"]):hover {
   color: var(--dsh-claude-link-hover);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_brand"],
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_primary"],
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="brand-button"],
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="composer-primary"],
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot="sidebar.settings"] > :is(button, [role="button"]) {
   background: var(--dsw-alias-button-primary-fill);
   color: var(--dsw-alias-label-primary-foreground, #faf9f5);
 }
 
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_brand"]:hover,
-body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[class*="_primary"]:hover,
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="brand-button"]:hover,
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) button[data-dsh-claude-part~="composer-primary"]:hover,
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) [data-slot="sidebar.settings"] > :is(button, [role="button"]):hover {
   background: var(--dsw-alias-button-primary-hover);
 }

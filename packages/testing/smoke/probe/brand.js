@@ -13,16 +13,27 @@
   probe.step(async function () {
     await probe.onlyFor(['custom-brand'], async function () {
       // The host's sidebar brand and hero hitbox, in the shape ui-sidebar and
-      // the hero render them (hashed class names, the art one level down).
-      var holder = document.createElement('div')
-      holder.innerHTML =
-        '<span class="_x_brandIdentity_1"><span class="_x_brandMark_1"><svg viewBox="0 0 8 8"></svg></span>' +
-          '<span class="_x_brandName_1"><span>DeepSeek</span></span></span>' +
-        '<div class="_h_fishHitbox_1" style="display:flex"><svg viewBox="0 0 8 8"></svg></div>'
-      document.body.appendChild(holder)
-      var mark = holder.querySelector('[class*="brandMark"]')
-      var name = holder.querySelector('[class*="brandName"]')
-      var hero = holder.querySelector('[class*="fishHitbox"]')
+      // the hero render them (hashed class names, the art one level down). Each
+      // sits in the host anchor the skin reads its parts inside (D3).
+      var sidebar = document.createElement('div')
+      sidebar.setAttribute('data-slot', 'sidebar')
+      sidebar.innerHTML =
+        '<span class="_brandIdentity_x_1"><span class="_brandMark_x_1"><svg viewBox="0 0 8 8"></svg></span>' +
+          '<span class="_brandName_x_1"><span>DeepSeek</span></span></span>'
+      var heroHolder = document.createElement('div')
+      heroHolder.setAttribute('data-conversation-scroll', '')
+      heroHolder.innerHTML =
+        '<div class="_fishHitbox_h_1" style="display:flex"><svg viewBox="0 0 8 8"></svg></div>'
+      document.body.appendChild(sidebar)
+      document.body.appendChild(heroHolder)
+      // The parts land on the pass after the subtree arrives (D3).
+      var mark = null
+      for (var look = 0; look < 40 && mark === null; look++) {
+        await sleep(50)
+        mark = sidebar.querySelector('[data-dsh-claude-part~="brand-mark"]')
+      }
+      var name = sidebar.querySelector('[data-dsh-claude-part~="brand-name"]')
+      var hero = heroHolder.querySelector('[data-dsh-claude-part~="hero-mark"]')
       for (var wait = 0; wait < 40 && !document.body.hasAttribute('data-dsh-claude-custom-mark'); wait++) await sleep(50)
       var read = function () {
         var body = getComputedStyle(document.body)
@@ -51,7 +62,8 @@
       window.__pushForm({ brandInk: 'original', brandAccent: '' })
       await sleep(150)
       r.customBrand.cleared = read()
-      holder.remove()
+      sidebar.remove()
+      heroHolder.remove()
     })
   })
 })()

@@ -13,8 +13,8 @@
   probe.step(async function () {
     await probe.onlyFor(['sidebar-layout'], async function () {
       var snapshot = function () {
-        var row = document.querySelector('[class*="sessionRow"]')
-        var foot = document.querySelector('[class*="footArea"]')
+        var row = document.querySelector('[data-dsh-claude-part~="session-row"]')
+        var foot = document.querySelector('[data-dsh-claude-part~="foot-area"]')
         var style = function (el) { return el === null ? null : getComputedStyle(el) }
         var rowStyle = style(row)
         var footStyle = style(foot)
