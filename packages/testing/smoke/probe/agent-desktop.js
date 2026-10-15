@@ -144,30 +144,36 @@
       }) : null
       var injectName = inject ? inject.querySelector('.dsh-claude-account-popover-name') : null
       r.injectName = injectName ? injectName.textContent : null
-      r.cansMark = 1
       // The hover plate this row paints is its own border box (the stylesheet
       // sizes it `border-box` with a 32px minimum), and the name sits centred
       // in it. Measured, because `content-box` here added the row's padding to
       // that minimum: a 36px plate with the name against its top edge.
-      (function () {
-        r.accountRowPlate = 'probe-ran'
-        if (!inject) { r.accountRowPlate = { noInject: true }; return }
-        var headerRow = inject.querySelector('.dsh-claude-account-popover-row')
-        if (!headerRow || !injectName) {
-          r.accountRowPlate = { missing: true, headerRow: headerRow !== null, injectName: injectName !== null }
+      // The leading semicolon matters: the assignment above ends without one, so
+      // the call would otherwise ride on the value that assignment produced.
+      ;(function () {
+        var plateRow = inject ? inject.querySelector('.dsh-claude-account-popover-row') : null
+        if (!plateRow || !injectName) {
+          r.accountRowPlate = {
+            missing: true,
+            inject: inject !== null,
+            plateRow: plateRow !== null,
+            injectName: injectName !== null,
+          }
           return
         }
-        var rowBox = headerRow.getBoundingClientRect()
-        var nameBox = injectName.getBoundingClientRect()
-        var rowStyle = getComputedStyle(headerRow)
+        var plateBox = plateRow.getBoundingClientRect()
+        var plateName = injectName.getBoundingClientRect()
+        var plateStyle = getComputedStyle(plateRow)
         r.accountRowPlate = {
-          box: rowStyle.boxSizing,
-          content: Math.round((rowBox.height - parseFloat(rowStyle.paddingTop) - parseFloat(rowStyle.paddingBottom)) * 10) / 10,
-          height: rowBox.height,
-          minHeight: rowStyle.minHeight,
-          display: rowStyle.display,
-          top: Math.round((nameBox.top - rowBox.top) * 10) / 10,
-          bottom: Math.round((rowBox.bottom - nameBox.bottom) * 10) / 10
+          box: plateStyle.boxSizing,
+          mode: plateStyle.display,
+          height: plateBox.height,
+          minHeight: plateStyle.minHeight,
+          padding: plateStyle.padding,
+          nameHeight: plateName.height,
+          content: Math.round((plateBox.height - parseFloat(plateStyle.paddingTop) - parseFloat(plateStyle.paddingBottom)) * 10) / 10,
+          top: Math.round((plateName.top - plateBox.top) * 10) / 10,
+          bottom: Math.round((plateBox.bottom - plateName.bottom) * 10) / 10
         }
       })()
       var htmlBefore = inject ? inject.innerHTML : null
