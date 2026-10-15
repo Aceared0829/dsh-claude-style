@@ -384,7 +384,7 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part
 }
 /* The selected row keeps the skin's fill rather than the host's stronger
    accent: the account menu's rows are actions, not a persistent choice. */
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="row-selected"] {
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-selected"] {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
 }
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-label"] {

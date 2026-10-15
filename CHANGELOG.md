@@ -25,6 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 手机远程访问（`@linxin666/dsh-remote-web-ui` 的竖屏适配）下，输入区底行不再错位：发送与停止按钮回到输入行内并完整落在卡片里；档位选择器与上下文圆环之间只隔 16px，和桌面一致；模型名称在行内还有空间时完整显示，只有真的放不下才以省略号收尾。上下文圆环的预留宽度变化时（流式输出期间也会发生），档位选择器当帧就跟着重新定位，不再停在旧位置。
 - 工作区分栏控件回到原样：进行中时它让位给「工作区」标题，指针进入该段才浮现，切到已归档才常驻。此前按类名片段定位列表区域时，片段同时命中了列表区域的外层容器，区间标记因此落在会话树自身的容器上，样式表里那对交叉淡入的两条规则都读不到它。现在按部件读列表区域，标记重新落在整个区段的根元素上。
 - 首页用量面板回来了：英雄页的根元素在中间列里，不在会话滚动区之内，按会话区域登记「root」这个局部名就读不到它，页面布局与工作室标记因此双双落空。该名字改为整页读取，规则再用宿主自己的 data-phase 限定到英雄页。
+- 宿主菜单卡片的部件重新写上：皮肤给菜单卡片打上自己的标记之后，只重读了那个元素本身，卡片里的行没有重读，于是账号弹层与英雄页的两个选择弹层按宿主原本的样子绘制，账号弹层因此出现了滚动条。元素因标记或类名变化成为区域锚点时，整棵子树一并重读。同一处顺带修正：账号弹层里选中行读的是侧栏的部件名，改为菜单区域自己的名字。
 
 ### 移除
 
@@ -58,6 +59,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - On a phone via the mobile remote plugin (`@linxin666/dsh-remote-web-ui`, portrait adaptation) the composer's bottom line no longer slips out of place: the send and stop buttons sit back on the input's own line and inside the card, the tier trigger stands 16px from the context ring as it does on a desktop, and the model name is shown whole whenever the row has room for it, ending in an ellipsis only when it does not. When the room the context ring reserves changes — which also happens while an answer streams — the tier trigger is placed again in that same frame instead of holding its old position.
 - The workspace section's segmented control behaves as before: in 进行中 it steps aside for the plain 工作区 heading and returns when the pointer enters the section, and it stays put in 已归档. Locating the list area by a class-name fragment also took that area's own outer container, so the view mark landed on the conversation tree's container instead of the section root and neither half of the stylesheet's cross-fade could read it. The list area is now read by its part, and the mark rides the section root again.
 - The home page's usage panel is back: the hero page's root sits in the centre column rather than inside the conversation's scroll region, so registering the host's `root` local name with that region never wrote it, and the page's layout and the studio mark both fell through. The name is read page-wide now, and a rule narrows it to the hero page with the host's own data-phase.
+- A host menu card's parts are written again: when the skin stamped its own mark on the card, only that element was re-read and the rows inside it were not, so the account card and the hero page's two pickers drew the host's own way — which is where the account card's scrollbar came from. An element that becomes a region's anchor through a stamp or a class rewrite now has its whole subtree re-read. The selected row in the account card read the sidebar's part name; it reads the menu region's own name now.
 
 ### Removals
 

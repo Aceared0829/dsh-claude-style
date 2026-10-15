@@ -152,7 +152,12 @@ export function installParts() {
       if (record.type === 'attributes') {
         if (record.target instanceof Element) {
           const { lookups, roots } = contextAt(record.target)
-          writeParts(record.target, lookups, roots)
+          // A stamp — or a class rewrite — can turn the element into a region's
+          // anchor, which is how a menu card portalled to `<body>` becomes one;
+          // the rows under it are read inside that region, so the whole subtree
+          // is walked. A plain class rewrite only moves the element's own parts.
+          if (record.target.matches(ANCHOR_SELECTOR)) walk(record.target, lookups, roots)
+          else writeParts(record.target, lookups, roots)
         }
         continue
       }
