@@ -9,10 +9,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">问题修复</h3>
 
 - 侧栏品牌标识悬停时不再浮出一块陶土色底板：它此前被列在「发送」按钮这类填充式 CTA 的规则里，靠一条按类名匹配的排除条件才没被填色；排除条件换掉之后，悬停底色落到了品牌按钮上。品牌按钮从这两条规则里移出，它的外观由自己那条规则给全，深色下也不再多出一块底板。
+- 侧栏收起成图标栏后，「进行中 / 已归档」控件与已归档列表随分区标题一起离开页面，宿主自己的分区按钮留在原处；侧栏重新展开时两者照旧回来。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
 - The sidebar brand mark no longer floats a clay plate under the pointer: it was listed among the filled CTAs beside the Send button, kept unpainted only by an exclusion written against a host class name, and once that exclusion went the hover fill landed on the brand button. The brand button leaves those two rules; its look comes from its own rule alone, and the dark theme no longer gains a plate either.
+- With the sidebar collapsed to its icon rail, the In progress / Archived control and the archived list leave the page along with the section's heading, so the host's own section buttons stay clear; both return when the sidebar is wide again.
 
 ## [0.14.2] - 2026-10-15
 

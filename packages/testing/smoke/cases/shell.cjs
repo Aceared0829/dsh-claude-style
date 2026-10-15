@@ -654,6 +654,13 @@ module.exports = {
     check('all switches off leave no switched feature on the page',
       !!sw.allOff && keys.every((key) => !present(sw.allOff, key)), JSON.stringify(sw.allOff))
     check('all switches back on bring every feature back', !!sw.allOn && keys.every((key) => present(sw.allOn, key)), JSON.stringify(sw.allOn))
+    const rail = sw.rail || {}
+    check('the host dropping the section heading takes the workspace control and the archived list off the page with it',
+      !!rail.wide && rail.wide.segments > 0 && !!rail.collapsed &&
+        rail.collapsed.segments === 0 && rail.collapsed.list === 0,
+      JSON.stringify(rail))
+    check('the heading coming back seats both in the section again',
+      !!rail.back && rail.back.segments > 0 && rail.back.list > 0, JSON.stringify(rail.back))
     commonChecks(r)
   },
   'switches-off'(r) {

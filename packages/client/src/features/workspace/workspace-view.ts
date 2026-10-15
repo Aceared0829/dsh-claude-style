@@ -364,9 +364,34 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     sync()
   }
 
+  /**
+   * Stand the feature down: the control and the archived list leave the page
+   * and the section's marks go with them.
+   *
+   * The host renders the section's heading only while the sidebar is wide
+   * (ui-sidebar's SidebarRoot unmounts it in the rail), while the header and
+   * the list area's own boxes stay mounted: with no heading to lay it over, an
+   * absolutely placed control would paint on the rail's own section buttons.
+   */
+  function dropSection() {
+    segmentPill.release()
+    if (control !== null && control.parentElement !== null) control.parentElement.removeChild(control)
+    control = null
+    if (listHost !== null && listHost.parentElement !== null) listHost.parentElement.removeChild(listHost)
+    listHost = null
+    labelStamp.release()
+    treeStamp.release()
+    viewStamp.release()
+  }
+
   function sync() {
     const label = findSection()
-    if (label === null || label.parentElement === null) return
+    // No heading to dress: the sidebar is a rail, and the section keeps its
+    // plain look until it is wide again.
+    if (label === null || label.parentElement === null) {
+      dropSection()
+      return
+    }
     const header = label.parentElement
     // Until the host's workspace and session services are both reachable
     // the section keeps its plain label.
@@ -433,14 +458,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       unwatch()
       unwatch = null
     }
-    segmentPill.release()
-    if (control !== null && control.parentElement !== null) control.parentElement.removeChild(control)
-    if (listHost !== null && listHost.parentElement !== null) listHost.parentElement.removeChild(listHost)
-    labelStamp.release()
-    treeStamp.release()
-    viewStamp.release()
-    control = null
-    listHost = null
+    dropSection()
     delete ui.workspace
   }
 }

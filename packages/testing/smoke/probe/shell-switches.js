@@ -76,6 +76,26 @@
         r.switches.allOff = await settleSwitch(allSwitches(false))
       })
       r.switches.allOn = await settleSwitch(allSwitches(true))
+      // The collapsed rail: the host renders the section's heading only while
+      // the sidebar is wide, so the feature's control and archived list have to
+      // leave with the heading and come back with it.
+      var railMarks = function () {
+        return {
+          segments: document.querySelectorAll('.dsh-claude-ws-segments').length,
+          list: document.querySelectorAll('.dsh-claude-archive-list').length,
+        }
+      }
+      var sectionHeader = switchSidebar.querySelector('._sectionHeader_w1_1')
+      var sectionLabel = switchSidebar.querySelector('._sectionLabel_w1_1')
+      var wide = railMarks()
+      sectionHeader.removeChild(sectionLabel)
+      document.body.appendChild(document.createElement('i'))
+      await sleep(300)
+      var collapsed = railMarks()
+      sectionHeader.insertBefore(sectionLabel, sectionHeader.firstChild)
+      document.body.appendChild(document.createElement('i'))
+      await sleep(300)
+      r.switches.rail = { wide: wide, collapsed: collapsed, back: railMarks() }
     })
   })
 })()
