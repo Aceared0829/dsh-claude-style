@@ -511,11 +511,13 @@
       "a reader who scrolled away himself is left where he is": [
         60
       ],
-      "the capped body walks to its end instead of jumping: short a frame later, still moving at a tenth of a second, at the end afterwards": [
-        200
+      "the capped body walks to its end instead of jumping: the recording starts far off, every frame closes on it, and the last one is at the end": [
+        0,
+        1
       ],
-      "the stream glide takes the host's own pin back and walks it: well short a frame later, still walking, at the end afterwards": [
-        100
+      "the stream glide takes the host's own pin back and walks it: the recording starts well off the end, every frame closes on it, and the last one is at the end": [
+        0,
+        1
       ],
       "the drawn caret is placed with a transform": [
         0

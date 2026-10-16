@@ -32,6 +32,41 @@
       "reason": "All long tasks together over the measured turn. The turn streams a long scripted answer, so some long tasks are the host rendering it; the budget is what the skin's own passes may add on top before the turn counts as blocked."
     },
     {
+      "name": "followAtEndPx",
+      "value": 6,
+      "reason": "A browser clamps a scroll position a few pixels inside `scrollHeight - clientHeight` when a child's own overflow or a scrollbar rounds it, so this is the distance from the end that counts as arrived (D00, 断言的写法)."
+    },
+    {
+      "name": "followCatchUpStartPx",
+      "value": 200,
+      "reason": "The distance the capped process body is left from its end before the catch-up is watched. The probe grows the body 900px inside a body about 200px tall, and a walk that never started reads the whole of it, so the floor separates a walk from a write."
+    },
+    {
+      "name": "followGlideStartPx",
+      "value": 100,
+      "reason": "The distance the conversation scroller is left from its end before the stream glide is watched: the probe appends a 300px block under the host's own streaming mark, and the host's pin puts the position back at the end in the same turn, so what is watched is the spring walking that distance rather than the pin."
+    },
+    {
+      "name": "followWalkDistinctValues",
+      "value": 2,
+      "reason": "How many different positions between the start and the end the recorded walk has to show. One value between the two ends is what a single write inside a frame leaves, and a sequence that holds the start and then the end is a jump; the two walking cases measured 26 and 18 intermediate readings at 60Hz."
+    },
+    {
+      "name": "followCatchUpMinFrames",
+      "value": 8,
+      "reason": "The fewest frames a recorded catch-up walk may take. The spring covers 95% of a gap in about 170ms, so a walk watched to the end holds about ten frames at 60Hz; the floor is the reading below which the walk was not watched to hear its end."
+    },
+    {
+      "name": "followGlideMinFrames",
+      "value": 8,
+      "reason": "The fewest frames a recorded stream glide may take, counted the same way as the catch-up's: the two walks carry the same spring, and the glide measured 18 intermediate readings at 60Hz."
+    },
+    {
+      "name": "followQuietFrames",
+      "value": 8,
+      "reason": "How many frames at the end of a recorded walk have to read the same position, within followAtEndPx, for the walk to count as finished rather than interrupted: the recorder stops on this many quiet frames, so the check asserts the stop it made was the walk arriving."
+    },
+    {
       "name": "laneFollowMaxGapPx",
       "value": 220,
       "reason": "How far behind the tail the scroller may lag while the reader follows it. The gap opens only while content arrives faster than the glide closes it — the lane's long script measures 151px at its fastest burst — so the bound is a third of that scenario's 600px viewport: a follow that stopped working leaves hundreds of pixels more, and a glide that stutters stays inside it."

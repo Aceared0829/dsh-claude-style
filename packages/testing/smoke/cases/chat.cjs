@@ -1,5 +1,27 @@
 'use strict'
 const { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonChecks } = require('./_shared.cjs')
+const { bound } = require('../../bounds.cjs')
+
+/**
+ * The readings between the two ends of a recorded walk, each with the frame it
+ * was taken on: what a walk shows that a jump does not.
+ */
+const walkedSteps = (readings, endPx) => {
+  const from = readings[0]
+  const steps = []
+  for (let at = 1; at < readings.length; at += 1) {
+    if (readings[at] !== readings[at - 1] && readings[at] > endPx && readings[at] < from) steps.push({ at, gap: readings[at] })
+  }
+  return steps
+}
+
+/**
+ * Whether the frames a recorded walk ended on all read the end: the walk arrived
+ * and its ease stopped there, rather than the recording being cut while it still
+ * had ground to cover.
+ */
+const walkHeldAtEnd = (readings, endPx, frames) => readings.length >= frames &&
+  readings.slice(-frames).every((gap) => gap <= endPx)
 
 module.exports = {
   'chat-follow'(r) {
@@ -11,31 +33,41 @@ module.exports = {
     // A browser clamps a scroll position a few pixels inside
     // `scrollHeight - clientHeight` when a child's own overflow or a scrollbar
     // rounds it, so "at the end" means "inside that clamp", and the point of the
-    // check is that it got there by walking.
-    const AT_END_PX = 6
+    // checks below is that the position got there by walking. The two walks are
+    // the page's own recordings of their frames (smoke/probe/chat-motion.js).
+    const AT_END_PX = bound('followAtEndPx')
     check('a structural moment hands the scroll back: the position was 60px off the end and lands at it',
       follow.before === 60 && follow.after <= AT_END_PX && follow.after < follow.before,
       JSON.stringify({ before: follow.before, after: follow.after }))
     check('a reader who scrolled away himself is left where he is',
       follow.readerBefore === 60 && follow.readerAfter === 60,
       JSON.stringify({ before: follow.readerBefore, after: follow.readerAfter }))
-    check('the capped body walks to its end instead of jumping: short a frame later, still moving at a tenth of a second, at the end afterwards',
-      follow.catchUpEarly > 200 && follow.catchUpMid < follow.catchUpEarly && follow.catchUpMid > AT_END_PX &&
-        follow.catchUpDone <= AT_END_PX && follow.catchUpLate <= AT_END_PX,
-      JSON.stringify({
-        early: follow.catchUpEarly, mid: follow.catchUpMid,
-        done: follow.catchUpDone, late: follow.catchUpLate,
-      }))
+    const catchUp = follow.catchUp || []
+    const catchUpSteps = walkedSteps(catchUp, AT_END_PX)
+    check('the capped body walks to its end instead of jumping: the recording starts far off, every frame closes on it, and the last one is at the end',
+      catchUp.length >= bound('followCatchUpMinFrames') && catchUp[0] > bound('followCatchUpStartPx') &&
+        catchUp.every((gap, at) => at === 0 || gap <= catchUp[at - 1]) &&
+        catchUp[catchUp.length - 1] <= AT_END_PX &&
+        catchUpSteps.length >= bound('followWalkDistinctValues'),
+      JSON.stringify({ readings: catchUp.length, start: catchUp[0], end: catchUp[catchUp.length - 1], steps: catchUpSteps.map((step) => step.gap) }))
+    check('the capped body is left at its end: the frames the recording ended on all read it',
+      walkHeldAtEnd(catchUp, AT_END_PX, bound('followQuietFrames')), JSON.stringify(catchUp.slice(-bound('followQuietFrames'))))
     // While the host's streaming mark is on the page, the end its own follow
     // writes is taken back before the frame paints and the spring walks the
     // distance (chat-follow.ts, scroll-ease.ts).
-    check('the stream glide takes the host\'s own pin back and walks it: well short a frame later, still walking, at the end afterwards',
-      follow.glideEarly > 100 && follow.glideMid < follow.glideEarly && follow.glideMid > AT_END_PX &&
-        follow.glideDone <= AT_END_PX,
+    const glide = follow.glide || []
+    const glideSteps = walkedSteps(glide, AT_END_PX)
+    check('the stream glide takes the host\'s own pin back and walks it: the recording starts well off the end, every frame closes on it, and the last one is at the end',
+      glide.length >= bound('followGlideMinFrames') && glide[0] > bound('followGlideStartPx') &&
+        glide.every((gap, at) => at === 0 || gap <= glide[at - 1]) &&
+        glide[glide.length - 1] <= AT_END_PX &&
+        glideSteps.length >= bound('followWalkDistinctValues'),
       JSON.stringify({
-        early: follow.glideEarly, mid: follow.glideMid, done: follow.glideDone,
-        diag: follow.glideDiag,
+        readings: glide.length, start: glide[0], end: glide[glide.length - 1],
+        steps: glideSteps.map((step) => step.gap), diag: follow.glideDiag,
       }))
+    check('the glide is left at the end: the frames the recording ended on all read it',
+      walkHeldAtEnd(glide, AT_END_PX, bound('followQuietFrames')), JSON.stringify(glide.slice(-bound('followQuietFrames'))))
     check('a message the reader just sent is not taken back: the host\'s jump to it stands',
       follow.submitGap <= AT_END_PX && follow.submitGapLate <= AT_END_PX,
       JSON.stringify({ gap: follow.submitGap, late: follow.submitGapLate }))

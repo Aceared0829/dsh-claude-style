@@ -279,6 +279,56 @@ for (const file of Object.keys(recordedLookups)) {
   problems.push(`packages/testing/document-lookups.json: ${file} is gone from the tree — take its entry out`)
 }
 
+// 9. The bounds a check compares against, and every name a check asks for.
+// packages/testing/bounds.json is where a limit on a reading lives, each with
+// the reason it holds its value, so loosening one is a line in a diff rather
+// than a number buried in an assertion (D00, 断言的写法). A name nothing reads
+// means the rule it guards is gone; a name something reads and the table does
+// not hold fails where it is read, which is why the pass over the sources is
+// part of the rule rather than a comment on the table.
+const boundsFile = path.join(ROOT, 'packages', 'testing', 'bounds.json')
+const readBounds = JSON.parse(fs.readFileSync(boundsFile, 'utf8'))
+if (!Array.isArray(readBounds.bounds) || readBounds.bounds.length === 0) {
+  problems.push('packages/testing/bounds.json: the table holds no bounds')
+}
+const boundNames = new Set()
+for (const entry of readBounds.bounds) {
+  if (typeof entry.name !== 'string' || entry.name === '') {
+    problems.push('packages/testing/bounds.json: a bound has no name')
+    continue
+  }
+  boundNames.add(entry.name)
+  if (typeof entry.value !== 'number' || !Number.isFinite(entry.value)) {
+    problems.push(`packages/testing/bounds.json: ${entry.name} is not a finite number`)
+  }
+  if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40) {
+    problems.push(`packages/testing/bounds.json: ${entry.name} carries no reason for its value`)
+  }
+}
+if (boundNames.size !== readBounds.bounds.length) {
+  problems.push('packages/testing/bounds.json: a name stands twice in the table')
+}
+const readBound = /bound\(\s*'([A-Za-z0-9_]+)'/g
+const askedBounds = new Set()
+let boundReads = 0
+for (const file of sources) {
+  if (!file.endsWith('.cjs') || !relative(file).startsWith('packages/testing/')) continue
+  if (relative(file) === 'packages/testing/bounds.cjs') continue
+  const text = fs.readFileSync(file, 'utf8')
+  for (const match of text.matchAll(readBound)) {
+    if (match[1] === 'name') continue
+    askedBounds.add(match[1])
+    boundReads += 1
+  }
+}
+for (const name of askedBounds) {
+  if (!boundNames.has(name)) problems.push(`packages/testing/bounds.json: ${name} is read by a check and the table does not hold it`)
+}
+for (const name of boundNames) {
+  if (!askedBounds.has(name)) problems.push(`packages/testing/bounds.json: ${name} is in the table and no check reads it — take the entry out, or read it where its rule lives`)
+}
+if (boundReads === 0) problems.push('lint: no bound was read — the bounds pattern matches nothing')
+
 // A rule whose pattern stopped matching anything would pass forever: each of the
 // rules has to have looked at something.
 if (featureUiChecked === 0) problems.push('lint: no feature module types ui as FeatureUi — the feature rule matches nothing')

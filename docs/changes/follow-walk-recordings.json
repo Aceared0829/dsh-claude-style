@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 32,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**滚动动效的断言不再随机器快慢变化**：跟随的追赶与流式滑行此前在几个钟点上各读一次距离，忙碌的机器上读到的差值不同；现在探针从滑行开始的那一帧起逐帧记下距离，断言改成这条记录的不变式——开头离终点很远、每一帧只朝终点靠近、中间至少经过两个不同的值、末帧落在终点、结尾连续若干帧都停在终点。阈值与帧数住进 `packages/testing/bounds.json`，`scripts/lint.mjs` 新增一条规则：台账里每条边界都要有名字、有限的值与理由，被检查读到的名字必须在台账里，台账里没人读的条目要被拿掉。",
+  "en": "**The scroll motion assertions no longer move with the machine**: the follow's catch-up and the stream glide each took a distance reading at a few clock points, and those readings differ on a busy machine; the probe now records the distance frame by frame from the frame the walk starts, and the checks ask that recording's invariants instead — the run starts far off the end, every frame closes on it, at least two different values lie between the two ends, the last frame is at the end, and the frames it ended on all still read the end. The thresholds and frame counts live in `packages/testing/bounds.json`, and `scripts/lint.mjs` gained a rule: every bound in the table carries a name, a finite value and a reason, a name a check reads has to be in the table, and an entry nothing reads comes out."
+}

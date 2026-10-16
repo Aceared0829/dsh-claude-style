@@ -20,6 +20,54 @@
       var endGap = function () {
         return Math.round(followScroller.scrollHeight - followScroller.clientHeight - followScroller.scrollTop)
       }
+      // One walk, as the browser draws it: the first reading is taken where the
+      // walk starts, the rest on the frames that follow, and the recording stops
+      // on a run of frames that read the same position. D00's 动效的断言 reads
+      // this sequence — monotone, at least two different values between the two
+      // ends, the end equal to the target — so that the shape of the curve is
+      // settled in the unit lane and this lane only asks whether it was walked.
+      //
+      // A walk out of a pin begins one frame after the content grew, when the
+      // size subscription armed after the host's own takes the pin back and the
+      // spring starts — so the recording waits for the frame the follow's hold
+      // mark says the take-back happened on. Started in the writing turn, it
+      // reads the pinned end every frame and never sees the walk at all.
+      var recordWalk = function (gap, held) {
+        return new Promise(function (resolve) {
+          var readings = []
+          var quiet = 0
+          var frames = 0
+          var started = false
+          var read = function () {
+            frames += 1
+            if (!started) {
+              started = held()
+              if (!started) {
+                if (frames >= 96) { resolve([]); return }
+                requestAnimationFrame(read)
+                return
+              }
+            }
+            var value = gap()
+            readings.push(value)
+            if (readings.length > 1 && value === readings[readings.length - 2]) quiet += 1
+            else quiet = 0
+            // The quiet run is what ends a walk: a fixed wait would either cut a
+            // slow runner's walk short or spend a second on a fast one.
+            if (quiet >= 8 || readings.length >= 120) { resolve(readings); return }
+            requestAnimationFrame(read)
+          }
+          requestAnimationFrame(read)
+        })
+      }
+      /** Whether the glide's take-back has happened: the follow's hold mark stands on the column. */
+      var glideHeld = function () {
+        return document.querySelector('[data-dsh-claude-follow-hold]') !== null
+      }
+      /** Whether the capped body has left its end, which is where its catch-up walk starts. */
+      var bodyWalking = function () {
+        return cappedBody !== null && cappedBody.scrollHeight - cappedBody.clientHeight - cappedBody.scrollTop > 6
+      }
       var structuralMoment = async function () {
         var node = document.createElement('div')
         node.setAttribute('data-chat-flow-key', 'probe')
@@ -53,7 +101,7 @@
       r.chatFollow.readerAfter = endGap()
       // The capped body's catch-up is walked in on a curve, not written in one
       // frame (scroll-ease.ts): grow the content well past the catch-up
-      // threshold and sample what is left to go at three moments.
+      // threshold and record every frame of the walk out of it.
       if (cappedBody !== null) {
         var cappedContent = cappedBody.querySelector('[data-step-process-content]')
         var bodyGap = function () {
@@ -62,17 +110,7 @@
         cappedBody.scrollTop = 0
         await sleep(80)
         if (cappedContent !== null) cappedContent.style.height = '900px'
-        await sleep(25)
-        r.chatFollow.catchUpEarly = bodyGap()
-        await sleep(110)
-        r.chatFollow.catchUpMid = bodyGap()
-        // A burst this size glides at the capped speed, so it takes about half a
-        // second to arrive; the quiet stretch between bursts is what that fits in.
-        await sleep(900)
-        r.chatFollow.catchUpDone = bodyGap()
-        await sleep(600)
-        // Held at the end: the ease ended there rather than being left running.
-        r.chatFollow.catchUpLate = bodyGap()
+        r.chatFollow.catchUp = await recordWalk(bodyGap, bodyWalking)
       }
       // The stream glide (chat-follow.ts): with the host's own streaming mark on
       // the page, the end the host's follow pins the position to is taken back
@@ -87,9 +125,11 @@
       var glideBlock = document.createElement('div')
       glideBlock.style.height = '300px'
       followColumn.appendChild(glideBlock)
+      // The pin the host's own follow writes is taken back before the frame
+      // paints and handed to the spring; the walk out of it is recorded from the
+      // frame the take-back happens on, the same way as the catch-up above.
       followScroller.scrollTop = followScroller.scrollHeight
-      await sleep(30)
-      r.chatFollow.glideEarly = endGap()
+      r.chatFollow.glide = await recordWalk(endGap, glideHeld)
       r.chatFollow.glideDiag = {
         motion: document.body.getAttribute('data-dsh-claude-motion'),
         streamMark: document.querySelector('[data-streaming]') !== null,
@@ -97,10 +137,6 @@
         buttonMarked: document.querySelector('[data-dsh-claude-stream-glide]') !== null,
         followAttr: document.querySelector('[data-chat-following-tail]') !== null,
       }
-      await sleep(120)
-      r.chatFollow.glideMid = endGap()
-      await sleep(900)
-      r.chatFollow.glideDone = endGap()
       // The host's own button is kept out of sight while the glide follows: a
       // position held off the end reads to the host as a reader who left.
       r.chatFollow.glideButtonMarked = document.querySelector('[data-dsh-claude-stream-glide]') !== null
