@@ -14,7 +14,6 @@ import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-s
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
 import type { RowWords } from './wait-state'
-import type { FrameTask } from '../../core/frame'
 import type { HostChatTarget } from '@dsh-claude-style/contracts/services'
 import type { HostContext, HostText } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
@@ -90,9 +89,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Each row's follow of its own session's snapshot, and the session it follows. */
   const follows = new Map<HTMLElement, { sessionId: string, stop: () => void }>()
   let timer: number | null = null
-  /** The pass this feature has asked the next frame for, and how to take it back. */
-  let passTask: FrameTask | null = null
-  let cancelPass: (() => void) | null = null
+  let cancelTick: (() => void) | null = null
+  let queued: Promise<void> | null = null
 
   // The detail choice is read on every pass; a change of it rewrites the line
   // at once rather than waiting out the standing word's lock.
@@ -105,18 +103,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   })
 
   /**
-   * One pass per frame, for the publishes the host makes and for the clock's own
-   * tick. A step that streams publishes several times inside one task and the
-   * timer asks four times a second; both want the same frame, so a burst of
-   * publishes costs one pass, and the line's writes land in the frame's write
-   * phase where the rest of the skin's do (D40). A page that is not painting
-   * runs no frame: the wording then stands with the clock until the next one.
+   * One pass per task, for the publishes the host makes: a step that streams
+   * publishes several times inside one task, while a tool call is its own task
+   * — the file it names is on the line only if that call is read between the
+   * publish that starts it and the one that settles it. A frame's own pass is
+   * the clock's below.
    */
-  function schedulePass() {
-    if (passTask !== null) return
-    const task: FrameTask = { write() { passTask = null; cancelPass = null; sync() } }
-    passTask = task
-    cancelPass = requestFrame(task)
+  function scheduleSync() {
+    if (queued !== null) return
+    queued = Promise.resolve().then(() => {
+      queued = null
+      sync()
+    })
   }
 
   /**
@@ -136,7 +134,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     if (followed !== undefined && followed.sessionId === sessionId) return
     followed?.stop()
-    follows.set(row, { sessionId, stop: target.subscribe(schedulePass) })
+    follows.set(row, { sessionId, stop: target.subscribe(scheduleSync) })
   }
 
   /**
@@ -341,8 +339,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (typeof key === 'string' && !live.has(key)) wording.delete(key)
     }
     // Yielded rows stay watched: style-only ownership changes must restore the line.
-    if (rows.length > 0 && timer === null) timer = window.setInterval(schedulePass, TICK_MS)
-    else if (rows.length === 0 && timer !== null) {
+    if (rows.length > 0 && timer === null) {
+      timer = window.setInterval(() => {
+        if (cancelTick !== null) return
+        cancelTick = requestFrame({ write() { cancelTick = null; sync() } })
+      }, TICK_MS)
+    } else if (rows.length === 0 && timer !== null) {
       window.clearInterval(timer)
       timer = null
     }
@@ -355,9 +357,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     runningRows.release()
     if (timer !== null) window.clearInterval(timer)
     timer = null
-    if (cancelPass !== null) cancelPass()
-    cancelPass = null
-    passTask = null
+    if (cancelTick !== null) cancelTick()
+    cancelTick = null
     for (const row of [...lines.keys()]) release(row)
     for (const row of document.querySelectorAll(`[${WAIT_ATTR}]`)) row.removeAttribute(WAIT_ATTR)
     waits.clear()
