@@ -540,8 +540,11 @@ module.exports = {
       dotName.word === 'Reading app.js now', JSON.stringify(dotName))
     const reduced = wait.reduced || {}
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
-      reduced.word === 'Thinking…' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Thinking…',
+      reduced.word === 'Checking the row now' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Checking the row now',
       JSON.stringify(reduced))
+    const reducedHeld = wait.reducedHeld || {}
+    check('句子不带自己的从句时，站着的那句在该选择下也留在原处',
+      reducedHeld.word === 'Checking the row now' && reducedHeld.copies === 1, JSON.stringify(reducedHeld))
     // Reduced presses every skin animation to a hundredth of a millisecond but
     // leaves its iteration count alone, so an animation left running strobes
     // instead of settling: the loader's dots have to be held, and the words'

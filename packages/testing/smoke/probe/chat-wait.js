@@ -345,8 +345,14 @@
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })
       await probe.settle()
+      reason('I am checking the row now. ')
+      r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Checking the row now' && reading.copies === 1 && reading.phase === null })
+      // A sentence with no clause of its own leaves the one standing in place
+      // under that choice too: what the line reads is what arrives, and nothing
+      // arrives here (wait-state.ts).
       reason('先看清工作区。')
-      r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
+      await probe.settle()
+      r.wait.reducedHeld = lineOf()
       // The dots under that choice: read on every frame until the page settles,
       // so a motion that never stops shows up as the first and last readings
       // differing.
