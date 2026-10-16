@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 4,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**构建要求每一处 `!important` 都有页面上的依据**：重要性走查现在把读到的每一处声明都写进 `packages/testing/importance-ledger.json`——判定为需要的连同它压过的候选，页面形态够不到的连同判定它的结果（从未匹配到元素、只在短暂标记下生效、第三方应答、伪元素读不到计算值）。样式表构建核对这份台账：产物里任何一处 `!important` 不在台账里就直接构建失败，并指出是哪些声明。",
+  "en": "**The build requires page evidence for every `!important`**: the importance walk now writes every declaration it read into `packages/testing/importance-ledger.json` — the ones it proved necessary together with what each beats, and the ones no page state could reach together with the verdict that says so (never matched an element, only in force under a transient mark, a third-party answer, an unreadable pseudo-element). The stylesheet build verifies that record: any `!important` in the output that is not in the ledger fails the build, naming the declarations."
+}

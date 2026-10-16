@@ -37,6 +37,7 @@ import selectorParser from 'postcss-selector-parser'
 import { featureSheet } from './feature-sheets.mjs'
 import { minifyCss } from './shared/minify-css.cjs'
 import { loadModule } from './shared/ts-module.cjs'
+import { ruleKey } from '../packages/testing/importance-audit.cjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'
@@ -613,5 +614,41 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
     ...tokenDoc.motion.map((item) => item.value),
   ].join('\n')
   checkTokensRead(tokenDoc, readers, sources)
-  return { main: minifyCss(joined(false)), surface: minifyCss(joined(true)) }
+  const main = minifyCss(joined(false))
+  checkImportance(main, srcDir)
+  return { main, surface: minifyCss(joined(true)) }
+}
+
+/**
+ * Every `!important` the built sheet carries must be one the importance walk
+ * decided (D51): the weight is only ever there over a host `!important`, an
+ * inline style or another skin rule, and which of those it stands over was read
+ * off the page by that walk. The walk writes every declaration it read — the
+ * ones it proved necessary with what each beats, and the ones no page state
+ * could reach with the verdict that says so — into
+ * packages/testing/importance-ledger.json, keyed by the declaration's rule text
+ * and property, which is the same key this check computes over the built sheet.
+ * A declaration in no entry is weight nobody has read the page for: write the
+ * reason into a decision, then run the walk with `DSH_IMPORTANCE_LEDGER=write`
+ * and read the ledger's diff.
+ *
+ * @param main - the built theme sheet, minified, as the page runs it.
+ * @param srcDir - packages/client/src, from which the repository root is reached.
+ */
+function checkImportance(main, srcDir) {
+  const root = path.resolve(srcDir, '..', '..', '..')
+  const ledger = JSON.parse(fs.readFileSync(path.join(root, 'packages', 'testing', 'importance-ledger.json'), 'utf8')).entries
+  const problems = []
+  postcss.parse(main).walkRules((rule) => {
+    const important = rule.nodes.filter((node) => node.type === 'decl' && node.important)
+    if (important.length === 0) return
+    const key = ruleKey(rule)
+    for (const node of important) {
+      if (ledger[`${key}|${node.prop.toLowerCase()}`] !== undefined) continue
+      problems.push(`${rule.selector.replace(/\s+/g, ' ').slice(0, 90)} { ${node.prop} }`)
+    }
+  })
+  if (problems.length > 0) {
+    throw new Error(`build: ${problems.length} !important declaration(s) the importance walk has not decided — read the page for each (the weight is only for a host !important, an inline style or another skin rule), then record it: ${problems.slice(0, 3).join('；')}`)
+  }
 }

@@ -307,14 +307,22 @@ function importanceScenario(lane) {
       const reached = [...UNREACHABLE.keys()].filter((selector) => !dead.has(selector) && !EITHER.has(selector))
       if (process.env.DSH_IMPORTANCE_LEDGER === 'write') {
         const entries = {}
-        for (const item of evidence) entries[evidenceKey(item)] = { selector: item.selector, prop: item.prop, state: item.state, opponents: item.opponents }
+        for (const item of declarations) {
+          const beaten = evidence.find((own) => own.ruleKey === item.ruleKey && own.prop === item.prop)
+          entries[evidenceKey(item)] = beaten === undefined
+            ? { selector: item.selector, prop: item.prop, verdict: item.verdict }
+            : { selector: item.selector, prop: item.prop, verdict: item.verdict, state: beaten.state, opponents: beaten.opponents }
+        }
         fs.writeFileSync(LEDGER_FILE, `${JSON.stringify({ note: LEDGER.note, entries }, null, 2)}\n`)
       }
       const ledgerNow = process.env.DSH_IMPORTANCE_LEDGER === 'write' ? JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8')) : LEDGER
       const recorded = new Set(Object.keys(ledgerNow.entries))
-      const evidenceKeys = new Set(evidence.map(evidenceKey))
-      const missingEvidence = [...evidenceKeys].filter((key) => !recorded.has(key))
-      const unknownEvidence = [...recorded].filter((key) => !evidenceKeys.has(key))
+      const needed = declarations.filter((item) => item.verdict === 'needed')
+      const missingEvidence = needed.filter((item) => !recorded.has(evidenceKey(item)))
+      const unrecordedDeclarations = declarations.filter((item) => !recorded.has(evidenceKey(item)))
+      const runKeys = new Set(declarations.map(evidenceKey))
+      const unknownEvidence = [...recorded].filter((key) => !runKeys.has(key))
+      const withOpponents = declarations.filter((item) => (ledgerNow.entries[evidenceKey(item)]?.opponents ?? []).length > 0)
       const briefKeys = (keys) => keys.slice(0, 3).map((key) => key.replace(/\s+/g, ' ').slice(0, 90)).join('；')
       const brief = (selectors) => selectors.slice(0, 3).map((selector) => selector.replace(/\s+/g, ' ').slice(0, 90)).join('；')
       const recordedGroups = UNREACHABLE_FILE.groups.map((group) => `${group.reason} ${group.selectors.length}`).join('，')
@@ -325,8 +333,8 @@ function importanceScenario(lane) {
         // enforced: a run that needs one the ledger has not recorded, or no
         // longer needs one it records, fails until the ledger is written again
         // and the difference read.
-        lane.check('保留下来的 !important 都有对手的记录', missingEvidence.length === 0 && unknownEvidence.length === 0,
-          `${evidence.length} 处有记录（其中 ${evidence.filter((item) => item.opponents.length > 0).length} 处认出了对手：${[...new Set(evidence.flatMap((item) => item.opponents.map((entry) => entry.kind)))].join('、') || '无'}），${missingEvidence.length} 处新需要（${briefKeys(missingEvidence)}），${unknownEvidence.length} 处记录里已不需要（${briefKeys(unknownEvidence)}）`),
+        lane.check('每处 !important 都在台账里，需要的那些记着对手', unrecordedDeclarations.length === 0 && unknownEvidence.length === 0 && missingEvidence.length === 0,
+          `${declarations.length} 处声明，台账记着 ${recorded.size} 处，其中 ${withOpponents.length} 处认出了对手（${[...new Set(withOpponents.flatMap((item) => (ledgerNow.entries[evidenceKey(item)].opponents ?? []).map((entry) => entry.kind)))].join('、') || '无'}）；本次未记录的 ${unrecordedDeclarations.length} 处（${briefKeys(unrecordedDeclarations.map(evidenceKey))}），台账里多出的 ${unknownEvidence.length} 处（${briefKeys(unknownEvidence)}）`),
         lane.check('没有多余的 !important', idle.length === 0, `${declarations.length} 处：需要 ${count('needed')}，多余 ${idle.length}${idle.length === 0 ? '' : `（${idle.slice(0, 3).map((item) => `${item.selector.replace(/\s+/g, ' ').slice(0, 70)} { ${item.prop} }`).join('；')}…）`}；另有 ${count('unmatched')} 处从未匹配到元素（本次页面形态未覆盖），${count('declared twice')} 处重复声明，${count('third-party')} 处属于第三方应答，${count('transient state')} 处只在短暂标记下生效，${count('unreadable pseudo-element')} 处伪元素读不到计算值`),
         // The other half of "every line is necessary": a selector no state
         // matches an element with is a rule the page never reads. One the walk

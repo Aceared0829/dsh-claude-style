@@ -711,4 +711,4 @@ async function createImportanceAudit(page, reference) {
   return { state, hoverTargets, result }
 }
 
-module.exports = { createImportanceAudit, planImportance, dropImportance, ROOT }
+module.exports = { createImportanceAudit, planImportance, dropImportance, ruleKey, ruleKeys, sweepParts, ROOT }
