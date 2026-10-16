@@ -5,10 +5,6 @@
       "count": 3,
       "reason": "The hero's own menu card and the trigger it hangs off, read in the refresh pass. Debt: one cacheFirstMatch per seat, or the card read off the trigger the pass already holds."
     },
-    "packages/client/src/features/account/host-menu.ts": {
-      "count": 1,
-      "reason": "The host's account menu, read in the refresh pass to tell whether it is up. Debt: the bus's registry for [role=\"menu\"], as the statistics' dialogs use."
-    },
     "packages/client/src/features/workspace/workspace-view.ts": {
       "count": 1,
       "reason": "The sidebar's section labels, read in the refresh pass. Debt: one cacheFirstMatch."

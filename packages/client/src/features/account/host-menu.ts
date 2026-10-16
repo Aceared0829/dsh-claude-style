@@ -1,5 +1,5 @@
-import { MENU_ROLE_SELECTOR, SETTINGS_BUTTON_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { findFootArea } from '../../core/host'
+import { SETTINGS_BUTTON_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { findFootArea, findHostMenu } from '../../core/host'
 
 /** Rhythm and give-up point of the poll for the host's account menu after the trigger's own click. */
 const MENU_LOOK_INTERVAL_MS = 40
@@ -86,11 +86,7 @@ export function createHostAccountMenu(options: { close(): void }) {
   function findAccountMenu() {
     const trigger = hostAccountTrigger()
     if (trigger === null || trigger.getAttribute('aria-expanded') !== 'true') return null
-    const menus = document.querySelectorAll<HTMLElement>(MENU_ROLE_SELECTOR)
-    for (let i = 0; i < menus.length; i++) {
-      if (!String(menus[i].className || '').includes('dsh-claude-')) return menus[i]
-    }
-    return null
+    return findHostMenu()
   }
 
   /**

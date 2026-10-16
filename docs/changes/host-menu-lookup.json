@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 7,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**宿主那张菜单卡片的查找收进一处**：账户菜单每趟刷新都要问「宿主开着的那张菜单在哪」，此前它把页面上 `[role=\"menu\"]` 全查一遍再逐个挑出不是本插件的那张。现在这条查询由宿主访问模块记住答案（菜单是节点来了又走，答案只在页面结构变化后重查），登记表里这一条欠账随之划掉。英雄首页那一处同样的查询留给下一轮改用同一处访问器。",
+  "en": "**The lookup for the host's open menu card moved into one place**: the account menu asked every pass where the host's open menu was, scanning every `[role=\"menu\"]` on the page and picking the one that is not the skin's own. That lookup now goes through the host access module, which keeps the answer until the page's structure changes (a menu is a node arriving and leaving), and the ledger entry recording it as debt is struck out. The hero menu's own query of the same kind moves onto the same accessor next."
+}

@@ -1,5 +1,5 @@
 import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
-import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
 import { observeMatches, subscribeMutations } from './bus'
@@ -123,6 +123,15 @@ export const findSidebarRoot = cacheFirst<HTMLElement>(SIDEBAR_ROOT_SELECTOR)
 export const findSidebarBrand = cacheFirst<HTMLElement>(SIDEBAR_BRAND_SELECTOR)
 export const findSidebarToggle = cacheFirst<HTMLElement>(SIDEBAR_TOGGLE_SELECTOR)
 export const findWindowsMenu = cacheFirst<HTMLElement>(WINDOWS_MENU_SELECTOR)
+
+/**
+ * The open host menu card: the host portals its menus to `<body>`, and every
+ * card the skin builds itself carries a `dsh-claude-` class (D3). The account
+ * row and the hero menu ask this same question on every pass, so it is read
+ * once here and kept until the page's structure changes — a menu opening or
+ * closing is a node arriving or leaving (D40).
+ */
+export const findHostMenu = cacheFirst<HTMLElement>(`${MENU_ROLE_SELECTOR}:not([class*="dsh-claude-"])`)
 
 /**
  * The host's composer card — the element the skin's composer rules hang on —
