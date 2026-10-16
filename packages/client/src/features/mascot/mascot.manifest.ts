@@ -11,6 +11,22 @@ export default {
     { file: 'crab.css', rank: 350 },
     { file: 'whale.css', rank: 360 },
   ],
+  settingsRows: [{
+    tab: 'appearance',
+    rank: 30,
+    pref: 'mascot',
+    title: 'mascotTitle',
+    desc: 'mascotDesc',
+    choiceLabels: { brand: 'mascotBrand', crab: 'mascotCrab', deepy: 'mascotDeepy', off: 'mascotOff' },
+  }, {
+    // It belongs to the mascot switch above it.
+    tab: 'appearance',
+    rank: 40,
+    pref: 'mascotScope',
+    parent: 'mascot',
+    title: 'mascotScopeTitle',
+    choiceLabels: { home: 'mascotScopeHome', all: 'mascotScopeAll' },
+  }],
   cases: ['crab-states', 'deepy', 'hero', 'studio'],
   description: {
     zh: {

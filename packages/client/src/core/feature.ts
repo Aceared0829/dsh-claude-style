@@ -133,8 +133,10 @@ export interface FeatureSettingsRow {
   /** A choice preference's labels: the copy key of each value. A value left out is drawn with its bare id. */
   choiceLabels?: Readonly<Record<string, string>>
   /**
-   * The preference whose switch this row stands under: it is drawn indented,
-   * with no hairline between them, and refuses input while that one is off.
+   * The preference whose row this row stands under: it is drawn indented, with
+   * no hairline between them, and refuses input while that preference is off
+   * (`false`, or a choice's own `off`) or while the row above it cannot act at
+   * all — a requirement of its own unmet, or an owner that yields the page.
    */
   parent?: keyof Prefs
   /** The preference the row's control only works under (D72). */

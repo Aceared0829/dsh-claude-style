@@ -5,5 +5,7 @@
   "empty": { "zh": "没有可用的模型。", "en": "No models available." },
   "moreLabel": { "zh": "更多模型", "en": "More models" },
   "pickerTitle": { "zh": "重绘模型选择器", "en": "Redraw the model picker" },
-  "pickerDesc": { "zh": "重绘对话框区域的模型菜单。", "en": "Replace the composer's model menu with the two-level Claude-style menu. Off restores the host's model menu." }
+  "pickerDesc": { "zh": "重绘对话框区域的模型菜单。", "en": "Replace the composer's model menu with the two-level Claude-style menu. Off restores the host's model menu." },
+  "modelDescriptionsTitle": { "zh": "模型描述", "en": "Model descriptions" },
+  "modelDescriptionsDesc": { "zh": "一级列表的每个模型下面写一行说明，讲这个模型是什么。关闭后每一行只剩模型名。", "en": "A line under each model in the picker's first level saying what it is. Off leaves every row with the model's name alone." }
 }

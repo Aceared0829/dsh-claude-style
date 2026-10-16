@@ -7,7 +7,7 @@ import { prefYielded, settingsRowsOf } from '../../core/feature'
 import { featureCopy } from '../../core/i18n'
 import { copy, sharedLine } from './copy'
 import { createSlidingPill } from '../../shared/sliding-pill'
-import type { Feature } from '../../core/feature'
+import type { Feature, FeatureSettingsRow } from '../../core/feature'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
 import type { QuickProvidersHandle } from './quick-providers'
@@ -96,13 +96,42 @@ function rowLine(feature: Feature, key: string) {
  *
  * A row refuses input and says why where it cannot act: a preference its
  * feature yields for (dsh-chat-ux on the page, managedDesc), one that only
- * works under another preference's values (`requires`) or stands under a switch
- * that is off (`parent`), and one acting on the Windows desktop window alone
+ * works under another preference's values (`requires`), one standing under a row
+ * that cannot act either (`parent`: the switch above it is off, or that row is
+ * itself waiting), and one acting on the Windows desktop window alone
  * (`windowsOnly`) on every page that is not that window.
  */
 function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
   const controls = view.controls
-  return settingsRowsOf(tab).map(({ feature, row }) => {
+  const entries = settingsRowsOf(tab)
+  const prefs = view.prefs
+  const rowsByPref = new Map(entries.map(({ row }) => [row.pref, row]))
+
+  /**
+   * Whether a preference is off: a switch stored `false`, or a choice stored
+   * its own `off`.
+   */
+  function isOff(pref: keyof Prefs) {
+    const stored = prefs[pref]
+    return stored === false || stored === 'off'
+  }
+
+  /**
+   * Whether a row cannot act right now: the preference it stands under is off,
+   * the row above it cannot act either, or its own requirement is unmet.
+   */
+  function blocked(row: FeatureSettingsRow, seen: ReadonlySet<string>): boolean {
+    if (isOff(row.pref)) return true
+    if (row.requires !== undefined && !row.requires.values.includes(String(prefs[row.requires.pref]))) return true
+    if (row.windowsOnly === true && !windowsDesktop()) return true
+    if (row.parent !== undefined && !seen.has(row.parent)) {
+      const parent = rowsByPref.get(row.parent)
+      if (parent !== undefined && blocked(parent, new Set([...seen, row.parent]))) return true
+    }
+    return false
+  }
+
+  return entries.map(({ feature, row }) => {
     const pref = row.pref
     const spec = PREFS[pref]
     const yielded = prefYielded(pref)
@@ -113,12 +142,13 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
       ? rowLine(feature, requires.note)
       : null
     const offWindows = row.windowsOnly === true && !windowsDesktop()
-    const parentOff = row.parent !== undefined && view.prefs[row.parent] === false
-    const unmet = waits !== null || offWindows
+    const above = row.parent === undefined ? undefined : rowsByPref.get(row.parent)
+    const parentBlocked = above !== undefined && blocked(above, new Set([row.parent as string]))
     const stored = view.prefs[pref]
     // The row's key and its values are the table's data: the clamp holds them.
     const write = (value: string | boolean) => { view.write({ [pref]: value } as Partial<Prefs>) }
-    const off = yielded || unmet || parentOff
+    // The row's own value never disables it: that is what the reader changes.
+    const off = yielded || waits !== null || offWindows || parentBlocked
     // A row the feature draws itself renders its own control (D72); every other
     // row follows the preference's own type.
     const own = row.control === undefined ? undefined : ROW_CONTROLS[feature.id]?.[row.control]
@@ -140,11 +170,11 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
       : (row.desc === undefined && note === null ? null : noteDesc(desc, note))
     const node = row.parent === undefined
       ? controls.row(pref, title, description, control, {
-        disabled: unmet,
+        disabled: off,
         // A row that is its control alone stacks it across the row.
         block: own !== undefined && title === null && description === null,
       })
-      : controls.subRow(pref, title ?? '', description, control, !parentOff)
+      : controls.subRow(pref, title ?? '', description, control, !off)
     return { rank: row.rank, node }
   })
 }

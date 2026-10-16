@@ -11,6 +11,14 @@ export default {
     { file: 'inline.css', rank: 90, gate: true },
     { file: 'inline-bar.css', rank: 100, gate: true },
   ],
+  settingsRows: [{
+    tab: 'composer',
+    rank: 10,
+    pref: 'composerScope',
+    title: 'composerTitle',
+    desc: 'composerDesc',
+    choiceLabels: { off: 'scopeOff', hero: 'scopeHero', conversation: 'scopeConversation', all: 'scopeAll' },
+  }],
   cases: ['composer', 'sync-fault', 'hero', 'late-forms'],
   description: {
     zh: {

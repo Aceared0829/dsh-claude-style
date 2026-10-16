@@ -20,6 +20,14 @@ export default {
       values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
       note: 'composerRequired',
     },
+  }, {
+    // The catalog's own description lines, which the picker draws, under it.
+    tab: 'composer',
+    rank: 35,
+    pref: 'modelDescriptions',
+    parent: 'modelPicker',
+    title: 'modelDescriptionsTitle',
+    desc: 'modelDescriptionsDesc',
   }],
   cases: ['brand', 'composer', 'settings', 'sync-fault', 'model-meter'],
   description: {

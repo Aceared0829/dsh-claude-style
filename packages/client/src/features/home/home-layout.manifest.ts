@@ -11,6 +11,14 @@ export default {
     { generated: 'heat-levels', rank: 335 },
     { file: 'home-models.css', rank: 340 },
   ],
+  settingsRows: [{
+    tab: 'appearance',
+    rank: 25,
+    pref: 'homeLayout',
+    title: 'homeTitle',
+    desc: 'homeDesc',
+    choiceLabels: { classic: 'homeClassic', studio: 'homeStudio' },
+  }],
   cases: ['hero', 'studio', 'late-forms', 'hdsl', 'hdsl-noskin', 'hdsl-broken'],
   description: {
     zh: {

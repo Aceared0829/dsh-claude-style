@@ -1,0 +1,8 @@
+{
+  "composerTitle": { "zh": "重绘对话框", "en": "Composer restyle" },
+  "composerDesc": { "zh": "重绘对话框样式", "en": "Which input area the skin restyles: the new-conversation page, the conversation, or both. Off restores the host's composer." },
+  "scopeOff": { "zh": "关闭", "en": "Off" },
+  "scopeHero": { "zh": "仅首页", "en": "Home only" },
+  "scopeConversation": { "zh": "仅对话", "en": "Conversation only" },
+  "scopeAll": { "zh": "全部", "en": "All" }
+}

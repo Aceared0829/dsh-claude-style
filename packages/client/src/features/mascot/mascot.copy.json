@@ -1,0 +1,11 @@
+{
+  "mascotTitle": { "zh": "吉祥物", "en": "Mascot" },
+  "mascotDesc": { "zh": "站在输入框上沿的像素小伙伴。", "en": "The pixel companion on the input area's top edge, animated by the agent's state. Follow the brand picks the crab under Claude, Deepy under DeepSeek." },
+  "mascotBrand": { "zh": "自动", "en": "Follow the brand" },
+  "mascotCrab": { "zh": "Clawd", "en": "Crab" },
+  "mascotDeepy": { "zh": "Deepy", "en": "Deepy" },
+  "mascotOff": { "zh": "关闭", "en": "Off" },
+  "mascotScopeTitle": { "zh": "出现位置", "en": "Where it appears" },
+  "mascotScopeHome": { "zh": "首页", "en": "Home" },
+  "mascotScopeAll": { "zh": "首页与对话", "en": "Home and conversation" }
+}

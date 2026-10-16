@@ -3,5 +3,7 @@
   "rateOffPeak": { "zh": "谷价", "en": "Off-peak rate" },
   "rateCampaign": { "zh": "活动价", "en": "Promotion" },
   "rateNow": { "zh": "此刻 {rate}", "en": "Now {rate}" },
-  "rateNext": { "zh": "{countdown} 后转为 {next}", "en": "in {countdown} → {next}" }
+  "rateNext": { "zh": "{countdown} 后转为 {next}", "en": "in {countdown} → {next}" },
+  "peakrateTitle": { "zh": "峰谷电表", "en": "Peak rate meter" },
+  "peakrateDesc": { "zh": "给模型菜单的每一行标出此刻的峰价、谷价或限时活动，以及距离切换还有多久。关闭后各行只显示模型名。", "en": "Marks every row of the model menu with the peak, off-peak or promotional rate in force right now, and how long it lasts. Off leaves the rows bare." }
 }
