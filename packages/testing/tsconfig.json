@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["*.cjs", "smoke/cases/*.cjs", "smoke/probe/*.js"]
+}

@@ -15,15 +15,23 @@
  *
  * The name is the check's own first argument; a name built from a template is
  * keyed by its fixed part, so the record does not follow a constant's value.
+ * The files are read on TypeScript's own syntax tree, through the project in
+ * packages/testing/tsconfig.json, the way scripts/source-tree.mjs reads the
+ * browser half.
  *
  * Usage: node packages/testing/check-numbers.cjs [--check]
  */
 'use strict'
 const fs = require('node:fs')
 const path = require('node:path')
+const { SyntaxKind, skipTrivia } = require('typescript/unstable/ast')
+const { API } = require('typescript/unstable/sync')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const RECORD = path.join(__dirname, 'check-numbers.json')
+const PROJECT = path.join(__dirname, 'tsconfig.json')
+
+const slashes = (file) => file.split(path.sep).join('/')
 
 /** The files whose checks are recorded: the smoke's cases and probes, and the lane's own scenarios. */
 function sources() {
@@ -43,124 +51,79 @@ function sources() {
   return files.sort()
 }
 
+/** A node's own source text, its leading comments and whitespace left out. */
+const textOf = (file, node) => file.text.slice(skipTrivia(file.text, node.pos), node.end)
+
 /**
- * The text of one call, from the opening parenthesis to its match, with strings
- * and comments read past so a parenthesis inside either does not count.
+ * A check's key: its name, with any template's dynamic tail dropped. A name
+ * that is no literal at all (a variable) is keyed by the expression as written.
  */
-function callText(text, open) {
-  let depth = 0
-  for (let at = open; at < text.length; at += 1) {
-    const char = text[at]
-    if (char === '/' && text[at + 1] === '/') {
-      at = text.indexOf('\n', at)
-      if (at === -1) return null
-      continue
-    }
-    if (char === '/' && text[at + 1] === '*') {
-      at = text.indexOf('*/', at + 2)
-      if (at === -1) return null
-      at += 1
-      continue
-    }
-    if (char === '\'' || char === '"' || char === '`') {
-      const quote = char
-      at += 1
-      while (at < text.length) {
-        if (text[at] === '\\') at += 2
-        else if (text[at] === quote) break
-        else at += 1
-      }
-      continue
-    }
-    if (char === '(') depth += 1
-    else if (char === ')') {
-      depth -= 1
-      if (depth === 0) return { body: text.slice(open + 1, at), end: at }
-    }
-  }
-  return null
+function nameOf(file, argument) {
+  let text
+  if (argument.kind === SyntaxKind.StringLiteral || argument.kind === SyntaxKind.NoSubstitutionTemplateLiteral) text = argument.text
+  else if (argument.kind === SyntaxKind.TemplateExpression) text = argument.head.text
+  else text = textOf(file, argument)
+  return text.replace(/\s+/g, ' ').trim()
 }
 
-/** The call's arguments, split at the commas that stand outside every bracket and string. */
-function argumentsOf(body) {
-  const args = []
-  let depth = 0
-  let start = 0
-  for (let at = 0; at < body.length; at += 1) {
-    const char = body[at]
-    if (char === '\'' || char === '"' || char === '`') {
-      const quote = char
-      at += 1
-      while (at < body.length) {
-        if (body[at] === '\\') at += 2
-        else if (body[at] === quote) break
-        else at += 1
-      }
-      continue
-    }
-    if ('([{'.includes(char)) depth += 1
-    else if (')]}'.includes(char)) depth -= 1
-    else if (char === ',' && depth === 0) {
-      args.push(body.slice(start, at))
-      start = at + 1
-    }
-  }
-  args.push(body.slice(start))
-  return args.map((arg) => arg.trim())
-}
-
-/** A check's key: its name, with escapes read and any template's dynamic tail dropped. */
-function nameOf(argument) {
-  const quoted = /^(['"])(.*)\1$/s.exec(argument)
-  const text = (quoted !== null ? quoted[2] : argument.replace(/^`|`$/g, '')).replace(/\\(['"`\\])/g, '$1')
-  const fixed = text.split('${')[0]
-  return fixed.replace(/\s+/g, ' ').trim()
-}
-
-/** The numeric literals one expression decides on, strings and comments left out. */
+/** The numeric literals one expression decides on. */
 function numbersOf(expression) {
-  const bare = expression
-    .replace(/\/\/[^\n]*/g, ' ')
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/'(?:[^'\\]|\\.)*'/g, ' ')
-    .replace(/"(?:[^"\\]|\\.)*"/g, ' ')
-    .replace(/`(?:[^`\\]|\\.)*`/g, ' ')
   const found = new Set()
-  for (const match of bare.matchAll(/(?<![\w.$])(\d+(?:\.\d+)?)(?![\w.])/g)) found.add(Number(match[1]))
+  const visit = (node) => {
+    if (node.kind === SyntaxKind.NumericLiteral) found.add(Number(node.text))
+    node.forEachChild(visit)
+  }
+  visit(expression)
   return [...found].sort((left, right) => left - right)
 }
 
-/** Every check in one file: its name key and the numbers its expression decides on. */
+/**
+ * Every check in one file: its name key and the numbers its expression decides
+ * on. `check(` and the lane's own `lane.check(` both count; a helper named
+ * `basicChecks(` is no check of its own.
+ */
 function record(file) {
-  const text = fs.readFileSync(path.join(ROOT, file), 'utf8')
   const found = {}
-  // `check(` and the lane's own `lane.check(` both count; a helper named
-  // `basicChecks(` is no check of its own, which the lookbehind keeps out.
-  for (const match of text.matchAll(/(?<![\w])check\s*\(/g)) {
-    const call = callText(text, match.index + match[0].length - 1)
-    if (call === null) continue
-    const args = argumentsOf(call.body)
-    if (args.length < 2) continue
-    let name = nameOf(args[0])
-    if (name === '' || name.includes('${')) continue
-    const numbers = numbersOf(args[1])
-    if (numbers.length === 0) continue
-    // Two checks can share a name that is built from the same fixed part; the
-    // later one is keyed by its own line so neither hides the other.
-    if (found[name] !== undefined) name = `${name} (line ${text.slice(0, match.index).split('\n').length})`
-    found[name] = numbers
+  const visit = (node) => {
+    if (node.kind === SyntaxKind.CallExpression && node.arguments.length >= 2) {
+      const callee = node.expression
+      const named = callee.kind === SyntaxKind.Identifier ? callee.text
+        : callee.kind === SyntaxKind.PropertyAccessExpression ? callee.name.text : undefined
+      if (named === 'check') {
+        let name = nameOf(file, node.arguments[0])
+        const numbers = numbersOf(node.arguments[1])
+        if (name !== '' && numbers.length > 0) {
+          // Two checks can share a name that is built from the same fixed part;
+          // the later one is keyed by its own line so neither hides the other.
+          if (found[name] !== undefined) name = `${name} (line ${file.getLineAndCharacterOfPosition(skipTrivia(file.text, node.pos)).line + 1})`
+          found[name] = numbers
+        }
+      }
+    }
+    node.forEachChild(visit)
   }
+  file.forEachChild(visit)
   return found
 }
 
-/** The whole record, as the file holds it. */
+/** The whole record, as the file holds it, read from one TypeScript project over the lanes. */
 function current() {
-  const out = {}
-  for (const file of sources()) {
-    const found = record(file)
-    if (Object.keys(found).length > 0) out[file] = found
+  const api = new API({ cwd: ROOT })
+  try {
+    const config = slashes(PROJECT)
+    const project = api.updateSnapshot({ openProjects: [config] }).getProjects().find((item) => slashes(item.configFileName) === config)
+    if (project === undefined) throw new Error(`check-numbers: TypeScript opened no project for ${config}`)
+    const out = {}
+    for (const file of sources()) {
+      const tree = project.program.getSourceFile(slashes(path.join(ROOT, file)))
+      if (tree === undefined) throw new Error(`check-numbers: ${file} is not in ${path.relative(ROOT, PROJECT)}'s project — widen its include`)
+      const found = record(tree)
+      if (Object.keys(found).length > 0) out[file] = found
+    }
+    return out
+  } finally {
+    api.close()
   }
-  return out
 }
 
 /** What changed between the record on disk and the tree, one line per check. */
