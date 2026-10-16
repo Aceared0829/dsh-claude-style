@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 34,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**页脚接管那一块也不再靠 `!important`**：`packages/client/src/features/account/footer-takeover.css` 里那 43 处 `!important` 去掉了——页脚各容器归零、镜像条目塌缩、侧栏收成细轨时的账号按钮与弹层、以及细轨里隐藏设置入口的那些规则，改为按选择器本身的权重压过去（这份表排在自己的基础规则之后，且每条都点名了细轨、页脚与它要的那一行）。`importance` 场景重走：422 处声明全部判定过，没有一处多余，十六处仍然必要；台账随之写下 422 条。外观快照五十个页面状态逐项一致。",
-  "en": "**The footer takeover no longer wins with `!important` either**: the 43 `!important` declarations in `packages/client/src/features/account/footer-takeover.css` are gone — the footer containers collapsing to zero, the mirrored entries folding away, the account button and popover in the collapsed rail, and the settings entry hidden there are now carried by the selectors' own weight (this sheet loads after the base rules it stands over, and every selector names the rail, the footer and the row it means). The `importance` scenario was walked again: 422 declarations, every one decided, none superfluous, the sixteen still needed unchanged, and the ledger now records those 422. The appearance snapshot matches across all fifty page states."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 4,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**Claude 品牌下的扫光不再是蓝色**：宿主在运行行上把扫光换成 DeepSeek 的蓝色，状态行的高光因此一直是蓝的；现在 Claude 品牌下状态行、过程组标题与宿主自己的调用行都用同一道暖色高光（暗色为 `#faf9f5` 的 45%，亮色为 `#141413` 的 30%），DeepSeek 品牌下仍是宿主的颜色。",
-  "en": "**The sweep under the Claude brand is no longer blue**: the host retints the sweep on its running row to DeepSeek blue, so the status line's highlight was always blue; under the Claude brand the status line, the process group header and the host's own call rows now share one warm highlight (45% of `#faf9f5` in dark, 30% of `#141413` in light), and the DeepSeek brand keeps the host's colour."
-}

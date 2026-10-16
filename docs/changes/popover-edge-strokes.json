@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 40,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**弹层的边缘留在边框上，深色在外侧多一道沉降**：皮肤自建的弹层卡片与宿主自己的账户菜单、首页选择器不再把边线挪进投影——线仍是卡片自己的边框（浅色用边框色，深色用深色阶梯那格高光），排布读到的那只盒子和开启动画缩放的绘制路径因此与从前一致；深色在外侧加一道 3px 暗色沉降，把受光的边与近黑画布隔开；投影同时收成 `0 8px 24px` + `0 2px 6px`，深色加深到 `rgba(0,0,0,.65)` / `rgba(0,0,0,.45)`。",
-  "en": "**A popover's edge stays its own border, with a dark falloff outside it in dark**: the skin's own popover cards, the host's account menu and the hero row's pickers no longer move the line into the shadow — it is the card's border as it always was (the border token in light, the dark ladder's highlight in dark), so the box the placement reads and the paint path the opening animation scales are the ones they have always had. Dark gains a 3px dark falloff outside it that separates the lit edge from the near-black canvas, and the drop tightens to `0 8px 24px` plus `0 2px 6px`, deepening in dark to `rgba(0,0,0,.65)` / `rgba(0,0,0,.45)`."
-}

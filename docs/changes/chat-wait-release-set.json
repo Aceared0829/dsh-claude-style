@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 31,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**长对话里收走状态行的那一趟不再按对话长度平方增长**：宿主一次交还多行时，插件要把每一行还站着的状态线摘掉，此前每条站着的线都要在一份运行行清单里从头找一遍。现在这份清单改作一次集合，摘除的一趟随行数线性走完。",
-  "en": "**The pass that takes the state lines down no longer grows with the square of the conversation**: when the host hands back several rows at once, the skin takes the status line off every row that still stands, and each standing line used to search the running-row list from the start. That list is a set now, so the pass walks it once per line."
-}

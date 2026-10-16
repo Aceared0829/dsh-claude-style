@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 14,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**冒烟的静置判定补上「没有还在跑的有限动画」**：此前只等「连续若干帧没有新的一趟」加「一段时间没有新的趟」，进场、换词、淡入这类动画还在飞的时候读数照样被采走。现在两者之外再要求页面上没有仍在运行的有限动画（无限循环的那种不算：正在进行的会话灯与扫光本来就不落地）。整条冒烟 50/50 通过，耗时未变（93.7 秒）。",
-  "en": "**The smoke walk's settle rule now requires that no finite animation is still running**: it used to wait only for a run of frames without a new pass plus a stretch of wall clock without one, so a reading could be taken while an entrance, a wording swap or a fade was still in flight. It now also requires that every finite animation the page runs has finished — an endless one is no such thing, since the running session's pulse and the sweeps never land. The whole smoke walk passes, 50 of 50, in the same time (93.7 s)."
-}

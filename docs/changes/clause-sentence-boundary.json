@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 36,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**状态行里的从句不再被名字里的点号截断**：这一行从推理正文里取模型自己那句话时，句子在哪里断开此前由一张手写的收尾标点表决定，于是文件名、版本号与缩写里的点号都被当成句末——正在读 `app.js` 的说法写成「Reading app」，正在看 `package.json` 写成「Checking package」，缩写处更只剩下一个字母。现在句子的边界交给页面自己的句子规则，说法从分词一直带到这一句真正结束的地方；同时助动词与分词之间的一两个词（now、currently、still、just 等）与完成进行时（I have been checking）也能读出来，此前这些句子整句读不出，这一行只会退回「正在思考」。否定的句子与还没动手的打算照旧不读。",
-  "en": "**The status line's clause is no longer cut at a dot inside a name**: where a sentence ended used to be decided by a hand-written table of closing punctuation, so the dot in a file name, a version number or an abbreviation read as the end of one — the clause about reading `app.js` said \"Reading app\" and the one about `package.json` said \"Checking package\", and an abbreviation left a single letter behind. Where a sentence ends is now the page's own sentence rules, so a clause runs from the participle to the place the sentence really ends. The one or two words that may stand between an auxiliary and its participle (now, currently, still, just …) and the perfect continuous (I have been checking) are read too; those sentences used to hand the line nothing and it fell back to \"Thinking…\". A negated clause and a plan the model has not started are still passed over."
-}

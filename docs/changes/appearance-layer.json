@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 15,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**外观层与它的闸门落地**：冒烟走查的每个页面状态现在按部件记一份计算值快照（只收与字体无关的属性：颜色、边框、圆角、阴影、层叠与溢出），第一版覆盖五十个页面状态、十二个部件；快照进版本管理，`npm run verify` 的 `appearance` 闸门把这次走查读到的值与它逐项比对。`scripts/ci-scope.mjs` 增加一条拒绝：`packages/testing/appearance.json` 变了而 `packages/client/src` 没变的推送不通过——快照是页面的样子，只随画它的样式表移动；云端两个工作流都接上了这条。顺带把「工作树改了哪些路径」的读取收进 `scripts/shared/changed-paths.mjs`，此前它有两份。",
-  "en": "**The appearance layer and its gates land**: every page state of the smoke walk now records what its parts compute to (font-independent properties only — colours, borders, radii, shadows, layering and overflow), the first version covering fifty page states and twelve parts; the snapshot is committed, and `npm run verify`'s `appearance` gate compares the walk's own reading against it item by item. `scripts/ci-scope.mjs` gained one refusal: a push where `packages/testing/appearance.json` changed and nothing under `packages/client/src` did — the snapshot is what the pages look like and only moves with the sheets that draw them; both cloud workflows carry the check. The reading of which paths the working tree changed moved into `scripts/shared/changed-paths.mjs`, which had two copies of it."
-}

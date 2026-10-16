@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 11,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**侧栏分区的标题改由总线登记表供着**：工作区视图每趟刷新都要在整份文档里查一遍分区标题，再挑出带列表区的那个；现在标题清单由观察总线按选择器登记、随页面变化增量维护（D40），每趟刷新只在清单里挑一次，标题与布局都不变时不再走文档。登记表里这一条欠账划掉，现存四十二处。",
-  "en": "**The sidebar's section labels come from the bus registry now**: the workspace view looked up every section label across the whole document each pass and then picked the one carrying a list area; the labels are now kept by the observation bus per selector and maintained incrementally as the page changes (D40), so a pass picks from the list without walking the document, and the ledger entry recording it as debt is struck out — forty-two sites remain recorded."
-}

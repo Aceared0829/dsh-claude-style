@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 9,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**首页那张宿主菜单卡也走同一条查找**：英雄首页把卡片落位前要问「宿主开着的那张菜单卡在哪」，此前它自己在整份文档里查 `[role=\"menu\"]` 并挑出不是本插件的那张；现在改用宿主访问模块里记住答案的那一处（打开一张菜单会把外壳里别的菜单折起，所以开着的宿主卡片就是这一张）。登记表里这条从两处降到一处——剩下那一处要的是活清单（首页那一行可能同时开着多个选择器）。",
-  "en": "**The hero page reads the host's open menu card through the same lookup**: before placing its own card the hero asked where the host's open menu was, scanning the whole document for `[role=\"menu\"]` and picking the one that is not the skin's; it now uses the accessor that keeps that answer (opening one menu folds the shell's others, so the open host card is that one). The ledger entry for the file drops from two lookups to one — the one left wants a live list, since the hero row may hold more than one open picker."
-}

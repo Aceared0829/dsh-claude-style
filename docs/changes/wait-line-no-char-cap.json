@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 35,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**状态行里的说法改为放不下才截断**：模型自己写的推理从句、命令调用声明的说明、正在操作的文件名此前都按字数上限截断（分别 40、40、32 字），宽窗口里也照样在同一个字数上断开，读者看到的是一句被切掉的话。现在这三种说法整句带到这一行，放得下多少由这一行的宽度决定：宿主那一行的内容盒此前不设宽度上限，长说法会顶着计时与徽标一直伸出对话列；它现在取所在行的宽度，说法在自己的盒子里截断并画省略号，加载点、计时与徽标留在原处。",
-  "en": "**The status line cuts a wording only where it no longer fits**: the clause the model's own reasoning hands the line, the description a command call declares, and the name of the file a call works on were each cut at a character cap (40, 40 and 32 characters), so on a wide window a reader still saw a sentence broken at the same count. All three are now carried whole, and how much of one shows is the line's own width: the host's content box had no width bound, so a long wording ran past the conversation column with the clock and the badge behind it; it now takes the width of the row it stands in, and the wording is clipped with an ellipsis inside its own box while the loader, the clock and the badge keep their places."
-}

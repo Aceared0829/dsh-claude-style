@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 41,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**侧栏与对话栏之间的分割线收到发丝细边**：这条线从 1px 改为 0.5px（Windows 桌面顶栏里它的延续段同步改），在高分屏上正好是一个物理像素，与产品自身的取值一致；Markdown 表格外框与轨迹胶囊原本就是 0.5px，其余单向细线仍是 1px。",
-  "en": "**The split between the sidebar and the conversation becomes a hairline**: the line drops from 1px to 0.5px, its continuation through the Windows caption row with it, which lands on a single device pixel on a retina display and is the width the product itself states; the Markdown table frame and the trajectory chip already took 0.5px, and every other single-direction rule stays 1px."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 38,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**状态行与过程组标题的扫光改用宿主自己的做法**：高光带由一层带遮罩的窗口与其中一份着色的文字副本反向平移组成，两半都是位移动画，由合成器播放，不再每帧重绘；节奏、步进、0.3 秒的起始延迟与遮罩都与宿主的行一致。回合进行中的页面上不再有运行中的绘制型动画。",
-  "en": "**The status line's and the process group header's sweep now use the host's own construction**: the highlight is a masked window and a tinted copy of the words moving in opposite directions, both translations the compositor plays, so no frame is repainted for it; the period, the steps, the 0.3 s start delay and the mask match the host's rows. A page with a turn running no longer has any paint-driven animation running."
-}

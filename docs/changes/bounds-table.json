@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 5,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**检查用的边界集中到一张表，每条带理由**：跟随末尾允许落后多少、长会话里一帧最长多少、长时间任务一共允许多少，这些「量出来的读数」的上限此前写在各自模块的常量里，现在住在 `packages/testing/bounds.json`，检查经 `packages/testing/bounds.cjs` 读它。放宽一个边界因此是这一个文件里的一行，理由就在旁边；余下的边界随迁移继续搬进来。",
-  "en": "**The bounds a check compares against now live in one table, each with its reason**: how far behind the tail the scroller may lag, the longest frame a long session may take, how much long-task time a turn may spend — the limits on measured readings used to sit as constants in each module, and now live in `packages/testing/bounds.json`, read through `packages/testing/bounds.cjs`. Loosening one is a line in that file with its reason beside it; the remaining bounds move in as the migration continues."
-}

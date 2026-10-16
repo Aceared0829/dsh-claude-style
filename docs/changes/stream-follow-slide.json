@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 43,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**流式输出的平滑跟随交给显卡来画**：输出期间滚动位置由宿主自己的跟随写到末尾，皮肤不再逐帧改写位置，只把新长出的内容从下缘滑上来，状态行停在原处不动。宿主的跟随在整段输出里保持开启，回到底部按钮不再需要藏起来。在本机同一段快速输出里量：最新内容落后于静止位置的距离中位数从 31 像素降到 26–28 像素，最大值从 73 像素降到 62 像素，每 4 秒的布局次数从 49 次降到 44–45 次。",
-  "en": "**The smooth follow while streaming is drawn by the graphics card**: while a reply streams, the host's own follow writes the position to the end and the skin no longer rewrites it frame by frame; it only slides the newly grown content up from the bottom edge, with the status line standing still. The host's follow stays on through the whole reply, so its back-to-end button no longer has to be hidden. Measured on this machine over the same fast stream: the newest content trails its resting place by a median of 26–28 px instead of 31 px and at most 62 px instead of 73 px, and layouts per 4 seconds fall from 49 to 44–45."
-}

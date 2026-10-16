@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**用量记录不再被覆盖掉**：记录解析不了时改名为 `usage.json.corrupt-<时间戳>` 留在插件目录里，再从会话日志重建；同一个 `$DSH_HOME` 下开着几个实例时，每次写回先合并磁盘上的那一份，另一个实例记下的会话不会被盖掉；旧的折算缓存在记录写成功之后删除。",
-  "en": "**The usage record is no longer overwritten**: a record that does not parse is kept in the plugin's directory as `usage.json.corrupt-<stamp>` before it is rebuilt from the session logs; with several instances open under one `$DSH_HOME`, every write first merges the copy on disk, so a session another instance recorded is not lost; the old fold cache is deleted once the record is written."
-}

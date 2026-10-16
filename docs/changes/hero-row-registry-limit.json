@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 12,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**登记一处查不到的原因，免得下一轮重走**：首页那一行「开着的选择器」看的是宿主写在常驻节点上的 `aria-expanded`，而观察总线的登记表跟的是节点增删——改用它会把已经关掉的选择器继续算作开着（冒烟里八条检查当场这么判）。这一处的理由因此改写清楚：要的是「属性一变就作废」的答案，得由它自己的读取或当趟已经拿着的行来给。",
-  "en": "**Why one lookup cannot move is written down, so the next pass does not walk the same road**: the hero row's open pickers turn on the host's `aria-expanded` on nodes that stay mounted, while the bus's registry follows node additions — moving it there keeps counting a picker that has closed (eight smoke checks said exactly that). The reason in the record now says what this site needs instead: an answer invalidated by an attribute change, from a reader of its own or from the row the pass already holds."
-}

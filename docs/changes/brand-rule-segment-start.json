@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 3,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**同一处分段起点下的其余模型也认得出厂商标**：`kimi-k3`、`minimax-m3` 这一类带服务方命名空间的标识此前也不被认领，`o3` 那一条只认冒号以外的分隔符；现在 K3、M3 与 o 系列的规则与混元那条读同一个分段起点。`nova` 那条补上分段边界，`sensenova-6.8-flash-lite` 不再被判成 Amazon Nova、标记也不再插进模型名中间。",
-  "en": "**The remaining models under that same segment start resolve their vendor lockup**: an id carrying its serving provider's namespace was unclaimed for the K3 and M3 lines too, and the o-series rule read only a slash or a hyphen before `o`; the K3, M3 and o-series rules now read the segment start the Hunyuan rule reads. The `nova` rules gain a segment boundary, so `sensenova-6.8-flash-lite` is no longer claimed as Amazon Nova and its lockup no longer lands in the middle of the name."
-}

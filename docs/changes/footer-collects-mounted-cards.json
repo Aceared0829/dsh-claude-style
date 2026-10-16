@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**侧栏页脚的插件条目全部收进账号区**：动作槽里的条目与别的插件直接挂在页脚上的卡片（用量卡片这一类）都收进账号弹层，卡片保持它自己的样子，侧栏底部只剩账号这一行，条目自带的行内样式一并让位；`importance` 台账随之记到 424 处。",
-  "en": "**Every plugin entry in the sidebar footer is collected into the account area**: the action slot's entries and a card another plugin mounted into the footer itself — the usage card is one — both stand in the account popover, the card keeping its own markup, and the footer keeps the account row alone; an entry's own inline style gives way with them; the importance ledger records 424 declarations with them."
-}

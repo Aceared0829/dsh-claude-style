@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 0,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**样式表里判断「谁包含谁」的规则改为读一处标记**：此前 16 条规则用 `:has()` 问浏览器「这个元素的子树里有没有那个部件或标记」，页面下方每次变化这些规则都要重新匹配。现在盖部件的同一趟走查顺带把答案写成一处标记，规则只读这处标记；页面上的 `:has()` 只剩进入作用域的两处与跟随焦点状态的一处。构建同时开始拒绝在 `:has()` 里读属性、核对每个标记都有声明的来源、并核对声明里的部件名。",
-  "en": "**Rules asking whether one element holds another read one mark again**: sixteen rules used to ask the browser, through `:has()`, whether an element's subtree carried a part or a mark, and every change below one of them re-matched those rules. The pass that marks the parts now writes that answer as one attribute, and the rules read it; the two `:has()` entries into scope and the one following focus state remain. The build refuses a `:has()` that reads an attribute, holds every mark read to a declared relation, and checks the part names those relations name."
-}

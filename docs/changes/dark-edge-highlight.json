@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 39,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**深色下的边框改为一层高光**：`--dsw-alias-border-l1`/`-l2`/`-l3` 的深色取值从 `#242320`/`#2e2c29`/`#3a3833` 三个实色改为同一个透明白在 `.09`/`.18`/`.30` 三档，卡片、面板、代码块与小徽标的外缘因此读作顶光打出的倒角高光，而不是需要在每种底色上重新配色的轮廓线；浅色的三档仍是暖色实色。",
-  "en": "**The dark border is now a highlight**: the dark values of `--dsw-alias-border-l1`/`-l2`/`-l3` move from the opaque `#242320`/`#2e2c29`/`#3a3833` to one translucent white at `.09`/`.18`/`.30`, so the edge of a card, a panel, a code block or a small badge reads as a chamfer catching the top light instead of a contour that has to be re-picked for every fill under it; the three light rungs stay the warm opaque ladder."
-}

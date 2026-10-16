@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 3,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**每处保留下来的 `!important` 都记下它压过谁**：重要性走查此前只回答「去掉它画出的样子变不变」，现在把判定为需要的每一处写进 `packages/testing/importance-ledger.json`——在哪个页面形态上判定需要，以及去掉重要性之后接过这个属性的候选（元素自己的行内样式、宿主的 `!important`、宿主权重更高的规则、皮肤的另一条规则）。走查把该处的重要性单独去掉，按属性展开的每一条长属性读页面退回的值，再逐个拿走其余候选：值动了的那些就是它压过的。台账里新出现或不再需要的条目会让走查失败，`DSH_IMPORTANCE_LEDGER=write` 从一次运行重写它，差别在 diff 里读。本次十六处里三处认出了对手，其余记作未认出（走查读不到那个候选）。",
-  "en": "**Every `!important` that stays now records what it beats**: the importance walk used to answer only whether the page still paints the same without it; it now writes each declaration it proved necessary into `packages/testing/importance-ledger.json` — the page state that decided it, and the candidates that take the property over once its importance is gone (the element's own inline style, the host's `!important`, a host rule of higher weight, another skin rule). The walk drops that one importance, reads the value the page falls back to over every longhand the property stands for, and takes each other candidate away in turn: the ones that move the value are what it beats. A declaration that appears or stops being needed fails the walk, and `DSH_IMPORTANCE_LEDGER=write` rewrites the record from a run so the difference is read in the diff. Three of this run's sixteen attributed an opponent; the rest are recorded as unattributed, the walk finding no candidate it can scan."
-}

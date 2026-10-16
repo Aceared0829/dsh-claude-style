@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 10,
-  "at": "2026-10-15",
-  "external": false,
-  "zh": "**两份决定草稿的现状跟上已落地的部分**：整份文档的查找记账现存四十三处，`importance` 台账覆盖全部五百三十九处 `!important` 且构建要求每一处都在册，边界表已有十四条由 `packages/testing/bounds.cjs` 供各场景读取，检查表达式里的其余数字由 `check-numbers.json` 记录并核对。",
-  "en": "**Both decision drafts' standing sections follow what has landed**: the whole-document lookup record stands at forty-three sites, the `!important` ledger covers all five hundred and thirty-nine declarations with the build requiring each to be in it, the bounds table holds fourteen values read through `packages/testing/bounds.cjs`, and the remaining numbers in check expressions are recorded and verified in `check-numbers.json`."
-}
