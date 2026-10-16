@@ -47,7 +47,6 @@ const STAND_IN_PARTS = [
  */
 const PROBE_PARTS = [
   'prelude.js',
-  'appearance.js',
   'shell-startup.js',
   'agent-desktop.js',
   'settle.js',
@@ -82,12 +81,6 @@ const readParts = (dir, parts) =>
   parts.map((part) => fs.readFileSync(path.join(__dirname, dir, part), 'utf8')).join(';\n')
 const STAND_IN = readParts('stand-in', STAND_IN_PARTS)
 const PROBE = readParts('probe', PROBE_PARTS)
-/**
- * The parts the appearance layer records in every page state: the list is
- * authored (packages/testing/appearance-parts.json) and reaches the page as
- * data, so one part is added to the walk by one line there.
- */
-const APPEARANCE_PARTS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'appearance-parts.json'), 'utf8')).parts
 
 /** The stand-in page for one load: host footer, host composer, then the bundle. */
 function page(name, tier, cases) {
@@ -422,7 +415,7 @@ ${caretArea}
 ${dockArea}
 ${foldArea}
 </div>
-<script>window.SMOKE_CASE = ${JSON.stringify(name)}; window.SMOKE_GROUPS = ${JSON.stringify(cases)}; window.SMOKE_TIER = ${JSON.stringify(tier)}; window.SMOKE_MARKUP = ${JSON.stringify(MARKUP)}; window.SMOKE_PNG = ${JSON.stringify(PNG_1PX)}; window.SMOKE_APPEARANCE_PARTS = ${JSON.stringify(APPEARANCE_PARTS)}</script>
+<script>window.SMOKE_CASE = ${JSON.stringify(name)}; window.SMOKE_GROUPS = ${JSON.stringify(cases)}; window.SMOKE_TIER = ${JSON.stringify(tier)}; window.SMOKE_MARKUP = ${JSON.stringify(MARKUP)}; window.SMOKE_PNG = ${JSON.stringify(PNG_1PX)}</script>
 <script>${STAND_IN}</script>
 <script src="/client.js"></script>
 <script>${PROBE}</script>

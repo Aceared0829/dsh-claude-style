@@ -200,16 +200,36 @@
       ]
     },
     {
-      "reason": "宿主的账户菜单：临时宿主没有登录的账户",
+      "reason": "账户卡片的个别状态：头像图片加载失败、菜单项禁用，以及自定义标志配上自定义色调（走查一次只写一个标记）",
+      "selectors": [
+        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] .dsh-claude-account-avatar",
+        "body[data-dsh-claude-style] .dsh-claude-account-photo[hidden]",
+        "body[data-dsh-claude-style] .dsh-claude-account-popover .dsh-claude-popover-item[aria-disabled=true]"
+      ]
+    },
+    {
+      "reason": "启动器的皮肤头像：只在由启动器带着皮肤启动的实例里出现",
+      "selectors": [
+        "body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-skin]",
+        "body[data-dsh-claude-style] .dsh-claude-account-skin"
+      ]
+    },
+    {
+      "reason": "折叠的侧栏里的账户区：走查没有折叠侧栏",
+      "selectors": [
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-btn",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-avatar",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] :is(.dsh-claude-account-label,.dsh-claude-account-chevron)",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-popover",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-menu]",
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-area] :is(button,[data-dsh-claude-part~=settings-trigger]):not([data-dsh-claude-account-host-row]):not([data-dsh-claude-holds~=account-row])",
+        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-host-row]"
+      ]
+    },
+    {
+      "reason": "宿主的账户菜单与它的账户行：只在桌面外壳里出现，走查跑在网页外壳",
       "selectors": [
         "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu])",
-        "body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-tint] .dsh-claude-account-avatar",
-        "body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-photo]",
-        "body[data-dsh-claude-style] .dsh-claude-account-photo",
-        "body[data-dsh-claude-style] .dsh-claude-account-photo[hidden]",
-        "body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-skin]",
-        "body[data-dsh-claude-style] .dsh-claude-account-skin",
-        "body[data-dsh-claude-style] .dsh-claude-account-popover .dsh-claude-popover-item[aria-disabled=true]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-host-row]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-host-row] img",
         "body[data-dsh-claude-style] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-trigger][data-dsh-claude-holds~=account-row]",
@@ -225,13 +245,6 @@
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-footer]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] .dsh-claude-account-inject",
         "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area]>[data-dsh-claude-part~=settings-area][data-dsh-claude-holds~=account-row]",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-btn",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-avatar",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] :is(.dsh-claude-account-label,.dsh-claude-account-chevron)",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] .dsh-claude-account-popover",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-menu]",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-part~=foot-area] [data-dsh-claude-part~=settings-area] :is(button,[data-dsh-claude-part~=settings-trigger]):not([data-dsh-claude-account-host-row]):not([data-dsh-claude-holds~=account-row])",
-        "body[data-dsh-claude-style] [data-dsh-claude-part~=sidebar-root][data-dsh-claude-part~=sidebar-collapsed] [data-dsh-claude-account-host-row]",
         "body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~=menu-item-selected]"
       ]
     },
@@ -305,12 +318,8 @@
         "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-model-group-row",
         "body[data-dsh-claude-style] .dsh-claude-model-group",
         "body[data-dsh-claude-style] .dsh-claude-model-option[data-brand=claude] .dsh-claude-model-name",
-        "body[data-dsh-claude-style] .dsh-claude-model-divider",
         "body[data-dsh-claude-style] .dsh-claude-model-rule",
-        "body[data-dsh-claude-style] .dsh-claude-model-rule-name",
-        "body[data-dsh-claude-style] .dsh-claude-model-cell",
-        "body[data-dsh-claude-style] .dsh-claude-model-cell-label",
-        "body[data-dsh-claude-style] .dsh-claude-model-cell-chevron"
+        "body[data-dsh-claude-style] .dsh-claude-model-rule-name"
       ]
     },
     {

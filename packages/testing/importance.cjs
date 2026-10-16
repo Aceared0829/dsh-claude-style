@@ -21,6 +21,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { createImportanceAudit, planImportance, dropImportance, ROOT } = require('./importance-audit.cjs')
 const { openSkinSettings } = require('./settings-route.cjs')
+const { readAppearance, compareAppearance, writeAppearance } = require('./appearance.cjs')
 
 /**
  * The selectors this walk cannot reach, each under the reason it is out of
@@ -213,12 +214,31 @@ function importanceScenario(lane) {
   return {
     script: 'inspect',
     prompt: 'look at the workspace',
+    // Signed in against the scripted platform, so the account card and the
+    // footer carry a reader and a picture (packages/testing/mock-platform.cjs).
+    account: true,
     // A slow stream, so the second answer is still arriving while it is audited.
     delayMs: 400,
     async beforeSend(context) {
       const { page } = context
       const reference = process.env.DSH_IMPORTANCE_REFERENCE
-      context.audit = await createImportanceAudit(page, reference === undefined ? undefined : fs.readFileSync(reference, 'utf8'))
+      const audit = await createImportanceAudit(page, reference === undefined ? undefined : fs.readFileSync(reference, 'utf8'))
+      // Every state the walk audits is also read for the appearance layer
+      // (appearance.cjs, D66): once the audit has landed the state's animations
+      // and put the skin's own sheet back, so the reading is the page the
+      // reader gets.
+      context.appearance = {}
+      const auditState = audit.state
+      audit.state = async (name, only) => {
+        const audited = await auditState(name, only)
+        context.appearance[name] = await readAppearance(page)
+        return audited
+      }
+      context.audit = audit
+      // Whether the host's own autofocus has reached the composer by the first
+      // reading depends on how fast the page came up, and the composer stack
+      // dresses its rows by that focus: the walk puts it there itself.
+      await page.focus('[data-composer-input]')
       await context.audit.state('hero')
       await withDraft(page, context.audit, 'hero draft')
       await withOpen(page, context.audit, 'hero host surface', HOST_TRIGGERS, 6)
@@ -293,7 +313,7 @@ function importanceScenario(lane) {
         await audit.state('hero after preferences')
       }
     },
-    async assert({ session, audit, out }) {
+    async assert({ session, audit, out, appearance }) {
       const { states, declarations, drift, sheet, sweep, evidence } = audit.result()
       fs.writeFileSync(path.join(out, 'importance-verdicts.json'), `${JSON.stringify({ states, declarations, drift, sweep, evidence }, null, 2)}\n`)
       // The stylesheet the verdicts number their rules in, for whoever acts on them.
@@ -345,6 +365,14 @@ function importanceScenario(lane) {
         lane.check('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}${EITHER.size === 0 ? '' : `；另有 ${EITHER.size} 条记录，抓到与否都算数`}`),
         lane.check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
+      // The appearance layer's snapshot is judged on the platform the cloud's
+      // lane runs (D66); `DSH_APPEARANCE=write` records it from this walk.
+      fs.writeFileSync(path.join(out, 'appearance-reading.json'), `${JSON.stringify(appearance, null, 2)}\n`)
+      if (process.env.DSH_APPEARANCE === 'write') writeAppearance(appearance)
+      const looks = compareAppearance(appearance)
+      const parts = Object.values(appearance).reduce((sum, state) => sum + Object.keys(state).length, 0)
+      checks.push(lane.check('每个页面形态的外观与快照逐项一致', looks.length === 0,
+        looks.length === 0 ? `${Object.keys(appearance).length} 个页面形态、${parts} 处部件读数` : `${looks.length} 处不同：${looks.slice(0, 4).join('；')}`))
       if (process.env.DSH_IMPORTANCE_REFERENCE !== undefined) {
         checks.push(lane.check('与参照样式表画出的页面一致', drift.length === 0, drift.length === 0 ? `${states.length} 个状态逐元素比对` : drift.map((item) => `${item.state}: ${item.count} 处，如 ${JSON.stringify(item.first[0])}`).join('；')))
       }

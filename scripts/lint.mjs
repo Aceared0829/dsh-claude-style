@@ -184,8 +184,9 @@ if (copies.status !== 0) {
 // their answer — packages/client/src/core/host.ts, core/bus.ts, shared/chat-dom.ts, and
 // the sheet core/stylesheet.ts mounts itself. Every other site is recorded in
 // packages/testing/document-lookups.json with the reason it is still there: a
-// file whose count rises is refused, a file whose count falls has to be written
-// down again, and an entry whose count reaches zero comes out of the file.
+// file's count has to match its entry, and an entry whose count reaches zero
+// comes out of the file. That the record's total never rises is held against
+// the base by scripts/ci-scope.mjs --ledgers.
 const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|document\.body\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|removeStrayNodes\(\s*document\b/g
 const LOOKUP_OWNERS = new Set([
   'packages/client/src/core/host.ts',

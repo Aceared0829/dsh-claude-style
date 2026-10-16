@@ -18,12 +18,21 @@
  *
  * It also holds the one push this cannot accept: a change to the appearance
  * snapshot (`packages/testing/appearance.json`) with no change under
- * `packages/client/src` (D66). The snapshot is what the pages look like,
- * so it only moves when what draws them moved; a push that carries it alone is
- * a snapshot recorded by hand, and `--appearance` fails it. A snapshot the base
+ * `packages/client/src` and none to the files that read it (D66). The
+ * snapshot is what the pages look like, so it only moves when what draws them
+ * or what reads them moved; a push that carries it alone is a snapshot
+ * recorded by hand, and `--appearance` fails it. A snapshot the base
  * does not hold at all is the layer's own arrival, which is no page's change.
  *
- * Usage: node scripts/ci-scope.mjs [--base <ref> | --all | --files <path>] [--print] [--appearance]
+ * `--ledgers` holds the two records that only shrink to that promise: the
+ * selectors the importance walk cannot reach (`importance-unreachable.json`,
+ * D9) and the whole-document lookups left outside the host access module
+ * (`document-lookups.json`). Each is compared with itself at the base and its
+ * total may not rise however the reasons read; the total is what is compared,
+ * so a selector rewritten or a module moved carries its entry along. Lint only
+ * holds each record to the tree.
+ *
+ * Usage: node scripts/ci-scope.mjs [--base <ref> | --all | --files <path>] [--print] [--appearance] [--ledgers]
  *        --base diffs that ref against this commit (an all-zero ref means a new
  *        branch, which diffs against master's merge base). A merge queue entry
  *        and a manual run judge the whole tree whatever the base says: neither
@@ -33,7 +42,9 @@
  *        from that file, one per line, for trying the mapping itself. --print
  *        writes the answers to stdout; without it they are appended to
  *        `$GITHUB_OUTPUT`. --appearance fails the run over the snapshot push
- *        instead of answering for the jobs.
+ *        and --ledgers over a record that grew, instead of answering for the
+ *        jobs; with --tree the base is HEAD and the record read is the
+ *        working tree's.
  */
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -58,14 +69,14 @@ const argOf = (flag) => {
 const UNREAD = [/^docs\//, /^locale\//, /^\.github\//, /\.md$/, /^LICENSE$/, /^THIRD_PARTY_NOTICES\.txt$/]
 
 /**
- * The snapshot whose change stands for the pages themselves, and the sources
- * whose change is what may move it. Only the client's own sources count: the
- * snapshot is the computation of the sheets those sources carry, and the list
- * of parts read beside it (packages/testing/appearance-parts.json) is the one
- * testing file that decides the reading.
+ * The snapshot whose change stands for the pages themselves, and the files
+ * whose change is what may move it: the client's own sources, which carry the
+ * sheets the snapshot computes, and the three testing files that decide the
+ * reading — the reader, the parts it reads and the walk whose states it reads
+ * in.
  */
 const APPEARANCE = 'packages/testing/appearance.json'
-const APPEARANCE_PARTS = 'packages/testing/appearance-parts.json'
+const APPEARANCE_READERS = ['packages/testing/appearance.cjs', 'packages/testing/appearance-parts.json', 'packages/testing/importance.cjs']
 const APPEARANCE_SOURCES = [/^packages\/client\/src\//]
 
 function git(...argv) {
@@ -82,6 +93,11 @@ function tracked() {
 /** Whether this checkout holds a revision at all — a force push can leave none. */
 function holds(revision) {
   return spawnSync('git', ['rev-parse', '--verify', '--quiet', `${revision}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).status === 0
+}
+
+/** Whether a revision this checkout holds has a file at a path. */
+function holdsFile(revision, file) {
+  return spawnSync('git', ['cat-file', '-e', `${revision}:${file}`], { cwd: ROOT }).status === 0
 }
 
 /**
@@ -149,30 +165,87 @@ function scope(files) {
 
 /**
  * The one push the mapping refuses: the appearance snapshot moved and nothing
- * under `packages/client/src` did. The snapshot is written by a smoke walk
- * (packages/testing/appearance.cjs), so a push carrying it alone is a snapshot
- * recorded by hand — it would accept whatever the page happened to look like on
- * the machine that wrote it, with no change to the sheets to say why. A snapshot
+ * under `packages/client/src` did, nor any file that reads it. The snapshot is
+ * written by the importance walk (packages/testing/appearance.cjs), so a push
+ * carrying it alone is a snapshot recorded by hand — it would accept whatever
+ * the page happened to look like on the machine that wrote it, with no change
+ * to the sheets to say why. A snapshot
  * the base does not hold is the layer arriving, not a page changing, and stands.
  */
 function refuseSnapshotAlone(files) {
   if (!files.includes(APPEARANCE)) return
   const moved = files.filter((file) => APPEARANCE_SOURCES.some((pattern) => pattern.test(file)))
-  if (moved.length > 0 || files.includes(APPEARANCE_PARTS)) return
+  if (moved.length > 0 || APPEARANCE_READERS.some((file) => files.includes(file))) return
   const base = argOf('base')
   const known = args.includes('--tree') || base === undefined || base === '' || /^0+$/.test(base)
     ? tracked().includes(APPEARANCE)
-    : holds(`${base}:${APPEARANCE}`)
+    : holds(base) && holdsFile(base, APPEARANCE)
   if (!known) return
-  console.error(`ci-scope: ${APPEARANCE} changed and nothing under packages/client/src did — the appearance snapshot is recorded by a smoke walk and only moves with the sheets that draw the pages; drop it from the push or carry the change it belongs to`)
+  console.error(`ci-scope: ${APPEARANCE} changed and nothing under packages/client/src did, nor any file that reads it — the appearance snapshot is recorded by the importance walk and only moves with what draws or reads the pages; drop it from the push or carry the change it belongs to`)
+  process.exit(1)
+}
+
+/**
+ * The records that only shrink, each as the entries it holds and how much each
+ * one counts for; growth is a total above the base's, and the keys the base
+ * lacks or holds less of are named to say where it came from.
+ */
+const LEDGERS = [
+  {
+    file: 'packages/testing/importance-unreachable.json',
+    entries: (record) => new Map(record.groups.flatMap((group) => group.selectors.map((selector) => [selector, 1]))),
+    what: 'unreachable selector',
+  },
+  {
+    file: 'packages/testing/document-lookups.json',
+    entries: (record) => new Map(Object.entries(record.files).map(([file, entry]) => [file, entry.count])),
+    what: 'whole-document lookup count',
+  },
+]
+
+/**
+ * The revision a ledger is compared with: HEAD for the working tree, else the
+ * merge base of the named base and this commit, the same change the push is
+ * read as above.
+ */
+function ledgerBase() {
+  if (args.includes('--tree')) return 'HEAD'
+  const named = argOf('base')
+  const base = named === undefined || named === '' || /^0+$/.test(named) ? 'origin/master' : named
+  if (!holds(base)) throw new Error(`ci-scope: ${base} is not in this checkout, so the records that only shrink cannot be compared with it`)
+  return git('merge-base', base, 'HEAD').trim()
+}
+
+/** Refuse every record that grew past what the base held. A record the base does not hold is arriving and stands. */
+function refuseLedgerGrowth() {
+  const base = ledgerBase()
+  const problems = []
+  for (const ledger of LEDGERS) {
+    if (!holdsFile(base, ledger.file)) continue
+    const before = ledger.entries(JSON.parse(git('show', `${base}:${ledger.file}`)))
+    const now = ledger.entries(JSON.parse(fs.readFileSync(path.join(ROOT, ledger.file), 'utf8')))
+    const total = (entries) => [...entries.values()].reduce((sum, amount) => sum + amount, 0)
+    if (total(now) <= total(before)) continue
+    const grown = [...now].filter(([key, amount]) => amount > (before.get(key) ?? 0)).map(([key]) => key)
+    problems.push(`${ledger.file}: ${total(before)} → ${total(now)} ${ledger.what}s; grown at ${grown.join(' | ')}`)
+  }
+  if (problems.length === 0) return
+  for (const problem of problems) console.error(`ci-scope: ${problem}`)
+  console.error('ci-scope: these records only shrink — reach the selector from the walk, or read the seat through core/host.ts and core/bus.ts, rather than recording it')
   process.exit(1)
 }
 
 const changed = changedFiles()
-if (args.includes('--appearance')) {
-  refuseSnapshotAlone(changed)
-  const moved = changed.filter((file) => APPEARANCE_SOURCES.some((pattern) => pattern.test(file)))
-  console.log(`ci-scope: ${APPEARANCE} ${changed.includes(APPEARANCE) ? `moved with ${moved.length} client source file(s)` : 'did not move'}`)
+if (args.includes('--appearance') || args.includes('--ledgers')) {
+  if (args.includes('--appearance')) {
+    refuseSnapshotAlone(changed)
+    const moved = changed.filter((file) => APPEARANCE_SOURCES.some((pattern) => pattern.test(file)))
+    console.log(`ci-scope: ${APPEARANCE} ${changed.includes(APPEARANCE) ? `moved with ${moved.length} client source file(s)` : 'did not move'}`)
+  }
+  if (args.includes('--ledgers')) {
+    refuseLedgerGrowth()
+    console.log(`ci-scope: ${LEDGERS.length} records that only shrink, none grew`)
+  }
   process.exit(0)
 }
 const answers = scope(changed)

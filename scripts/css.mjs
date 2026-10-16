@@ -630,12 +630,14 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
  * and property, which is the same key this check computes over the built sheet.
  * A declaration in no entry is weight nobody has read the page for: write the
  * reason into a decision, then run the walk with `DSH_IMPORTANCE_LEDGER=write`
- * and read the ledger's diff.
+ * and read the ledger's diff. That run builds the very sheet it is about to
+ * record, so the check stands aside for it; nothing else sets the variable.
  *
  * @param main - the built theme sheet, minified, as the page runs it.
  * @param srcDir - packages/client/src, from which the repository root is reached.
  */
 function checkImportance(main, srcDir) {
+  if (process.env.DSH_IMPORTANCE_LEDGER === 'write') return
   const root = path.resolve(srcDir, '..', '..', '..')
   const ledger = JSON.parse(fs.readFileSync(path.join(root, 'packages', 'testing', 'importance-ledger.json'), 'utf8')).entries
   const problems = []

@@ -103,6 +103,10 @@ jobs:
       - run: npm ci
       - id: scope
         run: node scripts/ci-scope.mjs --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
+      # The pushes the scope refuses against the same base: an appearance
+      # snapshot moved without the sheets that draw it, and a record that only
+      # shrinks grown (D66, D9).
+      - run: node scripts/ci-scope.mjs --appearance --ledgers --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
 
   # The gates that need no build: the lint rules, the feature list, the decisions
   # index against the files it lists, the changelog, AGENTS.md's command table
@@ -154,14 +158,6 @@ jobs:
       # flag, and npm would read a flag of its own rather than pass it on.
       - run: node packages/testing/smoke.cjs ${{ needs.changed.outputs.smoke }}
         timeout-minutes: 30
-      # The appearance snapshot against what that walk read (D66). The
-      # lane is where the judgement is made: only the fonts this checkout ships
-      # are in play, so a snapshot recorded on another platform is a reference
-      # rather than the answer. A failed walk still reports here, so one run
-      # carries both the behaviour failure and the appearance difference.
-      - run: node packages/testing/appearance.cjs
-        if: always()
-        timeout-minutes: 5
 
   # The readers' desktop runs on Windows, and the host half reads session
   # directories, drive-letter paths and file times there.

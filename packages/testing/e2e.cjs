@@ -39,6 +39,7 @@ const { MARKS } = require('./lane.cjs')
 const { SCENARIOS } = require('./scenarios.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { startMockLlm } = require('./mock-llm.cjs')
+const { startMockPlatform, accountStore } = require('./mock-platform.cjs')
 const { loadModule } = require('../../scripts/shared/ts-module.cjs')
 const { withLock } = require('../../scripts/shared/verify-lock.cjs')
 
@@ -283,7 +284,23 @@ async function runScenario(name, options) {
     delayMs: scenario.delayMs ?? options.delayMs,
     vars: { workspace, workspaceCode: workspace.replaceAll('\\', '\\\\') },
   })
-  const patch = ['- id: llm-deepseek', '  config:', `    baseURL: ${mock.url}`, '    apiKeyEnv: DSH_E2E_MOCK_KEY', ...scenario.patch ?? []].join('\n')
+  // A scenario that draws the account surfaces signs in against the scripted
+  // platform: the host's account provider reads it over loopback, from a store
+  // of this boot's own, and the account's model route answers from the same
+  // scripted model service as the key route.
+  const platform = scenario.account === true ? await startMockPlatform() : null
+  const accountPatch = []
+  if (platform !== null) {
+    const store = path.join(home, 'lane-account.credentials.yaml')
+    fs.mkdirSync(home, { recursive: true })
+    accountStore(store, platform.url)
+    accountPatch.push(
+      '- id: credentials', '  config:', `    path: ${JSON.stringify(store)}`,
+      '- id: deepseek-account', '  config:', `    platformOrigin: ${platform.url}`, '    allowLoopbackHttp: true', `    inferenceOrigin: ${mock.url}`,
+      '- id: llm-deepseek-account', '  config:', `    baseURL: ${mock.url}`,
+    )
+  }
+  const patch = ['- id: llm-deepseek', '  config:', `    baseURL: ${mock.url}`, '    apiKeyEnv: DSH_E2E_MOCK_KEY', ...accountPatch, ...scenario.patch ?? []].join('\n')
   const host = await start({ patch, args: scenario.hostArgs, env: { DSH_E2E_MOCK_KEY: 'mock' }, home, plugins: scenario.plugins, resetState: true })
   say(`\n== ${name} ==  mock ${mock.url}  host ${host.url}\n`)
   /** Where the scenario is, so a hang in the log says which step it never left. */
@@ -351,6 +368,7 @@ async function runScenario(name, options) {
     if (session !== undefined) await session.close()
     host.stop()
     await mock.stop()
+    if (platform !== null) await platform.stop()
     // The lines of a scenario that failed are printed before its error leaves
     // this function, so the evidence and the step it hung on stay together.
     flush()

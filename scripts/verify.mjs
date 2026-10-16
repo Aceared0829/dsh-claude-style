@@ -215,10 +215,9 @@ function gatesFor(request) {
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
-    // The appearance snapshot against the last walk's reading, and the rule that
-    // a snapshot only moves with the sheets that draw the pages (D9).
-    { id: 'appearance', script: 'packages/testing/appearance.cjs', args: [] },
-    { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--tree'] },
+    // The rule that the appearance snapshot only moves with what draws or reads
+    // the pages (D66), and the records that only shrink, against HEAD.
+    { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--ledgers', '--tree'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]
