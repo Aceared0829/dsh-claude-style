@@ -503,7 +503,11 @@
       },
       { "match": "doubao|seed|volc", "brand": "bytedance" },
       { "match": "ernie", "brand": "baidu" },
-      { "match": "hunyuan|(^|-)hy(\\d|-?mt)", "brand": "tencent" },
+      {
+        "match": "hunyuan|(^|[^a-z0-9])hy(\\d|-?mt)",
+        "brand": "tencent",
+        "note": "The id can carry the serving provider's namespace (`cn:hy3`, `openrouter/hy3`), so the segment start accepts any character outside a letter or a digit. Requiring `hy` to start a segment is what leaves `shy-mt2` unclaimed."
+      },
       { "match": "mistral|magistral|codestral", "brand": "mistral" },
       { "match": "north|command-?[ar]|cohere", "brand": "cohere" },
       { "match": "phi-?\\d", "brand": "microsoft" },
@@ -908,11 +912,12 @@
       }
     },
     {
-      "match": "hunyuan|(^|-)hy\\d",
+      "match": "hunyuan|(^|[^a-z0-9])hy\\d",
       "text": {
         "zh": "中文理解与智能体场景表现均衡。",
         "en": "Balanced for Chinese language and agentic scenarios."
-      }
+      },
+      "note": "The brand rule for this line reads the same segment start: `cn:hy3` is the same line as `hy3`."
     },
     {
       "match": "codestral",

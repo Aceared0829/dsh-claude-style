@@ -21,6 +21,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **删除对话不再带走它的用量**：面板的账此前每趟都从现存的会话日志重算，日志一删，那个会话的日子就从「全部」里消失。现在本地的这本账记在插件自己的目录里，日志已不在的会话照旧留着它结算过的日子，面板继续给出这些日子的 tokens、模型排行与小时分布；早先留在折算缓存里的日子在首次读取时迁移过来。
 - **用量记录不再被覆盖掉**：记录解析不了时改名为 `usage.json.corrupt-<时间戳>` 留在插件目录里，再从会话日志重建；同一个 `$DSH_HOME` 下开着几个实例时，每次写回先合并磁盘上的那一份，另一个实例记下的会话不会被盖掉；旧的折算缓存在记录写成功之后删除。
 - **侧栏页脚的插件条目全部收进账号区**：动作槽里的条目与别的插件直接挂在页脚上的卡片（用量卡片这一类）都收进账号弹层，卡片保持它自己的样子，侧栏底部只剩账号这一行，条目自带的行内样式一并让位；`importance` 台账随之记到 424 处。
+- **带供应商命名空间的模型标识也认得出厂商标**：网关把模型标识写成 `cn:hy3` 这类带前缀的形状时，混元系列的模型行照常画出厂商组合标，模型列表的第一级也一并给出它的说明文案。规则的分段起点改为任何不是字母或数字的字符，`shy-mt2` 这类标识仍不被认领。
 
 ### 其他变更
 
@@ -57,6 +58,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **Deleting a conversation no longer takes its usage with it**: the panel's own account was folded again from the stored logs on every pass, so a log deleted took that session's days out of the all-time figures. The local account now lives in the plugin's own directory, and a session whose log is gone keeps the days it settled on — the panel still gives those days' tokens, its model ranking and its hour histogram. The days an earlier build kept in its fold cache are migrated on the first read.
 - **The usage record is no longer overwritten**: a record that does not parse is kept in the plugin's directory as `usage.json.corrupt-<stamp>` before it is rebuilt from the session logs; with several instances open under one `$DSH_HOME`, every write first merges the copy on disk, so a session another instance recorded is not lost; the old fold cache is deleted once the record is written.
 - **Every plugin entry in the sidebar footer is collected into the account area**: the action slot's entries and a card another plugin mounted into the footer itself — the usage card is one — both stand in the account popover, the card keeping its own markup, and the footer keeps the account row alone; an entry's own inline style gives way with them; the importance ledger records 424 declarations with them.
+- **A model id carrying its provider's namespace resolves its vendor lockup**: an id spelled `cn:hy3` draws the Hunyuan lockup on its row and gets its description line in the picker's first level. A rule's segment start now accepts any character outside a letter or a digit, and an id such as `shy-mt2` stays unclaimed.
 
 ### Chores
 
