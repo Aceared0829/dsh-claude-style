@@ -1,8 +1,8 @@
 import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, PART_ATTR } from '../constants'
 import { HOLD_RELATIONS, PART_REGIONS } from './parts-table'
 import type { HoldRelation, PartTable } from './parts-table'
-import { localClassName, setAttributeIfChanged } from '../shared/dom'
-import { subscribeMutations } from './bus'
+import { localClassName, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 
 /**
  * The marking pass behind the skin's part vocabulary (D3) and the holds a

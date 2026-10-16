@@ -514,7 +514,7 @@ function checkTokensRead(doc, sheetText, sources) {
  */
 function checkAttributes(read, sources) {
   for (const [name, where] of read) {
-    if (!sources.attributes.has(name)) throw new Error(`build: ${where} reads [${name}], which nothing under packages/client/src/ writes`)
+    if (!sources.attributes.has(name)) throw new Error(`build: ${where} reads [${name}], which nothing in the browser half's sources writes`)
   }
 }
 

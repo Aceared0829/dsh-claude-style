@@ -1,6 +1,17 @@
 import { afterEach, expect, test } from 'vitest'
-import { MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, READER_HOLD_ATTR } from '../constants'
+import { adoptSkin } from './skin'
 import { easeScrollFor, easeScrollToEndFor, holdReader, joinScrollOwner, readerHolds, readerMovedSince, releaseReader, stopScrollFor, submissionHolds, writeScroll } from './scroll-owner'
+
+/** The skin's own vocabulary and answers, as this test hands them over. */
+const MOTION_ATTR = 'data-test-motion'
+const MOTION_FULL = 'full'
+const MOTION_REDUCED = 'reduced'
+const READER_HOLD_ATTR = 'data-test-reader-hold'
+adoptSkin({
+  quiet: 'data-test-quiet',
+  readerHold: READER_HOLD_ATTR,
+  motionReduced: () => document.body.getAttribute(MOTION_ATTR) === MOTION_REDUCED,
+})
 
 const nextFrame = () => new Promise<number>(resolve => requestAnimationFrame(resolve))
 const wanted = () => true

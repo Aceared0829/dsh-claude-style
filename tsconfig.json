@@ -12,8 +12,9 @@
     "skipLibCheck": true,
     "types": [],
     "paths": {
-      "@dsh-claude-style/contracts/*": ["./packages/contracts/src/*"]
+      "@dsh-claude-style/contracts/*": ["./packages/contracts/src/*"],
+      "@dsh-claude-style/engine/*": ["./packages/engine/src/*"]
     }
   },
-  "include": ["packages/client/src", "packages/contracts/src"]
+  "include": ["packages/client/src", "packages/contracts/src", "packages/engine/src"]
 }

@@ -6,10 +6,10 @@ import {
   HEADER_UTILITIES_SELECTOR,
   VIEW_TABS_STRIP_SELECTOR,
 } from '@dsh-claude-style/contracts/dom'
-import { observeMatches, observeSize } from '../../core/bus'
-import { desktopBand } from '../../core/desktop-band'
+import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
+import { desktopBand } from '@dsh-claude-style/engine/desktop-band'
 import { findWindowsMenu } from '../../core/host'
-import { createStamp, setAttributeIfChanged } from '../../shared/dom'
+import { createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import type { FeatureUi } from '../../core/feature'
 import type { HostContext } from '../../core/host'
 import type manifest from './header-band.manifest'

@@ -1,4 +1,4 @@
-import { buildElement } from './dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 
 /**
  * The highlight band the host's own TextShimmer draws over a running row's

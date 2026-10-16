@@ -1,5 +1,5 @@
 import { findComposerInput, findComposerPlaceholder } from '../../core/host'
-import type { MatchList } from '../../core/bus'
+import type { MatchList } from '@dsh-claude-style/engine/bus'
 
 /** The hero composer's own hint, which the skin's placeholder stands in for. */
 const HERO_HINT = 'How can I help you today?'

@@ -38,11 +38,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@dsh-claude-style/contracts': path.resolve(import.meta.dirname, 'packages/contracts/src'),
+      '@dsh-claude-style/engine': path.resolve(import.meta.dirname, 'packages/engine/src'),
       'virtual:dsh-claude-style/generated': GENERATED_FILE,
     },
   },
   test: {
-    include: ['packages/client/src/**/*.test.ts'],
+    include: ['packages/client/src/**/*.test.ts', 'packages/engine/src/**/*.test.ts'],
+    // The engine runs on the skin's own vocabulary, which the tests hand over
+    // the way the entry does (D73).
+    setupFiles: ['packages/testing/vitest-setup.ts'],
     // Failure screenshots and other attachments are local artifacts.
     attachmentsDir: '.debug/vitest',
     // Browser mode binds a control port, and its own default (63315) falls inside

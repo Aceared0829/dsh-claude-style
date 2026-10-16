@@ -1,4 +1,4 @@
-import { buildElement, setAttributeIfChanged } from './dom'
+import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 
 /**
  * The skin's popovers: one card shell, one dwell and grace, one card on screen

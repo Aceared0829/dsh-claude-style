@@ -1,4 +1,4 @@
-import { subscribeMutations } from '../../core/bus'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { CHAT_FLYING_ATTR, MESSAGE_ENTER_ATTR, MESSAGE_ENTER_GROW } from '../../constants'
 import { motionReduced, readPrefs } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'

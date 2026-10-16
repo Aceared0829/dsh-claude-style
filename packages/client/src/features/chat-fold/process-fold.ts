@@ -1,7 +1,7 @@
-import { subscribeMutations } from '../../core/bus'
-import { requestFrame } from '../../core/frame'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
-import { writeScroll } from '../../shared/scroll-owner'
+import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
 import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**

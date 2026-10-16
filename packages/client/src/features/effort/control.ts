@@ -1,8 +1,8 @@
-import { requestFrame } from '../../core/frame'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_FASTER, MODEL_EFFORT_LABEL, MODEL_EFFORT_NONE, MODEL_EFFORT_SMARTER } from '../model/copy-fallbacks'
 import { orderEffortIds } from './ladder'
 import { createEffortMatrix } from './matrix'
-import { buildElement, setAttributeIfChanged } from '../../shared/dom'
+import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import type { ModelCatalog } from '../model/catalog'
 import { copy } from './copy'
 

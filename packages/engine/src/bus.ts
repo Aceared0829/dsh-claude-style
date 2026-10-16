@@ -1,4 +1,4 @@
-import { QUIET_ATTR } from '../constants'
+import { skin } from './skin'
 
 /**
  * The observation bus (D40): the page has one MutationObserver and one
@@ -29,7 +29,7 @@ export interface MutationOptions {
   attributeFilter?: string[]
   attributeOldValue?: boolean
   subtree?: boolean
-  /** Leave out the skin's own quiet writes (QUIET_ATTR): they are no page change. */
+  /** Leave out the skin's own quiet writes (skin().quiet): they are no page change. */
   skipQuiet?: boolean
 }
 
@@ -52,13 +52,13 @@ function isQuietRecord(record: MutationRecord) {
   // list or an attribute, and the text node itself for a character change —
   // which is why the parent is asked as well.
   const target = record.target instanceof Element ? record.target : record.target.parentElement
-  if (target !== null && target.closest('[' + QUIET_ATTR + ']') !== null) return true
+  if (target !== null && target.closest('[' + skin().quiet + ']') !== null) return true
   if (record.addedNodes.length === 0 && record.removedNodes.length === 0) return false
   for (const node of record.addedNodes) {
-    if (!(node instanceof Element) || !node.hasAttribute(QUIET_ATTR)) return false
+    if (!(node instanceof Element) || !node.hasAttribute(skin().quiet)) return false
   }
   for (const node of record.removedNodes) {
-    if (!(node instanceof Element) || !node.hasAttribute(QUIET_ATTR)) return false
+    if (!(node instanceof Element) || !node.hasAttribute(skin().quiet)) return false
   }
   return true
 }

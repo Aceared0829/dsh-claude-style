@@ -1,4 +1,4 @@
-import { requestFrame } from '../../core/frame'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import {
   CHAT_REVEAL_FRAME_GAP_MS,
   CHAT_REVEAL_HIDDEN_GAP_MS,

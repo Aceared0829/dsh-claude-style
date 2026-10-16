@@ -1,10 +1,10 @@
-import { subscribeMutations } from '../../core/bus'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { motionReduced } from '../../core/prefs'
 import { FOLD_DISCLOSURE_SELECTOR, FOLD_INTENT_TTL_MS, FOLD_POPUP_SELECTOR, FOLD_ROLL_MS, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_TOGGLE_SELECTOR, FOLD_VISIBLE_SHARE, foldBeginHeightClip, foldConfirmCollapsed, foldControlAtBottom, foldExpandedBody, foldHoldThroughStalls, foldProcessBody, foldSettleAfter, foldVisibleReach, foldWatchReader, markChatFoldBusy } from './fold-glide-parts'
 import type { FoldWatch } from './fold-glide-parts'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { CHAT_FLOW_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { joinScrollOwner } from '../../shared/scroll-owner'
+import { joinScrollOwner } from '@dsh-claude-style/engine/scroll-owner'
 import { motionEase } from '../../shared/motion'
 
 /** Margin past the roll's own duration for the backstop that unlocks the click. */

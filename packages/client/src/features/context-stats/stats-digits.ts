@@ -1,4 +1,4 @@
-import { buildElement } from '../../shared/dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 
 /**
  * One figure, written so it can re-enter: every character is a span of its own

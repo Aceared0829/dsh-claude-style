@@ -1,6 +1,6 @@
-import { windowsDesktop } from '../../core/desktop-band'
+import { windowsDesktop } from '@dsh-claude-style/engine/desktop-band'
 import { cacheFirstMatch } from '../../core/host'
-import { createStamp } from '../../shared/dom'
+import { createStamp } from '@dsh-claude-style/engine/dom'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { HostContext } from '../../core/host'

@@ -36,27 +36,29 @@ const slashes = (file) => file.replaceAll('\\', '/')
  * Read the browser half once.
  *
  * @param root - the repository root, where tsconfig.json is.
- * @param srcDir - packages/client/src; tests and declaration files are left out.
+ * @param srcDirs - the directories the browser half is written in (packages/client/src
+ *   and the engine beside it); tests and declaration files are left out.
  * @returns `{ attributes, easings, stacking, motion, strings }`: the first four
  *   map each value to where it is first written; a value the build cannot read
  *   as a literal is a refusal (see follow).
  */
-export function readSourceTree(root, srcDir) {
+export function readSourceTree(root, srcDirs) {
   const api = new API({ cwd: root })
+  const dirs = (Array.isArray(srcDirs) ? srcDirs : [srcDirs]).map(slashes)
   try {
     const config = slashes(path.join(root, 'tsconfig.json'))
     const project = api.updateSnapshot({ openProjects: [config] }).getProjects().find((item) => slashes(item.configFileName) === config)
     if (project === undefined) throw new Error(`build: TypeScript opened no project for ${config}`)
-    return collect(project, slashes(root), slashes(srcDir))
+    return collect(project, slashes(root), dirs)
   } finally {
     api.close()
   }
 }
 
-function collect(project, root, srcDir) {
+function collect(project, root, srcDirs) {
   const { program, checker } = project
   const files = program.getSourceFileNames()
-    .filter((name) => slashes(name).startsWith(`${srcDir}/`) && !/\.(test|d)\.ts$/.test(name))
+    .filter((name) => srcDirs.some((dir) => slashes(name).startsWith(`${dir}/`)) && !/\.(test|d)\.ts$/.test(name))
     .map((name) => program.getSourceFile(name))
   const where = (node) => {
     const file = node.getSourceFile()
@@ -165,12 +167,35 @@ function collect(project, root, srcDir) {
     if (!map.has(value)) map.set(value, where(expression))
   }
 
+  /**
+   * An attribute name read off the engine's seam (`skin().quiet`): the engine
+   * writes whatever the skin handed over, and that hand-over is read where it
+   * is made (the adoptSkin call below), so this expression carries no literal
+   * of its own.
+   */
+  const isSeamRead = (expression) => expression.kind === SyntaxKind.PropertyAccessExpression
+    && expression.expression.kind === SyntaxKind.CallExpression
+    && calleeName(expression.expression) === 'skin'
+
   const attributes = new Map()
   const motion = new Map()
   for (const call of calls) {
     const name = calleeName(call)
     if (call.expression.kind === SyntaxKind.PropertyAccessExpression && ATTRIBUTE_WRITERS.has(name)) {
-      follow(call.arguments[0], firstAt(attributes), 'writes an attribute whose name is no literal the build can read; give it a literal type')
+      follow(call.arguments[0], firstAt(attributes), 'writes an attribute whose name is no literal the build can read; give it a literal type', isSeamRead)
+    }
+    // The engine writes the skin's own attribute names through the seam it is
+    // handed (packages/engine/src/skin.ts, D73), so the hand-over names them here.
+    if (name === 'adoptSkin') {
+      const seam = call.arguments[0]
+      if (seam?.kind === SyntaxKind.ObjectLiteralExpression) {
+        for (const property of seam.properties) {
+          if (property.kind !== SyntaxKind.PropertyAssignment) continue
+          const spelt = propertyName(property.name)
+          if (spelt !== 'quiet' && spelt !== 'readerHold') continue
+          follow(property.initializer, firstAt(attributes), 'hands the engine an attribute name that is no literal the build can read; give it a literal type')
+        }
+      }
     }
     if (MOTION_READERS.has(name) && call.arguments[0] !== undefined) {
       follow(call.arguments[0], firstAt(motion), 'asks shared/motion.ts for a token whose name is no literal the build can read (D9)')

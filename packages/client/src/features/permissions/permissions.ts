@@ -4,7 +4,7 @@ import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURR
 import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
 import { activeLocale } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
-import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
+import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, buildPopoverItem, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { createSlidingPill } from '../../shared/sliding-pill'

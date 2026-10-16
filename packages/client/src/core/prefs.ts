@@ -3,7 +3,7 @@ import type { PrefKey, Prefs } from '../constants'
 import type { HostContext } from './host'
 import type { HostConfigForm, HostConfigFormsService, HostRemoteSettings, HostSettingsDescribeAnswer } from '@dsh-claude-style/contracts/services'
 import { clampPrefs, PREFS } from '@dsh-claude-style/contracts/prefs'
-import { notifyAll } from '../shared/notify'
+import { notifyAll } from '@dsh-claude-style/engine/notify'
 import { pageOwner } from '../shared/visual-owner'
 
 /**

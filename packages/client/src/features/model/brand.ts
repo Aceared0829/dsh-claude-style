@@ -1,5 +1,5 @@
 import { modelCopy } from '../../core/model-copy'
-import { buildElement } from '../../shared/dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 import { COMBINE_SVGS, COMBINE_WORDS } from 'virtual:dsh-claude-style/generated'
 
 /**

@@ -1,7 +1,7 @@
 import { AUTO_POPOVER_ALL, HERO_MENU_ATTR } from '../../constants'
 import { cacheFirstMatch, findHostMenu } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
-import { closestFrom, createStamp } from '../../shared/dom'
+import { closestFrom, createStamp } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'

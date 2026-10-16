@@ -340,7 +340,7 @@ async function main() {
   // The browser half on its syntax tree, once the type check has passed: the
   // attributes it writes, its easing curves and stacking levels, the motion
   // tokens it asks for (scripts/source-tree.mjs).
-  const sources = readSourceTree(ROOT, SRC)
+  const sources = readSourceTree(ROOT, [SRC, path.join(ROOT, 'packages', 'engine', 'src')])
   checkMotionSources(sources)
   const sheets = styleFiles(manifests)
 

@@ -1,6 +1,5 @@
-import { READER_HOLD_ATTR } from '../constants'
-import { subscribeMutations } from '../core/bus'
-import { motionReduced } from '../core/prefs'
+import { subscribeMutations } from './bus'
+import { skin } from './skin'
 import { CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FLOW_KIND_ATTRIBUTE, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
 import { conversationScroller, findFollowTailButton, isScrollbarStrip } from './chat-dom'
 import { isReaderScrollIntent } from './reader-intent'
@@ -37,7 +36,7 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  * protected (claimConversation).
  * The reader's own wheel is the browser's: this module only records that he
  * moved (noteIntent), so the following sources stand down. The conversation
- * scroller above the container he holds carries READER_HOLD_ATTR while he
+ * scroller above the container he holds carries skin().readerHold while he
  * does, and the live status line's pin hangs on that mark: it stands only
  * while the follow is the one moving the position, never over content the
  * reader scrolled back to.
@@ -136,11 +135,11 @@ function syncHoldMark(container: Element) {
     }
   }
   if (anyHeld) {
-    scroller.setAttribute(READER_HOLD_ATTR, '')
+    scroller.setAttribute(skin().readerHold, '')
     markedScrollers.add(scroller)
     return
   }
-  scroller.removeAttribute(READER_HOLD_ATTR)
+  scroller.removeAttribute(skin().readerHold)
   markedScrollers.delete(scroller)
 }
 
@@ -358,7 +357,7 @@ export function joinScrollOwner() {
     window.removeEventListener('scroll', noteScroll, true)
     if (stopSubmissionWatch !== null) stopSubmissionWatch()
     stopSubmissionWatch = null
-    for (const scroller of markedScrollers) scroller.removeAttribute(READER_HOLD_ATTR)
+    for (const scroller of markedScrollers) scroller.removeAttribute(skin().readerHold)
     markedScrollers.clear()
     for (const container of held) heldTowardEnd.delete(container)
     held.clear()
@@ -387,7 +386,7 @@ export function writeScroll(container: Element, value: number, source: ScrollSou
  */
 export function easeScrollFor(container: Element, source: ScrollSource, destination: (element: Element, end: number) => number, wanted: () => boolean, lead = SCROLL_EASE_LEAD_PX) {
   if (!claim(container, source)) return false
-  if (motionReduced()) {
+  if (skin().motionReduced()) {
     stopScrollEase(container)
     container.scrollTop = destination(container, scrollEnd(container))
     return true

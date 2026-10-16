@@ -1,6 +1,6 @@
 import { PEAKRATE_ROUTE } from '../../constants'
 import { forgetRates } from './schedule'
-import type { HostAnswer } from '../../shared/resource'
+import type { HostAnswer } from '@dsh-claude-style/engine/resource'
 import type { RateProfile } from '@dsh-claude-style/contracts/peakrate'
 
 /**

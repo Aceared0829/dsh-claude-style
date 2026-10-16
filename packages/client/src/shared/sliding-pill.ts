@@ -1,4 +1,4 @@
-import { observeSize } from '../core/bus'
+import { observeSize } from '@dsh-claude-style/engine/bus'
 
 /**
  * The sliding highlight of a segmented control: one pseudo-element on the

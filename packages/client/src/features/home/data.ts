@@ -1,7 +1,7 @@
 import { HOME_HEAT_RAMP, USAGE_ROUTE } from '../../constants'
 import { activeLocale } from '../../core/i18n'
 import { pad2 } from '../../shared/format'
-import { notifyAll } from '../../shared/notify'
+import { notifyAll } from '@dsh-claude-style/engine/notify'
 import type { HostContext } from '../../core/host'
 import type { HostRemoteListAnswer, HostSessionRow } from '@dsh-claude-style/contracts/services'
 import type { UsageAnswer, UsageDay, UsageModel, UsageReport, UsageTotals } from '@dsh-claude-style/contracts/usage'

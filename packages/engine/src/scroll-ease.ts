@@ -1,4 +1,4 @@
-import { requestFrame } from '../core/frame'
+import { requestFrame } from './frame'
 /**
  * Walk a scroll container's position to where it is going instead of
  * writing it in one frame: the one scroll motion the skin draws.

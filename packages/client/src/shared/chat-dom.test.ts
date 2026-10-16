@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from 'vitest'
-import { conversationColumn, conversationScroller, isScrollbarStrip } from './chat-dom'
+import { conversationColumn, conversationScroller, isScrollbarStrip } from '@dsh-claude-style/engine/chat-dom'
 
 /**
  * The two readings the chat area asks for on every frame of a stream are kept

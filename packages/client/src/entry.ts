@@ -1,5 +1,7 @@
-import { HANDOFF_ATTR, LIVE_PREFS } from './constants'
+import { HANDOFF_ATTR, LIVE_PREFS, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
 import type { LivePref } from './constants'
+import { adoptSkin } from '@dsh-claude-style/engine/skin'
+import { motionReduced } from './core/prefs'
 import { loadHdsl, loadUsername, setHostContext } from './core/host'
 import type { HostContext } from './core/host'
 import { loadModelCopy } from './core/model-copy'
@@ -16,6 +18,15 @@ import { handleName, setFeatureRegistry } from './core/feature'
 import type { Feature, FeatureInstall } from './core/feature'
 import { FEATURES } from 'virtual:dsh-claude-style/features'
 import { BUILD_ID } from 'virtual:dsh-claude-style/generated'
+
+// The engine runs on the skin's own vocabulary: the attributes this package
+// writes, and the two answers only the skin can give (D73). Handed over before
+// anything installs, and before the module-scope sweep below reads any of it.
+adoptSkin({
+  quiet: QUIET_ATTR,
+  readerHold: READER_HOLD_ATTR,
+  motionReduced,
+})
 
 // At module scope on purpose: the sweep runs right after this factory
 // returns, so an `apply()` body would be too late. The head watch

@@ -1,5 +1,5 @@
-import { subscribeMutations } from '../../core/bus'
-import { requestFrame } from '../../core/frame'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { CHAT_FLYING_ATTR, MESSAGE_ENTER_GROW } from '../../constants'
 import { motionReduced, readPrefs } from '../../core/prefs'
 import { startMorph } from './send-morph'

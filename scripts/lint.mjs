@@ -83,6 +83,24 @@ for (const file of sources) {
   }
 }
 
+// The engine's dependency direction (D73): it serves the skin and talks to the
+// host, so it may read the shared contract and the host's own packages, and
+// nothing of the skin it serves — no client or host module, no generated module
+// carrying the skin's own vocabulary.
+const ENGINE = path.join(ROOT, 'packages', 'engine', 'src')
+for (const file of sources.filter((candidate) => relative(candidate).startsWith('packages/engine/src/'))) {
+  const text = fs.readFileSync(file, 'utf8')
+  for (const match of text.matchAll(/from '([^']+)'/g)) {
+    const specifier = match[1]
+    const intoSkin = specifier.startsWith('@dsh-claude-style/client')
+      || specifier.startsWith('@dsh-claude-style/host')
+      || specifier.startsWith('virtual:dsh-claude-style/')
+      || specifier.includes('../client/')
+      || specifier.includes('../host/')
+    if (intoSkin) problems.push(`${relative(file)}: the engine imports ${specifier}; the skin hands what the engine needs over the seam (packages/engine/src/skin.ts, D73)`)
+  }
+}
+
 // 2. Links in the committed Markdown.
 const markdown = [
   ...filesUnder(ROOT, ['.md'], SKIPPED_DIRS).filter((file) => !relative(file).startsWith('.debug/') && !relative(file).startsWith('node_modules/')),
@@ -190,9 +208,9 @@ if (copies.status !== 0) {
 const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|document\.body\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|removeStrayNodes\(\s*document\b/g
 const LOOKUP_OWNERS = new Set([
   'packages/client/src/core/host.ts',
-  'packages/client/src/core/bus.ts',
+  'packages/engine/src/bus.ts',
   'packages/client/src/core/stylesheet.ts',
-  'packages/client/src/shared/chat-dom.ts',
+  'packages/engine/src/chat-dom.ts',
 ])
 const recordedLookups = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'document-lookups.json'), 'utf8')).files
 let lookups = 0

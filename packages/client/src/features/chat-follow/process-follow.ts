@@ -1,6 +1,6 @@
-import { observeSize, subscribeMutations } from '../../core/bus'
+import { observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { PROCESS_BODY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
-import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor } from '../../shared/scroll-owner'
+import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor } from '@dsh-claude-style/engine/scroll-owner'
 
 /**
  * The capped process group's follow: inside it, thinking and tool output do

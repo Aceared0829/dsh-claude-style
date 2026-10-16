@@ -1,7 +1,7 @@
 import { BRAND_IMAGE_KINDS } from '@dsh-claude-style/contracts/brand'
 import type { BrandAnswer, BrandImageKind, BrandImageState } from '@dsh-claude-style/contracts/brand'
 import { BRAND_MARK_ROUTE, BRAND_ROUTE, BRAND_WORDMARK_ROUTE } from '../constants'
-import { notifyAll } from './notify'
+import { notifyAll } from '@dsh-claude-style/engine/notify'
 
 /**
  * The reader's own brand images as the page paints them (D30): which of the

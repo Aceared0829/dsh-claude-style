@@ -7,7 +7,7 @@ import type { CloseReason } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './effort-picker.manifest'
 import type { ModelCatalog } from '../model/catalog'
-import { setAttributeIfChanged } from '../../shared/dom'
+import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { copy } from './copy'
 

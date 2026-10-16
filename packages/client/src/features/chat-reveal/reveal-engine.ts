@@ -1,4 +1,4 @@
-import { subscribeMutations } from '../../core/bus'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { isChatFoldToggle } from '../chat-fold/fold-toggle'
 import { STREAMING_ATTRIBUTE, STREAMING_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { createRevealScanner } from './reveal-diff'

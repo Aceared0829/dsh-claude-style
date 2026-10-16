@@ -1,6 +1,6 @@
 import { MODEL_OFFICIAL_GROUP } from '../model/copy-fallbacks'
 import { readPrefs } from '../../core/prefs'
-import { buildElement } from '../../shared/dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem, closeOtherPopovers, positionAnchoredPopover, registerPopover, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '../../core/host'
 import type { CloseReason, FeatureHandle } from '../../core/scheduler'

@@ -1,4 +1,4 @@
-import { buildElement } from '../../shared/dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 import { findComposerStats } from '../../core/host'
 import { buildDigitGroup, writeDigits } from './stats-digits'
 import { sessionStatsSections } from './stats-model'

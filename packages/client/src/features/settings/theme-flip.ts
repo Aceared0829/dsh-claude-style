@@ -1,6 +1,6 @@
 import { DARK_THEME_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
-import { subscribeMutations } from '../../core/bus'
-import { requestFrame } from '../../core/frame'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { motionMs } from '../../shared/motion'
 
 /**

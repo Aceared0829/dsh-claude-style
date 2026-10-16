@@ -1,6 +1,6 @@
 import { MODEL_COPY_FALLBACK_LOCALE, MODEL_COPY_ROUTE } from '../features/model/copy-fallbacks'
-import { createHostResource } from '../shared/resource'
-import type { HostAnswer } from '../shared/resource'
+import { createHostResource } from '@dsh-claude-style/engine/resource'
+import type { HostAnswer } from '@dsh-claude-style/engine/resource'
 
 /** One `{ locale: text }` pair of the copy document. */
 export type CopyPair = Record<string, string>

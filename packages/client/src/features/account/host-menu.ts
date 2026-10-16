@@ -1,6 +1,6 @@
 import { SETTINGS_BUTTON_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea, findHostMenu } from '../../core/host'
-import { hasSkinClass } from '../../shared/dom'
+import { hasSkinClass } from '@dsh-claude-style/engine/dom'
 
 /** Rhythm and give-up point of the poll for the host's account menu after the trigger's own click. */
 const MENU_LOOK_INTERVAL_MS = 40

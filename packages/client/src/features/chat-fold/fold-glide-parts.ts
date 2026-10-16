@@ -1,7 +1,7 @@
-import { requestFrame } from '../../core/frame'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { CHAT_ROLLING_ATTR } from '../../constants'
 import { CONVERSATION_SCROLL_SELECTOR, DISCLOSURE_HEADER_SELECTOR, DISCLOSURE_ROW_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { handBackFollow, readerMovedSince } from '../../shared/scroll-owner'
+import { handBackFollow, readerMovedSince } from '@dsh-claude-style/engine/scroll-owner'
 import { motionMs } from '../../shared/motion'
 
 /**

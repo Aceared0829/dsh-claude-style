@@ -1,5 +1,5 @@
-import { requestFrame } from '../../core/frame'
-import { observeMatches } from '../../core/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
+import { observeMatches } from '@dsh-claude-style/engine/bus'
 import { motionReduced } from '../../core/prefs'
 import { EXPANDED_ATTRIBUTE, REASONING_TEXT_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 

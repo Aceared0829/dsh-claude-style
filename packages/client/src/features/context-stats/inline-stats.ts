@@ -1,5 +1,5 @@
 import { QUIET_ATTR } from '../../constants'
-import { buildElement } from '../../shared/dom'
+import { buildElement } from '@dsh-claude-style/engine/dom'
 import { findComposerCard, findComposerStats } from '../../core/host'
 import { formatCompactTokens } from '../../shared/format'
 import { buildDigitGroup, writeDigits } from './stats-digits'
