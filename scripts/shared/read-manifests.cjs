@@ -13,6 +13,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const vm = require('node:vm')
 const esbuild = require('esbuild')
+const { loadModule } = require('./ts-module.cjs')
 
 /** The repository root: this module sits one level below `scripts/`. */
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -20,6 +21,15 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 const FEATURES = path.join(SRC, 'features')
 const SUFFIX = '.manifest.ts'
+/** The preference table both halves share: a settings row names one of its keys (D73). */
+const { PREFS } = loadModule('packages/contracts/src/prefs.ts')
+/** The settings page's tabs (core/feature.ts SettingsTabId). */
+const SETTINGS_TABS = new Set(['general', 'appearance', 'composer', 'sidebar', 'conversation', 'motion'])
+/** The settings page's own copy: the lines two features' rows share live there (D72). */
+const SETTINGS_COPY = (() => {
+  const file = path.join(FEATURES, 'settings', 'settings.copy.json')
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
+})()
 
 /** Every manifest file, relative to packages/client/src with forward slashes. */
 function manifestFiles() {
@@ -91,23 +101,42 @@ function checkManifests(manifests) {
         fail(manifest, 'needs "prefValues": a non-empty list of the preference values the feature runs under')
       }
     }
-    if (manifest.switchRow !== undefined) {
-      if (manifest.pref === undefined) fail(manifest, 'has a switch row but no "pref"')
-      if (owners.has(manifest.pref)) fail(manifest, `owns the switch row of "${manifest.pref}", which packages/client/src/${owners.get(manifest.pref)} owns already`)
-      owners.set(manifest.pref, manifest.file)
-      for (const choice of manifest.switchRow.choices ?? []) {
-        if (typeof choice?.value !== 'string' || choice.value === '' || typeof choice.label?.key !== 'string' || typeof choice.label?.fallback !== 'string') {
-          fail(manifest, 'has a switch row choice without a "value" and a "label" key and fallback')
+    if (manifest.settingsRows !== undefined) {
+      if (!Array.isArray(manifest.settingsRows) || manifest.settingsRows.length === 0) fail(manifest, 'needs "settingsRows": a non-empty list of the rows this feature owns')
+      const copyFile = path.join(FEATURES, manifest.dir, `${manifest.dir}.copy.json`)
+      const copy = fs.existsSync(copyFile) ? JSON.parse(fs.readFileSync(copyFile, 'utf8')) : {}
+      /** A row's line: the feature's own copy, or the settings page's for a line two features share (D72). */
+      const carries = (key) => copy[key] !== undefined || SETTINGS_COPY[key] !== undefined
+      const ranks = new Map()
+      for (const row of manifest.settingsRows) {
+        if (!SETTINGS_TABS.has(row?.tab)) fail(manifest, `has a settings row on the tab "${row?.tab}", which the settings page does not carry`)
+        if (!Number.isInteger(row.rank) || row.rank < 0) fail(manifest, 'has a settings row without a whole "rank"')
+        if (ranks.has(`${row.tab}:${row.rank}`)) fail(manifest, `repeats the rank ${row.rank} on the "${row.tab}" tab`)
+        ranks.set(`${row.tab}:${row.rank}`, true)
+        if (manifest.pref === undefined) fail(manifest, 'has a settings row but no "pref"')
+        if (typeof row.pref !== 'string' || !(row.pref in PREFS)) fail(manifest, `has a settings row for "${row.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
+        if (owners.has(row.pref)) fail(manifest, `owns the settings row of "${row.pref}", which packages/client/src/${owners.get(row.pref)} owns already`)
+        owners.set(row.pref, manifest.file)
+        for (const key of [row.title, row.desc, row.requires?.note]) {
+          if (key === undefined) continue
+          if (typeof key !== 'string' || !carries(key)) fail(manifest, `names the copy key "${key}", which neither packages/client/src/features/${manifest.dir}/${manifest.dir}.copy.json nor the settings page's own copy carries`)
         }
-      }
-      const requires = manifest.switchRow.requires
-      if (requires !== undefined) {
-        if (requires.pref === manifest.pref) fail(manifest, 'has a switch row that requires its own preference')
-        if (!Array.isArray(requires.values) || requires.values.length === 0 || requires.values.some((value) => typeof value !== 'string' || value === '')) {
-          fail(manifest, 'has a switch row requirement without "values": the other preference\'s values the feature works under')
+        for (const [value, key] of Object.entries(row.choiceLabels ?? {})) {
+          const spec = PREFS[row.pref]
+          if (spec.type !== 'choice' || !spec.values.includes(value)) fail(manifest, `labels "${value}" for "${row.pref}", which does not carry that value`)
+          if (!carries(key)) fail(manifest, `names the copy key "${key}" for the value "${value}", which neither packages/client/src/features/${manifest.dir}/${manifest.dir}.copy.json nor the settings page's own copy carries`)
         }
-        if (typeof requires.note?.key !== 'string' || typeof requires.note?.fallback !== 'string') {
-          fail(manifest, 'has a switch row requirement without a "note" key and fallback')
+        const requires = row.requires
+        if (row.parent !== undefined) {
+          if (typeof row.parent !== 'string' || !(row.parent in PREFS)) fail(manifest, `has a settings row standing under "${row.parent}", which PREFS does not carry`)
+          if (row.parent === row.pref) fail(manifest, 'has a settings row that stands under its own preference')
+        }
+        if (requires !== undefined) {
+          if (typeof requires.pref !== 'string' || !(requires.pref in PREFS)) fail(manifest, `has a settings row requiring "${requires.pref}", which PREFS does not carry`)
+          if (requires.pref === row.pref) fail(manifest, 'has a settings row that requires its own preference')
+          if (!Array.isArray(requires.values) || requires.values.length === 0 || requires.values.some((value) => typeof value !== 'string' || value === '')) {
+            fail(manifest, 'has a settings row requirement without "values": the other preference\'s values the feature works under')
+          }
         }
       }
     }

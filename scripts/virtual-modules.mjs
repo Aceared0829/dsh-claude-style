@@ -10,7 +10,7 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 
 /** The manifest fields the browser half reads (FeatureRuntime in packages/client/src/core/feature.ts). */
-const RUNTIME_FIELDS = ['id', 'handle', 'order', 'pref', 'prefValues', 'ungated', 'yieldsTo', 'switchRow']
+const RUNTIME_FIELDS = ['id', 'handle', 'order', 'pref', 'prefValues', 'ungated', 'yieldsTo', 'settingsRows']
 
 /**
  * The feature registry, `virtual:dsh-claude-style/features`: each manifest's
@@ -19,16 +19,28 @@ const RUNTIME_FIELDS = ['id', 'handle', 'order', 'pref', 'prefValues', 'ungated'
  * themselves stay out of the bundle — their descriptions and test coverage are
  * of no use to the page.
  *
+ * A feature that declares settings rows also carries its own copy here: the
+ * settings page labels those rows whether the feature is installed or not, so
+ * the lines it needs cannot wait for a chunk (D72).
+ *
  * @param manifests - the feature manifests in install order.
  * @param chunks - each deferred feature's chunk address, by feature id.
  */
 export function featuresModule(manifests, chunks) {
+  const copyOwners = manifests.filter((manifest) => manifest.settingsRows !== undefined)
   const imports = manifests.flatMap((manifest, index) => manifest.load === 'deferred' ? [] : [`import { install as install${index} } from ${JSON.stringify(`./${manifest.main}`)}`])
+  for (const manifest of copyOwners) imports.push(`import COPY_${manifest.id} from ${JSON.stringify(`./features/${manifest.dir}/${manifest.dir}.copy.json`)}`)
   const entries = manifests.map((manifest, index) => {
-    const runtime = Object.fromEntries(RUNTIME_FIELDS.filter((field) => manifest[field] !== undefined).map((field) => [field, manifest[field]]))
-    if (manifest.load !== 'deferred') return `  { ...${JSON.stringify(runtime)}, install: install${index} },`
-    if (chunks[manifest.id] === undefined) throw new Error(`build: the deferred feature "${manifest.id}" has no chunk`)
-    return `  { ...${JSON.stringify({ ...runtime, chunk: chunks[manifest.id] })} },`
+    const fields = RUNTIME_FIELDS
+      .filter((field) => manifest[field] !== undefined)
+      .map((field) => `${JSON.stringify(field)}: ${JSON.stringify(manifest[field])}`)
+    if (manifest.settingsRows !== undefined) fields.push(`copy: COPY_${manifest.id}`)
+    if (manifest.load !== 'deferred') fields.push(`install: install${index}`)
+    else {
+      if (chunks[manifest.id] === undefined) throw new Error(`build: the deferred feature "${manifest.id}" has no chunk`)
+      fields.push(`chunk: ${JSON.stringify(chunks[manifest.id])}`)
+    }
+    return `  { ${fields.join(', ')} },`
   })
   const contents = `${imports.join('\n')}\nexport const FEATURES = [\n${entries.join('\n')}\n]\n`
   return {
