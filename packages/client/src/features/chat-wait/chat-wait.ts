@@ -300,8 +300,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const now = Date.now()
     const seen = new Set<string>()
     for (const row of rows) syncRow(row, t!, now, seen)
+    // The pass releases the lines of every row the host took away, and a long
+    // conversation leaves many behind at once: a membership test per standing
+    // line against the running list is the square of the two.
+    const running = new Set(rows)
     for (const row of [...lines.keys()]) {
-      if (!rows.includes(row)) release(row)
+      if (!running.has(row)) release(row)
     }
     // A wait the model ended, or a turn that closed, starts over next time.
     for (const key of [...waits.keys()]) {
