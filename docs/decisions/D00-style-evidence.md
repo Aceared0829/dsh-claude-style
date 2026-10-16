@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：构建与源码
 - **关联**：取代 D51 与 D9；D4、D30、D36、D38、D40、D44、D49、D50、D66
-- **现状**：语法树检查、令牌数据、排位、压缩与结构属性已实施（`scripts/css.mjs`、`scripts/source-tree.mjs`、`scripts/feature-sheets.mjs`、`packages/client/src/theme/tokens.json`、`packages/client/src/shared/chat-dom.ts`）。读皮肤自己部件关系的 `:has()` 已改成标记：十六条规则读 `data-dsh-claude-holds`，关系写在 `packages/client/src/core/parts-table.ts` 的 `HOLD_RELATIONS` 里，构建拒绝在 `:has()` 里读属性并核对这份关系表。整份文档的查找由 lint 记账（`packages/testing/document-lookups.json`，只许变短）。`importance` 场景逐条判定「去掉之后计算值不变」，并把保留下来的每一处连同它压过的候选写进 `packages/testing/importance-ledger.json`。够不到的选择器登记在 `packages/testing/importance-unreachable.json`，构建还不要求 `!important` 有证据。迁移完成之前，以现状为准修改代码。
+- **现状**：语法树检查、令牌数据、排位、压缩与结构属性已实施（`scripts/css.mjs`、`scripts/source-tree.mjs`、`scripts/feature-sheets.mjs`、`packages/client/src/theme/tokens.json`、`packages/client/src/shared/chat-dom.ts`）。读皮肤自己部件关系的 `:has()` 已改成标记：十六条规则读 `data-dsh-claude-holds`，关系写在 `packages/client/src/core/parts-table.ts` 的 `HOLD_RELATIONS` 里，构建拒绝在 `:has()` 里读属性并核对这份表。整份文档的查找由 lint 记账（`packages/testing/document-lookups.json`，只许变短，现存四十三处）。`importance` 场景把读到的每一处 `!important` 连同判定写进 `packages/testing/importance-ledger.json`（五百三十九处；判定为需要的十六处，其中三处认出了对手），构建要求产物里每一处都在台账里；够不到的选择器另记 `packages/testing/importance-unreachable.json`。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 

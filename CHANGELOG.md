@@ -28,6 +28,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **宿主那张菜单卡片的查找收进一处**：账户菜单每趟刷新都要问「宿主开着的那张菜单在哪」，此前它把页面上 `[role="menu"]` 全查一遍再逐个挑出不是本插件的那张。现在这条查询由宿主访问模块记住答案（菜单是节点来了又走，答案只在页面结构变化后重查），登记表里这一条欠账随之划掉。英雄首页那一处同样的查询留给下一轮改用同一处访问器。
 - **英雄首页那张选择器卡的触发点也记住答案**：输入卡片上那个工作区触发点与首页那一行是同一个选择器的两种入口，每趟刷新都要在整份文档里找一遍；现在由一处记住的查找（结构变化才重查）供着。登记表里这一条从三处降到两处，剩下的两处要的是活清单而不是单个元素，理由写在登记里。
 - **首页那张宿主菜单卡也走同一条查找**：英雄首页把卡片落位前要问「宿主开着的那张菜单卡在哪」，此前它自己在整份文档里查 `[role="menu"]` 并挑出不是本插件的那张；现在改用宿主访问模块里记住答案的那一处（打开一张菜单会把外壳里别的菜单折起，所以开着的宿主卡片就是这一张）。登记表里这条从两处降到一处——剩下那一处要的是活清单（首页那一行可能同时开着多个选择器）。
+- **两份决定草稿的现状跟上已落地的部分**：整份文档的查找记账现存四十三处，`importance` 台账覆盖全部五百三十九处 `!important` 且构建要求每一处都在册，边界表已有十四条由 `packages/testing/bounds.cjs` 供各场景读取，检查表达式里的其余数字由 `check-numbers.json` 记录并核对。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -51,6 +52,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The lookup for the host's open menu card moved into one place**: the account menu asked every pass where the host's open menu was, scanning every `[role="menu"]` on the page and picking the one that is not the skin's own. That lookup now goes through the host access module, which keeps the answer until the page's structure changes (a menu is a node arriving and leaving), and the ledger entry recording it as debt is struck out. The hero menu's own query of the same kind moves onto the same accessor next.
 - **The hero picker's card trigger keeps its answer too**: the workspace trigger on the composer card and the hero row are two views of the same picker, and the pass looked it up across the whole document every time; a kept lookup (re-asked only when the page's structure changes) serves it now. The ledger entry for that file drops from three lookups to two, and the two that remain want a live list rather than one element — the reason is written in the record.
 - **The hero page reads the host's open menu card through the same lookup**: before placing its own card the hero asked where the host's open menu was, scanning the whole document for `[role="menu"]` and picking the one that is not the skin's; it now uses the accessor that keeps that answer (opening one menu folds the shell's others, so the open host card is that one). The ledger entry for the file drops from two lookups to one — the one left wants a live list, since the hero row may hold more than one open picker.
+- **Both decision drafts' standing sections follow what has landed**: the whole-document lookup record stands at forty-three sites, the `!important` ledger covers all five hundred and thirty-nine declarations with the build requiring each to be in it, the bounds table holds fourteen values read through `packages/testing/bounds.cjs`, and the remaining numbers in check expressions are recorded and verified in `check-numbers.json`.
 
 ## [0.15.0] - 2026-10-15
 
