@@ -4,8 +4,10 @@ import { observeSize } from '../core/bus'
  * The sliding highlight of a segmented control: one pseudo-element on the
  * control (shared/sliding-pill.css) that travels to the active item,
  * instead of each item fading its own background out and the next one in.
- * The conversation view tabs, the permission segments and the workspace
- * section's 进行中 / 已归档 control all place it through this one factory.
+ * The conversation view tabs, the permission segments, the workspace section's
+ * 进行中 / 已归档 control, the settings page's segments and the search filters
+ * all place it through this one factory: one interaction, one implementation,
+ * the same feel in each.
  *
  * The control gets `data-dsh-claude-pill` and four custom properties,
  * `--dsh-claude-pill-x` / `-y` / `-w` / `-h`, measured from the active item's
@@ -22,6 +24,16 @@ import { observeSize } from '../core/bus'
  *
  * Item widths change without a DOM mutation when a font finishes loading,
  * so the control is also watched by a ResizeObserver.
+ *
+ * Each pass reads two boxes — the control's and the active item's — which is
+ * cheap inside a frame that has already been laid out. A reduced-motion
+ * preference does not stop the slide: this movement is required of the
+ * control. A control React renders (the settings page) is synchronized from a
+ * layout effect after every render, before the frame is painted, so the
+ * placement is never a frame behind the item it belongs to. The host's own
+ * segmented controls fade each item's background and carry no travelling
+ * highlight, so this pseudo-element is the skin's own; a host control that
+ * grows one makes this factory unnecessary.
  *
  * @param activeSelector - the active item, relative to the control.
  * @returns `{ measure(control), sync(control), release() }`: `measure` takes

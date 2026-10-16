@@ -1,5 +1,5 @@
 /**
- * The peak / off-peak rate catalog both halves exchange (D54).
+ * The peak / off-peak rate catalog both halves exchange
  *
  * The host half fetches the data source, validates it into these shapes and
  * serves them over its own route; the browser half evaluates them against the

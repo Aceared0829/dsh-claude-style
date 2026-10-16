@@ -1,7 +1,6 @@
 /**
  * The smoke's usage roll-up, in Node: the cost-meter ledger merged with the
  * fold over the stored logs by date, and the record that outlives them
- * (docs/decisions D53).
  */
 'use strict'
 const fs = require('fs')
@@ -92,7 +91,7 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   const days = Array.isArray(value.days) ? value.days : []
   // Reading one changed log by id used to walk the whole stored corpus first, so
   // a pass over a corpus grew with the square of the changed sessions; the
-  // listing-free observation resolves each one from a `stat` instead (D53).
+  // listing-free observation resolves each one from a `stat` instead
   check('no changed log is read through a whole stored-corpus listing',
     usageListings.length === 0, JSON.stringify({ usageListings, usageReads }))
   check('every changed log is still read, by id, and its lease released',
@@ -146,7 +145,7 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
     JSON.stringify({ value: warm.value && { read: warm.value.read, sessions: warm.value.sessions }, warmReads, warmListings }))
   // A session whose log is gone keeps the days the record holds for it: they are
   // the only account of them left, so deleting the conversation no longer takes
-  // its tokens off the panel (D53). Nothing is folded again, and the entry loses
+  // its tokens off the panel Nothing is folded again, and the entry loses
   // the fingerprint that described the log it no longer has.
   fs.rmSync(path.join(scratchCwd, 's1'), { recursive: true, force: true })
   const keptReads = []
@@ -180,7 +179,7 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   fs.rmSync(scratchHome, { recursive: true, force: true })
 
   // The fold cache this record replaced is migrated where the record does not
-  // exist yet, so the days of the sessions deleted before it come across (D53).
+  // exist yet, so the days of the sessions deleted before it come across
   console.log('\nhost half — the previous fold cache is migrated into the record')
   {
     const home = path.join(ROOT, '.debug', 'smoke-home-usage-migrate')
@@ -222,7 +221,7 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   }
 
   // A record that does not parse may be the only place the days of deleted
-  // sessions are left, so it is moved aside before the pass rebuilds it (D53).
+  // sessions are left, so it is moved aside before the pass rebuilds it
   console.log('\nhost half — an unreadable record is moved aside before it is rebuilt')
   {
     const home = path.join(ROOT, '.debug', 'smoke-home-usage-corrupt')
@@ -245,7 +244,7 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
 
   // Two instances under one harness home each write the whole record. A write
   // lays its pass over what the file holds by then, so a session another instance
-  // wrote while this pass was folding stays in it (D53).
+  // wrote while this pass was folding stays in it
   console.log('\nhost half — a write keeps what another instance wrote during the pass')
   {
     const home = path.join(ROOT, '.debug', 'smoke-home-usage-concurrent')

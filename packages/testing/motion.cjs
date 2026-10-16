@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * motion.cjs — the transitions.dev surfaces on the real page (D65, D66).
+ * motion.cjs — the transitions.dev surfaces on the real page (D9, D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

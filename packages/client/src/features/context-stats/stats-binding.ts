@@ -87,7 +87,7 @@ export function createContextStatsBinding() {
     // opened is stopped on its way there: the pointer is on the trigger it
     // opened from, and the leave is the way out
     // (shared/popover.ts::pressKeepsPopoverOpen). The line of figures keeps
-    // its own press behaviour: it is not a hover trigger (D27).
+    // its own press behaviour: it is not a hover trigger
     const onClick = (event: Event) => {
       if (isProgrammaticPress()) return
       const trigger = contextTrigger()
@@ -112,7 +112,7 @@ export function createContextStatsBinding() {
    * Bind the line of numbers as the panel's second trigger: the figures are what
    * the panel's rows expand on, so the line opens it and closes it again. Only
    * the press does that — the pointer path stays the meter's alone, so resting a
-   * pointer on the figures never unfolds the panel (D27). A rebuilt line is bound
+   * pointer on the figures never unfolds the panel A rebuilt line is bound
    * once per generation, like the meter.
    */
   function bindContextLine(line: Element) {

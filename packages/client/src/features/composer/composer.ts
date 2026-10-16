@@ -41,7 +41,7 @@ export interface ComposerHandle extends FeatureHandle {
  * view) is up. The scheduler triggers its behaviours through hooks: a press
  * on the inline card focuses the editor, a composer input refreshes the
  * hint's synthetic placeholder, and the transcript follows the card when it
- * changes height. The window-blur mirror the selection paints key on (D35)
+ * changes height. The window-blur mirror the selection paints key on
  * and the idle hint's own words live here too — both read the same card
  * state this reading produces.
  */
@@ -63,7 +63,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * whose teardown a hot reload dropped still has its marks swept.
    */
   const markedTiles = new Set<Element>(document.querySelectorAll(`[data-dsh-claude-attachment]`))
-  /** The window-blur mirror the selection paints key on (D35). */
+  /** The window-blur mirror the selection paints key on */
   const stopWindowBlur = installWindowBlurMirror()
 
   /**
@@ -500,7 +500,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The portrait layer a mobile remote plugin applies to the desktop GUI (D44):
+   * The portrait layer a mobile remote plugin applies to the desktop GUI (D3):
    * it floats the composer's controls with transforms of its own, so the
    * stylesheet scopes the skin's own placement of the send and stop buttons by
    * this mark, carried on the cards themselves. Read every pass — the layer

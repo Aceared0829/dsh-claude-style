@@ -64,7 +64,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-value {
    needs removing, only re-arming. */
 /* The two halves of the name's swap are siblings, so both are told the travel:
    the shared preset over the short distance, this line being 16px tall
-   (shared/motion.css, D65). */
+   (shared/motion.css, D9). */
 body[data-dsh-claude-style] .dsh-claude-effort-value,
 body[data-dsh-claude-style] .dsh-claude-effort-value-ghost {
   --dsh-claude-swap-distance: var(--dsh-claude-distance-nudge);

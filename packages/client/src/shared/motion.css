@@ -1,10 +1,10 @@
 /* ---------- The shared motion presets, and the motion tokens they read ---------- */
-/* The effects more than one feature needs, in one place (D65). Every value is a
+/* The effects more than one feature needs, in one place (D9). Every value is a
    token from packages/client/src/theme/tokens.json, generated into the token sheet; a
    feature that wants a different distance sets the preset's own custom property
    where it uses it, and keeps its own keyframes only when the effect is its own.
    The reduced-animation choice is answered once, for every skin animation, in
-   theme/chrome.css (D26, D65); the presets end where the element rests, so a
+   theme/chrome.css (D40, D9); the presets end where the element rests, so a
    duration of one instant leaves no half state behind. */
 
 body[data-dsh-claude-style] {
@@ -16,7 +16,7 @@ body[data-dsh-claude-style] {
   --dsh-claude-swap-gap: var(--dsh-claude-duration-swap-gap);
   --dsh-claude-swap-ease: var(--dsh-claude-ease-in-out);
 
-  /* The two paints the waiting line's words can wear (D26, D65): the highlight
+  /* The two paints the waiting line's words can wear (D40, D9): the highlight
      band the host's own rows sweep, and the colour wash transitions.dev's "Pro
      gradient text" (MIT) moves through the letters — seven radial washes over a
      grey ramp, blown up and orbited around the glyph box. The wash's colours are
@@ -166,7 +166,7 @@ body[data-dsh-claude-style][data-dsh-claude-status-motion="wash"] .dsh-claude-ch
   animation: dsh-claude-wash-hue var(--dsh-claude-period-wash-hue) linear infinite, dsh-claude-wash-drift var(--dsh-claude-period-wash-drift) var(--dsh-claude-ease-in-out) infinite;
 }
 
-/* The reader's animation choice (D26): the band is left out and the wash holds
+/* The reader's animation choice (D40): the band is left out and the wash holds
    its still frame. A pseudo-element is no element for the reduced net in
    theme/chrome.css to reach, so each paint answers the choice itself — for the
    preview cards wearing the look class and for the line's own copies alike. The

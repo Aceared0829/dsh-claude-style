@@ -1,5 +1,5 @@
 /* ---------- The settings page's pickers: one card per choice ---------- */
-/* The rows whose control is the effect itself (D32): a grid of cards spanning
+/* The rows whose control is the effect itself (D49): a grid of cards spanning
    the row, each card carrying a sample that wears the choice it stands for, so
    the control needs no label and the row needs no description. They stand
    apart from settings.css because they are a responsibility of their own — a
@@ -190,7 +190,7 @@ body[data-dsh-claude-style] .dsh-claude-caret-sample-bar.dsh-claude-caret-off {
   transition: none;
 }
 
-/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D26): the
+/* The reader's animation choice, resolved onto <body> (core/prefs.ts, D40): the
    paint is held still, and the two wordings still take turns — the line keeps
    changing its wording on this setting, writing the new words at once
    (shared/swapping-text.ts), so the card cuts from one to the other. The cut is
@@ -266,7 +266,7 @@ body[data-dsh-claude-style] .dsh-claude-reveal-card[data-fade] .dsh-claude-revea
   to { opacity: 1; }
 }
 
-/* The reader's animation choice (D26): both samples stand whole, which is what
+/* The reader's animation choice (D40): both samples stand whole, which is what
    the conversation does while the fade is held still. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-piece {
   opacity: 1;
@@ -392,7 +392,7 @@ body[data-dsh-claude-style] .dsh-claude-enter-bubble[data-standing] {
   animation: none;
 }
 
-/* The reader's animation choice (D26): the messages stand where they are and the
+/* The reader's animation choice (D40): the messages stand where they are and the
    column does not move. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-bubble {
   animation: none;

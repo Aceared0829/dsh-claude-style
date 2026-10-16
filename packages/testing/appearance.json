@@ -1,5 +1,5 @@
 {
-  "note": "The appearance layer's snapshot: what each page state's parts compute to, recorded by packages/testing/smoke.cjs through probe/appearance.js and written by packages/testing/appearance.cjs (D00, 外观层). Regenerate with a smoke walk (node packages/testing/smoke.cjs) then node packages/testing/appearance.cjs --write; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.",
+  "note": "The appearance layer's snapshot: what each page state's parts compute to, recorded by packages/testing/smoke.cjs through probe/appearance.js and written by packages/testing/appearance.cjs (D66). Regenerate with a smoke walk (node packages/testing/smoke.cjs) then node packages/testing/appearance.cjs --write; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.",
   "cases": {
     "account": {
       "composer-primary": {

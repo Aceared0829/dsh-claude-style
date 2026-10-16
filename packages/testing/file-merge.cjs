@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * file-merge.cjs — the calls on one file read as one row (D62, D66).
+ * file-merge.cjs — the calls on one file read as one row (D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

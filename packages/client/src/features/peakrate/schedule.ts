@@ -1,7 +1,7 @@
 import type { RateOverride, RatePeriod, RateProfile, RateSchedule, RateState, RateWindow } from '@dsh-claude-style/contracts/peakrate'
 
 /**
- * Which rate is in force, judged against the clock (D54).
+ * Which rate is in force, judged against the clock.
  *
  * Every judgement is made from real instants: the wall clock is read in the
  * schedule's own zone through `Intl`, a wall-clock time is converted back to a
@@ -14,7 +14,34 @@ import type { RateOverride, RatePeriod, RateProfile, RateSchedule, RateState, Ra
  * Precedence, highest first: a dated promotional window, a public holiday
  * (off-peak in full), then the weekday filter and the peak windows. A window
  * crossing midnight belongs to the day it starts, so the small hours are
- * judged against the previous day's weekday and holiday.
+ * judged against the previous day's weekday and holiday, and a holiday evening
+ * suppresses the peak a crossing window would carry into the next morning.
+ *
+ * The rules live here because the data source is a snapshot: it publishes
+ * schedules, no provider answers "is this peak right now", and a price change
+ * is never announced, so the judgement has to be local. The host half fetches
+ * that document, validates it into `RateProfile` and serves it; this module
+ * reads a profile's own zone without a guard, because the parser drops a
+ * profile whose zone the platform cannot resolve and drops only the holiday
+ * field when the holiday zone cannot be resolved.
+ *
+ * A campaign is judged by the bounds the document states: `startDate` /
+ * `endDate` are whole days, `startAt` / `endAt` are instants carrying their own
+ * offset, the opening instant is covered and the closing instant is the first
+ * moment the campaign is over, so an expired campaign stays expired. A
+ * provider billing the standard rate all day publishes its window as
+ * `00:00–00:00`, which reads as covering the whole day, so such a profile
+ * keeps its badge instead of being dropped as invalid. A bound that does not
+ * read as `HH:mm` makes its window or its campaign drop out, which shows up as
+ * the regular cycle taking over.
+ *
+ * The badge is the multiplier the data source prints for the state in force;
+ * nothing here computes it. A flat-rate provider prints the same text for both
+ * badges, so the peak one is what shows. The countdown runs to the next
+ * instant a judgement changes, and its candidates are every midnight, every
+ * window edge and every instant a campaign states as a bound. The host's model
+ * catalog states no peak flag, so the judgement stays here; a host that grows
+ * one would take it over.
  */
 
 /** How many days ahead the switch search looks; a weekday cycle fits twice. */

@@ -1,7 +1,7 @@
 import type { MascotLevel, MascotMoment } from './mascot-signals'
 
 /*
- * The mascot's state machine (D24), kept apart from the player so that the
+ * The mascot's state machine, kept apart from the player so that the
  * decisions run on a plain object and a clock: the player owns the nodes, the
  * animations and the one timer, and asks these functions what to do.
  */

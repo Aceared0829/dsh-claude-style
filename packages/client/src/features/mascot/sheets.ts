@@ -2,7 +2,7 @@
  * The mascot sheet tables: which frames each animation holds, the box each
  * frame is cropped to and the frame shown under reduced motion. `scripts/build.mjs`
  * reads them to rebuild every sheet as the vector the browser plays and the
- * host half serves under the assets route (D38), so a face and its animation
+ * host half serves under the assets route, so a face and its animation
  * cannot drift apart.
  */
 
@@ -23,7 +23,7 @@ export const DEEPY_FRAME_MS = 50
 export const DEEPY_SCALE = 5
 /**
  * The transparent margin, in logical pixels, that every frame keeps on all
- * four sides in the vector the build produces (packages/assets/assets.mjs, D24).
+ * four sides in the vector the build produces (packages/assets/assets.mjs).
  *
  * The sheets stack their frames edge to edge, and the browser draws the
  * rebuilt vector scaled down — from five pixels a logical pixel in the

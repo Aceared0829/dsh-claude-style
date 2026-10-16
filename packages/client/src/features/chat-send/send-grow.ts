@@ -64,7 +64,7 @@ export function watchGrowEnter() {
     if (hidden !== null) return
     if (readPrefs().messageEnter !== MESSAGE_ENTER_GROW) return
     // The reader's animation choice is read here rather than once at install
-    // (D26): a still page writes the message without the growth.
+    // (D40): a still page writes the message without the growth.
     if (motionReduced()) return
     const echo = takeFreshEcho(handled)
     if (echo === null) return

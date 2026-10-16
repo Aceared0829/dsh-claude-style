@@ -25,10 +25,10 @@ interface ChatFileRowProps {
   useDisclosure: () => { expanded: boolean, toggle: () => void }
 }
 
-/** How long one figure's turn takes: the roll the stylesheet's own animations run (D62, D65). */
+/** How long one figure's turn takes: the roll the stylesheet's own animations run (D9). */
 const ROLL_MS = motionMs('--dsh-claude-duration-roll')
 
-/** How long one operation swap takes: the shared swap the block's classes play (shared/motion.css, D65). */
+/** How long one operation swap takes: the shared swap the block's classes play (shared/motion.css, D9). */
 const SWAP_MS = motionMs('--dsh-claude-duration-swap')
 
 /**
@@ -48,7 +48,7 @@ const SWAP_MS = motionMs('--dsh-claude-duration-swap')
  * diffTotals); the row's own sizes and rhythm are in chat-files.css.
  *
  * The calls that touched one file inside one process group stand as one
- * (file-row-merge.ts, D62): the earliest of them draws the file's whole tail and
+ * (file-row-merge.ts): the earliest of them draws the file's whole tail and
  * whole card, and wears the operation its file's work last reached, while the
  * others take their boxes off the page. A file touched once is drawn exactly as
  * it was before merging existed.
@@ -65,7 +65,7 @@ const SWAP_MS = motionMs('--dsh-claude-duration-swap')
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const h = React.createElement
 
-  /** The rows of one file read together; one install owns one registry (D62). */
+  /** The rows of one file read together; one install owns one registry */
   const fileMerge = createFileMerge()
 
   /**
@@ -75,7 +75,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * roll runs (zai-org/ZCode's metric flip, THIRD_PARTY_NOTICES.md) — while the
    * characters that hold keep their place, so a growing number reads as one
    * figure turning rather than as a whole new number. The animation choice
-   * decides whether a digit on its way out is drawn at all (D26).
+   * decides whether a digit on its way out is drawn at all (D40).
    */
   const RollingStat = (props: { className: string, text: string, running: boolean }) => {
     const [leaving, setLeaving] = React.useState<string | null>(null)
@@ -136,7 +136,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const read = React.useMemo(() => (model.operation === 'read' ? chatFileReadCard(block, model.filePath) : null), [block, model.filePath, model.operation])
     const labels = React.useMemo(() => chatFileDiffBlockLabels(t), [t])
     const readLabels = React.useMemo(() => chatFileReadBlockLabels(t), [t])
-    // The view this row's file asks for (D62): null while it is not registered,
+    // The view this row's file asks for: null while it is not registered,
     // and a group of one call draws exactly what it drew before merging existed.
     const merge = React.useSyncExternalStore(fileMerge.subscribe, () => fileMerge.viewFor(rootRef.current))
     const merged = merge !== null && merge.count > 1
@@ -144,7 +144,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // its own tail and card, which the reader never sees.
     const shownHunks = merged && merge.head ? merge.hunks : hunks
     // A file whose calls changed nothing has no tail: an all-read group draws the
-    // file's window instead of a `+0 -0` that says nothing (D62).
+    // file's window instead of a `+0 -0` that says nothing
     const changedHunks = shownHunks === null || shownHunks.length === 0 ? null : shownHunks
     // The operation the row wears: the file's last call once its calls are read
     // together, its own call otherwise.
@@ -164,7 +164,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     // The file's work moving on: the label leaving and the one taking its place,
     // in one grid cell so the path beside them does not move sideways
-    // (transitions.dev's "Text states swap"; D26 for the animation choice).
+    // (transitions.dev's "Text states swap"; D40 for the animation choice).
     const [swapFrom, setSwapFrom] = React.useState<FileRowOperation | null>(null)
     const shownOperation = React.useRef(operation)
     const labelRef = React.useRef<HTMLSpanElement | null>(null)
@@ -195,7 +195,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (element === null || own === null) return
       // The host's id for this call: a row element it keeps for the file's next
       // call adds that call to the file's tail rather than losing the one before
-      // it (D62).
+      // it
       return fileMerge.put({ element, callId: chatFileCallId(block), ...own })
     }, [block, own])
 
@@ -326,7 +326,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         const stopEdit = slots.register({ ...seat, key: 'edit' }, ChatFileRow)
         const stopWrite = slots.register({ ...seat, key: 'write' }, ChatFileRow)
         // A read of a file is the third thing that touches one, and the row that
-        // stands for the file wears whichever of the three came last (D62).
+        // stands for the file wears whichever of the three came last
         const stopRead = slots.register({ ...seat, key: 'read' }, ChatFileRow)
         let stopped = false
         seatStops = () => {

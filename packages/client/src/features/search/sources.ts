@@ -61,7 +61,7 @@ export interface SearchSection {
  *
  * @param ctx - client context.
  * @param reveal - lands the conversation on one message's turn after a content
- *     hit is picked; the palette owns the waiting, the navigator the jump (D34).
+ *     hit is picked; the palette owns the waiting, the navigator the jump
  * @returns the source table the palette reads.
  */
 export function createSearchSources(ctx: HostContext, reveal: (sessionId: string, seq: number) => void) {

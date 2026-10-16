@@ -4,7 +4,7 @@ import type { HostSessionStatsProjection, HostText, HostTokenUsageProjection } f
 
 /**
  * The line of figures under the composer gives way one step at a time on a
- * card narrower than itself (D27), and takes steps back only once the roomier
+ * card narrower than itself, and takes steps back only once the roomier
  * step fits with room to spare. Every walk ends: a card too narrow for the
  * last step leaves the line there, and the page keeps answering.
  */

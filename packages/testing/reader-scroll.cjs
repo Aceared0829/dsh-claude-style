@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * reader-scroll.cjs — the reader's own scrolling during a live turn, end to end
- * (D41, D66).
+ * (D40, D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs). It
  * samples the page itself: the frames the shared trace carries are the scroll

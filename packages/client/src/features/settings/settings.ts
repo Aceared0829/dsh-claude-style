@@ -282,7 +282,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
   // than printing it twice.
   const embedded = !!(props && props.embed)
   // A page the host keeps its settings away from shows the host's values and
-  // takes no input (D60): the disabled fieldset disables every control in
+  // takes no input (D11): the disabled fieldset disables every control in
   // every tab, and the tabs themselves stay open to browse.
   const readOnly = prefsAreReadOnly()
   return React.createElement(

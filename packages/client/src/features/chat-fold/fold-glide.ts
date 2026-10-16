@@ -100,7 +100,7 @@ export function installChatFoldGlide() {
     return next
   }
 
-  // The reader's animation choice, resolved (packages/client/src/core/prefs.ts): D26's own
+  // The reader's animation choice, resolved (packages/client/src/core/prefs.ts): D40's own
   // preference, not the raw media query, so "reduced" in the settings page
   // stops the door and "always" keeps it against a system that asks for
   // reduced motion.

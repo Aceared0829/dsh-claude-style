@@ -445,7 +445,7 @@ body[data-dsh-claude-style] svg[data-state="ongoing"] {
 body[data-dsh-claude-style] svg[data-state="ongoing"] * {
   display: none;
 }
-/* The reader's animation choice (D26): Reduced holds the light at its bright
+/* The reader's animation choice (D40): Reduced holds the light at its bright
    pose, which is still the lit dot a running row is read by, so this indicator
    needs none of the exception the ring before it carried. The system's own
    setting needs no rule here either: the host's reduced-motion block reaches its

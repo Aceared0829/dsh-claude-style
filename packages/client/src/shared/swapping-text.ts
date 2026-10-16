@@ -25,7 +25,7 @@ import { motionMs, motionValue } from './motion'
  *
  * The names, the blurs and the distance are the recipe's, carried as this
  * skin's own properties; shared/swapping-text.css reads them. The reader's
- * animation choice (D26) decides at call time whether any of it runs, instead
+ * animation choice (D40) decides at call time whether any of it runs, instead
  * of the recipe's own media query — core/prefs.ts has already resolved the
  * setting and the system preference into one answer.
  */

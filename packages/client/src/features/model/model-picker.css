@@ -136,7 +136,7 @@ body[data-dsh-claude-style] .dsh-claude-model-combine {
      The two heights sit in separate rules on purpose: two declarations of one
      property in one rule are a rule the importance audit cannot judge. None of
      the four carries a weight — the class is the skin's own and nothing else
-     styles it, which the audit confirmed by dropping each one (D51). */
+     styles it, which the audit confirmed by dropping each one (D9). */
   height: 0.72em;
   margin-right: 0.25em;
   vertical-align: baseline;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * process-summary.cjs — the enhanced tier's waiting line and counted process
- * headers on the real host (D32, D66).
+ * headers on the real host (D49, D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

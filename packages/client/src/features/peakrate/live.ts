@@ -5,7 +5,6 @@ import type { RateProfile } from '@dsh-claude-style/contracts/peakrate'
 
 /**
  * The catalog in the browser: what the host half holds, read once and kept
- * (D54).
  *
  * The host owns the fetching, the disk cache and the refresh timer; this side
  * asks it once when the feature installs and again only when the copy it got
@@ -93,7 +92,7 @@ function call(refresh: boolean): Promise<boolean> {
     },
     () => {
       // The host half did not answer: the catalog already held stays, and the
-      // meter draws nothing until the next attempt (docs/decisions D54).
+      // meter draws nothing until the next attempt
       if (epoch !== startedAt) return false
       inFlight = false
       return false

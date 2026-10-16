@@ -227,7 +227,7 @@ and scrolls to its end.
 
 Every duration, curve, distance, blur and scale the skin uses is a token here,
 and a stylesheet or a Web Animations call reads the token rather than writing the
-value (D65). One value per role, so a faster feedback or a calmer swap is one
+value (D9). One value per role, so a faster feedback or a calmer swap is one
 edit; the build refuses a time or a curve written anywhere else.
 
 - Feedback: a control answering hover, press or focus.
@@ -267,7 +267,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-swap-gap` | `50ms` | the offset the words arriving start after the words leaving, so the two halves of a wording swap travel together |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
 | `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
-| `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight (D20), a sidebar icon's quarter turn, and the wording box taking the width of the words arriving |
+| `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight, a sidebar icon's quarter turn, and the wording box taking the width of the words arriving |
 | `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow, a placeholder handing its place to what it stood for |
 | `--dsh-claude-duration-bounce` | `350ms` | a switch's knob travelling across with its double bounce |
 | `--dsh-claude-duration-flight` | `400ms` | the sent message flying from the composer to its row |
@@ -277,7 +277,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the last two popping digits, the greeting's second line |
 | `--dsh-claude-period-dot-orbit` | `2400ms` | one turn of the waiting line's loader dots that swap corners: four quarter-turns of the two pairs, which leaves every dot where it started |
 | `--dsh-claude-period-dot-rotate` | `10s` | how long one of the waiting line's loader motions stands before another takes its place, the next one picked so a motion never follows itself |
-| `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D26) |
+| `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D40) |
 | `--dsh-claude-period-host-sweep` | `1500ms` | one pass of the highlight band across the waiting line's words and a running process group's header |
 | `--dsh-claude-period-preview-swap` | `4000ms` | one turn of the settings page's waiting-line preview: one wording standing, leaving, and standing again |
 | `--dsh-claude-period-preview-reveal` | `4000ms` | one turn of the settings page's new-text fade preview: the sample arriving character by character, then standing before the next wipe |
@@ -320,7 +320,7 @@ edit the JSON, not the table.
 
 ## Layers
 
-A z-index the skin writes is one of two kinds (D67). Inside one box, siblings
+A z-index the skin writes is one of two kinds (D9). Inside one box, siblings
 are ordered with a literal from -1 to 9: a fill painted under its own content,
 a label over its sliding pill, the composer's rows over one another. Anything
 that has to clear what the host draws around it — the composer's own controls,
@@ -847,5 +847,5 @@ plays its reaction.
   the look no single feature owns is in `packages/client/src/theme/`, and the parts several
   features share (the popover card and rows, the sliding highlight) are in
   `packages/client/src/shared/`. The host selector discipline and the style checks the build
-  runs are in `docs/decisions/` (D3, D4, D9, D19, D30, D51).
+  runs are in `docs/adr/` (D3, D9, D30).
 

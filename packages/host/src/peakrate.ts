@@ -1,6 +1,6 @@
 /**
  * The peak / off-peak catalog: which billing clock applies to which model, and
- * what the browser half needs to judge it (D54).
+ * what the browser half needs to judge it
  *
  * The data source is a published catalog document (offpeakclock.com) rather
  * than an API: no provider exposes "is this peak right now" over HTTP, so the
@@ -34,7 +34,7 @@ export const PEAKRATE_REFRESH_MS = 24 * 60 * 60 * 1000
 
 /**
  * How long after the last request the timer stands down: the page that asked is
- * gone, and a host nobody is reading does not keep reaching the source (D54).
+ * gone, and a host nobody is reading does not keep reaching the source
  * The browser half asks at least once a day while the meter is on, so only a
  * host whose reader has turned the feature off (or left the page) goes idle.
  */
@@ -165,7 +165,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
       }
     } catch (error) {
       // A source that cannot be reached is not a fault here: the meter keeps
-      // judging by the catalog already held (docs/decisions D54).
+      // judging by the catalog already held
       warn(`dsh-claude-style: peak rate source unreachable, keeping the current catalog: ${(error as { message?: string }).message}`)
       return false
     }
@@ -194,7 +194,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     if (timer !== undefined) return
     timer = setInterval(() => {
       // Nothing has asked for two days: the meter is off or the page is gone,
-      // and the source is no longer reached on its behalf (D54). The next
+      // and the source is no longer reached on its behalf The next
       // request starts the timer again.
       if (Date.now() - lastAskedAt > PEAKRATE_IDLE_MS) {
         stopTimer()

@@ -105,7 +105,7 @@ body[data-dsh-claude-style] .dsh-claude-process-summary[data-dsh-claude-summary-
   animation: dsh-claude-summary-shimmer var(--dsh-claude-period-host-sweep) var(--dsh-claude-ease-host-sweep) infinite;
 }
 
-/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D26):
+/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D40):
    reduced sets every count down at once and leaves the figures unswept. The
    attribute already folds in the system setting, so no media query here. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-process-summary[data-dsh-claude-summary-running] {

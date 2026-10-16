@@ -8,7 +8,7 @@
  */
 'use strict'
 
-/** The host's own marks this module waits on; each is a D44 entry in packages/contracts/src/dom.ts. */
+/** The host's own marks this module waits on; each is a D3 entry in packages/contracts/src/dom.ts. */
 const HOST = {
   composer: '[data-composer-input]', // COMPOSER_INPUT_SELECTOR
   userRow: '[data-chat-flow-kind="user"]', // FLOW_KIND_ATTRIBUTE with the host's user kind

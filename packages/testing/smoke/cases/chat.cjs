@@ -94,7 +94,7 @@ module.exports = {
       plain.layer === true && plain.marked === true && plain.visible === true && plain.nativeHidden === true,
       JSON.stringify(plain))
     const caretReduced = caret.reduced || {}
-    check('the animation choice stills the drawn caret without taking it away (D26)',
+    check('the animation choice stills the drawn caret without taking it away (D40)',
       caretReduced.layer === true &&
         String(caretReduced.transition).split(',').every(value => value.trim() === '0s') &&
         caretReduced.animation === 'none',
@@ -197,7 +197,7 @@ module.exports = {
     check('the wrapped row\'s door is handed back when it lands',
       wrapped.clicksDuringRoll === 0 && wrapped.clicks === 1 &&
         wrapped.bodyGone === true && wrapped.folded === true, JSON.stringify(wrapped))
-    // The switch covers the door and the entrance fade as well (D29/D32).
+    // The switch covers the door and the entrance fade as well (D42/D49).
     const animationsOff = fold.animationsOff || {}
     const wrappedEntrance = fold.entranceWrapped || {}
     const wrappedOff = animationsOff.wrappedEntrance || {}
@@ -230,7 +230,7 @@ module.exports = {
     check('once faded they leave the registry', settled.total === 0, JSON.stringify(settled))
     check('the preference withdraws the engine whole, and switching it back installs it again',
       off.total === 0 && off.mark === false && back.mark === true, JSON.stringify({ off: off, back: back }))
-    check('the animation choice reaches it too: Reduced withdraws the engine, not the system query (D26)',
+    check('the animation choice reaches it too: Reduced withdraws the engine, not the system query (D40)',
       reduced.total === 0 && reduced.mark === false, JSON.stringify(reduced))
     const flip = reveal.systemFlip || {}
     check('the system setting flipping under "follow the system" takes the running engine with it, and brings it back',
@@ -597,7 +597,7 @@ module.exports = {
     check('a row mounting later takes the hand-over',
       handed.ghost === false && handed.hidden === false && handed.visibility === 'visible', JSON.stringify(handed))
     const sendReduced = send.reduced || {}
-    check('the animation choice reaches it too: Reduced flies nothing and leaves the row visible (D26)',
+    check('the animation choice reaches it too: Reduced flies nothing and leaves the row visible (D40)',
       sendReduced.ghost === false && sendReduced.hidden === false && sendReduced.visibility === 'visible',
       JSON.stringify(sendReduced))
     // The row's own entrance (send-grow.ts, the Motion tab's other card): the

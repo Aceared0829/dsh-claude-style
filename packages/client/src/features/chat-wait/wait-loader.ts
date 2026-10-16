@@ -21,7 +21,7 @@ import { motionEase, motionMs } from '../../shared/motion'
  * motion does not carry, and no dot leaves or arrives at a moment its own motion
  * did not choose.
  *
- * Under the Reduced animation choice (D26) a change lands at once, with no fade:
+ * Under the Reduced animation choice (D40) a change lands at once, with no fade:
  * each lane holds the frame its own motion stands on.
  */
 
@@ -49,7 +49,7 @@ const DOT = 'dsh-claude-chat-wait-dot'
  * A lane's own account of its motion: the shares of its keyframes at which one
  * of its dots arrives and leaves, and how long one of its fades takes as a share
  * of the motion's own turn. The stylesheet owns these beside the keyframes they
- * describe; the curve a fade runs on is chosen below, from the token sheet (D65).
+ * describe; the curve a fade runs on is chosen below, from the token sheet (D9).
  *
  * A lane may declare no leaving moment at all — the swapping lane does — and its
  * dots then fade where they stand.
@@ -190,7 +190,7 @@ function dropFades(loader: HTMLElement) {
   }
 }
 
-/** The curve each lane's fades run on, read from the token sheet (D65). */
+/** The curve each lane's fades run on, read from the token sheet (D9). */
 function easesOf(motion: WaitLoaderMotion, leaving: boolean): '--dsh-claude-ease-damped-in' | '--dsh-claude-ease-damped-out' {
   if (motion === 'bounce') return leaving ? '--dsh-claude-ease-damped-out' : '--dsh-claude-ease-damped-in'
   return leaving ? '--dsh-claude-ease-damped-in' : '--dsh-claude-ease-damped-out'

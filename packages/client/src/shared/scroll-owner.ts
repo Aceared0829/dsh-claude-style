@@ -7,7 +7,7 @@ import { isReaderScrollIntent } from './reader-intent'
 import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, scrollEnd, stopScrollEase } from './scroll-ease'
 
 /**
- * The chat area's scroll positions have one writer (D41): the conversation's
+ * The chat area's scroll positions have one writer (D40): the conversation's
  * scroller and every capped process body are written here and nowhere else.
  * Features ask; this module decides, on the spring of shared/scroll-ease.ts.
  *

@@ -1,10 +1,40 @@
 /* ---------- Claude palette over a wallpaper: one mask over the whole window ---------- */
-/* While the wallpaper plugin shows one (`data-we-wallpaper`), the shell stands
-   down element by element and a single mask in the canvas colour lies over the
-   wallpaper — near-opaque ivory in light, warm black in dark — so the sidebar,
-   the header and the transcript all read on the same ground. The host token
-   `--dsw-alias-bg-base` keeps the Claude canvas, so every surface the host paints
-   with it (dialogs, overlays, cards) stays opaque (D61). */
+/* The wallpaper plugin (`dsh-plugin-wallpaper-engine`) marks `body` with
+   `data-we-wallpaper` while a wallpaper shows, and holds the wallpaper, its
+   scrim and its effect layers as the body's children at z-index -2 and -1. The
+   attribute is another plugin's marker, so it stays out of the host contract
+   table (D3) and every stylesheet that reads it states what it means.
+   With that marker and the Claude palette this stylesheet does two things. The
+   shell stands aside: `body`, the window frame, the centre column, the right
+   column, the conversation root and the sidebar paint no fill, and
+   `--dsw-specific-sidebar-fill` is cleared. One mask lies over everything:
+   `body::after` is fixed across the window at z-index -1, which in document
+   order lands after the plugin's layers and under the shell, in the canvas
+   colour, 86% opaque in light and 82% in dark. One even mask puts the sidebar,
+   the header, the transcript and the footer figures on a single ground, so
+   contrast is the same everywhere and the wallpaper reads as a faint wash.
+   The composer's seat and the transcript's top fade stand aside as well, with a
+   tray in the canvas colour carrying the composer card's own width so the
+   transcript scrolling under the card does not show through (the seat rules
+   below). The rules in `tokens.css`, `typography.css` and `chrome.css` that
+   paint the canvas onto the shell carry the same `:not([data-we-wallpaper])`
+   gate, and their palette gate stays as it is (D30).
+   `--dsw-alias-bg-base` keeps the canvas colour in this palette, and this
+   stylesheet's token block overrides the plugin's own clearing, so every surface
+   the host paints with that token (settings window, overlays, cards, onboarding)
+   stays opaque; the skin's own surfaces (popovers, the account popover, the
+   search panel) stay opaque too. The "follow the host" palette lays no mask and
+   leaves the shell and the surfaces to the host and the plugin (D30).
+   Two costs belong to this shape. The wallpaper shows through at a very low
+   strength, and the mask ratio is fixed, following neither the plugin's dim
+   slider nor its glass slider. The shell's standing aside is listed by the
+   host's class-name substrings and attributes, so a host that changes the
+   shell's element or its tokens has these rules to follow, and a mismatch shows
+   up in the smoke's `host-palette` case; the foreign attribute stays outside the
+   build's attribute check, which covers `data-dsh-*` alone (D9).
+   Read the host's interface here when it offers theme layering or token
+   layering, which lets the shell's standing aside be declared by layer (D30's own condition), or when the plugin offers a public mask or readability
+   contract. */
 
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-we-wallpaper] {
   background-color: transparent;

@@ -330,7 +330,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-
    leaves off the floor the instant it rebounds; the walk's arrives at the middle
    of its line, and leaves at the far end it turns at — a share each, since it
    crosses the middle and turns at either end twice a turn. Which curve each fade
-   runs on is the browser half's, read from the token sheet (D65). */
+   runs on is the browser half's, read from the token sheet (D9). */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-bounce {
   --dsh-claude-dot-arrives: 1;
   --dsh-claude-dot-leaves: 0 1;
@@ -353,7 +353,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-orbit {
   --dsh-claude-dot-fade: 0.125;
 }
 
-/* The reader's animation choice (D26): the dots hold the frame their motion
+/* The reader's animation choice (D40): the dots hold the frame their motion
    stands on rather than running. The theme presses every skin animation to a
    hundredth of a millisecond but leaves its iteration count alone, so a motion
    that still cycles would strobe instead of settling — pausing it holds each
@@ -432,7 +432,7 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-w
    The helper writes the shimmer class on the copy showing the words
    (shared/swapping-text.ts): the label's own box stands taller than the text
    by the swap's travel, and a band read off that box would sweep above the
-   glyphs. The reader's animation choice (D26) is the gate: core/prefs.ts
+   glyphs. The reader's animation choice (D40) is the gate: core/prefs.ts
    resolves the setting and the system preference onto the body attribute, and
    the helper reads it at each swap, so the recipe's own media query is not
    repeated. */
@@ -450,7 +450,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-label {
    shared/motion.css, beside the presets and the periods they read, and are
    written once for the line and for the settings page's preview cards; this
    sheet only says that the copy carrying the words is the box the line paints
-   them onto. The reader's animation choice (D26) is the gate there as well. */
+   them onto. The reader's animation choice (D40) is the gate there as well. */
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-clock {
   margin-left: 8px;

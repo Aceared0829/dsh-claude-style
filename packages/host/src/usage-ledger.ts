@@ -30,8 +30,7 @@ const LEDGER_VERSION = 1
  * The ledger is another plugin's document, so its keys are checked like its
  * values. A key that is not a day is dropped rather than kept: the merge
  * compares day keys as strings, and one sorting past every real day would take
- * the newest-day mark with it and hide the days the fold itself contributed
- * (D53).
+ * the newest-day mark with it and hide the days the fold itself contributed.
  */
 function isDayKey(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
@@ -101,7 +100,7 @@ export function readLedger(home: string): Map<string, DayBuckets> | null {
   } catch {
     // Another plugin's file, read without any coordination with its writer:
     // a write in progress reads as no ledger, and the local fold answers
-    // (docs/decisions D12).
+    // (D12).
     return null
   }
   if (parsed === null || typeof parsed !== 'object') return null

@@ -1,5 +1,5 @@
 /**
- * The custom brand images both halves handle (D64): which images there are,
+ * The custom brand images both halves handle (D30): which images there are,
  * the formats and the size the host half takes, and the answer its status
  * route sends.
  */

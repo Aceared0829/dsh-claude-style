@@ -16,7 +16,7 @@ const esbuild = require('esbuild')
 
 /** The repository root: this module sits one level below `scripts/`. */
 const ROOT = path.resolve(__dirname, '..', '..')
-// The browser half lives in its own package (D46).
+// The browser half lives in its own package (D7).
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 const FEATURES = path.join(SRC, 'features')
 const SUFFIX = '.manifest.ts'
@@ -77,7 +77,7 @@ function checkManifests(manifests) {
     if ((manifest.pref === undefined) === (manifest.ungated === undefined)) fail(manifest, 'must declare exactly one of "pref" and "ungated"')
     if (!fs.existsSync(path.join(SRC, manifest.main))) fail(manifest, `has no main module packages/client/src/${manifest.main}`)
     if (!Array.isArray(manifest.contracts) || manifest.contracts.some((id) => typeof id !== 'string' || id === '')) {
-      fail(manifest, 'needs "contracts": the host contract ids its own modules name (D44)')
+      fail(manifest, 'needs "contracts": the host contract ids its own modules name (D3)')
     }
     for (const sheet of manifest.stylesheets) {
       // A generated sheet is checked where it is written (scripts/feature-sheets.mjs).

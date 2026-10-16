@@ -1,6 +1,6 @@
 /**
  * source-tree.mjs — the browser half's TypeScript read on its syntax tree, for
- * the build's refusals that are about what the code does (D51, D65, D67).
+ * the build's refusals that are about what the code does (D9).
  *
  * TypeScript's own program over tsconfig.json answers through types: a name
  * handed over as a constant, a union or a parameter reaches a check as the
@@ -173,7 +173,7 @@ function collect(project, root, srcDir) {
       follow(call.arguments[0], firstAt(attributes), 'writes an attribute whose name is no literal the build can read; give it a literal type')
     }
     if (MOTION_READERS.has(name) && call.arguments[0] !== undefined) {
-      follow(call.arguments[0], firstAt(motion), 'asks shared/motion.ts for a token whose name is no literal the build can read (D65)')
+      follow(call.arguments[0], firstAt(motion), 'asks shared/motion.ts for a token whose name is no literal the build can read (D9)')
     }
     const props = call.arguments[1]
     if (props?.kind === SyntaxKind.ObjectLiteralExpression && declarationOf(call)?.name?.text === 'createElement') {
@@ -191,12 +191,12 @@ function collect(project, root, srcDir) {
 
   const easingCurves = new Map()
   for (const expression of easings) {
-    follow(expression, firstAt(easingCurves), 'names an easing curve that is no literal and no motion token; read it through shared/motion.ts (D65)',
+    follow(expression, firstAt(easingCurves), 'names an easing curve that is no literal and no motion token; read it through shared/motion.ts (D9)',
       (node) => node.kind === SyntaxKind.CallExpression && calleeName(node) === 'motionEase')
   }
   const stackingLevels = new Map()
   for (const expression of stacking) {
-    follow(expression, firstAt(stackingLevels), 'writes a stacking level the build cannot read; mark the element and place it on a layer in its stylesheet (D67)')
+    follow(expression, firstAt(stackingLevels), 'writes a stacking level the build cannot read; mark the element and place it on a layer in its stylesheet (D9)')
   }
   // A whole inline declaration list carries its stacking level inside the text.
   for (const text of strings) {

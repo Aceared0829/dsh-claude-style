@@ -6,7 +6,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './context-stats.manifest'
 
 /**
- * The session's numbers in the context popover (docs/decisions D27).
+ * The session's numbers in the context popover
  *
  * The host's stats row and its two stat dialogs give way to the context
  * meter's own panel, which this feature fills from the host's session

@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { buildDigitGroup, writeDigits } from './stats-digits'
 
 /**
- * A figure that can re-enter (D27): every character is a span of its own, the
+ * A figure that can re-enter: every character is a span of its own, the
  * last two carry the stagger the stylesheet delays them by, and a figure that
  * did not move is left exactly as it is — the pass runs on every projection
  * frame while an answer streams, so an unchanged figure must not be rewritten.

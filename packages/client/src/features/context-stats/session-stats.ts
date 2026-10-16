@@ -11,7 +11,7 @@ import type { HostContext, HostText } from '../../core/host'
 import type { HostSnapshotSource } from '@dsh-claude-style/contracts/services'
 
 /**
- * The session's numbers, read from the host's own projections (D27).
+ * The session's numbers, read from the host's own projections
  *
  * Where they show follows the `statsPosition` choice: `context` hides the
  * composer's statistics row and moves the numbers into the popover the context

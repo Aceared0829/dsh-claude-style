@@ -3,7 +3,7 @@ import { notifyAll } from '../../shared/notify'
 import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
 
 /**
- * The file row's read-across-calls half (D62): the calls that touched one file
+ * The file row's read-across-calls half: the calls that touched one file
  * inside one process group stand as a single row.
  *
  * The host renders one row per call and hands each of them only its own block,
@@ -14,7 +14,7 @@ import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './f
  * reached. A file touched once is drawn exactly as it was before this module
  * existed.
  *
- * A group is one process group's content layer (D44), so two pieces of work in
+ * A group is one process group's content layer (D3), so two pieces of work in
  * one turn are never read together, and the head is the group's earliest call
  * in document order: a number that grows stays where the file was first
  * touched, and the operation it wears moves on in place. The calls a program

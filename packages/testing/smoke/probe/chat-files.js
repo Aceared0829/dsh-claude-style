@@ -62,7 +62,7 @@
               out.hiddenText = Array.isArray(props.children) ? props.children[0] : props.children
             }
             // A tail figure rolls character by character, so its number is the
-            // characters in flow of its own element, read in order (D62). The
+            // characters in flow of its own element, read in order The
             // trees this reads are settled ones, where no digit is leaving.
             if (props.className.indexOf('dsh-claude-file-stat') >= 0) {
               var figure = ''
@@ -130,7 +130,7 @@
       r.files.reading = renderRow('read', reading, {})
       // The switch comes down whole: this feature takes the host's three seat
       // keys over, and a key cannot be handed back by reading a preference, so
-      // off has to unregister them (D29/D32).
+      // off has to unregister them (D42/D49).
       window.__pushForm({ chatAnimations: false })
       await sleep(150)
       r.files.offSeats = (window.__slots || []).filter(function (entry) { return entry.key === 'tool.call.toolview' }).length

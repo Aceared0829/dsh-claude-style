@@ -2,7 +2,7 @@
 
 /* The digit entrance, the fade band's height and the tone band are values, not
    looks: the wait badge and the panels standing above the composer read them
-   too, so they are declared on the document outside the composer gate (D4). The
+   too, so they are declared on the document outside the composer gate (D9). The
    rules they feed stay under the gate. */
 
 body[data-dsh-claude-style] {

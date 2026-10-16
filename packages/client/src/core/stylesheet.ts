@@ -41,7 +41,7 @@ export function parkForeignSheets() {
  * `data-plugin-css` from the moment it exists — the claim sweep reads
  * untagged tags alone — so no sibling package's bookkeeping can take it, and
  * it is refreshed in place rather than replaced, so a stale generation's
- * stop can never take a newer generation's sheet away (D33).
+ * stop can never take a newer generation's sheet away (D9).
  *
  * @param id - the `<style>` element's id.
  * @param text - the sheet.

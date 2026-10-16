@@ -8,7 +8,7 @@ import type { PeerPlugin } from '../core/feature'
  * The other chat-behaviour plugin, when this page runs it.
  *
  * dsh-chat-ux implements the same chat-area interactions this skin ports
- * (docs/decisions D32): the same fold doors over the same clicks, the
+ * (D49): the same fold doors over the same clicks, the
  * same two seat keys at the same priority, the same token fade, the same
  * drawn caret. Two implementations of one behaviour on one page do not
  * merge — the fold doors both intercept the click and replay it at each
@@ -82,7 +82,7 @@ export function peerPresent(plugin: PeerPlugin) {
  * next package to materialize would take it into that package's bookkeeping
  * and delete it at that package's next reload. This callback runs before
  * such a materialization — a mutation callback is a microtask, a
- * materialization is a later task — so the sheet is parked here (D33) while
+ * materialization is a later task — so the sheet is parked here (D9) while
  * it is still nobody's. This is the only hook the skin has for a sheet that
  * arrives after its own factory ran: `parkForeignSheets()` at module scope
  * covers the sheets already in the document, and nothing of the skin runs

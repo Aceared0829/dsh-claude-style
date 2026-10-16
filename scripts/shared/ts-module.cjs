@@ -1,13 +1,13 @@
 /**
  * ts-module.cjs — load one TypeScript module of this repository into a Node process.
  *
- * The build reads the host contract (D44) and the token data as data, and the
+ * The build reads the host contract (D3) and the token data as data, and the
  * end-to-end lane runs the same table against a live page (D66); both need the
  * module's exports without a second compiler setup. esbuild is already the
  * bundler, so it does the transform and the relative imports are resolved here.
  *
  * Paths are given from the repository root, so a module that has moved into a
- * package (D46) is loaded by its own path.
+ * package (D7) is loaded by its own path.
  */
 'use strict'
 const path = require('node:path')

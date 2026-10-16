@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "dsh-claude-style design tokens",
-  "description": "The skin's custom properties: the build generates the token stylesheet and the docs/STYLE.md token table from this document (D51).",
+  "description": "The skin's custom properties: the build generates the token stylesheet and the docs/STYLE.md token table from this document (D9).",
   "type": "object",
   "required": ["typeface", "apex", "palette", "motion", "layer"],
   "additionalProperties": false,
@@ -57,7 +57,7 @@
       }
     },
     "motion": {
-      "description": "Motion tokens (D65): durations, loop periods, easing curves, distances, blur and scale, and the two duration-and-curve shorthands. One value under every palette and typeface; the only place a stylesheet may write a time or a curve.",
+      "description": "Motion tokens (D9): durations, loop periods, easing curves, distances, blur and scale, and the two duration-and-curve shorthands. One value under every palette and typeface; the only place a stylesheet may write a time or a curve.",
       "type": "array",
       "items": {
         "type": "object",
@@ -72,7 +72,7 @@
       }
     },
     "layer": {
-      "description": "Layer tokens (D67): the stacking levels a skin surface takes against what the host draws around it. One value under every palette and typeface; the only place a stylesheet may write a z-index above the local orders 0 to 9.",
+      "description": "Layer tokens (D9): the stacking levels a skin surface takes against what the host draws around it. One value under every palette and typeface; the only place a stylesheet may write a z-index above the local orders 0 to 9.",
       "type": "array",
       "items": {
         "type": "object",

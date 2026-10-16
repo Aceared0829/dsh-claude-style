@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { matchProfile } from './match'
 import type { RateProfile } from '@dsh-claude-style/contracts/peakrate'
 
-/** Which billing profile claims a provider and model (docs/decisions D54). */
+/** Which billing profile claims a provider and model */
 
 function profile(id: string, provider: string): RateProfile {
   return {

@@ -16,7 +16,7 @@
  * The clause is the model's own text, so it is the same in every language; the
  * file's words are copy, so they are matched in the two the document carries.
  * Everything the words are read off is the real host: the snapshot's reasoning
- * block and the call it reports in flight (D44). The head of the row is read off
+ * block and the call it reports in flight (D3). The head of the row is read off
  * that same row: under the Claude brand the skin's own loading dots stand where
  * the host draws its whale tail, resting on the wording's line.
  */

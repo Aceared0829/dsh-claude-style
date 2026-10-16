@@ -1,7 +1,7 @@
 import { MOTION } from 'virtual:dsh-claude-style/generated'
 
 /**
- * The motion tokens as the browser half reads them (D65): the values come from
+ * The motion tokens as the browser half reads them (D9): the values come from
  * packages/client/src/theme/tokens.json through a generated module, so a
  * duration or a curve written here and one written in a stylesheet cannot
  * drift. A name the token table does not carry throws where it is read — a

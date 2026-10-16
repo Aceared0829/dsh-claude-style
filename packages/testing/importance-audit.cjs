@@ -1,5 +1,5 @@
 /**
- * importance-audit.cjs — which of the skin's `!important` declarations the page needs (D51).
+ * importance-audit.cjs — which of the skin's `!important` declarations the page needs (D9).
  *
  * The host's own styles carry a handful of `!important` and sit in no cascade
  * layer, so the skin's selectors — every one starting at
@@ -54,7 +54,7 @@ const { minifyCss } = require('../../scripts/shared/minify-css.cjs')
 const ROOT = path.resolve(__dirname, '..', '..')
 /** The marker declaration carrying each rule's index into the page's CSSOM. */
 const MARK = '--dsh-audit-rule'
-/** The skin's stylesheet, by the tag it wears (D33). */
+/** The skin's stylesheet, by the tag it wears (D9). */
 const SHEET = 'style[data-plugin-css="dsh-claude-style/client.css"]'
 /** Pseudo-elements the page can read a computed style for. */
 const READABLE_PSEUDO = new Set(['::before', '::after', '::marker', '::placeholder'])
@@ -453,7 +453,7 @@ function culpritsInPage({ rules, dropped, differences }) {
 }
 
 /**
- * What stands in a declaration's place once its `!important` is gone (D51).
+ * What stands in a declaration's place once its `!important` is gone (D9).
  *
  * The stylesheet is installed with that one declaration's importance already
  * dropped, so the value read here is the one the page falls back to. Every other
@@ -587,7 +587,7 @@ async function createImportanceAudit(page, reference) {
   const dropped = new Set()
   const needed = new Set()
   const matched = new Set()
-  /** `"<rule id>:<property>"` → what that declaration beats where it was decided (D51). */
+  /** `"<rule id>:<property>"` → what that declaration beats where it was decided (D9). */
   const evidence = new Map()
   /** Selectors of the sheet a state matched an element with, and the ones the page could not parse. */
   const swept = new Set()
@@ -650,7 +650,7 @@ async function createImportanceAudit(page, reference) {
     for (const key of verdict.needed) needed.add(key)
     // What each declaration that has to keep its weight beats where it was
     // decided: the sheet goes in with that one importance dropped, the fall-back
-    // value is read, and every candidate that held it is named (D51).
+    // value is read, and every candidate that held it is named (D9).
     for (const key of verdict.needed) {
       if (evidence.has(key)) continue
       const separatrix = key.lastIndexOf(':')

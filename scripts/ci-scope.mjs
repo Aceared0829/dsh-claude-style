@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ci-scope.mjs — what a push changed, as the workflow's own outputs (D69).
+ * ci-scope.mjs — what a push changed, as the outputs the workflow's lanes read.
  *
  * A push that touched no file the build or a browser reads does not need those
  * lanes, and one that touched a single feature directory does not need the
@@ -11,9 +11,14 @@
  * selection is one the smoke accepts, and a change it cannot place falls back to
  * the whole walk.
  *
+ * The answers are the job outputs the workflow's page lanes test before they
+ * start, so a lane the answer leaves out is skipped rather than run and reported
+ * green, and an answer that reads too narrowly leaves work unjudged. The
+ * arrangement around them is in `.github/workflows/ci.yml`.
+ *
  * It also holds the one push this cannot accept: a change to the appearance
  * snapshot (`packages/testing/appearance.json`) with no change under
- * `packages/client/src` (D00, 外观层). The snapshot is what the pages look like,
+ * `packages/client/src` (D66). The snapshot is what the pages look like,
  * so it only moves when what draws them moved; a push that carries it alone is
  * a snapshot recorded by hand, and `--appearance` fails it. A snapshot the base
  * does not hold at all is the layer's own arrival, which is no page's change.

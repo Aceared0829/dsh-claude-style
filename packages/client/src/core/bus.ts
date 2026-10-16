@@ -11,14 +11,13 @@ import { QUIET_ATTR } from '../constants'
  * in the order the subscriptions were made — the order separate observers
  * made in that order would have been called in. The observer is attached only
  * while a subscription exists, so the head is watched only while someone asks
- * (the other chat plugin's sheet, D33's foreign sheets).
+ * (the other chat plugin's sheet, D9's foreign sheets).
  *
  * Sizes: one ResizeObserver for every element, and a second, `afterHost`,
  * made anew each time a subscription joins it. Resize callbacks run in the
  * order the observers were made, and the host makes its own when it mounts a
  * message column; a subscription made after the mount therefore runs after
- * the host's in the same frame (D32's follow takes the host's pin back
- * before it paints).
+ * the host's in the same frame (D49's follow takes the host's pin back * before it paints).
  */
 
 export interface MutationOptions {

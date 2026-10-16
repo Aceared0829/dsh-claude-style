@@ -97,7 +97,7 @@ export function createModelRows(options: {
     if (desc) copy.appendChild(buildElement('span', 'dsh-claude-model-desc', desc))
     // The peak rate meter rides in front of the check: the row is compared by
     // its rate before it is picked, and a model whose provider bills on no
-    // clock carries no badge at all (packages/client/src/features/peakrate/, D54).
+    // clock carries no badge at all (packages/client/src/features/peakrate/).
     const meter = rate(group.id, model.id)
     if (meter !== null) item.insertBefore(meter, built.check)
     built.check!.innerHTML = selected ? POPOVER_CHECK_SVG : ''

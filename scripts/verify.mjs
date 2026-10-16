@@ -201,7 +201,7 @@ function gatesFor(request) {
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
     // The appearance snapshot against the last walk's reading, and the rule that
-    // a snapshot only moves with the sheets that draw the pages (D00, 外观层).
+    // a snapshot only moves with the sheets that draw the pages (D9).
     { id: 'appearance', script: 'packages/testing/appearance.cjs', args: [] },
     { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--tree'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },

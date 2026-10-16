@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { CACHE_HIT_STOPS, CONTEXT_STOPS, RAMP_SPAN_HIGH, RAMP_SPAN_LOW, rampPosition } from './stats-ramp'
 
 /**
- * The colour band a reading falls in (D27): the segment and the position inside
+ * The colour band a reading falls in: the segment and the position inside
  * it are what the browser mixes the colour from, so the boundary behaviour is
  * what a test can hold — a reading on a stop belongs to that stop, and the two
  * ends saturate instead of running off the band.

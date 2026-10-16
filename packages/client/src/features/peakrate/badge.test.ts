@@ -6,7 +6,7 @@ import type { RateState } from '@dsh-claude-style/contracts/peakrate'
  * The badge and its wording: the state's name, the whole judgement in one line,
  * and the element a row carries. The copy document has not been fetched here, so
  * these read the neutral constants the bundle carries — the same ones a page
- * falls back to before the document answers (docs/decisions D5).
+ * falls back to before the document answers (D5).
  */
 
 const PEAK: RateState = { period: 'peak', badge: '2×', minutesUntilSwitch: 80, nextPeriod: 'offPeak', nextBadge: '1×' }

@@ -1,7 +1,7 @@
 /**
  * virtual-modules.mjs — the modules the build generates while bundling, as
  * esbuild plugins: the feature registry from the manifests (D42), the table
- * the feature chunks share the bundle's modules through (D39) and the build's
+ * the feature chunks share the bundle's modules through (D42) and the build's
  * own output for the browser half (D36).
  */
 import path from 'node:path'
@@ -15,7 +15,7 @@ const RUNTIME_FIELDS = ['id', 'handle', 'order', 'pref', 'prefValues', 'ungated'
 /**
  * The feature registry, `virtual:dsh-claude-style/features`: each manifest's
  * runtime fields beside its main module's `install`, or beside its chunk's
- * address for a deferred feature (D39), in install order. The manifests
+ * address for a deferred feature (D42), in install order. The manifests
  * themselves stay out of the bundle — their descriptions and test coverage are
  * of no use to the page.
  *
@@ -42,7 +42,7 @@ export function featuresModule(manifests, chunks) {
 
 /**
  * The table the feature chunks resolve their shared modules from,
- * `virtual:dsh-claude-style/chunk-modules` (D39): each id a chunk imports, as
+ * `virtual:dsh-claude-style/chunk-modules` (D42): each id a chunk imports, as
  * this bundle's own instance — a source module's namespace or a generated
  * module's, or the host package exactly as the loader's `require` hands it
  * over, so the chunk's own import helpers treat it as the bundle's do.

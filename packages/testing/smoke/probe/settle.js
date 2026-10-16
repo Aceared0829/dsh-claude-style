@@ -26,7 +26,7 @@
     // frames have been quiet AND no pass has come for a stretch of wall clock
     // AND every finite animation the page runs has finished — an entrance, a
     // swap or a fade still in flight moves what the readings below are about
-    // (D00: the settle rule). An endless animation is no such thing: the
+    // (D66: the settle rule). An endless animation is no such thing: the
     // running session's pulse and the sweeps never land, and waiting for them
     // would wait for the page's own life.
     var quietFrames = 0

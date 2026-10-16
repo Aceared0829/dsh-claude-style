@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 /**
- * ci-required.mjs — the one check a branch rule names (D69).
+ * ci-required.mjs — the one check a branch rule names.
  *
  * A branch rule that lists every job has to be edited whenever a job is added or
  * renamed, and a job a rule does not name is a job a merge can skip. This reads
  * the `needs` the workflow hands it — the JSON `toJson(needs)` produces, one
- * entry per job with that job's `result` — and fails when any of them is not
- * `success`, so the rule names this one check and the jobs stay free to change.
+ * entry per job with that job's `result` — and fails when any of them reports
+ * neither `success` nor `skipped`, so the rule names this one check and the jobs
+ * stay free to be added, renamed or removed.
  *
- * A job that was skipped is `success` here, which is what lets a push that
- * touched no code pass without running the lanes.
+ * A job that was skipped is a pass here, which is what lets a push that touched
+ * no code answer green with its lanes left out. A job the workflow leaves out of
+ * `needs` never reaches this check, and the branch rule cannot catch it, so the
+ * list is what a new job is added to.
  *
  * Usage: node scripts/ci-required.mjs '<toJson(needs)>'
  */

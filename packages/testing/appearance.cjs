@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * appearance.cjs — the committed appearance snapshot against what a smoke run
- * read (D00, 外观层).
+ * read (D66).
  *
  * The smoke's every page state records what its parts compute to
  * (smoke/probe/appearance.js) and the run writes those readings to
@@ -15,7 +15,7 @@
  * records the whole walk, `node packages/testing/appearance.cjs --write` then
  * rewrites the snapshot, and the diff is what a reviewer reads. Only
  * font-independent properties are recorded, because a computed font family
- * answers for the machine's installed faces (D00, 代价): the judgement is made
+ * answers for the machine's installed faces (D66): the judgement is made
  * where the walk runs, and this machine's own snapshot is a reference.
  *
  * Usage: node packages/testing/appearance.cjs [--write] [--record <path>]
@@ -55,7 +55,7 @@ if (args.includes('--write')) {
   const sorted = {}
   for (const name of Object.keys(cases).sort()) sorted[name] = cases[name]
   fs.writeFileSync(SNAPSHOT, `${JSON.stringify({
-    note: 'The appearance layer\'s snapshot: what each page state\'s parts compute to, recorded by packages/testing/smoke.cjs through probe/appearance.js and written by packages/testing/appearance.cjs (D00, 外观层). Regenerate with a smoke walk (node packages/testing/smoke.cjs) then node packages/testing/appearance.cjs --write; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.',
+    note: 'The appearance layer\'s snapshot: what each page state\'s parts compute to, recorded by packages/testing/smoke.cjs through probe/appearance.js and written by packages/testing/appearance.cjs (D66). Regenerate with a smoke walk (node packages/testing/smoke.cjs) then node packages/testing/appearance.cjs --write; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.',
     cases: sorted,
   }, null, 2)}\n`)
   const states = Object.keys(sorted).length

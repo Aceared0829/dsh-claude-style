@@ -4,7 +4,7 @@ import { buildElement } from '../../shared/dom'
 import type { RatePeriod, RateState } from '@dsh-claude-style/contracts/peakrate'
 
 /**
- * The rate badge and its wording (D54).
+ * The rate badge and its wording
  *
  * The shape carries which state it is, the colour carries whether it is
  * expensive or cheap: twin peaks for the peak rate, twin valleys for the
@@ -14,7 +14,7 @@ import type { RatePeriod, RateState } from '@dsh-claude-style/contracts/peakrate
  *
  * The badge's text is the data source's own (`2×`, `0.5× credits`): it is
  * foreign text and is written with `textContent`, never as markup
- * (docs/decisions D11).
+ * (D11).
  */
 
 /** The mark each state draws, in a 16×16 box stroked with the current colour. */

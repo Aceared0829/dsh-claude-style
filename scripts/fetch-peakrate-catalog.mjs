@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * fetch-peakrate-catalog.mjs — refresh the peak rate catalog the package ships (D54).
+ * fetch-peakrate-catalog.mjs — refresh the peak rate catalog the package ships
  *
  * Run by hand when the data source publishes new schedules; like
  * `scripts/fetch-lobe-combines.py`, it is the only kind of script here that

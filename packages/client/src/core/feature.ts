@@ -13,7 +13,7 @@ import type { HandleName, Handles, Ui, UiCalls } from './scheduler'
  */
 export type FeatureManifest = FeatureIdentity & FeatureFields & FeatureSwitch
 
-/** Exactly one of `pref` and `ungated` (D29). */
+/** Exactly one of `pref` and `ungated` (D42). */
 export type FeatureSwitch =
   | {
       /** The preference that decides whether the reader gets the feature. */
@@ -47,12 +47,12 @@ export interface FeatureFields {
   reads?: HandleName[]
   /** Install order, and with it the scheduler's pass order: ascending, unique. */
   order: number
-  /** The plugin implementing the same behaviour: while it is on the page the feature stays uninstalled (D32). */
+  /** The plugin implementing the same behaviour: while it is on the page the feature stays uninstalled (D49). */
   yieldsTo?: PeerPlugin
   /**
    * `'deferred'`: the feature's own modules leave the bundle for a chunk of
    * their own, fetched once the page is taken and installed when it arrives
-   * (D39). Only for a feature the first frames can do without.
+   * (D42). Only for a feature the first frames can do without.
    */
   load?: 'deferred'
   /** The feature's stylesheets, relative to its directory; `rank` places each one in the concatenated sheet. */
@@ -63,7 +63,7 @@ export interface FeatureFields {
   cases: string[]
   /**
    * The host contract's entries this feature's own modules name
-   * (packages/contracts/src/table.ts, D44): the answer to "what breaks if the host
+   * (packages/contracts/src/table.ts, D3): the answer to "what breaks if the host
    * changes this", and the build refuses an entry no manifest claims.
    */
   contracts: string[]
@@ -81,7 +81,7 @@ export interface FeatureStylesheetFile {
   file: string
   /** Position in the concatenated stylesheet, shared with the theme's sheets (scripts/build.mjs). Unique. */
   rank: number
-  /** The composer rules are gated (D4). */
+  /** The composer rules are gated (D9). */
   gate?: boolean
   /**
    * `'surface'`: the sheet is scoped to `body[data-dsh-claude-surface]` and
@@ -115,7 +115,7 @@ export interface FeatureSwitchRow {
   desc?: SettingsCopyLine
   /** The choices of a segmented control; without them the row is an on/off switch. */
   choices?: FeatureSwitchChoice[]
-  /** The preference the feature only works under (D29). */
+  /** The preference the feature only works under (D42). */
   requires?: FeatureSwitchRequirement
   /**
    * The row acts on the Windows desktop window alone: on any other page it
@@ -155,7 +155,7 @@ export type FeatureInstall = (ctx: HostContext, ui: Ui) => (() => void) | void
 
 /**
  * One installable feature: its runtime manifest fields beside its main
- * module's `install`, or beside the address of the chunk that carries it (D39).
+ * module's `install`, or beside the address of the chunk that carries it (D42).
  */
 export type Feature = FeatureRuntime & ({ install: FeatureInstall, chunk?: never } | { chunk: string, install?: never })
 

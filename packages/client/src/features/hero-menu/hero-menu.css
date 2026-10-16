@@ -36,7 +36,7 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] {
   font-family: var(--dsw-font-family);
   /* The host mounts the card instead of toggling a `data-open` attribute, so
      the skin's open transition becomes the shared menu entrance with the same
-     values (shared/motion.css, D65). Its origin is the corner nearest the
+     values (shared/motion.css, D9). Its origin is the corner nearest the
      trigger: the card opens above the trigger's right edge, as the skin's
      composer pickers do. */
   transform-origin: bottom right;

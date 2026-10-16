@@ -78,7 +78,7 @@ export const PROCESS_SUMMARY_RUNNING_ATTR = 'data-dsh-claude-summary-running'
 export const PROCESS_SUMMARY_FORM_ATTR = 'data-dsh-claude-summary-form'
 /** On a rolling digit: `enter` rises into place, `exit` leaves upward, `settled` stands. */
 const ROLL_ATTR = 'data-dsh-claude-roll'
-/** How long a digit takes to roll, as the stylesheet's animations run it (D65). */
+/** How long a digit takes to roll, as the stylesheet's animations run it (D9). */
 const ROLL_MS = motionMs('--dsh-claude-duration-roll')
 const SUMMARY_CLASS = 'dsh-claude-process-summary'
 /** The hidden span holding the sentence, whose natural width tells whether the header has room for it. */

@@ -13,8 +13,7 @@
    the rest of the way back to the opening scale is the separate `scale`
    property, taken in one step once the fade has ended, so every opening grows
    the full distance without a closing state of its own. A menu the host MOUNTS
-   instead plays the shared dsh-claude-dropdown-in entrance (shared/motion.css,
-   D65). */
+   instead plays the shared dsh-claude-dropdown-in entrance (shared/motion.css, D9). */
 body[data-dsh-claude-style] .dsh-claude-popover-card {
   background: var(--dsw-alias-bg-overlay, #ffffff);
   border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);

@@ -7,8 +7,8 @@
  * computes it included, so a hit hands back the very bytes a fresh run would
  * produce: `lib/` is the same with the cache or without it. The directory sits
  * in `.debug/` (gitignored); a fresh clone starts empty and computes all, and
- * the continuous integration run restores what the run over the same tree saved
- * (D69).
+ * the continuous integration run restores what an earlier run over the same tree
+ * saved.
  */
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'

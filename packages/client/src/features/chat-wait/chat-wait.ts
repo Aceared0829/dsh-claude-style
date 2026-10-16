@@ -207,7 +207,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const line = lineOf(row, words)
     const { loader, label, clock, badge } = line
     // What the turn is doing, and the one word its brand waits on for a turn
-    // whose state cannot be read (D32): the line says the model's work, never a
+    // whose state cannot be read (D49): the line says the model's work, never a
     // guess.
     // Under the Precise choice three states carry words of their own — the
     // file a call works on, the description a command call declares, and the

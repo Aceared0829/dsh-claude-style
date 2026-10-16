@@ -462,7 +462,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Capture an origin once. Not capturing it counts as "this was not a submission", and doing nothing is always safe. */
   const captureOrigin = () => {
     // The reader's animation choice, resolved and read here rather than once
-    // at install (D26): a still page is a decision the reader can change
+    // at install (D40): a still page is a decision the reader can change
     // without a reload, and the resolved answer is what the rest of the skin
     // reads — the media query cannot express "always play".
     if (motionReduced()) return

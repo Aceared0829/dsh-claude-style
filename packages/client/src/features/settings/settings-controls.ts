@@ -79,7 +79,7 @@ export function tabRows(tab: SettingsTab, view: SettingsView) {
  * preference a feature yields for (dsh-chat-ux on the page) keeps the reader's
  * value on show and refuses input, saying who manages it (managedDesc); so
  * does a row whose feature only works under another preference's values
- * (`requires`, D29) while that preference holds none of them, saying what it
+ * (`requires`, D42) while that preference holds none of them, saying what it
  * waits for, and a row acting on the Windows desktop window alone
  * (`windowsOnly`) on every page that is not that window, saying where it acts.
  */

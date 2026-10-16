@@ -2,7 +2,7 @@ import { normalizeModelId } from '../../core/model-copy'
 import type { RateProfile } from '@dsh-claude-style/contracts/peakrate'
 
 /**
- * Which billing profile applies to one provider and model (D54).
+ * Which billing profile applies to one provider and model
  *
  * A profile is a provider's clock, not a model's: the data source lists direct
  * vendors, and a provider that resells one of them inherits its schedule. So

@@ -28,7 +28,36 @@ export interface FooterHandle extends FeatureHandle {
  * the skin self-builds the trigger and the popover and the popover's
  * body is the container. The rows themselves — the account header with the
  * hold-screen easter egg, the plugin footer entries (account/footer-mirror.ts)
- * and, on the self-built path only, the settings row — are shared.
+ * and, on the self-built path only, the settings row — are shared, and the
+ * popover is the only place the skin draws them: surface.ts re-reads the page
+ * on every pass and picks that pass's mount point.
+ *
+ * The host's row stays where the host put it: it is marked for the stylesheet
+ * and never copied, moved, or given forwarded clicks, so the host keeps its
+ * own labels, keyboard order and toggle. A row of ours that folds the menu
+ * dispatches one Escape carrying `__dshHostMenuEscape`, the dismissal the
+ * host's own Menu handles; the skin's global key path skips that mark, which
+ * keeps the press from closing the overlays standing behind the menu.
+ *
+ * The host mounts its menu a frame or two after the hover or the press and
+ * re-places the card a frame after our container grows inside it, so `<body>`
+ * carries ACCOUNT_ARMED_ATTR from that hover or press until the menu closes,
+ * and the card paints nothing while it is armed: surface.ts writes
+ * ACCOUNT_READY_ATTR once our row is in the host's list and two placement
+ * readings agree, and the entrance animation hangs on that mark. The wait
+ * costs those two or three frames of placement and host re-layout; a row that
+ * needs no placement is released as it arrives, and a card that never settles
+ * is released after a bounded number of frames (constants.ts).
+ *
+ * The header row is a button exactly while the easter egg is installed
+ * (`ui.ban` is present); without it the row is a name alone, without a button
+ * role, out of the tab order and without the hover fill. While the hold
+ * screen covers the window it takes the pointer off the row and the card, so
+ * the hover dismissal stands down and the footer is handed back as the reader
+ * left it.
+ *
+ * Read the host again when it offers a slot for appended rows, which drops the
+ * wait, or counts our row in its own first render.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The marker the stylesheet hangs the host account row's Claude shape on. */

@@ -37,7 +37,7 @@ body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"] .dsh-claude-ws-se
 body[data-dsh-claude-style] [data-dsh-claude-ws-view="active"]:hover .dsh-claude-ws-segments,
 body[data-dsh-claude-style] [data-dsh-claude-part~="section-header"]:hover .dsh-claude-ws-segments {
   /* The hover rule outranks the hidden state above on specificity alone: it
-     carries one pseudo-class more (D51). */
+     carries one pseudo-class more (D9). */
   opacity: 1;
   visibility: visible;
   pointer-events: auto;

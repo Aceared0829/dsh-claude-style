@@ -17,7 +17,67 @@ import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
  * there is nothing saying what was applied and only the arguments can speak —
  * a write's argument is the whole content (exact), an edit's is that pair of
  * replacements (which `replace_all`, or a write that failed, can put out of
- * step with what really happened).
+ * step with what really happened). A read's window is therefore taken twice:
+ * from the call's own metadata where it has any, which is a root call, and
+ * otherwise read back out of the model-facing envelope the read tool writes,
+ * which is what a sub-call leaves behind; a text that is neither falls back to
+ * the skin's IN/OUT card.
+ *
+ * The three operations take the host's own row through the keyed seat
+ * `tool.call.toolview` under the keys `read`, `edit` and `write`, registered
+ * and released together, so every file operation draws in the skin's row.
+ *
+ * Within one process group's content layer the same file's several calls read
+ * as one row. That row is the earliest call in document order; its icon and
+ * title show the last operation the file saw; its `+n -m` tail is the whole
+ * group's accumulated change; expanding it shows every change the group made.
+ * A file touched once draws as it always did. When the file's work moves from
+ * one operation to the next the head swaps in place: both states share one
+ * grid cell, so the title box takes the wider state and the neighbouring path
+ * does not shift, and the reduced-motion tier writes the new state directly.
+ * The tail counts changes alone, so a group that only read its file shows no
+ * numbers; each character owns its own box and only the digit that changed
+ * flips, the flipping box clipping with `clip-path: inset(0)` — `overflow`
+ * would treat the inline-block's bottom edge as the baseline and lift the
+ * glyphs off the line's baseline — with `perspective` on the box. The swap and
+ * the flipping digits are the transitions.dev snippet (MIT) the running row's
+ * word swap already uses, and a third place using it moves into
+ * `packages/client/src/shared/`.
+ *
+ * The row's registry lives with the merge (file-row-merge.ts), and this module
+ * supplies what goes into it. Each file row registers its path, its operation
+ * and its own call's changes, and the head reads the whole group back out;
+ * headship follows document order, so the head stays where it is when a new
+ * call arrives and only its operation, its numbers and its card change. A
+ * registration belongs to a call: the host gives the direct call the content
+ * layer's own row element and hands that same element to the file's next call,
+ * so the element carries the call id — a new id adds to the file's total, the
+ * same id replaces its earlier registration, and a read cannot zero a tail
+ * another call wrote.
+ *
+ * A row the head represents leaves the page: the mark goes on the box the host
+ * gave that call and the host's own spacing around it goes with it. A directly
+ * called tool standing in its own flow block (`data-chat-flow-key`) takes the
+ * mark on the block, because a host version giving each flow block its own top
+ * and bottom margins would leave those margins standing in a vertical flex
+ * once only the call row inside was hidden. A program-dispatched call shares
+ * the program's flow block, so its own row carries the mark and the program's
+ * row stays; a call the host gives no block of its own carries it on the call
+ * row. Failed and interrupted rows do not register at all, and the merged row
+ * carries a visually hidden sentence (`fileRowMergedOperations`) so a screen
+ * reader reads every call the row stands for. Merging hangs on the existing
+ * `chatAnimations` switch and adds no preference of its own.
+ *
+ * What follows from that shape: the skin draws every read row in the app, so
+ * they all take its style; a group that only read its file shows no change
+ * numbers; the two operation titles differ in width, which the shared grid
+ * cell absorbs at the cost of a little more air beside the narrow state; the
+ * trajectory entrance pill (`row.inspect`) a represented row carried is no
+ * longer pressable, and its changes are read through the head's expanded card;
+ * and because headship follows document order and mount state, a long
+ * conversation that unmounts its off-screen rows hands headship to the
+ * earliest row still mounted. A host that draws one row per file itself and
+ * exposes the head operation replaces this model.
  */
 
 /** One change a file row draws: the file, the text replaced (null for a new file) and the text written. */
@@ -31,7 +91,7 @@ export interface FileHunk {
 export type FileRowState = 'preparing' | 'running' | 'ok' | 'error' | 'stopped'
 
 /**
- * What one row did to its file (D62): a read of it, or one of the two changes
+ * What one row did to its file: a read of it, or one of the two changes
  * to it. The names are the host's own tool-view keys and its variant names.
  */
 export type FileRowOperation = 'read' | 'edit' | 'write'
@@ -66,7 +126,7 @@ export function chatFileOperationTitle(operation: FileRowOperation) {
 
 /**
  * The host's own id for one call, which tells a file's calls apart on a row
- * element the host keeps across them (D62). A block that carries none stands for
+ * element the host keeps across them. A block that carries none stands for
  * a call nothing can tell from the next, and its element then holds one call.
  */
 export function chatFileCallId(block: HostChatBlock) {
@@ -114,7 +174,7 @@ export const CHAT_FILE_ROLL_IN_CLASS = 'dsh-claude-file-roll-in'
 /**
  * On the row while its file's calls are read together: `head` on the row that
  * stands for the file, `member` on the rows it stands for, `gone` on a merged
- * row's carrier — the host's own call row — whose box comes off the page (D62).
+ * row's carrier — the host's own call row — whose box comes off the page.
  */
 export const CHAT_FILE_MERGE_ATTR = 'data-dsh-claude-file-merge'
 export const CHAT_FILE_MERGE_HEAD = 'head'

@@ -6,7 +6,7 @@ import { createEffortMatrix } from './matrix'
  * The top rung's dot matrix writes each particle's phase and cycle inline with
  * `!important`, because the stylesheet's animation shorthand is `!important`
  * too. Under the reader's reduced-motion choice nothing may move, and an inline
- * `!important` duration outranks that stylesheet rule (D26) — so the writes are
+ * `!important` duration outranks that stylesheet rule (D40) — so the writes are
  * what the tests hold: absent standing still, present when the reader lets the
  * skin play.
  */

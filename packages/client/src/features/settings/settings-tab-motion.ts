@@ -241,7 +241,7 @@ export function createSettingsMotionTab(): SettingsTab {
   /**
    * The reveal's two answers as preview cards: the same sample line arrives in
    * both, one through the fade and one at once, so the choice is shown rather
-   * than named (D32).
+   * than named (D49).
    *
    * The walk is the recipe's own (transitions.dev's "Streaming text", MIT): the
    * sample stands unseen between cycles and every piece is handed its turn one
@@ -331,7 +331,7 @@ export function createSettingsMotionTab(): SettingsTab {
     const nextId = React.useRef(shown.length)
     React.useEffect(() => {
       const timer = window.setInterval(() => {
-        // The reader's animation choice is read each turn (D26): on a still page
+        // The reader's animation choice is read each turn (D40): on a still page
         // the card stands on the messages already there, the way the line writes
         // its words at once, instead of a new message appearing without its
         // arrival and the column jumping a row.
@@ -462,7 +462,7 @@ export function createSettingsMotionTab(): SettingsTab {
         node: view.controls.row(
           'caretMotion',
           settingsCopy('caretTitle', 'Composer caret motion'),
-          // The preview cards are the description; only a yielded control still needs a line (D32).
+          // The preview cards are the description; only a yielded control still needs a line (D49).
           caretYielded ? managedDesc('', true) : null,
           React.createElement(CaretPicker, { prefs, write, disabled: caretYielded }),
           { block: true, disabled: caretYielded },
@@ -473,7 +473,7 @@ export function createSettingsMotionTab(): SettingsTab {
         node: view.controls.row(
           'chatReveal',
           settingsCopy('chatRevealTitle', 'New-text fade'),
-          // The preview cards are the description; only a yielded control still needs a line (D32).
+          // The preview cards are the description; only a yielded control still needs a line (D49).
           revealYielded ? managedDesc('', true) : null,
           React.createElement(RevealPicker, { prefs, write, disabled: revealYielded }),
           { block: true, disabled: revealYielded },

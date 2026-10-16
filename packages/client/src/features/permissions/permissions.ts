@@ -74,7 +74,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return catalogOption(preset) !== null
   }
 
-  /** Whether the interface language reads the host's own tier dictionary (D17). */
+  /** Whether the interface language reads the host's own tier dictionary (D43). */
   function readsHostTierNames() {
     return activeLocale(ctx).startsWith(PERMISSION_HOST_LABEL_LOCALE)
   }

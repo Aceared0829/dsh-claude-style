@@ -28,7 +28,7 @@ export interface ChatFoldHandle extends FeatureHandle {
  * window to the host.
  *
  * The door takes over the reader's clicks on a folding row, a takeover of the
- * host's interface like any other (D29): the entry installs this only while
+ * host's interface like any other (D42): the entry installs this only while
  * the preference is on and dsh-chat-ux is off the page (the manifest), and
  * this teardown leaves the clicks alone again. The follow guard asks whether
  * a door is rolling through `ui.chatFold`, which exists only while installed.

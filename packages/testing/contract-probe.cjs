@@ -1,7 +1,7 @@
 /**
  * contract-probe.cjs — the host contract table (packages/contracts/src/table.ts)
  * checked entry by entry on the lane's real page, for the `contract` scenario
- * (D44, D66).
+ * (D3, D66).
  */
 'use strict'
 const { loadModule } = require('../../scripts/shared/ts-module.cjs')
@@ -18,7 +18,7 @@ async function recordProbes(context, states, windowMs = 0) {
 
 /**
  * Check the entries of the host contract table that belong to the given page
- * states (D44) — the same lists the build holds the skin to, read through the
+ * states (D3) — the same lists the build holds the skin to, read through the
  * same loader, so a selector cannot pass the build and go unchecked here.
  *
  * The momentary states (`sending`, `streaming`) are read in one window: the

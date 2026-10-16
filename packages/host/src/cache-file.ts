@@ -3,7 +3,7 @@
  *
  * Every cache here only saves work: a file that does not parse is reported and
  * read as "no cache", and a write that fails leaves the pass that computed the
- * value still answering (docs/decisions D12). A write goes through a temporary
+ * value still answering (D12). A write goes through a temporary
  * file and a rename, so a reader never sees half a document.
  *
  * The path resolution stays in harness-home.ts, so the cache sits in the same

@@ -199,7 +199,7 @@ body[data-dsh-claude-style] .dsh-claude-search-trigger-label {
    the overlay and keeps it mounted while card and mask fade out together. */
 body[data-dsh-claude-style] .dsh-claude-search-dialog {
   /* The card is set high in the window, so it settles down into place; the
-     shared entrance preset travels that way with a negative start (D65). */
+     shared entrance preset travels that way with a negative start (D9). */
   --dsh-claude-surface-from: calc(-1 * var(--dsh-claude-distance-nudge));
   animation: dsh-claude-surface-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-glide);
   width: min(760px, 100%);

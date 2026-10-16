@@ -18,34 +18,87 @@ import type manifest from './header-band.manifest'
  * The conversation header's title row, lifted into the desktop caption row.
  *
  * The Windows shell hands the window's top 40px to a caption row and lets the
- * columns run up under it (D31), so that row is the one place a session title
+ * columns run up under it, so that row is the one place a session title
  * can sit above everything else — the row the collapsed sidebar's own button
  * and the view-tab strip (view-tabs.css) already use. Everything lifted here
  * belongs to the host, so nothing is moved between parents: each piece is
  * stamped and placed with `position: fixed`, and the row it leaves reflows on
  * its own — the title cluster keeps the preset picker, which closes up to the
- * row's left edge (D52).
+ * row's left edge.
  *
  * Both placements are measured, never assumed: the caption buttons' reserve
- * comes from desktopBand (D28), the row's own inset from the title row, and
- * the strip's box from wherever view-tabs put it. A side whose room is too
- * small stays in the row, which is the stylesheets' base rule — a placement
- * that does not fit writes nothing, so the fallback needs no restoring. The
- * title and the controls are decided apart, because a window wide enough for
- * one of them is often too narrow for the other, and either cluster may be
- * missing (the corner seat is empty while the right sidebar is open, whose own
- * chrome carries those controls) without the other losing its place.
+ * comes from desktopBand, the row's own inset from the title row, and
+ * the strip's box from wherever view-tabs put it. The right cluster is decided
+ * first, since it hangs off the right edge and its room does not depend on the
+ * title; the title then takes what is left of the row's left end up to the
+ * first thing in its way, and the strip's width is reserved in that sum rather
+ * than read off a position the pass is about to move it to. A side whose room
+ * is too small stays in the row, which is the stylesheets' base rule — a
+ * placement that does not fit writes nothing, so the fallback needs no
+ * restoring. The title and the controls are decided apart, because a window
+ * wide enough for one of them is often too narrow for the other, and either
+ * cluster may be missing (the corner seat is empty while the right sidebar is
+ * open, whose own chrome carries those controls) without the other losing its
+ * place: a missing cluster leaves no air behind, and the one still there keeps
+ * the offset it measured.
+ *
+ * The title's room is written to `--dsh-header-band-max`, and the title's own
+ * crumb ellipsizes inside whatever width that leaves — the host's rule, which
+ * this pass supplies the number to. Below a stub's width the title stays in the
+ * row, where the host's crumb draws it as it always did.
  *
  * The row the title leaves rises: with the words gone it holds only controls,
  * and the inset the host gives a row that also carried a title would leave
- * them floating a title's height below the caption row.
+ * them floating a title's height below the caption row. It rises through
+ * `position: relative` and a measured offset rather than a margin, because a
+ * margin would change the row's height inside the header's own grid and move
+ * the conversation below it, and a relative offset creates no containing block
+ * for the fixed pieces placed out of it. The row declares
+ * `-webkit-app-region: no-drag` as well: its top edge now lies inside the
+ * shell's drag strip, and a control that cannot be pressed is not a control.
+ *
+ * The host hides a chip's label through a container query on the row's own
+ * width, which protects the title while the two share the row. In the caption
+ * row the title takes no width and the row has room, so this mode re-shows the
+ * label the host hid; without that the control would simply be missing.
  *
  * macOS is left alone: its shell pads no content and the header already draws
  * its first line inside the traffic-light strip, so there is nothing to lift.
  *
- * The marks: `data-dsh-header-band` on the header carries which parts left the
- * row (`title`, `actions`, or both) and header-band.css keys every rule on it;
- * the three element stamps keep the stylesheet free of host class names.
+ * The marks ride the header itself, because they change on every page the row
+ * appears on or leaves and a body write would invalidate the whole document
+ * each time (D9). `data-dsh-header-band` carries which parts left the row
+ * (`title`, `actions`, or both) and header-band.css keys every rule on it; the
+ * element stamps (`data-dsh-header-title`, `data-dsh-header-row`,
+ * `data-dsh-header-actions`, `data-dsh-header-corner`) and the tab strip's own
+ * `data-dsh-header-band-tabs` keep the stylesheet free of host class names.
+ *
+ * The strip is placed by view-tabs at the middle of the window, which stops
+ * reading as the middle of the row once the title and the controls stand on
+ * either side of it. This pass hands it the middle of what is left — between
+ * the title's right edge and the controls' left edge, or between the shell's
+ * own left end and the caption buttons when a side stayed in the row — through
+ * `--dsh-header-band-tabs-left`, and the strip's own `translate(-50%, -50%)`
+ * keeps it centred on that value. The shell's own menu seat
+ * (`[data-windows-menu]`) gives up the row's left end, and the collapsed
+ * sidebar's control is kept clear whether that seat is mounted or not.
+ *
+ * The sidebar's collapse is an animation of the column's width with no DOM
+ * change under it, so the title row's size is subscribed and the placement
+ * rewritten in the same frame; a pass that reads the same boxes writes the same
+ * numbers and stops there. The boxes are read in the pass's read phase and
+ * written in its write phase, and a streaming batch that touches only the
+ * conversation column skips the pass.
+ *
+ * The title and the two clusters stand in two positions at once, one in the
+ * caption row and one in the header's own row, so screenshots and visual review
+ * cover a narrow desktop window as well as a page on another platform. The
+ * clusters' hover cards and menus position themselves from the trigger's own
+ * box, which is the lifted one; the host measures that at open time, so the
+ * placements here stay numbers a fixed box can be laid out from.
+ *
+ * A host that offers a slot for the title row or the top bar makes this pass
+ * unnecessary.
  *
  * @param ctx - client context.
  * @param ui - shared handle table.

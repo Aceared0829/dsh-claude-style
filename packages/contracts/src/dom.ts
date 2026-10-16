@@ -1,5 +1,5 @@
 /**
- * The DOM half of the host contract (D44): every selector or attribute the
+ * The DOM half of the host contract (D3): every selector or attribute the
  * host itself writes.
  *
  * The host's class names carry a build-time hash and change with every release,
@@ -32,7 +32,7 @@ export const THINK_ROW_SELECTOR = '[data-variant="think"]'
 export const REASONING_TEXT_SELECTOR = '[data-markdown-variant]'
 /**
  * The phase of a row that has one: a thinking row, and a tool call's own view
- * (the page's own phase is `data-phase`, D44). The values are the host's —
+ * (the page's own phase is `data-phase`, D3). The values are the host's —
  * `running` while that piece of work is under way.
  */
 export const ROW_PHASE_ATTRIBUTE = 'data-state'
@@ -181,7 +181,7 @@ export const COMPOSER_PLACEHOLDER_SELECTOR = '[data-composer-placeholder]'
 /**
  * The statistics in the composer stack. Both markers are read (D3), because an
  * older host build writes only the container; the context panel repeats the
- * figures (D27).
+ * figures
  */
 export const COMPOSER_STATS_SELECTOR = '[data-composer-stats]'
 export const COMPOSER_STAT_SELECTOR = '[data-composer-stat]'
@@ -204,7 +204,7 @@ export const MOBILE_PORTRAIT_SELECTOR = 'body.dsh-remote-portrait'
 /**
  * The filled arc of the context meter: the circle the host gives a dash array
  * (its track circle carries none). The skin paints it with the colour the
- * occupancy fell on (D27).
+ * occupancy fell on
  */
 export const CONTEXT_METER_FILL_SELECTOR = '[data-dsh-claude-context-meter] circle[stroke-dasharray]'
 /** The composer variant the host puts on the card (`hero` / `default`). */

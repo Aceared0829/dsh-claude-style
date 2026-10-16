@@ -22,7 +22,7 @@
       }
       // One walk, as the browser draws it: the first reading is taken where the
       // walk starts, the rest on the frames that follow, and the recording stops
-      // on a run of frames that read the same position. D00's 动效的断言 reads
+      // on a run of frames that read the same position. D66's 动效的断言 reads
       // this sequence — monotone, at least two different values between the two
       // ends, the end equal to the target — so that the shape of the curve is
       // settled in the unit lane and this lane only asks whether it was walked.
@@ -220,7 +220,7 @@
       await sleep(250)
       r.caret.back = caretOf()
       // The animation choice stills the drawn caret through its own stylesheet
-      // rule (caret.css), which is what D26's resolved attribute is for.
+      // rule (caret.css), which is what D40's resolved attribute is for.
       window.__pushForm({ motion: 'reduced' })
       await sleep(250)
       var reducedLayer = document.querySelector('[data-dsh-claude-caret-layer]')
@@ -571,7 +571,7 @@
       await sleep(150)
       var revealBack = revealPeek()
       // The animation choice: "reduced" withdraws the engine the same way the
-      // preference does (D26 — the resolved choice, not the system query).
+      // preference does (D40 — the resolved choice, not the system query).
       window.__pushForm({ motion: 'reduced' })
       await sleep(150)
       var revealReduced = revealPeek()

@@ -3,7 +3,7 @@
  * running call has received so far, or the object a settled call reports. Two
  * readers share this — the file rows (features/chat-files) and the waiting
  * line's own words (shared/file-tool) — so the reading lives here rather than
- * in either of them (D46).
+ * in either of them (D7).
  */
 
 /** A call's parsed arguments. */

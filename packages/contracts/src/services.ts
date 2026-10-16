@@ -1,5 +1,5 @@
 /**
- * The host services the skin reads, as the skin needs them (D44).
+ * The host services the skin reads, as the skin needs them (D3).
  *
  * Each interface declares only the members the skin actually touches, with the
  * meaning it gives them; the host's own types are wider and are not shipped
@@ -215,7 +215,7 @@ export interface HostChatBlock {
   /**
    * The host's own id for this call, on both stages. The host draws one row
    * element per call and hands it to the next call on the same file, so the id
-   * is what tells the file's calls apart on one element (D62).
+   * is what tells the file's calls apart on one element
    */
   callId?: string
   /** The call a settled node reports: its tool name and the raw arguments. */
@@ -436,7 +436,7 @@ interface HostLocaleService {
 }
 
 /**
- * The host's settings-form service (`configForms`, D60): one form per
+ * The host's settings-form service (`configForms`, D11): one form per
  * namespace, plus the catalogue of namespaces it serves.
  */
 export interface HostConfigFormsService {

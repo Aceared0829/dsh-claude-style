@@ -1,9 +1,9 @@
 /**
- * chunks.mjs — the deferred features' chunks (D39).
+ * chunks.mjs — the deferred features' chunks (D42).
  *
  * A feature whose manifest says `load: 'deferred'` leaves the bundle: its own
  * modules become one chunk, a classic script the host half's asset route
- * serves (D38), which packages/client/src/core/chunks.ts fetches once the page
+ * serves, which packages/client/src/core/chunks.ts fetches once the page
  * is taken. A module the bundle carries is never copied into a chunk — a second
  * copy of a module with state would split that state — so every import of one
  * stays an import, resolved at run time against the bundle's own instance
@@ -26,8 +26,7 @@ const moduleId = (file) => path.relative(ROOT, file).split(path.sep).join('/')
 /**
  * The repository's own modules among a metafile's inputs, as the ids the shared
  * table uses: a real module by its path from the repository root, a module a
- * build plugin generated under its own path (esbuild keys those as
- * `<namespace>:<path>`, and the generated data is one of them, D36).
+ * build plugin generated under its own path (esbuild keys those as * `<namespace>:<path>`, and the generated data is one of them, D36).
  *
  * The host packages and the virtual entry left out: they are the loader's or the
  * build's own, and the table resolves them where they stand.
@@ -110,7 +109,7 @@ function bundleChunk(manifest, shared, { external, plugins }) {
     footer: { js: CHUNK_CLOSE },
     // The sharing resolution runs before the generated-module plugin: that one
     // answers for its own paths, and an answer that wins would put a second copy
-    // of a module the bundle already carries into the chunk (D39).
+    // of a module the bundle already carries into the chunk (D42).
     plugins: [sharedModules(shared), ...plugins],
   })
 }
@@ -136,7 +135,7 @@ export async function splitChunks({ deferred, mainModules, options, slot }) {
   for (;;) {
     const shared = await mainModules([...promoted])
     for (const manifest of deferred) {
-      if (shared.has(`packages/client/src/${manifest.main}`)) throw new Error(`build: packages/client/src/${manifest.main} is deferred (D39), but a module the bundle carries imports it`)
+      if (shared.has(`packages/client/src/${manifest.main}`)) throw new Error(`build: packages/client/src/${manifest.main} is deferred (D42), but a module the bundle carries imports it`)
     }
     const chunks = new Map()
     for (const manifest of deferred) chunks.set(manifest.id, { manifest, result: await bundleChunk(manifest, shared, options) })
@@ -158,7 +157,7 @@ export async function splitChunks({ deferred, mainModules, options, slot }) {
         for (const item of input.imports) if (item.external) imports.add(item.path)
       }
       const text = result.outputFiles.find((file) => file.path.endsWith('.js')).text
-      if (text.includes(slot)) throw new Error(`build: a deferred feature reads BUILD_ID; a chunk is hashed before the bundle and cannot carry it (D39)`)
+      if (text.includes(slot)) throw new Error(`build: a deferred feature reads BUILD_ID; a chunk is hashed before the bundle and cannot carry it (D42)`)
     }
     return { chunks, shared: [...imports].sort(), bundled: shared }
   }

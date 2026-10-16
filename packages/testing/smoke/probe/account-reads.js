@@ -67,7 +67,7 @@
     var badge = mirrored ? mirrored.querySelector('.dsh-claude-popover-item-badge') : null
     r.mirroredBadge = badge ? badge.textContent : null
     r.stylesheet = !!document.getElementById('dsh-claude-style-style')
-    // The skin's sheet wears this package's own module-system tags (D33): the
+    // The skin's sheet wears this package's own module-system tags (D9): the
     // host's claim sweep reads untagged tags alone, so a tagged sheet cannot be
     // claimed by a sibling package and removed by that sibling's reload.
     var skinStyle = document.getElementById('dsh-claude-style-style')
@@ -76,13 +76,13 @@
     r.sheetClaimable = skinStyle ? skinStyle.matches('style:not([data-plugin])') : null
     // The sibling's sheet (the stand-in parts planted it before this bundle's factory
     // ran): this package must keep it out of its own bookkeeping, so no reload of
-    // this package removes it (D33).
+    // this package removes it (D9).
     var siblingSheet = probe.siblingSheet = document.getElementById('smoke-sibling-sheet')
     r.siblingSheetTag = siblingSheet ? siblingSheet.getAttribute('data-plugin') : null
     r.siblingSheetClaimable = siblingSheet ? siblingSheet.matches('style:not([data-plugin])') : null
     // A sibling's sheet that arrives after this bundle's factory ran, the way a
     // plugin mounting its sheet from apply() arrives: the head watch parks it
-    // before the next package materializes (D33).
+    // before the next package materializes (D9).
     var lateSheet = document.createElement('style')
     lateSheet.id = 'smoke-late-sibling-sheet'
     lateSheet.textContent = '.smoke-late-sibling-sheet{color:rgb(4, 5, 6)}'

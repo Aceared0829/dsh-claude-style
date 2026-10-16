@@ -3,7 +3,7 @@
  * (those are in scripts/css.mjs): the type check, the import graph, the
  * scroll owner's monopoly, every source reaching the bundle, the manifests
  * against the preference table, and the host contract and timing tables
- * (D36, D41, D42, D44).
+ * (D36, D40, D42, D3).
  */
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -13,13 +13,13 @@ import { loadModule, loadModuleEsm } from './shared/ts-module.cjs'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 /**
- * The preference table both halves share (packages/contracts/src/prefs.ts, D46):
+ * The preference table both halves share (packages/contracts/src/prefs.ts, D7):
  * the host half's Config is derived from it and every feature manifest's `pref`
  * has to name a key of it.
  */
 const { PREFS_DEFAULT } = await loadModuleEsm('packages/contracts/src/prefs.ts')
 
-/** The page states and check kinds packages/contracts/src/table.ts records (D44, D66). */
+/** The page states and check kinds packages/contracts/src/table.ts records (D3, D66). */
 const PROBE_STATES = new Set(['any', 'hero', 'sending', 'streaming', 'conversation', 'menu', 'dark'])
 const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'global', 'value', 'rail-geometry', 'none'])
 
@@ -27,7 +27,7 @@ const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'global', 'val
  * Refuse a source file that does not ship: a stylesheet no manifest and no
  * theme entry names, or a module nothing imports, would otherwise sit in packages/client/src/
  * with no way to reach the page. Manifests are data the build reads, the
- * contract table is read by the build and the tests (D44), and unit tests run
+ * contract table is read by the build and the tests (D3), and unit tests run
  * under Vitest; none of them is a module the bundle carries.
  *
  * @param bundled - the modules in the bundle (esbuild's metafile), relative to packages/client/src.
@@ -69,7 +69,7 @@ export function checkDependencies() {
 /**
  * Hold the manifests to the rest of the repository: every feature directory
  * carries at least one manifest, and a `pref` names a key of the shared
- * preference table (packages/contracts/src/prefs.ts, D46), the table the
+ * preference table (packages/contracts/src/prefs.ts, D7), the table the
  * settings form serves.
  *
  * @param manifests - the feature manifests (scripts/shared/read-manifests.cjs).
@@ -128,7 +128,7 @@ export function checkCycles(metafile) {
 }
 
 /**
- * Hold the host contract together (D44).
+ * Hold the host contract together (D3).
  *
  * The literals the skin keys on live in packages/contracts/src/dom.ts and the table of
  * what they mean in packages/contracts/src/table.ts; neither may drift from the other,
@@ -151,7 +151,7 @@ export function checkContracts(manifests) {
     if (listed.has(entry.id)) throw new Error(`build: packages/contracts/src/table.ts lists "${entry.id}" twice`)
     listed.add(entry.id)
   }
-  // Every entry says how the contract test checks it (D44), so a host upgrade
+  // Every entry says how the contract test checks it (D3), so a host upgrade
   // walks one list with no entry quietly unchecked.
   for (const entry of table) {
     const probe = entry.probe
@@ -181,7 +181,7 @@ export function checkContracts(manifests) {
 }
 
 /**
- * Hold the timing table to its checks (D44).
+ * Hold the timing table to its checks (D3).
  *
  * The timing assumptions live in packages/contracts/src/timing.ts, each naming what holds
  * it: a scenario of the end-to-end lane or a unit test beside its module. Both
@@ -217,7 +217,7 @@ function checkTiming() {
 
 /**
  * Refuse a module other than the scroll owner importing the spring: the chat
- * area's positions have one writer (D41), and a direct ease would bypass its
+ * area's positions have one writer (D40), and a direct ease would bypass its
  * arbitration.
  *
  * @param metafile - esbuild's metafile for the bundle.
@@ -226,18 +226,18 @@ export function checkScrollOwner(metafile) {
   for (const [file, input] of Object.entries(metafile.inputs)) {
     if (file === 'packages/client/src/shared/scroll-owner.ts') continue
     if (input.imports.some((item) => item.path === 'packages/client/src/shared/scroll-ease.ts')) {
-      throw new Error(`build: ${file} imports shared/scroll-ease.ts; positions go through shared/scroll-owner.ts (D41)`)
+      throw new Error(`build: ${file} imports shared/scroll-ease.ts; positions go through shared/scroll-owner.ts (D40)`)
     }
   }
 }
 
 /**
- * Refuse an easing curve written as a literal in the browser half (D65): a curve
+ * Refuse an easing curve written as a literal in the browser half (D9): a curve
  * is a token, so a Web Animations call names one through
  * packages/client/src/shared/motion.ts and a curve changed in the token table reaches
  * every animation. `linear` and the step functions are mechanical timing and
  * stay; the check reads the `easing` option of a keyframe or of an animation.
- * A stacking level above the local orders is refused the same way (D67): the
+ * A stacking level above the local orders is refused the same way (D9): the
  * browser half marks the element, and a sheet places it on a layer.
  *
  * @param sources - the browser half on its syntax tree (scripts/source-tree.mjs).
@@ -245,10 +245,10 @@ export function checkScrollOwner(metafile) {
 export function checkMotionSources(sources) {
   for (const [value, where] of sources.easings) {
     if (value === 'linear' || /^steps\(/.test(value)) continue
-    throw new Error(`build: ${where} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D65)`)
+    throw new Error(`build: ${where} writes the easing curve "${value}"; read it from the token table through shared/motion.ts (D9)`)
   }
   for (const [value, where] of sources.stacking) {
     if (Number(value) <= 9) continue
-    throw new Error(`build: ${where} writes the stacking level ${value}; mark the element and place it on a layer in its stylesheet (D67)`)
+    throw new Error(`build: ${where} writes the stacking level ${value}; mark the element and place it on a layer in its stylesheet (D9)`)
   }
 }

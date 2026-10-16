@@ -68,7 +68,7 @@ body[data-dsh-claude-style] {
 }
 
 /* The body's own canvas; a wallpaper plugin showing one keeps it unpainted
-   (D61, theme/wallpaper.css). */
+   (theme/wallpaper.css). */
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallpaper]) {
   background-color: var(--dsh-claude-canvas);
 }

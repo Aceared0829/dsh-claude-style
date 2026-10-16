@@ -18,7 +18,7 @@ export const PERMISSION_PRESETS: Record<string, { label: string, desc: string }>
  * The skin's own Chinese name for a tier the host's dictionary carries without
  * one: its `auto.label` reads "Auto review" in every language, so a Chinese
  * interface would otherwise show one English name among Chinese ones. A tier
- * the host translates is never overridden (D17).
+ * the host translates is never overridden (D43).
  */
 export const PERMISSION_CHINESE_LABELS: Record<string, string> = { 'auto': '自动审查' }
 
@@ -38,7 +38,7 @@ export const PERMISSION_SEGMENTS = [
 /**
  * The host's own tier names, keyed by preset id: its `permission.access`
  * dictionary holds the original Chinese names a Chinese interface shows
- * instead of a translation of Claude's own (D17).
+ * instead of a translation of Claude's own (D43).
  */
 export const PERMISSION_ACCESS_NAMESPACE = 'permission.access'
 export const PERMISSION_HOST_LABEL_KEYS: Record<string, string> = {

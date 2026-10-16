@@ -14,7 +14,7 @@ import type manifest from './chat-reveal.manifest'
  * page (the manifest); uninstalled, there are no step rules, no scan observer
  * and no paint frames. The engine's own prerequisite (the Custom Highlight
  * API) is handled inside it, and the animation choice is read here so a
- * running engine is taken down with it (D26): what comes back from the engine
+ * running engine is taken down with it (D40): what comes back from the engine
  * is null, and the mark the stylesheet reads is not written either.
  *
  * @param ctx - client context.

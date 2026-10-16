@@ -146,8 +146,7 @@
       holdRow.remove()
       await sleep(200)
       // The animation choice: with "reduced" in force the origin is not even
-      // measured, so no stand-in goes up and the echo stays visible (D26 — the
-      // resolved choice, read at each submission).
+      // measured, so no stand-in goes up and the echo stays visible (D40 — the // resolved choice, read at each submission).
       window.__pushForm({ motion: 'reduced' })
       await sleep(150)
       if (sendInput !== null) sendInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))

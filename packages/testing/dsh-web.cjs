@@ -150,7 +150,7 @@ async function start(options = {}) {
   }
   if (options.resetState === true) {
     // The usage record counts twice: the record itself, and the fold cache an
-    // earlier build wrote at the path the record is migrated from (D53).
+    // earlier build wrote at the path the record is migrated from
     for (const entry of ['sessions', path.join('storages', 'session_projcache'), path.join('dsh-claude-style', 'usage.json'), path.join('cache', 'dsh-claude-style', 'usage.json')]) {
       fs.rmSync(path.join(home, entry), { recursive: true, force: true })
     }

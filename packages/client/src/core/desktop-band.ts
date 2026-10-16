@@ -1,5 +1,27 @@
 import { FRAME_TOP_CLEARANCE_PROPERTY, FULLSCREEN_ATTRIBUTE, WINDOWS_TITLEBAR_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 
+/**
+ * The skin's one entry point for reading the desktop caption strip: a single
+ * call answers whether the strip is there, how tall it is, and which end the
+ * platform's window controls take.
+ *
+ * Both desktop platforms hand the top of the window to a native layer, and the
+ * criteria come from the host's own contracts: the markers are
+ * `data-windows-titlebar` and `data-platform="darwin"`; the height is
+ * `--dsh-frame-top-clearance`, which both platforms set (under Windows it
+ * aliases `--dsh-windows-titlebar-height`, and the computed style resolves the
+ * chain to a length); Windows' control width comes from the Window Controls
+ * Overlay API with 140px as the fallback, while macOS' controls sit at the left
+ * at the width of the host's own leading seat, 88px. Written into each consumer
+ * the platforms' three differences would repeat at every one of them, so they
+ * are resolved here once.
+ *
+ * The cost is one extra `getComputedStyle` per call, and a fall back to the
+ * module's own constants (macOS 48px, Windows 40px) when
+ * `--dsh-frame-top-clearance` is absent. Read the host's interface here when it
+ * offers a unified caption-strip slot or a platform-independent measurement.
+ */
+
 /** macOS: the clearance the traffic lights need, read off the host's own leading seat. */
 const MAC_TRAFFIC_LIGHTS = 88
 /** macOS: the strip height the host declares, used when the token is absent. */
@@ -54,14 +76,9 @@ export function windowsDesktop() {
  *     leading seat starts at 88px, the clearance those lights need.
  *   - Fullscreen. A fullscreen macOS window hides its traffic lights, and
  *     the host zeroes `--dsh-frame-chrome-top` with them, so that platform
- *     answers null. Windows keeps the answer it gave before this module
- *     existed: its frame holds both the strip and its padding in fullscreen,
- *     and the Window Controls Overlay API's own visibility is the authority
- *     there.
- *
- * Windows' answers are the ones the caption-band code computed before this
- * module existed, the Window Controls Overlay API included, so that
- * platform's behaviour is unchanged.
+ *     answers null. Windows' frame holds the strip and its padding in
+ *     fullscreen too, and the Window Controls Overlay API's own visibility is
+ *     the authority there; `data-fullscreen` takes no part in that branch.
  *
  * @returns {{ platform: 'win32' | 'darwin', height: number, controls: { side: 'left' | 'right', size: number } } | null}
  *          the strip, or null when the page owns its whole surface.

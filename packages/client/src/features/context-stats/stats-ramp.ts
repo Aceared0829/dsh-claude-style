@@ -1,7 +1,7 @@
 import { setAttributeIfChanged } from '../../shared/dom'
 
 /**
- * The colour ramp a reading takes, after dsh-chat-ux's design (D27): a reading
+ * The colour ramp a reading takes, after dsh-chat-ux's design: a reading
  * is placed between two stops and the browser mixes the colour between them in
  * OKLCH, so one reading of a session is one colour out of a continuous band
  * rather than one of a few buckets. The values themselves live in the

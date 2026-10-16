@@ -9,7 +9,7 @@
  *
  * The runs carry DSH_CLAUDE_STYLE_DEBUG=1: a watched checkout is the linked one
  * whose live page hot-reloads to every new bundle, and the page still running the
- * previous one asks for that build's chunks (D39). A plain `npm run build`
+ * previous one asks for that build's chunks (D42). A plain `npm run build`
  * afterwards leaves lib/assets/ holding one build's assets again.
  */
 import { spawn } from 'node:child_process'

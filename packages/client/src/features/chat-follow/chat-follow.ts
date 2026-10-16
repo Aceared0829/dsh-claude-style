@@ -19,7 +19,7 @@ import type manifest from './chat-follow.manifest'
  *
  * The guard that watches for the moments that lose the host's follow is
  * below; the hand-back itself and every position write are the scroll
- * owner's (shared/scroll-owner.ts, D41); the catch-up inside a capped body is
+ * owner's (shared/scroll-owner.ts, D40); the catch-up inside a capped body is
  * in process-follow.ts.
  */
 /** One tool call's row, and one flow block, in one selector: a new node either way. */
@@ -99,7 +99,7 @@ function placeFollowTail(stamp: ReturnType<typeof createStamp<HTMLElement>>, car
  * Watch the whole page for the moments that lose the host's follow, and hand
  * the position back at each of them; while content streams, glide the
  * position instead of letting the host write the end in one frame. Every
- * write goes through the scroll owner (D41).
+ * write goes through the scroll owner (D40).
  *
  * @param foldBusy - whether a fold glide is animating a height right now.
  * @returns teardown: the subscriptions go away.

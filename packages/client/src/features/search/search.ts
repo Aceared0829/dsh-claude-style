@@ -35,11 +35,47 @@ import type manifest from './search.manifest'
  * `icon` draws no box of the skin's at all and takes the click of the host's
  * own search button instead, which is left where the host draws it. It is
  * placed only where the row carries the wide brand, so the collapsed rail
- * keeps its expand toggle. The palette is the host's own `Modal`
- * (ui-primitives): the host's mask, focus return and modal layer, so while it
+ * keeps its expand toggle.
+ *
+ * The host's search control itself stays mounted in all three styles: the
+ * host's search shortcut has no public replacement, and its whole effect is to
+ * expand that control and put the caret in its input. `overlay` and
+ * `standalone` take the control out of sight and out of the layout
+ * (search.css), `icon` leaves it where it stands; a caret that lands in its
+ * input opens the palette, and the host's own clear button folds the control
+ * back, so a rebound shortcut keeps working and no press is intercepted.
+ *
+ * The palette is the host's own `Modal` (ui-primitives): the host's mask,
+ * focus return and modal layer, so while it
  * is open the host's shortcuts treat it as the foreground dialog, and Esc
- * closes it. The skin fills the modal's card with its own rows (sources.ts).
- * docs/decisions D22.
+ * closes it. The skin fills the modal's card with its own rows (sources.ts),
+ * and the palette takes a place in the shared popover table, so opening
+ * another popover closes it. The host unmounts the modal as it closes, so the
+ * close marks the overlay, keeps it mounted through the fade and releases the
+ * mark after the unmount: a mark released on a mounted overlay hands the card
+ * and the mask back their entrance animations for that one frame.
+ *
+ * What to list and what a row does are the host's own services and navigation
+ * (sources.ts), the picked row's navigation running once the modal has let go
+ * and handed the focus back. A content hit lands on the turn holding the
+ * message: the row's navigation opens its session first, the palette waits for
+ * that session on screen and for the outline naming its turns, and the host's
+ * own navigator takes the jump Services and remote namespaces are read
+ * by name through the context at the moment the palette needs them, since
+ * reading a remote namespace's child straight off the root context is refused
+ * by cordis as 「没有 inject」.
+ *
+ * Content search is the one question the host's client services do not answer:
+ * the host's own index (`sessions.search`, SQLite FTS5) is off in the shipped
+ * web composition and its `unicode61` tokenizer matches whitespace-delimited
+ * tokens only, so part of a Chinese sentence never matches there. The host half
+ * reads history through the host's observation interface and matches the way
+ * the host's own filter does (packages/host/src/search.ts), keeping one corpus
+ * per session in the cache directory beside a change token, answering the
+ * newest hit per session, and listing the stored sessions at most once in its
+ * own interval from the warm-up when the palette opens, never from a typed
+ * query. The host's own index takes this over once it matches Chinese by
+ * substring and ships in the web composition.
  *
  * @param ctx - client context.
  * @param ui - shared handle table.
@@ -47,7 +83,7 @@ import type manifest from './search.manifest'
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const sources = createSearchSources(ctx, revealHit)
-  /** The host-side navigator, which lands a picked hit on its turn (D34). */
+  /** The host-side navigator, which lands a picked hit on its turn */
   const hostTurns = createTurnNavHost(ctx)
   const FILTERS: { id: SearchFilter, key: string, fallback: string }[] = [
     { id: 'all', key: 'searchFilterAll', fallback: 'All' },
@@ -102,7 +138,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let closing = false
   let closeTimer = 0
   let pendingRun: (() => void) | null = null
-  /** The fade-out's length, the exit token the closing animations run (D65). */
+  /** The fade-out's length, the exit token the closing animations run (D9). */
   const CLOSE_MS = motionMs('--dsh-claude-duration-exit')
   /** The modal's overlay root, marked while it fades out. */
   const closingStamp = createStamp('data-dsh-claude-search-closing')
@@ -546,7 +582,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * Land on the turn holding one picked content hit, after that row's own
    * navigation opened its session. The conversation shows the session a frame
    * or two later and the whole-log outline lands with its binding, so both are
-   * waited for; the host's own rail takes the jump (D34).
+   * waited for; the host's own rail takes the jump
    */
   function revealHit(sessionId: string, seq: number) {
     const until = Date.now() + REVEAL_WAIT_MS

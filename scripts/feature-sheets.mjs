@@ -1,6 +1,6 @@
 /**
  * feature-sheets.mjs — the feature stylesheets the build writes from the
- * browser half's own constants (D51). Each is one rule per entry of a table
+ * browser half's own constants (D9). Each is one rule per entry of a table
  * whose length the code reads too, so the count and the rules have one source
  * in packages/client/src/constants.ts.
  *

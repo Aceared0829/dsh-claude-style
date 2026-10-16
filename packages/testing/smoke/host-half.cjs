@@ -1,7 +1,7 @@
 /**
  * The smoke's host half, in Node: lib/host/index.js applied to a fake cordis
  * context, and its private routes driven with the request shapes that matter
- * (docs/decisions D11).
+ * (D11).
  */
 'use strict'
 const fs = require('fs')
@@ -76,7 +76,7 @@ function fakeHost(mod, options = {}) {
           // The host's own `Session.seq` is the next sequence number, not the
           // event count: this log's events are numbered from 1.
           seq: (events?.[id] ?? []).reduce((next, event) => Math.max(next, event.seq + 1), 0),
-          // The host's own live Session: the events from one seq onward (D44).
+          // The host's own live Session: the events from one seq onward (D3).
           snapshotEvents: (fromSeq) => {
             if (tails !== undefined) tails.push([id, fromSeq])
             return (events?.[id] ?? []).filter((event) => event.seq >= fromSeq)
@@ -107,7 +107,7 @@ function fakeHost(mod, options = {}) {
         return {
           ...(shapes.includes('observeSession') ? {
             // The listing-free read: a `stat` by id and the restored log in a
-            // disposable lease (D53), released through `Symbol.dispose`.
+            // disposable lease, released through `Symbol.dispose`.
             observeSession: async (id) => {
               if (!known(id)) throw missing(id)
               return {
@@ -204,7 +204,7 @@ async function hostHalf() {
     const host = fakeHost(mod, { fenced, home: scratchHome })
     if (fenced) {
       // A profile entry the Config refuses keeps the host from starting the
-      // whole package (D60): the values earlier builds stored still pass. A
+      // whole package (D11): the values earlier builds stored still pass. A
       // `.volatile()` field resolves to an accessor, read through its `get()`.
       const resolved = (config) => {
         const [[key, stored]] = Object.entries(config)
@@ -415,7 +415,7 @@ async function hostHalf() {
   check('a moved revision is read again by the prewarm, and only it',
     same(reads.slice().sort(), ['session-a', 'session-b', 'session-b']), JSON.stringify(reads))
   // Each stale session is read by id, and that read no longer walks the stored
-  // corpus (D22, D53). The panel's own revision listing is a separate, throttled
+  // corpus The panel's own revision listing is a separate, throttled
   // pass and is not counted here.
   check('the catch-up folds its stale sessions without a stored-corpus listing',
     same(listings, []), JSON.stringify(listings))
@@ -467,7 +467,7 @@ async function hostHalf() {
   const wrongMethod = await request(rate, '/dsh-claude-style/peakrate', 'DELETE', '', browser)
   check('a method the rate route does not take is turned away', wrongMethod.status === 405, `HTTP ${wrongMethod.status}`)
 
-  // The routed assets, on the public prefix route (D38): the manifest the
+  // The routed assets, on the public prefix route: the manifest the
   // build wrote decides what exists, a text asset is stored brotli-compressed,
   // and nothing else answers however the name is spelled.
   console.log('\nhost half — public assets')
@@ -475,7 +475,7 @@ async function hostHalf() {
   const [assetName, asset] = Object.entries(manifest)[0] ?? []
   if (assetName === undefined) throw new Error('no routed assets in lib/assets/manifest.json; run npm run build')
   // Every name the manifest carries has its file: the manifest is what the
-  // route answers from, so an entry an earlier build's cleanup removed (D39)
+  // route answers from, so an entry an earlier build's cleanup removed (D42)
   // would have the route refuse a name the manifest promises.
   const dangling = Object.entries(manifest)
     .filter(([name, entry]) => !fs.existsSync(path.join(ROOT, 'lib', 'assets', entry.encoding === 'br' ? `${name}.br` : name)))
@@ -500,7 +500,7 @@ async function hostHalf() {
     check(`nothing but a name the build wrote answers under the assets route: ${url}`, answer.status === 404, `HTTP ${answer.status}`)
   }
 
-  // The debug retention (D39): a linked checkout rebuilds while a page runs the
+  // The debug retention (D42): a linked checkout rebuilds while a page runs the
   // previous bundle, which asks for that build's chunk names. The flag keeps
   // those names and their files in the manifest; a build without it ships
   // exactly its own set.

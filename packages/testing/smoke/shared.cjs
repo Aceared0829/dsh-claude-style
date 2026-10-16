@@ -11,7 +11,7 @@ const { loadModule } = require('../../../scripts/shared/ts-module.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..', '..')
 const CLIENT = path.join(ROOT, 'lib', 'client.js')
-// The host half as the package ships it (D46): the build writes it to lib/host.
+// The host half as the package ships it (D7): the build writes it to lib/host.
 const HOST = path.join(ROOT, 'lib', 'host', 'index.js')
 const MARKUP = '<img src=x onerror="window.__pwned=(window.__pwned||0)+1">'
 /** One transparent pixel: the launcher's avatar the HDSL case serves. */
@@ -63,7 +63,7 @@ const MANIFESTS = readManifests()
 const FEATURE_CASES = featureCases(MANIFESTS)
 
 /**
- * The cases that cover arriving in a chunk (D39): they exercise the loader and
+ * The cases that cover arriving in a chunk (D42): they exercise the loader and
  * the entries it takes, not one feature's own behaviour, so a deferred
  * feature's manifest names none of them itself. Every deferred directory is
  * credited with them here, or `--feature` cannot reach the run that covers how
@@ -76,7 +76,7 @@ for (const manifest of MANIFESTS) {
     for (const name of DEFERRED_CASES) if (!covered.includes(name)) covered.push(name)
 }
 
-/** The features that arrive in chunks of their own (D39), by id. */
+/** The features that arrive in chunks of their own (D42), by id. */
 const DEFERRED_FEATURES = MANIFESTS.filter((manifest) => manifest.load === 'deferred').map((manifest) => manifest.id)
 
 /** The preferences a page carries before a reader touches anything (packages/contracts/src/prefs.ts). */

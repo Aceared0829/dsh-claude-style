@@ -5,7 +5,7 @@
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
  * The Motion tab's other paint is a document attribute the reader's stored
- * choice resolves onto (D26), and everything between that choice and the words
+ * choice resolves onto (D40), and everything between that choice and the words
  * is real here: the loader patch writes `statusMotion` into the host's Config,
  * the host hands the value to the page's settings form, and the skin mirrors it
  * onto `<body>`. What the paint then is — seven radial washes orbiting the glyph
@@ -51,7 +51,7 @@ function washLineScenario({ check }) {
     script: 'waitLine',
     prompt: 'check the file and answer',
     delayMs: 600,
-    /** The reader's stored choice, written into the host's own settings (D60). */
+    /** The reader's stored choice, written into the host's own settings (D11). */
     patch: [
       '- id: ui-skin-claude-style',
       '  config:',

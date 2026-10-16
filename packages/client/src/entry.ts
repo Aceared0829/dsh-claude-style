@@ -200,14 +200,14 @@ export function apply(ctx: HostContext) {
     }
   }
 
-  /** The deferred features' installs that have arrived this generation, by id (D39). */
+  /** The deferred features' installs that have arrived this generation, by id (D42). */
   const arrived = new Map<string, FeatureInstall>()
   /** The deferred features whose chunk is on its way. */
   const awaited = new Set<string>()
 
   /**
    * Install one feature, or, for a deferred one whose chunk has not arrived
-   * yet, send for the chunk: the arrival installs it (D39).
+   * yet, send for the chunk: the arrival installs it (D42).
    */
   function installFeature(feature: Feature) {
     if (feature.chunk === undefined) {
@@ -222,8 +222,7 @@ export function apply(ctx: HostContext) {
 
   /**
    * Whether a feature whose chunk just arrived still belongs on the page: the
-   * page may have been given to another owner (only its KEPT_FOR features
-   * stay, D49), the feature switched off, or the generation ended while the
+   * page may have been given to another owner (only its KEPT_FOR features * stay, D49), the feature switched off, or the generation ended while the
    * chunk was on its way.
    */
   function belongs(feature: Feature) {
@@ -291,7 +290,7 @@ export function apply(ctx: HostContext) {
    * Stand down for another owner (D49): install the features it leaves on the
    * page that are not installed yet — a page booting yielded, or going from
    * one owner to the other — and release the rest. A kept feature that is
-   * deferred installs when its chunk arrives (D39).
+   * deferred installs when its chunk arrives (D42).
    */
   function yieldTo(next: PageOwner) {
     const keep = KEPT_FOR[next]
@@ -312,7 +311,7 @@ export function apply(ctx: HostContext) {
    * in install order; the scheduler's pass order is the same order. A live
    * feature follows its switch and the plugins it yields to; the rest
    * install once. A deferred feature installs when its chunk arrives, after
-   * this pass and the scheduler (D39). A `pref` outside FEATURE_PREF_DEFAULTS
+   * this pass and the scheduler (D42). A `pref` outside FEATURE_PREF_DEFAULTS
    * is read by the feature itself.
    */
   function own() {

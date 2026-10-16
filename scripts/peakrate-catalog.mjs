@@ -1,5 +1,5 @@
 /**
- * peakrate-catalog.mjs — the peak rate catalog the package ships (D54).
+ * peakrate-catalog.mjs — the peak rate catalog the package ships
  *
  * The document is the data source's own file, kept in the repository and
  * copied beside the bundle: it is what the host half serves when the source

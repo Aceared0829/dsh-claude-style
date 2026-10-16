@@ -13,7 +13,7 @@ import { motionMs } from '../../shared/motion'
  * The glide itself — the click it takes over, the intent it remembers, the
  * two directions it rolls — lives in fold-glide.ts.
  */
-/** The door's duration: the movement token, which the sliding highlight shares (D65). */
+/** The door's duration: the movement token, which the sliding highlight shares (D9). */
 export const FOLD_ROLL_MS = motionMs('--dsh-claude-duration-move')
 /**
  * The share of that duration the visible stretch gets; the rest is left for

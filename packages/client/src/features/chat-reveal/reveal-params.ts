@@ -9,7 +9,7 @@ import { motionMs } from '../../shared/motion'
 export { CHAT_REVEAL_COLOR_VAR, CHAT_REVEAL_HIGHLIGHT_PREFIX, CHAT_REVEAL_MIN_OPACITY, CHAT_REVEAL_STEPS } from '../../constants'
 /**
  * How long a character takes to become fully opaque: the reveal token, the same
- * pace the chat area's own entrances run at (D65). Moving it means weighing the
+ * pace the chat area's own entrances run at (D9). Moving it means weighing the
  * step count (constants.ts) again: each step stands this long divided by it.
  */
 export const CHAT_REVEAL_MS = motionMs('--dsh-claude-duration-reveal')

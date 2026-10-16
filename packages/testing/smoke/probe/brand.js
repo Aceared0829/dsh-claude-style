@@ -1,5 +1,5 @@
 /**
- * The custom-brand case (D64): the host half's status names a mark and a 4:1
+ * The custom-brand case (D30): the host half's status names a mark and a 4:1
  * wordmark, and the page paints them over the brand's own art — the sidebar's
  * mark and wordmark, the hero's mark and the account row's fallback picture —
  * then inks them in the text colour and takes a custom accent once the

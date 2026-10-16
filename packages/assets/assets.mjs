@@ -1,5 +1,5 @@
 /**
- * assets.mjs — every image the skin ships, one directory and one manifest (D38).
+ * assets.mjs — every image the skin ships, one directory and one manifest.
  *
  * Two delivery forms, chosen by size:
  *
@@ -10,7 +10,7 @@
  *            host half under ASSETS_ROUTE; the name carries the content hash,
  *            so the address may be cached for good.
  *
- * The deferred features' chunks and their source maps (D39) ride the same route:
+ * The deferred features' chunks and their source maps (D42) ride the same route:
  * the build hands their text in (routeText), always routed.
  *
  * A file whose bytes are text (SVG, a chunk) is stored brotli-compressed beside
@@ -314,7 +314,7 @@ export function checkClaimed(plan, claimed) {
 
 /**
  * Route a text file the build produced rather than read from packages/assets/src/: a
- * feature chunk or its source map (D39). It is never inlined — a chunk inlined
+ * feature chunk or its source map (D42). It is never inlined — a chunk inlined
  * into the bundle would put its feature back — and the build names it.
  *
  * @param plan - the plan (planAssets); the entry joins its routed files.
@@ -344,7 +344,7 @@ export function routeText(plan, { file, name, type, text }) {
  * still running the previous build keeps finding its own.
  *
  * `retain` carries the previous manifest's entries over, for the linked
- * checkout that rebuilds against a live page (D39): the page that booted the
+ * checkout that rebuilds against a live page (D42): the page that booted the
  * previous bundle asks for that build's chunk names, and this keeps them
  * addressable. An entry whose file is gone is dropped, because the manifest is
  * the gate the route answers from.

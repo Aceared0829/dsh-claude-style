@@ -8,16 +8,16 @@
  * packages/client/src/entry.ts into one minified CommonJS body with React and the host packages
  * external, and that body is wrapped in the loader's factory:
  *
- *   packages/client/src/entry.ts                 apply(): the FEATURES table, the deferred features installed from their chunks (D39)
+ *   packages/client/src/entry.ts                 apply(): the FEATURES table, the deferred features installed from their chunks (D42)
  *   packages/client/src/constants.ts             constants; also evaluated here for the stylesheet gates
- *   scripts/chunks.mjs                           the deferred features' chunks (D39), routed like the assets
+ *   scripts/chunks.mjs                           the deferred features' chunks (D42), routed like the assets
  *   scripts/build-cache.mjs                      the vectors and brotli payloads kept between runs in .debug/build-cache/
  *   packages/client/src/core/ packages/client/src/shared/ packages/client/src/features/<name>/   the modules, TypeScript, strict
  *   packages/client/src/features/<dir>/<main>.manifest.ts   each feature's manifest (D42), read by scripts/shared/read-manifests.cjs
  *   packages/client/src/theme/*.css and the feature stylesheets   concatenated by rank (THEME_SHEETS and the manifests),
  *                                checked and gated on the syntax tree (scripts/css.mjs)
  *   packages/client/src/theme/tokens.json        the design tokens: the token stylesheet and docs/STYLE.md's table
- *   packages/assets/src/                  every image (packages/assets/assets.mjs, D38): small ones inline, the rest
+ *   packages/assets/src/                  every image (packages/assets/assets.mjs): small ones inline, the rest
  *                                written to lib/assets/<hash>.<ext> and served by the host half
  *   packages/assets/src/fonts/            the four faces the package ships with their licences and
  *                                authors file, copied to lib/fonts/ (buildFonts)
@@ -36,7 +36,7 @@
  * The order of the writes is part of the contract: every asset and the host
  * half land before `lib/client.js`, because the client half of the hot reload
  * watches that one file — a page that swaps to it must find this build's chunks
- * already on disk and already in the manifest (D39).
+ * already on disk and already in the manifest (D42).
  *
  * `packages/client/data/model-descriptions.json` is not bundled: it is validated
  * (scripts/model-copy.mjs) and copied to `lib/`, where the host half serves it to
@@ -70,9 +70,9 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 /** The model copy: data beside the browser half's code, never bundled. */
 const DATA = path.join(ROOT, 'packages', 'client', 'data')
-/** The peak rate catalog the host half serves: data beside the host half's code, never bundled (D54). */
+/** The peak rate catalog the host half serves: data beside the host half's code, never bundled */
 const HOST_DATA = path.join(ROOT, 'packages', 'host', 'data')
-/** Brand marks, mascot sheets and vendor lockups; packages/assets/assets.mjs plans their delivery (D38). */
+/** Brand marks, mascot sheets and vendor lockups; packages/assets/assets.mjs plans their delivery */
 const ASSETS = path.join(ROOT, 'packages', 'assets', 'src')
 /** The plugin icon the manifest names, copied into lib/ as it is. */
 const BRAND_ASSETS = path.join(ASSETS, 'brand')
@@ -125,7 +125,7 @@ const THEME_SHEETS = [
   { file: 'theme/hero.css', rank: 70 },
   { file: 'theme/sidebar.css', rank: 110 },
   { file: 'theme/third-party.css', rank: 300 },
-  // Last: the page on a wallpaper restates what the features paint on the shell (D61).
+  // Last: the page on a wallpaper restates what the features paint on the shell
   { file: 'theme/wallpaper.css', rank: 400 },
 ]
 
@@ -149,7 +149,7 @@ function styleFiles(manifests) {
   return sheets
 }
 
-/** The package's own manifest; the loader id, the stylesheet's tag and the profile entry carry its name (D33). */
+/** The package's own manifest; the loader id, the stylesheet's tag and the profile entry carry its name (D9). */
 const PACKAGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 const PACKAGE_ID = PACKAGE.name
 
@@ -157,7 +157,7 @@ const PACKAGE_ID = PACKAGE.name
 const HOST_PACKAGES = ['react', 'react-dom/client', '@deepseek-ai/dsh-client-ui-primitives']
 
 /**
- * Whether this build keeps the assets the build before it shipped (D39).
+ * Whether this build keeps the assets the build before it shipped (D42).
  *
  * A linked checkout is what the flag is for: its live page boots the bundle
  * that was on disk when the host composed the graph, and after a rebuild that
@@ -229,7 +229,7 @@ const CONSTANTS = (() => {
   return {
     // The gate attributes scripts/css.mjs checks, stamps and writes the token
     // blocks under: who paints the colours and who sets the type (D30), the
-    // composer preference (D4) and the DeepSeek brand's own blocks (D50).
+    // composer preference (D9) and the DeepSeek brand's own blocks (D30).
     gates: {
       composer: COMPOSER_ATTR,
       palette: { attribute: PALETTE_ATTR, claude: PALETTE_CLAUDE, host: PALETTE_HOST },
@@ -297,7 +297,7 @@ function loadCombines(plan, claimed) {
 }
 
 /**
- * Deepy's sheets as the vectors the browser plays (D38).
+ * Deepy's sheets as the vectors the browser plays
  *
  * Each PNG is decoded, held to its animation table's crop box and frame count,
  * and rebuilt as SVG over the sprite's own cell layout. The vector is what the
@@ -345,7 +345,7 @@ async function main() {
   checkMotionSources(sources)
   const sheets = styleFiles(manifests)
 
-  // Every image, its content hash and its address (D38). Nothing is written
+  // Every image, its content hash and its address Nothing is written
   // yet: the plan is read by everything below, and a refusal anywhere in this
   // build must leave lib/ as it was.
   const cache = openBuildCache(CACHE_DIR)
@@ -412,7 +412,7 @@ async function main() {
     DEEPY_SHEET_URLS: deepyUrls,
     // The motion tokens, by name: the browser half reads the same table the
     // generated token stylesheet carries, so a duration cannot be 200 ms in the
-    // CSS and 250 ms in a Web Animations call (D65).
+    // CSS and 250 ms in a Web Animations call (D9).
     MOTION: motionValues(tokenDoc),
   })
 
@@ -442,7 +442,7 @@ async function main() {
     plugins: [featuresModule(manifests, chunkUrls), chunkModulesModule(shared), generated],
   })
 
-  // The deferred features leave the bundle for chunks of their own (D39). A
+  // The deferred features leave the bundle for chunks of their own (D42). A
   // graph pass stands every chunk's address in with its feature id.
   const deferred = manifests.filter((manifest) => manifest.load === 'deferred')
   const standIns = Object.fromEntries(deferred.map((manifest) => [manifest.id, manifest.id]))
@@ -471,7 +471,7 @@ async function main() {
   checkScrollOwner(result.metafile)
   // The metafile keys paths the way esbuild saw them: repository-relative. Both
   // sides of the comparison are the repository's own modules, generated ones
-  // included: a second copy of a generated module ships its values twice (D39).
+  // included: a second copy of a generated module ships its values twice (D42).
   const prefix = `${path.relative(ROOT, SRC).split(path.sep).join('/')}/`
   const mainIds = ownModuleIds(result.metafile)
   const twice = mainIds.filter((id) => chunkInputs.includes(id))
@@ -506,7 +506,7 @@ async function main() {
   const copyText = JSON.stringify(copy, null, 2) + '\n'
   // The peak rate catalog is the data source's own document, shipped as the
   // copy a machine with no reach judges by; the host half's parser is the same
-  // one the build checks it with (D54).
+  // one the build checks it with
   const catalogPath = path.join(HOST_DATA, PEAKRATE_CATALOG)
   const catalogText = fs.readFileSync(catalogPath, 'utf8')
   const catalogProfiles = validatePeakCatalog(JSON.parse(catalogText), catalogPath)
@@ -542,7 +542,7 @@ async function main() {
   // Last, always: this is the file a running page's client hot reload watches,
   // and the generation it swaps to reads its chunks from this build. Writing it
   // after every asset means those chunks are already on disk and already in the
-  // manifest when the page asks for them (D39).
+  // manifest when the page asks for them (D42).
   fs.writeFileSync(OUT, bundle)
   fs.writeFileSync(`${OUT}.map`, sourceMap)
   console.log(`built lib/client.js (${Buffer.byteLength(bundle)} bytes, build ${buildId}) from packages/client/src/ (${bundled.size} modules + ${sheets.length} stylesheets + ${Object.keys(combines).length} lockups)`)

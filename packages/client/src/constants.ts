@@ -31,14 +31,14 @@ export const PACKAGE_NAME = 'dsh-claude-style'
  * The skin stylesheet's own key in the client module system's bookkeeping:
  * the sheet is mounted tagged `data-plugin="<PACKAGE_NAME>"` and
  * `data-plugin-css="<STYLE_PLUGIN_CSS>"`, which is what keeps the host's
- * claim sweep and every sibling package's removal off it (D33).
+ * claim sweep and every sibling package's removal off it (D9).
  */
 export const STYLE_PLUGIN_CSS = `${PACKAGE_NAME}/client.css`
 /** The surface sheets' key in the same bookkeeping. */
 export const SURFACE_PLUGIN_CSS = `${PACKAGE_NAME}/surface.css`
 /**
  * The tag this package gives a sibling's untagged stylesheet so the host's
- * claim sweep cannot attribute it to this package (D33). It carries a slash,
+ * claim sweep cannot attribute it to this package (D9). It carries a slash,
  * so it can never equal a package name — the id every removal step matches
  * on — and no package's reload takes the sheet away.
  */
@@ -57,7 +57,7 @@ export const REPOSITORY_URL = 'https://github.com/Nwflower/dsh-claude-style'
  * packages/client/src/core/prefs.ts reads and writes them). Each value is
  * mirrored onto the document as an attribute so the stylesheet decides what a
  * preference means, and the defaults are the shared contract
- * (packages/contracts/src/prefs.ts, D46).
+ * (packages/contracts/src/prefs.ts, D7).
  */
 
 /** Brand marks selectable from the settings page. `claude` is the default. */
@@ -75,8 +75,7 @@ export const BRAND_DEEPSEEK_LEGACY = 'off'
 export const BRAND_ATTR = 'data-dsh-claude-brand'
 
 /**
- * The custom brand layer over either brand (D64,
- * packages/client/src/features/brand/brand.ts). Each part stands only while
+ * The custom brand layer over either brand (D30, * packages/client/src/features/brand/brand.ts). Each part stands only while
  * the reader has supplied it: CUSTOM_MARK_ATTR while a mark image is in place,
  * CUSTOM_WORD_ATTR as `image` while a wordmark image is and as `text` while
  * only a brand name is, CUSTOM_TINT_ATTR while the images take the text colour
@@ -245,7 +244,7 @@ export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
 export const CHAT_ANIMATIONS_OFF = 'off'
 
 /**
- * Where the session's numbers show (D27): `context` (the default) keeps them in
+ * Where the session's numbers show: `context` (the default) keeps them in
  * the popover the meter opens and leaves the card's bottom line to the meter
  * alone, and `inline` writes them on a line of their own under the input card,
  * with the host's meter at that line's end. The choice rides <body> as
@@ -284,7 +283,7 @@ export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF]
  * automatic folding with its rolling door and the file change rows. Those three
  * belong here rather than among the live-read preferences because two of them
  * cannot be stopped by reading a preference: the file change rows take the
- * host's two seat keys over (D32), and a seat registration only comes back when
+ * host's two seat keys over (D49), and a seat registration only comes back when
  * the feature is torn down whole. `statsPosition` answers where the session's
  * numbers show: one value writes them on a line of their own under the card,
  * the other fills the context popover with them and leaves that line to the
@@ -333,7 +332,7 @@ export const STREAM_GLIDE_ATTR = 'data-dsh-claude-stream-glide'
  * (packages/client/src/features/chat-follow/chat-follow.ts) holds the position
  * for the reader. A position held short of the end reads to the host as a
  * reader who left the tail, and it takes its own data-chat-following-tail away
- * (D44) — the gate the waiting line's pin waits for
+ * (D3) — the gate the waiting line's pin waits for
  * (packages/client/src/features/chat-wait/chat-wait.css). This mark stands
  * for that gate while the glide is the one moving the position.
  */
@@ -558,7 +557,7 @@ export const DOCK_LOOK_ATTR = 'data-dsh-claude-dock-look'
 
 /**
  * The host half's private routes, under this half's own names. The paths are
- * the shared contract (packages/contracts/src/routes.ts, D46), declared once
+ * the shared contract (packages/contracts/src/routes.ts, D7), declared once
  * for both halves.
  */
 export {
@@ -643,7 +642,7 @@ export interface Prefs {
   messageEnter: string
 }
 
-/** Every preference's shipped default, from the table both halves share (packages/contracts/src/prefs.ts, D46). */
+/** Every preference's shipped default, from the table both halves share (packages/contracts/src/prefs.ts, D7). */
 export const PREF_DEFAULTS: Prefs = PREFS_DEFAULT
 
 /** The preferences whose value is one of a fixed set; any other stored value reads as the default. */

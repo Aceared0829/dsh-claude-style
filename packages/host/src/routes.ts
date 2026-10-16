@@ -9,8 +9,7 @@
  * registered on its own: one path the web server refuses is reported, and the
  * other routes still register.
  *
- * The paths are the shared contract (`@dsh-claude-style/contracts/routes`,
- * D46): the browser half addresses the same names.
+ * The paths are the shared contract (`@dsh-claude-style/contracts/routes`, * D7): the browser half addresses the same names.
  */
 import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, ROUTE_PREFIX, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
 import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'
@@ -54,7 +53,7 @@ const FONT_FILES = {
 }
 /**
  * The assets the build routed rather than inlined, served under
- * `${ROUTE_PREFIX}/assets/` from the build output in `lib/assets/` (D38).
+ * `${ROUTE_PREFIX}/assets/` from the build output in `lib/assets/`
  *
  * The request name is the whole contract: it must be a key of the build's
  * manifest, which is `<content hash>.<ext>` — no separator, no dot segment —
@@ -238,7 +237,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
   }
 
   /**
-   * Answer one request for a routed asset (D38).
+   * Answer one request for a routed asset.
    *
    * The manifest is read per request, like every other file here: the build
    * decides what exists, and a rebuild then shows up without restarting the
@@ -308,7 +307,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
      * Register one route. The web server refuses a path another plugin already
      * holds by throwing; that refusal is reported and the other routes still
      * register, because a throw here would fail this fiber and drop the client
-     * bundle — the whole skin — with it (docs/decisions D12).
+     * bundle — the whole skin — with it (D12).
      *
      * A host that serves no web server at all registers nothing: that is said
      * once here, and nothing below is built, so the teardown is left with the
@@ -534,7 +533,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
       peakrate.dispose()
       sessionSearch.dispose()
       // One route's disposer failing must not keep the others registered
-      // (docs/decisions D12); the failure is reported.
+      // (D12); the failure is reported.
       for (const dispose of disposers) {
         try {
           dispose()

@@ -3,7 +3,7 @@ import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { loadBrandImages, readBrandImages, resetBrandImages, subscribeBrandImages } from '../../shared/custom-brand'
 
 /**
- * The custom brand layer (D64): the reader's own name, images and accent
+ * The custom brand layer (D30): the reader's own name, images and accent
  * colour over whichever brand is chosen. Each part is written onto <body>
  * only while the reader has supplied it — an attribute the stylesheets switch
  * on (brand.css, and the account avatar's rule in account-footer.css) and the

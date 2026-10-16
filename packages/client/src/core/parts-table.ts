@@ -244,7 +244,7 @@ export const PAGE_PARTS: PartTable = {
 
 /** One region: the host subtree its parts are read in, and the parts themselves. */
 export interface PartRegion {
-  /** The host subtree the region's parts are read in; a host contract (D44). */
+  /** The host subtree the region's parts are read in; a host contract (D3). */
   within: string
   parts: PartTable
   /**

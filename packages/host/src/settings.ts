@@ -9,7 +9,7 @@
  * package still loads the skin — it just loses the settings form.
  *
  * The preference list itself is the shared contract, so both halves declare
- * the fields from one table (`@dsh-claude-style/contracts/prefs`, D46).
+ * the fields from one table (`@dsh-claude-style/contracts/prefs`, D7).
  */
 import { PREFS_DEFAULT } from '@dsh-claude-style/contracts/prefs'
 import type { DshContext, DshScope } from './dsh.ts'
@@ -49,7 +49,7 @@ async function resolveSchemaFactory(): Promise<SchemaFactory | null> {
 
 /**
  * The schema factory the host provides (`@deepseek-ai/schemastery`), as far as
- * this half uses it: it is resolved at runtime and may be absent (D60), so the
+ * this half uses it: it is resolved at runtime and may be absent (D11), so the
  * shape is declared here rather than imported.
  */
 interface SchemaFactory {
@@ -107,7 +107,7 @@ function prefsField(Schema: SchemaFactory, key: keyof typeof PREFS_DEFAULT) {
  * bundle ships 3.18.2, so the marker is applied only when the installed
  * factory provides it.
  *
- * The import is guarded and top-level-awaited (docs/decisions D60): a
+ * The import is guarded and top-level-awaited (D11): a
  * host that cannot resolve schemastery must still load the skin — it just
  * loses the settings form.
  *

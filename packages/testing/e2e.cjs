@@ -10,9 +10,9 @@
  * the answer streams in, that the send flight hands the reader's words over
  * without a blank frame, and that both palettes capture the README frame's own
  * picture with nothing personal in it. The `contract` scenario walks packages/contracts/src/table.ts against the same page, so
- * each host literal the skin depends on is checked where it lives (D44), and the
+ * each host literal the skin depends on is checked where it lives (D3), and the
  * `importance` scenario holds every `!important` the skin writes to one the page
- * needs (packages/testing/importance.cjs, D51).
+ * needs (packages/testing/importance.cjs, D9).
  *
  * This file is the runner: it boots each scenario's instance, samples the page
  * once per frame while the turn runs, and writes the evidence of a failure. The
@@ -378,7 +378,7 @@ async function main() {
     const at = args.indexOf(`--${flag}`)
     return at === -1 ? undefined : args[at + 1]
   }
-  // The timing table names the scenarios that hold it (D44), so the two lists are
+  // The timing table names the scenarios that hold it (D3), so the two lists are
   // checked against each other rather than kept in step by hand.
   const { E2E_SCENARIOS } = loadModule('packages/contracts/src/timing.ts')
   const known = Object.keys(SCENARIOS)

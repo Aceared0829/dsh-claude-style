@@ -19,7 +19,7 @@ body[data-dsh-claude-style] [data-dsh-claude-message-enter] {
   animation: dsh-claude-enter-grow var(--dsh-claude-duration-enter) var(--dsh-claude-ease-enter) both;
 }
 
-/* The reader's animation choice (D26): the mark is not written on a still page,
+/* The reader's animation choice (D40): the mark is not written on a still page,
    and this is the second net for one written before the choice changed. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-message-enter] {
   animation: none;

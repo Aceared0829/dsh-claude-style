@@ -46,6 +46,33 @@ export interface BanHandle extends FeatureHandle {
  * titlebar, composer) whatever the host renders underneath — and it can
  * never be clipped by the sidebar column, which the account popover itself
  * has to work around.
+ *
+ * The window's top strip belongs to the system layer on both desktop
+ * platforms, so the page draws no window controls of its own while
+ * `desktopBand()` reports a strip; where it reports none, the page keeps its
+ * own window cluster. The band is read once per open, since it can neither
+ * appear nor vanish while the page is up: its height and the width the window
+ * controls take become `--dsh-ban-caption-height` and
+ * `--dsh-ban-caption-controls`, the end holding them becomes
+ * `data-dsh-ban-controls`, the overlay carries `data-dsh-ban-titlebar`, and the
+ * stylesheet puts the wordmark and 「退出登录」 in that row and gives up width at
+ * the controls' end, right on Windows and left on macOS. On Windows
+ * the band also follows the page: while the overlay is open its canvas colour
+ * (`--dsh-ban-canvas`) is written to `<body>`'s `--dsw-specific-sidebar-fill`,
+ * which the desktop shell probes and repaints whenever `<body>`'s style
+ * changes, and the token is taken back on close. macOS's band is the system's
+ * translucent material, so it takes no fill. The band is the window's drag
+ * area and the overlay covers the host's own, so the top bar declares itself a
+ * drag region with 「退出登录」 the only control that is not. The page always
+ * draws Claude's own starburst and wordmark, whatever brand the skin is set to.
+ *
+ * What this depends on is the desktop shell's own reading of the window:
+ * `data-windows-titlebar`, `data-platform="darwin"`,
+ * `--dsh-frame-top-clearance`, the `--dsw-specific-sidebar-fill` probe and the
+ * shape of the Window Controls Overlay interface. Where the shell stops
+ * measuring one of them, the caption band keeps the theme colour and covers the
+ * wordmark the page draws at its top. Read the shell again when it offers a
+ * slot for a full-window overlay, or a way to hide the titlebar.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let banRoot: HTMLElement | null = null

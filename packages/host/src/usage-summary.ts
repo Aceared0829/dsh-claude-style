@@ -9,7 +9,7 @@
  *
  * The cost meter's ledger and our own fold are two accounts of the same days, so
  * they combine by date and never by addition: a day the ledger knows is the
- * ledger's, and only the dates past its newest come from the fold (D53). Adding
+ * ledger's, and only the dates past its newest come from the fold. Adding
  * the fold's days on top of the ledger's would count the same settlements twice.
  */
 import { BUCKET_KEYS, addBuckets, emptyBuckets } from './usage-ledger.js'
@@ -190,7 +190,7 @@ export function mergeLedgerFold(
     days.set(date, buckets)
     folded = true
     // The count follows the days rather than the logs: a session whose log is
-    // gone is still behind the days the record holds for it (D53).
+    // gone is still behind the days the record holds for it.
     for (const id of buckets.sessionIds ?? []) sessionIds.add(id)
   }
   return { days, sessionIds, folded }

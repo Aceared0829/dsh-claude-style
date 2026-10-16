@@ -1,5 +1,5 @@
 /**
- * The appearance layer (D00, 外观层): what one page state's parts compute to.
+ * The appearance layer (D66): what one page state's parts compute to.
  *
  * A behaviour check asks whether a thing works; this asks what it looks like.
  * Every part in the vocabulary the stylesheets may read (packages/client/src/core/parts-table.ts)
@@ -8,7 +8,7 @@
  * colours, borders, radii, shadows, placement and overflow. The resolved family
  * and size of the font are left out on purpose, because neither says anything
  * about the sheet here: this checkout serves no face of its own, so both answer
- * for the browser's default for the platform the walk runs on (D00, 代价).
+ * for the browser's default for the platform the walk runs on (D66).
  *
  * The values are recorded, not asserted here: they land in the report under
  * `appearance`, the run writes them beside its own output, and

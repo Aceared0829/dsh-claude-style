@@ -1,8 +1,8 @@
 /**
  * file-walk.mjs — every file under a directory, by extension.
  *
- * Shared by lint.mjs and decision-number.mjs; each caller passes the
- * directories its own sweep never enters.
+ * Shared by the lint sweep, the tree hash and the verify gates; each caller
+ * passes the directories its own sweep never enters.
  */
 import fs from 'node:fs'
 import path from 'node:path'

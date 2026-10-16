@@ -313,7 +313,7 @@ export function createSessionSearch(ctx: DshContext) {
       if (entry.revision !== want.revision) stale.push(id)
     }
     // Each stale session is read by id, and that read no longer lists the
-    // stored corpus (D22, D53); the walk only costs one log open per session, so
+    // stored corpus; the walk only costs one log open per session, so
     // a handful run at once.
     let next = 0
     const worker = async () => {

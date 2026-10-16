@@ -21,7 +21,7 @@
    move one distance each way — while the label's layout stays exactly as it
    was. */
 /* The values the swap travels — its distance, blur, duration, its gap and its
-   curve — are the shared ones from shared/motion.css (D65), as motion tokens;
+   curve — are the shared ones from shared/motion.css (D9), as motion tokens;
    the box and the copies read them, and a caller that wants a shorter travel
    sets --dsh-claude-swap-distance where it uses the label. */
 body[data-dsh-claude-style] .dsh-claude-swap-label {
@@ -99,7 +99,7 @@ body[data-dsh-claude-style] .dsh-claude-swap-shimmer::before {
   -webkit-text-fill-color: transparent;
 }
 
-/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D26).
+/* The reader's animation choice, resolved onto <body> by core/prefs.ts (D40).
    The helper writes the words without a swap on that setting, so this is the
    second net for a swap already in flight when the choice changes — the copies'
    own motion and the box's travel alike. */

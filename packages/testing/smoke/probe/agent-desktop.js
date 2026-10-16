@@ -85,7 +85,7 @@
       // rules are what the page applies.
       var styleEl = document.getElementById('dsh-claude-style-style')
       var sheetRules = styleEl && styleEl.sheet ? Array.prototype.slice.call(styleEl.sheet.cssRules) : []
-      // The entrance is the shared menu preset (shared/motion.css, D65): the host
+      // The entrance is the shared menu preset (shared/motion.css, D9): the host
       // menu's own rule plays dsh-claude-dropdown-in, which the stylesheet carries.
       // The rule is read as written, since the shorthand names the timing tokens
       // and a shorthand holding var() leaves the longhands of `style` empty.

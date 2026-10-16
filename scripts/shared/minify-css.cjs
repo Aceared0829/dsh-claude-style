@@ -1,6 +1,6 @@
 'use strict'
 /**
- * The skin's stylesheet as the page receives it (D51): comments and formatting
+ * The skin's stylesheet as the page receives it (D9): comments and formatting
  * dropped by esbuild's CSS minifier, the same tool that minifies the bundle.
  * The build's checks read the sheets before this step; the importance audit
  * reads a source sheet through it, so its rules spell the way the page's do.

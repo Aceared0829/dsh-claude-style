@@ -2,7 +2,7 @@
  * Browser and host additions the TypeScript DOM library does not declare.
  */
 
-/** The Window Controls Overlay API (Chromium): the caption buttons' box on the Windows desktop shell (D28). */
+/** The Window Controls Overlay API (Chromium): the caption buttons' box on the Windows desktop shell */
 interface WindowControlsOverlay extends EventTarget {
   readonly visible: boolean
   getTitlebarAreaRect(): DOMRect
@@ -13,7 +13,7 @@ interface Navigator {
 }
 
 interface Window {
-  /** The host's boot manifest: every client entry the loader will evaluate (D32's peer check reads it). */
+  /** The host's boot manifest: every client entry the loader will evaluate (D49's peer check reads it). */
   readonly __DSH_BOOT__?: { entries?: unknown }
   /** ds-bot's registry, present while its browser half runs (D49 reads only its presence). */
   readonly dshBot?: unknown
@@ -46,7 +46,7 @@ interface Element {
 
 interface HTMLScriptElement {
   /**
-   * What a feature chunk's script hands back (D39): the chunk's factory, set
+   * What a feature chunk's script hands back (D42): the chunk's factory, set
    * on its own script element while it runs. It is called with the `require`
    * that resolves the modules the chunk shares with the bundle.
    */
@@ -54,6 +54,6 @@ interface HTMLScriptElement {
 }
 
 interface KeyboardEvent {
-  /** Set on the Escape the skin dispatches to the host's own menu (D14); the skin's key route skips it. */
+  /** Set on the Escape the skin dispatches to the host's own menu; the skin's key route skips it. */
   __dshHostMenuEscape?: boolean
 }

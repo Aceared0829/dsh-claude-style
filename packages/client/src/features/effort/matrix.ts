@@ -2,7 +2,7 @@ import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { motionMs } from '../../shared/motion'
 
-/** One flash of a particle, in seconds: the period token the stylesheet's own shorthand runs (D65). */
+/** One flash of a particle, in seconds: the period token the stylesheet's own shorthand runs (D9). */
 const FLASH_S = motionMs('--dsh-claude-period-flash') / 1000
 
 /**
@@ -95,7 +95,7 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
     // Standing still, the cycle and the phase are not written at all: an inline
     // `!important` duration outranks the reduced-motion rule, and a plume that
     // flashes once per block after a scattered delay is motion like any other
-    // (D26). Without them the stylesheet's own duration answers the rule.
+    // (D40). Without them the stylesheet's own duration answers the rule.
     if (motionReduced()) {
       sq.style.removeProperty('animation-delay')
       sq.style.removeProperty('animation-duration')
@@ -133,7 +133,7 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
            !important inline: the stylesheet's animation shorthand is
            !important (it resets delay/duration), so a plain assignment
            would silently lose. Standing still it is left off, for the same
-           reason paintParticle leaves the cycle off (D26). */
+           reason paintParticle leaves the cycle off (D40). */
         if (!motionReduced()) cell.style.setProperty('animation-delay', `${((1 - fx) * FLASH_S * 0.31 + cellUnit(r, c, 4) * FLASH_S * 0.055).toFixed(3)}s`, 'important')
         const sq = buildElement('div', 'dsh-claude-effort-matrix-sq')
         /* The plume shape is a STATIC per-block opacity: the flash animates

@@ -9,7 +9,7 @@
  *     listing the WHOLE stored corpus first, and a listing opens and
  *     decompresses every stored session's header. A pass that reads every log
  *     this way pays that walk once per session, which is what made a fold over a
- *     whole corpus quadratic (docs/decisions D22, D53).
+ *     whole corpus quadratic
  *   - `observeSession` resolves one session from its own `stat` alone: no corpus
  *     listing, and it hands back a disposable lease over the same complete,
  *     detached log. N sessions therefore cost N observations and no listings.
@@ -21,7 +21,7 @@
  * the fallback for a host that publishes only it.
  *
  * Either way the same two codes mean "this session has nothing to give right
- * now" (docs/decisions D12): an unreadable or vanished log is one session left
+ * now" (D12): an unreadable or vanished log is one session left
  * out, reported once, and every other failure propagates. The host ships no type
  * for the events, so the caller names the shape it reads.
  *

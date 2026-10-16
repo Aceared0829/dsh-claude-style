@@ -3,7 +3,7 @@ const { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonC
 
 module.exports = {
   // The other chat-behaviour plugin on the page: the ported features must hand
-  // their behaviour over whole (packages/client/src/shared/peer-plugin.ts, D32).
+  // their behaviour over whole (packages/client/src/shared/peer-plugin.ts, D49).
   'peer-chat-ux'(r) {
     basicChecks(r)
     const peer = r.peer || {}
@@ -21,7 +21,7 @@ module.exports = {
     const tabs = settings.tabs || {}
     const page = (tab) => tabs[tab] || {}
     // The rows the ported features own, each on the tab its manifest registers it
-    // on (D32, D42). The line's switch and the sent message's entrance carry
+    // on (D49, D42). The line's switch and the sent message's entrance carry
     // switches of their own beside the chat-area switch, so all five sit on the
     // Motion tab. headerBand carries a note of its own on a page that is not the
     // Windows desktop, so its note says nothing about the peer plugin.
@@ -63,8 +63,7 @@ module.exports = {
       JSON.stringify(Object.keys(ported).map(tab => `${tab} refusing=${refusingIn(tab).join(',')}`)))
     commonChecks(r)
   },
-  // Another plugin owns the page from the first frame (packages/client/src/shared/visual-owner.ts,
-  // D49): the theme paints nothing, keeps its settings section, and takes the
+  // Another plugin owns the page from the first frame (packages/client/src/shared/visual-owner.ts, // D49): the theme paints nothing, keeps its settings section, and takes the
   // page back the moment the owner leaves.
   'skin-center-handoff'(r) {
     basicChecks(r)
@@ -90,8 +89,7 @@ module.exports = {
     // No commonChecks: the shared baseline asserts a page the theme owns, and
     // this case's page is the other owner's until the last check hands it back.
   },
-  // A skin arriving after the theme took the page (packages/client/src/shared/visual-owner.ts,
-  // D49): the theme stands down then, and takes the page back when it leaves.
+  // A skin arriving after the theme took the page (packages/client/src/shared/visual-owner.ts, // D49): the theme stands down then, and takes the page back when it leaves.
   'skin-center-arrival'(r) {
     basicChecks(r)
     const arrival = r.arrival || {}

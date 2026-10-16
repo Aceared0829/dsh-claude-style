@@ -1,6 +1,5 @@
 /**
  * The data source's document, validated into the shape the browser half reads
- * (D54).
  *
  * The source is a community-maintained catalog of every provider's billing
  * clock: a document that is not the version read here, a profile without a
@@ -30,7 +29,7 @@ function asText(value: unknown): string | undefined {
  * A zone it cannot resolve would throw inside every judgement made from this
  * profile, so the document's own answer is asked for here: the caller drops
  * the profile, or that one field, instead of carrying a clock nothing can
- * read (docs/decisions D54).
+ * read
  */
 function zoneResolves(timeZone: string): boolean {
   try {

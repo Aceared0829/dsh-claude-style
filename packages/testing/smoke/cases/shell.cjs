@@ -1,7 +1,7 @@
 'use strict'
 const { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonChecks } = require('./_shared.cjs')
 
-/** The shell surfaces a wallpaper plugin shows through, and what the Claude palette paints them (D61). */
+/** The shell surfaces a wallpaper plugin shows through, and what the Claude palette paints them */
 const CLAUDE_SHELL = ['body', 'sidebar', 'conversation']
 const CLAUDE_FILLS = [['body', 'rgb(252, 252, 251)'], ['sidebar', 'rgb(251, 251, 249)'], ['conversation', 'rgb(252, 252, 251)']]
 
@@ -23,7 +23,7 @@ module.exports = {
       JSON.stringify(palette))
     commonChecks(r)
   },
-  // The custom brand over the Claude brand (D64): both images painted where the
+  // The custom brand over the Claude brand (D30): both images painted where the
   // brand's art stood, the text-colour ink and the accent once the preferences
   // ask for them, and the brand's own accent back once it is cleared.
   'custom-brand'(r) {
@@ -717,7 +717,7 @@ module.exports = {
       claude.base === '#fcfcfb' && claude.body === 'rgb(252, 252, 251)' && claude.account === 'rgb(252, 252, 251)' &&
         claude.popover === 'rgb(255, 255, 255)' && /Anthropic Serif Web Text/.test(claude.heading || ''),
       JSON.stringify(claude))
-    // D61: a wallpaper under the Claude palette. The shell canvases stand down
+    // A wallpaper under the Claude palette. The shell canvases stand down
     // and one fixed mask in the canvas colour lies over the wallpaper; the base
     // canvas the host paints its dialogs and cards with stays opaque, and so do
     // the skin's own faces. Taking the marker away brings the fills back and

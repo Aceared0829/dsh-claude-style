@@ -3,6 +3,12 @@ import { findFootArea } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { buildPopoverItem } from '../../shared/popover'
 
+/**
+ * The host's sidebar footer entries, mirrored as rows of the account popover:
+ * the row model, the two mount points and the popover's own behaviour belong to
+ * account-footer.ts, and this module only reads the host's footer action slot
+ * and rebuilds those entries inside the popover body.
+ */
 export function createFooterMirror(options: {
   body(): HTMLElement | null
   anchor(): Element | null

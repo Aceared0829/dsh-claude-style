@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 /**
- * What the host half reads off the DSH plugin context (D46).
+ * What the host half reads off the DSH plugin context (D7).
  *
  * The half runs inside DSH's loader, which hands it a context object; DSH ships
  * no types for it, so this file declares the members the half actually touches,

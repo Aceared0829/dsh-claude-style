@@ -1,5 +1,5 @@
 /**
- * css.mjs — the stylesheet half of the build (D51).
+ * css.mjs — the stylesheet half of the build (D9).
  *
  * Every stylesheet is plain CSS: it is parsed with PostCSS, and the rules the
  * skin's CSS lives by are checked on the syntax tree, selectors through
@@ -13,14 +13,14 @@
  *                typeface gate, and every private token the Claude choice
  *                defines has an alias under the host's (D30)
  *   composer     the rules below a sheet's `@composer-gate` comment get the
- *                composer gate stamped onto their scope compound (D4)
+ *                composer gate stamped onto their scope compound (D9)
  *   attributes   every `data-dsh-*` attribute a selector reads is one the
  *                browser half writes, read off its syntax tree (scripts/source-tree.mjs)
  *   motion       a time or an easing curve is written only in the token
  *                stylesheet, no two keyframes say the same thing, and every
- *                motion token is read somewhere (D65)
+ *                motion token is read somewhere (D9)
  *   layers       a z-index above the local orders 0 to 9 is a layer token,
- *                and every layer token is read somewhere (D67)
+ *                and every layer token is read somewhere (D9)
  *
  * The token stylesheet is generated from packages/client/src/theme/tokens.json, and so are the
  * token, motion and layer tables in docs/STYLE.md; it also declares the brand marks' addresses
@@ -65,13 +65,13 @@ const LAYER_BEGIN = '<!-- generated:layers (packages/client/src/theme/tokens.jso
 const LAYER_END = '<!-- /generated:layers -->'
 /**
  * A z-index a sheet may write as it is: an order among siblings inside one
- * box (D67). Anything that stacks against the host's own surfaces is a layer
+ * box (D9). Anything that stacks against the host's own surfaces is a layer
  * token instead.
  */
 const LOCAL_LAYER = /^(?:auto|-1|[0-9])$/
 
 /**
- * A time and an easing curve as a declaration's value spells them (D65). A
+ * A time and an easing curve as a declaration's value spells them (D9). A
  * name such as `--dsh-claude-ease-out` is no match, and neither is a digit
  * inside an identifier: the character before must not continue an identifier or
  * a number. `linear` and the step functions are mechanical timing, not a style
@@ -80,7 +80,7 @@ const LOCAL_LAYER = /^(?:auto|-1|[0-9])$/
 const TIME_PATTERN = /(?<![\w.#-])(\d*\.?\d+)(ms|s)(?![\w-])/g
 const EASE_PATTERN = /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out)(?![\w-])|cubic-bezier\(/
 
-/** The prefix of the attributes the skin writes; the host's own are read as contracts (D44). */
+/** The prefix of the attributes the skin writes; the host's own are read as contracts (D3). */
 const SKIN_ATTRIBUTE_PREFIX = 'data-dsh-'
 /** The attribute carrying the skin's own names for host elements; the one host anchor a rule reads (D3). */
 const PART_ATTRIBUTE = 'data-dsh-claude-part'
@@ -155,7 +155,7 @@ function checkHasPlacement(where, selector) {
  * (core/parts-table.ts) and the rule reads the answer. Two shapes stay: a
  * `:has()` over state the skin cannot mark (a pseudo-class, a class name), and
  * the document element's own entry into scope, where the whole gate compound
- * sits inside the `:has()` (D51) and nothing else can carry the rule.
+ * sits inside the `:has()` (D9) and nothing else can carry the rule.
  */
 function checkHasMarks(where, selector) {
   selector.walkPseudos((pseudo) => {
@@ -200,7 +200,7 @@ function motionProperty(prop) {
 }
 
 /**
- * Hold every time and easing curve in a stylesheet to the token table (D65):
+ * Hold every time and easing curve in a stylesheet to the token table (D9):
  * outside the token sheet itself, motion values are read as `var(--dsh-claude-…)`
  * and never written as literals, so one look at the token table answers what the
  * skin's motion is made of. `linear` and the step functions are timing rather
@@ -215,12 +215,12 @@ function checkMotionLiterals(sheet, label, rule) {
     const easing = node.value.match(EASE_PATTERN)
     if (time.length === 0 && easing === null) continue
     const found = [...time, ...easing === null ? [] : [easing]].join(', ')
-    throw new Error(`build: ${label}:${node.source.start.line} writes ${found} in ${node.prop}; read the token table in packages/client/src/${TOKEN_SHEET} (D65)`)
+    throw new Error(`build: ${label}:${node.source.start.line} writes ${found} in ${node.prop}; read the token table in packages/client/src/${TOKEN_SHEET} (D9)`)
   }
 }
 
 /**
- * Hold every z-index in a stylesheet to the layer tokens (D67): a sheet orders
+ * Hold every z-index in a stylesheet to the layer tokens (D9): a sheet orders
  * siblings inside its own box with a literal from -1 to 9, and anything that has
  * to clear what the host draws reads `var(--dsh-claude-layer-…)`, so the
  * levels the skin stacks on are one table.
@@ -231,14 +231,14 @@ function checkLayerLiterals(sheet, label, rule) {
     if (node.type !== 'decl' || node.prop !== 'z-index') continue
     const value = node.value.trim()
     if (LOCAL_LAYER.test(value) || /^var\(--dsh-claude-layer-[a-z0-9-]+\)$/.test(value)) continue
-    throw new Error(`build: ${label}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D67)`)
+    throw new Error(`build: ${label}:${node.source.start.line} writes z-index: ${value}; above the local orders -1 to 9, read a layer from packages/client/src/${TOKEN_SHEET} (D9)`)
   }
 }
 
 /**
  * Record one sheet's keyframes, refusing a second body that says the same thing
  * as an earlier one: the same effect twice is what the shared presets are for
- * (D65).
+ * (D9).
  *
  * @param seen - signature → `name (file:line)`, across the sheets in cascade order.
  */
@@ -247,7 +247,7 @@ function collectKeyframes(label, root, seen) {
     const body = at.nodes.map((rule) => `${rule.selector}{${rule.nodes.filter((node) => node.type === 'decl').map((node) => `${node.prop}:${node.value.replace(/\s+/g, ' ')}`).join(';')}}`).join(' ')
     const where = `${at.params} (${label}:${at.source.start.line})`
     const first = seen.get(body)
-    if (first !== undefined) throw new Error(`build: ${where} repeats the keyframes of ${first}; use the shared preset (D65)`)
+    if (first !== undefined) throw new Error(`build: ${where} repeats the keyframes of ${first}; use the shared preset (D9)`)
     seen.set(body, where)
   })
 }
@@ -259,14 +259,14 @@ function sheetLabel(sheet) {
 
 /**
  * Parse one stylesheet, check every rule, and stamp the composer
- * gate below the marker of a gated sheet (D4). The composer preference decides
+ * gate below the marker of a gated sheet (D9). The composer preference decides
  * per page which composer surface the skin repaints, so the gate is one
  * attribute on `<body>` stamped onto the scope compound of every rule below
  * the marker; a gated sheet without the marker, or with no rule below it,
  * fails the build.
  *
  * @param read - collects the skin attributes the sheet's selectors read, each with where.
- * @param keyframes - signature → where, across the sheets, for the repeat check (D65).
+ * @param keyframes - signature → where, across the sheets, for the repeat check (D9).
  * @param relations - relation name → where, for the hold-mark check (D9).
  * @returns the sheet's text, comments and formatting kept.
  */
@@ -363,7 +363,7 @@ function declarationsOf(items, pick) {
  * what differs from Claude's. The brand marks' addresses come first: every
  * choice paints with them. The motion and layer tokens are ungated blocks
  * beside them: the same durations, curves, distances and stacking levels under
- * every palette and typeface (D65, D67).
+ * every palette and typeface (D9).
  *
  * @param images - brand mark name → its address (data URI or route).
  */
@@ -453,7 +453,7 @@ function valueTable(items) {
 }
 
 /**
- * Write the motion table into its region of docs/STYLE.md (D65).
+ * Write the motion table into its region of docs/STYLE.md (D9).
  * @returns whether the file changed.
  */
 export function writeMotionTable(stylePath, doc) {
@@ -461,7 +461,7 @@ export function writeMotionTable(stylePath, doc) {
 }
 
 /**
- * Write the layer table into its region of docs/STYLE.md (D67).
+ * Write the layer table into its region of docs/STYLE.md (D9).
  * @returns whether the file changed.
  */
 export function writeLayerTable(stylePath, doc) {
@@ -471,7 +471,7 @@ export function writeLayerTable(stylePath, doc) {
 /* ---------- the stylesheet ---------- */
 
 /**
- * Hold every motion and layer token to a reader (D65, D67): a token nothing
+ * Hold every motion and layer token to a reader (D9): a token nothing
  * reads is a value the token table claims the skin uses and nothing does. The
  * readers are the stylesheets and, for motion, the browser half's TypeScript,
  * which reads the same table through packages/client/src/shared/motion.ts.
@@ -488,18 +488,18 @@ function checkTokensRead(doc, sheetText, sources) {
   const names = new Set(doc.motion.map((item) => item.token))
   for (const [name, where] of sources.motion) {
     if (names.has(name)) continue
-    throw new Error(`build: ${where} reads the motion token ${name}, which packages/client/src/${TOKEN_SHEET} does not declare (D65)`)
+    throw new Error(`build: ${where} reads the motion token ${name}, which packages/client/src/${TOKEN_SHEET} does not declare (D9)`)
   }
   const named = (token) => [...sources.strings].some((text) => text.includes(token))
   for (const item of doc.motion) {
     if (sheetText.includes(item.token) || named(item.token)) continue
-    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet or module reads (D65)`)
+    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet or module reads (D9)`)
   }
   // A layer is read by the sheets alone: the browser half stacks nothing by
-  // hand, it marks the element and the sheet places it (D67).
+  // hand, it marks the element and the sheet places it (D9).
   for (const item of doc.layer) {
     if (sheetText.includes(item.token)) continue
-    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet reads (D67)`)
+    throw new Error(`build: packages/client/src/${TOKEN_SHEET} declares ${item.token}, which no stylesheet reads (D9)`)
   }
 }
 
@@ -621,7 +621,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
 
 /**
  * Every `!important` the built sheet carries must be one the importance walk
- * decided (D51): the weight is only ever there over a host `!important`, an
+ * decided (D9): the weight is only ever there over a host `!important`, an
  * inline style or another skin rule, and which of those it stands over was read
  * off the page by that walk. The walk writes every declaration it read — the
  * ones it proved necessary with what each beats, and the ones no page state

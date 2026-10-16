@@ -42,7 +42,7 @@
           base: bodyStyle.getPropertyValue('--dsw-alias-bg-base').trim(),
           family: bodyStyle.getPropertyValue('--dsw-font-family').trim(),
           body: bodyStyle.backgroundColor,
-          // The mask the Claude palette lays over a wallpaper (D61).
+          // The mask the Claude palette lays over a wallpaper
           mask: getComputedStyle(document.body, '::after').backgroundColor,
           maskPosition: getComputedStyle(document.body, '::after').position,
           html: getComputedStyle(document.documentElement).backgroundColor,
@@ -67,7 +67,7 @@
         host: await readHost({ palette: 'host', typeface: 'host' }, false),
         wallpaper: await readHost(null, true),
         claude: await readHost({ palette: 'claude', typeface: 'claude' }, false),
-        // The wallpaper plugin showing one under the Claude palette (D61): the
+        // The wallpaper plugin showing one under the Claude palette: the
         // shell stands down, one mask lies over the wallpaper, and the base
         // canvas and the skin's own faces keep their fill.
         claudeWallpaper: await readHost(null, true),

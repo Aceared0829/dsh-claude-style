@@ -1,5 +1,5 @@
 /**
- * The plugin's private route names, shared by both halves (D46): the host half
+ * The plugin's private route names, shared by both halves (D7): the host half
  * registers them under this prefix and the browser half addresses them, so
  * every path is declared once.
  */
@@ -43,7 +43,7 @@ export const USAGE_PATH = `${ROUTE_PREFIX}/usage`
 export const SESSION_SEARCH_PATH = `${ROUTE_PREFIX}/session-search`
 
 /**
- * The reader's own brand images (D64): `GET` answers which of them are in
+ * The reader's own brand images (D30): `GET` answers which of them are in
  * place, each with a version that changes with its bytes.
  */
 export const BRAND_PATH = `${ROUTE_PREFIX}/brand`

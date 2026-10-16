@@ -1,5 +1,5 @@
 /**
- * build.mjs — write the host half into the package's build output (D46).
+ * build.mjs — write the host half into the package's build output (D7).
  *
  * The half lives in `packages/host/src` in TypeScript and ships as JavaScript
  * build output, so the packaged layout holds one `lib/` and no source tree.

@@ -4,7 +4,7 @@ import type { RateProfile, RateSchedule } from '@dsh-claude-style/contracts/peak
 
 /**
  * The billing clock's judgement: the boundaries the meter is judged by
- * (docs/decisions D54). Every case names its instant in UTC, so the schedule's
+ * Every case names its instant in UTC, so the schedule's
  * own zone is the only thing that moves the answer.
  */
 

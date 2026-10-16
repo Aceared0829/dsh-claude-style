@@ -9,13 +9,13 @@ import { pageOwner } from '../shared/visual-owner'
 /**
  * Skin preferences: the host settings namespace is the store, and every
  * value is mirrored onto the document as an attribute so the stylesheet
- * decides what it means (D60, D11). Until the first read settles — and if
+ * decides what it means (D11). Until the first read settles — and if
  * it fails — PREF_DEFAULTS holds.
  */
 export let prefs = normalizePrefs({})
 const prefsListeners: ((prefs: Prefs) => void)[] = []
 
-/** The official settings form (the host's form controller, D60); null until the service serves the namespace. */
+/** The official settings form (the host's form controller, D11); null until the service serves the namespace. */
 let prefsForm: HostConfigForm | null = null
 /** Disposer for the bound form's own change subscription. */
 let prefsFormUnsubscribe: (() => void) | null = null
@@ -23,9 +23,9 @@ let prefsFormUnsubscribe: (() => void) | null = null
 let prefsWatchOff: (() => void) | null = null
 /** Whether the served-namespace directory is already being watched. */
 let prefsBinding = false
-/** Disposers for the document reads a non-loopback page follows (D60); empty on a loopback page. */
+/** Disposers for the document reads a non-loopback page follows (D11); empty on a loopback page. */
 let remoteReadOffs: (() => void)[] = []
-/** Whether this page reads the host's settings document without a form to write through (D60). */
+/** Whether this page reads the host's settings document without a form to write through (D11). */
 let prefsReadOnly = false
 
 /** Namespaces to try, best first: loader entry id, package name, inserted id. */
@@ -102,7 +102,7 @@ function watchNamespace(forms: HostConfigFormsService, ctx: HostContext) {
 
 /**
  * Follow the settings document on a page whose form service never reads it
- * (D60): the host keeps a non-loopback page's settings in memory, but its own
+ * (D11): the host keeps a non-loopback page's settings in memory, but its own
  * remote still answers the read the form service is built on. Read again when
  * the document changes and after a reconnect, which can miss that event.
  */
@@ -137,7 +137,7 @@ function followHostDocument(ctx: HostContext) {
  * again when the settings page installs — the service may mount after this
  * plugin. A namespace the host does not serve yet leaves `prefsForm` null and
  * the defaults in place, so this never blocks or fails the skin. A page the
- * host keeps its settings away from reads the document instead (D60).
+ * host keeps its settings away from reads the document instead (D11).
  */
 export function adoptSettingsForm(ctx: HostContext) {
   if (prefsForm === null && !prefsReadOnly) {
@@ -156,7 +156,7 @@ export function adoptSettingsForm(ctx: HostContext) {
 
 /**
  * Whether the preferences on show are the host's but this page cannot save
- * them: the host keeps a non-loopback page's settings to itself (D60).
+ * them: the host keeps a non-loopback page's settings to itself (D11).
  */
 export function prefsAreReadOnly() {
   return prefsReadOnly
@@ -218,7 +218,7 @@ export function subscribePrefs(listener: (prefs: Prefs) => void) {
  * Adopt a preference set: mirror it onto the document, then notify. A page a
  * skin or ds-bot owns carries none of this theme's attributes (D49): the set is kept, and
  * taking the page back mirrors it (entry.ts). The form answers whenever it
- * answers, and the settings section installs whenever its chunk arrives (D39),
+ * answers, and the settings section installs whenever its chunk arrives (D42),
  * so a yielded page hears adoptions too.
  */
 export function adoptPrefs(next: Prefs) {
@@ -262,7 +262,7 @@ function writeMotionAttribute(mode: string) {
 /**
  * Re-resolve the current choice when the system's own setting flips. The
  * listeners hear about it only when the resolved answer really moved, because
- * features act on that answer rather than reading it lazily (D26).
+ * features act on that answer rather than reading it lazily (D40).
  */
 export function refreshMotionAttribute() {
   const before = document.body.getAttribute(MOTION_ATTR)
@@ -273,7 +273,7 @@ export function refreshMotionAttribute() {
 /**
  * Re-run everything that asked to hear about the environment without the
  * stored preferences having changed: the other chat plugin appearing or
- * leaving (packages/client/src/shared/peer-plugin.ts, D32).
+ * leaving (packages/client/src/shared/peer-plugin.ts, D49).
  */
 export function notifyEnvironmentChange() {
   notifyAll(prefsListeners, prefs)

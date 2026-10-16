@@ -6,7 +6,7 @@
 'use strict'
 
 /**
- * The host's page markers this lane reads. Each one is a D44 entry in
+ * The host's page markers this lane reads. Each one is a D3 entry in
  * `packages/contracts/src/dom.ts`, which the skin reads for the same reason; a marker
  * that changes breaks both, and the contract test names it there.
  */

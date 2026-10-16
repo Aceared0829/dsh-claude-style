@@ -9,10 +9,10 @@ import { createHostResource } from '../shared/resource'
 /**
  * The host's client context (cordis), handed to `apply` and to every feature.
  * Services come by name; their shapes are the host's own and stay untyped
- * here until the contract module types them (D44).
+ * here until the contract module types them (D3).
  */
 export interface HostContext {
-  /** The loader's fiber; its boot entry id names this plugin's settings namespace (D60). */
+  /** The loader's fiber; its boot entry id names this plugin's settings namespace (D11). */
   readonly fiber?: { entry?: { id?: unknown } }
   /** A service by name, or undefined when the host carries none (D12). */
   get(name: string): HostValue
@@ -27,7 +27,7 @@ export interface HostContext {
 /**
  * A value read off a host service or snapshot: a session, a catalog group, a
  * chat node. Its shape is the host's own; the contract module types the ones
- * the skin reads by name (D44, `contracts/services.ts`).
+ * the skin reads by name (D3, `contracts/services.ts`).
  */
 export type HostValue = any
 
@@ -98,7 +98,7 @@ function cacheFirst<T extends Element>(selector: string) {
 
 /**
  * The host's access-mode trigger: the button its permission slot renders.
- * Every slot render site carries a `[data-slot="<key>"]` wrapper (D19), and
+ * Every slot render site carries a `[data-slot="<key>"]` wrapper (D3), and
  * the skin inserts its own buttons inside that wrapper, so those are skipped.
  */
 export const findAccessTrigger = cacheFirst<HTMLButtonElement>(PERMISSION_TRIGGER_SELECTOR)
@@ -182,13 +182,13 @@ export function findComposerInput(scope: ParentNode = document) {
 
 /**
  * The composer seat around `scope`: a pointer or key inside it is the reader
- * typing, which the scroll owner reads as intent that is not a scroll (D41).
+ * typing, which the scroll owner reads as intent that is not a scroll (D40).
  */
 export function findComposerSeat(scope: ParentNode = document) {
   return scope.querySelector<HTMLElement>(COMPOSER_SELECTOR)
 }
 
-/** The session scroller: the element the host hangs its own follow off (D41). */
+/** The session scroller: the element the host hangs its own follow off (D40). */
 export const findConversationScroller = cacheFirst<HTMLElement>(CONVERSATION_SCROLL_SELECTOR)
 
 /** The chat columns on the page: the root every chat-area behaviour scopes to. */
@@ -300,7 +300,7 @@ export function currentPreset(session: HostSession): string | null {
  * One session's whole-log turn outline (the host's `turnOutline` projection):
  * `{ turn, seq, prompt, response }` per started turn, or undefined where the
  * assembly does not mount that projection. `seq` is the turn's `turn/start`
- * event, which is what the host's own jump pages history through (D34).
+ * event, which is what the host's own jump pages history through
  */
 export function sessionOutline(ctx: HostContext, sessionId: string): HostOutlineTurn[] | undefined {
   const face = ctx.get('sessions')?.binding(sessionId)?.session?.projections?.faceOf('turnOutline')
@@ -343,7 +343,7 @@ export function outlineSeq(outline: HostOutlineTurn[] | undefined, turn: number)
  * Who the skin shows. Nickname: the custom nickname, the signed-in account's
  * name, the HDSL launcher's account name, the cached OS-user probe, the fresh
  * probe. Picture: the signed-in account's avatar, the HDSL launcher's avatar,
- * then nothing, which lets the brand mark show (D15).
+ * then nothing, which lets the brand mark show (D11).
  */
 export let accountName = ''
 export let accountAvatar = ''
@@ -399,7 +399,7 @@ let hdslAvatar = false
 /**
  * The HDSL launcher's account contract, when this instance was launched by it.
  * An answer that is no contract is not adopted, so the chain skips the
- * launcher (D15).
+ * launcher (D11).
  */
 const hdslResource = createHostResource(HDSL_ROUTE, (data) => {
   if (!data || data.ok !== true || data.contract !== true) return undefined

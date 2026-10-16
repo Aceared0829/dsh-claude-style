@@ -7,7 +7,7 @@ import { loadBrandImages, readBrandImages, removeBrandImage, subscribeBrandImage
 import type { SettingsRow, SettingsView } from './settings-controls'
 
 /**
- * The Appearance tab's custom brand rows (D64), after the mascot: the brand
+ * The Appearance tab's custom brand rows (D30), after the mascot: the brand
  * name, the two images and how the images are inked. The name is a
  * preference written through the page's own write path; the images live in
  * the host half's brand directory and go through the shared image state
@@ -195,8 +195,8 @@ function BrandAccentControl(props: { stored: string, write: SettingsView['write'
 }
 
 /**
- * The accent colour as Colours' sub-row (D29): the accent paints only over
- * the skin's own palette (D64), so the row greys out while Colours follows
+ * The accent colour as Colours' sub-row (D42): the accent paints only over
+ * the skin's own palette (D30), so the row greys out while Colours follows
  * the host, still showing the stored colour.
  */
 export function accentRow(view: SettingsView): SettingsRow {

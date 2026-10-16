@@ -1,12 +1,12 @@
 /**
- * The usage payload the plugin's two halves exchange (D27's panel, D38's route).
+ * The usage payload the plugin's two halves exchange .
  *
  * `packages/host/src/usage.ts` answers `GET /dsh-claude-style/usage` with this shape and the
  * browser half reads it in `packages/client/src/features/home/data.ts`; the session list's own
  * roll-up (`sessions.list`, a host service) answers a narrower version of the
  * same entries, which is why several fields below are optional. These types are
  * the plugin's own contract rather than the host's, so they live beside the code
- * that produces them; D46 moves them into the shared contracts package.
+ * that produces them; D7 moves them into the shared contracts package.
  */
 
 /** One day of a roll-up: the four buckets, the settled calls, and the day's models. */
@@ -50,7 +50,7 @@ export interface UsageReport {
    * Which source answered: the fold over the session logs (`local`), the cost
    * ledger (`cost-meter`), or both when the fold covered dates the ledger does
    * not reach (`cost-meter+local`). The two accounts are merged by date, never
-   * summed (D53).
+   * summed
    */
   source: string
   computedAt: number
@@ -106,7 +106,7 @@ export interface SearchAnswer {
 /** One content hit: the session it belongs to, the message that matched, and the excerpt with its range. */
 export interface ContentHit {
   sessionId: string
-  /** The event sequence of the message that matched: what the jump lands on (D34). */
+  /** The event sequence of the message that matched: what the jump lands on */
   seq: number
   snippet: string
   /** The matched span of `snippet`, as `[start, end]`. */

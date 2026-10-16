@@ -7,7 +7,7 @@
  * as it stands — the days it holds are then the only account of them left, and
  * folding cannot bring them back — so deleting a conversation no longer takes
  * its tokens off the panel. That is also why the file sits in the plugin's own
- * directory rather than under `cache/`, which anything may clear (D53).
+ * directory rather than under `cache/`, which anything may clear.
  *
  * A stored day carries its tokens per route: the day's own buckets are the sum
  * of its routes, a settlement that named no model rides under the empty key, and
@@ -313,9 +313,9 @@ function readStored(ctx: DshContext): StoredRecord {
  * An absent or unreadable document is written out again whatever the pass
  * found. A version this build does not write is left as it stands: it was
  * written by a build that knew more, and overwriting it would drop the days of
- * the sessions deleted in between, which nothing can fold again (docs/decisions
- * D53, D12). The old fold cache's entries join wherever the record has none of
- * its own for that session.
+ * the sessions deleted in between, which nothing can fold again (D12). The old
+ * fold cache's entries join wherever the record has none of its own for that
+ * session.
  *
  * @param ctx - host plugin context, for the record's path and the warning a
  *   failure leaves.
@@ -338,7 +338,7 @@ export function readRecord(ctx: DshContext): RecordRead {
  * Every instance under one harness home folds the same logs and writes the
  * whole document, so what a later write would lose is only what its pass never
  * held: a session another instance folded whose log is gone by now, or that
- * instance's newer fold of one whose log went away (D53). A session this pass
+ * instance's newer fold of one whose log went away. A session this pass
  * compared against its log keeps this pass's entry.
  */
 function overStored(stored: ReadonlyMap<string, RecordSession>, sessions: ReadonlyMap<string, RecordSession>, live: ReadonlySet<string>): Map<string, RecordSession> {

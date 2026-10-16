@@ -325,7 +325,7 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
    new spans play this). The reader asked for it on every step and while an
    answer streams; the skin's own motion choice governs it — theme/chrome.css
    stills every dsh-claude-* animation when the reader chose reduced motion, and
-   following the system is that choice's default (D26). */
+   following the system is that choice's default (D40). */
 @keyframes dsh-claude-digit-pop-in {
   0% {
     transform: translate(calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-x)), calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-y)));

@@ -4,7 +4,7 @@ import { createHoverIntent, setMenuPopoverOpen } from './popover'
 /**
  * The one write that opens or closes a menu card: the card's own state and the
  * state its trigger reports are one act, and a trigger left saying "collapsed"
- * while the card is up is what makes a reader press it twice (D16).
+ * while the card is up is what makes a reader press it twice
  */
 
 test('returning to a trigger cancels the pending close', () => {

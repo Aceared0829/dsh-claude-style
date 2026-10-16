@@ -266,7 +266,7 @@ body[data-dsh-claude-style] .dsh-claude-ban-toast {
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(20, 20, 19, 0.08);
   /* The toast drops in from above, so the shared entrance travels the other way
-     round (shared/motion.css, D65). */
+     round (shared/motion.css, D9). */
   --dsh-claude-surface-from: calc(-1 * var(--dsh-claude-distance-nudge));
   animation: dsh-claude-surface-in var(--dsh-claude-timing-surface) both;
 }

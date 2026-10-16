@@ -1,5 +1,5 @@
 /**
- * importance.cjs — the lane's `importance` scenario: the walk over the page states (D51, D66).
+ * importance.cjs — the lane's `importance` scenario: the walk over the page states (D9, D66).
  *
  * The audit itself is in importance-audit.cjs; this file is the walk that gives
  * it states to read — the empty page and a conversation, a draft in the
@@ -24,7 +24,7 @@ const { openSkinSettings } = require('./settings-route.cjs')
 
 /**
  * The selectors this walk cannot reach, each under the reason it is out of
- * reach, recorded once from a run and reviewed by hand (D51). The list is a
+ * reach, recorded once from a run and reviewed by hand (D9). The list is a
  * debt: a selector the sheet writes that is neither matched in a state nor
  * recorded here fails the scenario, and a recorded one that starts matching
  * fails it too, so the list only shrinks.
@@ -41,7 +41,7 @@ const UNREACHABLE = new Map(UNREACHABLE_FILE.groups.flatMap((group) => group.sel
 const EITHER = new Set(UNREACHABLE_FILE.groups.filter((group) => group.either === true).flatMap((group) => group.selectors))
 /**
  * Every `!important` the walk proved necessary, with what it beats where it was
- * decided (D51): keyed by the rule's own text and the property, so a build check
+ * decided (D9): keyed by the rule's own text and the property, so a build check
  * can compute the same key from the source stylesheet without sharing an index.
  * The run fails when a declaration it needs is not recorded, or a recorded one
  * is no longer needed; `DSH_IMPORTANCE_LEDGER=write` writes the record from the
@@ -329,7 +329,7 @@ function importanceScenario(lane) {
       const checks = [
         lane.check('每个页面形态都审过', named.length >= 12, `${named.map((item) => `${item.name}: ${item.removable}/${item.needed}${item.sentBack === 0 ? '' : `/退回 ${item.sentBack}`}`).join('；')}；悬停 ${hovered} 处`),
         // Every `!important` the walk found necessary is written down with what
-        // it beats where it was decided (D51). The set of declarations is
+        // it beats where it was decided (D9). The set of declarations is
         // enforced: a run that needs one the ledger has not recorded, or no
         // longer needs one it records, fails until the ledger is written again
         // and the difference read.

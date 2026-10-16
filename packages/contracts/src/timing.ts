@@ -1,5 +1,5 @@
 /**
- * The host's timing as one table (D44): the orders the skin depends on, what
+ * The host's timing as one table (D3): the orders the skin depends on, what
  * breaks when one stops holding, and the check that holds each of them.
  *
  * The DOM contract (dom.ts, table.ts) says what the host's marks mean; this file
@@ -34,7 +34,7 @@ export const HOST_TIMING: HostTimingEntry[] = [
   {
     id: 'host.column-observer',
     assumption: 'The host creates its own ResizeObserver when it mounts a message column and writes the scroll position to the bottom inside that callback.',
-    use: 'The skin\u2019s afterHost subscription is made later, so it runs after the host\u2019s in the same frame and can take the pin back before the frame paints (D32, D40, D41).',
+    use: 'The skin\u2019s afterHost subscription is made later, so it runs after the host\u2019s in the same frame and can take the pin back before the frame paints (D49, D40).',
     checks: ['scenario:scroll'],
   },
   {
@@ -52,7 +52,7 @@ export const HOST_TIMING: HostTimingEntry[] = [
   {
     id: 'host.submission-echo',
     assumption: 'A submission mounts an optimistic row immediately and replaces it with the settled row: the echo is on the page for a few frames, not for the length of the turn.',
-    use: 'The send flight hides the real row while its stand-in flies and hands the reader\u2019s words over without a blank frame (D32).',
+    use: 'The send flight hides the real row while its stand-in flies and hands the reader\u2019s words over without a blank frame (D49).',
     checks: ['scenario:send', 'scenario:contract'],
   },
   {

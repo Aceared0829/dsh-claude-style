@@ -1,6 +1,6 @@
 /* ---------- Peak rate meter ---------- */
 /* The badge a model row carries: the rate in force right now and the countdown
-   to the switch (D54). The shape says which state it is — twin peaks, twin
+   to the switch The shape says which state it is — twin peaks, twin
    valleys, a spark — and the colour says expensive or cheap, so the two are
    never read from the same cue. The badge is the skin's own node inside the
    skin's own row, so nothing here needs to outrank the host. */
