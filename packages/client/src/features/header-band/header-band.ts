@@ -5,10 +5,10 @@ import {
   HEADER_TITLE_SELECTOR,
   HEADER_UTILITIES_SELECTOR,
   VIEW_TABS_STRIP_SELECTOR,
-  WINDOWS_MENU_SELECTOR,
 } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, observeSize } from '../../core/bus'
 import { desktopBand } from '../../core/desktop-band'
+import { findWindowsMenu } from '../../core/host'
 import { createStamp, setAttributeIfChanged } from '../../shared/dom'
 import type { FeatureUi } from '../../core/feature'
 import type { HostContext } from '../../core/host'
@@ -238,7 +238,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       stripEl,
       rowBox: rect(row),
       stripBox: rect(stripEl),
-      menuBox: rect(document.querySelector(WINDOWS_MENU_SELECTOR)),
+      menuBox: rect(findWindowsMenu()),
       utilitiesBox: rect(utilities),
       cornerBox: rect(corner),
       titleBox: rect(title),

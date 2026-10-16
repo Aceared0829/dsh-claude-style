@@ -1,0 +1,101 @@
+{
+  "note": "The whole-document lookups the browser half still makes outside the modules that own them, one entry per file: what it counts, when those reads happen where that is known, and which of them are debt. A lookup in a refresh pass or a frame callback costs the page's own size on every frame of a long conversation, so the sanctioned readers are core/host.ts's accessors (cacheFirstMatch caches a match and a miss until the page's structure changes), core/bus.ts's observeMatches registry, core/stylesheet.ts's own sheet, and shared/chat-dom.ts's two per-frame answers; every other site is recorded here and the list only shrinks. A read by an element's id is not counted: the browser answers it from its own index rather than by walking the tree, which is how the fold controls reach the body their aria-controls names. scripts/lint.mjs counts the sites the way this file records them: a file whose count rises is refused, a file whose count falls has to be written down again, and an entry whose count reaches zero is taken out.",
+  "files": {
+    "packages/client/src/features/hero-menu/hero-menu.ts": {
+      "count": 3,
+      "reason": "The hero's own menu card and the trigger it hangs off, read in the refresh pass. Debt: one cacheFirstMatch per seat, or the card read off the trigger the pass already holds."
+    },
+    "packages/client/src/features/account/host-menu.ts": {
+      "count": 1,
+      "reason": "The host's account menu, read in the refresh pass to tell whether it is up. Debt: the bus's registry for [role=\"menu\"], as the statistics' dialogs use."
+    },
+    "packages/client/src/features/workspace/workspace-view.ts": {
+      "count": 1,
+      "reason": "The sidebar's section labels, read in the refresh pass. Debt: one cacheFirstMatch."
+    },
+    "packages/client/src/features/search/search.ts": {
+      "count": 1,
+      "reason": "The host search box's clear button, read when the search box takes focus."
+    },
+    "packages/client/src/features/permissions/permissions.ts": {
+      "count": 7,
+      "reason": "Sweeps of the permission control's own nodes at install, in the pass that finds the control gone, on a preference change and at teardown. Debt: the control's own container is held while it stands, so the sweeps can be scoped to it."
+    },
+    "packages/client/src/features/model/model-picker.ts": {
+      "count": 4,
+      "reason": "Sweeps of the picker's own nodes when the feature is switched off, takes the page and tears down."
+    },
+    "packages/client/src/features/account/account-footer.ts": {
+      "count": 3,
+      "reason": "The footer's own sweeps at teardown, and the sweep for a copy a client reload stranded."
+    },
+    "packages/client/src/features/composer/composer.ts": {
+      "count": 3,
+      "reason": "The marks the composer wrote, swept once at install and once at teardown."
+    },
+    "packages/client/src/features/chat-fold/process-summary.ts": {
+      "count": 3,
+      "reason": "Debt: the process groups and the summary block, read outside the registries the fold already keeps."
+    },
+    "packages/client/src/features/chat-send/send-rows.ts": {
+      "count": 3,
+      "reason": "Debt: the submission echo row and the sent row, read around one send."
+    },
+    "packages/client/src/features/context-stats/stats-panel.ts": {
+      "count": 2,
+      "reason": "The context block and panel marks, swept once when the statistics are installed."
+    },
+    "packages/client/src/features/context-stats/session-stats.ts": {
+      "count": 2,
+      "reason": "Debt: the context statistics' own block and panel marks, swept on install and at teardown."
+    },
+    "packages/client/src/features/chat-send/send-flight.ts": {
+      "count": 2,
+      "reason": "The composer's input, read when a send begins and when the flight's seat is measured."
+    },
+    "packages/client/src/features/ban-screen/ban-screen.ts": {
+      "count": 1,
+      "reason": "The hold screen's own node, swept once when the screen is installed."
+    },
+    "packages/client/src/features/chat-fold/process-fold.ts": {
+      "count": 1,
+      "reason": "Debt: the running process group, read where the fold's own registry could serve it."
+    },
+    "packages/client/src/features/chat-fold/reasoning-fold.ts": {
+      "count": 1,
+      "reason": "Debt: the running thinking row, read where the fold's own registry could serve it."
+    },
+    "packages/client/src/features/chat-follow/process-follow.ts": {
+      "count": 1,
+      "reason": "Debt: the capped process body, read where the follow's own registry could serve it."
+    },
+    "packages/client/src/features/chat-reveal/reveal-diff.ts": {
+      "count": 1,
+      "reason": "The streaming containers, scanned when an attribute or structural batch arrives. Debt: the reveal engine's own registry."
+    },
+    "packages/client/src/features/chat-reveal/reveal-engine.ts": {
+      "count": 1,
+      "reason": "The streaming containers, read once when the reveal engine is installed."
+    },
+    "packages/client/src/features/chat-send/send-grow.ts": {
+      "count": 1,
+      "reason": "Debt: the submission echo row, read around the send that grows in place."
+    },
+    "packages/client/src/features/chat-wait/chat-wait.ts": {
+      "count": 1,
+      "reason": "Debt: the waiting line's own rows, swept where a generation before this one may have left one behind."
+    },
+    "packages/client/src/features/effort/effort-picker.ts": {
+      "count": 1,
+      "reason": "The effort popover's own node, swept when the control is switched off or torn down."
+    },
+    "packages/client/src/features/home/greeting-copy.ts": {
+      "count": 1,
+      "reason": "Debt: the hero's title group, read where the greeting's copy is written."
+    },
+    "packages/client/src/features/turn-nav/turn-nav.ts": {
+      "count": 1,
+      "reason": "The dialog or menu in front, read when a turn-navigation key is pressed."
+    }
+  }
+}

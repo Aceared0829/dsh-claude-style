@@ -236,6 +236,49 @@ for (const file of filesUnder(DECISIONS, ['.md'], SKIPPED_DIRS)) {
   }
 }
 
+// 8. The whole-document lookups the browser half makes outside the modules that
+// own them (D9): a lookup inside a refresh pass or a frame callback costs the
+// page's own size on every frame of a long conversation, and each of the
+// regressions behind that cost was one such call. A query by an element's id is
+// not counted: the browser answers it from its own index rather than by walking
+// the tree. The sanctioned readers are the accessors and registries that cache
+// their answer — packages/client/src/core/host.ts, core/bus.ts, shared/chat-dom.ts, and
+// the sheet core/stylesheet.ts mounts itself. Every other site is recorded in
+// packages/testing/document-lookups.json with the reason it is still there: a
+// file whose count rises is refused, a file whose count falls has to be written
+// down again, and an entry whose count reaches zero comes out of the file.
+const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|document\.body\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|removeStrayNodes\(\s*document\b/g
+const LOOKUP_OWNERS = new Set([
+  'packages/client/src/core/host.ts',
+  'packages/client/src/core/bus.ts',
+  'packages/client/src/core/stylesheet.ts',
+  'packages/client/src/shared/chat-dom.ts',
+])
+const recordedLookups = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'document-lookups.json'), 'utf8')).files
+let lookups = 0
+for (const file of sources) {
+  if (!file.endsWith('.ts') || relative(file).includes('packages/testing/')) continue
+  if (LOOKUP_OWNERS.has(relative(file))) continue
+  const count = (fs.readFileSync(file, 'utf8').match(LOOKUP) ?? []).length
+  lookups += count
+  const entry = recordedLookups[relative(file)]
+  if (count === 0) {
+    if (entry !== undefined) problems.push(`packages/testing/document-lookups.json: ${relative(file)} records ${entry.count} whole-document lookups and the file has none — take the entry out`)
+    continue
+  }
+  if (entry === undefined) {
+    problems.push(`${relative(file)}: ${count} whole-document ${count === 1 ? 'lookup' : 'lookups'} with no entry in packages/testing/document-lookups.json — read the seat through core/host.ts's accessors or core/bus.ts's registry, or record it there with the reason it stays`)
+    continue
+  }
+  if (entry.count !== count) {
+    problems.push(`packages/testing/document-lookups.json: ${relative(file)} records ${entry.count} whole-document lookups and the file has ${count} — write the count down again with the reason it changed`)
+  }
+}
+for (const file of Object.keys(recordedLookups)) {
+  if (fs.existsSync(path.join(ROOT, file))) continue
+  problems.push(`packages/testing/document-lookups.json: ${file} is gone from the tree — take its entry out`)
+}
+
 // A rule whose pattern stopped matching anything would pass forever: each of the
 // rules has to have looked at something.
 if (featureUiChecked === 0) problems.push('lint: no feature module types ui as FeatureUi — the feature rule matches nothing')
@@ -243,11 +286,12 @@ if (links === 0) problems.push('lint: no Markdown link was examined — the link
 if (citations === 0) problems.push('lint: no decision number was examined — the citation pattern matches nothing')
 if (prosePaths === 0) problems.push('lint: no repository path in prose was examined — the path pattern matches nothing')
 if (decisionBullets === 0) problems.push('lint: no decision bullet was measured — the decision length rule matches nothing')
+if (lookups === 0) problems.push('lint: no whole-document lookup was counted — the lookup rule matches nothing')
 
 if (problems.length > 0) {
   for (const problem of problems) console.error(`lint: ${problem}`)
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${decisionBullets} decision bullets and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${decisionBullets} decision bullets, ${lookups} recorded whole-document lookups and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }

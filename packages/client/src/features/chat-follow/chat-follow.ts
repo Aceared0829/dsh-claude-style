@@ -127,9 +127,13 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
     return scroller !== null && readerHolds(scroller)
   }
 
-  /** Whether work counts as in progress right now. */
-  const running = () => document.querySelector(FOLLOW_RUNNING_SELECTOR) !== null
-    || performance.now() - lastActivityAt <= FOLLOW_ACTIVITY_GRACE_MS
+  /**
+   * Whether work counts as in progress right now: the mark the host writes
+   * while it streams, read inside the message column the way the glide reads it
+   * (a document query made after the host's own write forces a style pass over
+   * the whole page), or the reader's own activity inside the grace window.
+   */
+  const running = () => streaming() || performance.now() - lastActivityAt <= FOLLOW_ACTIVITY_GRACE_MS
 
   // ---------- the stream glide ----------
   //

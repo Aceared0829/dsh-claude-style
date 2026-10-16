@@ -1,0 +1,25 @@
+{
+  "note": "The bounds a check compares against, each with the reason it holds that value (D00-style layering: a check reads its bound here instead of carrying a number of its own, so loosening one is a visible change with a reason beside it). The bounds of the other lanes move in with the migration; this file holds the ones a check reads so far.",
+  "bounds": [
+    {
+      "name": "longSessionGrowthRatio",
+      "value": 2.5,
+      "reason": "How much longer the second measured turn's transcript has to be for the two rounds to be worth comparing at all. The two lengths are set by the fill turns, and how many rows a scripted answer leaves behind moves the ratio between about 2.8 and 3.8 runs, so the floor sits below the lowest reading that still separates the two lengths."
+    },
+    {
+      "name": "longSessionGrowthSlack",
+      "value": 1.6,
+      "reason": "The long-session walk measures one and the same scripted turn twice, into a short transcript and into one about four times longer, and compares the readings of the two rounds. A cost that follows the page's size travels with that factor; one that follows its square (a scan per row, a whole-document query per element) lands near sixteen times and trips. The slack covers what a shared runner adds between two rounds, and the time readings it is applied to came in flat across runs."
+    },
+    {
+      "name": "longSessionQuerySlack",
+      "value": 2.5,
+      "reason": "The lookup counter counts every whole-document query the page makes, the host's own included, and how many of those a turn issues moves with how the host re-renders the growing answer: readings for the same tree have come in near 1.4 and near 4.9 times between the two rounds. The factor is therefore looser than the one for the time readings, while a lookup per element — the regression this counts for — still runs far past it."
+    },
+    {
+      "name": "longSessionGrowthFloorMs",
+      "value": 120,
+      "reason": "The short round can finish without one long task and with a p95 frame near the frame budget, so both time ratios are compared against a floor in milliseconds as well as the factor; without it the comparison divides by a number too small to mean anything."
+    }
+  ]
+}

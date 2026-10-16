@@ -3,6 +3,7 @@ import { SURFACE_STYLESHEET } from 'virtual:dsh-claude-style/generated'
 import { QUIET_ATTR, SURFACE_PLUGIN_CSS, SURFACE_STYLE_ID } from '../../constants'
 import { observeSize, subscribeMutations } from '../../core/bus'
 import { desktopBand } from '../../core/desktop-band'
+import { cacheFirstMatch, findSidebarBrand, findSidebarRoot, findSidebarToggle, findWindowsMenu } from '../../core/host'
 import { requestFrame } from '../../core/frame'
 import { copyLabel } from '../../core/i18n'
 import { onModelCopyLoaded } from '../../core/model-copy'
@@ -54,10 +55,36 @@ function currentMode(): Mode {
   return dsBotSurfaceActive() ? 'chat' : 'code'
 }
 
+/**
+ * ds-bot's own controls: the row and the account entry the switch stands beside
+ * and presses, and the account menu's Agent item. Each is read once and kept
+ * until the page's structure changes (core/host.ts's cacheFirstMatch), because
+ * every one of them is absent while the Bot surface is down and the switch's
+ * pass runs on every refresh (D9). Taken on the first install and reused, so a
+ * page the switch never reaches pays nothing and a re-install adds no reader.
+ */
+let seatReaders: {
+  botTopRow: () => HTMLElement | null
+  botAccount: () => HTMLElement | null
+  botReturn: () => HTMLElement | null
+  botAgentItem: () => HTMLElement | null
+} | null = null
+
+function seats() {
+  seatReaders ??= {
+    botTopRow: cacheFirstMatch<HTMLElement>(DS_BOT_SIDEBAR_TOP_SELECTOR),
+    botAccount: cacheFirstMatch<HTMLElement>(DS_BOT_ACCOUNT_SELECTOR),
+    botReturn: cacheFirstMatch<HTMLElement>(DS_BOT_RETURN_SELECTOR),
+    botAgentItem: cacheFirstMatch<HTMLElement>(DS_BOT_AGENT_ITEM_SELECTOR),
+  }
+  return seatReaders
+}
+
 export function install() {
   // Without ds-bot the host has one interface, and nothing to switch to.
   if (!dsBotInstalled()) return
   const body = document.body
+  const seat = seats()
   const stopSheet = mountStylesheet(SURFACE_STYLE_ID, SURFACE_STYLESHEET, SURFACE_PLUGIN_CSS)
 
   const root = buildElement('div', 'dsh-claude-surface-switch')
@@ -78,7 +105,7 @@ export function install() {
 
   /** ds-bot's own route back to its Bot surface. */
   function pressReturn() {
-    const button = document.querySelector<HTMLElement>(DS_BOT_RETURN_SELECTOR)
+    const button = seat.botReturn()
     if (button === null) throw new Error('surface: ds-bot shows no button back to its Bot surface')
     button.click()
   }
@@ -89,14 +116,14 @@ export function install() {
    * frame, and the menu is kept out of sight until it has closed again.
    */
   function pressAgentItem() {
-    const account = document.querySelector<HTMLElement>(DS_BOT_ACCOUNT_SELECTOR)
+    const account = seat.botAccount()
     if (account === null) throw new Error('surface: ds-bot\'s account button is not on the page')
     body.toggleAttribute(SWITCHING_ATTR, true)
     account.click()
     cancelSwitchFrame = requestFrame({
       write() {
         cancelSwitchFrame = null
-        const item = document.querySelector<HTMLElement>(DS_BOT_AGENT_ITEM_SELECTOR)
+        const item = seat.botAgentItem()
         cancelSwitchFrame = requestFrame({
           write() {
             cancelSwitchFrame = null
@@ -145,7 +172,7 @@ export function install() {
    * controls at the strip's left end, the switch stays measured but unseen.
    */
   function placeInBand(band: NonNullable<ReturnType<typeof desktopBand>>) {
-    const column = document.querySelector(SIDEBAR_ROOT_SELECTOR)
+    const column = findSidebarRoot()
     if (column === null) {
       detach()
       return
@@ -154,8 +181,8 @@ export function install() {
     const width = root.offsetWidth
     const height = root.offsetHeight
     let clear = band.controls.side === 'left' ? band.controls.size : 0
-    for (const selector of [SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR]) {
-      const box = document.querySelector(selector)?.getBoundingClientRect()
+    for (const read of [findSidebarToggle, findWindowsMenu]) {
+      const box = read()?.getBoundingClientRect()
       if (box !== undefined && box.width > 0 && box.top < band.height) clear = Math.max(clear, box.right)
     }
     const left = Math.round(column.getBoundingClientRect().right - BAND_INSET - width)
@@ -171,7 +198,7 @@ export function install() {
    */
   function placeInRow(mode: Mode) {
     if (mode === 'chat') {
-      const row = document.querySelector(DS_BOT_SIDEBAR_TOP_SELECTOR)
+      const row = seat.botTopRow()
       if (row === null) {
         detach()
         return
@@ -180,12 +207,12 @@ export function install() {
       mark('row')
       return
     }
-    const row = document.querySelector(SIDEBAR_BRAND_SELECTOR)?.parentElement ?? null
+    const row = findSidebarBrand()?.parentElement ?? null
     if (row === null) {
       detach()
       return
     }
-    const toggle = document.querySelector(SIDEBAR_TOGGLE_SELECTOR)
+    const toggle = findSidebarToggle()
     const before = toggle !== null && toggle.parentElement === row ? toggle : null
     if (root.parentElement !== row || root.nextSibling !== before) row.insertBefore(root, before)
     mark('row')
@@ -197,7 +224,7 @@ export function install() {
   let stopColumnSize: (() => void) | null = null
 
   function watchColumn() {
-    const column = document.querySelector(SIDEBAR_ROOT_SELECTOR)
+    const column = findSidebarRoot()
     if (column === watchedColumn) return
     if (stopColumnSize !== null) stopColumnSize()
     stopColumnSize = null
@@ -213,7 +240,7 @@ export function install() {
     for (const { mode: option, button } of options) setAttributeIfChanged(button, 'aria-checked', String(option === mode))
     watchColumn()
     // The control the other side presses has to be on the page, or the switch has nothing to do.
-    if (document.querySelector(mode === 'chat' ? DS_BOT_ACCOUNT_SELECTOR : DS_BOT_RETURN_SELECTOR) === null) {
+    if ((mode === 'chat' ? seat.botAccount() : seat.botReturn()) === null) {
       detach()
       return
     }

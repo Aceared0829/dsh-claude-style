@@ -14,6 +14,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - **样式表里判断「谁包含谁」的规则改为读一处标记**：此前 16 条规则用 `:has()` 问浏览器「这个元素的子树里有没有那个部件或标记」，页面下方每次变化这些规则都要重新匹配。现在盖部件的同一趟走查顺带把答案写成一处标记，规则只读这处标记；页面上的 `:has()` 只剩进入作用域的两处与跟随焦点状态的一处。构建同时开始拒绝在 `:has()` 里读属性、核对每个标记都有声明的来源、并核对声明里的部件名。
+- **每趟刷新与每一帧上的整份文档查找改走记下的答案**：界面切换的横带每趟刷新要问八次「对方的控件在不在」「侧栏的切换键在不在」「窗口菜单在不在」，聊天跟随每帧要问一次「宿主还在流式输出吗」，桌面端的页头每趟刷一次「窗口菜单在哪」——这些座位在多数页面上根本不存在，而每次问都要把整份文档走一遍。这一次改掉九处（界面切换七处、页头一处、聊天跟随一处）：这些答案由宿主访问模块记住，页面结构变了才重新查找；聊天跟随改在消息列里读那个标记，与它自己的另一处读法一致。剩下的四十六处逐条登记在册并写明缘由，脚本会拒绝新增的查找，也会拒绝与代码对不上的登记。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -23,6 +24,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - **Rules asking whether one element holds another read one mark again**: sixteen rules used to ask the browser, through `:has()`, whether an element's subtree carried a part or a mark, and every change below one of them re-matched those rules. The pass that marks the parts now writes that answer as one attribute, and the rules read it; the two `:has()` entries into scope and the one following focus state remain. The build refuses a `:has()` that reads an attribute, holds every mark read to a declared relation, and checks the part names those relations name.
+- **Whole-document lookups in a pass or a frame now read a kept answer**: the interface switch's band asked eight times a pass whether the other side's controls, the sidebar's collapse toggle and the window menu were on the page, the chat follow asked once a frame whether the host was still streaming, and the desktop header band asked once a pass where the window menu stood — seats most pages do not have at all, each question walking the whole document. Nine of them go (seven in the switch, one in the band, one in the follow): the host access module keeps those answers until the page's structure changes, and the follow reads its mark inside the message column, as its own other reading already did. The forty-six that remain are recorded one by one with the reason each stays, and the lint step refuses a new lookup as well as a record the code no longer matches.
 
 ## [0.15.0] - 2026-10-15
 

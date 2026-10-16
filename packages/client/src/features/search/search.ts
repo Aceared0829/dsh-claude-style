@@ -2,9 +2,9 @@ import { requestFrame } from '../../core/frame'
 import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
-import { SIDEBAR_BRAND_SELECTOR, SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
-import { cacheFirstMatch, conversationSessionId, findConversationSession, sessionOutline, turnForSeq } from '../../core/host'
+import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, sessionOutline, turnForSeq } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
@@ -19,12 +19,10 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './search.manifest'
 
 /**
- * The sidebar's brand row, the host element this feature reads every pass,
- * kept while it stays the first match (D40). The host's search button is
- * cached beside its own selector inside the install, which is where that
- * selector is read.
+ * The sidebar's brand row, the host element this feature reads every pass: read
+ * through the host access module, which keeps the answer while the element stays
+ * the first match (D40).
  */
-const SIDEBAR_BRAND = cacheFirstMatch<HTMLElement>(SIDEBAR_BRAND_SELECTOR)
 
 /**
  * Search: a box in the sidebar that opens a palette over the window, the way
@@ -187,7 +185,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * holds it — the host's logo row, or the skin's own row under it.
    */
   function syncTrigger() {
-    const brand = SIDEBAR_BRAND()
+    const brand = findSidebarBrand()
     const row = brand === null ? null : brand.parentElement
     const style = readPrefs().searchStyle
     // The brand is absent in the collapsed rail: no wide brand, no box.
