@@ -203,7 +203,7 @@ module.exports = {
     check('the wrapped row\'s door is handed back when it lands',
       wrapped.clicksDuringRoll === 0 && wrapped.clicks === 1 &&
         wrapped.bodyGone === true && wrapped.folded === true, JSON.stringify(wrapped))
-    // The switch covers the door and the entrance fade as well (D42/D49).
+    // The switch covers the door and the entrance fade as well (D72/D49).
     const animationsOff = fold.animationsOff || {}
     const wrappedEntrance = fold.entranceWrapped || {}
     const wrappedOff = animationsOff.wrappedEntrance || {}

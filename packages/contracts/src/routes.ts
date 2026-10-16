@@ -1,5 +1,5 @@
 /**
- * The plugin's private route names, shared by both halves (D7): the host half
+ * The plugin's private route names, shared by both halves (D73): the host half
  * registers them under this prefix and the browser half addresses them, so
  * every path is declared once.
  */

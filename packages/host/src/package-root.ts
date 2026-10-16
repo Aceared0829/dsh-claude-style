@@ -2,7 +2,7 @@
  * The plugin package's own directory, found from this module's location.
  *
  * The host half lives at `packages/host/src/` in the repository and is built to
- * `lib/host/` in the package (D7), so this module's depth is not a fixed
+ * `lib/host/` in the package (D73), so this module's depth is not a fixed
  * number of levels below the root: the root is the nearest directory whose
  * `package.json` is this plugin's, which is what the routes below hang their
  * files off.

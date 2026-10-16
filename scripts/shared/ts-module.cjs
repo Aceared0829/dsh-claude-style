@@ -7,7 +7,7 @@
  * bundler, so it does the transform and the relative imports are resolved here.
  *
  * Paths are given from the repository root, so a module that has moved into a
- * package (D7) is loaded by its own path.
+ * package (D73) is loaded by its own path.
  */
 'use strict'
 const path = require('node:path')

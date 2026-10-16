@@ -7,7 +7,7 @@
  * smoke's whole walk. This reads the changed paths once and answers for the
  * jobs: whether any code changed, which smoke selection the change earns, and
  * the tree hash the build cache is keyed on. The directory names it prints are
- * checked against the feature table the manifests produce (D42), so a printed
+ * checked against the feature table the manifests produce (D72), so a printed
  * selection is one the smoke accepts, and a change it cannot place falls back to
  * the whole walk.
  *

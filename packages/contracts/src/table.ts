@@ -6,7 +6,7 @@
  * The table is build and test data rather than runtime data: the browser bundle
  * carries the literals alone, so the notes cost the page nothing. The build
  * holds the two lists together — every exported literal of the DOM contract has
- * to appear here, and every id has to be named by a feature manifest (D42) — so
+ * to appear here, and every id has to be named by a feature manifest (D72) — so
  * a selector cannot enter the skin without a note and an owner, and a host
  * upgrade can be audited from this list alone.
  *
@@ -56,7 +56,7 @@ interface HostDomProbe {
  * it for.
  */
 interface HostDomEntry {
-  /** Stable id; a feature manifest names it (D42) and the contract test reports by it. */
+  /** Stable id; a feature manifest names it (D72) and the contract test reports by it. */
   id: string
   /** The literal, as the host writes it. */
   value: string

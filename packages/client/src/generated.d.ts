@@ -24,14 +24,14 @@ declare module 'virtual:dsh-claude-style/generated' {
 }
 
 /**
- * The modules the feature chunks share with the bundle (D42), by the id each
+ * The modules the feature chunks share with the bundle (D72), by the id each
  * chunk asks for: a source module's repository path, or a host package's name.
  */
 declare module 'virtual:dsh-claude-style/chunk-modules' {
   export const CHUNK_MODULES: Record<string, unknown>
 }
 
-/** The feature registry scripts/build.mjs generates from the manifests (D42), in install order. */
+/** The feature registry scripts/build.mjs generates from the manifests (D72), in install order. */
 declare module 'virtual:dsh-claude-style/features' {
   export const FEATURES: import('./core/feature').Feature[]
 }

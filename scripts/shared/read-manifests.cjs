@@ -1,6 +1,6 @@
 'use strict'
 /**
- * Read the feature manifests (packages/client/src/features/**\/<main>.manifest.ts, D42).
+ * Read the feature manifests (packages/client/src/features/**\/<main>.manifest.ts, D72).
  *
  * A manifest is data only, so it is evaluated here in Node: esbuild bundles
  * every manifest into one CommonJS body and the body runs in a fresh vm
@@ -16,7 +16,7 @@ const esbuild = require('esbuild')
 
 /** The repository root: this module sits one level below `scripts/`. */
 const ROOT = path.resolve(__dirname, '..', '..')
-// The browser half lives in its own package (D7).
+// The browser half lives in its own package (D73).
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 const FEATURES = path.join(SRC, 'features')
 const SUFFIX = '.manifest.ts'

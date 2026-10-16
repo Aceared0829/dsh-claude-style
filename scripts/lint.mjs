@@ -7,7 +7,7 @@
  * Markdown resolves, every decision a comment or a document cites exists
  * (numbers are stable and a retired one stays citable), every repository path
  * prose names exists, no feature module reaches past the handles its manifest
- * declares (D42), and no pair of files holds a copied stretch (jscpd).
+ * declares (D72), and no pair of files holds a copied stretch (jscpd).
  * Everything else a tool could enforce is already a build check, the type check
  * or a smoke case.
  *
@@ -149,7 +149,7 @@ for (const file of prose) {
 }
 
 // 5. A feature sees `ui` as FeatureUi of its own manifest: its handle and the
-// handles the manifest `reads` (D42). The whole registry type is the entry's
+// handles the manifest `reads` (D72). The whole registry type is the entry's
 // and the scheduler's; a feature module importing it would read any handle
 // with nothing declared.
 const featureModules = filesUnder(path.join(ROOT, 'packages', 'client', 'src', 'features'), ['.ts'], SKIPPED_DIRS).filter((file) => !/\.(test|manifest)\.ts$/.test(file))
@@ -157,7 +157,7 @@ let featureUiChecked = 0
 for (const file of featureModules) {
   const text = fs.readFileSync(file, 'utf8')
   if (/\bFeatureUi\b/.test(text)) featureUiChecked += 1
-  if (/^import type \{[^}]*\bUi\b[^}]*\} from '[./]+core\/scheduler'/m.test(text)) problems.push(`${relative(file)}: imports the whole ui registry type; type ui as FeatureUi<typeof manifest> and list the handles it reads in the manifest (D42)`)
+  if (/^import type \{[^}]*\bUi\b[^}]*\} from '[./]+core\/scheduler'/m.test(text)) problems.push(`${relative(file)}: imports the whole ui registry type; type ui as FeatureUi<typeof manifest> and list the handles it reads in the manifest (D72)`)
 }
 
 // 6. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy

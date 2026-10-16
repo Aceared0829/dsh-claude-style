@@ -4,7 +4,7 @@ import type { HostContext } from './host'
 import type { HandleName, Handles, Ui, UiCalls } from './scheduler'
 
 /**
- * A feature's manifest (D42): every fact about the feature that something
+ * A feature's manifest (D72): every fact about the feature that something
  * outside it needs. It sits beside the feature's main module as
  * `<main>.manifest.ts` and holds data only — the build evaluates it in Node
  * (scripts/shared/read-manifests.cjs) to order the features and their stylesheets,
@@ -13,7 +13,7 @@ import type { HandleName, Handles, Ui, UiCalls } from './scheduler'
  */
 export type FeatureManifest = FeatureIdentity & FeatureFields & FeatureSwitch
 
-/** Exactly one of `pref` and `ungated` (D42). */
+/** Exactly one of `pref` and `ungated` (D72). */
 export type FeatureSwitch =
   | {
       /** The preference that decides whether the reader gets the feature. */
@@ -41,7 +41,7 @@ export type FeatureIdentity =
 export interface FeatureFields {
   /**
    * The other features' handles this feature's modules read off `ui`
-   * (D42). Its modules see `ui` as FeatureUi of this manifest, so a read
+   * (D72). Its modules see `ui` as FeatureUi of this manifest, so a read
    * the manifest does not declare fails the type check.
    */
   reads?: HandleName[]
@@ -52,7 +52,7 @@ export interface FeatureFields {
   /**
    * `'deferred'`: the feature's own modules leave the bundle for a chunk of
    * their own, fetched once the page is taken and installed when it arrives
-   * (D42). Only for a feature the first frames can do without.
+   * (D72). Only for a feature the first frames can do without.
    */
   load?: 'deferred'
   /** The feature's stylesheets, relative to its directory; `rank` places each one in the concatenated sheet. */
@@ -115,7 +115,7 @@ export interface FeatureSwitchRow {
   desc?: SettingsCopyLine
   /** The choices of a segmented control; without them the row is an on/off switch. */
   choices?: FeatureSwitchChoice[]
-  /** The preference the feature only works under (D42). */
+  /** The preference the feature only works under (D72). */
   requires?: FeatureSwitchRequirement
   /**
    * The row acts on the Windows desktop window alone: on any other page it
@@ -155,7 +155,7 @@ export type FeatureInstall = (ctx: HostContext, ui: Ui) => (() => void) | void
 
 /**
  * One installable feature: its runtime manifest fields beside its main
- * module's `install`, or beside the address of the chunk that carries it (D42).
+ * module's `install`, or beside the address of the chunk that carries it (D72).
  */
 export type Feature = FeatureRuntime & ({ install: FeatureInstall, chunk?: never } | { chunk: string, install?: never })
 
@@ -172,7 +172,7 @@ type ReadHandles<M> = M extends { reads: readonly (infer R extends HandleName)[]
 
 /**
  * What one feature's modules see of `ui`: the two calls, the feature's own
- * handle and the handles its manifest `reads` (D42). Its install takes `ui` as
+ * handle and the handles its manifest `reads` (D72). Its install takes `ui` as
  * `FeatureUi<typeof manifest>`, with the manifest imported as a type.
  */
 export type FeatureUi<M> = UiCalls & { [K in OwnHandle<M> | ReadHandles<M>]?: Handles[K] }

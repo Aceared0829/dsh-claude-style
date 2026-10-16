@@ -288,7 +288,7 @@ async function browserHalf(planned, jobs) {
       const file = name.slice('dsh-claude-style/assets/'.length)
       const asset = ASSETS[file]
       // The chunk-fault case's route carries none of the feature chunks, the
-      // way a host still serving the bundle it read before an update answers (D42).
+      // way a host still serving the bundle it read before an update answers (D72).
       const chunkRefused = fromPage(req) === 'chunk-fault' && file.endsWith('.js')
       if (asset === undefined || chunkRefused) {
         res.writeHead(404)

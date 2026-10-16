@@ -46,7 +46,7 @@ interface Element {
 
 interface HTMLScriptElement {
   /**
-   * What a feature chunk's script hands back (D42): the chunk's factory, set
+   * What a feature chunk's script hands back (D72): the chunk's factory, set
    * on its own script element while it runs. It is called with the `require`
    * that resolves the modules the chunk shares with the bundle.
    */

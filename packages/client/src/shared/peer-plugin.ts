@@ -33,7 +33,7 @@ import type { PeerPlugin } from '../core/feature'
  * (the element is mounted there; the observation bus, D40) re-asks the
  * question and, when the answer changed, re-runs the environment — the
  * entry installs or tears down the features whose manifests yield to that
- * plugin (D42). The head is watched only while something is subscribed.
+ * plugin (D72). The head is watched only while something is subscribed.
  */
 /** The other plugin's id, as its entry appears in the boot list. */
 const PEER_ENTRY_ID = 'dsh-chat-ux'

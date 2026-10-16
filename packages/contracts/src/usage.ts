@@ -6,7 +6,7 @@
  * roll-up (`sessions.list`, a host service) answers a narrower version of the
  * same entries, which is why several fields below are optional. These types are
  * the plugin's own contract rather than the host's, so they live beside the code
- * that produces them; D7 moves them into the shared contracts package.
+ * that produces them; D73 moves them into the shared contracts package.
  */
 
 /** One day of a roll-up: the four buckets, the settled calls, and the day's models. */

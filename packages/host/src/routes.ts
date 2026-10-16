@@ -9,7 +9,7 @@
  * registered on its own: one path the web server refuses is reported, and the
  * other routes still register.
  *
- * The paths are the shared contract (`@dsh-claude-style/contracts/routes`, * D7): the browser half addresses the same names.
+ * The paths are the shared contract (`@dsh-claude-style/contracts/routes`, * D73): the browser half addresses the same names.
  */
 import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, ROUTE_PREFIX, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
 import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'

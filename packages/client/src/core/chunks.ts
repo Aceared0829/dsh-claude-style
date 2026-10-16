@@ -8,7 +8,7 @@ type ChunkFactory = NonNullable<HTMLScriptElement['__dshChunk']>
 const loads = new Map<string, Promise<FeatureInstall>>()
 
 /**
- * The `require` a chunk's factory receives (D42): the modules the build left
+ * The `require` a chunk's factory receives (D72): the modules the build left
  * out of the chunk because the bundle carries them, as this generation's own
  * instances. A chunk holding a second copy of a module with state would split
  * that state in two, so the build shares every such module through this table.
@@ -47,7 +47,7 @@ function fetchFactory(url: string) {
 }
 
 /**
- * Load one feature chunk and hand back its feature's `install` (D42).
+ * Load one feature chunk and hand back its feature's `install` (D72).
  *
  * @param url - the chunk's address (the asset route, content-hashed).
  * @returns `install`, or a rejection naming the address when the script fails
