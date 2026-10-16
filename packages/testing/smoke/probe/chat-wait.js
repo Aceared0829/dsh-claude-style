@@ -342,10 +342,6 @@
       // whole name rather than the piece before its extension.
       reason('I am reading app.js now. ')
       r.wait.dotName = await awaitWord(function (reading) { return reading.word === 'Reading app.js now' && reading.copies === 1 })
-      // Reasoning in the model's other language hands the line the clause in its
-      // own shape (「正在…」), which the same scan reads.
-      reason('我正在读取 app.js，然后回答。')
-      r.wait.chinese = await awaitWord(function (reading) { return reading.word === '正在读取 app.js' && reading.copies === 1 })
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })
       await probe.settle()

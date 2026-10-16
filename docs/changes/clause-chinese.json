@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 37,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**中文推理也把模型自己那句话交给状态行**：此前只有英文进行时从句会被读出，模型用中文思考时这一行一直停在「正在思考」上。现在中文里的「正在…」以同一处形状判定读出，说法的正文到这一句的收尾为止（「我正在读取 app.js，然后回答。」写成「正在读取 app.js」），行内标记照旧清掉；「精确状态行」关掉时这些具体内容仍然都不读。",
-  "en": "**Reasoning in Chinese hands the status line its clause as well**: only an English present-continuous clause used to be read, so a model thinking in Chinese left the line on \"Thinking…\". The Chinese 「正在…」 is now read by the same shape rule, its clause running to that sentence's own end (「我正在读取 app.js，然后回答。」 becomes 「正在读取 app.js」), with inline markers stripped as before. The Precise status line switched off still reads none of these specifics."
-}

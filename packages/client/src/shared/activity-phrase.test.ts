@@ -38,10 +38,19 @@ test('a negated clause is passed over: the line says what the model is doing', (
   expect(activityPhrase('I am not currently checking that.')).toBeNull()
 })
 
-test('the words the model is thinking in are read too, 正在 included', () => {
-  expect(activityPhrase('我正在读取 app.js，然后回答。')).toBe('正在读取 app.js')
+test('reasoning in another language, or with no clause at all, hands the line nothing', () => {
+  expect(activityPhrase('我正在读取 app.js，然后回答。')).toBeNull()
   expect(activityPhrase('先看清工作区，再动手。')).toBeNull()
   expect(activityPhrase('Nothing here at all.')).toBeNull()
+})
+
+test('a sentence the model quotes is not the model saying what it is doing', () => {
+  // The wording the line itself stands on, quoted back while the model thinks
+  // about the line, is the shape this rule has to refuse.
+  expect(activityPhrase('the row reads 「正在思考」 because the *lock* doesn\'t apply to the first write')).toBeNull()
+  expect(activityPhrase('The line then says "I am checking the file is true".')).toBeNull()
+  // A quotation inside a clause the model states itself is carried as written.
+  expect(activityPhrase('I am checking "app.js" now.')).toBe('Checking "app.js" now')
 })
 
 test('the markers the reasoning is written with stay out of the line', () => {

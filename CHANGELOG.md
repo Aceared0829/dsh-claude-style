@@ -6,11 +6,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">新增功能</h3>
-
-- **中文推理也把模型自己那句话交给状态行**：此前只有英文进行时从句会被读出，模型用中文思考时这一行一直停在「正在思考」上。现在中文里的「正在…」以同一处形状判定读出，说法的正文到这一句的收尾为止（「我正在读取 app.js，然后回答。」写成「正在读取 app.js」），行内标记照旧清掉；「精确状态行」关掉时这些具体内容仍然都不读。
-
-### 体验优化
+<h3 id="cn-unreleased">体验优化</h3>
 
 - **用量记录的体积缩到约四成**：记录里一天的量按路由存放（模型，以及没有归到任何模型的余量），当天总量由这些路由相加得出，小时直方图只记非零的格子，日志已不在的会话不再存指纹。用本机上这一份记录量：146 KB 降到 57 KB，一趟只剩解析与写回；与记录一致的那一趟不再写盘。
 - **界面每帧少做整份文档的查找**：查不到东西的查找此前每趟刷新都重新走一遍整份文档，而绝大多数页面上这些座位本来就不存在——会话页没有首屏根，对话框没打开时没有设置导航列。现在这类「什么都没找到」的答案在页面结构变化之前一直有效；设置页的导航格、侧栏的已归档清单清理、账户卡片的清理都收窄到它们各自所在的侧栏里。在 28568 个节点的页面上量同一个回合：插件发出的整份文档查找从 584 次降到 395 次，其中首屏根的查找从 273 次降到 26 次。
@@ -60,11 +56,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **外观层与它的闸门落地**：冒烟走查的每个页面状态现在按部件记一份计算值快照（只收与字体无关的属性：颜色、边框、圆角、阴影、层叠与溢出），第一版覆盖五十个页面状态、十二个部件；快照进版本管理，`npm run verify` 的 `appearance` 闸门把这次走查读到的值与它逐项比对。`scripts/ci-scope.mjs` 增加一条拒绝：`packages/testing/appearance.json` 变了而 `packages/client/src` 没变的推送不通过——快照是页面的样子，只随画它的样式表移动；云端两个工作流都接上了这条。顺带把「工作树改了哪些路径」的读取收进 `scripts/shared/changed-paths.mjs`，此前它有两份。
 - **方向记录改成一条方向一页**：每条方向只写它回答的背景、决定、由此而来的后果与重审条件，文件路径、函数名、数值与计数由代码注释、`ARCHITECTURE.md` 与测试承担，因此一次不改变方向的代码重构不再让方向记录过时；`docs/adr/README.md` 与作废编号的清册由 `npm run docs:index` 生成，编号作废之后不再复用。
 
-<h3 id="en-unreleased">New Features</h3>
-
-- **Reasoning in Chinese hands the status line its clause as well**: only an English present-continuous clause used to be read, so a model thinking in Chinese left the line on "Thinking…". The Chinese 「正在…」 is now read by the same shape rule, its clause running to that sentence's own end (「我正在读取 app.js，然后回答。」 becomes 「正在读取 app.js」), with inline markers stripped as before. The Precise status line switched off still reads none of these specifics.
-
-### Improvements
+<h3 id="en-unreleased">Improvements</h3>
 
 - **The usage record shrinks to about two fifths of its size**: a day is stored per route (a model, plus the remainder no model claimed), the day's own total is the sum of those routes, the hour histogram keeps its non-zero slots alone, and a session whose log is gone no longer carries a fingerprint. Measured on this machine's own record: 146 KB becomes 57 KB, and a pass pays for parsing and writing alone; a pass that matches the record writes nothing.
 - **Fewer whole-document lookups per frame**: a lookup that found nothing used to walk the whole document again on every pass, while on most pages the seat it asks for is simply absent — a conversation page carries no hero root, and the settings navigation column does not exist until the dialog opens. That "nothing matched" answer now stands until the page's structure changes; the settings navigation cell, the sidebar's archived-list sweep and the account card's sweep are scoped to the sidebar they live in. Measured over one turn on a page of 28568 nodes: the skin's whole-document lookups fall from 584 to 395, and its hero-root lookups from 273 to 26.

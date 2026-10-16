@@ -18,9 +18,12 @@
  * `currently`, `still`, …), and a participle. A negated clause ("I am not sure
  * …") is passed over, since it says what the model is not doing, and so is a
  * plan the model has not started ("Let me check …", "about to check …"): this
- * line says the work in hand. Chinese reasoning hands it the clause in its own
- * shape (「正在读取 app.js」). The shape admits an adjective built the same way
- * ("the file is missing"), which no rule here can tell from a participle.
+ * line says the work in hand. What a quotation carries is passed over as well —
+ * a model quoting a sentence it read, the line's own waiting word among them, is
+ * not a model saying what it is doing — and reasoning in another language hands
+ * the line nothing: only this shape can be told apart from a mention of it. The
+ * shape admits an adjective built the same way ("the file is missing"), which no
+ * rule here can tell from a participle.
  *
  * The clause is carried whole, without the inline markers the reasoning is
  * written with (backticks, paired emphasis, a link's brackets). How much of it
@@ -42,8 +45,11 @@ const SENTENCE_MARKS = /[.!?\u2026\u3002\uff01\uff1f]+$/
 const CLOSERS = /[\s"'\u201d\u2019\u300d\u300f\uff09)\]]+$/
 /** Where a clause stops inside its sentence: punctuation below the sentence's own end. */
 const CLAUSE_END = /[,;:\u2014\u2013)\uff0c\uff1b\uff1a\uff09]/
-/** The same for a Chinese clause, whose sentence ends with its own mark. */
-const CLAUSE_END_ZH = /[,;:!?)\u2014\u2013\u3002\uff0c\uff1b\uff1a\uff01\uff1f\uff09]/
+/**
+ * The quotations reasoning wraps what it read in: 「…」, 『…』, “…”, "...". A
+ * single quote is left out — an apostrophe is not a quotation.
+ */
+const QUOTED = /「[^」]*」|『[^』]*』|“[^”]*”|"[^"]*"/g
 /** A whole word, which is what an auxiliary, a qualifier and a participle are read as. */
 const WORD = /[A-Za-z\u2019']+/g
 /**
@@ -62,10 +68,8 @@ const QUALIFIER_LIMIT = 2
 const NOMINAL_ING = new Set(['nothing', 'anything', 'everything', 'something', 'thing', 'morning', 'evening'])
 /** The contraction tails that carry an auxiliary ("I'm", "it's", "I've"). */
 const CONTRACTED_AUX = /['\u2019](m|re|s|ve)$/
-/** The Chinese progressive marker, which the line carries along with its clause. */
-const CHINESE_ANCHOR = '\u6b63\u5728'
 
-/** The page's sentence rules, built once, at the runtime's own locale: the rules for English, Chinese and the dots inside a token are the same ones. */
+/** The page's sentence rules, built once, at the runtime's own locale: the rules for prose in either language, and for the dots inside a token, come from there. */
 let segmenter: Intl.Segmenter | null = null
 /** What the last scan read, and what it answered, so a pass over an unchanged reasoning costs one comparison. */
 let scannedText = ''
@@ -89,6 +93,17 @@ function stripMarkup(text: string) {
   return text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/`|\*\*|__|~~/g, '')
 }
 
+/**
+ * The sentence with the content of every quotation blanked out, its length kept
+ * so the offsets still name the same places. What a quotation carries is what
+ * the model read or is talking about — the line's own waiting word among it —
+ * and reading a clause out of one would hand the row a sentence the model never
+ * said about its own work.
+ */
+function withoutQuotes(sentence: string) {
+  return sentence.replace(QUOTED, (quoted) => ' '.repeat(quoted.length))
+}
+
 /** A participle: an `-ing` word the shape may anchor, the nominal ones left out. */
 function isParticiple(token: string) {
   return /^[a-z]+ing$/i.test(token) && !NOMINAL_ING.has(token.toLowerCase())
@@ -106,11 +121,16 @@ function auxiliaryOf(token: string): Auxiliary | null {
   return form === 's' ? 'either' : null
 }
 
-/** A clause's body: from the participle to the first stop inside the sentence, or to the sentence's end. */
-function clauseBody(sentence: string, from: number) {
-  const rest = sentence.slice(from)
-  const stop = rest.search(CLAUSE_END)
-  const body = stripMarkup(stop === -1 ? rest : rest.slice(0, stop))
+/**
+ * A clause's body: from the participle to the first stop inside the sentence, or
+ * to the sentence's end. Where it stops is read off the sentence without its
+ * quotations, so punctuation inside one does not cut a clause short, and the
+ * words carried come from the sentence as the model wrote it.
+ */
+function clauseBody(scanned: string, sentence: string, from: number) {
+  const stop = scanned.slice(from).search(CLAUSE_END)
+  const end = stop === -1 ? sentence.length : from + stop
+  const body = stripMarkup(sentence.slice(from, end))
   // The marks a sentence carries after its end go first: a sentence the segmenter
   // handed over keeps its own full stop and the space after it.
   return body.replace(CLOSERS, '').replace(SENTENCE_MARKS, '').replace(/\s+/g, ' ').trim()
@@ -124,7 +144,8 @@ function clauseBody(sentence: string, from: number) {
  * ending the scan, since a clause before it may still say what the model is on.
  */
 function englishClause(sentence: string): string | null {
-  const words = [...sentence.matchAll(WORD)].map(match => ({ text: match[0], end: (match.index ?? 0) + match[0].length }))
+  const scanned = withoutQuotes(sentence)
+  const words = [...scanned.matchAll(WORD)].map(match => ({ text: match[0], end: (match.index ?? 0) + match[0].length }))
   let phrase: string | null = null
   for (let at = 0; at < words.length; at++) {
     const head = auxiliaryOf(words[at].text)
@@ -144,27 +165,17 @@ function englishClause(sentence: string): string | null {
     }
     if (negated || next >= words.length || !isParticiple(words[next].text)) continue
     const participle = words[next].text
-    const body = clauseBody(sentence, words[next].end)
+    const body = clauseBody(scanned, sentence, words[next].end)
     phrase = `${participle.charAt(0).toUpperCase()}${participle.slice(1)}${body === '' ? '' : ` ${body}`}`
   }
   return phrase
 }
 
-/** The model's own clause out of one Chinese sentence, or null: the words after 正在, up to the sentence's own end. */
-function chineseClause(sentence: string): string | null {
-  const at = sentence.lastIndexOf(CHINESE_ANCHOR)
-  if (at === -1) return null
-  const rest = sentence.slice(at + CHINESE_ANCHOR.length)
-  const stop = rest.search(CLAUSE_END_ZH)
-  const body = stripMarkup(stop === -1 ? rest : rest.slice(0, stop)).replace(/\s+/g, ' ').trim()
-  return body === '' ? null : `${CHINESE_ANCHOR}${body}`
-}
-
 /**
  * What the model says it is doing, off one reasoning text, or null where it says
  * nothing of the kind: the newest ended sentence of the tail that hands the line
- * a clause — a sentence saying nothing, or saying only what the model is not
- * doing, lets the one before it speak.
+ * a clause — a sentence saying nothing, saying only what the model is not doing,
+ * or saying it inside a quotation, lets the one before it speak.
  */
 export function activityPhrase(text: string): string | null {
   if (text === scannedText) return scannedPhrase
@@ -172,7 +183,7 @@ export function activityPhrase(text: string): string | null {
   scannedText = text
   scannedPhrase = null
   for (const sentence of endedSentences(tail)) {
-    const clause = englishClause(sentence) ?? chineseClause(sentence)
+    const clause = englishClause(sentence)
     if (clause !== null) {
       scannedPhrase = clause
       break

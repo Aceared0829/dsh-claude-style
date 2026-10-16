@@ -178,12 +178,13 @@ function waitLineScenario({ check }) {
       const calls = await page.evaluate(() => window.__waitCalls ?? [])
       const head = notes.head ?? null
       const seats = head?.seats ?? null
-      // What stood between two clauses: the first clause the line said, up to
-      // the call's own words. The sentence carrying no clause sits inside that
-      // stretch, and nothing but a clause may stand there.
+      // What stood between two clauses: from the first clause the line said to
+      // the last. The sentence carrying no clause sits inside that stretch, and
+      // only a clause may stand there — the call's own words come after the last
+      // one, which is newer work and takes the line by design.
       const firstClause = words.findIndex((word) => PHRASES.includes(word))
-      const fileWord = words.findIndex((word) => READ_WORD.test(word))
-      const held = firstClause === -1 || fileWord === -1 ? [] : words.slice(firstClause, fileWord)
+      const lastClause = words.reduce((at, word, index) => (PHRASES.includes(word) ? index : at), -1)
+      const held = firstClause === -1 || lastClause === -1 ? [] : words.slice(firstClause, lastClause + 1)
       return [
         check('推理里的进行时从句由这一行自己说出来',
           words.some((word) => PHRASES.includes(word)), JSON.stringify(words)),
