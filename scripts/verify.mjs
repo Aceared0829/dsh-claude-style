@@ -31,7 +31,7 @@
  *
  * Usage: node scripts/verify.mjs [--quick] [--e2e] [--scenario <name>[,<name>…]]
  *        [--case <name>[,<name>…]] [--feature <dir>[,<dir>…]] [--full]
- *        [--no-e2e] [--force]
+ *        [--no-e2e] [--force] [--help]
  *        A bare run is the iteration tier: the checks, the build and the tests
  *        the working tree's change reaches, at once, and nothing that starts a
  *        browser. --quick adds the smoke's quick tier (its motion cases left
@@ -41,6 +41,7 @@
  *        --no-e2e leaves the lane out of either. A request for the whole smoke
  *        and the lane's default table together prints `请确认你正处于发布流程。`
  *        before its gates start: that pair is the cloud's release gate.
+ *        --help prints this block and stops.
  */
 import { execFileSync, spawn } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -116,9 +117,23 @@ function libHash() {
   return digest.digest('hex')
 }
 
+/**
+ * The usage text, read off this file's own header: everything from the `Usage:`
+ * line on, so the header stays its one home.
+ */
+function usage() {
+  const header = fs.readFileSync(new URL(import.meta.url), 'utf8').match(/\/\*\*([\s\S]*?)\*\//)[1]
+  const lines = header.split('\n').map((line) => line.replace(/^\s*\*?\s?/, ''))
+  return lines.slice(lines.findIndex((line) => line.startsWith('Usage:'))).join('\n').trimEnd()
+}
+
 /** One request's own flags, read off this process's command line. */
 function parseRequest() {
   const args = process.argv.slice(2)
+  if (args.includes('--help')) {
+    say(usage())
+    process.exit(0)
+  }
   const values = { case: [], feature: [], scenario: [] }
   for (let at = 0; at < args.length; at += 1) {
     const arg = args[at]
