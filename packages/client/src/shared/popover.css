@@ -2,9 +2,12 @@
 /* Every card the skin builds (permission, model picker, effort, account,
    session stats, quick providers) wears this shell: one fill, hairline, 12px
    radius, shadow and 6px inset, closed until data-open="true" and growing out
-   of its trigger as it opens. Each card's own stylesheet adds only what
-   differs — its placement, its width limits, the corner it grows from — and
-   comes later in the cascade, so it wins where the two overlap.
+   of its trigger as it opens. The edge stays the card's own border — the box the
+   placement reads and the opening animation scales keeps the paint path it has
+   always had, where a stroke moved into the shadow is rasterized inside that
+   scaled layer. Each card's own stylesheet adds only what differs — its
+   placement, its width limits, the corner it grows from — and comes later in the
+   cascade, so it wins where the two overlap.
 
    The motion is transitions.dev's "Menu dropdown" (MIT), written as a
    transition on `data-open`: the card grows from --dsh-claude-scale-dropdown
@@ -18,7 +21,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-card {
   background: var(--dsw-alias-bg-overlay, #ffffff);
   border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(20, 20, 19, 0.12), 0 2px 8px rgba(20, 20, 19, 0.06);
+  box-shadow: 0 8px 24px rgba(20, 20, 19, 0.12), 0 2px 6px rgba(20, 20, 19, 0.08);
   padding: 6px;
   box-sizing: border-box;
   z-index: var(--dsh-claude-layer-float);
@@ -52,16 +55,19 @@ body[data-dsh-claude-style] .dsh-claude-popover-card[data-open="true"] {
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-popover-card {
   background: var(--dsh-claude-raised);
-  border-color: var(--dsw-alias-border-l2);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  /* The edge is the dark border ladder's highlight (tokens.json), so the card
+     keeps the border it always had; the drop deepens and a 3px dark falloff
+     outside it separates the lit edge from the near-black canvas. */
+  border-color: var(--dsw-alias-border-l1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35), 0 8px 28px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 /* The host-mounted menu cards of the account footer and the hero row's pickers
    (features/account, features/hero-menu) take the same raised dark card; the
    `!important`s outrank the host menu's own rules. */
 body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) {
   background: var(--dsh-claude-raised) !important;
-  border-color: var(--dsw-alias-border-l2) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  border-color: var(--dsw-alias-border-l1) !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35), 0 8px 28px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.45) !important;
 }
 /* Under the host's colours the card's fill is the host's overlay layer, which
    a theme plugin may turn translucent (a wallpaper's glass): the card blurs
@@ -83,6 +89,21 @@ body[data-dsh-claude-style] .dsh-claude-popover-status {
   font-size: 12px !important;
   line-height: 20px !important;
   padding: 4px 8px !important;
+}
+
+/* The separator inside a card, whichever half drew it: the host's own menu
+   separators and the rows the skin builds take the host's line — 0.5px of the
+   border ladder's second rung, the rung the host itself picks for a menu surface
+   (Menu.module.css). It is drawn as a top border on a zero-height box rather
+   than as the background of a half-pixel box, so the line belongs to the layout
+   and does not change thickness with the card's opening scale. Every card the
+   shell governs is covered here — the skin's own cards and the two host menus it
+   repaints — so one declaration decides the line everywhere; a surface that
+   wants its own insets states only its margin beside this. */
+body[data-dsh-claude-style] :is(.dsh-claude-popover-card, [data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [role="separator"] {
+  height: 0;
+  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
+  background: transparent;
 }
 
 /* ---------- Popover rows ---------- */

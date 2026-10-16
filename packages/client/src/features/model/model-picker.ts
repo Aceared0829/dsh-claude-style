@@ -258,7 +258,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (let child = modelFooter.firstChild; child !== null; child = child.nextSibling) stale.push(child)
     for (let i = 0; i < stale.length; i++) modelFooter.removeChild(stale[i])
     if (!showMore) return
-    modelFooter.appendChild(buildElement('div', 'dsh-claude-model-divider'))
+    // The role is what the shared separator rule reads (shared/popover.css), so
+    // this line is the same line as every separator the host draws in a card.
+    const divider = buildElement('div', 'dsh-claude-model-divider')
+    divider.setAttribute('role', 'separator')
+    modelFooter.appendChild(divider)
     modelFooter.appendChild(modelRows.buildModelCell(copyLabel('moreLabel', MODEL_MORE_LABEL)))
   }
 

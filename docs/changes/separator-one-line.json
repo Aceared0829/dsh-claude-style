@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 44,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**弹层里的分隔线统一成宿主那一根，并由一处决定**：宿主菜单自己画的 `[role=\"separator\"]` 与皮肤自己建的分隔（模型选择器的页脚分隔、供应方标题那条线）现在都是同一根 0.5px 的 `--dsw-alias-border-l2`，写成零高度盒子上的上边框而不是半个像素高盒子的底色，线因此属于排版而不是随开启缩放改变厚度；那条通用的规则落在共享外壳里，皮肤自己的卡片与它重绘的两个宿主菜单一起受它管辖（此前只有账户与首页两个菜单各写一份 1px），模型选择器的两个页脚上边框也从 1px 收到 0.5px。",
+  "en": "**One separator line in a popover, decided in one place**: the host menu's own `[role=\"separator\"]` and the separators the skin builds (the model picker's footer divider and its provider-header rule) are now the same 0.5px `--dsw-alias-border-l2`, drawn as a top border on a zero-height box rather than the background of a half-pixel box, so the line belongs to the layout instead of changing thickness with the card's opening scale. The general rule lives in the shared shell and covers the skin's own cards together with the two host menus it repaints — before it, only the account and hero menus each stated a 1px line — and the two menu footers drop from a 1px to a 0.5px top border."
+}

@@ -18,7 +18,11 @@ Design tokens for `dsh-claude-style`, recreating the Claude Code Desktop aesthet
 
 Rules:
 
-- Never pure white, never pure black, never cool grays.
+- Never pure white, never pure black, never cool grays. The reader's own message
+  plate is the one fill that is not a step of the warm surface ladder and not the
+  canvas either (`--dsw-specific-bubble`: the neutral the table header wears in
+  light, a 6% white lift in dark) — the product's own light tint is a cool
+  blue-grey, which reads blue beside this canvas.
 - Accent usage stays under ~10% of visible elements.
 
 **The DeepSeek brand's palettes.** The DeepSeek brand turns both palettes
@@ -46,9 +50,9 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsw-alias-bg-layer-2` | `#fbfbf9` | `#f7f9ff` | `#242320` | `#212631` | host's own |  |
 | `--dsw-alias-bg-layer-3` | `#f9f9f6` | `#f4f7fe` | `#2e2c29` | `#2a303c` | host's own |  |
 | `--dsw-alias-bg-overlay` | `#ffffff` | `#ffffff` | `#242320` | `#212631` | host's own |  |
-| `--dsw-alias-border-l1` | `#e8e6dc` | `#e7ecf7` | `#242320` | `#212631` | host's own |  |
-| `--dsw-alias-border-l2` | `#dedcd2` | `#dde4f1` | `#2e2c29` | `#2a303c` | host's own |  |
-| `--dsw-alias-border-l3` | `#d0cdc1` | `#cfd8ea` | `#3a3833` | `#363d4b` | host's own |  |
+| `--dsw-alias-border-l1` | `#e8e6dc` | `#e7ecf7` | `rgba(255, 255, 255, 0.09)` | `#212631` | host's own | the standard edge: card and panel outlines, dividers, field outlines |
+| `--dsw-alias-border-l2` | `#dedcd2` | `#dde4f1` | `rgba(255, 255, 255, 0.18)` | `#2a303c` | host's own |  |
+| `--dsw-alias-border-l3` | `#d0cdc1` | `#cfd8ea` | `rgba(255, 255, 255, 0.30)` | `#363d4b` | host's own |  |
 | `--dsw-alias-brand-primary` | `#d97757` | `#4d6bfe` | `#d97757` | `#4d6bfe` | host's own | the single accent: checks, focus rings, selected marks |
 | `--dsw-alias-brand-text` | `#faf9f5` | `#fafbff` | `#faf9f5` | `#eef1f8` | host's own |  |
 | `--dsw-alias-button-primary-fill` | `#d97757` | `#4d6bfe` | `#d97757` | `#4d6bfe` | host's own |  |
@@ -97,7 +101,7 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsh-claude-link-hover` | `#a94f2f` | `#2c43b8` | `#f0a488` | `#b0c0ff` | `var(--dsw-alias-link)` | text link under the pointer |
 | `--dsh-claude-logo-ink` | `#141413` | `#4d6bfe` | `#faf9f5` | `#4d6bfe` | `var(--dsw-alias-label-primary)` | sidebar brand art: the whale and the wordmark |
 | `--dsw-specific-menu` | `#ffffff` | `#ffffff` | — | — | host's own |  |
-| `--dsw-specific-bubble` | `var(--dsh-claude-hover-bg)` | `#eaf0fe` | — | `#232a3a` | host's own | user message bubble |
+| `--dsw-specific-bubble` | `#f0f0ef` | `#eaf0fe` | `rgba(255, 255, 255, 0.06)` | `#232a3a` | host's own | user message bubble |
 | `--dsh-claude-chip` | `#f6f6f4` | `#f2f6fd` | — | — | `var(--dsw-specific-selector)` | segmented control and switch at rest |
 | `--dsh-claude-meter-peak` | `#a4621d` | `#9a5a1a` | `#e2a45f` | `#e5ae67` | `var(--dsw-alias-state-warn-label)` | the peak rate badge: the expensive end of a provider's own billing clock |
 | `--dsh-claude-meter-valley` | `#3d7550` | `#2e7554` | `#8cbf96` | `#7cc2a0` | `var(--dsw-alias-state-success-primary)` | the off-peak rate badge, and the dated promotions priced below it |
@@ -151,7 +155,7 @@ text, a border or an accent reads a token.
 On the Windows desktop the 40px caption row has no colour of its own: the
 sidebar and the conversation run to the window's top edge, each in its own
 fill (`--dsh-claude-sidebar-canvas`, `--dsh-claude-canvas`), and the sidebar's
-1px `--dsw-alias-border-l1` hairline runs with them from the top edge to the
+0.5px `--dsw-alias-border-l1` hairline runs with them from the top edge to the
 bottom. The conversation column and the fullscreen file panel lose the host's
 16px top-left corner, so the hairline meets them straight. The three window
 buttons sit on the page itself: no block of their own behind them, and they dim
@@ -205,8 +209,18 @@ and scrolls to its end.
   composer card's 18px (the host's 22px less 4), the inline composer's 14px and
   11px, the permission and workspace segments' 7px, the view tabs' 5px, the
   peak-rate and file pills' 999px.
-- Borders: 1px warm hairline. The same host copies keep their own stroke: the
-  inline composer's 1.6px stop square.
+- Borders: 1px, and in dark not a colour but a highlight. The three border
+  tokens are one translucent white at `.09` / `.18` / `.30`, so a card, a panel,
+  a code block or a keycap reads as a chamfer catching the top light over
+  whatever fill it sits on rather than as a contour whose colour has to be
+  re-picked per surface. The light rungs stay the warm opaque ladder. A copy of a
+  host control keeps that control's own stroke: the inline composer's 1.6px stop
+  square.
+- Hairline: 0.5px, for the split between the sidebar and the conversation
+  (`theme/chrome.css`, one device pixel on a retina display and the width the
+  product itself states), the Markdown table frame and the trajectory chip
+  (`theme/typography.css`, `features/chat-files`). Every other single-direction
+  rule stays 1px.
 - Spacing: 4 px rhythm.
 - Bottom edge: the transcript never fades behind the composer by shadow. The
   composer seat paints an opaque `var(--dsw-alias-bg-base)` bar across its own
@@ -418,9 +432,9 @@ the shell itself. What it carries is described under "Context popover" below.
 | Property | Value |
 |---|---|
 | background | `var(--dsw-alias-bg-overlay)`; dark `#1e1e1d` |
-| border | `1px solid var(--dsw-alias-border-l1)`; dark `#2e2c29` |
+| border | `1px solid var(--dsw-alias-border-l1)`; dark the same stroke, which the dark ladder makes a highlight. The edge stays the card's own border: the box the placement reads and the opening animation scales keeps the paint path it has always had, and no stroke is drawn inside it |
 | radius | 12px |
-| shadow | `0 8px 30px rgba(20,20,19,.12), 0 2px 8px rgba(20,20,19,.06)`; dark `rgba(0,0,0,.5)` / `rgba(0,0,0,.3)` |
+| shadow | `0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.08)`; dark a 3px `rgba(0,0,0,.35)` falloff outside the border first — it separates the lit edge from the near-black canvas — then `0 8px 28px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.45)` |
 | padding | 6px |
 | layout | flex column, `gap: 6px`; a list body stacks its rows 3px apart |
 | z-index | 99999, above the host's own menus (1100) |
@@ -443,8 +457,13 @@ the shell itself. What it carries is described under "Context popover" below.
 **Heading, separator, footer**
 
 - heading row: 11px / 16px at 600, `letter-spacing: .04em`, uppercase, `label-tertiary`, `padding: 6px 7px 2px`
-- separator: 1px `var(--dsw-alias-border-l1)`, `margin: 2px 4px`
-- pinned footer: `margin-top` / `padding-top` 4px, `1px solid var(--dsw-alias-border-l1)` above
+- separator: `0.5px` `var(--dsw-alias-border-l2)` — the host's own line on a menu
+  surface (`Menu.module.css`) — `margin: 2px 4px`, drawn as a top border on a
+  zero-height box. One rule in the shared shell covers every separator in a card,
+  the host's own menu separators included, so the line is one thickness wherever
+  it appears and does not follow the card's opening scale
+- pinned footer: `margin-top` / `padding-top` 4px, and the same `0.5px`
+  `var(--dsw-alias-border-l2)` line above it
 
 **Host surfaces**
 

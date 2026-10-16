@@ -4069,7 +4069,7 @@
       "foot-area": {
         "background-color": "rgba(0, 0, 0, 0)",
         "color": "rgb(250, 249, 245)",
-        "border-top-color": "rgb(46, 44, 41)",
+        "border-top-color": "rgba(255, 255, 255, 0.18)",
         "border-top-width": "1px",
         "border-top-style": "solid",
         "border-top-left-radius": "0px",

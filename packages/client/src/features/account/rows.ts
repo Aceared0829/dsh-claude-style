@@ -191,6 +191,9 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
     const nameEl = buildElement('div', 'dsh-claude-account-popover-name', username)
 
     const divider = buildElement('div', 'dsh-claude-account-popover-divider')
+    // The role is what the shared separator rule reads (shared/popover.css), so
+    // this line is the same line as every other separator in a card.
+    divider.setAttribute('role', 'separator')
 
     rowEl.appendChild(nameEl)
     header.appendChild(rowEl)

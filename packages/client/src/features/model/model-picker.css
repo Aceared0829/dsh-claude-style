@@ -185,14 +185,15 @@ body[data-dsh-claude-style] .dsh-claude-model-desc {
   line-height: 14px;
   color: var(--dsw-alias-label-tertiary, #8f8d84);
 }
-/* The picker's two hairlines share one declaration: the provider header's rule
-   and the divider that closes the model list. Same colour, same thickness, same
-   insets — the only difference left is that the header's line starts after the
-   provider's name, which is the point of that row. */
-body[data-dsh-claude-style] .dsh-claude-model-divider,
+/* The divider that closes the model list carries the shared separator's role, so
+   its line comes from shared/popover.css with every other separator in a card;
+   what stays here is its margin. The provider header's own rule is the one line
+   this sheet states, in the same language: a 0.5px border of the border ladder's
+   second rung, the rung the host picks on a menu surface (Menu.module.css). It is
+   a border on a zero-height box so the line belongs to the layout. */
 body[data-dsh-claude-style] .dsh-claude-model-rule::after {
-  height: 1px;
-  background: var(--dsw-alias-border-l1, #e8e6dc);
+  height: 0;
+  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
 }
 body[data-dsh-claude-style] .dsh-claude-model-divider {
   margin: 2px 4px;

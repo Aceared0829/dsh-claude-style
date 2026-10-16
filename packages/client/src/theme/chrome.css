@@ -23,8 +23,12 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallp
   background: var(--dsh-claude-sidebar-canvas);
 }
 
+/* The split between the columns is the skin's one device-pixel line: 1px at
+   100% scaling is two device pixels on any display the reader is likely to use,
+   and the 0.5px the product itself states (docs/STYLE.md "Shapes") is one there.
+   This is the dark half; theme/tokens.css states the light one. */
 body[data-dsh-claude-style] :is([data-pane="sidebar"], [data-dsh-claude-part~="sidebar-column"], .dshDesktopSidebarSurface) {
-  border-right: 1px solid var(--dsw-alias-border-l1);
+  border-right: 0.5px solid var(--dsw-alias-border-l1);
 }
 
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallpaper]) :is([data-pane="conversation"], [data-dsh-claude-part~="center-column"]) {
@@ -64,15 +68,15 @@ html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper])
   box-shadow: 0 calc(-1 * var(--dsh-windows-titlebar-height)) 0 0 var(--dsh-claude-canvas);
 }
 
-/* The handle is 8px wide, centred on the column edge; the sidebar's 1px
-   hairline is the last pixel inside the column, 3px into the handle. */
+/* The handle is 8px wide, centred on the column edge; the sidebar's hairline is
+   the last line inside the column, 3px into the handle. */
 html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-part~="layout-frame"] > [data-side="sidebar"]::before {
   content: "";
   position: absolute;
   left: 3px;
   bottom: 100%;
   height: var(--dsh-windows-titlebar-height);
-  border-left: 1px solid var(--dsw-alias-border-l1);
+  border-left: 0.5px solid var(--dsw-alias-border-l1);
   pointer-events: none;
 }
 

@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 20,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**状态行不再把引用里的话当成模型在做的事**：模型在推理里引用它读到的一句话，或者在推理里讨论这一行自己那个等待词时，这一行会把那段引用连同后半句一起说成自己的动作。现在引号里（「」『』“”与英文双引号）的内容不参与从句判定，从句也不在那里断开：模型引用什么，读者不会在状态行上看到它被说成模型在做的事；模型自己那一句里带引号的部分照旧原样带出。顺带把中文的「正在」判定撤掉：它与这一行的等待词同形，没有词表能把「正在读取 app.js」与一句关于这一行的话分开，中文推理回到说等待词。",
+  "en": "**The status line no longer reads a quotation as the model's own work**: when the model quoted a sentence it had read, or discussed this line's own waiting word while thinking, the line carried that quotation and the rest of the sentence as the model's own doing. What stands inside a quotation (「」『』“” and the English double quote) now takes no part in reading a clause, and a clause does not end inside one: a reader never sees the model's quotation stated as its work, while a quoted part of a clause the model does state is still carried as written. The Chinese 「正在」 reading is withdrawn with it — it shares its shape with this line's own waiting word, and no local word list tells 「正在读取 app.js」 from a sentence about the line — so reasoning in Chinese stands on the waiting word again."
+}

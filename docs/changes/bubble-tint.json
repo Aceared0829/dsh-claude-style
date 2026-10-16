@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 42,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**用户消息气泡改用写定的一对底色**：`--dsw-specific-bubble` 在 Claude 配色下不再借用按钮悬浮灰，改为浅色 `#f0f0ef`、深色 6% 白；深色此前没有取值，会回落到宿主自己的深蓝，现在这一格由本插件写定。浅色没有采用产品自己那格偏蓝的底片——它贴在这张暖色画布上会发蓝，改用皮肤已有的中性底衬（表头同值）；设置页的消息气泡演示读同一个令牌，随之一起变。",
+  "en": "**The reader's message bubble takes a stated pair of fills**: under the Claude palette `--dsw-specific-bubble` no longer borrows the button-hover grey and states `#f0f0ef` in light and a 6% white lift in dark, a dark cell the skin left unset before, so the bubble no longer fell through to the host's own deep blue. The light half is not the product's own cool plate, which reads blue on this warm canvas, but the skin's existing neutral (the value the table header wears); the settings page's demonstration bubble reads the same token and moves with it."
+}

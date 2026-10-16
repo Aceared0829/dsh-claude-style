@@ -340,7 +340,7 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] {
   border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
   border-radius: 12px;
   background: var(--dsh-claude-card);
-  box-shadow: 0 8px 30px rgba(20, 20, 19, 0.12), 0 2px 8px rgba(20, 20, 19, 0.06);
+  box-shadow: 0 8px 24px rgba(20, 20, 19, 0.12), 0 2px 6px rgba(20, 20, 19, 0.08);
   font-family: var(--dsw-font-family);
 }
 /* The card's visible fill is the MenuSurface material layer, not this box:
@@ -426,12 +426,10 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
 }
 
-/* Separators take the skin's hairline and bleed across the card's padding the
-   way the drawer's own divider does. */
+/* Separators bleed across the card's padding the way the drawer's own divider
+   does; the line itself is the shared one (shared/popover.css). */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [role="separator"] {
-  height: 1px;
   margin: 2px -6px;
-  background: var(--dsw-alias-border-l1, #e8e6dc);
 }
 
 /* The list and its pinned footer sit inside the card's 6px padding; the footer
@@ -443,7 +441,7 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-footer"] {
   margin-top: 2px;
   padding-top: 2px;
-  border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
 }
 
 /* Our injected container and header already use the shared popover rules; the
@@ -476,9 +474,9 @@ body[data-dsh-claude-style] .dsh-claude-account-popover-name {
   line-height: 18px;
   font-family: var(--dsw-font-family);
 }
+/* The drawer's own divider carries the separator role, so its line comes from
+   shared/popover.css with every other one; what stays here is its margin. */
 body[data-dsh-claude-style] .dsh-claude-account-popover-divider {
-  height: 1px;
-  background: var(--dsw-alias-border-l1, #e8e6dc);
   margin: 2px 0;
   flex: none;
 }
