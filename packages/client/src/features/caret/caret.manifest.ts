@@ -7,6 +7,13 @@ export default {
   pref: 'caretMotion',
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ file: 'caret.css', rank: 220 }],
+  settingsRows: [{
+    tab: 'motion',
+    rank: 20,
+    pref: 'caretMotion',
+    title: 'caretTitle',
+    control: 'caret-preview',
+  }],
   cases: ['caret'],
   description: {
     zh: {

@@ -80,6 +80,28 @@ export function chunkModulesModule(ids) {
 }
 
 /**
+ * The table the settings page resolves its own row controls from,
+ * `virtual:dsh-claude-style/settings-controls` (D72): each feature that draws a
+ * control itself exports them from `<功能>.settings.ts` beside its main module,
+ * and the settings page — the only importer — carries them with its own chunk.
+ *
+ * @param manifests - the feature manifests in install order.
+ */
+export function settingsControlsModule(manifests) {
+  const owners = manifests.filter((manifest) => (manifest.settingsRows ?? []).some((row) => row.control !== undefined))
+  const imports = owners.map((manifest) => `import { controls as ROWS_${manifest.id} } from ${JSON.stringify(`./features/${manifest.dir}/${manifest.dir}.settings`)}`)
+  const entries = owners.map((manifest) => `  ${JSON.stringify(manifest.id)}: ROWS_${manifest.id},`)
+  const contents = `${imports.join('\n')}\nexport const ROW_CONTROLS = {\n${entries.join('\n')}\n}\n`
+  return {
+    name: 'settings-controls',
+    setup(build) {
+      build.onResolve({ filter: /^virtual:dsh-claude-style\/settings-controls$/ }, (args) => ({ path: args.path, namespace: 'settings-controls' }))
+      build.onLoad({ filter: /.*/, namespace: 'settings-controls' }, () => ({ contents, loader: 'js', resolveDir: SRC }))
+    },
+  }
+}
+
+/**
  * The generated module's source: everything the build produces for the browser
  * half, as named exports. The build serves it to the bundle and the unit tests'
  * config writes it out, so both hand a module under test the same values.

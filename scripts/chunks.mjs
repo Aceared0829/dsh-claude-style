@@ -61,7 +61,10 @@ function sharedModules(shared) {
         // A generated module keeps the path its plugin resolved it under; the
         // table and the chunk's own import are keyed by that same id.
         const id = result.namespace === 'file' ? moduleId(result.path) : result.path
-        return shared.has(id) ? { path: id, external: true } : { path: result.path }
+        if (shared.has(id)) return { path: id, external: true }
+        // A generated module the bundle does not carry is this chunk's own: it
+        // is loaded in the namespace its plugin resolved it under.
+        return result.namespace === 'file' ? { path: result.path } : { path: result.path, namespace: result.namespace }
       })
     },
   }

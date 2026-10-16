@@ -35,3 +35,11 @@ declare module 'virtual:dsh-claude-style/chunk-modules' {
 declare module 'virtual:dsh-claude-style/features' {
   export const FEATURES: import('./core/feature').Feature[]
 }
+
+/**
+ * The row controls scripts/build.mjs collects from the features' own settings
+ * modules (D72), by feature id and the name the manifest's row gives them.
+ */
+declare module 'virtual:dsh-claude-style/settings-controls' {
+  export const ROW_CONTROLS: Record<string, import('./core/feature').SettingsRowControls>
+}

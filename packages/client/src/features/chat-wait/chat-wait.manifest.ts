@@ -15,6 +15,20 @@ export default {
     rank: 15,
     pref: 'chatWait',
     title: 'statusMotionTitle',
+  }, {
+    // The line's detail choice: on writes the specifics a moment carries, off
+    // the bare states alone. It belongs to the switch above it.
+    tab: 'motion',
+    rank: 16,
+    pref: 'statusDetail',
+    parent: 'chatWait',
+    title: 'statusDetailTitle',
+  }, {
+    // The option under the line's own switch: the two paints as preview cards.
+    tab: 'motion',
+    rank: 17,
+    pref: 'statusMotion',
+    control: 'status-paint',
   }],
   cases: ['chat-wait'],
   description: {

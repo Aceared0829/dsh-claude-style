@@ -9,12 +9,17 @@ export default {
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ file: 'send-flight.css', rank: 200 }],
   // The sent message's entrance has its own switch on the Motion tab, with the
-  // two answers as the option under it (settings-tab-motion.ts).
+  // two entrances as the option under it (chat-send.settings.ts).
   settingsRows: [{
     tab: 'motion',
     rank: 50,
     pref: 'chatSend',
     title: 'messageEnterTitle',
+  }, {
+    tab: 'motion',
+    rank: 51,
+    pref: 'messageEnter',
+    control: 'send-preview',
   }],
   cases: ['chat-send'],
   description: {

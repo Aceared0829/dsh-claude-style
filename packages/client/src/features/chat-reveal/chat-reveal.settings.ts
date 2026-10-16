@@ -1,0 +1,78 @@
+import * as React from 'react'
+import { CHAT_REVEAL_OFF, CHAT_REVEAL_ON } from '../../constants'
+import { motionMs } from '../../shared/motion'
+import { copy } from './copy'
+import type { Prefs } from '../../constants'
+import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
+import type manifest from './chat-reveal.manifest'
+
+/**
+ * The one row this feature draws itself (D72): the fade's two answers as
+ * preview cards, each showing the arriving characters the way the answer it
+ * picks does (features/settings/settings-cards.css).
+ */
+export const controls: SettingsControlsOf<typeof manifest> = {
+  'reveal-preview': RevealPicker,
+}
+
+/**
+ * The share of the reveal preview's period the sample takes to arrive; the rest
+ * of the period is the hold before the next wipe. A share rather than a time, so
+ * a longer sample resolves at the same pace of the card.
+ */
+const REVEAL_PREVIEW_ARRIVAL_SHARE = 0.45
+
+function RevealPicker(props: SettingsRowView) {
+  const sample = copy('chatRevealSample')
+  const [tick, setTick] = React.useState(0)
+  React.useEffect(() => {
+    const count = Array.from(sample).length
+    const period = motionMs('--dsh-claude-period-preview-reveal')
+    const arrival = Math.round(period * REVEAL_PREVIEW_ARRIVAL_SHARE)
+    const gap = Math.max(1, Math.round(arrival / count))
+    // The ticks the sample is on show before the next wipe: the rest of the
+    // period is the hold, which is what gives the reader time to read it.
+    const ticks = count + Math.max(0, Math.round((period - arrival) / gap))
+    let next = 0
+    setTick(0)
+    const timer = window.setInterval(() => {
+      next = next + 1 >= ticks ? 0 : next + 1
+      setTick(next)
+    }, gap)
+    return () => window.clearInterval(timer)
+  }, [sample])
+  const shown = Math.min(tick, Array.from(sample).length)
+  const options: { value: Prefs['chatReveal'], label: string }[] = [
+    { value: CHAT_REVEAL_ON, label: copy('chatRevealOn') },
+    { value: CHAT_REVEAL_OFF, label: copy('chatRevealOff') },
+  ]
+  return React.createElement(
+    'div',
+    { className: 'dsh-claude-reveal-picker', role: 'group' },
+    options.map(option => React.createElement(
+      'button',
+      {
+        key: option.value,
+        type: 'button',
+        className: 'dsh-claude-reveal-card',
+        // The card whose pieces wear the fade (settings-cards.css); the other
+        // hands them their turn with nothing between.
+        'data-fade': option.value === CHAT_REVEAL_ON ? '' : undefined,
+        disabled: props.disabled,
+        'data-active': option.value === props.prefs.chatReveal ? '' : undefined,
+        'aria-pressed': option.value === props.prefs.chatReveal ? 'true' : 'false',
+        'aria-label': option.label,
+        onClick: () => { if (option.value !== props.prefs.chatReveal) props.write({ chatReveal: option.value }) },
+      },
+      React.createElement(
+        'span',
+        { className: 'dsh-claude-reveal-sample', 'aria-hidden': 'true' },
+        Array.from(sample).map((piece, index) => React.createElement(
+          'span',
+          { key: `${index}-${piece}`, className: 'dsh-claude-reveal-piece', 'data-in': index < shown ? '' : undefined },
+          piece,
+        )),
+      ),
+    )),
+  )
+}

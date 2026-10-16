@@ -9,6 +9,13 @@ export default {
   prefValues: [CHAT_REVEAL_ON],
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ generated: 'reveal-steps', rank: 180 }],
+  settingsRows: [{
+    tab: 'motion',
+    rank: 40,
+    pref: 'chatReveal',
+    title: 'chatRevealTitle',
+    control: 'reveal-preview',
+  }],
   cases: ['chat-reveal'],
   description: {
     zh: {

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { PREFS } from '@dsh-claude-style/contracts/prefs'
+import { ROW_CONTROLS } from 'virtual:dsh-claude-style/settings-controls'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
 import { windowsDesktop } from '../../core/desktop-band'
 import { prefYielded, settingsRowsOf } from '../../core/feature'
@@ -105,7 +106,7 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     const pref = row.pref
     const spec = PREFS[pref]
     const yielded = prefYielded(pref)
-    const title = rowLine(feature, row.title)
+    const title = row.title === undefined ? null : rowLine(feature, row.title)
     const desc = row.desc === undefined ? '' : rowLine(feature, row.desc)
     const requires = row.requires
     const waits = requires !== undefined && !requires.values.includes(String(view.prefs[requires.pref]))
@@ -117,14 +118,20 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     const stored = view.prefs[pref]
     // The row's key and its values are the table's data: the clamp holds them.
     const write = (value: string | boolean) => { view.write({ [pref]: value } as Partial<Prefs>) }
-    const control = spec.type === 'boolean'
-      ? controls.toggle(stored !== false, write, yielded || unmet || parentOff)
-      : controls.segment(
-        (spec.type === 'choice' ? spec.values : []).map((value: string) => ({ value, label: rowLine(feature, row.choiceLabels?.[value] ?? value) })),
-        String(stored),
-        write,
-        yielded || unmet || parentOff,
-      )
+    const off = yielded || unmet || parentOff
+    // A row the feature draws itself renders its own control (D72); every other
+    // row follows the preference's own type.
+    const own = row.control === undefined ? undefined : ROW_CONTROLS[feature.id]?.[row.control]
+    const control = own !== undefined
+      ? React.createElement(own, { prefs: view.prefs, write: view.write, disabled: off })
+      : spec.type === 'boolean'
+        ? controls.toggle(stored !== false, write, off)
+        : controls.segment(
+          (spec.type === 'choice' ? spec.values : []).map((value: string) => ({ value, label: rowLine(feature, row.choiceLabels?.[value] ?? value) })),
+          String(stored),
+          write,
+          off,
+        )
     const note = waits ?? (offWindows ? sharedLine('windowsOnlyNote') : null)
     // A yielded row says who manages it even when it carries no description of
     // its own: the switch rows over the preview cards have none.
@@ -132,8 +139,12 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
       ? managedDesc(desc, true)
       : (row.desc === undefined && note === null ? null : noteDesc(desc, note))
     const node = row.parent === undefined
-      ? controls.row(pref, title, description, control, { disabled: unmet })
-      : controls.subRow(pref, title, description, control, !parentOff)
+      ? controls.row(pref, title, description, control, {
+        disabled: unmet,
+        // A row that is its control alone stacks it across the row.
+        block: own !== undefined && title === null && description === null,
+      })
+      : controls.subRow(pref, title ?? '', description, control, !parentOff)
     return { rank: row.rank, node }
   })
 }

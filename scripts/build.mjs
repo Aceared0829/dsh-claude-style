@@ -64,7 +64,7 @@ import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import manifestReader from './shared/read-manifests.cjs'
 import { withLock } from './shared/verify-lock.cjs'
 import { loadModule } from './shared/ts-module.cjs'
-import { chunkModulesModule, featuresModule, generatedModule } from './virtual-modules.mjs'
+import { chunkModulesModule, featuresModule, generatedModule, settingsControlsModule } from './virtual-modules.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
@@ -438,7 +438,7 @@ async function main() {
     // counts its lines.
     banner: { js: FACTORY_OPEN },
     footer: { js: FACTORY_CLOSE },
-    plugins: [featuresModule(manifests, chunkUrls), chunkModulesModule(shared), generated],
+    plugins: [featuresModule(manifests, chunkUrls), chunkModulesModule(shared), settingsControlsModule(manifests), generated],
   })
 
   // The deferred features leave the bundle for chunks of their own (D72). A
@@ -451,7 +451,7 @@ async function main() {
       const graph = await esbuild.build({ ...clientOptions(standIns, promoted), minify: false, sourcemap: false })
       return new Set(ownModuleIds(graph.metafile))
     },
-    options: { external: HOST_PACKAGES, plugins: [generated] },
+    options: { external: HOST_PACKAGES, plugins: [settingsControlsModule(manifests), generated] },
     slot: BUILD_ID_SLOT,
   })
   const chunkUrls = {}

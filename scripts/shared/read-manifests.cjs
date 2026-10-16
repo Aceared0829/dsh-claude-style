@@ -113,10 +113,15 @@ function checkManifests(manifests) {
         if (!Number.isInteger(row.rank) || row.rank < 0) fail(manifest, 'has a settings row without a whole "rank"')
         if (ranks.has(`${row.tab}:${row.rank}`)) fail(manifest, `repeats the rank ${row.rank} on the "${row.tab}" tab`)
         ranks.set(`${row.tab}:${row.rank}`, true)
-        if (manifest.pref === undefined) fail(manifest, 'has a settings row but no "pref"')
+        if (manifest.pref === undefined && manifest.ungated === undefined) fail(manifest, 'has a settings row and names neither "pref" nor "ungated"')
         if (typeof row.pref !== 'string' || !(row.pref in PREFS)) fail(manifest, `has a settings row for "${row.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
         if (owners.has(row.pref)) fail(manifest, `owns the settings row of "${row.pref}", which packages/client/src/${owners.get(row.pref)} owns already`)
         owners.set(row.pref, manifest.file)
+        if (row.control !== undefined) {
+          if (typeof row.control !== 'string' || row.control === '') fail(manifest, 'has a settings row with an empty "control" name')
+          const module = path.join(FEATURES, manifest.dir, `${manifest.dir}.settings.ts`)
+          if (!fs.existsSync(module)) fail(manifest, `has a settings row naming the control "${row.control}", but packages/client/src/features/${manifest.dir}/${manifest.dir}.settings.ts is not there`)
+        }
         for (const key of [row.title, row.desc, row.requires?.note]) {
           if (key === undefined) continue
           if (typeof key !== 'string' || !carries(key)) fail(manifest, `names the copy key "${key}", which neither packages/client/src/features/${manifest.dir}/${manifest.dir}.copy.json nor the settings page's own copy carries`)

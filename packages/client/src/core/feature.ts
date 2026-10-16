@@ -1,3 +1,4 @@
+import type * as React from 'react'
 import type { Prefs } from '../constants'
 import { peerPresent } from '../shared/peer-plugin'
 import type { HostContext } from './host'
@@ -125,7 +126,8 @@ export interface FeatureSettingsRow {
   rank: number
   /** The preference the row writes. */
   pref: keyof Prefs
-  title: string
+  /** The row's title, by key in the feature's own copy; a row whose own control is the whole row carries none. */
+  title?: string
   /** The line under the title; a row whose own control is the explanation carries none. */
   desc?: string
   /** A choice preference's labels: the copy key of each value. A value left out is drawn with its bare id. */
@@ -162,6 +164,33 @@ export interface FeatureRowRequirement {
   /** The line the row shows while the requirement is unmet, by key in the feature's own copy. */
   note: string
 }
+
+/**
+ * What a feature's own settings row control is rendered with (D72): the
+ * preferences on show, the page's own write path, and whether the row can act
+ * at all right now (it yields for another plugin, a requirement is unmet, or
+ * the switch it stands under is off).
+ */
+export interface SettingsRowView {
+  prefs: Prefs
+  write(patch: Partial<Prefs>): void
+  disabled: boolean
+}
+
+/** One feature's own row controls, by the name its manifest gives each row. */
+export type SettingsRowControls = Readonly<Record<string, React.ComponentType<SettingsRowView>>>
+
+/** The names a manifest's `settingsRows` give their own controls. */
+export type RowControlNames<M> = M extends { settingsRows: readonly (infer R)[] }
+  ? R extends { control: infer C extends string } ? C : never
+  : never
+
+/**
+ * The controls one feature's settings module exports, keyed by the names its
+ * own manifest gives: a name the manifest does not carry, or one it carries and
+ * the record leaves out, fails the type check (D72).
+ */
+export type SettingsControlsOf<M> = Record<RowControlNames<M>, React.ComponentType<SettingsRowView>>
 
 export interface FeatureCopy {
   title: string
