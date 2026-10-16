@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 16,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**方向记录改成一条方向一页**：每条方向只写它回答的背景、决定、由此而来的后果与重审条件，文件路径、函数名、数值与计数由代码注释、`ARCHITECTURE.md` 与测试承担，因此一次不改变方向的代码重构不再让方向记录过时；`docs/adr/README.md` 与作废编号的清册由 `npm run docs:index` 生成，编号作废之后不再复用。",
+  "en": "**A direction is one page**: each record carries the background it answers, the decision, what follows from it and what would make it worth revisiting, while file paths, function names, values and counts live in the code comments, ARCHITECTURE.md and the tests, so a refactor that keeps the direction leaves no record stale; `npm run docs:index` writes `docs/adr/README.md` and the register of void numbers, and a void number is never reused."
+}
