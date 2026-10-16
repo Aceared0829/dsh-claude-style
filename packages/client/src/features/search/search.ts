@@ -28,54 +28,18 @@ import type manifest from './search.manifest'
  * Search: a box in the sidebar that opens a palette over the window, the way
  * Claude's sidebar search does.
  *
- * Where the box stands is the `searchStyle` preference, read on every pass:
- * `overlay` (the default) keeps it in the host's logo row beside the brand and
- * replaces the brand only while the pointer is over the sidebar (search.css);
- * `standalone` gives it a row of its own under the brand row, shown always;
- * `icon` draws no box of the skin's at all and takes the click of the host's
- * own search button instead, which is left where the host draws it. It is
- * placed only where the row carries the wide brand, so the collapsed rail
- * keeps its expand toggle.
+ * The host's search control stays mounted under every `searchStyle`, hidden
+ * or not: the host's shortcut has no public replacement and only expands that
+ * control, so a caret landing in its input opens the palette and no press is
+ * intercepted. The palette is the host's own `Modal`, so the host's shortcuts
+ * treat it as the foreground dialog; the overlay stays marked until the host
+ * unmounts it, or the card replays its entrance for one frame. Services are
+ * read by name at the moment of use, since cordis refuses a remote namespace's
+ * child read off the root context.
  *
- * The host's search control itself stays mounted in all three styles: the
- * host's search shortcut has no public replacement, and its whole effect is to
- * expand that control and put the caret in its input. `overlay` and
- * `standalone` take the control out of sight and out of the layout
- * (search.css), `icon` leaves it where it stands; a caret that lands in its
- * input opens the palette, and the host's own clear button folds the control
- * back, so a rebound shortcut keeps working and no press is intercepted.
- *
- * The palette is the host's own `Modal` (ui-primitives): the host's mask,
- * focus return and modal layer, so while it
- * is open the host's shortcuts treat it as the foreground dialog, and Esc
- * closes it. The skin fills the modal's card with its own rows (sources.ts),
- * and the palette takes a place in the shared popover table, so opening
- * another popover closes it. The host unmounts the modal as it closes, so the
- * close marks the overlay, keeps it mounted through the fade and releases the
- * mark after the unmount: a mark released on a mounted overlay hands the card
- * and the mask back their entrance animations for that one frame.
- *
- * What to list and what a row does are the host's own services and navigation
- * (sources.ts), the picked row's navigation running once the modal has let go
- * and handed the focus back. A content hit lands on the turn holding the
- * message: the row's navigation opens its session first, the palette waits for
- * that session on screen and for the outline naming its turns, and the host's
- * own navigator takes the jump Services and remote namespaces are read
- * by name through the context at the moment the palette needs them, since
- * reading a remote namespace's child straight off the root context is refused
- * by cordis as 「没有 inject」.
- *
- * Content search is the one question the host's client services do not answer:
- * the host's own index (`sessions.search`, SQLite FTS5) is off in the shipped
- * web composition and its `unicode61` tokenizer matches whitespace-delimited
- * tokens only, so part of a Chinese sentence never matches there. The host half
- * reads history through the host's observation interface and matches the way
- * the host's own filter does (packages/host/src/search.ts), keeping one corpus
- * per session in the cache directory beside a change token, answering the
- * newest hit per session, and listing the stored sessions at most once in its
- * own interval from the warm-up when the palette opens, never from a typed
- * query. The host's own index takes this over once it matches Chinese by
- * substring and ships in the web composition.
+ * Content search runs in the host half (packages/host/src/search.ts): the
+ * host's own index is off in the web composition and cannot match part of a
+ * Chinese sentence. It takes this over once it can.
  *
  * @param ctx - client context.
  * @param ui - shared handle table.

@@ -33,36 +33,16 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallp
 
 /* ---------- Windows titlebar: the columns run to the window's top ---------- */
 /* The shell keeps a caption row above every column and paints the three window
-   buttons over it. That row carries no colour of the skin's: the frame's own
-   background, which the host fills with the sidebar colour, is set to the canvas
-   colour, and the drag bar its `::before` draws goes transparent. Each column
-   extends its own fill up through the row with an upward offset outer shadow one
-   titlebar height tall. The desktop window of Claude Code runs its sidebar and
-   its conversation surface to the top edge with one separator line down the whole
-   window, and an outer shadow paints outside the column's box, so the column's
-   contents and the host's layout stay untouched while drag-to-resize and the
-   collapse animation follow the column.
-   `--dsh-windows-content-radius: 0` takes the top-left rounding off the
-   conversation column and the fullscreen file panel, and the sidebar's drag
-   handle (`[data-side="sidebar"]`) draws the hairline upward through the row.
-   The fill under the window buttons is the system's own, coloured from a hidden
-   probe `<span>` the desktop preload puts under `<body>`: the preload reads
-   `--dsw-specific-sidebar-fill` and hands the colour to `setTitleBarOverlay`.
-   Clearing that probe's `background-color` leaves the page itself under the
-   buttons and lets a modal scrim darken them with the page; the buttons keep
-   their hover highlight, the system laying a layer of about a tenth strength in
-   the icon colour over what shows.
-   Two costs belong to this shape. Recognising the probe reads the
-   `--dsw-specific-sidebar-fill` substring of its inline style, an internal
-   writing of the desktop preload with no public contract behind it (the D3 exception recorded here); a host that changes that writing drops the button
-   area back to its own fill without breaking. A collapsed sidebar loses the
-   host's drag handle at once, so the separator segment in the caption row goes
-   before the column-width animation ends.
-   Under a wallpaper the frame and those two fills stand down whole, so the
-   caption row lies under the same mask as the rest of the window
-   (theme/wallpaper.css); the row's own background is cleared either way. Read
-   the host's interface here when its desktop offers a transparent top bar or a
-   public interface for the button-area fill. */
+   buttons over it. Each column extends its fill up through the row with an
+   upward outer shadow, which paints outside the column's box, so the host's
+   layout, drag-to-resize and the collapse animation stay untouched.
+   The fill under the window buttons comes from a hidden probe `<span>` whose
+   inline `--dsw-specific-sidebar-fill` the desktop preload hands to
+   `setTitleBarOverlay`. That writing has no public contract (the D3 exception
+   recorded here): if it changes, the button area falls back to the host's fill.
+   Under a wallpaper the frame and the fills stand down so the row lies under
+   the mask (theme/wallpaper.css). A transparent top bar from the host retires
+   this block. */
 html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~="layout-frame"][data-dsh-claude-holds~="sidebar-column"] {
   --dsh-windows-content-radius: 0px;
   background: var(--dsh-claude-canvas) !important;
@@ -201,9 +181,8 @@ body[data-dsh-claude-style] :is(
 }
 
 /* ---------- chrome details ---------- */
-/* Scrollbars keep their document-wide scope: the same comparison over a session
-   switch and over scrolling frames measured no difference, so `*` and the four
-   `::-webkit-scrollbar` rules stay as they are. */
+/* Unlike `::selection` below, the document-wide scrollbar rules cost nothing
+   measurable, so they keep `*`. */
 body[data-dsh-claude-style] * {
   scrollbar-width: thin;
   scrollbar-color: var(--dsh-claude-scrollbar) transparent;
@@ -231,20 +210,11 @@ body[data-dsh-claude-style] ::-webkit-scrollbar-thumb:hover {
    !important and solid colours because the paint has to cover the ink the host
    and this skin put under it (links, code, syntax tokens). The unfocused rule
    comes after the focused one at the same weight, so the attribute decides.
-   The scope is the block-level elements of the conversation (`[data-chat-flow]`)
-   and the draft editor (`[data-lexical-editor]`); the sidebar, the settings page
-   and the popovers keep the host's own selection styling. A document-wide
-   `::selection` made Blink compute selection style for every element in each
-   style recalculation, which is where the stutter on switching sessions and on
-   creating one came from: a switch away and back recalculated 1.6–2.7 s
-   document-wide, 0.3–0.8 s with this scope and 0.05 s with no skin, and one
-   switch took 0.9–2.4 s against 0.11–0.51 s. Selection styles inherit, so the
-   blocks carry their inline descendants and the conversation's selection look is
-   unchanged. The cost is that a selection in the sidebar, the settings page or a
-   popover falls back to the host's translucent wash; a region that later needs
-   its own selection colour joins the scope of these rules. Read the host's theme
-   interface here when it offers a selection colour, or when Blink stops
-   computing document-wide `::selection` for every element. */
+   The scope is the conversation's text blocks and the draft editor: a
+   document-wide `::selection` makes Blink compute selection style for every
+   element on each recalculation, which stalls session switches. Selection
+   styles inherit, so the blocks carry their inline descendants; elsewhere the
+   host's own wash shows. */
 body[data-dsh-claude-style] :is([data-chat-flow], [data-lexical-editor]) :is(p, li, td, th, blockquote, pre, h1, h2, h3, h4, h5, h6)::selection {
   background-color: #3366d0 !important;
   color: #ffffff !important;

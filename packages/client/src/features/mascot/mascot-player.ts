@@ -45,78 +45,17 @@ export interface MascotCharacter {
  * One mascot on the composer — the crab or Deepy — played from its sheets
  * by the state the agent is in (packages/client/src/features/mascot/mascot-signals.ts).
  *
- * On the home page it stands on the composer card's top edge, near the
- * right end. In a conversation it stands on top of the whole input area —
- * the card and the queue, todo and goal cards stacked above it — and when
- * an approval, a question or a plan review takes the card's place, on top
- * of that panel instead. That panel is the composer chain's own fallback
- * wrapper, hidden inline, with the elected panel mounted right after it.
- * Only the main conversation carries it; the sidebar's subagent chats do
- * not, and the "where it appears" preference can keep it to the home page.
- * The host element the mascot stands on carries the anchor mark and the
- * stylesheet makes it `position: relative`, which is what the sprite's
- * offsets are measured against. One character stands on the page at a time:
- * the feature brings one on stage and releases the other.
+ * It stands on the composer card, or on the approval panel that takes the
+ * card's place: that panel is the composer chain's fallback wrapper, whose
+ * class-name fragment is the placement contract. The chat target is
+ * subscribed while a session is followed, because an unsubscribed read
+ * answers nothing in the trajectory view; one-off moments come from the
+ * session's event stream. Priority and the clock rules are mascot-stage.ts's.
  *
- * What it plays follows the work, the way the Clawd on Desk themes map
- * agent states to animations: idle breathing; thinking while the model
- * reasons or has not answered; typing while it writes or runs tools,
- * headphones when two sessions work at once and a hard hat from three;
- * headphones or conducting while one or more subagents run; context
- * compaction; the notification while the reader is asked for something;
- * the error shake after a failed tool call or turn; the celebration when
- * a turn or a compaction finishes. The home page reads the whole
- * workspace. Between jobs it plays one of the character's idle extras now
- * and then, falls asleep after a quiet minute — no work to show and no
- * pointer move or key press — and wakes up startled at the next pointer
- * move or key press. A click on its left or right half pokes it, four
- * quick clicks tickle it, and pressing it and pulling lifts it for as long
- * as the press lasts.
- *
- * Everything it plays off is the host's own client data: the followed
- * session's status, the session list with its subagent catalog, and the chat
- * snapshot of the open turns — the last block of the running step, the tool
- * calls in flight. The chat target is subscribed while a session is followed,
- * because a read without that subscription answers nothing in the trajectory
- * view. The moments that happen once — a turn's end reason, a failed tool
- * result, a compaction starting or ending — come from the session's event
- * stream, subscribed for the time the mascot follows and read from the point
- * of subscription on; a compaction already running is counted over the whole
- * window. The home page reads the whole workspace, where a session that gains
- * an unread completion is the "the work finished behind you" moment.
- *
- * Priority decides what stands on the stage, highest first: a click or drag
- * reaction, error, waiting on the reader, compaction, done, subagents,
- * working, thinking, idle. A state already on stage is not replaced by an
- * equal or a lower one inside the stage's minimum hold; working has three
- * levels by how many top-level sessions are busy, the subagent state two by
- * how many run, and both characters share one set of animation names. The
- * clock rules — the minimum hold, the two rounds error and done keep, the
- * interval between idle extras, the quiet minute before sleep — are
- * mascot-stage.ts's.
- *
- * Each animation is one sheet: the sprite's box and sheet are custom
- * properties on the mascot's own node, and a frame change is a translation
- * of the strip inside the sprite's overflow-hidden window, played by the
- * browser's animation engine (WAAPI steps keyframes) — no timer, no DOM
- * mutation, so playing never wakes a pass. The character's sheet pipeline
- * says when a sheet is ready and paints it; the animation on screen keeps
- * playing until the new sheet is ready, so a switch never blinks. An
- * animation that runs once ends on the engine's own `finished`, with a timer
- * on the same deadline as the backstop, and the state machine's clock needs
- * one timer at most, set for its next decision. A reader who asks for reduced
- * motion gets each state's still frame, and the reactions only when they
- * click.
- *
- * What this depends on is the host's: the composer chain's fallback wrapper
- * and the composer stack's class-name fragment decide where the mascot stands,
- * and the session state and the event stream's shape decide what it plays.
- * Subscribing the chat target makes the host build a chat view for that
- * session even where the reader is looking at the trajectory. Playing rewrites
- * the mascot node's own style each frame, which costs that one element's style
- * recalculation and a small repaint, and a character's sheet table has to
- * cover every animation name the state machine names. Read the host again when
- * it offers a placement slot, or a service that reports session activity.
+ * Frames are a WAAPI `steps()` translation of the sheet strip, so playing
+ * needs no timer and no DOM mutation and never wakes a pass; the old sheet
+ * keeps playing until the new one is ready, so a switch never blinks. A host
+ * placement slot or activity service retires the host reads here.
  *
  * @param ctx - client context.
  * @param ui - shared handle table (`ui.composer`).

@@ -17,61 +17,16 @@ import type { StatsValueReader } from './stats-model'
  * (stats-digits.ts), so a number that moved re-enters instead of swapping in
  * place, and the cache share takes the colour band the ramp names.
  *
- * The setting decides one thing: `context`, the default, keeps every figure in
- * the meter's panel, and `inline` writes the same figures here as well. The
- * host's statistics row and its two detail dialogs are hidden under both values
- * and the panel keeps both of its sections, so a change of value needs no
- * reload. The row stays in the document because the panel reads the
- * 「性能与用量」 level (详细 / 简洁) off its structure, and that panel's 简洁
- * level shows four figures — total elapsed (model time plus tool time, which the
- * host never totals, so the skin words it), average first token, output speed and
- * cache hit — in an untitled 2×2 grid. The switch belongs to this feature.
+ * The host's statistics row stays in the document, hidden, because the panel
+ * reads the 「性能与用量」 level off its structure. The words come from the
+ * host's own `chat` templates with each number swapped for a marker, so every
+ * number stays its own animated figure. A line too wide for its card drops
+ * figures one step at a time and never changes height, or the conversation
+ * above it would jump with every step.
  *
- * The words come from the host's `chat` namespace — the templates its own
- * statistics row is written from (`stats.counts`, `stats.cacheHit`,
- * `message.tokensPerSecond`, `message.turnUsage.count`) — with each number
- * replaced by a marker first, so one template yields the words before and after
- * its number and the number itself stays its own animated figure. The host's four
- * format rules (`formatDuration`, `formatTokensPerSecond`, `formatExactTokens`,
- * `formatCacheHitPercent`) are written again in the skin, one function per host
- * function, to the character the same output.
- *
- * A line wider than the card it stands under gives way one step at a time, in
- * this order: the cache share's words, then the turns and steps, then the
- * meter's own reading (its ring stays), then the two token figures in favour of
- * one total, and last the counts folded into k, M and B. The line never
- * squeezes its own figures — a line that cannot fit is shortened, so a narrow
- * window shows fewer figures instead of figures drawn over each other. The
- * ladder moves width alone: the line keeps the height the composer measured for
- * the card's bottom line, or the conversation above it would jump with every
- * step. A step's room is read off a twin line laid out beside the line for that
- * one reading, so the shown line keeps its own figures and their pop-in.
- *
- * The segments stand apart by the line's own gap, with no separator glyph
- * between them. The line is also the second way into the host's context panel
- * (stats-binding.ts): a press opens the panel and the next closes it, Enter and
- * Space do the same, Escape closes it, and the line's own `aria-expanded` says
- * which way it stands; hover opening stays with the meter. The line stands where
- * the host's statistics row stood, in that row's parent.
- *
- * The figures are the host's `sessionStats` and `tokenUsage` projections, read
- * through the session's keyed projection face — the seat the host's own
- * `useProjection` reads (session-stats.ts) — and refilled whenever the panel
- * opens and whenever the line is rewritten, so a new frame shows in place.
- *
- * The host's key names and value shapes are the contract here: the two
- * projection units' keys, the `chat` keys, the projection face, the structure of
- * the host's statistics row and the meter's current shape. A host that wraps
- * those rows one layer deeper or renames its three stat dialogs' marks leaves
- * both groups of figures silently absent — nothing throws and nothing is
- * reported. The cache share's colour depends on the meter's filled arc being the
- * circle the host gives a dash array (`composer.meter-fill`); a host that draws
- * the arc another way leaves the ring uncoloured while the reading and the line
- * stand as they are.
- *
- * A host that shows these figures in a panel of its own, gives its statistics row
- * a slot to hang from, or writes the levels and the reading ramps itself makes
- * this line unnecessary.
+ * The contract is the host's projection keys, `chat` keys and the statistics
+ * row's structure: a host that reshapes the row leaves the figures absent
+ * without an error. A host panel or slot for these figures retires this line.
  */
 
 /** The mark on the line itself. */

@@ -4,36 +4,15 @@ import { observeSize } from '../core/bus'
  * The sliding highlight of a segmented control: one pseudo-element on the
  * control (shared/sliding-pill.css) that travels to the active item,
  * instead of each item fading its own background out and the next one in.
- * The conversation view tabs, the permission segments, the workspace section's
- * 进行中 / 已归档 control, the settings page's segments and the search filters
- * all place it through this one factory: one interaction, one implementation,
- * the same feel in each.
+ * Every segmented control in the skin places it through this one factory, so
+ * they share one feel.
  *
- * The control gets `data-dsh-claude-pill` and four custom properties,
- * `--dsh-claude-pill-x` / `-y` / `-w` / `-h`, measured from the active item's
- * box against the control's padding box — the box the absolutely placed
- * pseudo-element is laid out in. The whole box is measured, not only the
- * horizontal share of it, so the pill lands on the item's own line when a
- * control wraps onto two (the settings tabs at a narrow width). Any transform
- * on the control moves both boxes alike, so it cancels out. The attribute and
- * the first placement
- * land in the same call: the pseudo-element does not exist before it, so the
- * pill appears in place and only later moves slide. A control with no
- * visible active item (hidden, or nothing selected) drops the attribute and
- * the item's own active background comes back.
- *
- * Item widths change without a DOM mutation when a font finishes loading,
- * so the control is also watched by a ResizeObserver.
- *
- * Each pass reads two boxes — the control's and the active item's — which is
- * cheap inside a frame that has already been laid out. A reduced-motion
- * preference does not stop the slide: this movement is required of the
- * control. A control React renders (the settings page) is synchronized from a
- * layout effect after every render, before the frame is painted, so the
- * placement is never a frame behind the item it belongs to. The host's own
- * segmented controls fade each item's background and carry no travelling
- * highlight, so this pseudo-element is the skin's own; a host control that
- * grows one makes this factory unnecessary.
+ * The attribute and the first placement land in the same call: the
+ * pseudo-element does not exist before it, so the pill appears in place and
+ * only later moves slide. The whole box is measured, so a control that wraps
+ * onto two lines still lands the pill on the item's own line. Font loading
+ * changes widths with no DOM mutation, hence the ResizeObserver. Reduced
+ * motion does not stop the slide; the movement is required of the control.
  *
  * @param activeSelector - the active item, relative to the control.
  * @returns `{ measure(control), sync(control), release() }`: `measure` takes

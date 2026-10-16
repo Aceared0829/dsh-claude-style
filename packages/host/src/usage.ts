@@ -16,95 +16,15 @@
  *     log, so a deleted session keeps its days.
  *   - `usage-summary.ts` merges the two accounts by date, and shapes the payload.
  *
- * The two accounts are combined, never added: a day the ledger knows stays the
- * ledger's, down to its session ids and its per-model split, and the fold answers
- * for the days past the ledger's newest one. Both describe the same days, so
- * summing them would settle one day twice, while the fold alone holds only the
- * days whose logs are still stored. A session the fold places on a day the ledger
- * already covers stays in the record, and the ledger's figure for that day is the
- * one read.
+ * The two accounts are combined, never added: both describe the same days, so a
+ * day the ledger knows stays the ledger's and the fold answers only for the days
+ * past its newest one. A ledger that answers is published before the fold starts,
+ * so a ledger the cost meter stopped updating still shows its days at once.
+ * `totals.sessions` can count a session twice when it spans a ledger day and a
+ * folded one: the two sources name sessions in different shapes.
  *
- * The record is what keeps a deleted conversation's figures on the panel: it
- * lives at `$DSH_HOME/dsh-claude-style/usage.json`, beside the reader's fonts and
- * brand images, because `cache/` may be cleared at any time and the record has to
- * outlive the logs it accounts for. A session whose log is gone keeps its days as
- * they stand, and those days carry their tokens, their models and their hour
- * histogram into the panel; no fold can produce them again.
- *
- * An entry holds the fingerprint of the log it was folded from, while that log
- * exists, and the days it settled on. A session whose log is gone carries no
- * fingerprint: nothing is left to compare it against and nothing to skip. A
- * stored day carries its amount per route — the model, and the remainder no model
- * claimed — and the day's total is the sum of its routes, so those figures are
- * written once. The hour histogram keeps its non-zero slots alone. A version this
- * build does not write is left as it stands, with a warning, because a build that
- * knew more wrote it; a file that does not parse is moved aside under a stamped
- * name and rebuilt from the logs, since the sessions whose logs were deleted
- * exist in that file alone.
- *
- * The fold cache at `cache/dsh-claude-style/usage.json` is read while it exists
- * and removed once a record holding its sessions is on disk, so those sessions
- * join the record once and a home that runs the cache-writing build again
- * recovers what that build wrote meanwhile.
- *
- * The pass, in order:
- *
- *   1. `listSessionLogs` lists the stored logs with their fingerprints. A log
- *      whose size and modification time match the record's entry is taken from
- *      the record without being read.
- *   2. `readLedger` reads the cost meter's document.
- *   3. A ledger that answers hands its own summary to `publish` before the fold
- *      starts, so a ledger the cost meter stopped updating shows every day it
- *      covers at once, and the uncovered days land when the fold ends.
- *   4. The changed logs are folded, `mergeLedgerFold` puts the two accounts
- *      together by date, and `summarize` shapes the payload.
- *
- * The record is written back only on a pass that differs from it: a session
- * folded afresh, one the record did not know, one it no longer holds, or one
- * whose log went away, whose fingerprint goes with it. The write re-reads the
- * document and merges per session first, because every instance under one
- * `$DSH_HOME` writes the whole file: the sessions this pass compared against
- * their log keep this pass's entry, and the rest — another instance's fold, or a
- * session whose log is gone — keep what the disk holds.
- *
- * `source` names what answered: `cost-meter+local` once the fold supplied a date,
- * `local` when there is no ledger at all, since crediting a plugin that is not
- * installed would misname the account. A ledger that is absent, unparseable or of
- * a version this build does not read leaves the fold as the whole account (D12).
- * `totals` is recomputed over the merged day map, `totals.sessions` is the union
- * of the ledger's per-day session ids with the fold's own, and `activeDays` counts
- * the merged days.
- *
- * A session's log is read through the host's observation interface
- * (`sessionQuery.observeSession`, see `session-events.ts`), which observes that
- * one archive by id without listing the corpus first: reading N sessions costs N
- * observations and no listing. A host that publishes only `readSession` is read
- * by id, and that version lists the whole corpus once per session read.
- *
- * What this shape costs, and what makes it change:
- *
- *   - The record cannot be rebuilt whenever it looks wrong: a format change needs
- *     a migration, and a version this build does not write is left where it is
- *     until the build that wrote it returns.
- *   - Every write parses the record once more. Two instances between the re-read
- *     and the rename can still let the later write win, with the window down to
- *     milliseconds.
- *   - The fold still walks every stored log, and the record's fingerprints are
- *     what keep the unchanged ones unread. Each changed log is observed once per
- *     pass, and an observation reuses the session it restored for that archive
- *     revision.
- *   - A session that settled on a day the ledger covers and on one it does not is
- *     counted twice in `totals.sessions`: the ledger's session ids and the session
- *     directory names have different shapes, so the two cannot be subtracted.
- *   - The peak hour follows the days the fold supplied alone. The ledger has no
- *     hour dimension, so a day it covers carries no histogram until a fold
- *     reaches it, and a window's peak can read low.
- *   - A host that publishes cross-session usage totals of its own retires the
- *     ledger read, and this module reads the host alone.
- *   - A host that keeps the usage of deleted sessions itself retires the path that
- *     holds the days of a log that is gone.
- *   - A cost meter that stops maintaining its ledger format retires the ledger
- *     path.
+ * A host that publishes cross-session usage totals, or keeps the usage of deleted
+ * sessions, retires the matching path here.
  */
 import { join, resolve } from 'node:path'
 import type { DshContext } from './dsh.js'

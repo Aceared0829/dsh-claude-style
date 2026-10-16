@@ -33,62 +33,19 @@ import type manifest from './turn-nav.manifest'
  *   keys     Alt+↑ / Alt+↓ jump to the previous or the next turn.
  *   landing  the turn a jump lands on shows a short line over its first row.
  *
- * The skin's rail sits in the host's own slot beside the host's rail and
- * takes its seat from the same rules the host's stylesheet places its rail
- * with (turn-nav.css): 12px in from that slot's right edge, centred in the
- * band between the conversation's top and the composer, at most that band
- * less 64px and at most ten turns, and hidden in a narrow conversation by the
- * host's own container query. Placing it reads no layout. Layout is read when
- * the card opens, and when the reading position moved the current mark.
+ * The skin's rail takes its seat from the rules the host's stylesheet places
+ * its own rail with (turn-nav.css), so placing it reads no layout. The rows
+ * follow the host's `mergeTurnRailItems`, so both rails agree on every turn.
  *
- * The rows follow the host's own `mergeTurnRailItems`: the loaded turns of the
- * chat snapshot (`navigation.items()`) and the `turnOutline` projection, the
- * loaded side's prompt winning where both hold the turn and the projection
- * filling in an empty one; a turn no source gives words to reads as the host's
- * `chat` 「第 {turn} 轮」, and a turn outside the loaded window draws a fainter
- * mark. The card hangs in the rail's slot inside the conversation pane, so a
- * pointer over the card still counts as a pointer over the pane; it opens with
- * no dwell, fades in and out through the shared popover shell
- * (shared/popover.ts) without that shell's rise, and closes on its grace.
+ * The host's rail is the contract: a jump presses its mark, which also pages in
+ * a turn outside the loaded window. Its marks render only near its own scroll
+ * position, so an unrendered mark is scrolled to first. The host lands a loaded
+ * turn in one frame; the skin restores the position before that frame paints
+ * and glides through the scroll owner (D40). The keys stand down while a draft,
+ * a dialog or dsh-plugin-msg-nav holds them, and a quick repeat steps on from
+ * the last target, since the reading position is still on its way there.
  *
- * The host's rail carries the whole jump: the current mark is read off its
- * `aria-current`, and a jump presses the mark for that place, which pages the
- * history in when the turn stands outside the loaded window and lands it. Its
- * marks carry a place in the list alone (`data-index`) and render only around
- * the rail's own scroll position, so a press is allowed while the host rail
- * holds as many marks as the merged list has turns — read off its scroller's
- * content height as count × 10 + 2 — and a mark that is not rendered asks the
- * host rail to scroll to it first, throwing after 30 frames without it.
- *
- * A loaded turn is landed by the host inside the press, writing the position in
- * one frame: the skin puts the position back before that frame paints and glides
- * to the host's landing through the shared scroll owner (scroll-owner.ts) over
- * the last 480px alone, and the reader's own wheel or a host correction gives
- * the glide way at once. A turn outside the loaded window lands after its rows
- * arrive and is not glided, and reduced motion is not glided either. The landed
- * turn's first row takes the landing line for 1.4 seconds, and stands still for
- * that time under reduced motion.
- *
- * Alt+↑ / Alt+↓ leave the key alone while the field under it holds a draft or a
- * dialog or menu holds the foreground, and while dsh-plugin-msg-nav's stylesheet
- * stands in the head, because its own jump answers the same keys. A press
- * repeated within 1.2 seconds steps on from the turn the last press went to,
- * since the reading position is still on its way there. Every listener hangs on
- * the skin's own nodes and goes with them; a scroll or a window change coalesces
- * into one read per frame of the host's current mark, and a pass that finds that
- * mark and its place unchanged reads no layout.
- *
- * The host's rail is the contract: the slot's only `nav`, its scroller, the
- * `data-index` and `aria-current` marks at a 10px pitch with a 6px end inset,
- * the placement rules and container query above, and the shapes of `navigation`
- * and `turnOutline`. A host that changes any of them makes a press throw after
- * 30 frames and drifts the seat. The host's mark buttons lose keyboard focus
- * while its rail is unseen and the skin's rail takes no focus, so a keyboard
- * reader uses Alt+↑ / Alt+↓.
- *
- * A host that opens an interface for jumping to a turn, or writes the turn's
- * number on a mark, replaces the marks being pressed; a pitch the host lets be
- * chosen returns the rail to the host's own drawing.
+ * A host interface for jumping to a turn replaces the pressed marks.
  *
  * @param ctx - client context.
  * @param ui - the shared handle table.

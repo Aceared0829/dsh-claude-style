@@ -4,35 +4,15 @@ import { buildElement, setAttributeIfChanged } from './dom'
  * The skin's popovers: one card shell, one dwell and grace, one card on screen
  * at a time.
  *
- * Every card this skin builds for itself — the permission picker, the model
- * picker, the reasoning-effort picker, the account card, the quick-provider
- * card — carries `dsh-claude-popover-card` (shared/popover.css) for its fill,
- * hairline, corner radius, shadow, padding, layer, unfold animation and dark
- * palette, and its rows, badges, check marks, status lines and body take the
- * neutral `dsh-claude-popover-*` names built below. A feature's own stylesheet
- * adds the card's placement, its width limits and the corner it grows from, so
- * a change to one picker's look cannot reach another.
+ * Every skin card carries `dsh-claude-popover-card` (shared/popover.css) for
+ * its look; a feature's own stylesheet adds only placement and width, so one
+ * picker's change cannot reach another.
  *
- * The dwell before a card unfolds and the grace before it closes are the two
- * shared constants below. A picker that needs another value states it where it
- * is used together with its reason: the model picker's second level keeps the
- * card up for 150ms, which is what a slow traverse from a first-level row onto
- * that card needs.
- *
- * One card is up at a time: each popover registers its close path below and
- * calls `closeOtherPopovers` before it opens. A picker whose second level is
- * its own card registers one entry, so opening that level does not fold the
- * first; a host menu is registered by the feature that drives it, and its
- * closer presses that host trigger on the skin's own behalf. The hero row is
- * the case the host forces: its single entry stands for two host menus, so
- * `hero-menu.ts` folds the sibling itself, by which trigger is expanded.
- *
- * The registry holds close paths and no "who is open", since every closer is a
- * no-op while its card is down. It is module-level state, so a feature that
- * registers has to unregister when it is torn down, and a client reload
- * replaces a closer by name because the previous generation's scope is gone.
- * The host offers neither a global popover exclusion nor a focus trap, so this
- * registry is what keeps two cards apart.
+ * The host offers no global popover exclusion, so each popover registers its
+ * close path here and calls `closeOtherPopovers` before it opens. A picker's
+ * second level registers as one entry with its first. The registry is module
+ * state: a feature unregisters on teardown, and a reload replaces a closer by
+ * name because the previous generation's scope is gone.
  */
 
 export const POPOVER_MARGIN = 8

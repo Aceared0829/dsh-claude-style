@@ -26,33 +26,13 @@ import type manifest from './workspace-view.manifest'
  * controller's archive set (ids) and the session list (titles and times) —
  * with an unarchive and a delete button on every row.
  *
- * The projection follows the host's archived-only rule: an archived id is a
- * row once its session summary has landed, and the summaries of subagent
- * children and blank placeholders are not rows. Both lists arrive after the
- * skin installs, so every tick of either recomputes the rows, and a tick that
- * leaves each row's id, title and time as they stand rebuilds nothing.
- *
- * Unarchiving calls the host's `workspaces.unarchiveSession`. Deleting goes
- * through the skin host half's own route (D11), which removes the stored
- * session and drops the id from the registry's archive set before it answers;
- * the browser half then re-pulls the session list baseline, so the removed
- * session's stale summary leaves `sessions.list` at that pull. Every other
- * refusal keeps the row and raises the host's Toast.
- *
- * The host DOES ship this filter, but its state lives in the viewing store
- * the ui-workspace plugin creates privately (`createWorkspaceViewStore`) and
- * is not reachable as a client service — the only way to use it is to click its options menu, which flashes
- * a popover in the user's face and still leaves the archived rows buried in
- * collapsed workspace groups. Listing them here is quieter and flat, and
- * recomputing them by the host's own rule is what keeps the two lists saying
- * the same thing. The notice channel is private as well: a click on an
- * archived row renders the host's own Toast with the `workspace` copy table's
- * `toast.archivedNotOpenable`, the wording the host's own rows use.
- *
- * The archived-only rule belongs to the host, so a host release that changes
- * it has to be read back into `refreshItems`; a host that opens the view
- * filter or the notice channel as a client service retires the list and the
- * notice this file builds.
+ * The host ships this filter, but its state lives in a store the ui-workspace
+ * plugin keeps private (`createWorkspaceViewStore`), reachable only by clicking
+ * its menu. The rows are recomputed by the host's own archived-only rule so
+ * the two lists agree; a host release that changes the rule has to be read
+ * back into `refreshItems`. Deleting goes through the host half's route (D11),
+ * then re-pulls the session list so the stale summary leaves. A filter opened
+ * as a client service retires this list.
  *
  * @param ctx - client context.
  * @param ui - shared handle table.
