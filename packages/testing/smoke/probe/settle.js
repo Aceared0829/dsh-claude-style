@@ -23,7 +23,12 @@
     // behind them asks for its frame a few milliseconds later, and a loaded
     // runner then reads that single frame inside the measured second (nine page
     // loads read exactly 1 pass at 8ms). The wait therefore holds until the
-    // frames have been quiet AND no pass has come for a stretch of wall clock.
+    // frames have been quiet AND no pass has come for a stretch of wall clock
+    // AND every finite animation the page runs has finished — an entrance, a
+    // swap or a fade still in flight moves what the readings below are about
+    // (D00: the settle rule). An endless animation is no such thing: the
+    // running session's pulse and the sweeps never land, and waiting for them
+    // would wait for the page's own life.
     var quietFrames = 0
     var quietMs = 250
     var lastPass = performance.now()
@@ -37,7 +42,12 @@
         quietFrames = 0
         lastPass = performance.now()
       }
-      if (quietFrames >= 8 && performance.now() - lastPass >= quietMs) break
+      var settled = document.getAnimations().every(function (animation) {
+        if (animation.playState !== 'running' && animation.playState !== 'pending') return true
+        var timing = animation.effect === null ? null : animation.effect.getComputedTiming()
+        return timing !== null && timing.iterations === Infinity
+      })
+      if (quietFrames >= 8 && performance.now() - lastPass >= quietMs && settled) break
     }
     if (window.SMOKE_TIER !== 'quick') {
       var from = window.__passes

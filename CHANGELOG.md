@@ -32,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **侧栏分区的标题改由总线登记表供着**：工作区视图每趟刷新都要在整份文档里查一遍分区标题，再挑出带列表区的那个；现在标题清单由观察总线按选择器登记、随页面变化增量维护（D40），每趟刷新只在清单里挑一次，标题与布局都不变时不再走文档。登记表里这一条欠账划掉，现存四十二处。
 - **登记一处查不到的原因，免得下一轮重走**：首页那一行「开着的选择器」看的是宿主写在常驻节点上的 `aria-expanded`，而观察总线的登记表跟的是节点增删——改用它会把已经关掉的选择器继续算作开着（冒烟里八条检查当场这么判）。这一处的理由因此改写清楚：要的是「属性一变就作废」的答案，得由它自己的读取或当趟已经拿着的行来给。
 - **对手分类按走查自己的口径补齐两处，并记下试过的死路**：判定为需要的依据里包含「去掉重要性之后有过渡开始」，分类现在也把这一条算作「这个候选正托着值」；同一条规则里与简写并排写的长属性（`border` 旁边的 `border-color`）此前被整条跳过，现在也是候选。两处补齐没有改变本次的归属数（仍是十六处里三处），台账的说明把试过的三条死路一并写下：过渡、同规则长属性、以及只看第一个匹配元素。
+- **冒烟的静置判定补上「没有还在跑的有限动画」**：此前只等「连续若干帧没有新的一趟」加「一段时间没有新的趟」，进场、换词、淡入这类动画还在飞的时候读数照样被采走。现在两者之外再要求页面上没有仍在运行的有限动画（无限循环的那种不算：正在进行的会话灯与扫光本来就不落地）。整条冒烟 50/50 通过，耗时未变（93.7 秒）。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -59,6 +60,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The sidebar's section labels come from the bus registry now**: the workspace view looked up every section label across the whole document each pass and then picked the one carrying a list area; the labels are now kept by the observation bus per selector and maintained incrementally as the page changes (D40), so a pass picks from the list without walking the document, and the ledger entry recording it as debt is struck out — forty-two sites remain recorded.
 - **Why one lookup cannot move is written down, so the next pass does not walk the same road**: the hero row's open pickers turn on the host's `aria-expanded` on nodes that stay mounted, while the bus's registry follows node additions — moving it there keeps counting a picker that has closed (eight smoke checks said exactly that). The reason in the record now says what this site needs instead: an answer invalidated by an attribute change, from a reader of its own or from the row the pass already holds.
 - **The opponent classification now matches the walk's own criteria in two places, and the dead ends are written down**: a declaration counts as necessary when dropping its importance starts a transition, and the classification counts that as the candidate holding the value too; a longhand written beside a shorthand in the very rule under test (`border-color` next to `border`) used to be skipped with the whole rule and is a candidate now. Neither changed today's tally (three of sixteen), and the ledger's note records the three dead ends tried: transitions, same-rule longhands, and reading only the first matching element.
+- **The smoke walk's settle rule now requires that no finite animation is still running**: it used to wait only for a run of frames without a new pass plus a stretch of wall clock without one, so a reading could be taken while an entrance, a wording swap or a fade was still in flight. It now also requires that every finite animation the page runs has finished — an endless one is no such thing, since the running session's pulse and the sweeps never land. The whole smoke walk passes, 50 of 50, in the same time (93.7 s).
 
 ## [0.15.0] - 2026-10-15
 
