@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 3,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**带供应商命名空间的模型标识也认得出厂商标**：网关把模型标识写成 `cn:hy3` 这类带前缀的形状时，混元系列的模型行照常画出厂商组合标，模型列表的第一级也一并给出它的说明文案。规则的分段起点改为任何不是字母或数字的字符，`shy-mt2` 这类标识仍不被认领。",
+  "en": "**A model id carrying its provider's namespace resolves its vendor lockup**: an id spelled `cn:hy3` draws the Hunyuan lockup on its row and gets its description line in the picker's first level. A rule's segment start now accepts any character outside a letter or a digit, and an id such as `shy-mt2` stays unclaimed."
+}
