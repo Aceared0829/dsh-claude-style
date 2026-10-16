@@ -44,7 +44,7 @@ test('a source ranked below the running ease is refused, an equal or higher one 
   const scroller = scrollBox('data-conversation-scroll')
   expect(easeScrollFor(scroller, 'jump', () => 600, wanted)).toBe(true)
   expect(writeScroll(scroller, 0, 'fold')).toBe(false)
-  expect(easeScrollToEndFor(scroller, 'stream', wanted)).toBe(false)
+  expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(false)
   expect(writeScroll(scroller, 300, 'jump')).toBe(true)
   expect(scroller.scrollTop).toBe(300)
 })
@@ -52,7 +52,7 @@ test('a source ranked below the running ease is refused, an equal or higher one 
 test('a write ends a running ease that ranks below it', () => {
   setMotion(MOTION_FULL)
   const scroller = scrollBox('data-conversation-scroll')
-  expect(easeScrollToEndFor(scroller, 'stream', wanted)).toBe(true)
+  expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(true)
   expect(writeScroll(scroller, 200, 'composer')).toBe(true)
   expect(scroller.scrollTop).toBe(200)
 })
@@ -94,13 +94,12 @@ test('a press or a wheel outside the conversation is no hold on it: the follow k
   expect(readerHolds(scroller)).toBe(true)
 })
 
-test('a jump to a turn holds the follow and the stream off until the reader comes back to the end', async () => {
+test('a jump to a turn holds the follow off until the reader comes back to the end', async () => {
   setMotion(MOTION_FULL)
   join()
   const scroller = scrollBox('data-conversation-scroll')
   holdReader(scroller)
   expect(readerHolds(scroller)).toBe(true)
-  expect(easeScrollToEndFor(scroller, 'stream', wanted)).toBe(false)
   expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(false)
   // Written to the end with no move of his (the host's own follow): the hold stands.
   scroller.scrollTop = scroller.scrollHeight
@@ -167,7 +166,7 @@ test('a jump to a turn marks the hold on the container it lands in', () => {
   expect(scroller.hasAttribute(READER_HOLD_ATTR)).toBe(true)
 })
 
-test('the reader\'s own message holds the stream back and leaves the follow alone', async () => {
+test('the reader\'s own message arms the submission hold and leaves the follow alone', async () => {
   setMotion(MOTION_FULL)
   join()
   const scroller = scrollBox('data-conversation-scroll')
@@ -177,7 +176,6 @@ test('the reader\'s own message holds the stream back and leaves the follow alon
   await nextFrame()
   await nextFrame()
   expect(submissionHolds()).toBe(true)
-  expect(easeScrollToEndFor(scroller, 'stream', wanted)).toBe(false)
   expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(true)
 })
 
@@ -203,11 +201,10 @@ test('a hold armed by one conversation does not follow the reader into the next'
   expect(submissionHolds()).toBe(true)
   // A session switch keeps the scroller (the reading view reuses it) and the new
   // conversation mounts its own user rows: the hold the last one armed must not
-  // stand here, or the follow that brings the open session to its end is refused.
+  // stand here, or the stream slide stays down over the session just opened.
   wrapper.setAttribute('data-conversation-session', 'session-two')
   writeScroll(scroller, 100, 'composer')
   expect(submissionHolds()).toBe(false)
-  expect(easeScrollToEndFor(scroller, 'stream', wanted)).toBe(true)
 })
 
 test('under reduced motion an ease is its destination written at once', () => {

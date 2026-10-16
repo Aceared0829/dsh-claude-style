@@ -1,4 +1,4 @@
-import { READER_HOLD_ATTR, STREAM_GLIDE_ATTR } from '../constants'
+import { READER_HOLD_ATTR } from '../constants'
 import { subscribeMutations } from '../core/bus'
 import { motionReduced } from '../core/prefs'
 import { CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FLOW_KIND_ATTRIBUTE, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
@@ -19,23 +19,22 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  *             back once a door has rolled
  *   composer  keeping a reader at the end while the composer card changes height
  *   follow    the follow's hand-back at a structural moment
- *   stream    the stream glide: taking the host's pin back and walking the
- *             distance while content streams
  *   process   a capped process body's catch-up
  *
  * The rules, per container:
  *   - a request whose source ranks below the ease running there is refused;
  *     an equal or higher one is carried out, and a write ends a running ease
  *     that ranks below it;
- *   - follow, stream and process requests are refused while the reader holds
- *     the container (readerHolds), and their eases end the moment he does;
- *   - stream requests are refused, and their eases end, for a while after
- *     the reader's own message arrives: the host's jump to it stands; the
- *     hold is dropped when the scroller is replaced, because a conversation
- *     opening mounts its own user rows and its jump is not the one being
- *     protected (claimConversation);
+ *   - follow and process requests are refused while the reader holds the
+ *     container (readerHolds), and their eases end the moment he does;
  *   - while the reader's animation choice means "no animation", an ease is
  *     its destination written at once.
+ * While content streams, nothing here writes: the host's own follow pins the
+ * end, and the follow feature slides what the pin pushed up (D71). It asks the
+ * owner whether the reader's own message has just arrived (submissionHolds);
+ * that hold is dropped when the scroller is replaced, because a conversation
+ * opening mounts its own user rows and its jump is not the one being
+ * protected (claimConversation).
  * The reader's own wheel is the browser's: this module only records that he
  * moved (noteIntent), so the following sources stand down. The conversation
  * scroller above the container he holds carries READER_HOLD_ATTR while he
@@ -43,27 +42,24 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  * while the follow is the one moving the position, never over content the
  * reader scrolled back to.
  *
- * The host's side of the follow is handed over here too: the pin a frame of
- * streaming writes is taken back (takeBackHostPin), the host's follow is lit
- * back up through its own button (handBackFollow), and that button is kept
- * out of sight while the stream glide follows (holdFollowButton).
+ * The host's side of the follow is handed over here too: the host's follow is
+ * lit back up through its own button (handBackFollow).
  */
 
 export { SCROLL_EASE_LEAD_PX }
 
-export type ScrollSource ='jump' | 'fold' | 'composer' | 'follow' | 'stream' | 'process'
+export type ScrollSource ='jump' | 'fold' | 'composer' | 'follow' | 'process'
 
 /** Each source's rank; a higher rank's claim stands over a lower one's. */
 const SCROLL_SOURCE_RANK: Record<ScrollSource, number> = {
   process: 1,
-  stream: 2,
   follow: 2,
   composer: 3,
   fold: 5,
   jump: 6,
 }
 /** The sources that only follow the end: the reader holding a container stops them. */
-const FOLLOWING_SOURCES = new Set<ScrollSource>(['follow', 'stream', 'process'])
+const FOLLOWING_SOURCES = new Set<ScrollSource>(['follow', 'process'])
 
 /** How close to a process body's end the reader has to come for his hold on it to end. */
 const PROCESS_RELEASE_THRESHOLD_PX = 4
@@ -74,19 +70,13 @@ const PROCESS_RELEASE_THRESHOLD_PX = 4
  */
 const SUBMISSION_SELECTOR = `[${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"], ${SUBMISSION_ECHO_SELECTOR}`
 /**
- * How long the stream glide stands down after one of them arrives. The
+ * How long the stream slide stands down after one of them arrives. The
  * host's own jump to a freshly sent message is deliberate — the reader has to
  * see the message he just sent — and the echo is swapped for the real row
  * about a second later, which moves the position again. The stand-down
  * covers both.
  */
 const SUBMISSION_HOLD_MS = 1200
-/**
- * How far the position has to move past the stream's own last reading before
- * it counts as the host pinning it rather than the spring taking its own
- * step (both happen inside one frame).
- */
-const HOST_PIN_TOLERANCE_PX = 1
 /** How many times a hand-back looks again; the host may turn its follow off a beat later. */
 const FOLLOW_LOOK_ROUNDS = 5
 /** The gap between two looks; five of them cover the host's 500 ms sampling window. */
@@ -118,14 +108,10 @@ const heldTowardEnd = new WeakSet<Element>()
 const markedScrollers = new Set<Element>()
 /** When the reader last made a moving intent, for movedSince. */
 let lastMovingIntentAt = 0
-/** Until this moment the stream glide stands down: the reader's own message just arrived. */
+/** Until this moment the stream slide stands down: the reader's own message just arrived. */
 let submissionHoldUntil = 0
 /** The conversation the owner last worked in, for the hold above; null before the first is claimed. */
 let claimedSession: string | null = null
-/** The conversation's position as the frame started, from its scroll events; the reading a host pin is measured against. */
-let seen: { element: Element, top: number } | null = null
-/** The host's back-to-end button while it is kept out of sight. */
-let heldButton: HTMLElement | null = null
 /** How many features use the owner; its listeners live while one does. */
 let members = 0
 let stopSubmissionWatch: (() => void) | null = null
@@ -188,7 +174,6 @@ function claim(container: Element, source: ScrollSource) {
   const running = runningSource(container)
   if (running !== undefined && SCROLL_SOURCE_RANK[source] < SCROLL_SOURCE_RANK[running]) return false
   if (FOLLOWING_SOURCES.has(source) && readerHolds(container)) return false
-  if (source === 'stream' && submissionHolds()) return false
   return true
 }
 
@@ -242,7 +227,7 @@ export function readerMovedSince(since: number) {
   return lastMovingIntentAt > since
 }
 
-/** Whether the stream glide stands down for the reader's own message right now. */
+/** Whether the stream slide (features/chat-follow/chat-follow.ts) stands down for the reader's own message right now. */
 export function submissionHolds() {
   return performance.now() < submissionHoldUntil
 }
@@ -263,8 +248,9 @@ let sessionId: string | null = null
  * The submission hold is armed by the nodes a conversation renders — opening a
  * session mounts its user rows, which look exactly like a message just sent —
  * and it protects the host's jump to a message the reader has just sent, which
- * belongs to the conversation he left. Left standing, it refuses the stream
- * source for its whole window over the history the new conversation just opened.
+ * belongs to the conversation he left. Left standing, it stands the stream
+ * slide down for its whole window over the history the new conversation just
+ * opened.
  */
 function claimConversation() {
   if (sessionElement === null || !sessionElement.isConnected) {
@@ -274,7 +260,6 @@ function claimConversation() {
   if (next === sessionId) return
   sessionId = next
   submissionHoldUntil = 0
-  seen = null
 }
 
 /**
@@ -327,19 +312,12 @@ function noteIntent(event: Event) {
 }
 
 /**
- * Track the conversation's position as each frame starts: scroll events are
- * fired before the frame's own callbacks, so this is what a pin written
- * during the frame is measured against. A held container that has come back
- * to its end is released here, before content growing under it can move the
- * end away again.
+ * A held container that has come back to its end is released as it scrolls,
+ * before content growing under it can move the end away again.
  */
 function noteScroll(event: Event) {
   const target = event.target
   if (target instanceof Element && held.has(target)) readerHolds(target)
-  if (target instanceof HTMLElement && target.matches(CONVERSATION_SCROLL_SELECTOR)) {
-    // Kept with its element: a session switch replaces the scroller.
-    seen = { element: target, top: target.scrollTop }
-  }
 }
 
 function noteSubmission(records: MutationRecord[]) {
@@ -384,8 +362,6 @@ export function joinScrollOwner() {
     markedScrollers.clear()
     for (const container of held) heldTowardEnd.delete(container)
     held.clear()
-    releaseFollowButton()
-    seen = null
   }
 }
 
@@ -417,9 +393,7 @@ export function easeScrollFor(container: Element, source: ScrollSource, destinat
     return true
   }
   const following = FOLLOWING_SOURCES.has(source)
-  easeScroll(container, destination, () => wanted()
-    && !(following && readerHolds(container))
-    && !(source === 'stream' && submissionHolds()), lead)
+  easeScroll(container, destination, () => wanted() && !(following && readerHolds(container)), lead)
   easeSources.set(container, source)
   return true
 }
@@ -441,60 +415,6 @@ export function stopScrollFor(container: Element, source?: ScrollSource) {
 /** The position the ease last wrote on a container, or null while none runs there. */
 export function scrollPositionFor(container: Element) {
   return scrollEasePosition(container)
-}
-
-/**
- * Take back the end the host wrote this frame while content streams, and
- * leave the distance to the stream glide.
- *
- * The reference a pin is measured against: the spring's own last write while
- * it eases (a position it has just written is one this frame may be at),
- * else the position this scroller was at as the frame started, else the end
- * the frame started at — this frame's end less the column's reported growth.
- * Only a move down is taken back: an upward one is the reader, or the host
- * going somewhere else.
- *
- * @param scroller - the conversation's scroller.
- * @param end - the end of its content, read by the caller: reading it here as
- *     well paid a second layout pass in the same frame (D9).
- * @param grew - how far the message column grew this frame, when it did.
- * @returns the position the scroller sits at now, so the caller needs no
- *     reading of its own after a write.
- */
-export function takeBackHostPin(scroller: HTMLElement, end: number, grew?: number) {
-  let expected = scrollEasePosition(scroller)
-  if (expected === null && seen !== null && seen.element === scroller) expected = seen.top
-  if (expected === null && typeof grew === 'number' && grew > 0) expected = Math.max(0, end - grew)
-  const top = scroller.scrollTop
-  if (expected === null || top - expected <= HOST_PIN_TOLERANCE_PX) return top
-  return writeScroll(scroller, expected, 'stream') ? expected : top
-}
-
-/**
- * Keep the host's own back-to-end button out of sight while the stream glide
- * follows. A position held off the end reads to the host as a reader who left
- * it, so its settlement turns the follow off and renders the button although
- * the glide is following. The mark is this skin's own and the stylesheet hides
- * the button; the host's state is untouched.
- */
-export function holdFollowButton() {
-  // The host renders that button only while its follow is off, so finding one
-  // is the reading the marker used to be asked for — and finding it costs the
-  // structure walk rather than a document query on every frame of a stream (D9).
-  const button = findFollowTailButton()
-  if (button === heldButton) return
-  releaseFollowButton()
-  if (button !== null) {
-    button.setAttribute(STREAM_GLIDE_ATTR, '')
-    heldButton = button
-  }
-}
-
-/** Let the host's button show again. */
-export function releaseFollowButton() {
-  if (heldButton === null) return
-  heldButton.removeAttribute(STREAM_GLIDE_ATTR)
-  heldButton = null
 }
 
 /**

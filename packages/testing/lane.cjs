@@ -34,7 +34,7 @@ const SKIN = {
   sendLink: '[data-dsh-claude-send-link]', // CHAT_SEND_LINK_ATTR
   flyingMark: 'data-dsh-claude-send-flight', // CHAT_FLYING_ATTR
   echoAttribute: 'data-submission-echo', // SUBMISSION_ECHO_SELECTOR without its brackets
-  // The other mark the pin reads while the glide holds a position (FOLLOW_HOLD_ATTR).
+  // The other mark the pin reads while a door rolls (FOLLOW_HOLD_ATTR).
   hold: '[data-dsh-claude-follow-hold]', // FOLLOW_HOLD_ATTR
 }
 

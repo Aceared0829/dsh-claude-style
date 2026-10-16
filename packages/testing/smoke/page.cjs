@@ -190,14 +190,17 @@ function page(name, tier, cases) {
     ? '<style>' +
         '#debugScroller { height: 240px; overflow-y: auto; }' +
         '[data-step-process-body] { max-height: 120px; overflow-y: auto; }' +
+        // The host's own wrapper around the column, which carries its follow
+        // mark and clips: an offset on the column never reaches the scroll height.
+        '#debugFollowing { overflow: clip; }' +
       '</style>' +
-      '<div id="debugFrame"><div id="debugScroller" data-conversation-scroll><div data-chat-flow>' +
+      '<div id="debugFrame"><div id="debugScroller" data-conversation-scroll><div id="debugFollowing"><div data-chat-flow>' +
         '<div data-chat-flow-key="a" style="height:600px">a</div>' +
         '<div data-chat-flow-key="b" style="height:600px">b</div>' +
       '</div></div></div>' +
-      // The host renders its own button beside the frame that holds the scroll
-      // frame, which is the shape handBackFollow in shared/scroll-owner.ts reads.
-      '<div id="debugTail"><button type="button">Back to the end</button></div>' +
+      // The host renders its own button beside the frame two levels above the
+      // column, which is the shape handBackFollow in shared/scroll-owner.ts reads.
+      '<div id="debugTail"><button type="button">Back to the end</button></div></div>' +
       '<div data-step-process><div data-step-process-body><div data-step-process-content style="height:400px">capped</div></div></div>' +
       '<div data-step-process data-group-expanded-mode="detailed"><div data-step-process-body><div data-step-process-content style="height:400px">expanded</div></div></div>'
     : ''

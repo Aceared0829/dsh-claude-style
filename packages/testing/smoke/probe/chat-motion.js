@@ -26,11 +26,10 @@
       // ends, the end equal to the target — so that the shape of the curve is
       // settled in the unit lane and this lane only asks whether it was walked.
       //
-      // A walk out of a pin begins one frame after the content grew, when the
-      // size subscription armed after the host's own takes the pin back and the
-      // spring starts — so the recording waits for the frame the follow's hold
-      // mark says the take-back happened on. Started in the writing turn, it
-      // reads the pinned end every frame and never sees the walk at all.
+      // A walk out of a growth begins on the frame the content is laid out in,
+      // when the size subscription armed after the host's own starts it — so the
+      // recording waits for the frame `held` says it began on. Started in the
+      // writing turn, it reads the state before the walk and never sees it.
       var recordWalk = function (gap, held) {
         return new Promise(function (resolve) {
           var readings = []
@@ -58,10 +57,6 @@
           }
           requestAnimationFrame(read)
         })
-      }
-      /** Whether the glide's take-back has happened: the follow's hold mark stands on the column. */
-      var glideHeld = function () {
-        return document.querySelector('[data-dsh-claude-follow-hold]') !== null
       }
       /** Whether the capped body has left its end, which is where its catch-up walk starts. */
       var bodyWalking = function () {
@@ -114,55 +109,69 @@
         if (cappedContent !== null) cappedContent.style.height = '900px'
         r.chatFollow.catchUp = await recordWalk(bodyGap, bodyWalking)
       }
-      // The stream glide (chat-follow.ts): with the host's own streaming mark on
-      // the page, the end the host's follow pins the position to is taken back
-      // before the frame paints and handed to the spring, so the text walks there
-      // instead of jumping. The mark is the host's; the pin is what its follow
-      // does on every content change.
+      // The stream slide (chat-follow.ts, D71): with the host's own streaming mark
+      // on the page and its follow on, the growth the host's pin pushed up is put
+      // back down by the column's own offset and slid to rest, while the position
+      // stays at the end. The live turn's row, the flow's last, stands still.
       followScroller.scrollTop = followScroller.scrollHeight
       await probe.settle()
+      // The host's own mark that its follow is on, which it writes on the
+      // column's wrapper; the slide only moves a growth the host has pinned.
+      followColumn.parentElement.setAttribute('data-chat-following-tail', '')
       var streamingMark = document.createElement('div')
       streamingMark.setAttribute('data-streaming', '')
       followColumn.appendChild(streamingMark)
-      var glideBlock = document.createElement('div')
-      glideBlock.style.height = '300px'
-      followColumn.appendChild(glideBlock)
-      // The pin the host's own follow writes is taken back before the frame
-      // paints and handed to the spring; the walk out of it is recorded from the
-      // frame the take-back happens on, the same way as the catch-up above.
+      var runningRow = document.createElement('div')
+      runningRow.setAttribute('data-chat-running', '')
+      runningRow.style.height = '24px'
+      followColumn.appendChild(runningRow)
       followScroller.scrollTop = followScroller.scrollHeight
-      r.chatFollow.glide = await recordWalk(endGap, glideHeld)
-      r.chatFollow.glideDiag = {
+      await probe.settle()
+      var slideBlock = document.createElement('div')
+      slideBlock.style.height = '300px'
+      followColumn.insertBefore(slideBlock, runningRow)
+      /** The column's offset as it renders, with the end gap and the running row's top on the same frame. */
+      var slideFrames = []
+      var slideOffset = function () {
+        slideFrames.push({ gap: endGap(), row: runningRow.getBoundingClientRect().top })
+        return Math.round(new DOMMatrix(getComputedStyle(followColumn).transform).m42 * 10) / 10
+      }
+      var sliding = function () {
+        return followColumn.getAnimations().length > 0
+      }
+      // The pin the host's own follow writes; the slide starts in the frame it
+      // is laid out in, and is recorded from there the same way as the catch-up.
+      followScroller.scrollTop = followScroller.scrollHeight
+      r.chatFollow.slide = await recordWalk(slideOffset, sliding)
+      r.chatFollow.slideFrames = slideFrames
+      r.chatFollow.slideDiag = {
         motion: document.body.getAttribute('data-dsh-claude-motion'),
         streamMark: document.querySelector('[data-streaming]') !== null,
         rolling: document.querySelector('[data-dsh-claude-rolling]') !== null,
-        buttonMarked: document.querySelector('[data-dsh-claude-stream-glide]') !== null,
         followAttr: document.querySelector('[data-chat-following-tail]') !== null,
       }
-      // The host's own button is kept out of sight while the glide follows: a
-      // position held off the end reads to the host as a reader who left.
-      r.chatFollow.glideButtonMarked = document.querySelector('[data-dsh-claude-stream-glide]') !== null
       // A message the reader has just sent is not streaming content: the host's
-      // jump to it stands, and the glide stands down around it. The streaming
-      // mark is still on the page here, so without the stand-down the glide
-      // would take this jump back like any other.
+      // jump to it stands, and the slide stands down around it. The streaming
+      // mark is still on the page here, so without the stand-down this growth
+      // would slide like any other.
       var userRow = document.createElement('div')
       userRow.setAttribute('data-chat-flow-key', 'sent')
       userRow.setAttribute('data-chat-flow-kind', 'user')
       userRow.style.height = '300px'
-      followColumn.appendChild(userRow)
-      // Every frame from the jump until the page settles: a take-back on any of
-      // them would show as a frame off the end.
+      followColumn.insertBefore(userRow, runningRow)
+      // Every frame from the jump until the page settles: a slide on any of them
+      // would show as an animation on the column.
       followScroller.scrollTop = followScroller.scrollHeight
-      r.chatFollow.submitGaps = await probe.watch(endGap)
+      r.chatFollow.submitSlides = await probe.watch(function () { return followColumn.getAnimations().length })
       userRow.remove()
       await probe.settle()
       streamingMark.remove()
-      glideBlock.remove()
+      slideBlock.remove()
+      runningRow.remove()
+      followColumn.parentElement.removeAttribute('data-chat-following-tail')
       await probe.settle()
       followScroller.scrollTop = followScroller.scrollHeight
       await probe.settle()
-      r.chatFollow.glideButtonBack = document.querySelector('[data-dsh-claude-stream-glide]') === null
     })
     // The ported caret motion (packages/client/src/features/caret/): the focused composer
     // surface gets a drawn caret and the native one gives way; switching the

@@ -53,27 +53,29 @@ module.exports = {
     check('the capped body is left at its end: the frames the recording ended on all read it',
       walkHeldAtEnd(catchUp, AT_END_PX, bound('followQuietFrames')), JSON.stringify(catchUp.slice(-bound('followQuietFrames'))))
     // While the host's streaming mark is on the page, the end its own follow
-    // writes is taken back before the frame paints and the spring walks the
-    // distance (chat-follow.ts, scroll-ease.ts).
-    const glide = follow.glide || []
-    const glideSteps = walkedSteps(glide, AT_END_PX)
-    check('the stream glide takes the host\'s own pin back and walks it: the recording starts well off the end, every frame closes on it, and the last one is at the end',
-      glide.length >= bound('followGlideMinFrames') && glide[0] > bound('followGlideStartPx') &&
-        glide.every((gap, at) => at === 0 || gap <= glide[at - 1]) &&
-        glide[glide.length - 1] <= AT_END_PX &&
-        glideSteps.length >= bound('followWalkDistinctValues'),
+    // writes stands, and the column slides the growth to rest (chat-follow.ts, D71).
+    const slide = follow.slide || []
+    const slideSteps = walkedSteps(slide, AT_END_PX)
+    check('the stream slide puts the growth the host\'s pin pushed up back down and slides it to rest: the recording starts well above rest, every frame closes on it, and the last one is at rest',
+      slide.length >= bound('followSlideMinFrames') && slide[0] > bound('followSlideStartPx') &&
+        slide.every((offset, at) => at === 0 || offset <= slide[at - 1]) &&
+        slide[slide.length - 1] <= AT_END_PX &&
+        slideSteps.length >= bound('followWalkDistinctValues'),
       JSON.stringify({
-        readings: glide.length, start: glide[0], end: glide[glide.length - 1],
-        steps: glideSteps.map((step) => step.gap), diag: follow.glideDiag,
+        readings: slide.length, start: slide[0], end: slide[slide.length - 1],
+        steps: slideSteps.map((step) => step.gap), diag: follow.slideDiag,
       }))
-    check('the glide is left at the end: the frames the recording ended on all read it',
-      walkHeldAtEnd(glide, AT_END_PX, bound('followQuietFrames')), JSON.stringify(glide.slice(-bound('followQuietFrames'))))
-    check('a message the reader just sent is not taken back: the host\'s jump to it stands',
-      (follow.submitGaps || []).length > 0 && follow.submitGaps.every((gap) => gap <= AT_END_PX),
-      JSON.stringify(follow.submitGaps))
-    check('the host\'s own back-to-the-end button is kept out of sight while the glide follows, and shows again after',
-      follow.glideButtonMarked === true && follow.glideButtonBack === true,
-      JSON.stringify({ marked: follow.glideButtonMarked, back: follow.glideButtonBack }))
+    check('the slide is left at rest: the frames the recording ended on all read it',
+      walkHeldAtEnd(slide, AT_END_PX, bound('followQuietFrames')), JSON.stringify(slide.slice(-bound('followQuietFrames'))))
+    const slideFrames = follow.slideFrames || []
+    const rowTops = slideFrames.map((frame) => frame.row)
+    check('the slide writes no position: the host\'s pin stands at the end on every frame, and the live turn\'s row stands still over it',
+      slideFrames.length > 0 && slideFrames.every((frame) => frame.gap <= AT_END_PX) &&
+        Math.max(...rowTops) - Math.min(...rowTops) <= bound('followSlideRowDriftPx'),
+      JSON.stringify(slideFrames))
+    check('a message the reader just sent does not slide: the host\'s jump to it stands',
+      (follow.submitSlides || []).length > 0 && follow.submitSlides.every((count) => count === 0),
+      JSON.stringify(follow.submitSlides))
   },
   caret(r) {
     basicChecks(r)

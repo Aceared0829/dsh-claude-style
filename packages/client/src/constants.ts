@@ -319,22 +319,12 @@ export const FEATURE_PREF_DEFAULTS = {
  */
 export const CHAT_FOLLOW_ATTR = 'data-dsh-claude-chat-follow'
 /**
- * On the host's own "back to the end" button while the stream glide
- * (packages/client/src/features/chat-follow/chat-follow.ts) is following on the conversation
- * scroller: the glide holds the position off the end on purpose, which the
- * host reads as the reader having left, so it renders that button although
- * it is being followed. The stylesheet keeps it out of sight until the glide
- * lets go; the host's own state is not touched.
- */
-export const STREAM_GLIDE_ATTR = 'data-dsh-claude-stream-glide'
-/**
- * On the flow column while the stream glide
- * (packages/client/src/features/chat-follow/chat-follow.ts) holds the position
- * for the reader. A position held short of the end reads to the host as a
- * reader who left the tail, and it takes its own data-chat-following-tail away
- * (D3) — the gate the waiting line's pin waits for
- * (packages/client/src/features/chat-wait/chat-wait.css). This mark stands
- * for that gate while the glide is the one moving the position.
+ * On the flow column while a door rolls
+ * (packages/client/src/features/chat-follow/chat-follow.ts). A door's height
+ * change reads to the host as a reader who left the tail, and it takes its own
+ * data-chat-following-tail away (D3) — the gate the waiting line's pin waits
+ * for (packages/client/src/features/chat-wait/chat-wait.css). This mark stands
+ * for that gate until the fold hands the follow back.
  */
 export const FOLLOW_HOLD_ATTR = 'data-dsh-claude-follow-hold'
 /**

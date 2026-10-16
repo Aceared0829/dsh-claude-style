@@ -8,7 +8,7 @@
  *
  * A door is the fold's height animation
  * (packages/client/src/features/chat-fold/fold-glide.ts). One that rolls at the
- * tail while the turn streams stands the stream glide down, and its height
+ * tail while the turn streams stands the stream slide down, and its height
  * change takes the host's follow away until the fold hands it back; the tail is
  * still followed all the while, so the status line has to stay pinned where it
  * stood. The scenario runs the standard tier, where a running turn's steps

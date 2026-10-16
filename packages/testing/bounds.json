@@ -42,9 +42,9 @@
       "reason": "The distance the capped process body is left from its end before the catch-up is watched. The probe grows the body 900px inside a body about 200px tall, and a walk that never started reads the whole of it, so the floor separates a walk from a write."
     },
     {
-      "name": "followGlideStartPx",
+      "name": "followSlideStartPx",
       "value": 100,
-      "reason": "The distance the conversation scroller is left from its end before the stream glide is watched: the probe appends a 300px block under the host's own streaming mark, and the host's pin puts the position back at the end in the same turn, so what is watched is the spring walking that distance rather than the pin."
+      "reason": "The offset the message column has to start its slide from: the probe grows the column by a 300px block under the host's own streaming mark and pins the end, so a slide recorded from its first frame carries most of that growth; a column that never slid reads 0."
     },
     {
       "name": "followWalkDistinctValues",
@@ -57,9 +57,14 @@
       "reason": "The fewest frames a recorded catch-up walk may take. The spring covers 95% of a gap in about 170ms, so a walk watched to the end holds about ten frames at 60Hz; the floor is the reading below which the walk was not watched to hear its end."
     },
     {
-      "name": "followGlideMinFrames",
+      "name": "followSlideMinFrames",
       "value": 8,
-      "reason": "The fewest frames a recorded stream glide may take, counted the same way as the catch-up's: the two walks carry the same spring, and the glide measured 18 intermediate readings at 60Hz."
+      "reason": "The fewest frames a recorded stream slide may take, counted the same way as the catch-up's: the slide runs for the slide token's 240ms, about fourteen frames at 60Hz, and the floor is the reading below which it was not watched to its end."
+    },
+    {
+      "name": "followSlideRowDriftPx",
+      "value": 0.5,
+      "reason": "How far the live turn's row may move on screen while the column slides under it: the row carries the same slide reversed, started in the same frame, so the two cancel exactly; half a pixel leaves room for the rounding of two offsets and nothing a reader could see."
     },
     {
       "name": "followQuietFrames",
@@ -69,7 +74,7 @@
     {
       "name": "laneFollowMaxGapPx",
       "value": 220,
-      "reason": "How far behind the tail the scroller may lag while the reader follows it. The gap opens only while content arrives faster than the glide closes it — the lane's long script measures 151px at its fastest burst — so the bound is a third of that scenario's 600px viewport: a follow that stopped working leaves hundreds of pixels more, and a glide that stutters stays inside it."
+      "reason": "How far behind the tail the scroller may lag while the reader follows it. The host's own follow pins the end on every growth and the skin's slide writes no position, so the gap is at most the growth of the frame being sampled; the bound is a third of that scenario's 600px viewport: a follow that stopped working leaves hundreds of pixels more."
     },
     {
       "name": "readerScrollPinSlackPx",

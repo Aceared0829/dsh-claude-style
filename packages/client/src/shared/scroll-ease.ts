@@ -56,8 +56,9 @@ const SCROLL_EASE_MAX_SPEED_PX_S = 2400
 const SCROLL_EASE_MAX_ACCEL_PX_S2 = 24000
 /**
  * The longest stretch that is glided. A gap past it is first closed to it
- * (see above); it is also the line the stream glide draws between a burst of
- * content and a replaced column.
+ * (see above); it is also the line the stream slide
+ * (features/chat-follow/chat-follow.ts) draws between a burst of content and a
+ * replaced column.
  */
 export const SCROLL_EASE_LEAD_PX = 1200
 /** Within this of the destination, and slower than SCROLL_EASE_REST_PX_S, the position has arrived. */
@@ -168,10 +169,8 @@ export function isScrollEasing(element: Element) {
  * The position the ease last wrote on this element, or null while it is not
  * easing on it.
  *
- * The scroll owner reads it to tell the host's pin apart from the spring's
- * own step inside one frame (takeBackHostPin): the host writes the end
- * outright the moment content grows, and the distance that write added has
- * to go back to the spring instead of painting.
+ * The scroll owner hands it on (scrollPositionFor): a jump reads where its own
+ * walk has the position without a layout reading of its own.
  * @param element - the scroll container.
  */
 export function scrollEasePosition(element: Element) {

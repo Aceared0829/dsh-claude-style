@@ -275,11 +275,9 @@ const SCENARIOS = {
       const live = sampled.filter((frame) => frame.running !== null && frame.running !== undefined && frame.following && overflowing(frame))
       const tops = live.map((frame) => frame.running)
       const spread = tops.length === 0 ? 0 : Math.max(...tops) - Math.min(...tops)
-      // The host's own mark is off in these frames: its attribution read the glide's writes as a
-      // reader leaving the tail, so the pin comes from the hold mark alone.
-      const held = sampled.filter((frame) => frame.running !== null && frame.running !== undefined && frame.hold === true && frame.following === false && overflowing(frame))
-      const heldTops = held.map((frame) => frame.running)
-      const heldSpread = heldTops.length === 0 ? 0 : Math.max(...heldTops) - Math.min(...heldTops)
+      // The skin writes no position while the answer streams (D71), so nothing reads to the host as a
+      // reader leaving the tail: its own mark stays on in every frame the live turn's row is pinned in.
+      const dropped = sampled.filter((frame) => frame.running !== null && frame.running !== undefined && frame.following === false && overflowing(frame))
       return [
         check('逐帧采样真的在跑', sampled.length > 30, `frames=${sampled.length}`),
         check('回答在采样期间长出来', grown > 100, `grew ${grown}px during the trace`),
@@ -288,7 +286,7 @@ const SCENARIOS = {
         check('尾部没有自己跑远', escaped.length === 0, `escaped=${escaped.length}${escaped.length === 0 ? '' : ` at ${escaped.slice(0, 3).map((f) => f.t).join(',')}ms`}`),
         check('跟随期间尾部留在视野里', worst <= MAX_FOLLOW_GAP_PX, `maxGap=${worst}px of ${following.length} following frames`),
         check('落定后回到末尾', last !== undefined && last.gap <= 4, `lastGap=${last === undefined ? 'n/a' : last.gap}`),
-        check('宿主关掉跟随时状态行仍停在同一处', held.length > 3 && heldSpread === 0, `frames the host mark was off in=${held.length}, top ${heldTops.length === 0 ? 'n/a' : `${Math.min(...heldTops)}..${Math.max(...heldTops)}`}`),
+        check('输出期间宿主自己的跟随一直开着', dropped.length === 0, `frames the host mark was off in=${dropped.length}${dropped.length === 0 ? '' : ` at ${dropped.slice(0, 3).map((f) => f.t).join(',')}ms`}`),
         check('满屏之后宿主的状态行不再随内容移动，连半个像素也不动', live.length > 10 && spread === 0, `overflowing frames with the row=${live.length}, top ${tops.length === 0 ? 'n/a' : `${Math.min(...tops)}..${Math.max(...tops)}`}`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]

@@ -22,6 +22,7 @@
 | [D49](D49-visual-yield.md) | 与其他插件共存，向上游让路 | D23、D32、D55、D56、D57、D58、D63 |
 | [D66](D66-testing.md) | 测试分层 | D45 |
 | [D70](D70-clause-from-reasoning.md) | 从推理正文里读出的从句 |  |
+| [D71](D71-stream-follow-slide.md) | 流式输出的跟随由宿主写位置，皮肤只画位移 |  |
 
 ## 作废的编号
 

@@ -302,15 +302,14 @@
       "落定后回到末尾": [
         4
       ],
-      "宿主关掉跟随时状态行仍停在同一处": [
-        0,
-        3
+      "输出期间宿主自己的跟随一直开着": [
+        0
       ],
       "满屏之后宿主的状态行不再随内容移动，连半个像素也不动": [
         0,
         10
       ],
-      "控制台没有异常 (line 293)": [
+      "控制台没有异常 (line 291)": [
         0
       ],
       "替身起飞后离开页面": [
@@ -331,32 +330,32 @@
       "Windows 标题栏标记下，替身里的祖先链不画伪元素": [
         0
       ],
-      "控制台没有异常 (line 363)": [
+      "控制台没有异常 (line 361)": [
         0
       ],
       "满屏的对话里也读到了飞行": [
         1,
         5
       ],
-      "替身落地时不低于它替换的那一行 (line 397)": [
+      "替身落地时不低于它替换的那一行 (line 395)": [
         0
       ],
       "落定后那一行带着字": [
         0
       ],
-      "控制台没有异常 (line 399)": [
+      "控制台没有异常 (line 397)": [
         0
       ],
       "没有页面形态的条目已逐条列出": [
         0
       ],
-      "控制台没有异常 (line 454)": [
+      "控制台没有异常 (line 452)": [
         0
       ],
       "脚本回答已渲染": [
         0
       ],
-      "控制台没有异常 (line 495)": [
+      "控制台没有异常 (line 493)": [
         0
       ]
     },
@@ -523,11 +522,14 @@
         0,
         1
       ],
-      "the stream glide takes the host's own pin back and walks it: the recording starts well off the end, every frame closes on it, and the last one is at the end": [
+      "the stream slide puts the growth the host's pin pushed up back down and slides it to rest: the recording starts well above rest, every frame closes on it, and the last one is at rest": [
         0,
         1
       ],
-      "a message the reader just sent is not taken back: the host's jump to it stands": [
+      "the slide writes no position: the host's pin stands at the end on every frame, and the live turn's row stands still over it": [
+        0
+      ],
+      "a message the reader just sent does not slide: the host's jump to it stands": [
         0
       ],
       "the drawn caret is placed with a transform": [
@@ -1015,6 +1017,9 @@
       ]
     },
     "packages/testing/wait-line.cjs": {
+      "从句在下一次意图到达之前一直站着，中间不退回等待词": [
+        0
+      ],
       "一个说法锁住一秒：状态换得再快，这一行也只一秒换一次": [
         0
       ],
