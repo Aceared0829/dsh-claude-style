@@ -12,7 +12,8 @@
  *     saw, every provider included.
  *   - `usage-fold.ts` finds the session logs and folds them, which is what covers
  *     the dates past the ledger's newest day.
- *   - `usage-cache.ts` keeps each session's fold between passes.
+ *   - `usage-record.ts` keeps each session's fold: the account that outlives the
+ *     log, so a deleted session keeps its days (D53).
  *   - `usage-summary.ts` merges the two accounts by date, and shapes the payload.
  *
  * The two accounts are combined, never added: a day the ledger knows stays the
@@ -21,8 +22,8 @@
 import { join, resolve } from 'node:path'
 import type { DshContext } from './dsh.js'
 import { harnessPath } from './harness-home.js'
-import { readCache, writeCache } from './usage-cache.js'
-import type { CacheSession } from './usage-cache.js'
+import { readRecord, writeRecord } from './usage-record.js'
+import type { RecordSession } from './usage-record.js'
 import { readEvents } from './session-events.js'
 import { foldSession, listSessionLogs } from './usage-fold.js'
 import type { SessionLog, UsageEvent } from './usage-fold.js'
@@ -35,8 +36,6 @@ import type { UsageSummary } from './usage-summary.js'
 const LEDGER_SOURCE = 'cost-meter'
 /** The `source` field of an answer our own fold over the session logs produced. */
 const LOCAL_SOURCE = 'local'
-/** An empty hour histogram, for a session list with nothing to fold. */
-const NO_HOURS = new Array(24).fill(0) as number[]
 
 /** The hour histogram of a merged day map: its days' histograms, slot by slot. */
 function hoursOf(days: ReadonlyMap<string, DayBuckets>): number[] {
@@ -46,6 +45,22 @@ function hoursOf(days: ReadonlyMap<string, DayBuckets>): number[] {
     for (let hour = 0; hour < 24; hour += 1) hours[hour] += Number(buckets.hours[hour]) || 0
   }
   return hours
+}
+
+/**
+ * Whether this pass's entries differ from the ones the document holds, which is
+ * the whole reason to write it again: a session folded afresh, one the record did
+ * not know, one it no longer holds, or one whose log went away since the document
+ * was written, whose fingerprint goes with it.
+ */
+function recordChanged(stored: ReadonlyMap<string, RecordSession>, sessions: ReadonlyMap<string, RecordSession>, read: number): boolean {
+  if (read > 0 || stored.size !== sessions.size) return true
+  for (const [id, entry] of sessions) {
+    const held = stored.get(id)
+    if (held === undefined || held.days.size !== entry.days.size) return true
+    if ((held.fingerprint !== undefined) !== (entry.fingerprint !== undefined)) return true
+  }
+  return false
 }
 
 /** The service's state: the last summary, whether more is coming, and why not. */
@@ -71,16 +86,18 @@ export function createUsage(ctx: DshContext) {
   let pending: Promise<UsageSummary | null> | null = null
   let disposed = false
 
-  /** Fold every session whose log changed since the cache was written. */
+  /** Fold every session whose log changed since the record was written. */
   async function computeLocal(logs: SessionLog[], ledgerDays: ReadonlyMap<string, DayBuckets> | null) {
-    const cache = readCache(ctx)
-    const sessions = new Map<string, CacheSession>()
+    const record = readRecord(ctx)
+    const sessions = new Map<string, RecordSession>()
     let read = 0
     let failed = 0
     for (const log of logs) {
-      const cached = cache.get(log.id)
-      if (cached !== undefined && cached.size === log.size && cached.mtimeMs === log.mtimeMs) {
-        sessions.set(log.id, cached)
+      const stored = record.sessions.get(log.id)
+      const fingerprint = stored?.fingerprint
+      if (stored !== undefined && fingerprint !== undefined
+        && fingerprint.size === log.size && fingerprint.mtimeMs === log.mtimeMs) {
+        sessions.set(log.id, stored)
         continue
       }
       // Each changed log is read by id. That read resolves the session through
@@ -89,18 +106,26 @@ export function createUsage(ctx: DshContext) {
       const events = await readEvents<UsageEvent>(ctx, log.id, 'the usage roll-up')
       if (events === null) {
         // The reader refused (no `sessionQuery` service, or a log it cannot
-        // parse). Leave the session out of the cache so the next pass retries it
+        // parse). Leave the entry as it stands, so the next pass retries this log
         // instead of freezing an empty day map behind a fresh fingerprint.
         failed += 1
-        if (cached !== undefined) sessions.set(log.id, cached)
+        if (stored !== undefined) sessions.set(log.id, stored)
         continue
       }
-      const folded = foldSession(events)
-      sessions.set(log.id, { size: log.size, mtimeMs: log.mtimeMs, days: folded.days, hours: folded.hours })
+      sessions.set(log.id, { fingerprint: { size: log.size, mtimeMs: log.mtimeMs }, days: foldSession(events).days })
       read += 1
     }
-    writeCache(ctx, sessions)
-    const merge = mergeLedgerFold(ledgerDays, sessions, logs)
+    // A session whose log is gone keeps the days the record holds for it: they
+    // are the only account of those days left, and no fold can bring them back
+    // (D53). An entry with no day goes: the log is gone, so nothing compares
+    // against it and it holds nothing to keep.
+    for (const [id, stored] of record.sessions) {
+      if (!sessions.has(id) && stored.days.size > 0) sessions.set(id, { days: stored.days })
+    }
+    if (record.writable && (record.mustWrite || recordChanged(record.sessions, sessions, read))) {
+      writeRecord(ctx, sessions)
+    }
+    const merge = mergeLedgerFold(ledgerDays, sessions)
     // The source names what answered: with no ledger at all the fold is the
     // whole account, and saying `cost-meter+local` there would credit a plugin
     // that is not installed (D53).
@@ -129,12 +154,11 @@ export function createUsage(ctx: DshContext) {
     const logs = listSessionLogs(root)
     const ledgerDays = readLedger(home())
 
-    if (logs.length === 0) return summarize(new Map(), 0, LOCAL_SOURCE, NO_HOURS)
     if (ledgerDays !== null && ledgerDays.size > 0) {
-      // The ledger is the wider account: it saw every provider and it outlives
-      // the logs. Hand its own answer over before the fold runs, so a stale
-      // ledger shows the whole history at once and the uncovered days land a
-      // moment later.
+      // The ledger is the wider account: it saw every provider, so it answers
+      // for the older days whether or not their logs are still stored. Hand its
+      // own answer over before the fold runs, so a stale ledger shows the whole
+      // history at once and the uncovered days land a moment later.
       const sessionIds = new Set<string>()
       for (const buckets of ledgerDays.values()) {
         for (const id of buckets.sessionIds ?? []) sessionIds.add(id)

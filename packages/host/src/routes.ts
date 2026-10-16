@@ -19,7 +19,7 @@ import { dirname, join, resolve, sep } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 import { brandRoutes } from './brand.js'
 import type { DshContext, DshRequest, DshResponse, DshRoute, DshScope } from './dsh.js'
-import { harnessPath } from './harness-home.js'
+import { harnessPath, pluginPath } from './harness-home.js'
 import { fenceRefused, methodRefused, readRequestBody, refusalOf, sendJson } from './http.js'
 import { createHdslAccount } from './hdsl.js'
 import type { HdslReading } from './hdsl.js'
@@ -206,7 +206,7 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
   const file = join(root, 'lib', COPY_FILE)
   const fontsDir = join(root, 'lib', 'fonts')
   /** Where a user's own faces live; resolved per request, so a file added while the host runs is served. */
-  const userFontsDir = () => harnessPath(ctx, 'dsh-claude-style', 'fonts')
+  const userFontsDir = () => pluginPath(ctx, 'fonts')
   const assetsDir = join(root, 'lib', 'assets')
   /** The decompressed payload of each brotli-stored asset served to a client that cannot take it. */
   const unpressed = new Map()

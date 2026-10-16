@@ -14,7 +14,7 @@ import { BRAND_MARK_PATH, BRAND_PATH, BRAND_WORDMARK_PATH } from '@dsh-claude-st
 import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DshContext, DshRequest, DshResponse, DshRoute } from './dsh.js'
-import { harnessPath } from './harness-home.js'
+import { pluginPath } from './harness-home.js'
 import { fenceRefused, methodRefused, readRequestBody, sendJson } from './http.js'
 
 /** Each image's route. */
@@ -50,7 +50,7 @@ interface StoredImage {
  * @param ctx - host plugin context, for the harness home.
  */
 function createBrandStore(ctx: DshContext) {
-  const dir = () => harnessPath(ctx, 'dsh-claude-style', 'brand')
+  const dir = () => pluginPath(ctx, 'brand')
 
   /** The file holding one image, in the type table's order, or null when there is none. */
   const find = (kind: BrandImageKind): StoredImage | null => {

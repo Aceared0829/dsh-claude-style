@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**用量记录的体积缩到约四成**：记录里一天的量按路由存放（模型，以及没有归到任何模型的余量），当天总量由这些路由相加得出，小时直方图只记非零的格子，日志已不在的会话不再存指纹。用本机上这一份记录量：146 KB 降到 57 KB，一趟只剩解析与写回；与记录一致的那一趟不再写盘。",
+  "en": "**The usage record shrinks to about two fifths of its size**: a day is stored per route (a model, plus the remainder no model claimed), the day's own total is the sum of those routes, the hour histogram keeps its non-zero slots alone, and a session whose log is gone no longer carries a fingerprint. Measured on this machine's own record: 146 KB becomes 57 KB, and a pass pays for parsing and writing alone; a pass that matches the record writes nothing."
+}

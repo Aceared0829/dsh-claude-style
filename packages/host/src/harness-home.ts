@@ -20,3 +20,16 @@ export function harnessPath(ctx: DshContext, ...segments: string[]): string {
   if (typeof resolvePath === 'function') return resolvePath(...segments)
   return join(process.env.DSH_HOME ?? join(homedir(), '.dsh'), ...segments)
 }
+
+/**
+ * One path inside this plugin's own directory in the harness home, which holds
+ * everything of ours that lives beside the host's own stores: the reader's
+ * dropped-in fonts and brand images, and the usage record.
+ *
+ * @param ctx - host plugin context.
+ * @param segments - path segments under the plugin's directory.
+ * @returns the resolved path.
+ */
+export function pluginPath(ctx: DshContext, ...segments: string[]): string {
+  return harnessPath(ctx, 'dsh-claude-style', ...segments)
+}

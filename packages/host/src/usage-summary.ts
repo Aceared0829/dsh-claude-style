@@ -14,9 +14,7 @@
  */
 import { BUCKET_KEYS, addBuckets, emptyBuckets } from './usage-ledger.js'
 import type { Buckets, DayBuckets } from './usage-ledger.js'
-import type { CacheSession } from './usage-cache.js'
-import { dayKey } from './usage-fold.js'
-import type { SessionLog } from './usage-fold.js'
+import type { RecordSession } from './usage-record.js'
 
 /** What the service reads out: the summarized days, models and totals, or null before the first read. */
 export interface UsageSummary {
@@ -44,15 +42,9 @@ function bucketTotal(buckets: Partial<Buckets> | null | undefined): number {
 }
 
 /** Sum the per-session day maps into one, tracking distinct sessions per day. */
-export function mergeSessions(sessions: ReadonlyMap<string, CacheSession>): { days: Map<string, DayBuckets>, sessionCount: number, hours: number[] } {
+export function mergeSessions(sessions: ReadonlyMap<string, RecordSession>): Map<string, DayBuckets> {
   const days = new Map<string, DayBuckets>()
-  const hours = new Array(24).fill(0) as number[]
-  const seen = new Set<string>()
   for (const [id, entry] of sessions) {
-    seen.add(id)
-    if (Array.isArray(entry.hours)) {
-      for (let hour = 0; hour < 24; hour += 1) hours[hour] += Number(entry.hours[hour]) || 0
-    }
     for (const [day, buckets] of entry.days) {
       let target = days.get(day)
       if (target === undefined) {
@@ -82,7 +74,7 @@ export function mergeSessions(sessions: ReadonlyMap<string, CacheSession>): { da
     day.sessionIds = behind
     day.sessions = behind.length
   }
-  return { days, sessionCount: seen.size, hours }
+  return days
 }
 
 export function summarize(
@@ -177,12 +169,10 @@ export interface LedgerMerge {
  *     all: a null is what tells the caller the answer is the fold's alone, which
  *     an empty map cannot say.
  * @param sessions - the per-session folds, keyed by session id.
- * @param logs - the session logs those folds came from, for their last-write day.
  */
 export function mergeLedgerFold(
   ledgerDays: ReadonlyMap<string, DayBuckets> | null,
-  sessions: ReadonlyMap<string, CacheSession>,
-  logs: ReadonlyArray<SessionLog>,
+  sessions: ReadonlyMap<string, RecordSession>,
 ): LedgerMerge {
   const days = new Map<string, DayBuckets>()
   const sessionIds = new Set<string>()
@@ -195,17 +185,13 @@ export function mergeLedgerFold(
   // An uncovered day is the fold's whole day: its model split, the sessions
   // that settled on it and its hour histogram, as the fold alone would answer.
   let folded = false
-  for (const [date, buckets] of mergeSessions(sessions).days) {
+  for (const [date, buckets] of mergeSessions(sessions)) {
     if (lastLedgerDay !== null && date <= lastLedgerDay) continue
     days.set(date, buckets)
     folded = true
-  }
-  // Which sessions belong to the uncovered days: the ones whose log was last
-  // written on one of them. A log rewritten later may also hold ledger days,
-  // and the ledger already counts the session those days belong to.
-  for (const log of logs) {
-    const date = dayKey(log.mtimeMs)
-    if (date !== null && (lastLedgerDay === null || date > lastLedgerDay)) sessionIds.add(log.id)
+    // The count follows the days rather than the logs: a session whose log is
+    // gone is still behind the days the record holds for it (D53).
+    for (const id of buckets.sessionIds ?? []) sessionIds.add(id)
   }
   return { days, sessionIds, folded }
 }

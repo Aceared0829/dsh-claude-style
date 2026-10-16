@@ -149,7 +149,9 @@ async function start(options = {}) {
     for (const name of fs.readdirSync(faces)) fs.copyFileSync(path.join(faces, name), path.join(dropPoint, name))
   }
   if (options.resetState === true) {
-    for (const entry of ['sessions', path.join('storages', 'session_projcache'), path.join('cache', 'dsh-claude-style', 'usage.json')]) {
+    // The usage record counts twice: the record itself, and the fold cache an
+    // earlier build wrote at the path the record is migrated from (D53).
+    for (const entry of ['sessions', path.join('storages', 'session_projcache'), path.join('dsh-claude-style', 'usage.json'), path.join('cache', 'dsh-claude-style', 'usage.json')]) {
       fs.rmSync(path.join(home, entry), { recursive: true, force: true })
     }
     // The skin's settings page is part of the end-to-end walk, and the choices
