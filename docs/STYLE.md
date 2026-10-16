@@ -73,6 +73,8 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsw-alias-label-secondary` | `#6e6a60` | `#61666b` | `#b0aea5` | `#aeb5c4` | host's own |  |
 | `--dsw-alias-label-tertiary` | `#8f8a7e` | `#81858c` | `#8f8d84` | `#8a92a3` | host's own |  |
 | `--dsw-alias-label-caption` | `#a6a094` | `#adb2b8` | `#6b6a65` | `#666e7e` | host's own |  |
+| `--dsw-alias-label-shimmer` | `color-mix(in srgb, #141413 30%, transparent)` | `color-mix(in srgb, #141413 30%, transparent)` | `color-mix(in srgb, #faf9f5 45%, transparent)` | `color-mix(in srgb, #faf9f5 45%, transparent)` | host's own | the highlight band's tint over running words: the host's own rows and the skin's band (shared/sweep-band.ts) alike |
+| `--dsw-alias-label-deep-diving-shimmer` | `color-mix(in srgb, #141413 30%, transparent)` | `color-mix(in srgb, #141413 30%, transparent)` | `color-mix(in srgb, #faf9f5 45%, transparent)` | `color-mix(in srgb, #faf9f5 45%, transparent)` | host's own | the band's tint inside the running row, which the host points --dsw-alias-label-shimmer at; under Claude it is the same warm band as everywhere else |
 | `--dsw-alias-state-business-primary` | `#d97757` | `#4d6bfe` | `#d97757` | `#6a84ff` | host's own |  |
 | `--dsw-alias-state-business-tertiary` | `#e9dfd2` | `#e9eeff` | `#3a2a22` | `#253056` | host's own |  |
 | `--dsw-alias-link` | `#c6613f` | `#3b56d9` | `#e08a6d` | `#8fa4ff` | host's own | text link at rest |
