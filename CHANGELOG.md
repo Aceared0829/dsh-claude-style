@@ -26,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **检查用的边界集中到一张表，每条带理由**：跟随末尾允许落后多少、长会话里一帧最长多少、长时间任务一共允许多少，这些「量出来的读数」的上限此前写在各自模块的常量里，现在住在 `packages/testing/bounds.json`，检查经 `packages/testing/bounds.cjs` 读它。放宽一个边界因此是这一个文件里的一行，理由就在旁边；余下的边界随迁移继续搬进来。
 - **其余十个读数上限也搬进边界表**：门闩滚动与落定的等待、门户两侧取样的帧数、跟随末尾的贴齐余量、行与栏是否成一条线的容差、动效落定的等待、远端页面跟随本机改动的时限、设置快捷方式与设置对话框的等待、状态行换词的间隔——这些常量原来各自写在场景模块里，现在住在 `packages/testing/bounds.json`，理由照抄它们原本的注释，场景经 `packages/testing/bounds.cjs` 读。
 - **宿主那张菜单卡片的查找收进一处**：账户菜单每趟刷新都要问「宿主开着的那张菜单在哪」，此前它把页面上 `[role="menu"]` 全查一遍再逐个挑出不是本插件的那张。现在这条查询由宿主访问模块记住答案（菜单是节点来了又走，答案只在页面结构变化后重查），登记表里这一条欠账随之划掉。英雄首页那一处同样的查询留给下一轮改用同一处访问器。
+- **英雄首页那张选择器卡的触发点也记住答案**：输入卡片上那个工作区触发点与首页那一行是同一个选择器的两种入口，每趟刷新都要在整份文档里找一遍；现在由一处记住的查找（结构变化才重查）供着。登记表里这一条从三处降到两处，剩下的两处要的是活清单而不是单个元素，理由写在登记里。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -47,6 +48,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The bounds a check compares against now live in one table, each with its reason**: how far behind the tail the scroller may lag, the longest frame a long session may take, how much long-task time a turn may spend — the limits on measured readings used to sit as constants in each module, and now live in `packages/testing/bounds.json`, read through `packages/testing/bounds.cjs`. Loosening one is a line in that file with its reason beside it; the remaining bounds move in as the migration continues.
 - **The other ten reading limits moved into the bounds table**: the wait for a door to roll and land, the frames sampled on each side of the doors, the slack that still counts as pinned to the row, the tolerance for a control reading as on the column's line, the wait for motion to settle, how long a remote page may take to follow a local change, the waits for the settings shortcut and dialog, and the gap the state line's wording leaves — each was a constant in a scenario module and now lives in `packages/testing/bounds.json` with the reason its own comment gave, read through `packages/testing/bounds.cjs`.
 - **The lookup for the host's open menu card moved into one place**: the account menu asked every pass where the host's open menu was, scanning every `[role="menu"]` on the page and picking the one that is not the skin's own. That lookup now goes through the host access module, which keeps the answer until the page's structure changes (a menu is a node arriving and leaving), and the ledger entry recording it as debt is struck out. The hero menu's own query of the same kind moves onto the same accessor next.
+- **The hero picker's card trigger keeps its answer too**: the workspace trigger on the composer card and the hero row are two views of the same picker, and the pass looked it up across the whole document every time; a kept lookup (re-asked only when the page's structure changes) serves it now. The ledger entry for that file drops from three lookups to two, and the two that remain want a live list rather than one element — the reason is written in the record.
 
 ## [0.15.0] - 2026-10-15
 

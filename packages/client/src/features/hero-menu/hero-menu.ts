@@ -1,5 +1,6 @@
 import { AUTO_POPOVER_ALL, HERO_MENU_ATTR } from '../../constants'
 import { MENU_ROLE_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { cacheFirstMatch } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
 import { closestFrom, createStamp } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
@@ -53,6 +54,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const GAP = 6
   /** The two triggers, and the card once it is stamped. */
   const TRIGGER_SELECTOR = '[data-dsh-claude-part~="hero-workspace-row"] [aria-haspopup="menu"]'
+
+/**
+ * The composer card's own workspace trigger, the second view of the same picker
+ * state as the row's chip: one element, kept while it stays the first match, so
+ * the pass that reads it every time pays the page's own size only when the page
+ * changed (D9).
+ */
+const findCardTrigger = cacheFirstMatch<HTMLElement>('[data-dsh-claude-part~="card-workspace-trigger"] [aria-expanded="true"]')
   const CARD_SELECTOR = `[${HERO_MENU_ATTR}]`
   /** The open card, marked with the picker it belongs to, and the trigger it was stamped for. */
   const cardStamp = createStamp<HTMLElement>(HERO_MENU_ATTR)
@@ -233,7 +242,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function openTriggers() {
     const row = rowTriggers()
     if (row.length > 0) return row
-    const card = document.querySelector<HTMLElement>('[data-dsh-claude-part~="card-workspace-trigger"] [aria-expanded="true"]')
+    const card = findCardTrigger()
     return card === null ? [] : [card]
   }
 

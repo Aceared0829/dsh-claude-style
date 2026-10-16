@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 8,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**英雄首页那张选择器卡的触发点也记住答案**：输入卡片上那个工作区触发点与首页那一行是同一个选择器的两种入口，每趟刷新都要在整份文档里找一遍；现在由一处记住的查找（结构变化才重查）供着。登记表里这一条从三处降到两处，剩下的两处要的是活清单而不是单个元素，理由写在登记里。",
+  "en": "**The hero picker's card trigger keeps its answer too**: the workspace trigger on the composer card and the hero row are two views of the same picker, and the pass looked it up across the whole document every time; a kept lookup (re-asked only when the page's structure changes) serves it now. The ledger entry for that file drops from three lookups to two, and the two that remain want a live list rather than one element — the reason is written in the record."
+}
