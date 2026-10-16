@@ -314,23 +314,42 @@
       // clock slides with it: the frames run on until the page settles.
       r.wait.silent = r.wait.silent.concat(await probe.watch(lineOf))
       r.wait.enterFrames = enterFrames
+      // The reasoning this case's turn streams, one wording at a time: the line
+      // reads it off the session's snapshot (shared/turn-activity).
+      var reason = function (text) {
+        window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: text }] } : undefined } } }]
+      }
       // Reasoning the line can take words from: the model's own clause, the
       // participle first, up to the sentence's end.
-      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }] } : undefined } } }]
+      reason('Let me look. I am checking the file is true. ')
       r.wait.phrase = await awaitWord(function (reading) { return reading.word === 'Checking the file is true' && reading.copies === 1 })
+      // A sentence carrying no clause of its own does not put the waiting word
+      // back: the clause stands until the next intent arrives (wait-state.ts).
+      reason('The user asked about the row. ')
+      await probe.settle()
+      r.wait.clauseHeld = lineOf()
       // The same kind of wording in a row with no room for it: the label gives
       // way and the words are clipped, so the clock keeps its place on the row.
       // The clause is carried whole — how much of it shows is the row's own
       // width (shared/activity-phrase) — so the reading is the whole clause with
       // the copy drawing its ellipsis.
-      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'I am checking whether the whole row model still reads the same arguments. ' }] } : undefined } } }]
+      reason('I am checking whether the whole row model still reads the same arguments. ')
       waitSession.style.maxWidth = '240px'
       r.wait.narrow = await awaitWord(function (reading) { return reading.word === 'Checking whether the whole row model still reads the same arguments' && reading.copies === 1 })
       waitSession.style.maxWidth = ''
+      // Where a sentence ends is the page's own sentence rules (shared/activity-phrase):
+      // the dot inside a file name does not end one, so the clause carries the
+      // whole name rather than the piece before its extension.
+      reason('I am reading app.js now. ')
+      r.wait.dotName = await awaitWord(function (reading) { return reading.word === 'Reading app.js now' && reading.copies === 1 })
+      // Reasoning in the model's other language hands the line the clause in its
+      // own shape (「正在…」), which the same scan reads.
+      reason('我正在读取 app.js，然后回答。')
+      r.wait.chinese = await awaitWord(function (reading) { return reading.word === '正在读取 app.js' && reading.copies === 1 })
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })
       await probe.settle()
-      window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: '先看清工作区。' }] } : undefined } } }]
+      reason('先看清工作区。')
       r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
       // The dots under that choice: read on every frame until the page settles,
       // so a motion that never stops shows up as the first and last readings

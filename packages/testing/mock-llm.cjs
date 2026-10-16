@@ -227,15 +227,18 @@ const SCRIPTS = {
   },
   /**
    * The waiting line's own words: the model reasons in an English clause it is
-   * on ("I am checking the file is true"), then reads a file, so the line has to
-   * say the model's clause while it reasons and the file's name while the call
-   * runs. Each piece is short and the pause between them is the lane's own, so
-   * every state stands long enough for the scenario to sample it.
+   * on ("I am checking the file is true"), then in a sentence carrying no clause
+   * at all, then in a second clause, and then reads a file. The line has to say
+   * the model's clause while it reasons and the file's name while the call runs,
+   * and the sentence between the two clauses must not put the waiting word back:
+   * the clause stands until the next intent arrives. Each piece is short and the
+   * pause between them is the lane's own, so every state stands long enough for
+   * the scenario to sample it.
    */
   waitLine: {
     conversation: [
       {
-        thinking: ['Let me look at the file. ', 'I am checking the file is true. '],
+        thinking: ['Let me look at the file. ', 'I am checking the file is true. ', 'The user asked about the row. ', 'I am reading the row model. '],
         tool: { name: 'read', input: { file_path: '{{workspaceCode}}/app.js' } },
       },
       { thinking: ['The read came back, so I can answer. '], text: ['看过了，答案如下。\n'] },

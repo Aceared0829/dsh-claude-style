@@ -68,9 +68,9 @@ test('reasoning that says what it is doing hands the line its own clause', () =>
 })
 
 test('a wording written stands a whole second; the newest state after it is written at once', () => {
-  const quiet = { word: null, detail: null, onCall: false, host: 'Deep diving' }
-  const thinking = { word: 'Thinking…', detail: null, onCall: false, host: 'Deep diving' }
-  const read = { word: 'Reading app.js', detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
+  const quiet = { word: null, own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const thinking = { word: 'Thinking…', own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const read = { word: 'Reading app.js', own: false, detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
   const first = wordForPass(read, undefined, 1000)
   expect(first).toEqual({ word: 'Reading app.js', row: { standing: { word: 'Reading app.js', until: 1000 + WORD_LOCK_MS } } })
   // Inside the second the newest state waits, however many arrive.
@@ -90,11 +90,11 @@ test('a wording written stands a whole second; the newest state after it is writ
 })
 
 test('a call the lock stepped over waits for it and is written ahead of the state', () => {
-  const quiet = { word: null, detail: null, onCall: false, host: 'Deep diving' }
-  const thinking = { word: 'Thinking…', detail: null, onCall: false, host: 'Deep diving' }
-  const preparing = { word: 'Preparing a tool call…', detail: null, onCall: true, host: 'Deep diving' }
-  const read = { word: 'Reading app.js', detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
-  const edit = { word: 'Editing notes.md', detail: 'Editing notes.md', onCall: false, host: 'Deep diving' }
+  const quiet = { word: null, own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const thinking = { word: 'Thinking…', own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const preparing = { word: 'Preparing a tool call…', own: false, detail: null, onCall: true, host: 'Deep diving' }
+  const read = { word: 'Reading app.js', own: false, detail: 'Reading app.js', onCall: false, host: 'Deep diving' }
+  const edit = { word: 'Editing notes.md', own: false, detail: 'Editing notes.md', onCall: false, host: 'Deep diving' }
   const first = wordForPass(thinking, undefined, 1000)
   // The read is read while the lock stands: it waits, and the state stays.
   const waiting = wordForPass(read, first.row, 1300)
@@ -112,6 +112,34 @@ test('a call the lock stepped over waits for it and is written ahead of the stat
   expect(late.row.pending).toBe('Reading app.js')
   expect(wordForPass(preparing, late.row, 2200).row.pending).toBeUndefined()
   expect(wordForPass(preparing, late.row, 2200 + WORD_LOCK_MS).word).toBe('Preparing a tool call…')
+})
+
+test('the model\'s own words stand until the next intent, through the reasoning that says nothing', () => {
+  const quiet = { word: null, own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const clause = { word: 'Checking the row model', own: true, detail: null, onCall: false, host: 'Deep diving' }
+  const writing = { word: 'Writing…', own: false, detail: null, onCall: false, host: 'Deep diving' }
+  const first = wordForPass(clause, undefined, 1000)
+  expect(first).toEqual({
+    word: 'Checking the row model',
+    row: { standing: { word: 'Checking the row model', until: 1000 + WORD_LOCK_MS }, held: 'Checking the row model' },
+  })
+  // The stretch of reasoning between two clauses reads as nothing: the clause
+  // stands rather than the brand's waiting word.
+  const between = wordForPass(quiet, first.row, 1000 + WORD_LOCK_MS + 1)
+  expect(between.word).toBe('Checking the row model')
+  expect(between.row.held).toBe('Checking the row model')
+  // A state the line can read is newer work: it takes the line, and the clause
+  // does not come back once it has gone.
+  const state = wordForPass(writing, between.row, 1000 + WORD_LOCK_MS + 200)
+  expect(state.word).toBe('Writing…')
+  expect(state.row.held).toBeUndefined()
+  const silent = wordForPass(quiet, state.row, 1000 + WORD_LOCK_MS + 200 + WORD_LOCK_MS + 1)
+  expect(silent.word).toBe('Deep diving')
+  // The waiting word holds its own second like any other wording: the next
+  // clause waits for it and then takes the line, held in its turn.
+  const newer = wordForPass({ ...clause, word: 'Reading the row model' }, silent.row, 1000 + WORD_LOCK_MS + 200 + WORD_LOCK_MS * 2 + 2)
+  expect(newer.word).toBe('Reading the row model')
+  expect(newer.row.held).toBe('Reading the row model')
 })
 
 test('the first wait of a turn counts from its start, a later one from when it was seen', () => {

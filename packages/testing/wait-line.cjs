@@ -5,13 +5,16 @@
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
  * The `waitLine` script (packages/testing/mock-llm.cjs) reasons in an English
- * clause the line can take — "I am checking the file is true" — and then reads a
- * file. The line has to say that clause as the model writes it and name the file
- * while the call is in flight, and it has to change at most once a second
- * however many states the turn passes through in between (WORD_LOCK_MS: a
- * wording shorter than the lock is passed over, and a call's own words are the
- * one thing that waits for it). The state words the lock may pass over are held
- * by the smoke case, which drives each of them on its own.
+ * clause the line can take — "I am checking the file is true" — then in a
+ * sentence carrying no clause, then in a second clause, and then reads a file.
+ * The line has to say a clause as the model writes it and name the file while
+ * the call is in flight; it has to change at most once a second however many
+ * states the turn passes through in between (WORD_LOCK_MS: a wording shorter
+ * than the lock is passed over, and a call's own words are the one thing that
+ * waits for it); and the clause it stood on has to hold the line through the
+ * stretch that says nothing, rather than falling back to the waiting word. The
+ * state words the lock may pass over are held by the smoke case, which drives
+ * each of them on its own.
  *
  * The clause is the model's own text, so it is the same in every language; the
  * file's words are copy, so they are matched in the two the document carries.
@@ -26,7 +29,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 /** The clauses the model writes, which the line says back word for word. */
-const PHRASES = ['Checking the file is true']
+const PHRASES = ['Checking the file is true', 'Reading the row model']
 /** The call the script makes, and the file whose name the line has to carry. */
 const READ_WORD = /^(Reading app\.js|正在读取 app\.js)$/
 /**
@@ -104,7 +107,10 @@ function waitLineScenario({ check }) {
   return {
     script: 'waitLine',
     prompt: 'check the file and answer',
-    delayMs: 600,
+    // A piece per lock and a half: every sentence the script writes stands long
+    // enough for the line to reach it, so what the wording does between two
+    // clauses is the line's own doing (features/chat-wait/wait-state.ts).
+    delayMs: 1400,
     /** The workspace the scratch host opens its session in, and a recorder of what the host says each call is doing. */
     async beforeSend(context) {
       const workspace = path.join(context.home, 'workspace')
@@ -172,11 +178,19 @@ function waitLineScenario({ check }) {
       const calls = await page.evaluate(() => window.__waitCalls ?? [])
       const head = notes.head ?? null
       const seats = head?.seats ?? null
+      // What stood between two clauses: the first clause the line said, up to
+      // the call's own words. The sentence carrying no clause sits inside that
+      // stretch, and nothing but a clause may stand there.
+      const firstClause = words.findIndex((word) => PHRASES.includes(word))
+      const fileWord = words.findIndex((word) => READ_WORD.test(word))
+      const held = firstClause === -1 || fileWord === -1 ? [] : words.slice(firstClause, fileWord)
       return [
         check('推理里的进行时从句由这一行自己说出来',
-          PHRASES.every((phrase) => words.includes(phrase)), JSON.stringify(words)),
+          words.some((word) => PHRASES.includes(word)), JSON.stringify(words)),
         check('调用在跑时说出它读的文件',
           words.some((word) => READ_WORD.test(word)), JSON.stringify({ words, calls })),
+        check('从句在下一次意图到达之前一直站着，中间不退回等待词',
+          held.length > 0 && held.every((word) => PHRASES.includes(word)), JSON.stringify({ words, held })),
         check('一个说法锁住一秒：状态换得再快，这一行也只一秒换一次',
           gaps.length > 0 && gaps.every((gap) => gap >= MIN_GAP_MS),
           JSON.stringify({ gaps, words })),

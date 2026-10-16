@@ -21,6 +21,7 @@
 | [D48](D48-documentation.md) | 文档分层 |  |
 | [D49](D49-visual-yield.md) | 与其他插件共存，向上游让路 | D23、D32、D55、D56、D57、D58、D63 |
 | [D66](D66-testing.md) | 测试分层 | D45 |
+| [D70](D70-clause-from-reasoning.md) | 从推理正文里读出的从句 |  |
 
 ## 作废的编号
 

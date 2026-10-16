@@ -14,18 +14,21 @@ import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-s
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
 import type { RowWords } from './wait-state'
+import type { FrameTask } from '../../core/frame'
 import type { HostChatTarget } from '@dsh-claude-style/contracts/services'
 import type { HostContext, HostText } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-wait.manifest'
 
-/** One row's line: its box, and the parts every pass writes into it. */
+/** One row's line: its box, the parts every pass writes into it, and the turn it speaks for. */
 interface WaitLine {
   line: HTMLElement
   loader: HTMLElement
   label: HTMLElement
   clock: HTMLElement
   badge: HTMLElement
+  /** What the row's wording is held under (syncRow): `session:turn` where the snapshot says it, the row itself before that. */
+  key: string | HTMLElement
 }
 
 /**
@@ -76,13 +79,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const hostWords = new Map<HTMLElement, Element>()
   /** When each turn's current wait began, by `session:turn`; absent while the model is at work. */
   const waits = new Map<string, number>()
-  /** The wording standing on each row, its lock, and the call words waiting for it (wordForPass). */
-  const wording = new Map<HTMLElement, RowWords>()
+  /**
+   * The wording standing on each row, its lock, the call words waiting for it
+   * and the model's own words to fall back on (wordForPass). Held under the turn
+   * the row speaks for where the snapshot names one: the host builds a fresh row
+   * at a step boundary, and the wording a turn stood on is the turn's, not the
+   * element's — a rebuilt row picks up the clause and the lock it had.
+   */
+  const wording = new Map<string | HTMLElement, RowWords>()
   /** Each row's follow of its own session's snapshot, and the session it follows. */
   const follows = new Map<HTMLElement, { sessionId: string, stop: () => void }>()
   let timer: number | null = null
-  let cancelTick: (() => void) | null = null
-  let queued: Promise<void> | null = null
+  /** The pass this feature has asked the next frame for, and how to take it back. */
+  let passTask: FrameTask | null = null
+  let cancelPass: (() => void) | null = null
 
   // The detail choice is read on every pass; a change of it rewrites the line
   // at once rather than waiting out the standing word's lock.
@@ -95,17 +105,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   })
 
   /**
-   * One pass per task, for the publishes the host makes: a step that streams
-   * publishes several times inside one task, while a tool call is its own task
-   * — the file it names is on the line only if that call is read between the
-   * publish that starts it and the one that settles it.
+   * One pass per frame, for the publishes the host makes and for the clock's own
+   * tick. A step that streams publishes several times inside one task and the
+   * timer asks four times a second; both want the same frame, so a burst of
+   * publishes costs one pass, and the line's writes land in the frame's write
+   * phase where the rest of the skin's do (D40). A page that is not painting
+   * runs no frame: the wording then stands with the clock until the next one.
    */
-  function scheduleSync() {
-    if (queued !== null) return
-    queued = Promise.resolve().then(() => {
-      queued = null
-      sync()
-    })
+  function schedulePass() {
+    if (passTask !== null) return
+    const task: FrameTask = { write() { passTask = null; cancelPass = null; sync() } }
+    passTask = task
+    cancelPass = requestFrame(task)
   }
 
   /**
@@ -125,7 +136,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     if (followed !== undefined && followed.sessionId === sessionId) return
     followed?.stop()
-    follows.set(row, { sessionId, stop: target.subscribe(scheduleSync) })
+    follows.set(row, { sessionId, stop: target.subscribe(schedulePass) })
   }
 
   /**
@@ -151,7 +162,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /** The line inside one row, built the first time beside the host's words. */
-  function lineOf(row: HTMLElement, words: Element): WaitLine {
+  function lineOf(row: HTMLElement, words: Element, key: string | HTMLElement): WaitLine {
     const previous = hostWords.get(row)
     if (previous !== words) {
       previous?.removeAttribute(WORDS_ATTR)
@@ -159,7 +170,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hostWords.set(row, words)
     }
     const standing = lines.get(row)
-    if (standing !== undefined && standing.line.isConnected) return standing
+    if (standing !== undefined && standing.line.isConnected) {
+      // The same row can stand for another turn (the host reuses the running
+      // row): the wording is looked up under the turn in hand from here on.
+      standing.key = key
+      return standing
+    }
     const line = buildElement('span', 'dsh-claude-chat-wait')
     line.setAttribute(QUIET_ATTR, '')
     // The host's own words are hidden while this line stands in for them
@@ -175,7 +191,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const loader = buildLoader()
     line.append(loader, label, clock, badge)
     words.after(line)
-    const parts = { line, loader, label, clock, badge }
+    const parts = { line, loader, label, clock, badge, key }
     // The line is recorded before its loader starts. wait-loader.ts refuses to
     // start a motion the stylesheet leaves without a lane, a fade length or a
     // turn to hand over; thrown from here, with the record not yet written, every
@@ -193,7 +209,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /** Bring one row's line to what the host's snapshot says now. */
-  function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>) {
+  function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>, live: Set<string>) {
     const words = row.querySelector<HTMLElement>(CHAT_RUNNING_TEXT_SELECTOR)
     if (words === null || foreignRunningLineOwns(words, lines.get(row)?.line, WORDS_ATTR)) {
       release(row)
@@ -204,7 +220,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     followRow(row, sessionId, target)
     const snapshot = target === null ? null : target.getSnapshot() ?? null
     const turn = snapshot === null ? undefined : openTurn(snapshot)
-    const line = lineOf(row, words)
+    const key: string | HTMLElement = sessionId !== null && turn !== undefined ? `${sessionId}:${turn.turn}` : row
+    if (typeof key === 'string') live.add(key)
+    const line = lineOf(row, words, key)
     const { loader, label, clock, badge } = line
     // What the turn is doing, and the one word its brand waits on for a turn
     // whose state cannot be read (D49): the line says the model's work, never a
@@ -215,26 +233,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // they are; Simple reads the bare states alone. A wording written is
     // locked for a second (wordForPass): a turn passes through several states
     // that fast, and only the newest one after the lock is worth showing; a
-    // call's own words are the one thing that waits for it.
+    // call's own words are the one thing that waits for it, and the model's own
+    // words are the one thing that stands between two of them.
     const prefs = readPrefs()
     const precise = prefs.statusDetail === true
     const activity = activityWords(snapshot, turn, precise)
     // One word stands for the model thinking and for a wait nothing can be read
     // from (shared/turn-activity): the skin's own under the Claude brand, the
-    // host's own under the DeepSeek brand.
+    // host's own under the DeepSeek brand. The thinking state answers no word of
+    // its own — that word is the one below — so the clause standing from before
+    // holds the line instead of a fallback and a return.
     const waiting = waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving', ctx))
-    const said = activity === null
+    const own = activity !== null && activity.key === null && activity.aboutCall === undefined
+    const said = activity === null || activity.key === ACTIVITY_THINKING.key
       ? null
-      : activity.key === ACTIVITY_THINKING.key
-        ? waiting
-        : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
+      : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
     const pass = wordForPass({
       word: said,
+      own,
       detail: activity !== null && activity.aboutCall === 'detail' ? said : null,
       onCall: activity !== null && activity.aboutCall === 'generic',
       host: waiting,
-    }, wording.get(row), now)
-    wording.set(row, pass.row)
+    }, wording.get(key), now)
+    wording.set(key, pass.row)
     setSwappingText(label, pass.word, true)
     // The loader no longer follows that wording: its three motions rotate on
     // their own clock (wait-loader.ts), set going once with the line itself.
@@ -284,11 +305,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       releaseSwappingText(parts.label)
       releaseWaitLoader(parts.loader)
       parts.line.remove()
+      // A row standing for no turn holds its own wording; one standing for a
+      // turn leaves it to that turn, which the next pass of the same turn picks
+      // up again in whatever row the host gives it (syncRow).
+      if (typeof parts.key !== 'string') wording.delete(parts.key)
     }
     lines.delete(row)
     hostWords.get(row)?.removeAttribute(WORDS_ATTR)
     hostWords.delete(row)
-    wording.delete(row)
     follows.get(row)?.stop()
     follows.delete(row)
     row.removeAttribute(WAIT_ATTR)
@@ -299,7 +323,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const rows = t === null ? [] : runningRows.all()
     const now = Date.now()
     const seen = new Set<string>()
-    for (const row of rows) syncRow(row, t!, now, seen)
+    const live = new Set<string>()
+    for (const row of rows) syncRow(row, t!, now, seen, live)
     // The pass releases the lines of every row the host took away, and a long
     // conversation leaves many behind at once: a membership test per standing
     // line against the running list is the square of the two.
@@ -307,17 +332,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const row of [...lines.keys()]) {
       if (!running.has(row)) release(row)
     }
-    // A wait the model ended, or a turn that closed, starts over next time.
+    // A wait the model ended, or a turn that closed, starts over next time; a
+    // turn no row speaks for any more forgets the wording it stood on.
     for (const key of [...waits.keys()]) {
       if (!seen.has(key)) waits.delete(key)
     }
+    for (const key of [...wording.keys()]) {
+      if (typeof key === 'string' && !live.has(key)) wording.delete(key)
+    }
     // Yielded rows stay watched: style-only ownership changes must restore the line.
-    if (rows.length > 0 && timer === null) {
-      timer = window.setInterval(() => {
-        if (cancelTick !== null) return
-        cancelTick = requestFrame({ write() { cancelTick = null; sync() } })
-      }, TICK_MS)
-    } else if (rows.length === 0 && timer !== null) {
+    if (rows.length > 0 && timer === null) timer = window.setInterval(schedulePass, TICK_MS)
+    else if (rows.length === 0 && timer !== null) {
       window.clearInterval(timer)
       timer = null
     }
@@ -330,8 +355,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     runningRows.release()
     if (timer !== null) window.clearInterval(timer)
     timer = null
-    if (cancelTick !== null) cancelTick()
-    cancelTick = null
+    if (cancelPass !== null) cancelPass()
+    cancelPass = null
+    passTask = null
     for (const row of [...lines.keys()]) release(row)
     for (const row of document.querySelectorAll(`[${WAIT_ATTR}]`)) row.removeAttribute(WAIT_ATTR)
     waits.clear()

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 38,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**状态行里的从句站到下一次意图到达为止**：模型在快速输出时每秒写下好几个句子，从句与从句之间那几拍（推理读作「正在思考」，或刚起一步还没写下什么）此前会把刚说出的从句顶掉，读者看到的是一句话闪一下就退回「正在思考」，再闪一下又说下一句。现在模型自己那句从句在下一次意图到达之前一直站着——新的从句、调用自带的说法，或写回答、调用工具这类状态一到才改口；「精确状态行」关掉时不读从句，这一条不适用。一个说法锁一秒的规则不变，这条锁也因此落在说法上而不是落在行上：宿主在步骤之间重建那一行时，这一轮站着的说法与它的锁跟着这一轮走，不会重新从零开始。",
+  "en": "**The status line's clause stands until the next intent arrives**: a model writing fast ends several sentences a second, and the stretches between its clauses — the reasoning reading as the bare thinking state, or a step that has written nothing yet — used to take the clause that had just been said off the line, so the reader saw a clause flash, fall back to \"Thinking…\", and flash again with the next one. The model's own clause now stands until the next intent arrives: a newer clause, a call's own words, or a state such as writing or running a tool. With the Precise status line switched off no clause is read and none of this applies. The one-second lock on a wording is unchanged, and it now rests on the wording rather than on the row: when the host builds a fresh row between steps, the wording that turn stood on and its lock travel with the turn instead of starting over."
+}

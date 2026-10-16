@@ -524,12 +524,21 @@ module.exports = {
     const phrase = wait.phrase || {}
     check('reasoning the line can take words from says the model\'s own clause',
       phrase.word === 'Checking the file is true' && phrase.copies === 1, JSON.stringify(phrase))
+    const clauseHeld = wait.clauseHeld || {}
+    check('从句在下一次意图到达之前一直站着，中间不退回等待词',
+      clauseHeld.word === 'Checking the file is true', JSON.stringify(clauseHeld))
     const narrow = wait.narrow || {}
     check('a wording with no room is carried whole and clipped where the row ends, and the clock stays on the row',
       narrow.box?.clipped === true && narrow.box.labelRight <= narrow.box.lineRight + 1 &&
         narrow.box.clockLeft < narrow.box.rowRight && narrow.box.clockRight <= narrow.box.rowRight + 1 &&
         narrow.word === 'Checking whether the whole row model still reads the same arguments',
       JSON.stringify({ word: narrow.word, box: narrow.box }))
+    const dotName = wait.dotName || {}
+    check('the dot inside a file name does not end the sentence: the clause carries the whole name',
+      dotName.word === 'Reading app.js now', JSON.stringify(dotName))
+    const chinese = wait.chinese || {}
+    check('reasoning in Chinese hands the line its own clause too',
+      chinese.word === '正在读取 app.js', JSON.stringify(chinese))
     const reduced = wait.reduced || {}
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
       reduced.word === 'Thinking…' && reduced.phase === null && reduced.copies === 1 && reduced.displayed === 'Thinking…',
