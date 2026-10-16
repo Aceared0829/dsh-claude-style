@@ -1,7 +1,7 @@
 import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
 import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
-import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
+import { currentPreset, currentSession, findAccessTrigger, hostLocale, hostRemote, hostRemotePermissionPresets } from '../../core/host'
 import { activeLocale } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
@@ -92,7 +92,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function hostPresetLabel(preset: string): string {
     const key = PERMISSION_HOST_LABEL_KEYS[preset]
     if (key === undefined || !readsHostTierNames()) return ''
-    const locale = ctx.get('locale')
+    const locale = hostLocale(ctx)
     if (typeof locale?.bind !== 'function') return ''
     const text: string = locale.bind(PERMISSION_ACCESS_NAMESPACE)(key)
     if (typeof text !== 'string' || text === '' || text === key) return ''
@@ -193,7 +193,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   function probeAutoPreset() {
-    const namespace = ctx.get('remote.permissionPresets')
+    const namespace = hostRemotePermissionPresets(ctx)
     if (typeof namespace?.catalog !== 'function') {
       if (typeof ctx.inject !== 'function') {
         autoPresetError = new Error('permission: the host exposes no remote.permissionPresets catalog')
@@ -251,7 +251,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     } else {
       probeAutoPreset()
     }
-    const remoteRoot = ctx.get('remote')
+    const remoteRoot = hostRemote(ctx)
     if (typeof remoteRoot?.$on === 'function') {
       catalogChangedDisposer = remoteRoot.$on('permission-presets/catalog-changed', () => {
         probeAutoPreset()

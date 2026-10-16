@@ -1,4 +1,4 @@
-import { findChatTarget, readTurnActivity } from '../../core/host'
+import { findChatTarget, hostSessions, hostUiSession, readTurnActivity } from '../../core/host'
 import type { HostContext } from '../../core/host'
 import type { HostChatSnapshot, HostChatTarget, HostFeedEntry, HostSessionEvent, HostSessionListSnapshot, HostSessionStatusSnapshot, HostSnapshotSource, HostSubagentEntry } from '@dsh-claude-style/contracts/services'
 
@@ -151,7 +151,7 @@ export function createMascotSignals(ctx: HostContext, onMoment: (moment: MascotM
   let stopStatus: (() => void) | null = null
 
   function statusOf(): HostSessionStatusSnapshot | null {
-    const source = ctx.get('uiSession')?.sessionStatus
+    const source = hostUiSession(ctx)?.sessionStatus
     if (source !== statusSource) {
       if (stopStatus !== null) stopStatus()
       statusSource = source
@@ -161,7 +161,7 @@ export function createMascotSignals(ctx: HostContext, onMoment: (moment: MascotM
   }
 
   function listOf(): HostSessionListSnapshot | null {
-    const list = ctx.get('sessions')?.list
+    const list = hostSessions(ctx)?.list
     return typeof list?.getSnapshot === 'function' ? list.getSnapshot() : null
   }
 
@@ -247,7 +247,7 @@ export function createMascotSignals(ctx: HostContext, onMoment: (moment: MascotM
     unfollow()
     followed = sessionId
     if (sessionId === null) return
-    const feed = ctx.get('sessions')?.binding(sessionId)?.eventSource
+    const feed = hostSessions(ctx)?.binding(sessionId)?.eventSource
     if (typeof feed?.subscribe !== 'function') {
       followed = undefined
       return
@@ -271,8 +271,9 @@ export function createMascotSignals(ctx: HostContext, onMoment: (moment: MascotM
         return
       }
       if (change.kind !== 'append') return
-      for (let i = 0; i < change.entries.length; i++) {
-        if (change.entries[i].type === 'event') take(change.entries[i].event)
+      const arrived = change.entries ?? []
+      for (let i = 0; i < arrived.length; i++) {
+        if (arrived[i].type === 'event') take(arrived[i].event)
       }
     })
   }

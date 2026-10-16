@@ -1,5 +1,5 @@
 import { MODEL_EFFORT_DEFAULT } from './copy-fallbacks'
-import { currentSessionId } from '../../core/host'
+import { currentSessionId, hostModelDirectories, hostSessions } from '../../core/host'
 import type { HostContext } from '../../core/host'
 import type { HostModelCatalogSnapshot, HostModelDirectory, HostModelEntry, HostModelGroup, HostModelReasoning } from '@dsh-claude-style/contracts/services'
 import { notifyAll } from '@dsh-claude-style/engine/notify'
@@ -45,7 +45,7 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
    * resolves to null on current hosts and the picker never loads.
    */
   function currentModelSessionId() {
-    const sessions = ctx.get('sessions')
+    const sessions = hostSessions(ctx)
     if (sessions === undefined || sessions === null) return null
     return currentSessionId(ctx, sessions) ?? null
   }
@@ -68,7 +68,7 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
     dropSubscription()
     modelDir = null
     modelSessionId = null
-    const dirs = ctx.get('modelDirectories')
+    const dirs = hostModelDirectories(ctx)
     if (typeof dirs?.directoryFor === 'function') {
       try {
         modelDir = dirs.directoryFor(id)

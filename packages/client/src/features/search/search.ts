@@ -4,7 +4,7 @@ import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
-import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, sessionOutline, turnForSeq } from '../../core/host'
+import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, hostShortcuts, sessionOutline, turnForSeq } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
 import type { ContentHit, SearchFilter, SearchRow } from './sources'
@@ -221,7 +221,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   let triggerKeys: string | null = null
   function syncTriggerKeys(group: Element) {
-    const shortcuts = ctx.get('shortcuts')
+    const shortcuts = hostShortcuts(ctx)
     let keys: string[] = []
     if (shortcuts) {
       const rows = shortcuts.catalog.getSnapshot()

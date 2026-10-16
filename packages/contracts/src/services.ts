@@ -69,7 +69,8 @@ export interface HostWorkspacesService {
 export interface HostShortcutRow {
   id: string
   label?: string
-  keys?: string[]
+  /** The keycaps the command answers to; empty where the host names none. */
+  keys: string[]
   aliases?: string[]
 }
 
@@ -79,11 +80,26 @@ export interface HostShortcutsService {
   fixedCatalog: HostSnapshotSource<HostShortcutRow[]>
 }
 
-/** The `slots` service: what is registered under a key, and how a plugin adds its own. */
+/**
+ * The `slots` service: what is registered under a key, and how a plugin adds its
+ * own. `inject` waits for the host to declare a slot and `register` hands one
+ * entry over, each answering the function that takes it back (D42).
+ */
 export interface HostSlotsService {
   entries(key: string): HostSlotRegistration[]
-  register(key: string, id: string, component: unknown): unknown
-  inject?(key: string, id: string, component: unknown): unknown
+  inject(key: string, callback: () => (() => void) | void): () => void
+  register(options: HostSlotOptions, component: unknown): () => void
+}
+
+/** One entry's own declaration: the slot it fills, the key or id it stands under, and where it stands among the others. */
+export interface HostSlotOptions {
+  name?: string
+  id?: string
+  key?: string
+  order?: number
+  priority?: number
+  locale?: string
+  label?(): string
 }
 
 /** One registered slot entry: how it was declared, and the store it hands out. */
@@ -138,7 +154,7 @@ export interface HostSkillListAnswer {
  * A session binding's own context, which the conversation service keys its
  * input by; the plugin's `HostContext` satisfies it by shape.
  */
-interface HostServiceLookup {
+export interface HostServiceLookup {
   get(name: string): any
 }
 
@@ -155,7 +171,7 @@ export interface HostConversationInput {
 }
 
 /** The `modelDirectories` service: one session's model directory, by session id. */
-interface HostModelDirectoriesService {
+export interface HostModelDirectoriesService {
   directoryFor(sessionId: string): HostModelDirectory
 }
 
@@ -315,9 +331,15 @@ export interface HostSessionsService {
  */
 export interface HostSessionBinding {
   session?: HostSession
-  eventSource?: HostSnapshotSource<{ entries: HostFeedEntry[] }>
+  eventSource?: HostSnapshotSource<{ entries: HostFeedEntry[], change: HostFeedChange }>
   /** The binding's own context, which its services are read through. */
   ctx: HostServiceLookup
+}
+
+/** What the feed's last change was: whether the compaction list was replaced, or one entry arrived. */
+export interface HostFeedChange {
+  kind: string
+  entries?: HostFeedEntry[]
 }
 
 /** One session: its projections, which the skin reads by face name, its state, and its command seat. */
@@ -438,7 +460,7 @@ export interface HostRunningCall extends HostChatBlock {
 }
 
 /** The `locale` service: a namespace's translate seat, and its raw resolver. */
-interface HostLocaleService {
+export interface HostLocaleService {
   bind(namespace: string): HostText
   resolveText?(key: string, params?: Record<string, string | number>): unknown
 }

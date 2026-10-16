@@ -1,5 +1,5 @@
 import { CLIENT_VERSION } from 'virtual:dsh-claude-style/generated'
-import { setAccountIdentity } from '../../core/host'
+import { hostRemote, hostRemoteAccount, setAccountIdentity } from '../../core/host'
 import { activeLocale } from '../../core/i18n'
 import type { HostContext, HostFiber } from '../../core/host'
 import type { HostAccountAnswer, HostAccountClient, HostAccountFrame, HostAccountService, HostStream, HostStreamStep } from '@dsh-claude-style/contracts/services'
@@ -28,7 +28,7 @@ export function createAccountProfile(ctx: HostContext, onChange: () => void) {
   let accountRetries = 0
 
   function accountService(): HostAccountService | null {
-    return ctx.get('remote.account') ?? null
+    return hostRemoteAccount(ctx)
   }
 
   /**
@@ -157,7 +157,7 @@ export function createAccountProfile(ctx: HostContext, onChange: () => void) {
    */
   function followAccount() {
     const account = accountService()
-    const remote = ctx.get('remote')
+    const remote = hostRemote(ctx)
     if (account === null || typeof account.watch !== 'function' || typeof remote?.$stream !== 'function') return false
     const stream = remote.$stream({
       name: 'dsh-claude-style account',

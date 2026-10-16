@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom/client'
 import { PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } from '../../constants'
 import type { Prefs } from '../../constants'
-import { COMPOSER_STACK, cacheFirstMatch } from '../../core/host'
+import { COMPOSER_STACK, cacheFirstMatch, hostSlots } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
 import { HOME_RANGES, createHomeUsage, homePanelData } from './data'
@@ -225,7 +225,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function registerPanel() {
     if (typeof ctx.inject !== 'function') return
     slotsFiber = ctx.inject(['slots'], scope => {
-      const slots = scope.get('slots')
+      const slots = hostSlots(scope)
       if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
       scope.effect(() => slots.inject(DOCK_SLOT, () => // A list seat keys its entries by id; the dock also carries the
       // host's todo, queue and goal bars, so the id is what keeps this

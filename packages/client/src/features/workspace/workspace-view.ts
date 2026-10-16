@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SESSION_DELETE_ROUTE } from '../../constants'
-import { findSidebarRoot } from '../../core/host'
+import { findSidebarRoot, hostLocale } from '../../core/host'
 import { observeMatches } from '@dsh-claude-style/engine/bus'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 import { buildElement, closestFrom, createStamp } from '@dsh-claude-style/engine/dom'
@@ -233,7 +233,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** The host's own notice for a clicked archived row (`toast.archivedNotOpenable`). */
   function notifyArchivedNotOpenable() {
-    const t = ctx.get('locale').bind('workspace')
+    const t = hostLocale(ctx)!.bind('workspace')
     notifyToast(t('toast.archivedNotOpenable'))
   }
 

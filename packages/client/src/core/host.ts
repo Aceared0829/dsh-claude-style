@@ -1,6 +1,6 @@
 import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRemoteSettings, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { closestFrom } from '@dsh-claude-style/engine/dom'
@@ -438,8 +438,89 @@ export function resolveAvatarUrl() {
   return ''
 }
 
-/** Host context reference for services that read host state outside apply(ctx)'s call stack. */
+/**
+ * Host context reference for services that read host state outside apply(ctx)'s call stack.
+ */
 export let hostCtx: HostContext | null = null
+/**
+ * The host's client services, each read here once (D3).
+ *
+ * A feature asks for what it does with a service, not for the service's name:
+ * the name, the shape it is read as, and the answer where the host carries none
+ * live in this module, so a host that renames one is answered here. The ones
+ * whose shape the contract does not type come back as `HostValue`, and the
+ * reader keeps the check it had.
+ */
+
+/** The session list, and the binding each session's chat is read through. */
+export function hostSessions(lookup: HostServiceLookup | null | undefined): HostSessionsService | null {
+  const sessions = lookup?.get('sessions') as HostSessionsService | undefined
+  return sessions ?? null
+}
+
+/** The shown session's own state: which session it is, and how its turn is going. */
+export function hostUiSession(lookup: HostServiceLookup | null | undefined): HostUiSessionService | null {
+  const uiSession = lookup?.get('uiSession') as HostUiSessionService | undefined
+  return uiSession ?? null
+}
+
+/** One session's model directory: the catalog, its load and the pick. */
+export function hostModelDirectories(lookup: HostServiceLookup | null | undefined): HostModelDirectoriesService | null {
+  const directories = lookup?.get('modelDirectories') as HostModelDirectoriesService | undefined
+  return directories ?? null
+}
+
+/** The shell's language, and the namespaces it translates. */
+export function hostLocale(lookup: HostServiceLookup | null | undefined): HostLocaleService | null {
+  const locale = lookup?.get('locale') as HostLocaleService | undefined
+  return locale ?? null
+}
+
+/** One session's conversation service, the chat target's own reader. */
+export function hostConversation(lookup: HostServiceLookup | null | undefined): HostConversationService | null {
+  const conversation = lookup?.get('conversation') as HostConversationService | undefined
+  return conversation ?? null
+}
+
+/** The reader's own keyboard shortcuts. */
+export function hostShortcuts(lookup: HostServiceLookup | null | undefined): HostShortcutsService | null {
+  const shortcuts = lookup?.get('shortcuts') as HostShortcutsService | undefined
+  return shortcuts ?? null
+}
+
+/** The slot registry, read from the scope that injected it (D11). */
+export function hostSlots(lookup: HostServiceLookup): HostSlotsService | null {
+  const slots = lookup.get('slots') as HostSlotsService | undefined
+  return slots ?? null
+}
+
+/** The client remote: the endpoint every service behind it is reached through. */
+export function hostRemote(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote')
+}
+
+/** The account service behind the remote. */
+export function hostRemoteAccount(lookup: HostServiceLookup | null | undefined): HostAccountService | null {
+  const account = lookup?.get('remote.account') as HostAccountService | undefined
+  return account ?? null
+}
+
+/** The session service behind the remote: the list, and the shown session. */
+export function hostRemoteSession(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote.session')
+}
+
+/** The permission presets the host serves, behind the remote. */
+export function hostRemotePermissionPresets(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote.permissionPresets')
+}
+
+/** The settings document behind the remote, on a page with no writable form (D11). */
+export function hostRemoteSettings(ctx: HostServiceLookup): HostRemoteSettings | null {
+  const settings = ctx.get('remote.settings') as HostRemoteSettings | undefined
+  return settings ?? null
+}
+
 export function setHostContext(ctx: HostContext | null) {
   hostCtx = ctx
   // A new host context means a new OS user and a new launcher, so the next

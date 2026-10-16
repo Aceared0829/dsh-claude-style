@@ -12,6 +12,7 @@ import type { HostContext, HostFiber, HostText } from '../../core/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-files.manifest'
+import { hostSlots } from '../../core/host'
 
 /** The seat's owner payload for a file tool row, plus the seat's copy. */
 interface ChatFileRowProps {
@@ -316,7 +317,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let slotsFiber: HostFiber | null = null
   if (typeof ctx.inject === 'function') {
     slotsFiber = ctx.inject(['slots'], scope => {
-      const slots = scope.get('slots')
+      const slots = hostSlots(scope)
       if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
       /** The three keys' registrations, or null while they are not claimed. */
       let seatStops: (() => void) | null = null

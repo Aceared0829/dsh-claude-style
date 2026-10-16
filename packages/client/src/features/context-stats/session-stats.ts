@@ -1,4 +1,4 @@
-import { conversationSessionId, findConversationSession } from '../../core/host'
+import { conversationSessionId, findConversationSession, hostSessions } from '../../core/host'
 import { hostChatSeat } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { STATS_POSITION_INLINE } from '../../constants'
@@ -68,7 +68,7 @@ export function createSessionStats(ctx: HostContext) {
    * session or its projections cannot be reached.
    */
   function statsFaces(sessionId: string) {
-    const sessions = ctx.get('sessions')
+    const sessions = hostSessions(ctx)
     const binding = typeof sessions?.binding === 'function' ? sessions.binding(sessionId) : undefined
     const projections = binding?.session?.projections
     if (typeof projections?.faceOf !== 'function') return null

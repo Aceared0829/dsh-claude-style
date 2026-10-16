@@ -3,7 +3,7 @@ import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATT
 import { SEGMENT_CLASS } from '../../shared/segment-control'
 import { loadModelCopy, onModelCopyLoaded } from '../../core/model-copy'
 import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
-import { cacheFirstMatch } from '../../core/host'
+import { cacheFirstMatch, hostSlots } from '../../core/host'
 import { motionMs } from '../../shared/motion'
 import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './settings-controls'
 import { createSettingsAppearanceTab } from './settings-tab-appearance'
@@ -391,7 +391,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
   if (typeof ctx.inject !== 'function') return stopThemeFlip
   const fiber = ctx.inject(['slots'], scope => {
-    const slots = scope.get('slots')
+    const slots = hostSlots(scope)
     if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
     slotsApi = slots
     // 0.1.7 keeps a bundle's own configuration on the plugin's page: the

@@ -200,7 +200,7 @@ if (copies.status !== 0) {
 // not counted: the browser answers it from its own index rather than by walking
 // the tree. The sanctioned readers are the accessors and registries that cache
 // their answer — packages/client/src/core/host.ts, core/bus.ts, shared/chat-dom.ts, and
-// the sheet core/stylesheet.ts mounts itself. Every other site is recorded in
+// the sheet the engine's stylesheet.ts mounts itself. Every other site is recorded in
 // packages/testing/document-lookups.json with the reason it is still there: a
 // file's count has to match its entry, and an entry whose count reaches zero
 // comes out of the file. That the record's total never rises is held against
@@ -209,7 +209,7 @@ const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|do
 const LOOKUP_OWNERS = new Set([
   'packages/client/src/core/host.ts',
   'packages/engine/src/bus.ts',
-  'packages/client/src/core/stylesheet.ts',
+  'packages/engine/src/stylesheet.ts',
   'packages/engine/src/chat-dom.ts',
 ])
 const recordedLookups = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'document-lookups.json'), 'utf8')).files

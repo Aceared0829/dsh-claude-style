@@ -7,6 +7,7 @@ import type { HostRemoteListAnswer, HostSessionRow } from '@dsh-claude-style/con
 import type { UsageAnswer, UsageDay, UsageModel, UsageReport, UsageTotals } from '@dsh-claude-style/contracts/usage'
 import { copy } from './copy'
 import type { CopyKey } from './copy'
+import { hostRemoteSession } from '../../core/host'
 
 /**
  * The roll-up store's snapshot: the route's last answer (the host half's
@@ -368,7 +369,7 @@ export function createHomeUsage(ctx: HostContext) {
   /** Read the session list once; a host without the remote service keeps the route's answer. */
   function loadSessionSummary() {
     if (disposed || listLoading || listSummary !== null) return
-    const sessions = ctx.get('remote.session')
+    const sessions = hostRemoteSession(ctx)
     if (sessions === undefined || sessions === null || typeof sessions.list !== 'function') return
     listLoading = true
     sessions.list({}).then((result: HostRemoteListAnswer) => {

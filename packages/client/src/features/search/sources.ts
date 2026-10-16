@@ -1,5 +1,5 @@
 import { SESSION_SEARCH_ROUTE } from '../../constants'
-import { currentSessionId } from '../../core/host'
+import { currentSessionId, hostConversation } from '../../core/host'
 import type { HostContext, HostValue } from '../../core/host'
 import type { ContentHit, SearchAnswer } from '@dsh-claude-style/contracts/usage'
 import type { HostBundleListAnswer, HostConversationInput, HostConversationService, HostInventoryAnswer, HostPluginBundle, HostSessionBinding, HostSessionSummary, HostShortcutRow, HostShortcutsService, HostSkill, HostSkillListAnswer, HostSlotsService, HostSlotStore, HostWorkspaceListSnapshot } from '@dsh-claude-style/contracts/services'
@@ -309,7 +309,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
    * back to the composer: a leading `/name` is how the host invokes a skill.
    */
   function insertSkill(binding: HostSessionBinding, name: string) {
-    const conversation = binding.ctx.get('conversation')
+    const conversation = hostConversation(binding.ctx)
     if (!conversation) throw new Error('search: the conversation service is not available')
     const input = conversation.input.for(binding.ctx)
     const draft = input.state.getSnapshot().draft
