@@ -97,6 +97,8 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run smoke
+      # What that walk read, against the committed appearance snapshot (D00, 外观层).
+      - run: node packages/testing/appearance.cjs
       # The assembled host on the pinned version, walked over the scenario
       # table's own default walk: what a pull request runs is what the promotion
       # waits on (D66).

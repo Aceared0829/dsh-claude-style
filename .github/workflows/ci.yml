@@ -115,6 +115,14 @@ jobs:
       # flag, and npm would read a flag of its own rather than pass it on.
       - run: node packages/testing/smoke.cjs ${{ needs.changed.outputs.smoke }}
         timeout-minutes: 30
+      # The appearance snapshot against what that walk read (D00, 外观层). The
+      # lane is where the judgement is made: only the fonts this checkout ships
+      # are in play, so a snapshot recorded on another platform is a reference
+      # rather than the answer. A failed walk still reports here, so one run
+      # carries both the behaviour failure and the appearance difference.
+      - run: node packages/testing/appearance.cjs
+        if: always()
+        timeout-minutes: 5
 
   # The readers' desktop runs on Windows, and the host half reads session
   # directories, drive-letter paths and file times there (D69).

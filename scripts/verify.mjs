@@ -48,6 +48,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
+import { changedPaths } from './shared/changed-paths.mjs'
 import { SKIPPED, TREES, treeHash } from './shared/tree-hash.mjs'
 import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
 
@@ -82,30 +83,6 @@ function bad(message) {
 const UNIT_SOURCES = ['packages/client/src', 'packages/contracts/src']
 
 /**
- * Every path the working tree has changed under those sources, as `git status`
- * reports them: a session edits files and runs the iteration tier long before it
- * commits, so the working tree is the change the tier answers about. Untracked
- * files count — a test written beside its module has to run.
- */
-function changedUnderSources() {
-  const out = execFileSync('git', ['status', '--porcelain', '-z', '--', ...UNIT_SOURCES], { cwd: ROOT, encoding: 'utf8' })
-  const parts = out.split('\0')
-  const paths = []
-  for (let at = 0; at < parts.length; at += 1) {
-    const entry = parts[at]
-    if (entry.length === 0) continue
-    const status = entry.slice(0, 2)
-    const file = entry.slice(3)
-    // A file the change removed has nothing for the lane to read; its tests are
-    // reached through whatever still imports it.
-    if (file !== '' && fs.existsSync(path.join(ROOT, file))) paths.push(file)
-    // A rename or a copy states its original path in the part after this one.
-    if (status.includes('R') || status.includes('C')) at += 1
-  }
-  return paths
-}
-
-/**
  * The unit gate of a request: the whole lane, or — for the iteration tier — the
  * tests the working tree's change reaches, which is what makes that tier answer
  * in seconds while a session is editing. A tree with no change under the
@@ -114,7 +91,7 @@ function changedUnderSources() {
  */
 function unitGate(iteration) {
   if (!iteration) return { id: 'unit', script: VITEST, args: ['run'] }
-  const changed = changedUnderSources()
+  const changed = changedPaths(...UNIT_SOURCES)
   if (changed.length === 0) return { id: 'unit', script: VITEST, args: ['run'] }
   return { id: 'unit', script: VITEST, args: ['related', ...changed] }
 }
@@ -223,6 +200,10 @@ function gatesFor(request) {
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
+    // The appearance snapshot against the last walk's reading, and the rule that
+    // a snapshot only moves with the sheets that draw the pages (D00, 外观层).
+    { id: 'appearance', script: 'packages/testing/appearance.cjs', args: [] },
+    { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--tree'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]

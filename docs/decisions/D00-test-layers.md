@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：分发与流程
 - **关联**：取代 D66；D40、D42、D44、D46、D47、D51、D69
-- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；跟随的追赶与流式滑行已改读页面逐帧记下的位置序列（`smoke/probe/chat-motion.js` 的 `recordWalk`），冒烟与端到端其余动效检查仍读钟点、帧数与像素；静置的判定已经是「连续帧没有新的趟、一段墙钟没有新的趟，且没有仍在运行的有限动画」（`smoke/probe/settle.js`）；`shots` 场景只截图给人看；端到端每个场景各起一个宿主实例。边界住在 `packages/testing/bounds.json`（现存二十四条，含跟随的七条），由 `packages/testing/bounds.cjs` 读，`scripts/lint.mjs` 的第九条规则核对每条有名字、有限值与理由，且没有无人读的条目；检查表达式里的其余字面量逐条记在 `packages/testing/check-numbers.json` 里，闸门核对这份记录。外观快照与 `scripts/ci-scope.mjs` 的约束要等外观层落地。迁移完成之前，以现状为准修改代码。
+- **现状**：入口、锁、结论缓存与各档参数已由 `scripts/verify.mjs` 实施，其中已有 `appearance` 与 `scope` 两条闸门。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；跟随的追赶与流式滑行已改读页面逐帧记下的位置序列（`smoke/probe/chat-motion.js`），其余动效检查仍读钟点、帧数与像素；静置的判定已经是「连续帧没有新的趟、一段墙钟没有新的趟，且没有仍在运行的有限动画」；`shots` 场景只截图给人看；端到端每个场景各起一个宿主实例。边界住在 `packages/testing/bounds.json`（二十四条），由 `bounds.cjs` 读，`scripts/lint.mjs` 的第九条规则核对每条有名字、有限值与理由；检查表达式里的其余字面量记在 `packages/testing/check-numbers.json` 里。外观快照已落地：每个页面状态按部件记一份计算值快照，只收与字体无关的属性；`scripts/ci-scope.mjs` 已能拒绝「快照变了而 `packages/client/src` 没变」的那次改动。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 

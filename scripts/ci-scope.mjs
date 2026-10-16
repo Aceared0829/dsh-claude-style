@@ -11,7 +11,14 @@
  * selection is one the smoke accepts, and a change it cannot place falls back to
  * the whole walk.
  *
- * Usage: node scripts/ci-scope.mjs [--base <ref> | --all | --files <path>] [--print]
+ * It also holds the one push this cannot accept: a change to the appearance
+ * snapshot (`packages/testing/appearance.json`) with no change under
+ * `packages/client/src` (D00, 外观层). The snapshot is what the pages look like,
+ * so it only moves when what draws them moved; a push that carries it alone is
+ * a snapshot recorded by hand, and `--appearance` fails it. A snapshot the base
+ * does not hold at all is the layer's own arrival, which is no page's change.
+ *
+ * Usage: node scripts/ci-scope.mjs [--base <ref> | --all | --files <path>] [--print] [--appearance]
  *        --base diffs that ref against this commit (an all-zero ref means a new
  *        branch, which diffs against master's merge base). A merge queue entry
  *        and a manual run judge the whole tree whatever the base says: neither
@@ -20,12 +27,14 @@
  *        from a machine with no event to read; --files reads the changed paths
  *        from that file, one per line, for trying the mapping itself. --print
  *        writes the answers to stdout; without it they are appended to
- *        `$GITHUB_OUTPUT`.
+ *        `$GITHUB_OUTPUT`. --appearance fails the run over the snapshot push
+ *        instead of answering for the jobs.
  */
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { changedPaths } from './shared/changed-paths.mjs'
 import { treeHash } from './shared/tree-hash.mjs'
 
 const require = createRequire(import.meta.url)
@@ -43,6 +52,17 @@ const argOf = (flag) => {
  */
 const UNREAD = [/^docs\//, /^locale\//, /^\.github\//, /\.md$/, /^LICENSE$/, /^THIRD_PARTY_NOTICES\.txt$/]
 
+/**
+ * The snapshot whose change stands for the pages themselves, and the sources
+ * whose change is what may move it. Only the client's own sources count: the
+ * snapshot is the computation of the sheets those sources carry, and the list
+ * of parts read beside it (packages/testing/appearance-parts.json) is the one
+ * testing file that decides the reading.
+ */
+const APPEARANCE = 'packages/testing/appearance.json'
+const APPEARANCE_PARTS = 'packages/testing/appearance-parts.json'
+const APPEARANCE_SOURCES = [/^packages\/client\/src\//]
+
 function git(...argv) {
   const result = spawnSync('git', argv, { cwd: ROOT, encoding: 'utf8' })
   if (result.status !== 0) throw new Error(`git ${argv.join(' ')} failed: ${result.stderr.trim()}`)
@@ -59,6 +79,15 @@ function holds(revision) {
   return spawnSync('git', ['rev-parse', '--verify', '--quiet', `${revision}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).status === 0
 }
 
+/**
+ * Every path the working tree has changed, a file the change removed included:
+ * the snapshot rule has to see a path that is gone as well, or a push that took
+ * the snapshot down would read as no change at all.
+ */
+function workingTreePaths() {
+  return changedPaths()
+}
+
 /** The paths this push changed, by the base the caller named. */
 function changedFiles() {
   // A list read from a file answers the same question without a checkout to
@@ -67,6 +96,11 @@ function changedFiles() {
   if (listed !== undefined) {
     return fs.readFileSync(listed, 'utf8').split('\n').map((line) => line.trim()).filter(Boolean)
   }
+  // The working tree, for the snapshot rule: a session records the snapshot
+  // before it commits, so both the file and the sources that moved it are still
+  // uncommitted when the rule is asked. Every other question is about a push,
+  // which is read from the base below.
+  if (args.includes('--tree')) return workingTreePaths()
   // A queue entry and a manual run judge the whole tree: neither is a push whose
   // change can be read off the event, and both are asked for on purpose.
   const event = process.env.GITHUB_EVENT_NAME ?? ''
@@ -108,7 +142,35 @@ function scope(files) {
   return { code, smoke, tree: treeHash(ROOT).hash }
 }
 
-const answers = scope(changedFiles())
+/**
+ * The one push the mapping refuses: the appearance snapshot moved and nothing
+ * under `packages/client/src` did. The snapshot is written by a smoke walk
+ * (packages/testing/appearance.cjs), so a push carrying it alone is a snapshot
+ * recorded by hand — it would accept whatever the page happened to look like on
+ * the machine that wrote it, with no change to the sheets to say why. A snapshot
+ * the base does not hold is the layer arriving, not a page changing, and stands.
+ */
+function refuseSnapshotAlone(files) {
+  if (!files.includes(APPEARANCE)) return
+  const moved = files.filter((file) => APPEARANCE_SOURCES.some((pattern) => pattern.test(file)))
+  if (moved.length > 0 || files.includes(APPEARANCE_PARTS)) return
+  const base = argOf('base')
+  const known = args.includes('--tree') || base === undefined || base === '' || /^0+$/.test(base)
+    ? tracked().includes(APPEARANCE)
+    : holds(`${base}:${APPEARANCE}`)
+  if (!known) return
+  console.error(`ci-scope: ${APPEARANCE} changed and nothing under packages/client/src did — the appearance snapshot is recorded by a smoke walk and only moves with the sheets that draw the pages; drop it from the push or carry the change it belongs to`)
+  process.exit(1)
+}
+
+const changed = changedFiles()
+if (args.includes('--appearance')) {
+  refuseSnapshotAlone(changed)
+  const moved = changed.filter((file) => APPEARANCE_SOURCES.some((pattern) => pattern.test(file)))
+  console.log(`ci-scope: ${APPEARANCE} ${changed.includes(APPEARANCE) ? `moved with ${moved.length} client source file(s)` : 'did not move'}`)
+  process.exit(0)
+}
+const answers = scope(changed)
 const lines = Object.entries(answers).map(([key, value]) => `${key}=${value}`)
 if (args.includes('--print')) {
   process.stdout.write(`${lines.join('\n')}\n`)
