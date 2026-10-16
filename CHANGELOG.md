@@ -30,6 +30,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **首页那张宿主菜单卡也走同一条查找**：英雄首页把卡片落位前要问「宿主开着的那张菜单卡在哪」，此前它自己在整份文档里查 `[role="menu"]` 并挑出不是本插件的那张；现在改用宿主访问模块里记住答案的那一处（打开一张菜单会把外壳里别的菜单折起，所以开着的宿主卡片就是这一张）。登记表里这条从两处降到一处——剩下那一处要的是活清单（首页那一行可能同时开着多个选择器）。
 - **两份决定草稿的现状跟上已落地的部分**：整份文档的查找记账现存四十三处，`importance` 台账覆盖全部五百三十九处 `!important` 且构建要求每一处都在册，边界表已有十四条由 `packages/testing/bounds.cjs` 供各场景读取，检查表达式里的其余数字由 `check-numbers.json` 记录并核对。
 - **侧栏分区的标题改由总线登记表供着**：工作区视图每趟刷新都要在整份文档里查一遍分区标题，再挑出带列表区的那个；现在标题清单由观察总线按选择器登记、随页面变化增量维护（D40），每趟刷新只在清单里挑一次，标题与布局都不变时不再走文档。登记表里这一条欠账划掉，现存四十二处。
+- **登记一处查不到的原因，免得下一轮重走**：首页那一行「开着的选择器」看的是宿主写在常驻节点上的 `aria-expanded`，而观察总线的登记表跟的是节点增删——改用它会把已经关掉的选择器继续算作开着（冒烟里八条检查当场这么判）。这一处的理由因此改写清楚：要的是「属性一变就作废」的答案，得由它自己的读取或当趟已经拿着的行来给。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -55,6 +56,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The hero page reads the host's open menu card through the same lookup**: before placing its own card the hero asked where the host's open menu was, scanning the whole document for `[role="menu"]` and picking the one that is not the skin's; it now uses the accessor that keeps that answer (opening one menu folds the shell's others, so the open host card is that one). The ledger entry for the file drops from two lookups to one — the one left wants a live list, since the hero row may hold more than one open picker.
 - **Both decision drafts' standing sections follow what has landed**: the whole-document lookup record stands at forty-three sites, the `!important` ledger covers all five hundred and thirty-nine declarations with the build requiring each to be in it, the bounds table holds fourteen values read through `packages/testing/bounds.cjs`, and the remaining numbers in check expressions are recorded and verified in `check-numbers.json`.
 - **The sidebar's section labels come from the bus registry now**: the workspace view looked up every section label across the whole document each pass and then picked the one carrying a list area; the labels are now kept by the observation bus per selector and maintained incrementally as the page changes (D40), so a pass picks from the list without walking the document, and the ledger entry recording it as debt is struck out — forty-two sites remain recorded.
+- **Why one lookup cannot move is written down, so the next pass does not walk the same road**: the hero row's open pickers turn on the host's `aria-expanded` on nodes that stay mounted, while the bus's registry follows node additions — moving it there keeps counting a picker that has closed (eight smoke checks said exactly that). The reason in the record now says what this site needs instead: an answer invalidated by an attribute change, from a reader of its own or from the row the pass already holds.
 
 ## [0.15.0] - 2026-10-15
 

@@ -3,7 +3,7 @@
   "files": {
     "packages/client/src/features/hero-menu/hero-menu.ts": {
       "count": 1,
-      "reason": "The hero row's open pickers, read in the refresh pass. The row may hold more than one open picker, so the site wants a live list rather than one kept element; the debt is one observeMatches registry. The card it is placed against is read through core/host.ts's findHostMenu."
+      "reason": "The hero row's open pickers, read in the refresh pass. Their openness is the host's `aria-expanded` on nodes that stay mounted, and the bus's registry follows node additions alone, so it cannot serve this site: it would keep serving a trigger that has closed (eight smoke checks said so). The answer this site needs is invalidated by an attribute change, which is either a reader of its own or the row the pass already holds."
     },
     "packages/client/src/features/search/search.ts": {
       "count": 1,
