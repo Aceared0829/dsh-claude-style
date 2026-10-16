@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- **中文推理也把模型自己那句话交给状态行**：此前只有英文进行时从句会被读出，模型用中文思考时这一行一直停在「正在思考」上。现在中文里的「正在…」以同一处形状判定读出，说法的正文到这一句的收尾为止（「我正在读取 app.js，然后回答。」写成「正在读取 app.js」），行内标记照旧清掉；「精确状态行」关掉时这些具体内容仍然都不读。
+
+### 体验优化
 
 - **用量记录的体积缩到约四成**：记录里一天的量按路由存放（模型，以及没有归到任何模型的余量），当天总量由这些路由相加得出，小时直方图只记非零的格子，日志已不在的会话不再存指纹。用本机上这一份记录量：146 KB 降到 57 KB，一趟只剩解析与写回；与记录一致的那一趟不再写盘。
 - **界面每帧少做整份文档的查找**：查不到东西的查找此前每趟刷新都重新走一遍整份文档，而绝大多数页面上这些座位本来就不存在——会话页没有首屏根，对话框没打开时没有设置导航列。现在这类「什么都没找到」的答案在页面结构变化之前一直有效；设置页的导航格、侧栏的已归档清单清理、账户卡片的清理都收窄到它们各自所在的侧栏里。在 28568 个节点的页面上量同一个回合：插件发出的整份文档查找从 584 次降到 395 次，其中首屏根的查找从 273 次降到 26 次。
@@ -15,6 +19,9 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **账户页脚那一块不再靠 `!important` 取胜**：`packages/client/src/features/account/account-footer.css` 里那 79 处 `!important` 去掉了，主机账户行、账户菜单、头像与皮肤画布、抽屉里的行与悬停这些都改为按选择器本身的权重压过去——皮肤的选择器本来就带 `body[data-dsh-claude-style]`，比宿主那些单个类名的规则重。这些声明此前压在宿主账户菜单元素上，那个形态的走查读不到，所以从没被判定过是否必要。`importance` 场景重新走了一遍：每一处都判定过，没有一处多余，十六处仍然必要（压的是宿主的内联样式）；账户菜单那四条选择器因此从「够不到」登记表里划掉。顺带把账户菜单与首页两个菜单的行样式合成一处按两个标记写（此前两处一模一样，去掉了 `!important` 才看得出重复），首页那份只留自己独有的禁用态与选中标记。页面外观不变：外观快照五十个页面状态逐项一致，账户与首页相关用例全过。
 - **页脚接管那一块也不再靠 `!important`**：`packages/client/src/features/account/footer-takeover.css` 里那 43 处 `!important` 去掉了——页脚各容器归零、镜像条目塌缩、侧栏收成细轨时的账号按钮与弹层、以及细轨里隐藏设置入口的那些规则，改为按选择器本身的权重压过去（这份表排在自己的基础规则之后，且每条都点名了细轨、页脚与它要的那一行）。`importance` 场景重走：422 处声明全部判定过，没有一处多余，十六处仍然必要；台账随之写下 422 条。外观快照五十个页面状态逐项一致。
 - **状态行里的说法改为放不下才截断**：模型自己写的推理从句、命令调用声明的说明、正在操作的文件名此前都按字数上限截断（分别 40、40、32 字），宽窗口里也照样在同一个字数上断开，读者看到的是一句被切掉的话。现在这三种说法整句带到这一行，放得下多少由这一行的宽度决定：宿主那一行的内容盒此前不设宽度上限，长说法会顶着计时与徽标一直伸出对话列；它现在取所在行的宽度，说法在自己的盒子里截断并画省略号，加载点、计时与徽标留在原处。
+- **状态行里的从句不再被名字里的点号截断**：这一行从推理正文里取模型自己那句话时，句子在哪里断开此前由一张手写的收尾标点表决定，于是文件名、版本号与缩写里的点号都被当成句末——正在读 `app.js` 的说法写成「Reading app」，正在看 `package.json` 写成「Checking package」，缩写处更只剩下一个字母。现在句子的边界交给页面自己的句子规则，说法从分词一直带到这一句真正结束的地方；同时助动词与分词之间的一两个词（now、currently、still、just 等）与完成进行时（I have been checking）也能读出来，此前这些句子整句读不出，这一行只会退回「正在思考」。否定的句子与还没动手的打算照旧不读。
+- **状态行里的从句站到下一次意图到达为止**：模型在快速输出时每秒写下好几个句子，从句与从句之间那几拍（推理读作「正在思考」，或刚起一步还没写下什么）此前会把刚说出的从句顶掉，读者看到的是一句话闪一下就退回「正在思考」，再闪一下又说下一句。现在模型自己那句从句在下一次意图到达之前一直站着——新的从句、调用自带的说法，或写回答、调用工具这类状态一到才改口；「精确状态行」关掉时不读从句，这一条不适用。一个说法锁一秒的规则不变，这条锁也因此落在说法上而不是落在行上：宿主在步骤之间重建那一行时，这一轮站着的说法与它的锁跟着这一轮走，不会重新从零开始。
+- **状态行与过程组标题的扫光改用宿主自己的做法**：高光带由一层带遮罩的窗口与其中一份着色的文字副本反向平移组成，两半都是位移动画，由合成器播放，不再每帧重绘；节奏、步进、0.3 秒的起始延迟与遮罩都与宿主的行一致。回合进行中的页面上不再有运行中的绘制型动画。
 
 ### 问题修复
 
@@ -23,6 +30,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **侧栏页脚的插件条目全部收进账号区**：动作槽里的条目与别的插件直接挂在页脚上的卡片（用量卡片这一类）都收进账号弹层，卡片保持它自己的样子，侧栏底部只剩账号这一行，条目自带的行内样式一并让位；`importance` 台账随之记到 424 处。
 - **带供应商命名空间的模型标识也认得出厂商标**：网关把模型标识写成 `cn:hy3` 这类带前缀的形状时，混元系列的模型行照常画出厂商组合标，模型列表的第一级也一并给出它的说明文案。规则的分段起点改为任何不是字母或数字的字符，`shy-mt2` 这类标识仍不被认领。
 - **同一处分段起点下的其余模型也认得出厂商标**：`kimi-k3`、`minimax-m3` 这一类带服务方命名空间的标识此前也不被认领，`o3` 那一条只认冒号以外的分隔符；现在 K3、M3 与 o 系列的规则与混元那条读同一个分段起点。`nova` 那条补上分段边界，`sensenova-6.8-flash-lite` 不再被判成 Amazon Nova、标记也不再插进模型名中间。
+- **Claude 品牌下的扫光不再是蓝色**：宿主在运行行上把扫光换成 DeepSeek 的蓝色，状态行的高光因此一直是蓝的；现在 Claude 品牌下状态行、过程组标题与宿主自己的调用行都用同一道暖色高光（暗色为 `#faf9f5` 的 45%，亮色为 `#141413` 的 30%），DeepSeek 品牌下仍是宿主的颜色。
 
 ### 其他变更
 
@@ -44,7 +52,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **外观层与它的闸门落地**：冒烟走查的每个页面状态现在按部件记一份计算值快照（只收与字体无关的属性：颜色、边框、圆角、阴影、层叠与溢出），第一版覆盖五十个页面状态、十二个部件；快照进版本管理，`npm run verify` 的 `appearance` 闸门把这次走查读到的值与它逐项比对。`scripts/ci-scope.mjs` 增加一条拒绝：`packages/testing/appearance.json` 变了而 `packages/client/src` 没变的推送不通过——快照是页面的样子，只随画它的样式表移动；云端两个工作流都接上了这条。顺带把「工作树改了哪些路径」的读取收进 `scripts/shared/changed-paths.mjs`，此前它有两份。
 - **方向记录改成一条方向一页**：每条方向只写它回答的背景、决定、由此而来的后果与重审条件，文件路径、函数名、数值与计数由代码注释、`ARCHITECTURE.md` 与测试承担，因此一次不改变方向的代码重构不再让方向记录过时；`docs/adr/README.md` 与作废编号的清册由 `npm run docs:index` 生成，编号作废之后不再复用。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- **Reasoning in Chinese hands the status line its clause as well**: only an English present-continuous clause used to be read, so a model thinking in Chinese left the line on "Thinking…". The Chinese 「正在…」 is now read by the same shape rule, its clause running to that sentence's own end (「我正在读取 app.js，然后回答。」 becomes 「正在读取 app.js」), with inline markers stripped as before. The Precise status line switched off still reads none of these specifics.
+
+### Improvements
 
 - **The usage record shrinks to about two fifths of its size**: a day is stored per route (a model, plus the remainder no model claimed), the day's own total is the sum of those routes, the hour histogram keeps its non-zero slots alone, and a session whose log is gone no longer carries a fingerprint. Measured on this machine's own record: 146 KB becomes 57 KB, and a pass pays for parsing and writing alone; a pass that matches the record writes nothing.
 - **Fewer whole-document lookups per frame**: a lookup that found nothing used to walk the whole document again on every pass, while on most pages the seat it asks for is simply absent — a conversation page carries no hero root, and the settings navigation column does not exist until the dialog opens. That "nothing matched" answer now stands until the page's structure changes; the settings navigation cell, the sidebar's archived-list sweep and the account card's sweep are scoped to the sidebar they live in. Measured over one turn on a page of 28568 nodes: the skin's whole-document lookups fall from 584 to 395, and its hero-root lookups from 273 to 26.
@@ -53,6 +65,9 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The account footer no longer wins with `!important`**: the 79 `!important` declarations in `packages/client/src/features/account/account-footer.css` are gone, and the host account row, the account menu, the avatar and skin canvas, and the drawer's rows and hover states are now carried by the selectors' own weight — every skin selector starts with `body[data-dsh-claude-style]` and outweighs the host's single-class rules. Those declarations sat on host account-menu elements, which the walk's page states never reach, so none had ever been judged. The `importance` scenario was walked again: every declaration decided, none superfluous, the sixteen still needed beating a host inline style, and the four account-menu selectors struck out of the unreachable registry. The account menu's rows and the home page's two menus now state their row style once, for both markers together (the two copies were identical and only the dropped weight made that visible); the home sheet keeps what is its own — the disabled state and the selected mark. The pages look the same: the appearance snapshot matches across all fifty page states and the account and home cases pass.
 - **The footer takeover no longer wins with `!important` either**: the 43 `!important` declarations in `packages/client/src/features/account/footer-takeover.css` are gone — the footer containers collapsing to zero, the mirrored entries folding away, the account button and popover in the collapsed rail, and the settings entry hidden there are now carried by the selectors' own weight (this sheet loads after the base rules it stands over, and every selector names the rail, the footer and the row it means). The `importance` scenario was walked again: 422 declarations, every one decided, none superfluous, the sixteen still needed unchanged, and the ledger now records those 422. The appearance snapshot matches across all fifty page states.
 - **The status line cuts a wording only where it no longer fits**: the clause the model's own reasoning hands the line, the description a command call declares, and the name of the file a call works on were each cut at a character cap (40, 40 and 32 characters), so on a wide window a reader still saw a sentence broken at the same count. All three are now carried whole, and how much of one shows is the line's own width: the host's content box had no width bound, so a long wording ran past the conversation column with the clock and the badge behind it; it now takes the width of the row it stands in, and the wording is clipped with an ellipsis inside its own box while the loader, the clock and the badge keep their places.
+- **The status line's clause is no longer cut at a dot inside a name**: where a sentence ended used to be decided by a hand-written table of closing punctuation, so the dot in a file name, a version number or an abbreviation read as the end of one — the clause about reading `app.js` said "Reading app" and the one about `package.json` said "Checking package", and an abbreviation left a single letter behind. Where a sentence ends is now the page's own sentence rules, so a clause runs from the participle to the place the sentence really ends. The one or two words that may stand between an auxiliary and its participle (now, currently, still, just …) and the perfect continuous (I have been checking) are read too; those sentences used to hand the line nothing and it fell back to "Thinking…". A negated clause and a plan the model has not started are still passed over.
+- **The status line's clause stands until the next intent arrives**: a model writing fast ends several sentences a second, and the stretches between its clauses — the reasoning reading as the bare thinking state, or a step that has written nothing yet — used to take the clause that had just been said off the line, so the reader saw a clause flash, fall back to "Thinking…", and flash again with the next one. The model's own clause now stands until the next intent arrives: a newer clause, a call's own words, or a state such as writing or running a tool. With the Precise status line switched off no clause is read and none of this applies. The one-second lock on a wording is unchanged, and it now rests on the wording rather than on the row: when the host builds a fresh row between steps, the wording that turn stood on and its lock travel with the turn instead of starting over.
+- **The status line's and the process group header's sweep now use the host's own construction**: the highlight is a masked window and a tinted copy of the words moving in opposite directions, both translations the compositor plays, so no frame is repainted for it; the period, the steps, the 0.3 s start delay and the mask match the host's rows. A page with a turn running no longer has any paint-driven animation running.
 
 ### Bug Fixes
 
@@ -61,6 +76,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **Every plugin entry in the sidebar footer is collected into the account area**: the action slot's entries and a card another plugin mounted into the footer itself — the usage card is one — both stand in the account popover, the card keeping its own markup, and the footer keeps the account row alone; an entry's own inline style gives way with them; the importance ledger records 424 declarations with them.
 - **A model id carrying its provider's namespace resolves its vendor lockup**: an id spelled `cn:hy3` draws the Hunyuan lockup on its row and gets its description line in the picker's first level. A rule's segment start now accepts any character outside a letter or a digit, and an id such as `shy-mt2` stays unclaimed.
 - **The remaining models under that same segment start resolve their vendor lockup**: an id carrying its serving provider's namespace was unclaimed for the K3 and M3 lines too, and the o-series rule read only a slash or a hyphen before `o`; the K3, M3 and o-series rules now read the segment start the Hunyuan rule reads. The `nova` rules gain a segment boundary, so `sensenova-6.8-flash-lite` is no longer claimed as Amazon Nova and its lockup no longer lands in the middle of the name.
+- **The sweep under the Claude brand is no longer blue**: the host retints the sweep on its running row to DeepSeek blue, so the status line's highlight was always blue; under the Claude brand the status line, the process group header and the host's own call rows now share one warm highlight (45% of `#faf9f5` in dark, 30% of `#141413` in light), and the DeepSeek brand keeps the host's colour.
 
 ### Chores
 
