@@ -1,6 +1,5 @@
 import { AUTO_POPOVER_ALL, HERO_MENU_ATTR } from '../../constants'
-import { MENU_ROLE_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { cacheFirstMatch } from '../../core/host'
+import { cacheFirstMatch, findHostMenu } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
 import { closestFrom, createStamp } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
@@ -302,16 +301,18 @@ const findCardTrigger = cacheFirstMatch<HTMLElement>('[data-dsh-claude-part~="ca
       clearStamp()
       return
     }
-    // The skin's own popovers carry a `dsh-claude-` class token, so excluding
-    // that namespace as whole tokens leaves the host's menus only.
-    const cards = document.querySelectorAll<HTMLElement>(`body > ${MENU_ROLE_SELECTOR}:not([class^="dsh-claude-"], [class*=" dsh-claude-"])`)
-    if (cards.length !== 1) {
+    // The host's own card, read through the one accessor that keeps the answer
+    // (D40): the skin's popovers carry a `dsh-claude-` class token, and opening
+    // a menu folds the shell's others, so the open host card is the one to place
+    // against.
+    const card = findHostMenu()
+    if (card === null) {
       clearStamp()
       return
     }
-    if (cardStamp.current() !== cards[0]) stampedTrigger = trigger
-    cardStamp.mark(cards[0], pickerKind(trigger))
-    placeCard(trigger, cards[0])
+    if (cardStamp.current() !== card) stampedTrigger = trigger
+    cardStamp.mark(card, pickerKind(trigger))
+    placeCard(trigger, card)
   }
 
   // The hero row's two host menus take part in the shared popover rule

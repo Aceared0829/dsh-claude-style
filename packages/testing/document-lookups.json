@@ -2,8 +2,8 @@
   "note": "The whole-document lookups the browser half still makes outside the modules that own them, one entry per file: what it counts, when those reads happen where that is known, and which of them are debt. A lookup in a refresh pass or a frame callback costs the page's own size on every frame of a long conversation, so the sanctioned readers are core/host.ts's accessors (cacheFirstMatch caches a match and a miss until the page's structure changes), core/bus.ts's observeMatches registry, core/stylesheet.ts's own sheet, and shared/chat-dom.ts's two per-frame answers; every other site is recorded here and the list only shrinks. A read by an element's id is not counted: the browser answers it from its own index rather than by walking the tree, which is how the fold controls reach the body their aria-controls names. scripts/lint.mjs counts the sites the way this file records them: a file whose count rises is refused, a file whose count falls has to be written down again, and an entry whose count reaches zero is taken out.",
   "files": {
     "packages/client/src/features/hero-menu/hero-menu.ts": {
-      "count": 2,
-      "reason": "The hero row's open pickers and the host card they are placed against, read in the refresh pass. Both want a live list rather than one kept element — the row may hold more than one open picker, and the card is placed only while exactly one host menu stands — so the debt is one observeMatches registry each, or the card read off the trigger the pass already holds."
+      "count": 1,
+      "reason": "The hero row's open pickers, read in the refresh pass. The row may hold more than one open picker, so the site wants a live list rather than one kept element; the debt is one observeMatches registry. The card it is placed against is read through core/host.ts's findHostMenu."
     },
     "packages/client/src/features/workspace/workspace-view.ts": {
       "count": 1,
