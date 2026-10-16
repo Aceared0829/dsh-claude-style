@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：分发与流程
 - **关联**：取代 D66；D40、D42、D44、D46、D47、D51、D69
-- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素；静置按等一段时间判定；`shots` 场景只截图给人看，不与任何快照比对；端到端的每个场景各起一个宿主实例。边界正在收进 `packages/testing/bounds.json`（现存十四条，涵盖长会话的增长比较与各场景的等待、容差），由 `packages/testing/bounds.cjs` 读；检查表达式里的其余字面量逐条记在 `packages/testing/check-numbers.json` 里，闸门核对这份记录。快照比对要等外观层落地，`scripts/ci-scope.mjs` 的那条约束也随它写。迁移完成之前，以现状为准修改代码。
+- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素；静置的判定已经是「连续帧没有新的趟、一段墙钟没有新的趟，且没有仍在运行的有限动画」（`smoke/probe/settle.js`）；`shots` 场景只截图给人看；端到端每个场景各起一个宿主实例。边界正在收进 `packages/testing/bounds.json`（现存十四条），由 `packages/testing/bounds.cjs` 读；检查表达式里的其余字面量逐条记在 `packages/testing/check-numbers.json` 里，闸门核对这份记录。外观快照与 `scripts/ci-scope.mjs` 的约束要等外观层落地。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 
