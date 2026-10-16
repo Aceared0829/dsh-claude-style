@@ -63,4 +63,77 @@ function check(name, ok, detail) {
   return { name, ok: ok === true, detail: detail === undefined ? '' : String(detail) }
 }
 
-module.exports = { HOST, SKIN, MARKS, readFlow, check }
+/**
+ * Record `read(arg)` inside the page on every frame from now until the page has
+ * settled, and answer the readings (D66: the settle rule). The page has settled
+ * when its finite animations have landed and the document has not changed for
+ * eight frames running; an endless animation (a sweep, a pulse) is the page's
+ * own life and is not waited for. `read` runs in the page, so it carries no
+ * closure; without it this only waits. A page that never settles fails by name.
+ */
+function watchPage(page, read, arg) {
+  return page.evaluate(({ source, arg: input }) => new Promise((resolve, reject) => {
+    // The reader crosses into the page as its source text.
+    const reader = source === null ? null : new Function('arg', `return (${source})(arg)`)
+    const frames = []
+    let quiet = 0
+    let changed = false
+    const observer = new MutationObserver(() => { changed = true })
+    observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true })
+    const started = performance.now()
+    const landed = () => document.getAnimations().every((animation) => (animation.playState !== 'running' && animation.playState !== 'pending') ||
+      animation.effect?.getComputedTiming().iterations === Infinity)
+    const look = () => {
+      if (reader !== null) frames.push(reader(input))
+      quiet = changed ? 0 : quiet + 1
+      changed = false
+      if (quiet >= 8 && landed()) {
+        observer.disconnect()
+        resolve(frames)
+        return
+      }
+      if (performance.now() - started > 8000) {
+        observer.disconnect()
+        reject(new Error('the page did not settle within eight seconds'))
+        return
+      }
+      requestAnimationFrame(look)
+    }
+    look()
+  }), { source: read === undefined ? null : read.toString(), arg })
+}
+
+/** Wait for the page to settle (see watchPage). */
+const settlePage = (page) => watchPage(page)
+
+/**
+ * Record `read(arg)` inside the page on every frame until `reached(frames)`
+ * holds, for a page that keeps moving on a clock of its own (a streaming turn)
+ * and so never settles; the readings end with the one that reached. Both
+ * functions run in the page and carry no closure. A state that never comes
+ * fails by name once `limitMs` has passed.
+ */
+function recordUntil(page, read, reached, arg, limitMs, what) {
+  return page.evaluate(({ readSource, reachedSource, arg: input, limit, label }) => new Promise((resolve, reject) => {
+    // Both functions cross into the page as their source text.
+    const reader = new Function('arg', `return (${readSource})(arg)`)
+    const done = new Function('frames', `return (${reachedSource})(frames)`)
+    const frames = []
+    const started = performance.now()
+    const look = () => {
+      frames.push(reader(input))
+      if (done(frames)) {
+        resolve(frames)
+        return
+      }
+      if (performance.now() - started > limit) {
+        reject(new Error(`${label} did not happen within ${limit} ms; the last reading was ${JSON.stringify(frames[frames.length - 1])}`))
+        return
+      }
+      requestAnimationFrame(look)
+    }
+    look()
+  }), { readSource: read.toString(), reachedSource: reached.toString(), arg, limit: limitMs, label: what })
+}
+
+module.exports = { HOST, SKIN, MARKS, readFlow, check, watchPage, settlePage, recordUntil }

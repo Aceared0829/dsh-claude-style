@@ -11,44 +11,13 @@
   probe.step(async function () {
     // The reads below depend on the skin's first pass having landed, and the
     // full tier's idle check counts the frames the page asks for in one second
-    // of wall clock. A renderer still coming up hands out a frame or two per
-    // second, so a quiet window measured in wall clock closes between two frames
-    // while the skin's first work is still queued, and that count then reads
-    // those frames as a page that never went idle — a fresh Windows runner read
-    // exactly 2 passes in the first page's eight cases. Ask for frames here
-    // instead, through the rAF the stand-in did not wrap, and wait for a run of
-    // them that carries none of the page's own.
-    //
-    // A run of quiet frames is not enough on its own: a timer that came due just
-    // behind them asks for its frame a few milliseconds later, and a loaded
-    // runner then reads that single frame inside the measured second (nine page
-    // loads read exactly 1 pass at 8ms). The wait therefore holds until the
-    // frames have been quiet AND no pass has come for a stretch of wall clock
-    // AND every finite animation the page runs has finished — an entrance, a
-    // swap or a fade still in flight moves what the readings below are about
-    // (D66: the settle rule). An endless animation is no such thing: the
-    // running session's pulse and the sweeps never land, and waiting for them
-    // would wait for the page's own life.
-    var quietFrames = 0
-    var quietMs = 250
-    var lastPass = performance.now()
-    var started = performance.now()
-    while (performance.now() - started < 8000) {
-      var before = window.__passes
-      await new Promise(function (done) { window.__nativeRaf(function () { done() }) })
-      if (window.__passes === before) {
-        quietFrames += 1
-      } else {
-        quietFrames = 0
-        lastPass = performance.now()
-      }
-      var settled = document.getAnimations().every(function (animation) {
-        if (animation.playState !== 'running' && animation.playState !== 'pending') return true
-        var timing = animation.effect === null ? null : animation.effect.getComputedTiming()
-        return timing !== null && timing.iterations === Infinity
-      })
-      if (quietFrames >= 8 && performance.now() - lastPass >= quietMs && settled) break
-    }
+    // of wall clock: a renderer still coming up hands out a frame or two per
+    // second, and a quiet window measured in wall clock alone would read those
+    // frames as a page that never went idle. The settle rule waits on frames
+    // and animations as well (prelude.js), and here also on a quarter second
+    // with no pass: a timer that came due just behind a quiet run asks for its
+    // frame a few milliseconds later, inside the second the check counts.
+    await probe.settle(250)
     if (window.SMOKE_TIER !== 'quick') {
       var from = window.__passes
       var mark = performance.now()

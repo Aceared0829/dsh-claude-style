@@ -5,7 +5,6 @@
  */
 (function () {
   var probe = window.__dshSmokeProbe
-  var sleep = probe.sleep
   var r = probe.report
 
   probe.step(async function () {
@@ -73,9 +72,12 @@
         node.setAttribute('data-chat-flow-key', 'probe')
         node.style.display = 'none'
         followColumn.appendChild(node)
-        await sleep(250)
+        // Two hand-backs never land closer than the follow's own interval
+        // (FOLLOW_MIN_INTERVAL_MS, a fifth of a second): the moment is held past
+        // it, which is the product's clock, before it is taken away again.
+        await probe.sleep(250)
         followColumn.removeChild(node)
-        await sleep(50)
+        await probe.settle()
       }
       r.chatFollow = {
         marked: document.body.hasAttribute('data-dsh-claude-chat-follow'),
@@ -84,18 +86,18 @@
       }
       // At the end, so any reader-took-over the guard is holding is dropped.
       followScroller.scrollTop = followScroller.scrollHeight
-      await sleep(80)
+      await probe.settle()
       await structuralMoment()
       // 60px off the end, the way a structural moment leaves it.
       followScroller.scrollTop = Math.max(0, followScroller.scrollHeight - followScroller.clientHeight - 60)
-      await sleep(30)
+      await probe.settle()
       r.chatFollow.before = endGap()
       await structuralMoment()
       r.chatFollow.after = endGap()
       // A wheel of the reader's own: the hand-back stops until he returns.
       followScroller.dispatchEvent(new WheelEvent('wheel', { bubbles: true }))
       followScroller.scrollTop = Math.max(0, followScroller.scrollHeight - followScroller.clientHeight - 60)
-      await sleep(30)
+      await probe.settle()
       r.chatFollow.readerBefore = endGap()
       await structuralMoment()
       r.chatFollow.readerAfter = endGap()
@@ -108,7 +110,7 @@
           return Math.round(cappedBody.scrollHeight - cappedBody.clientHeight - cappedBody.scrollTop)
         }
         cappedBody.scrollTop = 0
-        await sleep(80)
+        await probe.settle()
         if (cappedContent !== null) cappedContent.style.height = '900px'
         r.chatFollow.catchUp = await recordWalk(bodyGap, bodyWalking)
       }
@@ -118,7 +120,7 @@
       // instead of jumping. The mark is the host's; the pin is what its follow
       // does on every content change.
       followScroller.scrollTop = followScroller.scrollHeight
-      await sleep(100)
+      await probe.settle()
       var streamingMark = document.createElement('div')
       streamingMark.setAttribute('data-streaming', '')
       followColumn.appendChild(streamingMark)
@@ -149,18 +151,17 @@
       userRow.setAttribute('data-chat-flow-kind', 'user')
       userRow.style.height = '300px'
       followColumn.appendChild(userRow)
+      // Every frame from the jump until the page settles: a take-back on any of
+      // them would show as a frame off the end.
       followScroller.scrollTop = followScroller.scrollHeight
-      await sleep(60)
-      r.chatFollow.submitGap = endGap()
-      await sleep(200)
-      r.chatFollow.submitGapLate = endGap()
+      r.chatFollow.submitGaps = await probe.watch(endGap)
       userRow.remove()
-      await sleep(60)
+      await probe.settle()
       streamingMark.remove()
       glideBlock.remove()
-      await sleep(120)
+      await probe.settle()
       followScroller.scrollTop = followScroller.scrollHeight
-      await sleep(200)
+      await probe.settle()
       r.chatFollow.glideButtonBack = document.querySelector('[data-dsh-claude-stream-glide]') === null
     })
     // The ported caret motion (packages/client/src/features/caret/): the focused composer
@@ -192,7 +193,7 @@
         document.dispatchEvent(new Event('selectionchange'))
       }
       caretSelect()
-      await sleep(250)
+      await probe.settle()
       r.caret = { on: caretOf() }
       // The plain surface: a textarea under the seat is measured through the
       // hidden mirror, and taken over the same way.
@@ -202,7 +203,7 @@
         answer.selectionStart = answer.value.length
         answer.selectionEnd = answer.value.length
         document.dispatchEvent(new Event('selectionchange'))
-        await sleep(250)
+        await probe.settle()
         var answerLayer = answer.parentElement.querySelector('[data-dsh-claude-caret-layer]')
         r.caret.plain = {
           layer: answerLayer !== null,
@@ -211,18 +212,18 @@
           nativeHidden: getComputedStyle(answer).caretColor === 'rgba(0, 0, 0, 0)',
         }
         caretSelect()
-        await sleep(250)
+        await probe.settle()
       }
       window.__pushForm({ caretMotion: 'off' })
-      await sleep(250)
+      await probe.settle()
       r.caret.off = caretOf()
       window.__pushForm({ caretMotion: 'typing' })
-      await sleep(250)
+      await probe.settle()
       r.caret.back = caretOf()
       // The animation choice stills the drawn caret through its own stylesheet
       // rule (caret.css), which is what D40's resolved attribute is for.
       window.__pushForm({ motion: 'reduced' })
-      await sleep(250)
+      await probe.settle()
       var reducedLayer = document.querySelector('[data-dsh-claude-caret-layer]')
       r.caret.reduced = reducedLayer === null ? null : {
         layer: true,
@@ -230,7 +231,7 @@
         animation: getComputedStyle(reducedLayer).animationName,
       }
       window.__pushForm({ motion: 'system' })
-      await sleep(250)
+      await probe.settle()
     })
     // The ported automatic folding (packages/client/src/features/chat-fold/): a running thinking
     // row and a running process group are opened at install, both fold back when
@@ -283,16 +284,10 @@
         }
       }
       // The wording answers the room the header has, a frame or two behind a
-      // change: a reading is taken once it has stopped moving.
+      // change: a reading is taken once the page has settled.
       var settledSummary = async function () {
-        var last = null
-        for (var round = 0; round < 20; round += 1) {
-          await sleep(50)
-          var now = summaryOf()
-          if (last !== null && last.form === now.form && last.text === now.text) return now
-          last = now
-        }
-        return last
+        await probe.settle()
+        return summaryOf()
       }
       r.fold = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
@@ -318,7 +313,7 @@
       foldThink.setAttribute('data-state', 'ok')
       foldWords.removeAttribute('data-shimmer')
       foldWords.textContent = 'Worked'
-      await sleep(450)
+      await probe.settle()
       r.fold.after = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
         groupOpen: !foldBody.hasAttribute('hidden'),
@@ -328,9 +323,11 @@
       // The reasoning's streamed window (reasoning-stream.ts, transitions.dev's
       // "Reasoning stream"): the window takes the text's own height up to the cap
       // reasoning may reach, and only at that cap does the text step up on the
-      // snippet's clock behind a mask. The first row is grown three lines between
-      // waits, so the window is read while it grows and again once it is held at
-      // the cap; the second stands over the cap from the start.
+      // snippet's clock behind a mask. The first row is grown three lines at a
+      // time, and read once the page has settled after each growth, so the
+      // window is read while it grows and again once it is held at the cap; the
+      // second stands over the cap from the start, and every frame of its steps
+      // is recorded until they stop at the newest line.
       var growBody = document.getElementById('debugThinkBody')
       var growText = document.getElementById('debugThinkText')
       var reasonBody = document.getElementById('debugGrowBody')
@@ -355,9 +352,8 @@
       // The row reopens for the reasoning: the fold closes it when the phase
       // turns ok, and the window's own reading is of a running, open row.
       foldThink.setAttribute('data-state', 'running')
-      await sleep(300)
+      r.fold.reasonGrow = await probe.watch(function () { return windowOf(reasonBody, reasonText) })
       r.fold.reasonWindow = [windowOf(growBody, growText)]
-      r.fold.reasonGrow = [windowOf(reasonBody, reasonText)]
       var growLine = 3
       var growMore = async function () {
         for (var added = 0; added < 3; added += 1) {
@@ -369,15 +365,11 @@
         // a live stream reaches the window between steps.
         document.getElementById('debugThink').setAttribute('data-state', 'ok')
         document.getElementById('debugThink').setAttribute('data-state', 'running')
-        await sleep(1100)
+        await probe.settle()
       }
       for (var growRound = 0; growRound < 3; growRound += 1) {
         await growMore()
         r.fold.reasonWindow.push(windowOf(growBody, growText))
-      }
-      for (var wait = 0; wait < 3; wait += 1) {
-        await sleep(1100)
-        r.fold.reasonGrow.push(windowOf(reasonBody, reasonText))
       }
       // The reasoning stops and the reader opens the row: the window is off and
       // the whole text stands in the host's own body again. The capped row's own
@@ -385,12 +377,11 @@
       r.fold.reasonStopped = windowOf(reasonBody, reasonText)
       document.getElementById('debugGrow').setAttribute('data-state', 'ok')
       document.getElementById('debugThink').setAttribute('data-state', 'ok')
-      await sleep(1400)
+      await probe.settle()
       r.fold.reasonClosed = windowOf(reasonBody, reasonText)
       r.fold.reasonGrewClosed = windowOf(growBody, growText)
-      await sleep(200)
       document.getElementById('debugThinkRow').click()
-      await sleep(200)
+      await probe.settle()
       r.fold.reasonOpen = windowOf(growBody, growText)
       // The fold glide on the reader's own press: the click is intercepted, the
       // real element is pressed with the door marked, and the click is handed back
@@ -398,38 +389,48 @@
       var disclosure = document.getElementById('debugDisclosure')
       var disclosureBody = function () { return document.getElementById('debugDisclosureBody') }
       var disclosureBefore = window.__disclosureClicks
-      disclosure.click()
-      await sleep(60)
-      var rollingBody = disclosureBody()
-      r.fold.glide = {
-        rolling: rollingBody !== null && rollingBody.hasAttribute('data-dsh-claude-rolling'),
-        clipped: rollingBody !== null && rollingBody.style.overflow === 'hidden',
-        clicksDuringRoll: window.__disclosureClicks - disclosureBefore,
+      // One door, every frame from the press until the page settles: what the
+      // frames that carried the door showed, and how the last one stands.
+      var doorOf = function (bodyOf, clicksSince) {
+        return function () {
+          var body = bodyOf()
+          return {
+            present: body !== null,
+            rolling: body !== null && body.hasAttribute('data-dsh-claude-rolling'),
+            clipped: body !== null && body.style.overflow === 'hidden',
+            rollingAnywhere: document.querySelector('[data-dsh-claude-rolling]') !== null,
+            clicks: clicksSince(),
+          }
+        }
       }
-      await sleep(500)
-      r.fold.glide.after = {
-        bodyGone: disclosureBody() === null,
-        rollingAnywhere: document.querySelector('[data-dsh-claude-rolling]') !== null,
-        clicks: window.__disclosureClicks - disclosureBefore,
+      var rollOf = function (frames) {
+        var during = frames.filter(function (frame) { return frame.rolling })
+        return {
+          rolling: during.length > 0,
+          clipped: during.length > 0 && during.every(function (frame) { return frame.clipped }),
+          clicksDuringRoll: during.length === 0 ? null : Math.max.apply(null, during.map(function (frame) { return frame.clicks })),
+          inserted: frames.some(function (frame) { return frame.present }),
+          last: frames[frames.length - 1],
+        }
+      }
+      var disclosureDoor = doorOf(disclosureBody, function () { return window.__disclosureClicks - disclosureBefore })
+      disclosure.click()
+      var closing = rollOf(await probe.watch(disclosureDoor))
+      r.fold.glide = {
+        rolling: closing.rolling,
+        clipped: closing.clipped,
+        clicksDuringRoll: closing.clicksDuringRoll,
+        after: { bodyGone: !closing.last.present, rollingAnywhere: closing.last.rollingAnywhere, clicks: closing.last.clicks },
       }
       // The opening direction: the press is remembered as an intent, the host
       // inserts the body, and the door rolls it open.
       disclosure.click()
-      await sleep(80)
-      var openingBody = disclosureBody()
-      r.fold.glide.open = {
-        inserted: openingBody !== null,
-        rolling: openingBody !== null && openingBody.hasAttribute('data-dsh-claude-rolling'),
-      }
-      await sleep(450)
-      var settledBody = disclosureBody()
-      r.fold.glide.openAfter = {
-        present: settledBody !== null,
-        rolling: settledBody !== null && settledBody.hasAttribute('data-dsh-claude-rolling'),
-      }
+      var opening = rollOf(await probe.watch(disclosureDoor))
+      r.fold.glide.open = { inserted: opening.inserted, rolling: opening.rolling }
+      r.fold.glide.openAfter = { present: opening.last.present, rolling: opening.last.rolling }
       // The reader's own press in this phase: the module leaves it alone.
       foldHeader.click()
-      await sleep(350)
+      await probe.settle()
       r.fold.readerOpen = !foldBody.hasAttribute('hidden')
       // A row the host wraps in a header: the door has to step out of that
       // wrapper for its body, and the accessory beside the row is not it.
@@ -437,24 +438,21 @@
       var wrappedAccessory = document.getElementById('debugWrappedAccessory')
       var wrappedBody = function () { return document.getElementById('debugWrappedBody') }
       var wrappedBefore = window.__wrappedClicks
+      var wrappedDoor = doorOf(wrappedBody, function () { return window.__wrappedClicks - wrappedBefore })
+      var accessoryRolled = false
       wrappedRow.click()
-      await sleep(60)
-      var wrappedDuring = wrappedBody()
-      var rolled = {
-        rolling: wrappedDuring !== null && wrappedDuring.hasAttribute('data-dsh-claude-rolling'),
-        clipped: wrappedDuring !== null && wrappedDuring.style.overflow === 'hidden',
-        accessoryRolled: wrappedAccessory.hasAttribute('data-dsh-claude-rolling'),
-        clicksDuringRoll: window.__wrappedClicks - wrappedBefore,
-      }
-      await sleep(500)
+      var rolled = rollOf(await probe.watch(function () {
+        if (wrappedAccessory.hasAttribute('data-dsh-claude-rolling')) accessoryRolled = true
+        return wrappedDoor()
+      }))
       r.fold.wrappedRolled = {
         rolling: rolled.rolling,
         clipped: rolled.clipped,
-        accessoryRolled: rolled.accessoryRolled,
+        accessoryRolled: accessoryRolled,
         clicksDuringRoll: rolled.clicksDuringRoll,
-        bodyGone: wrappedBody() === null,
+        bodyGone: !rolled.last.present,
         folded: wrappedRow.getAttribute('aria-expanded') === 'false',
-        clicks: window.__wrappedClicks - wrappedBefore,
+        clicks: rolled.last.clicks,
       }
       // The switch covers the door and the entrance fade as well as the automatic
       // folding: off, a press reaches the host's own handler in the same turn and
@@ -507,11 +505,11 @@
       r.fold.entranceOn = entranceOf()
       r.fold.entranceWrapped = wrappedEntranceOf()
       window.__pushForm({ chatAnimations: false })
-      await sleep(200)
+      await probe.settle()
       var offBefore = window.__disclosureClicks
       disclosure.click()
       var offImmediate = window.__disclosureClicks - offBefore
-      await sleep(300)
+      await probe.settle()
       r.fold.animationsOff = {
         mark: document.body.hasAttribute('data-dsh-claude-chat-fold'),
         entrance: entranceOf(),
@@ -520,7 +518,7 @@
         rolling: document.querySelector('[data-dsh-claude-rolling]') !== null,
       }
       window.__pushForm({ chatAnimations: true })
-      await sleep(200)
+      await probe.settle()
       r.fold.animationsBack = { mark: document.body.hasAttribute('data-dsh-claude-chat-fold') }
     })
     // The ported token reveal (packages/client/src/features/chat-reveal/): characters arriving in
@@ -548,43 +546,43 @@
       revealShippedContainer.setAttribute('data-streaming', '')
       revealShippedContainer.textContent = 'Hello there'
       document.body.appendChild(revealShippedContainer)
-      await sleep(80)
+      await probe.settle()
       var revealShipped = revealPeek()
       revealShippedContainer.remove()
       window.__pushForm({ chatReveal: 'on' })
-      await sleep(150)
+      await probe.settle()
+      // Characters arriving, then more of them: every frame from each arrival
+      // until the fade has run out, so the registration is read on the frames
+      // that carry it and the empty registry on the one the page settles on.
       var revealContainer = document.createElement('div')
       revealContainer.setAttribute('data-streaming', '')
       revealContainer.textContent = 'Hello there'
       document.body.appendChild(revealContainer)
-      await sleep(80)
-      var revealOpening = revealPeek()
+      var revealOpening = await probe.watch(revealPeek)
       revealContainer.firstChild.data = 'Hello there, more'
-      await sleep(80)
-      var revealGrown = revealPeek()
-      await sleep(450)
-      var revealSettled = revealPeek()
+      var revealGrown = await probe.watch(revealPeek)
+      var revealSettled = revealGrown[revealGrown.length - 1]
       window.__pushForm({ chatReveal: 'off' })
-      await sleep(150)
+      await probe.settle()
       var revealOff = revealPeek()
       window.__pushForm({ chatReveal: 'on' })
-      await sleep(150)
+      await probe.settle()
       var revealBack = revealPeek()
       // The animation choice: "reduced" withdraws the engine the same way the
       // preference does (D40 — the resolved choice, not the system query).
       window.__pushForm({ motion: 'reduced' })
-      await sleep(150)
+      await probe.settle()
       var revealReduced = revealPeek()
       window.__pushForm({ motion: 'system' })
-      await sleep(150)
+      await probe.settle()
       // And the system setting flipping underneath "follow the system": the
       // resolved attribute moves, the preference stream is re-run and a running
       // engine goes with it (packages/client/src/core/prefs.ts, refreshMotionAttribute).
       window.__setSystemReduced(true)
-      await sleep(250)
+      await probe.settle()
       var revealFlipReduced = revealPeek()
       window.__setSystemReduced(false)
-      await sleep(250)
+      await probe.settle()
       var revealFlipBack = revealPeek()
       revealContainer.remove()
       r.reveal = {

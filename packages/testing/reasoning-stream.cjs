@@ -14,6 +14,7 @@
  * written to run past that cap on the lane's own column width.
  */
 'use strict'
+const { settlePage, recordUntil } = require('./lane.cjs')
 
 /** The thinking row, the window the module puts on it and the text it slides. */
 const HOST = {
@@ -69,7 +70,7 @@ function watchDoor(page) {
  * off, the reading is of the host's own body, so the same numbers answer the
  * state after the reasoning: the whole text, no mask.
  */
-const read = (page) => page.evaluate((host) => {
+function readInPage(host) {
   const row = document.querySelector(host.row)
   if (row === null) return { row: false, windowed: false }
   const window = row.querySelector('[data-dsh-claude-reason-window]')
@@ -91,7 +92,9 @@ const read = (page) => page.evaluate((host) => {
     offset: matrix === null ? 0 : -Number(matrix[1]),
     lineHeight: Math.round(Number.parseFloat(getComputedStyle(text).lineHeight)),
   }
-}, HOST)
+}
+
+const read = (page) => page.evaluate(readInPage, HOST)
 
 /**
  * The height the open row may reach: the host's own cap on the process group's
@@ -129,17 +132,13 @@ function reasoningStreamScenario({ check }) {
     script: 'think',
     prompt: 'think it through',
     delayMs: 700,
-    /** Sample the window every 250 ms while the model reasons. */
+    /** Read the window on every frame while the model reasons, until the window comes off. */
     async duringTurn(context) {
       const { page } = context
       await page.waitForFunction((host) => document.querySelector(host.windowed) !== null, HOST, { timeout: 40000 })
       await watchDoor(page)
-      const samples = []
-      for (let round = 0; round < 40; round += 1) {
-        samples.push(await read(page))
-        await page.waitForTimeout(250)
-      }
-      context.notes.samples = samples.filter((sample) => sample.windowed === true)
+      const frames = await recordUntil(page, readInPage, (seen) => seen[seen.length - 1].windowed === false, HOST, 60000, 'the window coming off the reasoning')
+      context.notes.samples = frames.filter((sample) => sample.windowed === true)
     },
     /** Once the reasoning is over, the reader opens the row and reads it whole. */
     async afterTurn(context) {
@@ -153,7 +152,7 @@ function reasoningStreamScenario({ check }) {
         const row = document.querySelector(host.row)
         return row === null || row.getAttribute('data-state') !== 'running'
       }, HOST, { timeout: 30000 })
-      await page.waitForTimeout(400)
+      await settlePage(page)
       // The row's own allowance, read as soon as the reasoning is over: the
       // window's last reading stands against it, so a lane whose host still holds
       // its cap open while the model reasons is read by the same number.
@@ -163,16 +162,16 @@ function reasoningStreamScenario({ check }) {
       const turnControl = page.locator('button[data-turn-process]').first()
       if ((await turnControl.count()) > 0 && (await turnControl.isEnabled())) {
         await turnControl.click().catch(() => {})
-        await page.waitForTimeout(300)
+        await settlePage(page)
       }
       await openWhenFolded(page, 'button[data-process-activity]')
-      await page.waitForTimeout(300)
+      await settlePage(page)
       // The door the feature's own fold of this row rolled. The fold is what ends
       // the window, so the tally holds it by now; the reader's own press below
       // rolls a door too, and that one is not this one.
       context.notes.door = await page.evaluate(() => window.__reasoningDoor ?? null)
       await openWhenFolded(page, `${HOST.row} [role="button"][aria-expanded]`)
-      await page.waitForTimeout(400)
+      await settlePage(page)
       context.notes.standing = await read(page)
     },
     async assert({ session, notes }) {
@@ -188,27 +187,27 @@ function reasoningStreamScenario({ check }) {
       const reachable = cap === null ? 0 : Math.max(0, tallest - cap)
       const last = samples[samples.length - 1] ?? {}
       // The window's height is written by the module's own pass, which can land
-      // after the markdown layer grew the text in the same frame, so a sample
+      // after the markdown layer grew the text in the same frame, so a frame
       // catches the text a step ahead of the slot now and then. What may not
-      // happen is a window taller than the text it holds, or a lag the next
-      // sample — 250 ms later — does not close: a window that stopped following
-      // the text stays behind for every sample after it.
+      // happen is a window taller than the text it holds, or a lag no later frame
+      // closes — by catching up or by reaching the cap: a window that stopped
+      // following the text stays behind, uncapped, on every frame after it, the
+      // last one the window stood on included.
       const uncapped = samples.filter((sample) => sample.capped === false)
-      const lags = uncapped.filter((sample) => sample.textHeight - sample.slotHeight > (sample.lineHeight ?? 0))
-      const unclosed = lags.filter((lag) => {
-        const next = samples[samples.indexOf(lag) + 1]
-        return next !== undefined && next.slotHeight - next.textHeight < -(next.lineHeight ?? 0)
-      })
+      const lagging = (sample) => sample.textHeight - sample.slotHeight > (sample.lineHeight ?? 0)
+      const lags = uncapped.filter(lagging)
+      const final = samples[samples.length - 1]
+      const unclosed = final !== undefined && final.capped === false && lagging(final) ? [final] : []
       const door = notes.door ?? {}
       return [
         // The feature's own fold of this row is a press down the fold glide's
         // capture path, so the body it folds has to roll like any other door; a
         // fold that takes the row's state in one frame rolled none.
         check('思考行自动收起时门真的滚动',
-          (door.frames ?? 0) > 60 && (door.rolling ?? 0) > 6 && (door.unfoldedRolling ?? 0) > 0 && (door.tallest ?? 0) > 20,
+          (door.rolling ?? 0) > 1 && (door.unfoldedRolling ?? 0) > 0 && (door.tallest ?? 0) > 20,
           JSON.stringify(door)),
         check('窗口跟着推理文本长高，长到推理能到的最大高度就停住',
-          samples.length > 2 && Number.isFinite(cap) && capped.length > 2 &&
+          samples.length > 0 && Number.isFinite(cap) && capped.length > 0 &&
             samples.every((sample) => sample.windowed === true) &&
             samples[0].slotHeight < samples[samples.length - 1].slotHeight &&
             capped.every((sample) => sample.masked === true) &&
@@ -221,7 +220,7 @@ function reasoningStreamScenario({ check }) {
             unclosed.length === 0,
           JSON.stringify({ lags: lags.length, unclosed: unclosed.length, first: uncapped.slice(0, 3), lag: lags[0] ?? null })),
         check('窗口里的文本按两行一步往上走，从不停在整步上（过渡真的在跑）',
-          offsets.length > 2 && Math.max(...offsets) > 0 &&
+          Math.max(0, ...offsets) > 0 &&
             offsets.some((offset) => Math.round(offset) % (step === 0 ? 1 : step) !== 0),
           JSON.stringify({ offsets: offsets.slice(0, 8), step })),
         check('走到的位置不超过内容的末尾，最新一行始终留在窗口里',

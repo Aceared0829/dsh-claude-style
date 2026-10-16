@@ -11,6 +11,66 @@
   window.__applyError = null
   try { window.__skin.apply(window.__ctx) } catch (e) { window.__applyError = String((e && e.stack) || e) }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms) }) }
+  /** One frame, through the rAF the stand-in did not wrap, so asking for it is no pass of the skin's. */
+  function frame() { return new Promise(function (done) { window.__nativeRaf(function () { done() }) }) }
+  /** Whether every finite animation on the page has landed; an endless one is the page's own life. */
+  function landed() {
+    return document.getAnimations().every(function (animation) {
+      if (animation.playState !== 'running' && animation.playState !== 'pending') return true
+      var timing = animation.effect === null ? null : animation.effect.getComputedTiming()
+      return timing !== null && timing.iterations === Infinity
+    })
+  }
+  /**
+   * Record `read()` on every frame from now until the page has settled, and
+   * answer the readings with the settled one last (D66: the settle rule). The
+   * page has settled when its finite animations have landed and the skin has
+   * asked for no pass on eight frames running. A clock of the page's own — the
+   * waiting line ticks four times a second while a turn runs — is its life, the
+   * way an endless animation is, so a quiet run between two ticks counts.
+   * `quietMs` adds a stretch of wall clock with no pass at all, for a reading
+   * that counts passes itself. A page that never settles fails the step by name.
+   */
+  async function watch(read, quietMs) {
+    var readings = []
+    var quietFrames = 0
+    var lastPass = performance.now()
+    var started = performance.now()
+    for (;;) {
+      if (read !== undefined) readings.push(read())
+      var before = window.__passes
+      await frame()
+      if (window.__passes === before) quietFrames += 1
+      else {
+        quietFrames = 0
+        lastPass = performance.now()
+      }
+      if (quietFrames >= 8 && performance.now() - lastPass >= (quietMs || 0) && landed()) break
+      if (performance.now() - started > 8000) throw new Error('smoke: the page did not settle within eight seconds')
+    }
+    if (read !== undefined) readings.push(read())
+    return readings
+  }
+  /** Wait for the page to settle (see watch). */
+  function settle(quietMs) { return watch(undefined, quietMs) }
+  /**
+   * Record `read()` on every frame until `reached(readings)` holds, for a page
+   * that keeps moving on a clock of its own and so never settles; the readings
+   * end with the one that reached. A state that never comes fails the step by
+   * name once `limitMs` (eight seconds unless the state's own clock is longer)
+   * has passed.
+   */
+  async function until(read, reached, what, limitMs) {
+    var limit = limitMs === undefined ? 8000 : limitMs
+    var readings = []
+    var started = performance.now()
+    for (;;) {
+      readings.push(read())
+      if (reached(readings)) return readings
+      if (performance.now() - started > limit) throw new Error('smoke: ' + what + ' did not happen within ' + limit + ' ms')
+      await frame()
+    }
+  }
   function attrs(el) { return el ? Array.prototype.map.call(el.attributes, function (a) { return a.name }) : null }
   // A segmented control's sliding pill (packages/client/src/shared/sliding-pill.ts) against
   // the item it should sit under: its mark, its written placement, the item's
@@ -35,6 +95,10 @@
 
   var probe = {
     sleep: sleep,
+    frame: frame,
+    watch: watch,
+    settle: settle,
+    until: until,
     attrs: attrs,
     pillState: pillState,
     report: { applyError: window.__applyError, teardownRegistered: typeof window.__dispose === 'function' },

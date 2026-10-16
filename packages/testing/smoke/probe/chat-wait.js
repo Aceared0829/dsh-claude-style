@@ -5,7 +5,6 @@
  */
 (function () {
   var probe = window.__dshSmokeProbe
-  var sleep = probe.sleep
   var r = probe.report
 
   probe.step(async function () {
@@ -30,11 +29,9 @@
       var row = waitSession.querySelector('[data-chat-running]')
       var words = document.getElementById('debugRunningWords')
       // The parts land on the pass after the subtree arrives (D3).
-      var whale = null
-      for (var look = 0; look < 40 && whale === null; look++) {
-        await sleep(50)
-        whale = row.querySelector('[data-dsh-claude-part~="running-icon"]')
-      }
+      var icons = await probe.until(function () { return row.querySelector('[data-dsh-claude-part~="running-icon"]') },
+        function (found) { return found[found.length - 1] !== null }, 'the running icon part')
+      var whale = icons[icons.length - 1]
       var foreignLine = document.createElement('div')
       foreignLine.textContent = 'Third-party status'
       words.parentElement.appendChild(foreignLine)
@@ -169,37 +166,20 @@
           foreignShown: getComputedStyle(foreignLine).display !== 'none',
         }
       }
-      // The two halves of the wording swap travel together: the old one leaves
-      // upward with a blur while the new one stands parked below and is released
-      // one gap later, so both copies are in the box for the rest of the swap.
-      // Sampled across the swap, rather than once at the end: the leave lasts
-      // 150ms, so the grid has to be far finer than it for the last leave frame
-      // to read as gone.
-      var watchSwap = async function () {
-        var frames = []
-        for (var round = 0; round < 48; round += 1) {
-          frames.push(lineOf())
-          await sleep(25)
-        }
-        // One settled frame after the window: the swap can land late in it, and
-        // the last reading is what "at rest" is judged on.
-        await sleep(250)
-        frames.push(lineOf())
-        return frames
-      }
       // A wording written stands a whole second (WORD_LOCK_MS), so a reading of
-      // a state the fixture has just moved to waits for the line to reach it
-      // rather than sleeping a fixed stretch: the lock, the swap after it and
-      // the state before it all land at different moments. The deadline is the
-      // bound, and a reading that never arrives answers with what stood.
-      var awaitWord = async function (want) {
-        var deadline = Date.now() + 4000
-        for (;;) {
-          var reading = lineOf()
-          if (reading !== null && want(reading)) return reading
-          if (Date.now() > deadline) return reading
-          await sleep(50)
-        }
+      // a state the fixture has just moved to is recorded on every frame until
+      // the line reaches it: the lock, the swap after it and the state before it
+      // all land at different moments. Every frame of the way is answered, so a
+      // swap is read whole whenever it lands.
+      var framesToWord = function (want, what) {
+        return probe.until(lineOf, function (frames) {
+          var reading = frames[frames.length - 1]
+          return reading !== null && want(reading)
+        }, what)
+      }
+      var awaitWord = async function (want, what) {
+        var frames = await framesToWord(want, what || 'the line reaching its wording')
+        return frames[frames.length - 1]
       }
       r.wait = { working: await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 }) }
       // The whale tail is DeepSeek's own character: under that brand the host's
@@ -213,21 +193,8 @@
       r.wait.claudeAgain = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 })
       foreignLine.remove()
       words.parentElement.appendChild(foreignLine)
-      await sleep(300)
+      await probe.settle()
       r.wait.foreignAfter = lineOf()
-      // One hand-over of the loader's two lanes: both lanes are read every 20 ms
-      // for long enough that a whole one fits — the longest a dot can wait for its
-      // own moment is a full turn of its motion, and its fade is one leg of that
-      // turn on top (features/chat-wait/wait-loader.ts).
-      var watchLoader = async function () {
-        var frames = []
-        for (var round = 0; round < 80; round += 1) {
-          var reading = lineOf()
-          frames.push(reading === null ? null : reading.loader)
-          await sleep(20)
-        }
-        return frames
-      }
       // One lane's motion read off the animation itself: a lane's dots run the
       // same clock, so stepping that clock through a whole turn — all of them
       // together, which keeps their own phases — reads the motion's own curve
@@ -275,23 +242,28 @@
         return { step: step, frames: frames }
       }
       // The rotation: the loader opens on one motion and takes up another every
-      // ten seconds, never the one already standing. Sampled with the moment of
-      // each reading, so the stretch one motion stood and the hand-over between
-      // two of them can both be read off it.
-      var watchRotation = async function (rounds) {
-        var frames = []
-        for (var round = 0; round < rounds; round += 1) {
+      // ten seconds, never the one already standing. Its length is the
+      // product's own (D66: a duration that is the behaviour), so every frame is
+      // recorded with its moment until two changes have landed: the stretch one
+      // motion stood and the hand-over between two of them are both read off it.
+      var watchRotation = function () {
+        return probe.until(function () {
           var reading = lineOf()
-          frames.push({ at: performance.now(), loader: reading === null ? null : reading.loader })
-          await sleep(100)
-        }
-        return frames
+          return { at: performance.now(), loader: reading === null ? null : reading.loader }
+        }, function (frames) {
+          var changes = 0
+          for (var at = 1; at < frames.length; at += 1) {
+            var was = frames[at - 1].loader
+            var now = frames[at].loader
+            if (was !== null && now !== null && String(was.motion) !== String(now.motion)) changes += 1
+          }
+          return changes >= 2
+        }, 'two changes of the loader rotation', 25000)
       }
       // A tool call in flight is a state of its own, with no block streaming.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'settled', step: 1, blocks: [{ kind: 'reasoning' }, { kind: 'tool-call' }] } : undefined } } }]
       var calls = window.__dshSmokeHost.turnFixtureCalls
       calls.push({ turn: 2 })
-      r.wait.loaderChange = await watchLoader()
       r.wait.tools = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
       // Each lane's own motion, one at a time: the hopping wave reads a whole
       // bounce, the walk a whole period, the corner swap a whole turn.
@@ -300,63 +272,37 @@
       r.wait.orbitLane = await watchLane('is-orbit', 61, 40)
       // And the rotation itself: long enough for two changes to land, so the
       // stretch between two of them can be timed.
-      r.wait.rotation = await watchRotation(220)
+      r.wait.rotation = await watchRotation()
       // A call that has its arguments names the file it works on; one whose
       // arguments are still arriving names nothing yet.
       calls[0] = { turn: 2, phase: 'start', name: 'read', argsRaw: JSON.stringify({ file_path: 'C:\\work\\app.js' }) }
       r.wait.fileCall = await awaitWord(function (reading) { return reading.word === 'Reading app.js' && reading.copies === 1 })
       calls[0] = { turn: 2, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"C:\\\\work\\\\app' }
       r.wait.arriving = await awaitWord(function (reading) { return reading.word === 'Running tools…' && reading.copies === 1 })
-      // The lock the tool state carries is let run out before the turn is
-      // emptied, so the swap below lands inside the window the entry's watcher
-      // samples rather than being held back by a word written a moment ago.
-      await sleep(900)
       // The model goes silent: the running turn has written nothing and no call
       // is in flight, so the line stands on the word its brand waits on — the
-      // same word it says while the model is thinking. The swap that reaches it
-      // is watched with the entry's own frames sampled by the browser rather
-      // than by a polling loop: the window between the incoming copy's rest pose
-      // and its release is shorter than a 10 ms poll can see, and the reading is
-      // about how the two halves move together. The entering copy is the one
-      // whose `data-text` names what the line is heading for, so it is found by
-      // its words and watched frame by frame. The timeout is the bound: a frame
-      // that never arrives answers with the frames that did.
-      var waitForEnter = new Promise(function (resolve) {
-        var frames = []
-        var settled = false
-        var done = function () {
-          if (settled) return
-          settled = true
-          resolve(frames.length === 0 ? null : frames)
-        }
-        setTimeout(done, 1500)
-        var read = function () {
-          var label = row.querySelector('.dsh-claude-chat-wait-label')
-          var copy = label === null ? null : label.querySelector('.dsh-claude-swap-copy[data-text="Thinking…"]')
-          if (copy === null) { requestAnimationFrame(read); return }
-          var style = getComputedStyle(copy)
-          frames.push({ opacity: Number(style.opacity), filter: style.filter, transform: style.transform })
-          // The bound is the swap's own length, not a frame count: the stand-in's
-          // frames arrive faster than a display's, and a count that covers the
-          // whole swap on one machine reads only its beginning on another. A few
-          // frames of the climb are kept either way, and the timeout above is the
-          // outer bound.
-          if (frames.length >= 6 && Number(style.opacity) >= 0.999) { done(); return }
-          if (frames.length >= 240) { done(); return }
-          requestAnimationFrame(read)
-        }
-        requestAnimationFrame(read)
-      })
+      // same word it says while the model is thinking. The two halves of the
+      // swap that reaches it travel together: the old one leaves upward with a
+      // blur while the new one stands parked below and is released one gap
+      // later. Every frame from here until the swap has landed is recorded, the
+      // line whole and the entering copy on its own (the one whose `data-text`
+      // names the word), however long the lock written a moment ago holds it.
+      var enterFrames = []
       calls.length = 0
       window.__dshSmokeHost.turnFixtureRunning.steps = []
-      // The turn going back to thinking changes the loader's motion the other
-      // way, and its wording at the same time: the loader's own change is
-      // watched alongside the swap below rather than after it, since the swap's
-      // frames are the ones that have to be caught whole.
-      var loaderBack = watchLoader()
-      r.wait.silent = await watchSwap()
-      r.wait.loaderBack = await loaderBack
-      r.wait.enterFrames = await waitForEnter
+      r.wait.silent = await framesToWord(function (reading) {
+        var label = row.querySelector('.dsh-claude-chat-wait-label')
+        var copy = label === null ? null : label.querySelector('.dsh-claude-swap-copy[data-text="Thinking…"]')
+        if (copy !== null) {
+          var style = getComputedStyle(copy)
+          enterFrames.push({ opacity: Number(style.opacity), filter: style.filter, transform: style.transform })
+        }
+        return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null
+      }, 'the swap to the silent wording')
+      // The box takes the arriving width after the words have landed, and the
+      // clock slides with it: the frames run on until the page settles.
+      r.wait.silent = r.wait.silent.concat(await probe.watch(lineOf))
+      r.wait.enterFrames = enterFrames
       // Reasoning the line can take words from: the model's own clause, the
       // participle first, up to the sentence's end.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }] } : undefined } } }]
@@ -372,32 +318,32 @@
       waitSession.style.maxWidth = ''
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })
-      await sleep(200)
+      await probe.settle()
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: '先看清工作区。' }] } : undefined } } }]
       r.wait.reduced = await awaitWord(function (reading) { return reading.word === 'Thinking…' && reading.copies === 1 && reading.phase === null })
-      // The dots under that choice: read twice a tenth of a second apart, so a
-      // motion that never settles shows up as the two readings differing.
-      var still = lineOf()
-      await sleep(120)
-      r.wait.reducedStill = { first: still, second: lineOf() }
+      // The dots under that choice: read on every frame until the page settles,
+      // so a motion that never stops shows up as the first and last readings
+      // differing.
+      var stillFrames = await probe.watch(lineOf)
+      r.wait.reducedStill = { first: stillFrames[0], second: stillFrames[stillFrames.length - 1] }
       window.__pushForm({ motion: 'system' })
-      await sleep(200)
+      await probe.settle()
       // The Motion tab's second paint: the words take the colour wash and its
       // two loops instead of the band, and picking the band again hands them
-      // back. The choice is one document attribute, so a reading after one
-      // sleep is the whole paint.
+      // back. The choice is one document attribute, so a reading once the page
+      // has settled is the whole paint.
       window.__pushForm({ statusMotion: 'wash' })
-      await sleep(200)
+      await probe.settle()
       r.wait.wash = lineOf()
       window.__pushForm({ statusMotion: 'sweep' })
-      await sleep(200)
+      await probe.settle()
       r.wait.sweepAgain = lineOf()
       var previousWords = words
       words = document.createElement('span')
       words.setAttribute('data-shimmer', 'true')
       words.textContent = previousWords.textContent
       previousWords.replaceWith(words)
-      await sleep(400)
+      await probe.settle()
       r.wait.replaced = {
         previousMarked: previousWords.hasAttribute('data-dsh-claude-wait-words'),
         current: lineOf(),
@@ -412,31 +358,35 @@
           follow: document.body.hasAttribute('data-dsh-claude-chat-follow'),
         }
       }
+      // A change of owner that is only a style is read on the line's own
+      // quarter-second tick (chat-wait.ts), so each reading waits for the line
+      // to stand aside or come back, and a line that never does fails by name.
+      var owned = async function (lineStands, what) {
+        var seen = await probe.until(ownership, function (frames) {
+          var last = frames[frames.length - 1]
+          return last.line === lineStands && last.marked === lineStands
+        }, what)
+        return seen[seen.length - 1]
+      }
       words.style.display = 'none'
-      await sleep(400)
-      r.wait.takeover = ownership()
+      r.wait.takeover = await owned(false, 'the line standing aside for a visible replacement')
       foreignLine.hidden = true
-      await sleep(400)
-      r.wait.hiddenReplacement = ownership()
+      r.wait.hiddenReplacement = await owned(true, 'the line coming back once the replacement hides')
       foreignLine.hidden = false
-      await sleep(400)
-      r.wait.visibleReplacement = ownership()
+      r.wait.visibleReplacement = await owned(false, 'the line standing aside for the replacement shown again')
       words.style.removeProperty('display')
-      await sleep(400)
-      r.wait.hostRestored = ownership()
+      r.wait.hostRestored = await owned(true, 'the line coming back once the host words return')
       window.__pushForm({ chatWait: false })
-      await sleep(300)
+      await probe.settle()
       words.style.display = 'none'
       window.__pushForm({ chatWait: true })
-      await sleep(400)
-      r.wait.existingOwner = ownership()
+      r.wait.existingOwner = await owned(false, 'the line standing aside for an owner already there')
       foreignLine.remove()
       words.style.removeProperty('display')
-      await sleep(400)
-      r.wait.ownerRemoved = ownership()
+      r.wait.ownerRemoved = await owned(true, 'the line coming back once the owner is gone')
       words.parentElement.appendChild(foreignLine)
       window.__pushForm({ chatWait: false })
-      await sleep(300)
+      await probe.settle()
       r.wait.off = {
         line: row.querySelector('.dsh-claude-chat-wait') !== null,
         marked: row.hasAttribute('data-dsh-claude-wait'),
@@ -445,9 +395,9 @@
         foreignShown: getComputedStyle(foreignLine).display !== 'none',
       }
       window.__pushForm({ chatWait: true })
-      await sleep(300)
+      await probe.settle()
       waitSession.remove()
-      await sleep(300)
+      await probe.settle()
       r.wait.removed = { wordsMarked: words.hasAttribute('data-dsh-claude-wait-words') }
     })
   })

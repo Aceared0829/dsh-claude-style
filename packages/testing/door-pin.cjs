@@ -19,7 +19,6 @@
  * while the reasoning streams.
  */
 'use strict'
-const { bound } = require('./bounds.cjs')
 
 /** The host's page markers this scenario reads, as packages/testing/lane.cjs names them. */
 const HOST = {
@@ -35,11 +34,6 @@ const SKIN = {
   rolling: '[data-dsh-claude-rolling]', // CHAT_ROLLING_ATTR
   readerHold: '[data-dsh-claude-reader-hold]', // READER_HOLD_ATTR
 }
-
-/** Long enough for a door to roll and its settle to land before the next press. */
-const DOOR_SETTLE_MS = bound('doorPinSettleMs')
-/** The frames on each side of the doors whose status line is held to the same spot. */
-const AROUND_FRAMES = bound('doorPinAroundFrames')
 
 /**
  * Sample the page once per frame until the turn settles: the row's place on
@@ -69,19 +63,27 @@ function watch(page) {
 }
 
 /**
- * Press the newest process group's header with no pointer behind the click.
- * @returns what the header said before the press, or null when there was none.
+ * Press the newest process group's header with no pointer behind the click,
+ * then wait until the door it rolls has landed: the sampler's frames since the
+ * press carry a rolling one and the page carries none any more.
+ * @returns what the header said before the press, and the sampler's frames from
+ *     the press to the landing as `[from, to)`; null when there was no header.
  */
-function pressGroup(page) {
-  return page.evaluate((marks) => {
+async function pressGroup(page) {
+  const pressed = await page.evaluate((marks) => {
     const groups = [...document.querySelectorAll(marks.group)]
     const group = groups[groups.length - 1]
     const header = group === undefined ? null : group.querySelector('[aria-controls]')
     if (!(header instanceof HTMLElement)) return null
     const expanded = header.getAttribute('aria-expanded')
+    const from = window.__doorPinTrace.length
     header.click()
-    return { expanded }
+    return { expanded, from }
   }, HOST)
+  if (pressed === null) return null
+  await page.waitForFunction(({ from, rolling }) => window.__doorPinTrace.slice(from).some((frame) => frame.rolling) &&
+    document.querySelector(rolling) === null, { from: pressed.from, rolling: SKIN.rolling }, { timeout: 10000 })
+  return { ...pressed, to: await page.evaluate(() => window.__doorPinTrace.length) }
 }
 
 function doorPinScenario({ check }) {
@@ -113,31 +115,30 @@ function doorPinScenario({ check }) {
         return scroller.scrollHeight - scroller.clientHeight > scroller.clientHeight / 2
       }, HOST, { timeout: 30000 })
       context.notes.shut = await pressGroup(page)
-      await page.waitForTimeout(DOOR_SETTLE_MS)
       context.notes.open = await pressGroup(page)
-      await page.waitForTimeout(DOOR_SETTLE_MS)
       context.notes.streaming = await page.evaluate((marks) => document.querySelector(marks) !== null, HOST.reasoning)
     },
     async afterTurn(context) {
       context.notes.trace = await context.page.evaluate(() => window.__doorPinTrace ?? [])
     },
     async assert({ session, notes }) {
-      const frames = (notes.trace ?? []).filter((frame) => frame.row !== null && frame.overflowing && !frame.reader)
-      const rolling = frames.filter((frame) => frame.rolling)
+      // Each door is read on its own frames, from its press to its landing.
+      const trace = notes.trace ?? []
+      const doorFrames = (door) => door === null || door === undefined ? []
+        : trace.slice(door.from, door.to).filter((frame) => frame.row !== null && frame.overflowing && !frame.reader)
+      const doors = [doorFrames(notes.shut), doorFrames(notes.open)]
+      const rolling = doors.flatMap((frames) => frames.filter((frame) => frame.rolling))
       const slipped = rolling.filter((frame) => !frame.pinned)
-      const first = frames.findIndex((frame) => frame.rolling)
-      const last = frames.findLastIndex((frame) => frame.rolling)
-      const around = first === -1 ? [] : frames.slice(Math.max(0, first - AROUND_FRAMES), last + AROUND_FRAMES + 1)
-      const tops = around.map((frame) => frame.row)
-      const spread = tops.length === 0 ? 0 : Math.max(...tops) - Math.min(...tops)
+      const spreads = doors.map((frames) => frames.length === 0 ? null : Math.max(...frames.map((frame) => frame.row)) - Math.min(...frames.map((frame) => frame.row)))
       return [
         check('两扇门都在推理流式输出时滚过',
-          notes.shut?.expanded === 'true' && notes.open?.expanded === 'false' && notes.streaming === true && rolling.length > 6,
-          JSON.stringify({ shut: notes.shut, open: notes.open, streamingAfter: notes.streaming, doorFrames: rolling.length })),
+          notes.shut?.expanded === 'true' && notes.open?.expanded === 'false' && notes.streaming === true &&
+            doors.every((frames) => frames.some((frame) => frame.rolling)),
+          JSON.stringify({ shut: notes.shut, open: notes.open, streamingAfter: notes.streaming, doorFrames: doors.map((frames) => frames.filter((frame) => frame.rolling).length) })),
         check('门滚动的每一帧状态行都钉着', rolling.length > 0 && slipped.length === 0,
           `${slipped.length} of ${rolling.length} door frames unpinned${slipped.length === 0 ? '' : `, row ${Math.min(...slipped.map((f) => f.row))}..${Math.max(...slipped.map((f) => f.row))}`}`),
-        check('门滚动前后状态行停在同一处，连半个像素也不动', around.length > AROUND_FRAMES && spread === 0,
-          `top ${tops.length === 0 ? 'n/a' : `${Math.min(...tops)}..${Math.max(...tops)}`} over ${around.length} frames`),
+        check('从按下到门落定，状态行停在同一处，连半个像素也不动', spreads.every((spread) => spread === 0),
+          `spread per door ${JSON.stringify(spreads)} over ${doors.map((frames) => frames.length).join(' and ')} frames`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

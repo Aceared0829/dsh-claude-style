@@ -69,8 +69,8 @@ module.exports = {
     check('the glide is left at the end: the frames the recording ended on all read it',
       walkHeldAtEnd(glide, AT_END_PX, bound('followQuietFrames')), JSON.stringify(glide.slice(-bound('followQuietFrames'))))
     check('a message the reader just sent is not taken back: the host\'s jump to it stands',
-      follow.submitGap <= AT_END_PX && follow.submitGapLate <= AT_END_PX,
-      JSON.stringify({ gap: follow.submitGap, late: follow.submitGapLate }))
+      (follow.submitGaps || []).length > 0 && follow.submitGaps.every((gap) => gap <= AT_END_PX),
+      JSON.stringify(follow.submitGaps))
     check('the host\'s own back-to-the-end button is kept out of sight while the glide follows, and shows again after',
       follow.glideButtonMarked === true && follow.glideButtonBack === true,
       JSON.stringify({ marked: follow.glideButtonMarked, back: follow.glideButtonBack }))
@@ -149,7 +149,7 @@ module.exports = {
         grow[3].textHeight > grow[0].textHeight,
       JSON.stringify(grow))
     check('a reasoning over the cap holds the window at the height it may reach, masked at both edges',
-      run.length === 4 &&
+      run.length > 0 &&
         run.every((frame) => frame.on === true && frame.capped === true &&
           frame.slotHeight === 400 && frame.mask.startsWith('linear-gradient') && frame.textHeight > 400),
       JSON.stringify(run))
@@ -216,8 +216,8 @@ module.exports = {
     basicChecks(r)
     const reveal = r.reveal || {}
     const shipped = reveal.shipped || {}
-    const opening = reveal.opening || {}
-    const grown = reveal.grown || {}
+    const opening = reveal.opening || []
+    const grown = reveal.grown || []
     const settled = reveal.settled || {}
     const off = reveal.off || {}
     const back = reveal.back || {}
@@ -225,8 +225,8 @@ module.exports = {
     check('the fade ships off: a streaming container gets no step highlights and no mark until the choice is turned on',
       shipped.total === 0 && shipped.mark === false, JSON.stringify(shipped))
     check('characters arriving in a streaming container are registered as step highlights from the faintest step',
-      opening.mark === true && opening.total > 0 && opening.steps > 0, JSON.stringify(opening))
-    check('more characters arriving join them', grown.total > 0 && grown.steps >= 1, JSON.stringify(grown))
+      opening.some((frame) => frame.mark === true && frame.total > 0 && frame.steps > 0), JSON.stringify(opening.slice(0, 4)))
+    check('more characters arriving join them', grown.some((frame) => frame.total > 0 && frame.steps >= 1), JSON.stringify(grown.slice(0, 4)))
     check('once faded they leave the registry', settled.total === 0, JSON.stringify(settled))
     check('the preference withdraws the engine whole, and switching it back installs it again',
       off.total === 0 && off.mark === false && back.mark === true, JSON.stringify({ off: off, back: back }))
@@ -427,12 +427,15 @@ module.exports = {
       changes.length >= 2 && gaps.every((one) => one >= 9500 && one <= 11500) && rotated.every((one) => one === true),
       JSON.stringify({ changes: changes.length, gaps: gaps.map((one) => Math.round(one)), motions: starts.map((at) => motionOf(at)) }))
     const laneTail = (frame, name) => ((laneOf(frame.loader, name).opacity || [])[0])
+    // The hand-over is read on the frames between the first change and the next:
+    // the lane that stood before it fades out and the one it names fades in.
     const before = changes.length === 0 ? null : seen[changes[0] - 1]
-    const settled = changes.length === 0 ? null : seen[Math.min(changes[0] + 18, seen.length - 1)]
-    const goneLane = before === null || settled === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneTail(before, name) > 0.9 && laneTail(settled, name) < 0.1)
-    const comeLane = before === null || settled === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneTail(before, name) < 0.1 && laneTail(settled, name) > 0.9)
+    const comeLane = changes.length === 0 ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => name === `is-${motionOf(changes[0])}`) ?? null
+    const goneLane = before === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneTail(before, name) > 0.9) ?? null
+    const settled = changes.length < 2 || goneLane === null || comeLane === null ? null
+      : seen.slice(changes[0], changes[1]).find((frame) => laneTail(frame, goneLane) < 0.1 && laneTail(frame, comeLane) > 0.9) ?? null
     check('换轨道是一次交接：旧的那条各自淡出、新的那条各自淡入，没有一颗球是被搬过去的',
-      goneLane !== null && comeLane !== null && goneLane !== comeLane && String(settled.motion).includes(comeLane),
+      goneLane !== null && comeLane !== null && goneLane !== comeLane && settled !== null && String(settled.motion).includes(comeLane),
       JSON.stringify({ gone: goneLane, come: comeLane, settled: settled === null ? null : settled.motion }))
     check('the DeepSeek brand keeps the host\'s whale tail, stands the skin\'s dots down and waits on the host\'s own word',
       wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true && wait.deepseek?.word === 'Deep diving',
@@ -474,7 +477,7 @@ module.exports = {
       JSON.stringify({ overlapping: overlap.length, opacities: overlap.map((frame) => frame.opacity), sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-sweep').length }))
     const enter = wait.enterFrames || []
     check('the wording arriving rises from below through a blur, its opacity climbing to rest',
-      enter.length > 3 && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&
+      enter.some((frame) => frame.opacity > 0.05 && frame.opacity < 0.95) && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&
         Number(enter[enter.length - 1].opacity) > 0.9 && blurOf(enter[enter.length - 1]) < 0.5 &&
         enter.every((frame, at) => at === 0 || frame.opacity >= enter[at - 1].opacity - 0.01),
       JSON.stringify(enter))

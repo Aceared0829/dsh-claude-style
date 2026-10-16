@@ -72,16 +72,6 @@
       "reason": "How far behind the tail the scroller may lag while the reader follows it. The gap opens only while content arrives faster than the glide closes it — the lane's long script measures 151px at its fastest burst — so the bound is a third of that scenario's 600px viewport: a follow that stopped working leaves hundreds of pixels more, and a glide that stutters stays inside it."
     },
     {
-      "name": "doorPinSettleMs",
-      "value": 450,
-      "reason": "Long enough for a door to roll and its settle to land before the next press in the door-pin walk."
-    },
-    {
-      "name": "doorPinAroundFrames",
-      "value": 30,
-      "reason": "The frames on each side of the doors whose status line is held to the same spot."
-    },
-    {
       "name": "readerScrollPinSlackPx",
       "value": 40,
       "reason": "How much of the pinned row's own height a frame may sit within and still count as floating at the pin."
@@ -90,11 +80,6 @@
       "name": "readerScrollTailThresholdPx",
       "value": 25,
       "reason": "How far the tail has to sit from the end for the pin to have something to hold against."
-    },
-    {
-      "name": "motionSettleMs",
-      "value": 600,
-      "reason": "Longer than any entrance or exit the motion token table holds, so a state read after it has landed."
     },
     {
       "name": "remoteSettingsFollowTimeoutMs",
