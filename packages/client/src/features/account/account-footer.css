@@ -165,8 +165,8 @@ body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"] {
 }
 body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"]:hover,
 body[data-dsh-claude-style] .dsh-claude-account-popover-row[role="button"]:focus-visible {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
-  outline: none !important;
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
+  outline: none;
 }
 
 /* The rule under the account name belongs to the POPOVER, not to the row: it
@@ -185,22 +185,22 @@ body[data-dsh-claude-style] .dsh-claude-account-popover-header .dsh-claude-accou
    <img> sends it, and only an element can say so. A picture that fails to load
    hides itself, and the mark underneath shows instead of an empty circle. */
 body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-photo] {
-  position: relative !important;
+  position: relative;
 }
 body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-photo]::before {
-  display: none !important;
+  display: none;
 }
 body[data-dsh-claude-style] .dsh-claude-account-photo {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  border-radius: inherit !important;
-  pointer-events: none !important;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
 }
 body[data-dsh-claude-style] .dsh-claude-account-photo[hidden] {
-  display: none !important;
+  display: none;
 }
 
 /* The launcher's own skin, when the instance was started with one: the head is
@@ -215,20 +215,20 @@ body[data-dsh-claude-style] .dsh-claude-account-photo[hidden] {
    corners off. The launcher's own account list shows the head square for the
    same reason. */
 body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-skin] {
-  position: relative !important;
-  background-image: none !important;
-  border-radius: 0 !important;
+  position: relative;
+  background-image: none;
+  border-radius: 0;
 }
 body[data-dsh-claude-style] .dsh-claude-account-avatar[data-dsh-claude-skin]::before {
-  display: none !important;
+  display: none;
 }
 body[data-dsh-claude-style] .dsh-claude-account-skin {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: inherit !important;
-  pointer-events: none !important;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
   image-rendering: pixelated;
 }
 
@@ -236,14 +236,14 @@ body[data-dsh-claude-style] .dsh-claude-account-skin {
    `.dsh-claude-popover-item:hover` rule in the stylesheet is scoped to the model
    picker. Give the account drawer the same affordance as the rest of the skin. */
 body[data-dsh-claude-style] .dsh-claude-account-popover .dsh-claude-popover-item:hover {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-account-popover .dsh-claude-popover-item:hover {
-  background: rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.10);
 }
 body[data-dsh-claude-style] .dsh-claude-account-popover .dsh-claude-popover-item[aria-disabled="true"] {
-  opacity: 0.5 !important;
-  cursor: default !important;
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* ---------- Host account area ---------- */
@@ -259,9 +259,9 @@ body[data-dsh-claude-style] [data-dsh-claude-account-host-row] {
   width: 100%;
   height: 32px;
   box-sizing: border-box;
-  padding: 0 8px !important;
+  padding: 0 8px;
   margin: 0;
-  border: none !important;
+  border: none;
   border-radius: 6px;
   background: transparent;
   color: var(--dsw-alias-label-primary);
@@ -278,22 +278,22 @@ body[data-dsh-claude-style] [data-dsh-claude-account-host-row]:hover {
 /* The host's own avatar keeps its picture; only its box is normalised to this
    row's 18px circle. */
 body[data-dsh-claude-style] [data-dsh-claude-account-host-row] img {
-  width: 18px !important;
-  height: 18px !important;
-  flex: none !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
 }
 /* The chevron is the skin's own: the host row does not draw one. */
 body[data-dsh-claude-style] [data-dsh-claude-account-host-row]::after {
-  content: "" !important;
-  display: inline-block !important;
-  width: 12px !important;
-  height: 12px !important;
-  flex: none !important;
-  margin-left: auto !important;
-  background: currentColor !important;
-  opacity: 0.55 !important;
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: auto;
+  background: currentColor;
+  opacity: 0.55;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
 }
@@ -301,15 +301,15 @@ body[data-dsh-claude-style] [data-dsh-claude-account-host-row]::after {
    marked row becomes a full-width flex box, so the row can fill the footer
    whatever the host's hashed wrapper classes are. */
 body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"][data-dsh-claude-holds~="account-row"] {
-  display: flex !important;
-  align-items: center !important;
-  width: 100% !important;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] [data-dsh-claude-holds~="account-row"] {
-  display: flex !important;
-  align-items: center !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Our container injected at the head of the host's account menu. Its rows use
@@ -364,75 +364,92 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"] [data-dsh-claude-a
    so inside the armed window it stays unpainted until surface.ts has seen our
    rows inside it and the host's placement stand still. */
 body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data-menu-material]:not([data-dsh-claude-account-ready]) {
-  visibility: hidden !important;
-  animation: none !important;
+  visibility: hidden;
+  animation: none;
 }
 body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data-menu-material][data-dsh-claude-account-ready] {
-  transform-origin: bottom left !important;
-  animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle) !important;
+  transform-origin: bottom left;
+  animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
 }
 
 /* The host's rows. itemWrap is the shared Menu's row wrapper; the bare item
    fragment would reach unrelated class names, so the longest stable piece is
-   used. */
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
-  min-height: 32px !important;
-  padding: 2px 7px !important;
-  gap: 8px !important;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  line-height: 20px !important;
-  font-weight: 400 !important;
-  color: var(--dsw-alias-label-primary, #141413) !important;
-  transition: background-color var(--dsh-claude-timing-feedback) !important;
+   used.
+   One row height, one radius and one hover plate carry both host menus the skin
+   repaints — the account area's and the home hero's, features/hero-menu — so the
+   two never drift apart. The account row's own weight is stated below. */
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
+  min-height: 32px;
+  padding: 2px 7px;
+  gap: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary, #141413);
+  transition: background-color var(--dsh-claude-timing-feedback);
 }
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled),
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:focus-visible:not(:disabled) {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled),
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:focus-visible:not(:disabled) {
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
+}
+body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
+  font-weight: 400;
+}
+/* The rows the host hands a description or a name of their own keep their own
+   line, in the account area as on the home page. */
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-name"] {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+}
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-desc"] {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--dsw-alias-label-tertiary, #8f8d84);
+}
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-icon"] {
+  width: 16px;
+  height: 16px;
+  color: var(--dsw-alias-label-secondary, #787672);
+}
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-icon"] svg {
+  width: 16px;
+  height: 16px;
+}
+body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-label"] {
+  font-size: 13px;
+  line-height: 20px;
 }
 /* The selected row keeps the skin's fill rather than the host's stronger
    accent: the account menu's rows are actions, not a persistent choice. */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-selected"] {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
-}
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-label"] {
-  font-size: 13px !important;
-  line-height: 20px !important;
-}
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-icon"] {
-  width: 16px !important;
-  height: 16px !important;
-  color: var(--dsw-alias-label-secondary, #787672) !important;
-}
-body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item-icon"] svg {
-  width: 16px !important;
-  height: 16px !important;
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
 }
 
 /* Separators take the skin's hairline and bleed across the card's padding the
    way the drawer's own divider does. */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [role="separator"] {
-  height: 1px !important;
-  margin: 2px -6px !important;
-  background: var(--dsw-alias-border-l1, #e8e6dc) !important;
+  height: 1px;
+  margin: 2px -6px;
+  background: var(--dsw-alias-border-l1, #e8e6dc);
 }
 
 /* The list and its pinned footer sit inside the card's 6px padding; the footer
    keeps a hairline but takes the skin's spacing. */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-viewport"] {
-  padding: 0 !important;
-  overflow-x: hidden !important;
+  padding: 0;
+  overflow-x: hidden;
 }
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-footer"] {
-  margin-top: 2px !important;
-  padding-top: 2px !important;
-  border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc) !important;
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
 }
 
 /* Our injected container and header already use the shared popover rules; the
    host's viewport is a flex column, so the container only needs to fill it. */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] .dsh-claude-account-inject {
-  width: 100% !important;
+  width: 100%;
 }
 
 

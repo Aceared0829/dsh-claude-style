@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 33,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**账户页脚那一块不再靠 `!important` 取胜**：`packages/client/src/features/account/account-footer.css` 里那 79 处 `!important` 去掉了，主机账户行、账户菜单、头像与皮肤画布、抽屉里的行与悬停这些都改为按选择器本身的权重压过去——皮肤的选择器本来就带 `body[data-dsh-claude-style]`，比宿主那些单个类名的规则重。这些声明此前压在宿主账户菜单元素上，那个形态的走查读不到，所以从没被判定过是否必要。`importance` 场景重新走了一遍：每一处都判定过，没有一处多余，十六处仍然必要（压的是宿主的内联样式）；账户菜单那四条选择器因此从「够不到」登记表里划掉。顺带把账户菜单与首页两个菜单的行样式合成一处按两个标记写（此前两处一模一样，去掉了 `!important` 才看得出重复），首页那份只留自己独有的禁用态与选中标记。页面外观不变：外观快照五十个页面状态逐项一致，账户与首页相关用例全过。",
+  "en": "**The account footer no longer wins with `!important`**: the 79 `!important` declarations in `packages/client/src/features/account/account-footer.css` are gone, and the host account row, the account menu, the avatar and skin canvas, and the drawer's rows and hover states are now carried by the selectors' own weight — every skin selector starts with `body[data-dsh-claude-style]` and outweighs the host's single-class rules. Those declarations sat on host account-menu elements, which the walk's page states never reach, so none had ever been judged. The `importance` scenario was walked again: every declaration decided, none superfluous, the sixteen still needed beating a host inline style, and the four account-menu selectors struck out of the unreachable registry. The account menu's rows and the home page's two menus now state their row style once, for both markers together (the two copies were identical and only the dropped weight made that visible); the home sheet keeps what is its own — the disabled state and the selected mark. The pages look the same: the appearance snapshot matches across all fifty page states and the account and home cases pass."
+}

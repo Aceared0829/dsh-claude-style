@@ -43,54 +43,17 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] {
   animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
 }
 
-/* One row height, one radius, one hover plate for both pickers. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
-  min-height: 32px;
-  padding: 2px 7px;
-  gap: 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--dsw-alias-label-primary, #141413);
-  transition: background-color var(--dsh-claude-timing-feedback);
-}
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled) {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
-}
+/* One row height, one radius and one hover plate carry both host menus the skin
+   repaints; the account area (features/account/account-footer.css) states them
+   for the two markers together. What follows is what only this menu has. */
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
-}
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-icon"] {
-  width: 16px;
-  height: 16px;
-  color: var(--dsw-alias-label-secondary, #787672);
-}
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-icon"] svg {
-  width: 16px;
-  height: 16px;
-}
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-label"] {
-  font-size: 13px;
-  line-height: 20px;
 }
 /* The current row is marked by the accent, as in the model picker. */
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-check"] {
   flex: none;
   color: var(--dsw-alias-brand-primary, #d97757);
-}
-
-/* The preset rows are two lines (name + description), so the height above is a
-   floor rather than a cap. */
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-name"] {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 16px;
-}
-body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item-desc"] {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
 }
 
 /* Heading and separator rows. */
