@@ -4,6 +4,8 @@ import * as reactDom from 'react-dom/client'
 import { SESSION_DELETE_ROUTE } from '../../constants'
 import { copyLabel } from '../../core/i18n'
 import { findSidebarRoot } from '../../core/host'
+import { observeMatches } from '../../core/bus'
+import type { MatchList } from '../../core/bus'
 import { buildElement, closestFrom, createStamp } from '../../shared/dom'
 import { removeStrayNodes } from '../../shared/popover'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
@@ -92,6 +94,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * had already given (D9).
    */
   let sectionLabel: HTMLElement | null = null
+  /** The section labels on the page, taken from the bus and released with the section. */
+  let labelWatch: MatchList<HTMLElement> | null = null
   /** The section root a label sits in: the label's header, and that header's parent. */
   function sectionRoot(label: Element) {
     const header = label.parentElement
@@ -106,7 +110,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function findSection() {
     const kept = sectionLabel
     if (kept !== null && kept.isConnected && sectionOf(kept) !== null) return kept
-    const labels = document.querySelectorAll<HTMLElement>('[data-dsh-claude-part~="section-label"]')
+    // The labels of every section the sidebar holds, kept current by the bus
+    // (D40): which one dresses a control is decided here per pass, but the
+    // document is walked once rather than on every pass.
+    labelWatch ??= observeMatches<HTMLElement>('[data-dsh-claude-part~="section-label"]')
+    const labels = labelWatch.all()
     for (let i = 0; i < labels.length; i++) {
       if (sectionOf(labels[i]) === null) continue
       sectionLabel = labels[i]
@@ -406,6 +414,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     labelStamp.release()
     treeStamp.release()
     viewStamp.release()
+    labelWatch?.release()
+    labelWatch = null
   }
 
   function sync() {

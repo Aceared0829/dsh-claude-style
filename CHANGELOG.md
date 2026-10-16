@@ -29,6 +29,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **英雄首页那张选择器卡的触发点也记住答案**：输入卡片上那个工作区触发点与首页那一行是同一个选择器的两种入口，每趟刷新都要在整份文档里找一遍；现在由一处记住的查找（结构变化才重查）供着。登记表里这一条从三处降到两处，剩下的两处要的是活清单而不是单个元素，理由写在登记里。
 - **首页那张宿主菜单卡也走同一条查找**：英雄首页把卡片落位前要问「宿主开着的那张菜单卡在哪」，此前它自己在整份文档里查 `[role="menu"]` 并挑出不是本插件的那张；现在改用宿主访问模块里记住答案的那一处（打开一张菜单会把外壳里别的菜单折起，所以开着的宿主卡片就是这一张）。登记表里这条从两处降到一处——剩下那一处要的是活清单（首页那一行可能同时开着多个选择器）。
 - **两份决定草稿的现状跟上已落地的部分**：整份文档的查找记账现存四十三处，`importance` 台账覆盖全部五百三十九处 `!important` 且构建要求每一处都在册，边界表已有十四条由 `packages/testing/bounds.cjs` 供各场景读取，检查表达式里的其余数字由 `check-numbers.json` 记录并核对。
+- **侧栏分区的标题改由总线登记表供着**：工作区视图每趟刷新都要在整份文档里查一遍分区标题，再挑出带列表区的那个；现在标题清单由观察总线按选择器登记、随页面变化增量维护（D40），每趟刷新只在清单里挑一次，标题与布局都不变时不再走文档。登记表里这一条欠账划掉，现存四十二处。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -53,6 +54,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The hero picker's card trigger keeps its answer too**: the workspace trigger on the composer card and the hero row are two views of the same picker, and the pass looked it up across the whole document every time; a kept lookup (re-asked only when the page's structure changes) serves it now. The ledger entry for that file drops from three lookups to two, and the two that remain want a live list rather than one element — the reason is written in the record.
 - **The hero page reads the host's open menu card through the same lookup**: before placing its own card the hero asked where the host's open menu was, scanning the whole document for `[role="menu"]` and picking the one that is not the skin's; it now uses the accessor that keeps that answer (opening one menu folds the shell's others, so the open host card is that one). The ledger entry for the file drops from two lookups to one — the one left wants a live list, since the hero row may hold more than one open picker.
 - **Both decision drafts' standing sections follow what has landed**: the whole-document lookup record stands at forty-three sites, the `!important` ledger covers all five hundred and thirty-nine declarations with the build requiring each to be in it, the bounds table holds fourteen values read through `packages/testing/bounds.cjs`, and the remaining numbers in check expressions are recorded and verified in `check-numbers.json`.
+- **The sidebar's section labels come from the bus registry now**: the workspace view looked up every section label across the whole document each pass and then picked the one carrying a list area; the labels are now kept by the observation bus per selector and maintained incrementally as the page changes (D40), so a pass picks from the list without walking the document, and the ledger entry recording it as debt is struck out — forty-two sites remain recorded.
 
 ## [0.15.0] - 2026-10-15
 
