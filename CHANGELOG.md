@@ -4,6 +4,18 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- **界面每帧少做整份文档的查找**：查不到东西的查找此前每趟刷新都重新走一遍整份文档，而绝大多数页面上这些座位本来就不存在——会话页没有首屏根，对话框没打开时没有设置导航列。现在这类「什么都没找到」的答案在页面结构变化之前一直有效；设置页的导航格、侧栏的已归档清单清理、账户卡片的清理都收窄到它们各自所在的侧栏里。在 28568 个节点的页面上量同一个回合：插件发出的整份文档查找从 584 次降到 395 次，其中首屏根的查找从 273 次降到 26 次。
+- **长对话里收走状态行的那一趟不再按对话长度平方增长**：宿主一次交还多行时，插件要把每一行还站着的状态线摘掉，此前每条站着的线都要在一份运行行清单里从头找一遍。现在这份清单改作一次集合，摘除的一趟随行数线性走完。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- **Fewer whole-document lookups per frame**: a lookup that found nothing used to walk the whole document again on every pass, while on most pages the seat it asks for is simply absent — a conversation page carries no hero root, and the settings navigation column does not exist until the dialog opens. That "nothing matched" answer now stands until the page's structure changes; the settings navigation cell, the sidebar's archived-list sweep and the account card's sweep are scoped to the sidebar they live in. Measured over one turn on a page of 28568 nodes: the skin's whole-document lookups fall from 584 to 395, and its hero-root lookups from 273 to 26.
+- **The pass that takes the state lines down no longer grows with the square of the conversation**: when the host hands back several rows at once, the skin takes the status line off every row that still stands, and each standing line used to search the running-row list from the start. That list is a set now, so the pass walks it once per line.
+
 ## [0.15.0] - 2026-10-15
 
 [中文](#cn-0.15.0) | [English](#en-0.15.0)

@@ -3,6 +3,7 @@ import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SESSION_DELETE_ROUTE } from '../../constants'
 import { copyLabel } from '../../core/i18n'
+import { findSidebarRoot } from '../../core/host'
 import { buildElement, closestFrom, createStamp } from '../../shared/dom'
 import { removeStrayNodes } from '../../shared/popover'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
@@ -450,9 +451,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     // The sidebar re-renders its own way: when React replaces the container
     // that held the list, the old copy can stay in the document while a new
-    // one is built elsewhere. Sweep every copy but the live one, the same way
-    // the stats popover sweeps its strays.
-    removeStrayNodes(document, '.dsh-claude-archive-list', [listHost])
+    // one is built elsewhere. Sweep every copy but the live one, scoped to the
+    // sidebar the list lives in (core/host.ts): the sweep runs every pass, and
+    // a whole-document query costs a walk of the conversation's rows too.
+    const sidebar = findSidebarRoot()
+    removeStrayNodes(sidebar ?? document, '.dsh-claude-archive-list', [listHost])
     viewStamp.mark(host, view)
   }
 

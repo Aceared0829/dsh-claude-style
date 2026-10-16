@@ -1,8 +1,8 @@
 import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
-import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_ROOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAssistantStep, HostChatSnapshot, HostChatTarget, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
 import { readPrefs } from './prefs'
-import { observeMatches } from './bus'
+import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from '../shared/dom'
 import { createHostResource } from '../shared/resource'
 
@@ -61,14 +61,33 @@ function stillFirstMatch(element: Element, selector: string) {
  * when the host replaced the element or mounted one before it. The answer is
  * the one a query gives — an earlier match invalidates the kept element.
  *
+ * An answer of "nothing matched" is kept for the rest of the batch too. The
+ * query walks the whole document, and the seats asked for here are absent on
+ * most of the pages a pass runs over — the hero root on a conversation page,
+ * the settings nav list away from the dialog — so a query re-issued per pass
+ * paid a document walk for an answer that only the host's own mounting can
+ * change. A batch that adds or removes nodes asks for the query once more, and
+ * this subscription exists whether or not a reader has asked for anything yet,
+ * so no answer is kept across a mount.
+ *
  * Exported for the seats one feature alone reads (a header, a slot, a meter):
  * the mechanism lives once, the selector stays with its reader.
  */
 export function cacheFirstMatch<T extends Element>(selector: string) {
   let kept: T | null = null
+  let answered = false
+  // The subscription outlives the reader on purpose: a generation whose
+  // teardown a client reload dropped would otherwise keep an answer with
+  // nothing left to clear it.
+  subscribeMutations(document.body, { subtree: true, childList: true }, () => {
+    kept = null
+    answered = false
+  })
   return () => {
     if (kept !== null && stillFirstMatch(kept, selector)) return kept
+    if (kept === null && answered) return null
     kept = document.querySelector<T>(selector)
+    answered = true
     return kept
   }
 }
@@ -86,6 +105,13 @@ export const findAccessTrigger = cacheFirst<HTMLButtonElement>(PERMISSION_TRIGGE
 
 /** The sidebar footer, where the account row and the plugin footer entries live. */
 export const findFootArea = cacheFirst<HTMLElement>(FOOT_AREA_SELECTOR)
+
+/**
+ * The sidebar's own column. The skin's sidebar-side nodes live inside it, so a
+ * sweep for its own strays is scoped here instead of the whole document; the
+ * host mounts this column once and replaces it whole.
+ */
+export const findSidebarRoot = cacheFirst<HTMLElement>(SIDEBAR_ROOT_SELECTOR)
 
 /**
  * The host's composer card — the element the skin's composer rules hang on —

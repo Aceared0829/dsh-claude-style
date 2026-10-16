@@ -4,6 +4,7 @@ import { SEGMENT_CLASS } from '../../shared/segment-control'
 import { settingsCopy } from '../../core/i18n'
 import { loadModelCopy, onModelCopyLoaded } from '../../core/model-copy'
 import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
+import { cacheFirstMatch } from '../../core/host'
 import { motionMs } from '../../shared/motion'
 import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './settings-controls'
 import { createSettingsAppearanceTab } from './settings-tab-appearance'
@@ -320,11 +321,20 @@ export function ClaudeStyleBundleConfig(props: { view?: string }) {
 }
 
 /**
+ * The nav list the entry's cell stands in, resolved on demand and kept while
+ * it stays the document's first match (core/host.ts). The query is a
+ * whole-document walk — a part match plus a class substring — and the pass
+ * asked for it every frame while the answer moves only when the host rebuilds
+ * the dialog or opens the overlay the list lives in.
+ */
+const settingsNavList = cacheFirstMatch<HTMLElement>(':is([data-dsh-claude-part~="settings-area"], [data-dsh-claude-part~="overlay"], [class*="SettingsRoot"]) [data-dsh-claude-part~="nav-list"]')
+
+/**
  * Stamped onto the Claude Style nav button in the settings dialog so CSS
  * can replace the host's default settings gear with the black Claude mark.
  */
 export function syncSettingsNav() {
-  const navList = document.querySelector(':is([data-dsh-claude-part~="settings-area"], [data-dsh-claude-part~="overlay"], [class*="SettingsRoot"]) [data-dsh-claude-part~="nav-list"]')
+  const navList = settingsNavList()
   if (!navList) return
   if (navList.querySelector(`[data-dsh-section="${SETTINGS_SECTION_ID}"]`) !== null) return
   // The section's position among the slot's entries is the nav cell's

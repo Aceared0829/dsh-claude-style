@@ -1,5 +1,5 @@
 import { ACCOUNT_ARMED_ATTR, AUTO_POPOVER_OFF } from '../../constants'
-import { findFootArea, getUsername } from '../../core/host'
+import { findFootArea, findSidebarRoot, getUsername } from '../../core/host'
 import { readPrefs } from '../../core/prefs'
 import { createFooterMirror } from './footer-mirror'
 import { createHostAccountMenu } from './host-menu'
@@ -207,7 +207,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function ensureSynthetic(footArea: Element) {
     const username = getUsername()
     removeStrayNodes(footArea, '.dsh-claude-account-btn', [accountBtn])
-    removeStrayNodes(document, '.dsh-claude-account-popover', [accountPopover])
+    // The popover is the skin's own card and lives in the footer's own subtree
+    // (below, on the self-built path), so the sweep for a copy a client reload
+    // stranded is scoped to the sidebar: it runs every pass, and a
+    // whole-document query walks the conversation's rows too.
+    removeStrayNodes(findSidebarRoot() ?? document, '.dsh-claude-account-popover', [accountPopover])
 
     if (accountBtn === null || !footArea.contains(accountBtn)) {
       if (accountBtn && accountBtn.parentElement) accountBtn.parentElement.removeChild(accountBtn)
