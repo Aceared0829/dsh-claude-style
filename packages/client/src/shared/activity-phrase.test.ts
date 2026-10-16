@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { PHRASE_MAX_CHARS, PHRASE_TAIL_CHARS, activityPhrase } from './activity-phrase'
+import { PHRASE_TAIL_CHARS, activityPhrase } from './activity-phrase'
 
 test('the model\'s own clause stands without its subject: participle first, to the sentence\'s end', () => {
   expect(activityPhrase('Let me look. I am checking the file is true. ')).toBe('Checking the file is true')
@@ -31,12 +31,9 @@ test('the shape is the rule: an adjective of the same shape reads as a clause to
   expect(activityPhrase('The file is missing.')).toBe('Missing')
 })
 
-test('a clause past the line\'s length is cut where it stops fitting', () => {
+test('a long clause is carried whole: how much of it shows is the row\'s own width', () => {
   const long = 'I am checking whether the whole row model still reads the same arguments as before.'
-  const clause = long.slice('I am '.length)
-  const carried = `${clause.charAt(0).toUpperCase()}${clause.slice(1)}`.slice(0, PHRASE_MAX_CHARS).trimEnd()
-  expect(clause.length).toBeGreaterThan(PHRASE_MAX_CHARS)
-  expect(activityPhrase(long)).toBe(`${carried}\u2026`)
+  expect(activityPhrase(long)).toBe('Checking whether the whole row model still reads the same arguments as before')
 })
 
 test('only the tail of a long reasoning is read', () => {

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { FILE_NAME_MAX_CHARS, fileName, fileToolCall, fileToolOperation } from './file-tool'
+import { fileName, fileToolCall, fileToolOperation } from './file-tool'
 
 /** One running call's block: its phase, its tool name and its argument JSON. */
 function running(name: string, args: unknown, phase = 'start') {
@@ -34,7 +34,7 @@ test('a call that names no file answers none: another tool, arguments still arri
   expect(fileToolCall(running('read', { file_path: 'C:\\work\\' }))).toBeNull()
 })
 
-test('a name past what the line carries is cut where it stops fitting', () => {
-  const long = `${'a'.repeat(FILE_NAME_MAX_CHARS)}-tail.ts`
-  expect(fileToolCall(running('read', { file_path: `/work/${long}` }))?.file).toBe(`${'a'.repeat(FILE_NAME_MAX_CHARS)}…`)
+test('a long name is carried whole: how much of it shows is the row\'s own width', () => {
+  const long = `${'a'.repeat(60)}-tail.ts`
+  expect(fileToolCall(running('read', { file_path: `/work/${long}` }))?.file).toBe(long)
 })

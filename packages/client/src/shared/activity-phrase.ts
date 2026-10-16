@@ -10,12 +10,15 @@
  * glance beside its clock. A negated clause ("I am not sure …") is passed over,
  * since it says what the model is not doing. The shape is the whole rule, so an
  * adjective built the same way ("the file is missing") reads as a clause too.
+ *
+ * The clause is carried whole. How much of it the row can show is the row's own
+ * question, answered by the line's box and the ellipsis it draws where the room
+ * runs out (features/chat-wait/chat-wait.css), so a clause is never cut to a
+ * character count the window knows nothing about.
  */
 
 /** How much of the reasoning's tail one scan reads, in characters. */
 export const PHRASE_TAIL_CHARS = 400
-/** The longest clause the line carries; a longer one is cut here. */
-export const PHRASE_MAX_CHARS = 40
 
 /** One clause: its auxiliary (a contraction included), an optional negation, and its participle. */
 const CLAUSE = /(?:\b(?:am|is|are)|['\u2019](?:m|re|s))(\s+not)?\s+([a-z]+ing)\b/gi
@@ -39,11 +42,5 @@ export function activityPhrase(text: string): string | null {
     if (words === '') continue
     phrase = words.charAt(0).toUpperCase() + words.slice(1)
   }
-  return phrase === null ? null : cutPhrase(phrase)
-}
-
-/** The line's own length: wording past it is cut where it stops fitting. A reasoning clause and a call's own description (shared/call-description) share it. */
-export function cutPhrase(phrase: string) {
-  if (phrase.length <= PHRASE_MAX_CHARS) return phrase
-  return `${phrase.slice(0, PHRASE_MAX_CHARS).trimEnd()}\u2026`
+  return phrase
 }

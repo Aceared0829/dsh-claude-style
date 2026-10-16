@@ -632,14 +632,18 @@ shimmering words step aside for the skin's line beside it: the wording in the
 secondary label at 14px on a 24px line,
 the turn's clock 8px later in the caption at 13px with tabular figures, and the
 "No response yet" badge 8px after that (11px on a 16px line, 0 6px padding, a 5px
-radius, the warning label over 16% of itself). The wording wears one of two
-paints, whichever the Motion tab's Waiting-line animation holds: a highlight band
-swept across it the way the host's own rows sweep — 1.5s a pass with the band
-resting the last third of it, in the host's shimmer tint — or a colour wash, the
-seven radial washes of `packages/client/src/shared/motion.css` over a grey ramp,
-orbiting the glyph box (5s an orbit while the hue turns a full circle over 4s),
-which is the effect transitions.dev ships as its Pro gradient text. A wording that
-changes runs both halves of the swap at once and is over in 0.2s: the old one
+radius, the warning label over 16% of itself). The line takes the row's own
+width and gives way inside it: the words are carried whole, so a clause the row
+has no room for is clipped where the room ends and the copy draws an ellipsis,
+with the loader, the clock and the badge keeping their places. The wording wears
+one of two paints, whichever the Motion tab's Waiting-line animation holds: a
+highlight band swept across it the way the host's own rows sweep — 1.5s a pass
+with the band resting the last third of it, in the host's shimmer tint — or a
+colour wash, the seven radial washes of `packages/client/src/shared/motion.css`
+over a grey ramp, orbiting the glyph box (5s an orbit while the hue turns a full
+circle over 4s), which is the effect transitions.dev ships as its Pro gradient
+text. A wording that changes runs both halves of the swap at once and is over in
+0.2s: the old one
 leaves upward with a 2px blur while the new one, parked one gap, enters from 4px
 below; under Reduced motion the band is left out, the wash holds its still frame,
 and the wording is written at once. The Motion tab's preview cards

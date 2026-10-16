@@ -14,14 +14,16 @@
     // The fixture's running turn started 65 s ago and is still reasoning.
     await probe.onlyFor(['chat-wait'], async function () {
       // The running row stands in the host's conversation anchor, where the
-      // skin reads its chat parts (D3).
+      // skin reads its chat parts (D3). The content span carries the host's own
+      // local class name, so the pass writes `running-content` onto it: that
+      // part is what bounds the line to the row (chat-wait.css).
       var waitHolder = document.createElement('div')
       waitHolder.setAttribute('data-conversation-scroll', '')
       var waitSession = document.createElement('div')
       waitSession.setAttribute('data-conversation-session', 'smoke-session')
       waitSession.innerHTML = '<div data-chat-flow="">' +
         '<div data-chat-running="true" style="display:flex"><span role="status">Deep diving</span><span aria-hidden="true"></span>' +
-        '<span style="display:flex;min-width:0"><span class="_runningIcon_c_1" aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
+        '<span class="_runningContent_c_1" style="display:flex;min-width:0"><span class="_runningIcon_c_1" aria-hidden="true">whale</span><span data-shimmer="true" id="debugRunningWords">Deep diving for 1m 5s ···</span></span></div>' +
         '</div>'
       waitHolder.appendChild(waitSession)
       document.body.appendChild(waitHolder)
@@ -140,6 +142,9 @@
             width: label.getBoundingClientRect().width,
             height: label.getBoundingClientRect().height,
             clockLeft: clock.getBoundingClientRect().left,
+            // The clock's own right edge: the line gives way inside the row, and
+            // the clock and the badge keep their places at its end (chat-wait.css).
+            clockRight: clock.getBoundingClientRect().right,
             labelLeft: label.getBoundingClientRect().left,
             lineLeft: line.getBoundingClientRect().left,
             lineWidth: line.getBoundingClientRect().width,
@@ -357,10 +362,13 @@
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }] } : undefined } } }]
       r.wait.phrase = await awaitWord(function (reading) { return reading.word === 'Checking the file is true' && reading.copies === 1 })
       // The same kind of wording in a row with no room for it: the label gives
-      // way and the words are cut, so the clock keeps its place on the row.
+      // way and the words are clipped, so the clock keeps its place on the row.
+      // The clause is carried whole — how much of it shows is the row's own
+      // width (shared/activity-phrase) — so the reading is the whole clause with
+      // the copy drawing its ellipsis.
       window.__dshSmokeHost.turnFixtureRunning.steps = [{ data: { get: function (kind) { return kind === 'assistant-step' ? { status: 'running', step: 2, blocks: [{ kind: 'reasoning', text: 'I am checking whether the whole row model still reads the same arguments. ' }] } : undefined } } }]
       waitSession.style.maxWidth = '240px'
-      r.wait.narrow = await awaitWord(function (reading) { return reading.word === 'Checking whether the whole row model sti…' && reading.copies === 1 })
+      r.wait.narrow = await awaitWord(function (reading) { return reading.word === 'Checking whether the whole row model still reads the same arguments' && reading.copies === 1 })
       waitSession.style.maxWidth = ''
       // The reader's animation choice: reduced writes the new wording at once.
       window.__pushForm({ motion: 'reduced' })

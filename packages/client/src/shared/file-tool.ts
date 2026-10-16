@@ -19,9 +19,6 @@ export function fileToolOperation(toolName: string): FileToolOperation | null {
   return null
 }
 
-/** How much of a file's name the line carries; a longer one is cut here. */
-export const FILE_NAME_MAX_CHARS = 32
-
 /** A path's own name: the piece after its last separator. */
 export function fileName(path: string) {
   const at = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
@@ -38,7 +35,9 @@ export interface FileToolCall {
  * The file one call works on, or null where it names none: a tool that is not a
  * file operation, a call whose arguments are still arriving (the host's
  * `preparing` phase, whose JSON is cut off mid-stream), or arguments carrying no
- * usable path. The arguments are the ones the host's own file row reads.
+ * usable path. The arguments are the ones the host's own file row reads. The
+ * name is carried whole: the waiting line shows as much of it as the row has
+ * room for and draws its own ellipsis past that (features/chat-wait/chat-wait.css).
  */
 export function fileToolCall(block: HostChatBlock): FileToolCall | null {
   if (block.phase !== 'start') return null
@@ -49,5 +48,5 @@ export function fileToolCall(block: HostChatBlock): FileToolCall | null {
   if (path === undefined) return null
   const file = fileName(path)
   if (file === '') return null
-  return { operation, file: file.length <= FILE_NAME_MAX_CHARS ? file : `${file.slice(0, FILE_NAME_MAX_CHARS)}…` }
+  return { operation, file }
 }

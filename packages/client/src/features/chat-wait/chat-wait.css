@@ -59,6 +59,18 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
   white-space: nowrap;
 }
 
+/* How much of the wording shows is the row's own width and nothing else: the
+   words are carried whole (shared/activity-phrase, shared/call-description,
+   shared/file-tool), so the box has to be the row. The host's content span is a
+   flex item of a column row and takes its own content's width, which lets a
+   long clause run past the row instead of giving way; bounded here, the label
+   clips and its copies draw the ellipsis exactly where the room runs out
+   (shared/swapping-text.css), with the loader, the clock and the badge keeping
+   their places beside it. */
+body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] [data-dsh-claude-part~="running-content"] {
+  max-width: 100%;
+}
+
 /* The host leads its running row with a whale tail, which is DeepSeek's own
    character. Under the Claude brand the skin hides it and stands its own loader
    where it was: the line's first child, ahead of the wording, so the row reads

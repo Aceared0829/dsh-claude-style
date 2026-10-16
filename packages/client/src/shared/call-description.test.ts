@@ -1,5 +1,4 @@
 import { expect, test } from 'vitest'
-import { PHRASE_MAX_CHARS } from './activity-phrase'
 import { callDescription } from './call-description'
 
 /** One running call's block: its phase, its tool name and its argument JSON. */
@@ -29,8 +28,7 @@ test('a call with nothing of its own answers none: another tool, arguments still
   expect(callDescription({ phase: 'start', name: 'pwsh', argsRaw: '{"command":"ls","description":"list' })).toBeNull()
 })
 
-test('a description past what the line carries is cut where it stops fitting', () => {
+test('a long description is carried whole: how much of it shows is the row\'s own width', () => {
   const description = `Regenerate ${'a'.repeat(40)} changelog`
-  expect(description.length).toBeGreaterThan(PHRASE_MAX_CHARS)
-  expect(callDescription(running('pwsh', { command: 'x', description }))).toBe(`Regenerate ${'a'.repeat(29)}…`)
+  expect(callDescription(running('pwsh', { command: 'x', description }))).toBe(description)
 })

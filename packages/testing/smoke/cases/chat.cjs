@@ -518,10 +518,10 @@ module.exports = {
     check('reasoning the line can take words from says the model\'s own clause',
       phrase.word === 'Checking the file is true' && phrase.copies === 1, JSON.stringify(phrase))
     const narrow = wait.narrow || {}
-    check('a wording with no room is cut where the row ends, and the clock stays on the row',
+    check('a wording with no room is carried whole and clipped where the row ends, and the clock stays on the row',
       narrow.box?.clipped === true && narrow.box.labelRight <= narrow.box.lineRight + 1 &&
-        narrow.box.clockLeft < narrow.box.rowRight &&
-        narrow.word === 'Checking whether the whole row model sti…',
+        narrow.box.clockLeft < narrow.box.rowRight && narrow.box.clockRight <= narrow.box.rowRight + 1 &&
+        narrow.word === 'Checking whether the whole row model still reads the same arguments',
       JSON.stringify({ word: narrow.word, box: narrow.box }))
     const reduced = wait.reduced || {}
     check('with the animation choice set to Reduced the new wording is written at once, with no swap',
