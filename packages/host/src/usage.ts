@@ -122,10 +122,10 @@ export function createUsage(ctx: DshContext) {
     for (const [id, stored] of record.sessions) {
       if (!sessions.has(id) && stored.days.size > 0) sessions.set(id, { days: stored.days })
     }
-    if (record.writable && (record.mustWrite || recordChanged(record.sessions, sessions, read))) {
-      writeRecord(ctx, sessions)
-    }
-    const merge = mergeLedgerFold(ledgerDays, sessions)
+    const recorded = record.writable && (record.mustWrite || recordChanged(record.sessions, sessions, read))
+      ? writeRecord(ctx, sessions, new Set(logs.map((log) => log.id)))
+      : sessions
+    const merge = mergeLedgerFold(ledgerDays, recorded)
     // The source names what answered: with no ledger at all the fold is the
     // whole account, and saying `cost-meter+local` there would credit a plugin
     // that is not installed (D53).

@@ -44,14 +44,17 @@ export function readJsonDocument(ctx: DshContext, path: string, label: string): 
  * @param path - the file to write.
  * @param label - what the file is, for the warning.
  * @param document - the value to store.
+ * @returns whether the file now holds the document.
  */
-export function writeJsonDocument(ctx: DshContext, path: string, label: string, document: unknown) {
+export function writeJsonDocument(ctx: DshContext, path: string, label: string, document: unknown): boolean {
   const temporary = `${path}.${process.pid}.tmp`
   try {
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(temporary, JSON.stringify(document), 'utf8')
     renameSync(temporary, path)
+    return true
   } catch (error) {
     ctx.logger?.warn?.(`dsh-claude-style: ${label} not written: ${(error as { message?: string }).message}`)
+    return false
   }
 }

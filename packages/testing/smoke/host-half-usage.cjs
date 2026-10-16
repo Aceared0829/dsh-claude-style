@@ -215,6 +215,62 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
         JSON.stringify(writtenDay?.m) === JSON.stringify({ 'model-c': [60, 6, 0, 0, 1] }) &&
         JSON.stringify(writtenDay?.h) === JSON.stringify({ '11': 1 }),
       JSON.stringify(record))
+    check('the previous fold cache is removed once the record holding its days is written',
+      !fs.existsSync(path.join(home, 'cache', 'dsh-claude-style', 'usage.json')),
+      JSON.stringify(fs.readdirSync(path.join(home, 'cache', 'dsh-claude-style'))))
+    fs.rmSync(home, { recursive: true, force: true })
+  }
+
+  // A record that does not parse may be the only place the days of deleted
+  // sessions are left, so it is moved aside before the pass rebuilds it (D53).
+  console.log('\nhost half — an unreadable record is moved aside before it is rebuilt')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-usage-corrupt')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    fs.mkdirSync(path.join(cwd, 'r1'), { recursive: true })
+    fs.writeFileSync(path.join(cwd, 'r1', 'session.v4.jsonl.zstd'), 'x')
+    fs.mkdirSync(path.join(home, 'dsh-claude-style'), { recursive: true })
+    fs.writeFileSync(path.join(home, 'dsh-claude-style', 'usage.json'), '{"version":1,"sessions":{')
+    const rebuilt = (await settledUsage(fakeHost(mod, { fenced: true, home, events: { r1: [settlement(at(0, 15), 1)] } }))).value ?? {}
+    const names = fs.readdirSync(path.join(home, 'dsh-claude-style'))
+    const aside = names.find((name) => /^usage\.json\.corrupt-\d+$/.test(name))
+    const record = JSON.parse(fs.readFileSync(path.join(home, 'dsh-claude-style', 'usage.json'), 'utf8'))
+    check('an unreadable record is kept under a stamped name and the record is rebuilt from the logs',
+      aside !== undefined && fs.readFileSync(path.join(home, 'dsh-claude-style', aside), 'utf8') === '{"version":1,"sessions":{' &&
+        record.version === 1 && record.sessions?.r1?.days !== undefined && rebuilt.totals?.input === 10,
+      JSON.stringify({ names, totals: rebuilt.totals }))
+    fs.rmSync(home, { recursive: true, force: true })
+  }
+
+  // Two instances under one harness home each write the whole record. A write
+  // lays its pass over what the file holds by then, so a session another instance
+  // wrote while this pass was folding stays in it (D53).
+  console.log('\nhost half — a write keeps what another instance wrote during the pass')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-usage-concurrent')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    fs.mkdirSync(path.join(cwd, 'c1'), { recursive: true })
+    fs.writeFileSync(path.join(cwd, 'c1', 'session.v4.jsonl.zstd'), 'x')
+    const day = localDay(at(-2, 9))
+    // The other instance's write lands while this pass reads c1's log.
+    const reads = {
+      push: () => {
+        fs.mkdirSync(path.join(home, 'dsh-claude-style'), { recursive: true })
+        fs.writeFileSync(path.join(home, 'dsh-claude-style', 'usage.json'), JSON.stringify({
+          version: 1,
+          computedAt: 1,
+          sessions: { 'other-gone': { days: { [day]: { m: { 'model-d': [40, 4, 0, 0, 1] }, h: { '9': 1 } } } } },
+        }))
+      },
+    }
+    const answer = (await settledUsage(fakeHost(mod, { fenced: true, home, events: { c1: [settlement(at(0, 15), 1)] }, reads }))).value ?? {}
+    const record = JSON.parse(fs.readFileSync(path.join(home, 'dsh-claude-style', 'usage.json'), 'utf8'))
+    check("a record written during the pass keeps the other instance's session beside this pass's own",
+      record.sessions?.['other-gone']?.days?.[day] !== undefined && record.sessions?.c1?.size !== undefined &&
+        answer.totals?.input === 50 && answer.totals?.sessions === 2,
+      JSON.stringify({ record, totals: answer.totals }))
     fs.rmSync(home, { recursive: true, force: true })
   }
 
