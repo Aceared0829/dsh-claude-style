@@ -21,7 +21,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 const { createImportanceAudit, planImportance, dropImportance, ROOT } = require('./importance-audit.cjs')
 const { openSkinSettings } = require('./settings-route.cjs')
-const { readAppearance, compareAppearance, writeAppearance, HOST_SURFACE_STATES } = require('./appearance.cjs')
+const { readAppearance, compareAppearance, writeAppearance, HOST_DEPENDENT_STATES } = require('./appearance.cjs')
 
 /**
  * The selectors this walk cannot reach, each under the reason it is out of
@@ -234,8 +234,8 @@ function importanceScenario(lane) {
         // The states read inside the host's own menus are audited but not
         // snapshotted: which controls the walk's query finds and what each menu
         // holds belong to the host version it runs against, so the readings of
-        // one host describe another (appearance.cjs, HOST_SURFACE_STATES).
-        if (!HOST_SURFACE_STATES.test(name)) context.appearance[name] = await readAppearance(page)
+        // one host describe another (appearance.cjs, HOST_DEPENDENT_STATES).
+        if (!HOST_DEPENDENT_STATES.test(name)) context.appearance[name] = await readAppearance(page)
         return audited
       }
       context.audit = audit

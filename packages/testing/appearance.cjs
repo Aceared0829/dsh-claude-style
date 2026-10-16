@@ -27,13 +27,15 @@ const path = require('node:path')
 const SNAPSHOT = path.join(__dirname, 'appearance.json')
 const PARTS = JSON.parse(fs.readFileSync(path.join(__dirname, 'appearance-parts.json'), 'utf8')).parts
 /**
- * The states read inside the host's own menus, which a snapshot from an earlier
- * walk still carries: which controls the walk's query finds and what each menu
- * holds belong to the host version it runs against, so the readings of one host
- * describe another. `importance.cjs` no longer walks them and they are ignored
- * here so a snapshot written before that stays readable.
+ * The states whose readings belong to what the host version and the walk's own
+ * sign-in show, and so cannot be compared across two runs: the controls found
+ * inside the host's own menus, and the account card, which is only on the page
+ * when the scripted platform signed the walk in. They are walked — the
+ * `!important` verdicts and the unreachable register are read off them — and left
+ * out of the snapshot; `importance.cjs` reads the same pattern, and one a
+ * snapshot from an earlier walk still carries is ignored here.
  */
-const HOST_SURFACE_STATES = /^(hero )?host surface /
+const HOST_DEPENDENT_STATES = /^(hero )?host surface |^account card$/
 const PROPS = [
   'background-color',
   'color',
@@ -106,7 +108,7 @@ function compareAppearance(readings) {
     }
   }
   for (const state of Object.keys(snapshot)) {
-    if (HOST_SURFACE_STATES.test(state)) continue
+    if (HOST_DEPENDENT_STATES.test(state)) continue
     if (readings[state] === undefined) problems.push(`${state}: the snapshot holds this page state and the walk read nothing for it`)
   }
   return problems
@@ -122,4 +124,4 @@ function writeAppearance(readings) {
   }, null, 2)}\n`)
 }
 
-module.exports = { readAppearance, compareAppearance, writeAppearance, HOST_SURFACE_STATES }
+module.exports = { readAppearance, compareAppearance, writeAppearance, HOST_DEPENDENT_STATES }
