@@ -12,7 +12,12 @@
  * arrives, and kept if it never does. They are English because a failed
  * fetch has no locale to honour.
  */
-export const MODEL_OFFICIAL_GROUP = 'deepseek-official'
+/**
+ * The host's group id for its official provider, which this feature reads as
+ * the picker's default rather than a choice (packages/contracts/src/services.ts,
+ * where the host's model catalog declares it).
+ */
+export { OFFICIAL_MODEL_GROUP as MODEL_OFFICIAL_GROUP } from '@dsh-claude-style/contracts/services'
 export const MODEL_COPY_ROUTE = '/dsh-claude-style/model-descriptions.json'
 export const MODEL_COPY_FALLBACK_LOCALE = 'en'
 export const MODEL_FALLBACK_LABEL = 'Select model'

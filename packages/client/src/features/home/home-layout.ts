@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom/client'
 import { PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } from '../../constants'
+import type { Prefs } from '../../constants'
 import { COMPOSER_STACK, cacheFirstMatch } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
@@ -109,7 +110,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /** Write the layout onto the document and start loading when it needs data. */
-  function setLayout(next: string) {
+  function setLayout(next: Prefs['homeLayout']) {
     layout = next
     if (next === HOME_LAYOUT_STUDIO) document.body.setAttribute(HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO)
     else document.body.removeAttribute(HOME_LAYOUT_ATTR)

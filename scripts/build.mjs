@@ -8,12 +8,12 @@
  * packages/client/src/entry.ts into one minified CommonJS body with React and the host packages
  * external, and that body is wrapped in the loader's factory:
  *
- *   packages/client/src/entry.ts                 apply(): the FEATURES table, the deferred features installed from their chunks (D42)
+ *   packages/client/src/entry.ts                 apply(): the FEATURES table, the deferred features installed from their chunks (D72)
  *   packages/client/src/constants.ts             constants; also evaluated here for the stylesheet gates
- *   scripts/chunks.mjs                           the deferred features' chunks (D42), routed like the assets
+ *   scripts/chunks.mjs                           the deferred features' chunks (D72), routed like the assets
  *   scripts/build-cache.mjs                      the vectors and brotli payloads kept between runs in .debug/build-cache/
  *   packages/client/src/core/ packages/client/src/shared/ packages/client/src/features/<name>/   the modules, TypeScript, strict
- *   packages/client/src/features/<dir>/<main>.manifest.ts   each feature's manifest (D42), read by scripts/shared/read-manifests.cjs
+ *   packages/client/src/features/<dir>/<main>.manifest.ts   each feature's manifest (D72), read by scripts/shared/read-manifests.cjs
  *   packages/client/src/theme/*.css and the feature stylesheets   concatenated by rank (THEME_SHEETS and the manifests),
  *                                checked and gated on the syntax tree (scripts/css.mjs)
  *   packages/client/src/theme/tokens.json        the design tokens: the token stylesheet and docs/STYLE.md's table
@@ -36,7 +36,7 @@
  * The order of the writes is part of the contract: every asset and the host
  * half land before `lib/client.js`, because the client half of the hot reload
  * watches that one file — a page that swaps to it must find this build's chunks
- * already on disk and already in the manifest (D42).
+ * already on disk and already in the manifest (D72).
  *
  * `packages/client/data/model-descriptions.json` is not bundled: it is validated
  * (scripts/model-copy.mjs) and copied to `lib/`, where the host half serves it to
@@ -103,7 +103,7 @@ const ICON_FILE = 'claude-mark.svg'
 
 /**
  * The stylesheets that belong to no feature, with their place in the
- * concatenated sheet. A feature's own sheets come from its manifest (D42),
+ * concatenated sheet. A feature's own sheets come from its manifest (D72),
  * each with a rank on this same scale; the build sorts the two together.
  * The order is the cascade: where two rules meet at the same specificity,
  * the later one wins.
@@ -157,7 +157,7 @@ const PACKAGE_ID = PACKAGE.name
 const HOST_PACKAGES = ['react', 'react-dom/client', '@deepseek-ai/dsh-client-ui-primitives']
 
 /**
- * Whether this build keeps the assets the build before it shipped (D42).
+ * Whether this build keeps the assets the build before it shipped (D72).
  *
  * A linked checkout is what the flag is for: its live page boots the bundle
  * that was on disk when the host composed the graph, and after a rebuild that
@@ -237,7 +237,6 @@ const CONSTANTS = (() => {
       brand: { attribute: BRAND_ATTR, deepseek: BRAND_DEEPSEEK },
     },
     ...pick(sheets, sheetsFile, ['CRAB_SHEETS', 'DEEPY_SHEETS', 'DEEPY_SCALE', 'DEEPY_GUTTER']),
-    ...pick(constants, constantsFile, ['PREF_DEFAULTS']),
     featureSheets: pick(constants, constantsFile, FEATURE_SHEET_CONSTANTS),
   }
 })()
@@ -442,7 +441,7 @@ async function main() {
     plugins: [featuresModule(manifests, chunkUrls), chunkModulesModule(shared), generated],
   })
 
-  // The deferred features leave the bundle for chunks of their own (D42). A
+  // The deferred features leave the bundle for chunks of their own (D72). A
   // graph pass stands every chunk's address in with its feature id.
   const deferred = manifests.filter((manifest) => manifest.load === 'deferred')
   const standIns = Object.fromEntries(deferred.map((manifest) => [manifest.id, manifest.id]))
@@ -471,7 +470,7 @@ async function main() {
   checkScrollOwner(result.metafile)
   // The metafile keys paths the way esbuild saw them: repository-relative. Both
   // sides of the comparison are the repository's own modules, generated ones
-  // included: a second copy of a generated module ships its values twice (D42).
+  // included: a second copy of a generated module ships its values twice (D72).
   const prefix = `${path.relative(ROOT, SRC).split(path.sep).join('/')}/`
   const mainIds = ownModuleIds(result.metafile)
   const twice = mainIds.filter((id) => chunkInputs.includes(id))
@@ -542,7 +541,7 @@ async function main() {
   // Last, always: this is the file a running page's client hot reload watches,
   // and the generation it swaps to reads its chunks from this build. Writing it
   // after every asset means those chunks are already on disk and already in the
-  // manifest when the page asks for them (D42).
+  // manifest when the page asks for them (D72).
   fs.writeFileSync(OUT, bundle)
   fs.writeFileSync(`${OUT}.map`, sourceMap)
   console.log(`built lib/client.js (${Buffer.byteLength(bundle)} bytes, build ${buildId}) from packages/client/src/ (${bundled.size} modules + ${sheets.length} stylesheets + ${Object.keys(combines).length} lockups)`)

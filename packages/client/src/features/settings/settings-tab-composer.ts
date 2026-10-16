@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_OFF } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
-import type { SettingsTab, SettingsView } from './settings-controls'
+import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
+import type { Prefs } from '../../constants'
 
 /**
  * The settings page's Composer tab: the composer restyle's scope, the model
@@ -24,7 +25,7 @@ export function createSettingsComposerTab(): SettingsTab {
     const prefs = view.prefs
     const write = view.write
     const controls = view.controls
-    const scopeOptions = [
+    const scopeOptions: SegmentOption<Prefs['composerScope']>[] = [
       { value: COMPOSER_SCOPE_OFF, label: settingsCopy('scopeOff', 'Off') },
       { value: COMPOSER_SCOPE_HERO, label: settingsCopy('scopeHero', 'Home only') },
       { value: COMPOSER_SCOPE_CONVERSATION, label: settingsCopy('scopeConversation', 'Conversation only') },

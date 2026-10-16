@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest'
 import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, STATUS_MOTION_WASH, USERNAME_MAX } from '../constants'
 import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
-import { normalizePrefs, resolveMascot } from './prefs'
+import { resolveMascot } from './prefs'
+import { clampPrefs as normalizePrefs } from '@dsh-claude-style/contracts/prefs'
 
 test('an empty or unreadable value reads as the defaults', () => {
   expect(normalizePrefs({})).toEqual(PREF_DEFAULTS)

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, USERNAME_MAX } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import type { Prefs } from '../../constants'
-import type { SettingsTab, SettingsView } from './settings-controls'
+import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's General tab: the theme style, the username and the
@@ -21,7 +21,7 @@ export function createSettingsGeneralTab(): SettingsTab {
    * is one option here plus one rule in settings-cards.css.
    */
   function themePicker(prefs: Prefs, write: SettingsView['write']) {
-    const brandOptions = [
+    const brandOptions: SegmentOption<Prefs['brand']>[] = [
       { value: BRAND_DEEPSEEK, label: settingsCopy('brandDeepseek', 'DeepSeek') },
       { value: BRAND_CLAUDE, label: settingsCopy('brandClaude', 'Claude') },
     ]
@@ -48,7 +48,7 @@ export function createSettingsGeneralTab(): SettingsTab {
     const prefs = view.prefs
     const write = view.write
     const controls = view.controls
-    const autoPopoverOptions = [
+    const autoPopoverOptions: SegmentOption<Prefs['autoPopover']>[] = [
       { value: AUTO_POPOVER_OFF, label: settingsCopy('autoPopoverOff', 'Off') },
       { value: AUTO_POPOVER_ACCOUNT, label: settingsCopy('autoPopoverAccount', 'Account only') },
       { value: AUTO_POPOVER_ALL, label: settingsCopy('autoPopoverAll', 'All') },

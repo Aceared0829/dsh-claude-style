@@ -3,7 +3,7 @@
  * (those are in scripts/css.mjs): the type check, the import graph, the
  * scroll owner's monopoly, every source reaching the bundle, the manifests
  * against the preference table, and the host contract and timing tables
- * (D36, D40, D42, D3).
+ * (D36, D40, D72, D3).
  */
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -13,11 +13,11 @@ import { loadModule, loadModuleEsm } from './shared/ts-module.cjs'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
 /**
- * The preference table both halves share (packages/contracts/src/prefs.ts, D7):
+ * The preference table both halves share (packages/contracts/src/prefs.ts, D73):
  * the host half's Config is derived from it and every feature manifest's `pref`
  * has to name a key of it.
  */
-const { PREFS_DEFAULT } = await loadModuleEsm('packages/contracts/src/prefs.ts')
+const { PREFS } = await loadModuleEsm('packages/contracts/src/prefs.ts')
 
 /** The page states and check kinds packages/contracts/src/table.ts records (D3, D66). */
 const PROBE_STATES = new Set(['any', 'hero', 'sending', 'streaming', 'conversation', 'menu', 'dark'])
@@ -69,7 +69,7 @@ export function checkDependencies() {
 /**
  * Hold the manifests to the rest of the repository: every feature directory
  * carries at least one manifest, and a `pref` names a key of the shared
- * preference table (packages/contracts/src/prefs.ts, D7), the table the
+ * preference table (packages/contracts/src/prefs.ts, D73), the table the
  * settings form serves.
  *
  * @param manifests - the feature manifests (scripts/shared/read-manifests.cjs).
@@ -80,8 +80,8 @@ export function checkManifests(manifests) {
     if (dir.isDirectory() && !covered.has(dir.name)) throw new Error(`build: packages/client/src/features/${dir.name}/ has no manifest`)
   }
   for (const manifest of manifests) {
-    if (manifest.pref !== undefined && !(manifest.pref in PREFS_DEFAULT)) {
-      throw new Error(`build: packages/client/src/${manifest.file} names pref "${manifest.pref}", which packages/contracts/src/prefs.ts PREFS_DEFAULT does not carry`)
+    if (manifest.pref !== undefined && !(manifest.pref in PREFS)) {
+      throw new Error(`build: packages/client/src/${manifest.file} names pref "${manifest.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
     }
   }
 }
@@ -132,7 +132,7 @@ export function checkCycles(metafile) {
  *
  * The literals the skin keys on live in packages/contracts/src/dom.ts and the table of
  * what they mean in packages/contracts/src/table.ts; neither may drift from the other,
- * and every entry has to be claimed by a feature manifest (D42), so a selector
+ * and every entry has to be claimed by a feature manifest (D72), so a selector
  * cannot enter the skin without a note and an owner, and a host upgrade can be
  * audited by walking one list.
  *

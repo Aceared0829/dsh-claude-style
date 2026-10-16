@@ -1,13 +1,20 @@
 /**
  * The constants the build reads out of the browser half: the gate attributes
- * scripts/css.mjs checks on the syntax tree, the values preferences hold with
- * the attribute names they resolve onto, and the preference defaults —
- * scripts/build.mjs evaluates this module and picks those names. The
- * stylesheets spell the attributes out; the build holds every one they read to
- * a name the browser half writes. The identity constants and the host half's
- * route re-exports live here too.
+ * scripts/css.mjs checks on the syntax tree, the document attributes the
+ * preferences resolve onto, and the feature gates. The stylesheets spell the
+ * attributes out; the build holds every one they read to a name the browser
+ * half writes. The preference vocabulary itself is the shared table
+ * (packages/contracts/src/prefs.ts, D73), re-exported below. The identity
+ * constants and the host half's route re-exports live here too.
  */
-import { PREFS_DEFAULT } from '@dsh-claude-style/contracts/prefs'
+/**
+ * The preference vocabulary and the preference shape are the shared declaration
+ * (packages/contracts/src/prefs.ts, D73): the values a preference holds, the
+ * table that declares them, `Prefs` and the defaults. What follows is this
+ * skin's own — the document attributes each value resolves onto, the feature
+ * gates, and the identity constants.
+ */
+export * from '@dsh-claude-style/contracts/prefs'
 
 export const STYLE_ID = 'dsh-claude-style-style'
 /** The surface sheets' own element, which stays while ds-bot's surface has the page (D49). */
@@ -51,26 +58,6 @@ export const SETTINGS_SECTION_SLOT = 'settings.section'
  */
 export const REPOSITORY_URL = 'https://github.com/Nwflower/dsh-claude-style'
 
-/**
- * Preferences, persisted in the profile entry's settings namespace (the
- * exported Config in packages/host/src/settings.ts declares the fields;
- * packages/client/src/core/prefs.ts reads and writes them). Each value is
- * mirrored onto the document as an attribute so the stylesheet decides what a
- * preference means, and the defaults are the shared contract
- * (packages/contracts/src/prefs.ts, D7).
- */
-
-/** Brand marks selectable from the settings page. `claude` is the default. */
-export const BRAND_CLAUDE = 'claude'
-/**
- * The DeepSeek brand: the host's own brand area stays (no Claude variant
- * matches) and takes DeepSeek's brand blue, both palettes turn blue
- * (theme/tokens.css), the skin's Claude marks give way to DeepSeek's whale,
- * and Deepy the pixel whale takes the crab's place on the composer.
- */
-export const BRAND_DEEPSEEK = 'deepseek'
-/** What earlier builds stored for the DeepSeek choice, when it was labelled "Off". */
-export const BRAND_DEEPSEEK_LEGACY = 'off'
 /** The document attribute the stylesheet switches on. */
 export const BRAND_ATTR = 'data-dsh-claude-brand'
 
@@ -88,226 +75,24 @@ export const CUSTOM_WORD_IMAGE = 'image'
 export const CUSTOM_WORD_TEXT = 'text'
 export const CUSTOM_TINT_ATTR = 'data-dsh-claude-custom-tint'
 export const ACCENT_ATTR = 'data-dsh-claude-accent'
-/** How the custom images are painted: in their own colours, or as a shape in the text colour. */
-export const BRAND_INK_ORIGINAL = 'original'
-export const BRAND_INK_TEXT = 'text'
-export const BRAND_INKS = [BRAND_INK_ORIGINAL, BRAND_INK_TEXT]
-/** Longest accepted brand name; core/prefs.ts trims the stored value to it. */
-export const BRAND_NAME_MAX = 40
 
-/**
- * The animation choice, and the document attribute it resolves onto.
- *
- * Three values in the settings page, two on the document: `system` follows
- * the operating system's own reduced-motion setting, `reduced` holds every
- * animation still whatever the system says, and `full` always plays them.
- * The resolved answer rides <body> as MOTION_ATTR (`reduced` / `full`), so
- * the mascots and the stylesheets read one value instead of asking the
- * system separately — which is the only way "always play" can override it.
- */
-export const MOTION_SYSTEM = 'system'
-export const MOTION_REDUCED = 'reduced'
-export const MOTION_FULL = 'full'
-export const MOTION_MODES = [MOTION_SYSTEM, MOTION_REDUCED, MOTION_FULL]
+/** The document attribute the resolved animation answer rides. */
 export const MOTION_ATTR = 'data-dsh-claude-motion'
 
 /**
- * What the words on the waiting line wear while a turn runs: the highlight band
- * the host's own rows sweep (`sweep`, the default), or the colour wash
- * transitions.dev's "Pro gradient text" (MIT) moves through the letters
- * (`wash`). Both are paints of the same line — the wording, the swap and the
- * clock are untouched — so the choice rides <body> as STATUS_MOTION_ATTR and
- * the stylesheets decide it (features/chat-wait/chat-wait.css).
+ * The waiting line's paint rides this attribute, and the stylesheets decide it
+ * (features/chat-wait/chat-wait.css): the wording, the swap and the clock are
+ * untouched by the choice.
  */
-export const STATUS_MOTION_SWEEP = 'sweep'
-export const STATUS_MOTION_WASH = 'wash'
-export const STATUS_MOTIONS = [STATUS_MOTION_SWEEP, STATUS_MOTION_WASH]
 export const STATUS_MOTION_ATTR = 'data-dsh-claude-status-motion'
 
-/**
- * Whether the waiting line says the specifics of what the turn is doing
- * (packages/client/src/features/chat-wait/): on writes the file a call works on,
- * the description a command call declares for itself and the model's own clause
- * out of its reasoning; off writes the bare states alone. It became an on/off
- * row of the Motion tab, so the value an earlier build stored as `precise` or
- * `simple` is mapped over in core/prefs.ts; no attribute carries it.
- */
-
-/**
- * The composer caret's motion (packages/client/src/features/caret/caret.ts): `typing`
- * (the default) takes the caret over and transitions every move; `off` takes
- * nothing over at all and leaves the browser's own caret in place. The retired
- * third tier `move` an earlier build stored reads as the default: the choice
- * set clamps it.
- */
-export const CARET_MOTION_OFF = 'off'
-export const CARET_MOTION_TYPING = 'typing'
-export const CARET_MOTIONS = [CARET_MOTION_TYPING, CARET_MOTION_OFF]
-
-/**
- * Whether the characters arriving in a streaming answer fade in
- * (packages/client/src/features/chat-reveal/): `on` runs the token reveal, `off`
- * — the shipped answer — leaves the arriving text solid. The reader picks
- * between two preview cards on the Motion tab, so the choice carries the two
- * values the cards write rather than a switch that only reads on and off.
- */
-export const CHAT_REVEAL_OFF = 'off'
-export const CHAT_REVEAL_ON = 'on'
-export const CHAT_REVEAL_MODES = [CHAT_REVEAL_ON, CHAT_REVEAL_OFF]
-
-/**
- * How a message the reader sends arrives on screen
- * (packages/client/src/features/chat-send/): `flight` — the shipped answer —
- * carries a stand-in of the composer card up to the row while the real row
- * waits hidden, so the words read as leaving the box they were typed in;
- * `grow` writes the row in place and lets it grow out of its own bottom-right
- * corner. The reader picks between two preview cards on the Motion tab, so the
- * choice carries the two values the cards write. Read in JS on every send
- * (packages/client/src/core/prefs.ts); no attribute carries it.
- */
-export const MESSAGE_ENTER_FLIGHT = 'flight'
-export const MESSAGE_ENTER_GROW = 'grow'
-export const MESSAGE_ENTER_MODES = [MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW]
-
-/**
- * Who paints the colours, and who sets the type. `claude` is the skin's own
- * palette (or typefaces); `host` leaves the host's colour (or font) tokens
- * to the host and to whatever other theme plugin writes them — a wallpaper
- * plugin's glass, say — and the skin's own surfaces read those tokens
- * through its private aliases. Each choice rides <body> as its attribute,
- * and the stylesheet gates every rule that writes the host's tokens on it.
- */
-export const PALETTE_CLAUDE = 'claude'
-export const PALETTE_HOST = 'host'
-export const PALETTES = [PALETTE_CLAUDE, PALETTE_HOST]
+/** The document attributes the choices below resolve onto; the values themselves are in the table (contracts/prefs.ts). */
 export const PALETTE_ATTR = 'data-dsh-claude-palette'
-export const TYPEFACE_CLAUDE = 'claude'
-export const TYPEFACE_HOST = 'host'
-export const TYPEFACES = [TYPEFACE_CLAUDE, TYPEFACE_HOST]
 export const TYPEFACE_ATTR = 'data-dsh-claude-typeface'
-
-/**
- * The mascot on the composer, chosen apart from the brand. `brand` follows
- * the brand (the crab under Claude, Deepy under DeepSeek); `crab` and
- * `deepy` pick one whatever the brand; `off` shows none. The resolved
- * mascot (`crab`, `deepy` or `off`) rides <body> as MASCOT_ATTR.
- *
- * MASCOT_SCOPES says where it stands: the home page alone, or the home page
- * and the conversation.
- */
-export const MASCOT_BRAND = 'brand'
-export const MASCOT_CRAB = 'crab'
-export const MASCOT_DEEPY = 'deepy'
-export const MASCOT_OFF = 'off'
-export const MASCOTS = [MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF]
 export const MASCOT_ATTR = 'data-dsh-claude-mascot'
-export const MASCOT_SCOPE_HOME = 'home'
-export const MASCOT_SCOPE_ALL = 'all'
-export const MASCOT_SCOPES = [MASCOT_SCOPE_HOME, MASCOT_SCOPE_ALL]
-
-/**
- * Where the skin's search box stands, and how much of the host's own sidebar
- * search it leaves in place (packages/client/src/features/search/search.css).
- * `icon` takes the click of the host's own search button and leaves that button
- * where the host draws it; `overlay` keeps the box in the brand row, standing
- * over the brand while the pointer is over the sidebar; `standalone` gives the
- * box a row of its own under the brand row, shown always. The choice rides
- * <body> as SEARCH_STYLE_ATTR, so every rule that places the box is gated on it.
- */
-export const SEARCH_STYLE_ICON = 'icon'
-export const SEARCH_STYLE_OVERLAY = 'overlay'
-export const SEARCH_STYLE_STANDALONE = 'standalone'
-export const SEARCH_STYLES = [SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE]
 export const SEARCH_STYLE_ATTR = 'data-dsh-claude-search-style'
-
-/**
- * How much air the sidebar keeps around its own rows: `relaxed` is the
- * stylesheet as written, `compact` takes the same declarations down — the foot
- * under the top block's rows, the gap between the workspace and the rows, the
- * conversation rows' own height and the footer's padding
- * (packages/client/src/theme/sidebar.css). The choice belongs to no feature, so
- * the Sidebar tab writes the row itself, like the dock cards. It rides <body> as
- * SIDEBAR_LAYOUT_ATTR, so every rule that tightens a value is gated on it.
- */
-export const SIDEBAR_LAYOUT_RELAXED = 'relaxed'
-export const SIDEBAR_LAYOUT_COMPACT = 'compact'
-export const SIDEBAR_LAYOUTS = [SIDEBAR_LAYOUT_RELAXED, SIDEBAR_LAYOUT_COMPACT]
 export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
-
-/**
- * The chat area's animation switch: on plays the ported set
- * (packages/client/src/features/chat-*), off leaves the area to the host. The
- * features share the one switch, each naming it as its `pref` (D42); a value an
- * earlier build stored under the retired Redraw choice reads as on
- * (packages/client/src/core/prefs.ts).
- */
-export const CHAT_ANIMATIONS_OFF = 'off'
-
-/**
- * Where the session's numbers show: `context` (the default) keeps them in
- * the popover the meter opens and leaves the card's bottom line to the meter
- * alone, and `inline` writes them on a line of their own under the input card,
- * with the host's meter at that line's end. The choice rides <body> as
- * STATS_POSITION_ATTR, so the composer rules that hide or overlay the host's
- * statistics row are gated on it.
- */
-export const STATS_POSITION_INLINE = 'inline'
-export const STATS_POSITION_CONTEXT = 'context'
-export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT]
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
-
-/**
- * The language the account-hold easter egg (packages/client/src/features/ban-screen/ban-screen.ts) is
- * written in, or `off` for no easter egg at all: the feature runs under the two
- * languages (its manifest's `prefValues`), and the account row is then a plain
- * name. It is its own preference rather than "follow the shell", because the
- * page reproduces a real Claude screen: the point is to read it in the
- * language Claude actually used, whatever the shell is set to. The default is
- * English for that reason.
- */
-export const BAN_LOCALE_EN = 'en'
-export const BAN_LOCALE_ZH = 'zh'
-export const BAN_LOCALE_OFF = 'off'
-export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF]
-
-/**
- * Feature switches: one preference per feature that replaces or moves a host
- * control, on by default. Each feature's manifest names its key (`pref`, D42)
- * and, for a choice preference, the values it runs under (`prefValues`); a
- * value outside that set runs the feature's teardown, which hands its surface
- * back to the host.
- *
- * `statsPosition` and `banLocale` are the choices among them; the waiting line
- * and the sent message's entrance each carry a switch of their own beside
- * `chatAnimations`, which is what is left of the chat-area set — the follow, the
- * automatic folding with its rolling door and the file change rows. Those three
- * belong here rather than among the live-read preferences because two of them
- * cannot be stopped by reading a preference: the file change rows take the
- * host's two seat keys over (D49), and a seat registration only comes back when
- * the feature is torn down whole. `statsPosition` answers where the session's
- * numbers show: one value writes them on a line of their own under the card,
- * the other fills the context popover with them and leaves that line to the
- * host's meter. `banLocale` names the easter egg's language, and `off` takes
- * the easter egg away. `chatReveal` is the token reveal's own choice, shipped
- * off; it stands beside the chat-area switch rather than inside it because the
- * fade is a taste of its own and its row carries the two answers as preview
- * cards.
- */
-export const FEATURE_PREF_DEFAULTS = {
-  permissionsControl: true,
-  statsPosition: STATS_POSITION_CONTEXT,
-  banLocale: BAN_LOCALE_EN,
-  workspaceView: true,
-  sidebarSearch: true,
-  turnNav: true,
-  viewTabs: true,
-  headerBand: true,
-  chatAnimations: true,
-  chatWait: true,
-  chatSend: true,
-  chatReveal: CHAT_REVEAL_OFF,
-  peakrate: true,
-}
 
 
 /**
@@ -547,7 +332,7 @@ export const DOCK_LOOK_ATTR = 'data-dsh-claude-dock-look'
 
 /**
  * The host half's private routes, under this half's own names. The paths are
- * the shared contract (packages/contracts/src/routes.ts, D7), declared once
+ * the shared contract (packages/contracts/src/routes.ts, D73), declared once
  * for both halves.
  */
 export {
@@ -562,100 +347,3 @@ export {
   USAGE_PATH as USAGE_ROUTE,
   USERNAME_PATH as USERNAME_ROUTE,
 } from '@dsh-claude-style/contracts/routes'
-/**
- * Home-page layouts. `classic` is the centered hero the skin has always
- * drawn; `studio` is the dashboard form: the greeting sits at the top left,
- * the composer hugs the window's bottom edge, and the usage panel fills the
- * space between them. Studio is the default: it is Claude Code's own home.
- */
-export const HOME_LAYOUT_CLASSIC = 'classic'
-export const HOME_LAYOUT_STUDIO = 'studio'
-export const HOME_LAYOUTS = [HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO]
-/** Composer surfaces the restyle may cover, in settings order. */
-export const COMPOSER_SCOPE_OFF = 'off'
-export const COMPOSER_SCOPE_HERO = 'hero'
-export const COMPOSER_SCOPE_CONVERSATION = 'conversation'
-export const COMPOSER_SCOPE_ALL = 'all'
-export const COMPOSER_SCOPES = [COMPOSER_SCOPE_OFF, COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL]
-/**
- * How eagerly the skin's popovers open on hover: `off` is click-only,
- * `account` auto-opens the sidebar account popover alone, and `all` adds the
- * permission, model, session-stats and the host's two hero-row pickers.
- */
-export const AUTO_POPOVER_OFF = 'off'
-export const AUTO_POPOVER_ACCOUNT = 'account'
-export const AUTO_POPOVER_ALL = 'all'
-export const AUTO_POPOVER_SCOPES = [AUTO_POPOVER_OFF, AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL]
-
-/**
- * The preference shape the browser half reads: one field per key of the shared
- * defaults table, whose values hold until the settings form answers. A boolean
- * preference is on unless stored as an explicit `false`.
- */
-export interface Prefs {
-  brand: string
-  brandName: string
-  brandInk: string
-  brandAccent: string
-  motion: string
-  statusMotion: string
-  statusDetail: boolean
-  collapseFooter: boolean
-  autoPopover: string
-  composerScope: string
-  modelPicker: boolean
-  modelDescriptions: boolean
-  peakrate: boolean
-  quickProviders: string[]
-  username: string
-  banLocale: string
-  homeLayout: string
-  palette: string
-  typeface: string
-  mascot: string
-  mascotScope: string
-  caretMotion: string
-  permissionsControl: boolean
-  statsPosition: string
-  workspaceView: boolean
-  dockCards: boolean
-  sidebarSearch: boolean
-  searchStyle: string
-  sidebarLayout: string
-  turnNav: boolean
-  viewTabs: boolean
-  headerBand: boolean
-  chatAnimations: boolean
-  chatWait: boolean
-  chatSend: boolean
-  chatReveal: string
-  messageEnter: string
-}
-
-/** Every preference's shipped default, from the table both halves share (packages/contracts/src/prefs.ts, D7). */
-export const PREF_DEFAULTS: Prefs = PREFS_DEFAULT
-
-/** The preferences whose value is one of a fixed set; any other stored value reads as the default. */
-export const PREF_CHOICES: Partial<Record<keyof Prefs, string[]>> = {
-  brandInk: BRAND_INKS,
-  motion: MOTION_MODES,
-  statusMotion: STATUS_MOTIONS,
-  composerScope: COMPOSER_SCOPES,
-  banLocale: BAN_LOCALES,
-  homeLayout: HOME_LAYOUTS,
-  palette: PALETTES,
-  typeface: TYPEFACES,
-  mascot: MASCOTS,
-  mascotScope: MASCOT_SCOPES,
-  searchStyle: SEARCH_STYLES,
-  sidebarLayout: SIDEBAR_LAYOUTS,
-  caretMotion: CARET_MOTIONS,
-  chatReveal: CHAT_REVEAL_MODES,
-  messageEnter: MESSAGE_ENTER_MODES,
-  statsPosition: STATS_POSITIONS,
-}
-/** Longest accepted custom username; core/prefs.ts trims the stored value to it. */
-export const USERNAME_MAX = 64
-/** Most quick-provider ids kept, and the longest id accepted; core/prefs.ts clamps to both. */
-export const QUICK_PROVIDERS_MAX = 64
-export const PROVIDER_ID_MAX = 128

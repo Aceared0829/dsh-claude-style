@@ -185,6 +185,14 @@ export interface HostModelGroup {
   models: HostModelEntry[]
 }
 
+/**
+ * The host's own group id for its official provider: that group is the picker's
+ * default rather than a choice, so it carries no display name of its own
+ * (`features/model/`) and a stored quick-provider id for it is dropped
+ * (contracts/prefs.ts).
+ */
+export const OFFICIAL_MODEL_GROUP = 'deepseek-official'
+
 /** One model: its id, its name, its own description text, and the reasoning metadata the effort control reads. */
 export interface HostModelEntry {
   id: string

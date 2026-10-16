@@ -1,8 +1,8 @@
-import { AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, AUTO_POPOVER_SCOPES, BRAND_ATTR, BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, COMPOSER_ATTR, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, PACKAGE_NAME, PALETTE_ATTR, PREF_CHOICES, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, STATUS_MOTION_ATTR, TYPEFACE_ATTR, USERNAME_MAX } from '../constants'
-import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
-import type { Prefs } from '../constants'
+import { BRAND_ATTR, BRAND_DEEPSEEK, COMPOSER_ATTR, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, PACKAGE_NAME, PALETTE_ATTR, PREF_DEFAULTS, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, STATUS_MOTION_ATTR, TYPEFACE_ATTR } from '../constants'
+import type { PrefKey, Prefs } from '../constants'
 import type { HostContext } from './host'
 import type { HostConfigForm, HostConfigFormsService, HostRemoteSettings, HostSettingsDescribeAnswer } from '@dsh-claude-style/contracts/services'
+import { clampPrefs, PREFS } from '@dsh-claude-style/contracts/prefs'
 import { notifyAll } from '../shared/notify'
 import { pageOwner } from '../shared/visual-owner'
 
@@ -10,9 +10,10 @@ import { pageOwner } from '../shared/visual-owner'
  * Skin preferences: the host settings namespace is the store, and every
  * value is mirrored onto the document as an attribute so the stylesheet
  * decides what it means (D11). Until the first read settles — and if
- * it fails — PREF_DEFAULTS holds.
+ * it fails — the table's defaults hold. The clamp that turns a stored value
+ * into one of these is the table's own (packages/contracts/src/prefs.ts, D73).
  */
-export let prefs = normalizePrefs({})
+export let prefs = clampPrefs({})
 const prefsListeners: ((prefs: Prefs) => void)[] = []
 
 /** The official settings form (the host's form controller, D11); null until the service serves the namespace. */
@@ -119,7 +120,7 @@ function followHostDocument(ctx: HostContext) {
         if (answer.ok !== true) throw new Error(`dsh-claude-style: the settings document refused the read: ${answer.error?.message}`)
         const match = servedNamespace(answer.value?.namespaces, candidates)
         if (match === null) return
-        adoptPrefs(normalizePrefs(match.served.value))
+        adoptPrefs(clampPrefs(match.served.value))
       })
     }
     scope.effect(() => {
@@ -215,33 +216,60 @@ export function subscribePrefs(listener: (prefs: Prefs) => void) {
 }
 
 /**
+ * The document mirror: one entry per preference the stylesheet switches on,
+ * with the attribute it rides and the resolver that turns the preference into
+ * what the rules test (the resolved mascot, the dock's look, the footer's
+ * presence). One list is the whole contract with the stylesheets: `adoptPrefs`
+ * writes these and `clearPrefsAttributes` takes the same names back (entry.ts).
+ * Its entries are literals so the build can hold every attribute a stylesheet
+ * reads to a name written here (D9).
+ */
+interface PrefMirror {
+  key: PrefKey
+  attr: string
+  /** The value to write; a `false` takes the attribute off. */
+  value(prefs: Prefs): string | boolean
+}
+
+const MIRRORS = [
+  { key: 'brand', attr: BRAND_ATTR, value: (prefs: Prefs) => prefs.brand },
+  { key: 'palette', attr: PALETTE_ATTR, value: (prefs: Prefs) => prefs.palette },
+  { key: 'typeface', attr: TYPEFACE_ATTR, value: (prefs: Prefs) => prefs.typeface },
+  { key: 'mascot', attr: MASCOT_ATTR, value: resolveMascot },
+  { key: 'dockCards', attr: DOCK_LOOK_ATTR, value: (prefs: Prefs) => prefs.dockCards ? DOCK_LOOK_CARD : DOCK_LOOK_FLUSH },
+  { key: 'searchStyle', attr: SEARCH_STYLE_ATTR, value: (prefs: Prefs) => prefs.searchStyle },
+  { key: 'sidebarLayout', attr: SIDEBAR_LAYOUT_ATTR, value: (prefs: Prefs) => prefs.sidebarLayout },
+  { key: 'statsPosition', attr: STATS_POSITION_ATTR, value: (prefs: Prefs) => prefs.statsPosition },
+  { key: 'statusMotion', attr: STATUS_MOTION_ATTR, value: (prefs: Prefs) => prefs.statusMotion },
+  { key: 'collapseFooter', attr: FOOTER_ATTR, value: (prefs: Prefs) => prefs.collapseFooter && !footerTakeoverRetired },
+] as const satisfies readonly PrefMirror[]
+
+/** Every attribute the mirror writes, plus the animation answer `writeMotionAttribute` resolves. */
+const MIRROR_ATTRS: readonly string[] = [...MIRRORS.map(mirror => mirror.attr), MOTION_ATTR]
+
+/**
  * Adopt a preference set: mirror it onto the document, then notify. A page a
- * skin or ds-bot owns carries none of this theme's attributes (D49): the set is kept, and
- * taking the page back mirrors it (entry.ts). The form answers whenever it
- * answers, and the settings section installs whenever its chunk arrives (D42),
- * so a yielded page hears adoptions too.
+ * skin or ds-bot owns carries none of this theme's attributes (D49): the set is
+ * kept, and taking the page back mirrors it (entry.ts). The form answers
+ * whenever it answers, and the settings section installs whenever its chunk
+ * arrives (D72), so a yielded page hears adoptions too.
  */
 export function adoptPrefs(next: Prefs) {
   prefs = next
   if (pageOwner() === null) {
-    document.body.setAttribute(BRAND_ATTR, next.brand)
-    document.body.setAttribute(PALETTE_ATTR, next.palette)
-    document.body.setAttribute(TYPEFACE_ATTR, next.typeface)
-    document.body.setAttribute(MASCOT_ATTR, resolveMascot(next))
-    document.body.setAttribute(DOCK_LOOK_ATTR, next.dockCards ? DOCK_LOOK_CARD : DOCK_LOOK_FLUSH)
-    document.body.setAttribute(SEARCH_STYLE_ATTR, next.searchStyle)
-    document.body.setAttribute(SIDEBAR_LAYOUT_ATTR, next.sidebarLayout)
-    document.body.setAttribute(STATS_POSITION_ATTR, next.statsPosition)
-    document.body.setAttribute(STATUS_MOTION_ATTR, next.statusMotion)
+    for (const mirror of MIRRORS) {
+      const value = mirror.value(next)
+      if (value === false) document.body.removeAttribute(mirror.attr)
+      else document.body.setAttribute(mirror.attr, String(value))
+    }
     writeMotionAttribute(next.motion)
-    document.body.toggleAttribute(FOOTER_ATTR, next.collapseFooter && !footerTakeoverRetired)
   }
   notifyAll(prefsListeners, next)
 }
 
 /** Take back every attribute adoptPrefs mirrors onto the document: the page goes back to the host (entry.ts). */
 export function clearPrefsAttributes() {
-  for (const name of [BRAND_ATTR, PALETTE_ATTR, TYPEFACE_ATTR, MASCOT_ATTR, DOCK_LOOK_ATTR, SEARCH_STYLE_ATTR, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, STATUS_MOTION_ATTR, MOTION_ATTR, FOOTER_ATTR]) document.body.removeAttribute(name)
+  for (const name of MIRROR_ATTRS) document.body.removeAttribute(name)
 }
 
 /** Whether the operating system asks for reduced motion right now. */
@@ -298,43 +326,8 @@ export function motionReduced() {
 export function loadPrefs() {
   const value = readFormValue()
   if (value === null) return
-  adoptPrefs(normalizePrefs(value))
+  adoptPrefs(clampPrefs(value))
   moveLocalPrefs(value)
-}
-
-/** Clamp the hover-open preference; the earlier boolean shape still lands. */
-function normalizeAutoPopover(value: unknown) {
-  if (value === true) return AUTO_POPOVER_ALL
-  if (value === false) return AUTO_POPOVER_OFF
-  return typeof value === 'string' && AUTO_POPOVER_SCOPES.includes(value) ? value : PREF_DEFAULTS.autoPopover
-}
-
-/**
- * The provider ids the picker's first level carries: ids rather than names, so
- * a catalog rename does not lose the stored selection. The official service is
- * the picker's default rather than a choice, so a stored id for it is dropped.
- */
-function normalizeQuickProviders(value: unknown) {
-  if (!Array.isArray(value)) return []
-  const out: string[] = []
-  for (let i = 0; i < value.length && out.length < QUICK_PROVIDERS_MAX; i++) {
-    const id = value[i]
-    if (typeof id !== 'string' || id === '' || id.length > PROVIDER_ID_MAX) continue
-    if (id === MODEL_OFFICIAL_GROUP || out.includes(id)) continue
-    out.push(id)
-  }
-  return out
-}
-
-/** Clamp the brand; values stored by earlier builds under older names land on their choice. */
-function normalizeBrand(value: unknown) {
-  if (value === BRAND_DEEPSEEK) return value
-  return value === BRAND_DEEPSEEK_LEGACY ? BRAND_DEEPSEEK : BRAND_CLAUDE
-}
-
-/** Clamp the custom accent: a `#rrggbb` colour, lower-cased, or empty for the brand's own. */
-function normalizeAccent(value: unknown) {
-  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : ''
 }
 
 /** The mascot actually on the page: `brand` resolves through the brand. */
@@ -344,81 +337,39 @@ export function resolveMascot(current: Prefs) {
 }
 
 /**
- * Clamp the chat-area animation switch. A value an earlier build stored under
- * the retired choice reads as on, except the one that meant off; an unreadable
- * value reads as the default.
- */
-/**
- * The waiting line's detail as an on/off choice: an earlier build stored the
- * two words under it, and `precise` is what the switch being on means. An
- * unreadable value reads as the default.
- */
-function normalizeStatusDetail(value: unknown) {
-  if (value === 'precise') return true
-  if (value === 'simple') return false
-  if (typeof value === 'boolean') return value
-  return PREF_DEFAULTS.statusDetail
-}
-
-function normalizeChatAnimations(value: unknown) {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'string') return value !== CHAT_ANIMATIONS_OFF
-  return PREF_DEFAULTS.chatAnimations
-}
-
-/**
- * Clamp one host value into the preference shape, field by field off
- * PREF_DEFAULTS: a boolean stays on unless stored as `false`, a choice outside
- * its set reads as its default, and the seven fields with a shape of their own
- * have their own clamps.
- */
-export function normalizePrefs(value: unknown): Prefs {
-  const section: Record<string, unknown> = value && typeof value === 'object' ? value as Record<string, unknown> : {}
-  const out: Record<string, unknown> = {}
-  for (const key of Object.keys(PREF_DEFAULTS) as (keyof Prefs)[]) {
-    const fallback = PREF_DEFAULTS[key]
-    const choices = PREF_CHOICES[key]
-    if (typeof fallback === 'boolean') out[key] = section[key] !== false
-    else if (choices !== undefined) out[key] = typeof section[key] === 'string' && choices.includes(section[key]) ? section[key] : fallback
-  }
-  out.brand = normalizeBrand(section.brand)
-  out.autoPopover = normalizeAutoPopover(section.autoPopover)
-  out.chatAnimations = normalizeChatAnimations(section.chatAnimations)
-  out.statusDetail = normalizeStatusDetail(section.statusDetail)
-  out.quickProviders = normalizeQuickProviders(section.quickProviders)
-  out.username = typeof section.username === 'string' ? section.username.trim().slice(0, USERNAME_MAX) : ''
-  out.brandName = typeof section.brandName === 'string' ? section.brandName.trim().slice(0, BRAND_NAME_MAX) : ''
-  out.brandAccent = normalizeAccent(section.brandAccent)
-  // Every key of PREF_DEFAULTS is set above: the booleans and the choices in
-  // the loop, the seven shaped fields after it.
-  return out as unknown as Prefs
-}
-
-/**
  * Values an earlier build kept in this browser's local storage, by preference:
  * the first time the form carries values, each field the form does not hold
  * yet is written through the form and the local copy dropped.
  */
-const LOCAL_PREF_KEYS: Partial<Record<keyof Prefs, string>> = {
+const LOCAL_PREF_KEYS: Partial<Record<PrefKey, string>> = {
   username: 'dsh-claude-style.username',
   banLocale: 'dsh-claude-style.banLocale',
 }
 let localPrefsMoved = false
 
+/** Whether a stored local value is one this build still accepts for that preference. */
+function localValueUsable(key: PrefKey, stored: string) {
+  const spec = PREFS[key]
+  if (stored === '' || stored === spec.default) return false
+  if (spec.type === 'choice') return spec.values.some((value: string) => value === stored)
+  if (spec.type === 'text') return stored.trim().length <= spec.max
+  return false
+}
+
 function moveLocalPrefs(formValue: Record<string, unknown>) {
   if (localPrefsMoved) return
   localPrefsMoved = true
-  for (const [key, storageKey] of Object.entries(LOCAL_PREF_KEYS) as [keyof Prefs, string][]) {
+  for (const [key, storageKey] of Object.entries(LOCAL_PREF_KEYS) as [PrefKey, string][]) {
     const stored = localStorage.getItem(storageKey)
     if (stored === null) continue
     const held = formValue[key] !== undefined && formValue[key] !== PREF_DEFAULTS[key]
-    const choices = PREF_CHOICES[key]
-    const unusable = stored === '' || stored === PREF_DEFAULTS[key] || (choices !== undefined && !choices.includes(stored))
-    if (held || unusable) {
+    if (held || !localValueUsable(key, stored)) {
       localStorage.removeItem(storageKey)
       continue
     }
-    savePrefs({ [key]: stored }).then(saved => {
+    // The value was held to the table just above, and each key here is one of
+    // the two string-shaped preferences: the write carries its own type.
+    savePrefs({ [key]: stored } as Partial<Prefs>).then(saved => {
       if (saved !== null && saved[key] === stored) localStorage.removeItem(storageKey)
     })
   }

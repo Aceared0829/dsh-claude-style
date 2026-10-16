@@ -1,4 +1,5 @@
-import { FEATURE_PREF_DEFAULTS, HANDOFF_ATTR } from './constants'
+import { HANDOFF_ATTR, LIVE_PREFS } from './constants'
+import type { LivePref } from './constants'
 import { loadHdsl, loadUsername, setHostContext } from './core/host'
 import type { HostContext } from './core/host'
 import { loadModelCopy } from './core/model-copy'
@@ -21,10 +22,12 @@ import { BUILD_ID } from 'virtual:dsh-claude-style/generated'
 // (shared/peer-plugin.ts) covers the sheets that arrive later.
 parkForeignSheets()
 
-/** A feature its preference switches on and off live (a key of FEATURE_PREF_DEFAULTS). */
-type SwitchedFeature = Feature & { pref: keyof typeof FEATURE_PREF_DEFAULTS }
+/** A feature its preference switches on and off live (a key of LIVE_PREFS, packages/contracts/src/prefs.ts). */
+type SwitchedFeature = Feature & { pref: LivePref }
 
-const isSwitched = (feature: Feature): feature is SwitchedFeature => Object.hasOwn(FEATURE_PREF_DEFAULTS, feature.pref ?? '')
+const LIVE_PREF_KEYS: ReadonlySet<string> = new Set(LIVE_PREFS)
+
+const isSwitched = (feature: Feature): feature is SwitchedFeature => feature.pref !== undefined && LIVE_PREF_KEYS.has(feature.pref)
 
 /**
  * Whether a feature comes and goes during the generation: its preference is
@@ -200,14 +203,14 @@ export function apply(ctx: HostContext) {
     }
   }
 
-  /** The deferred features' installs that have arrived this generation, by id (D42). */
+  /** The deferred features' installs that have arrived this generation, by id (D72). */
   const arrived = new Map<string, FeatureInstall>()
   /** The deferred features whose chunk is on its way. */
   const awaited = new Set<string>()
 
   /**
    * Install one feature, or, for a deferred one whose chunk has not arrived
-   * yet, send for the chunk: the arrival installs it (D42).
+   * yet, send for the chunk: the arrival installs it (D72).
    */
   function installFeature(feature: Feature) {
     if (feature.chunk === undefined) {
@@ -290,7 +293,7 @@ export function apply(ctx: HostContext) {
    * Stand down for another owner (D49): install the features it leaves on the
    * page that are not installed yet — a page booting yielded, or going from
    * one owner to the other — and release the rest. A kept feature that is
-   * deferred installs when its chunk arrives (D42).
+   * deferred installs when its chunk arrives (D72).
    */
   function yieldTo(next: PageOwner) {
     const keep = KEPT_FOR[next]
@@ -307,11 +310,11 @@ export function apply(ctx: HostContext) {
    * a yield leaves the features it kept alone (D49); a feature retired after
    * failing stays retired (D12).
    *
-   * FEATURES is the registry the build generates from the manifests (D42),
+   * FEATURES is the registry the build generates from the manifests (D72),
    * in install order; the scheduler's pass order is the same order. A live
    * feature follows its switch and the plugins it yields to; the rest
    * install once. A deferred feature installs when its chunk arrives, after
-   * this pass and the scheduler (D42). A `pref` outside FEATURE_PREF_DEFAULTS
+   * this pass and the scheduler (D72). A `pref` outside LIVE_PREFS
    * is read by the feature itself.
    */
   function own() {

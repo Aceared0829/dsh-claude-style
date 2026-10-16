@@ -11,7 +11,7 @@ const { loadModule } = require('../../../scripts/shared/ts-module.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..', '..')
 const CLIENT = path.join(ROOT, 'lib', 'client.js')
-// The host half as the package ships it (D7): the build writes it to lib/host.
+// The host half as the package ships it (D73): the build writes it to lib/host.
 const HOST = path.join(ROOT, 'lib', 'host', 'index.js')
 const MARKUP = '<img src=x onerror="window.__pwned=(window.__pwned||0)+1">'
 /** One transparent pixel: the launcher's avatar the HDSL case serves. */
@@ -55,7 +55,7 @@ const TIMING_CASES = ['chat-follow', 'chat-fold', 'chat-reveal', 'chat-send', 'c
 
 /**
  * Which cases cover which directory under `packages/client/src/features/`, gathered from the
- * feature manifests (D42). A directory with an empty list has no case of its
+ * feature manifests (D72). A directory with an empty list has no case of its
  * own, and `--feature` refuses it rather than running something unrelated;
  * the runner refuses a case name the case table lacks.
  */
@@ -63,7 +63,7 @@ const MANIFESTS = readManifests()
 const FEATURE_CASES = featureCases(MANIFESTS)
 
 /**
- * The cases that cover arriving in a chunk (D42): they exercise the loader and
+ * The cases that cover arriving in a chunk (D72): they exercise the loader and
  * the entries it takes, not one feature's own behaviour, so a deferred
  * feature's manifest names none of them itself. Every deferred directory is
  * credited with them here, or `--feature` cannot reach the run that covers how
@@ -76,11 +76,11 @@ for (const manifest of MANIFESTS) {
     for (const name of DEFERRED_CASES) if (!covered.includes(name)) covered.push(name)
 }
 
-/** The features that arrive in chunks of their own (D42), by id. */
+/** The features that arrive in chunks of their own (D72), by id. */
 const DEFERRED_FEATURES = MANIFESTS.filter((manifest) => manifest.load === 'deferred').map((manifest) => manifest.id)
 
 /** The preferences a page carries before a reader touches anything (packages/contracts/src/prefs.ts). */
-const SHIPPED_PREFS = loadModule('packages/contracts/src/prefs.ts').PREFS_DEFAULT
+const SHIPPED_PREFS = loadModule('packages/contracts/src/prefs.ts').PREF_DEFAULTS
 
 /**
  * The deferred features a page wants, by id: a feature gated on a choice

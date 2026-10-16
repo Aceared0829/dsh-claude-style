@@ -1,5 +1,5 @@
 /**
- * build.mjs — write the host half into the package's build output (D7).
+ * build.mjs — write the host half into the package's build output (D73).
  *
  * The half lives in `packages/host/src` in TypeScript and ships as JavaScript
  * build output, so the packaged layout holds one `lib/` and no source tree.
@@ -23,18 +23,23 @@ const ROOT = path.resolve(PACKAGE, '..', '..')
 const SOURCE = path.join(PACKAGE, 'src')
 /** The shared contract's package name: the one specifier a module's build resolves and inlines. */
 const CONTRACTS_PREFIX = '@dsh-claude-style/contracts/'
+/** The contract's own source directory: a relative import inside it is inlined too. */
+const CONTRACTS_DIR = path.join(ROOT, 'packages', 'contracts', 'src')
 
 /**
  * Keep every import but the shared contract's external: marking a specifier
  * external leaves it in the output verbatim, so the published file imports the
- * same relative modules and host packages it did before.
+ * same relative modules and host packages it did before. A contract module that
+ * imports its neighbour (`./services`) resolves here as well — left external,
+ * the published file would ask for a file the package does not ship.
  */
 const externalButContracts = {
   name: 'external-but-contracts',
   setup(build) {
-    build.onResolve({ filter: /.*/ }, (args) => (args.kind === 'entry-point' || args.path.startsWith(CONTRACTS_PREFIX)
-      ? undefined
-      : { path: args.path, external: true }))
+    const inlined = (args) => args.kind === 'entry-point'
+      || args.path.startsWith(CONTRACTS_PREFIX)
+      || (args.path.startsWith('.') && args.importer.startsWith(CONTRACTS_DIR))
+    build.onResolve({ filter: /.*/ }, (args) => (inlined(args) ? undefined : { path: args.path, external: true }))
   },
 }
 

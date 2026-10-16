@@ -19,9 +19,12 @@ import type { QuickProvidersHandle } from './quick-providers'
  * of two lookalikes.
  */
 
-/** One choice of a segmented control. */
-export interface SegmentOption {
-  value: string
+/**
+ * One choice of a segmented control. Its value type is the preference's own, so
+ * a control that writes one hands back a value the table carries.
+ */
+export interface SegmentOption<V extends string = string> {
+  value: V
   label: string
 }
 
@@ -43,7 +46,7 @@ export interface SettingsView {
   }
 }
 
-/** One row of a tab, with its place among the tab's rows and the switch rows the manifests add (D42). */
+/** One row of a tab, with its place among the tab's rows and the switch rows the manifests add (D72). */
 export interface SettingsRow {
   rank: number
   node: React.ReactNode
@@ -79,7 +82,7 @@ export function tabRows(tab: SettingsTab, view: SettingsView) {
  * preference a feature yields for (dsh-chat-ux on the page) keeps the reader's
  * value on show and refuses input, saying who manages it (managedDesc); so
  * does a row whose feature only works under another preference's values
- * (`requires`, D42) while that preference holds none of them, saying what it
+ * (`requires`, D72) while that preference holds none of them, saying what it
  * waits for, and a row acting on the Windows desktop window alone
  * (`windowsOnly`) on every page that is not that window, saying where it acts.
  */
@@ -205,7 +208,7 @@ export function createSettingsControls() {
    * A segmented control. `disabled` greys the whole group out and stops it
    * answering (a sub-row whose parent is off).
    */
-  function segment(options: SegmentOption[], active: string, onPick: (value: string) => void, disabled?: boolean) {
+  function segment<V extends string>(options: readonly SegmentOption<V>[], active: string, onPick: (value: V) => void, disabled?: boolean) {
     const buttons: React.ReactElement[] = []
     for (let i = 0; i < options.length; i++) {
       buttons.push(React.createElement(

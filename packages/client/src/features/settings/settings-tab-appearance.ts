@@ -3,7 +3,8 @@ import { HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO, MASCOT_BRAND, MASCOT_CRAB, MAS
 import { settingsCopy } from '../../core/i18n'
 import { resolveMascot } from '../../core/prefs'
 import { accentRow, brandRows } from './settings-brand'
-import type { SettingsTab, SettingsView } from './settings-controls'
+import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
+import type { Prefs } from '../../constants'
 
 /**
  * The settings page's Appearance tab: who paints the colours — with the
@@ -16,25 +17,25 @@ export function createSettingsAppearanceTab(): SettingsTab {
     const prefs = view.prefs
     const write = view.write
     const controls = view.controls
-    const paletteOptions = [
+    const paletteOptions: SegmentOption<Prefs['palette']>[] = [
       { value: PALETTE_CLAUDE, label: settingsCopy('paletteClaude', 'Claude') },
       { value: PALETTE_HOST, label: settingsCopy('paletteHost', 'Follow the host') },
     ]
-    const typefaceOptions = [
+    const typefaceOptions: SegmentOption<Prefs['typeface']>[] = [
       { value: TYPEFACE_CLAUDE, label: settingsCopy('typefaceClaude', 'Claude') },
       { value: TYPEFACE_HOST, label: settingsCopy('typefaceHost', 'Follow the host') },
     ]
-    const homeLayoutOptions = [
+    const homeLayoutOptions: SegmentOption<Prefs['homeLayout']>[] = [
       { value: HOME_LAYOUT_CLASSIC, label: settingsCopy('homeClassic', 'Classic') },
       { value: HOME_LAYOUT_STUDIO, label: settingsCopy('homeStudio', 'Studio') },
     ]
-    const mascotOptions = [
+    const mascotOptions: SegmentOption<Prefs['mascot']>[] = [
       { value: MASCOT_BRAND, label: settingsCopy('mascotBrand', 'Follow the brand') },
       { value: MASCOT_CRAB, label: settingsCopy('mascotCrab', 'Crab') },
       { value: MASCOT_DEEPY, label: settingsCopy('mascotDeepy', 'Deepy') },
       { value: MASCOT_OFF, label: settingsCopy('mascotOff', 'Off') },
     ]
-    const mascotScopeOptions = [
+    const mascotScopeOptions: SegmentOption<Prefs['mascotScope']>[] = [
       { value: MASCOT_SCOPE_HOME, label: settingsCopy('mascotScopeHome', 'Home') },
       { value: MASCOT_SCOPE_ALL, label: settingsCopy('mascotScopeAll', 'Home and conversation') },
     ]

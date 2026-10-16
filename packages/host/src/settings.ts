@@ -8,10 +8,11 @@
  * the profile tree (see resolveSchemaFactory). A host that cannot resolve the
  * package still loads the skin — it just loses the settings form.
  *
- * The preference list itself is the shared contract, so both halves declare
- * the fields from one table (`@dsh-claude-style/contracts/prefs`, D7).
+ * The preference list itself is the shared table, so both halves declare the
+ * fields from one declaration (`@dsh-claude-style/contracts/prefs`, D73).
  */
-import { PREFS_DEFAULT } from '@dsh-claude-style/contracts/prefs'
+import { PREFS } from '@dsh-claude-style/contracts/prefs'
+import type { PrefKey } from '@dsh-claude-style/contracts/prefs'
 import type { DshContext, DshScope } from './dsh.ts'
 
 /**
@@ -74,28 +75,20 @@ function volatileField(field: SchemaField | null | undefined) {
 }
 
 /**
- * The preferences whose stored value may still carry the type an earlier build
- * gave them: `autoPopover` was a boolean before it grew its choices, and
- * `chatAnimations` held a choice before it became a switch again. Their field
- * accepts both shapes. The host checks a profile entry's config against this
- * Config before it starts the plugin, and a value of another type fails that
- * check: the host then starts nothing of this package — no route, no settings
- * form, no client bundle. The browser half reads either shape
- * (packages/client/src/core/prefs.ts).
- */
-/**
  * One Config field for one preference, permissive on purpose: it takes the
  * shapes a stored value may have carried — a string, a boolean or an array of
- * strings — and keeps PREFS_DEFAULT's value as its default. A value an older
- * build stored therefore never fails the host's own validation and never keeps
- * the package from starting; the browser half clamps what it reads and falls
- * back to the default (packages/client/src/core/prefs.ts).
+ * strings — and keeps the table's default (packages/contracts/src/prefs.ts,
+ * D73). A value an older build stored (`autoPopover` was a boolean,
+ * `chatAnimations` held a choice) therefore never fails the host's own
+ * validation and never keeps the package from starting: the host checks a
+ * profile entry's config against this Config before it starts the plugin, and a
+ * refused value starts nothing of this package at all. The browser half clamps
+ * what it reads and falls back to the default (packages/client/src/core/prefs.ts).
  */
-function prefsField(Schema: SchemaFactory, key: keyof typeof PREFS_DEFAULT) {
-  const value = PREFS_DEFAULT[key]
+function prefsField(Schema: SchemaFactory, key: PrefKey) {
   return Schema
     .union([Schema.string(), Schema.boolean(), Schema.array(Schema.string())])
-    .default(value)
+    .default(PREFS[key].default)
 }
 
 /**
@@ -120,7 +113,7 @@ function prefsField(Schema: SchemaFactory, key: keyof typeof PREFS_DEFAULT) {
 export const Config = SchemaFactory === null
   ? undefined
   : SchemaFactory.object(Object.fromEntries(
-      Object.keys(PREFS_DEFAULT).map(key => [key, volatileField(prefsField(SchemaFactory, key as keyof typeof PREFS_DEFAULT))]),
+      Object.keys(PREFS).map(key => [key, volatileField(prefsField(SchemaFactory, key as PrefKey))]),
     ))
 
 /**

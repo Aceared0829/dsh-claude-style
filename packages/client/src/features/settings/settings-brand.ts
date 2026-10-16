@@ -4,7 +4,8 @@ import type { BrandImageKind } from '@dsh-claude-style/contracts/brand'
 import { BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, PALETTE_HOST } from '../../constants'
 import { settingsCopy } from '../../core/i18n'
 import { loadBrandImages, readBrandImages, removeBrandImage, subscribeBrandImages, uploadBrandImage } from '../../shared/custom-brand'
-import type { SettingsRow, SettingsView } from './settings-controls'
+import type { SegmentOption, SettingsRow, SettingsView } from './settings-controls'
+import type { Prefs } from '../../constants'
 
 /**
  * The Appearance tab's custom brand rows (D30), after the mascot: the brand
@@ -195,7 +196,7 @@ function BrandAccentControl(props: { stored: string, write: SettingsView['write'
 }
 
 /**
- * The accent colour as Colours' sub-row (D42): the accent paints only over
+ * The accent colour as Colours' sub-row (D72): the accent paints only over
  * the skin's own palette (D30), so the row greys out while Colours follows
  * the host, still showing the stored colour.
  */
@@ -217,7 +218,7 @@ export function accentRow(view: SettingsView): SettingsRow {
 /** The custom brand rows, ranked after the mascot's placement row (rank 40). */
 export function brandRows(view: SettingsView): SettingsRow[] {
   const { prefs, write, controls } = view
-  const inkOptions = [
+  const inkOptions: SegmentOption<Prefs['brandInk']>[] = [
     { value: BRAND_INK_ORIGINAL, label: settingsCopy('brandInkOriginal', 'Original') },
     { value: BRAND_INK_TEXT, label: settingsCopy('brandInkText', 'Text colour') },
   ]

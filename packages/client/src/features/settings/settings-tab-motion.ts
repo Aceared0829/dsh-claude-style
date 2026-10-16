@@ -8,7 +8,7 @@ import { SWEEP_BAND_CLASS, SWEEP_GLYPHS_CLASS } from '../../shared/sweep-band'
 import { waitingWord } from '../../shared/turn-activity'
 import { managedDesc } from './settings-controls'
 import type { Prefs } from '../../constants'
-import type { SettingsTab, SettingsView } from './settings-controls'
+import type { SettingsTab, SettingsView, SegmentOption } from './settings-controls'
 
 /**
  * The share of the reveal preview's period the sample takes to arrive; the
@@ -108,7 +108,7 @@ export function createSettingsMotionTab(): SettingsTab {
         preciseWords[preciseTurn % preciseWords.length] ?? preciseWords[0],
       ]
       : plainWords
-    const options = [
+    const options: SegmentOption<Prefs['statusMotion']>[] = [
       { value: STATUS_MOTION_SWEEP, label: settingsCopy('statusMotionSweep', 'Highlight sweep') },
       { value: STATUS_MOTION_WASH, label: settingsCopy('statusMotionWash', 'Colour wash') },
     ]
@@ -195,7 +195,7 @@ export function createSettingsMotionTab(): SettingsTab {
         : last.getBoundingClientRect().right
       picker.style.setProperty('--dsh-claude-caret-x', `${edge - line.getBoundingClientRect().left}px`)
     }, [at, sample])
-    const options = [
+    const options: SegmentOption<Prefs['caretMotion']>[] = [
       { value: CARET_MOTION_TYPING, label: settingsCopy('caretOn', 'On') },
       { value: CARET_MOTION_OFF, label: settingsCopy('caretOff', 'Off') },
     ]
@@ -273,7 +273,7 @@ export function createSettingsMotionTab(): SettingsTab {
       return () => window.clearInterval(timer)
     }, [sample])
     const shown = Math.min(tick, Array.from(sample).length)
-    const options = [
+    const options: SegmentOption<Prefs['chatReveal']>[] = [
       { value: CHAT_REVEAL_ON, label: settingsCopy('chatRevealOn', 'Fade in') },
       { value: CHAT_REVEAL_OFF, label: settingsCopy('chatRevealOff', 'Appears at once') },
     ]
@@ -367,7 +367,7 @@ export function createSettingsMotionTab(): SettingsTab {
         stack.style.transform = ''
       }
     }, [shown])
-    const options = [
+    const options: SegmentOption<Prefs['messageEnter']>[] = [
       { value: MESSAGE_ENTER_GROW, label: settingsCopy('messageEnterGrow', 'Grows into its place') },
       { value: MESSAGE_ENTER_FLIGHT, label: settingsCopy('messageEnterFlight', 'Flies up from the composer') },
     ]
@@ -415,7 +415,7 @@ export function createSettingsMotionTab(): SettingsTab {
   function rows(view: SettingsView) {
     const prefs = view.prefs
     const write = view.write
-    const motionOptions = [
+    const motionOptions: SegmentOption<Prefs['motion']>[] = [
       { value: MOTION_SYSTEM, label: settingsCopy('motionSystem', 'Follow the system') },
       { value: MOTION_REDUCED, label: settingsCopy('motionReduced', 'Reduced') },
       { value: MOTION_FULL, label: settingsCopy('motionFull', 'Always') },
