@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：构建与源码
 - **关联**：取代 D51 与 D9；D4、D30、D36、D38、D40、D44、D49、D50、D66
-- **现状**：语法树检查、令牌数据、排位、压缩与结构属性已实施（`scripts/css.mjs`、`scripts/source-tree.mjs`、`scripts/feature-sheets.mjs`、`packages/client/src/theme/tokens.json`、`packages/client/src/shared/chat-dom.ts`）。`importance` 场景只判定「去掉之后计算值不变」，不记录对手；够不到的选择器登记在 `packages/testing/importance-unreachable.json`，其中带 `either` 的分组两种结果都算数，没审计到的 `!important` 照留；构建不要求 `!important` 有证据；样式表里还有读皮肤自己部件关系的 `:has()`；功能模块里还有整份文档查找。迁移完成之前，以现状为准修改代码。
+- **现状**：语法树检查、令牌数据、排位、压缩与结构属性已实施（`scripts/css.mjs`、`scripts/source-tree.mjs`、`scripts/feature-sheets.mjs`、`packages/client/src/theme/tokens.json`、`packages/client/src/shared/chat-dom.ts`）。读皮肤自己部件关系的 `:has()` 已改成标记：十六条规则读 `data-dsh-claude-holds`，关系写在 `packages/client/src/core/parts-table.ts` 的 `HOLD_RELATIONS` 里，由盖部件的走查维护，构建拒绝在 `:has()` 里读属性的写法并核对这份关系表。整份文档的查找由 lint 记账（`packages/testing/document-lookups.json` 逐条登记，只许变短）。`importance` 场景只判定「去掉之后计算值不变」，不记录对手；够不到的选择器登记在 `packages/testing/importance-unreachable.json`，其中带 `either` 的分组两种结果都算数，没审计到的 `!important` 照留；构建不要求 `!important` 有证据。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 

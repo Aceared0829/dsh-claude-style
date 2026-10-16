@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：分发与流程
 - **关联**：取代 D66；D40、D42、D44、D46、D47、D51、D69
-- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素，边界是检查代码里的数字字面量；静置按等一段时间判定；`shots` 场景只截图给人看，不与任何快照比对；端到端的每个场景各起一个宿主实例；长会话场景只记节点数，没有增长判定。迁移完成之前，以现状为准修改代码。
+- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素；静置按等一段时间判定；`shots` 场景只截图给人看，不与任何快照比对；端到端的每个场景各起一个宿主实例。边界已经开始收进 `packages/testing/bounds.json`：长会话场景在其中一轮量的两个长度上比较查找次数、长时间任务与 p95 帧时（`packages/testing/long-session.cjs`），其余检查仍把数字写在代码里。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 
