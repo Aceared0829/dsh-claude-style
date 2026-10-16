@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 /**
- * lint.mjs — the rules that need no build (D48).
+ * lint.mjs — the rules that need no build.
  *
  * The promises the repository makes in prose and a tool can check without
  * guessing: no source file crosses the stop line, every link in the committed
  * Markdown resolves, every decision a comment or a document cites exists
- * (numbers are stable and a retired one stays citable, D48; drafts carry the
- * D00 placeholder, allowed locally and rejected under CI), every repository
- * path prose names exists, no feature module reaches past the handles its
- * manifest declares (D42), no pair of files holds a copied stretch (jscpd), and
- * a decision's 决定 section stays the length D48 allows it. Everything else a
- * tool could enforce is already a build check (D44, D51), the type check or a
- * smoke case.
+ * (numbers are stable and a retired one stays citable), every repository path
+ * prose names exists, no feature module reaches past the handles its manifest
+ * declares (D42), and no pair of files holds a copied stretch (jscpd).
+ * Everything else a tool could enforce is already a build check, the type check
+ * or a smoke case.
  *
  * Usage: node scripts/lint.mjs
  */
@@ -21,7 +19,7 @@ import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
-const DECISIONS = path.join(ROOT, 'docs', 'decisions')
+const DECISIONS = path.join(ROOT, 'docs', 'adr')
 /** The stop line: a source file approaching this gets split, not extended. */
 const MAX_LINES = 750
 /**
@@ -42,38 +40,19 @@ const SKIPPED_DIRS = new Set(['.git', '.debug', '.claude', 'node_modules'])
 
 const relative = (file) => path.relative(ROOT, file).replace(/\\/g, '/')
 
-/** CI (GitHub Actions sets `CI=true`) rejects the D00 draft placeholder. */
-const CI = Boolean(process.env.CI)
-
 /**
- * The files documenting the placeholder mechanism itself mention D00 without
- * citing a draft; the CI rejection does not read them. A draft's own file is
- * reported by the draft check below, not per citation.
- */
-const MECHANISM_FILES = new Set([
-  'docs/decisions/D48-documentation.md',
-  'docs/decisions/README.md',
-  'scripts/decisions-index.mjs',
-  'scripts/decision-number.mjs',
-  'scripts/lint.mjs',
-])
-
-/**
- * The decision numbers that exist, the ones a replacing decision retired, and
- * the drafts holding the D00 placeholder. Numbers retired without a successor
- * sit in retired.txt, one per line (D48).
+ * The decision numbers that exist and the ones a replacing decision retired.
+ * Numbers retired without a successor sit in retired.txt, one per line; a
+ * number is never reused, so this set only grows.
  */
 function decisionNumbers() {
   const live = new Set()
   const retired = new Set()
-  const drafts = []
   for (const name of fs.readdirSync(DECISIONS)) {
-    if (/^D00-.*\.md$/.test(name)) { drafts.push(name); continue }
     if (!/^D\d+-.*\.md$/.test(name)) continue
     live.add(Number(name.match(/^D(\d+)/)[1]))
     const text = fs.readFileSync(path.join(DECISIONS, name), 'utf8')
-    const related = text.match(/^- \*\*关联\*\*：(.+)$/m)
-    const replaced = related === null ? null : related[1].match(/取代\s*([^；;]+)/)
+    const replaced = text.match(/^- \*\*取代\*\*：(.+)$/m)
     if (replaced !== null) for (const number of replaced[1].matchAll(/D(\d+)/g)) retired.add(Number(number[1]))
   }
   const retiredFile = path.join(DECISIONS, 'retired.txt')
@@ -82,11 +61,11 @@ function decisionNumbers() {
       const trimmed = line.trim()
       if (trimmed === '' || trimmed.startsWith('#')) return
       const entry = trimmed.match(/^D(\d+)$/)
-      if (entry === null) { problems.push(`docs/decisions/retired.txt:${at + 1}: not a bare number: ${trimmed}`); return }
+      if (entry === null) { problems.push(`docs/adr/retired.txt:${at + 1}: not a bare number: ${trimmed}`); return }
       retired.add(Number(entry[1]))
     })
   }
-  return { live, retired, drafts }
+  return { live, retired }
 }
 
 // 1. The stop line.
@@ -123,8 +102,7 @@ for (const file of markdown) {
 }
 
 // 3. Decision numbers cited by code and documents.
-const { live, retired, drafts } = decisionNumbers()
-if (CI && drafts.length > 0) problems.push(`docs/decisions: ${drafts.join(', ')} still carry the D00 placeholder — run \`npm run decision:number\` before merging`)
+const { live, retired } = decisionNumbers()
 const citing = [
   ...sources,
   ...markdown,
@@ -140,10 +118,6 @@ for (const file of citing) {
     for (const match of line.matchAll(/(?<![\w#-])D(\d{1,3})(?![\w-])/g)) {
       const number = Number(match[1])
       citations += 1
-      if (number === 0) {
-        if (CI && !MECHANISM_FILES.has(relative(file)) && !path.basename(file).startsWith('D00-')) problems.push(`${relative(file)}:${at + 1}: cites D00, the draft placeholder — run \`npm run decision:number\` before merging`)
-        continue
-      }
       if (live.has(number) || retired.has(number)) continue
       problems.push(`${relative(file)}:${at + 1}: cites D${number}, which is not a decision`)
     }
@@ -201,42 +175,7 @@ if (copies.status !== 0) {
   problems.push(`copied code; move the shared part into the shared layer (npx jscpd lists every copy):\n${copies.stdout}${copies.stderr}`)
 }
 
-// 7. The length of a decision's 决定 section and of its 现状 line (D48): a
-// bullet states one constraint, and the code a constraint rests on is named in
-// the 现状 line rather than walked through bullet by bullet. Every check passes
-// something.
-const DECISION_BULLET_MAX = 300
-const DECISION_SECTION_MAX = 3000
-const DECISION_STANDING_MAX = 600
-let decisionBullets = 0
-for (const file of filesUnder(DECISIONS, ['.md'], SKIPPED_DIRS)) {
-  const lines = fs.readFileSync(file, 'utf8').split('\n')
-  let inDecision = false
-  let section = 0
-  lines.forEach((line, at) => {
-    if (/^## /.test(line)) {
-      inDecision = line.trim() === '## 决定'
-      return
-    }
-    const standing = line.match(/^- \*\*现状\*\*：(.+)$/)
-    if (standing !== null && standing[1].replace(/\s+/g, '').length > DECISION_STANDING_MAX) {
-      problems.push(`${relative(file)}:${at + 1}: the 现状 line is ${standing[1].replace(/\s+/g, '').length} characters, over the ${DECISION_STANDING_MAX}-character cap (D48)`)
-    }
-    if (!inDecision) return
-    const size = line.replace(/\s+/g, '').length
-    section += size
-    if (!/^\s*- /.test(line)) return
-    decisionBullets += 1
-    if (size > DECISION_BULLET_MAX) {
-      problems.push(`${relative(file)}:${at + 1}: a 决定 bullet of ${size} characters, over the ${DECISION_BULLET_MAX}-character cap — state the constraint and name the code in the 现状 line (D48)`)
-    }
-  })
-  if (section > DECISION_SECTION_MAX) {
-    problems.push(`${relative(file)}: the 决定 section is ${section} characters, over the ${DECISION_SECTION_MAX}-character cap (D48)`)
-  }
-}
-
-// 8. The whole-document lookups the browser half makes outside the modules that
+// 7. The whole-document lookups the browser half makes outside the modules that
 // own them (D9): a lookup inside a refresh pass or a frame callback costs the
 // page's own size on every frame of a long conversation, and each of the
 // regressions behind that cost was one such call. A query by an element's id is
@@ -279,10 +218,10 @@ for (const file of Object.keys(recordedLookups)) {
   problems.push(`packages/testing/document-lookups.json: ${file} is gone from the tree — take its entry out`)
 }
 
-// 9. The bounds a check compares against, and every name a check asks for.
+// 8. The bounds a check compares against, and every name a check asks for.
 // packages/testing/bounds.json is where a limit on a reading lives, each with
 // the reason it holds its value, so loosening one is a line in a diff rather
-// than a number buried in an assertion (D00, 断言的写法). A name nothing reads
+// than a number buried in an assertion (D66). A name nothing reads
 // means the rule it guards is gone; a name something reads and the table does
 // not hold fails where it is read, which is why the pass over the sources is
 // part of the rule rather than a comment on the table.
@@ -335,7 +274,6 @@ if (featureUiChecked === 0) problems.push('lint: no feature module types ui as F
 if (links === 0) problems.push('lint: no Markdown link was examined — the link pattern matches nothing')
 if (citations === 0) problems.push('lint: no decision number was examined — the citation pattern matches nothing')
 if (prosePaths === 0) problems.push('lint: no repository path in prose was examined — the path pattern matches nothing')
-if (decisionBullets === 0) problems.push('lint: no decision bullet was measured — the decision length rule matches nothing')
 if (lookups === 0) problems.push('lint: no whole-document lookup was counted — the lookup rule matches nothing')
 
 if (problems.length > 0) {
@@ -343,5 +281,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${decisionBullets} decision bullets, ${lookups} recorded whole-document lookups and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${lookups} recorded whole-document lookups and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }

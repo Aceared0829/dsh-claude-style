@@ -111,7 +111,7 @@ Keep only one theme enabled at a time. dsh ≥ 0.1.7 is required, and a restart 
 | Document | Contents |
 | --- | --- |
 | [Design tokens](docs/STYLE.md) | The palette, typography, shape, motion and layer rules, with three tables generated from the token table (in English) |
-| [Architecture decisions](docs/decisions/README.md) | One file per decision: build and source, the host boundary, the runtime and each feature's trade-offs, and the architecture migration in progress (in Chinese) |
+| [Architecture decisions](docs/adr/README.md) | One page per direction: the background it answers, the decision, what follows from it, and what would make it worth revisiting (in Chinese) |
 | [Changelog](CHANGELOG.md) | Version history |
 | [Contributing](CONTRIBUTING.md) | Building from `packages/client/src/`, commit conventions, and the screenshot and regression tooling (in English) |
 

@@ -28,7 +28,7 @@ concurrency:
 jobs:
   # The readers' desktop runs on Windows, and the release carries the same
   # package to it: the smoke there is a gate the promotion waits on, as it is in
-  # CI (D45).
+  # CI.
   smoke-windows:
     runs-on: windows-latest
     timeout-minutes: 20
@@ -97,7 +97,7 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run smoke
-      # What that walk read, against the committed appearance snapshot (D00, 外观层).
+      # What that walk read, against the committed appearance snapshot (D66).
       - run: node packages/testing/appearance.cjs
       # The assembled host on the pinned version, walked over the scenario
       # table's own default walk: what a pull request runs is what the promotion
