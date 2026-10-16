@@ -1,3 +1,5 @@
 {
-  "permissionGroupLabel": { "zh": "权限", "en": "Permission" }
+  "permissionGroupLabel": { "zh": "权限", "en": "Permission" },
+  "permissionsTitle": { "zh": "重绘权限控件", "en": "Redraw the permission control" },
+  "permissionsDesc": { "zh": "使用插件自己的权限控件；关闭后交还宿主的权限菜单。", "en": "Use the skin's own permission control; Off restores the host's permission menu." }
 }

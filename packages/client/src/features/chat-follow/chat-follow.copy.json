@@ -1,0 +1,4 @@
+{
+  "chatAnimationsTitle": { "zh": "聊天区滚动动画", "en": "Chat-area scrolling animation" },
+  "chatAnimationsDesc": { "zh": "滚动展示助手消息并进行可读性优化", "en": "Scrolls the assistant's messages into view and makes them easier to read" }
+}

@@ -13,8 +13,6 @@ export interface CopyRule {
 
 /** The copy document, indexed for lookups (indexModelCopy). */
 export interface ModelCopyIndex {
-  /** The settings rows' own lines, which the feature manifests name as data (D72). */
-  settings: Record<string, CopyPair>
   fallback: string
   families: CopyRule[]
   tiers: CopyRule[]
@@ -67,11 +65,6 @@ function indexModelCopy(doc: HostAnswer): ModelCopyIndex | null {
   const table = <T>(value: unknown) => (value && typeof value === 'object' ? value : {}) as Record<string, T>
   const brands = table<any>(doc.brands)
   const index: ModelCopyIndex = {
-    // The settings rows' lines are the one interface copy still in this
-    // document: a manifest names them as data, so they travel with the manifest
-    // (D72). Every block the document carries has to be listed here — this index
-    // IS what lookups read.
-    settings: table(doc.settings),
     fallback: typeof doc.fallback === 'string' && doc.fallback ? doc.fallback : MODEL_COPY_FALLBACK_LOCALE,
     families: [],
     tiers: [],

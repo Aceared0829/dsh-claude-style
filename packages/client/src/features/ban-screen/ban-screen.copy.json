@@ -15,5 +15,10 @@
   "exportDesc": { "zh": "我们会把你的对话、项目和设置打包供你下载。这可能需要一些时间。", "en": "We’ll package up your conversations, projects, and settings for download. This might take some time to complete." },
   "deleteTitle": { "zh": "删除你的账户", "en": "Delete your account" },
   "deleteDesc": { "zh": "你可以永久删除账户与数据。此操作不可撤销。", "en": "You can permanently delete your account and data. This can’t be undone." },
-  "title": { "zh": "你的账户已被暂停", "en": "Your account is on hold" }
+  "title": { "zh": "你的账户已被暂停", "en": "Your account is on hold" },
+  "banLocaleTitle": { "zh": "封号彩蛋", "en": "Account-hold easter egg" },
+  "banLocaleDesc": { "zh": "点账户弹层顶部的用户名行打开的彩蛋页，按这里选的语言显示；关闭后用户名行只显示名字。", "en": "The account row in the account popover opens a replica of Claude's account-hold page, in the language chosen here; Off leaves a plain name." },
+  "banLocaleOff": { "zh": "关闭", "en": "Off" },
+  "banLocaleZh": { "zh": "中文", "en": "中文" },
+  "banLocaleEn": { "zh": "English", "en": "English" }
 }

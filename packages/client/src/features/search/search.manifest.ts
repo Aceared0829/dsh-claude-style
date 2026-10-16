@@ -7,12 +7,13 @@ export default {
   contracts: ['shell.sidebar-search', 'shell.sidebar-brand'],
   pref: 'sidebarSearch',
   stylesheets: [{ file: 'search.css', rank: 130 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'sidebar',
     rank: 20,
-    title: { key: 'searchTitle', fallback: 'Sidebar search' },
-    desc: { key: 'searchDesc', fallback: 'A search box in the sidebar that finds sessions, projects, plugins, Skills and shortcuts. Off restores the host\'s brand row.' },
-  },
+    pref: 'sidebarSearch',
+    title: 'searchTitle',
+    desc: 'searchDesc',
+  }],
   cases: ['search', 'switches'],
   description: {
     zh: {

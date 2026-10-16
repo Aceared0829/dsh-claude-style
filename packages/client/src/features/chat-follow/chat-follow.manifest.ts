@@ -8,14 +8,15 @@ export default {
   pref: 'chatAnimations',
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [{ file: 'chat-follow.css', rank: 160 }],
-  switchRow: {
+  settingsRows: [{
     // The Motion tab's own row: what is left of the chat-area switch after the
     // waiting line and the sent message's entrance took switches of their own.
     tab: 'motion',
     rank: 10,
-    title: { key: 'chatAnimationsTitle', fallback: 'Chat-area scrolling animation' },
-    desc: { key: 'chatAnimationsDesc', fallback: 'Scrolls the assistant\'s messages into view and makes them easier to read' },
-  },
+    pref: 'chatAnimations',
+    title: 'chatAnimationsTitle',
+    desc: 'chatAnimationsDesc',
+  }],
   cases: ['chat-follow'],
   description: {
     zh: {

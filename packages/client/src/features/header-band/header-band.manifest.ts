@@ -9,13 +9,14 @@ export default {
   ],
   pref: 'headerBand',
   stylesheets: [{ file: 'header-band.css', rank: 75 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'conversation',
     rank: 60,
-    title: { key: 'headerBandTitle', fallback: 'Header in the title bar' },
-    desc: { key: 'headerBandDesc', fallback: 'On the Windows desktop the session title and the header\'s controls rise into the window\'s caption row, and a side without room stays in the header\'s own row.' },
+    pref: 'headerBand',
+    title: 'headerBandTitle',
+    desc: 'headerBandDesc',
     windowsOnly: true,
-  },
+  }],
   cases: ['header-band', 'switches'],
   description: {
     zh: {

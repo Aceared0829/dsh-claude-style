@@ -10,12 +10,13 @@ export default {
     { file: 'account-footer.css', rank: 240 },
     { file: 'footer-takeover.css', rank: 290 },
   ],
-  switchRow: {
+  settingsRows: [{
     tab: 'sidebar',
     rank: 10,
-    title: { key: 'collapseTitle', fallback: 'Collapse the sidebar settings area' },
-    desc: { key: 'collapseDesc', fallback: 'Fold the sidebar footer\'s settings entry into the account popover. Off restores the host\'s footer.' },
-  },
+    pref: 'collapseFooter',
+    title: 'collapseTitle',
+    desc: 'collapseDesc',
+  }],
   cases: ['account', 'desktop', 'markup', 'install-fault'],
   description: {
     zh: {

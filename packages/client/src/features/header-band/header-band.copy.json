@@ -1,0 +1,4 @@
+{
+  "headerBandTitle": { "zh": "标题进入顶栏", "en": "Header in the title bar" },
+  "headerBandDesc": { "zh": "Windows 桌面端把会话标题与顶栏那一行的控件抬进窗口的标题栏，放不下的一侧留在原来的行里。", "en": "On the Windows desktop the session title and the header's controls rise into the window's caption row, and a side without room stays in the header's own row." }
+}

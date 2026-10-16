@@ -8,18 +8,19 @@ export default {
   contracts: [],
   pref: 'modelPicker',
   stylesheets: [{ file: 'model-picker.css', rank: 260 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'composer',
     rank: 30,
-    title: { key: 'pickerTitle', fallback: 'Redraw the model picker' },
-    desc: { key: 'pickerDesc', fallback: 'Replace the composer\'s model menu with the two-level Claude-style menu. Off restores the host\'s model menu.' },
+    pref: 'modelPicker',
+    title: 'pickerTitle',
+    desc: 'pickerDesc',
     // The menu is drawn into the restyled composer.
     requires: {
       pref: 'composerScope',
       values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: { key: 'composerRequired', fallback: 'No effect while Composer restyle is Off.' },
+      note: 'composerRequired',
     },
-  },
+  }],
   cases: ['brand', 'composer', 'settings', 'sync-fault', 'model-meter'],
   description: {
     zh: {

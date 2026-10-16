@@ -7,12 +7,13 @@ export default {
   contracts: ['boot.peer-sheet', 'chat.scroller', 'chat.turn-attribute', 'conversation.session', 'conversation.session-attribute', 'shell.foreground', 'turn.rail', 'turn.rail-current', 'turn.rail-inset', 'turn.rail-mark', 'turn.rail-pitch', 'turn.rail-scroller'],
   pref: 'turnNav',
   stylesheets: [{ file: 'turn-nav.css', rank: 150 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'conversation',
     rank: 20,
-    title: { key: 'turnNavTitle', fallback: 'Conversation navigator' },
-    desc: { key: 'turnNavDesc', fallback: 'Hover the turn marks at the conversation\'s right edge to open a list of every turn; the wheel scrolls it, a click jumps over. Alt+↑ / Alt+↓ jump between turns. Off restores the host\'s turn marks.' },
-  },
+    pref: 'turnNav',
+    title: 'turnNavTitle',
+    desc: 'turnNavDesc',
+  }],
   cases: ['turn-nav'],
   description: {
     zh: {

@@ -11,23 +11,24 @@ export default {
   // one adds, since the panel the meter owns carries the rows either way.
   prefValues: [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT],
   stylesheets: [],
-  switchRow: {
+  settingsRows: [{
     tab: 'conversation',
     rank: 35,
-    title: { key: 'statsPositionTitle', fallback: 'Conversation statistics position' },
-    desc: { key: 'statsPositionDesc', fallback: 'Inside the context popover puts the session\'s figures in the ring\'s panel; On its own line writes them under the input card, ending in the ring.' },
-    choices: [
-      { value: STATS_POSITION_INLINE, label: { key: 'statsPositionInline', fallback: 'On its own line' } },
-      { value: STATS_POSITION_CONTEXT, label: { key: 'statsPositionContext', fallback: 'Inside the context popover' } },
-    ],
+    pref: 'statsPosition',
+    title: 'statsPositionTitle',
+    desc: 'statsPositionDesc',
+    choiceLabels: {
+      [STATS_POSITION_INLINE]: 'statsPositionInline',
+      [STATS_POSITION_CONTEXT]: 'statsPositionContext',
+    },
     // The figures hang off the meter the composer restyle stamps, and a
     // session's figures only exist in the conversation.
     requires: {
       pref: 'composerScope',
       values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: { key: 'statsComposerRequired', fallback: 'Takes effect only while Composer restyle covers the conversation.' },
+      note: 'statsComposerRequired',
     },
-  },
+  }],
   cases: ['context-stats', 'stats-compact', 'stats-inline'],
   description: {
     zh: {

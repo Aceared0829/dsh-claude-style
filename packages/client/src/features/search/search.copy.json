@@ -21,5 +21,7 @@
   "searchActionSettings": { "zh": "设置", "en": "Settings" },
   "searchActionShortcuts": { "zh": "键盘快捷键", "en": "Keyboard shortcuts" },
   "searchLoading": { "zh": "正在搜索…", "en": "Searching…" },
-  "searchEmpty": { "zh": "没有匹配的结果", "en": "No results" }
+  "searchEmpty": { "zh": "没有匹配的结果", "en": "No results" },
+  "searchTitle": { "zh": "侧栏搜索", "en": "Sidebar search" },
+  "searchDesc": { "zh": "使用插件提供的搜索框功能和逻辑。", "en": "A search box in the sidebar that finds sessions, projects, plugins, Skills and shortcuts. Off restores the host's brand row." }
 }

@@ -1,13 +1,15 @@
 import * as React from 'react'
+import { PREFS } from '@dsh-claude-style/contracts/prefs'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
 import { windowsDesktop } from '../../core/desktop-band'
-import { prefYielded, switchRowFeatures } from '../../core/feature'
-import { settingsCopy } from '../../core/i18n'
+import { prefYielded, settingsRowsOf } from '../../core/feature'
+import { featureCopy } from '../../core/i18n'
+import { copy, sharedLine } from './copy'
 import { createSlidingPill } from '../../shared/sliding-pill'
+import type { Feature } from '../../core/feature'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
 import type { QuickProvidersHandle } from './quick-providers'
-import { copy } from './copy'
 
 /**
  * The settings page's controls: the segmented control, the switch, the row
@@ -66,11 +68,11 @@ export interface SettingsTab {
 }
 
 /**
- * The tab's whole row list: its notice, then its own rows and the switch rows
- * of the features whose manifests place one here, in rank order.
+ * The tab's whole row list: its notice, then the rows the tab writes itself and
+ * the rows the feature manifests place here, in rank order.
  */
 export function tabRows(tab: SettingsTab, view: SettingsView) {
-  const rows = [...tab.rows(view), ...switchRows(tab.id, view)]
+  const rows = [...tab.rows(view), ...featureRows(tab.id, view)]
   const nodes = rows.sort((a, b) => a.rank - b.rank).map(row => row.node)
   const notice = tab.notice === undefined ? null : tab.notice()
   if (notice === null) return nodes
@@ -78,54 +80,61 @@ export function tabRows(tab: SettingsTab, view: SettingsView) {
 }
 
 /**
- * The on/off and choice rows the manifests declare for a tab: without
- * `choices` the row carries a switch, with them a segmented control. A
- * preference a feature yields for (dsh-chat-ux on the page) keeps the reader's
- * value on show and refuses input, saying who manages it (managedDesc); so
- * does a row whose feature only works under another preference's values
- * (`requires`, D72) while that preference holds none of them, saying what it
- * waits for, and a row acting on the Windows desktop window alone
- * (`windowsOnly`) on every page that is not that window, saying where it acts.
+ * One line of a row's copy: the owning feature's own line, or this page's own
+ * for a line two features' rows share (D72).
  */
-function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
+function rowLine(feature: Feature, key: string) {
+  return feature.copy === undefined || feature.copy[key] === undefined ? sharedLine(key) : featureCopy(feature.copy, key)
+}
+
+/**
+ * The rows the feature manifests declare for a tab (D72). The control follows
+ * the preference's own declaration (packages/contracts/src/prefs.ts): a boolean
+ * is an on/off switch, a choice a segmented control over the values the table
+ * carries, each labelled by the row's own copy.
+ *
+ * A row refuses input and says why where it cannot act: a preference its
+ * feature yields for (dsh-chat-ux on the page, managedDesc), one that only
+ * works under another preference's values (`requires`) or stands under a switch
+ * that is off (`parent`), and one acting on the Windows desktop window alone
+ * (`windowsOnly`) on every page that is not that window.
+ */
+function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
   const controls = view.controls
-  return switchRowFeatures(tab).map(feature => {
-    const pref = feature.pref
-    const row = feature.switchRow
+  return settingsRowsOf(tab).map(({ feature, row }) => {
+    const pref = row.pref
+    const spec = PREFS[pref]
     const yielded = prefYielded(pref)
+    const title = rowLine(feature, row.title)
+    const desc = row.desc === undefined ? '' : rowLine(feature, row.desc)
     const requires = row.requires
     const waits = requires !== undefined && !requires.values.includes(String(view.prefs[requires.pref]))
-      ? settingsCopy(requires.note.key, requires.note.fallback)
+      ? rowLine(feature, requires.note)
       : null
     const offWindows = row.windowsOnly === true && !windowsDesktop()
+    const parentOff = row.parent !== undefined && view.prefs[row.parent] === false
     const unmet = waits !== null || offWindows
     const stored = view.prefs[pref]
-    const write = (value: string | boolean) => { view.write({ [pref]: value }) }
-    const control = row.choices === undefined
-      ? controls.toggle(stored !== false, write, yielded || unmet)
+    // The row's key and its values are the table's data: the clamp holds them.
+    const write = (value: string | boolean) => { view.write({ [pref]: value } as Partial<Prefs>) }
+    const control = spec.type === 'boolean'
+      ? controls.toggle(stored !== false, write, yielded || unmet || parentOff)
       : controls.segment(
-        row.choices.map(choice => ({ value: choice.value, label: settingsCopy(choice.label.key, choice.label.fallback) })),
+        (spec.type === 'choice' ? spec.values : []).map((value: string) => ({ value, label: rowLine(feature, row.choiceLabels?.[value] ?? value) })),
         String(stored),
         write,
-        yielded || unmet,
+        yielded || unmet || parentOff,
       )
-    const text = row.desc === undefined ? '' : settingsCopy(row.desc.key, row.desc.fallback)
-    const note = waits ?? (offWindows ? copy('windowsOnlyNote') : null)
+    const note = waits ?? (offWindows ? sharedLine('windowsOnlyNote') : null)
     // A yielded row says who manages it even when it carries no description of
     // its own: the switch rows over the preview cards have none.
     const description = yielded
-      ? managedDesc(text, true)
-      : (row.desc === undefined && note === null ? null : noteDesc(text, note))
-    return {
-      rank: row.rank,
-      node: controls.row(
-        pref,
-        settingsCopy(row.title.key, row.title.fallback),
-        description,
-        control,
-        { disabled: unmet },
-      ),
-    }
+      ? managedDesc(desc, true)
+      : (row.desc === undefined && note === null ? null : noteDesc(desc, note))
+    const node = row.parent === undefined
+      ? controls.row(pref, title, description, control, { disabled: unmet })
+      : controls.subRow(pref, title, description, control, !parentOff)
+    return { rank: row.rank, node }
   })
 }
 

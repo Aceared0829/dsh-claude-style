@@ -1,6 +1,7 @@
 import type { Prefs } from '../constants'
 import { peerPresent } from '../shared/peer-plugin'
 import type { HostContext } from './host'
+import type { CopyEntries } from './i18n'
 import type { HandleName, Handles, Ui, UiCalls } from './scheduler'
 
 /**
@@ -57,8 +58,12 @@ export interface FeatureFields {
   load?: 'deferred'
   /** The feature's stylesheets, relative to its directory; `rank` places each one in the concatenated sheet. */
   stylesheets: FeatureStylesheet[]
-  /** The settings row of the switch this feature owns; a preference shared by several features is owned by one. */
-  switchRow?: FeatureSwitchRow
+  /**
+   * The settings rows this feature owns (D72): each writes one preference, and
+   * the settings page assembles them by tab and rank with the rows it writes
+   * itself. A preference is written by one row, in the feature it belongs to.
+   */
+  settingsRows?: FeatureSettingsRow[]
   /** The smoke cases that cover the feature (`npm run smoke -- --feature <dir>`). */
   cases: string[]
   /**
@@ -97,49 +102,65 @@ export interface FeatureStylesheetGenerated {
   rank: number
 }
 
-/** A line of settings copy: its key in the model copy document and the English fallback. */
+/** A line of copy in the settings page's own copy file, before it moves to its feature (D72). */
 export interface SettingsCopyLine {
   key: string
   fallback: string
 }
 
-/** The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts). */
+/**
+ * The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts).
+ */
 export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'motion'
 
-export interface FeatureSwitchRow {
+/**
+ * One settings row a feature owns (D72). The control follows the preference's
+ * own declaration (packages/contracts/src/prefs.ts): a boolean is an on/off
+ * switch, a choice a segmented control over the values the table carries. Every
+ * line is a key in the feature's own copy (`<功能>.copy.json`).
+ */
+export interface FeatureSettingsRow {
   tab: SettingsTabId
-  /** Position among the tab's rows, shared with the rows the tab writes itself. */
+  /** Position among the tab's rows, shared with the rows the settings feature writes itself. */
   rank: number
-  title: SettingsCopyLine
-  /** The line under the title; a switch whose option below it is the explanation carries none. */
-  desc?: SettingsCopyLine
-  /** The choices of a segmented control; without them the row is an on/off switch. */
-  choices?: FeatureSwitchChoice[]
-  /** The preference the feature only works under (D72). */
-  requires?: FeatureSwitchRequirement
+  /** The preference the row writes. */
+  pref: keyof Prefs
+  title: string
+  /** The line under the title; a row whose own control is the explanation carries none. */
+  desc?: string
+  /** A choice preference's labels: the copy key of each value. A value left out is drawn with its bare id. */
+  choiceLabels?: Readonly<Record<string, string>>
+  /**
+   * The preference whose switch this row stands under: it is drawn indented,
+   * with no hairline between them, and refuses input while that one is off.
+   */
+  parent?: keyof Prefs
+  /** The preference the row's control only works under (D72). */
+  requires?: FeatureRowRequirement
   /**
    * The row acts on the Windows desktop window alone: on any other page it
    * keeps the stored choice on show, refuses input and says where it acts
    * (core/desktop-band.ts).
    */
   windowsOnly?: boolean
+  /**
+   * The feature's own module that draws this row's control, beside its main
+   * module: a preview card, a picker or an editor the generic switch cannot
+   * draw. The build collects these modules for the settings page (D72).
+   */
+  control?: string
 }
 
 /**
- * Another preference a feature only works under: while that preference holds
- * none of `values` the row keeps the stored choice on show, refuses input and
- * says why with `note` under its description.
+ * Another preference a row's control only works under: while that preference
+ * holds none of `values` the row keeps the stored choice on show, refuses input
+ * and says why with `note` under its description.
  */
-export interface FeatureSwitchRequirement {
+export interface FeatureRowRequirement {
   pref: keyof Prefs
-  values: string[]
-  note: SettingsCopyLine
-}
-
-/** One choice of a switch row's segmented control: the stored value and its line of copy. */
-export interface FeatureSwitchChoice {
-  value: string
-  label: SettingsCopyLine
+  values: readonly string[]
+  /** The line the row shows while the requirement is unmet, by key in the feature's own copy. */
+  note: string
 }
 
 export interface FeatureCopy {
@@ -148,7 +169,17 @@ export interface FeatureCopy {
 }
 
 /** The manifest fields the browser half reads. */
-export type FeatureRuntime = FeatureIdentity & Pick<FeatureFields, 'order' | 'yieldsTo' | 'switchRow'> & { pref?: keyof Prefs, prefValues?: string[], ungated?: string }
+export type FeatureRuntime = FeatureIdentity & Pick<FeatureFields, 'order' | 'yieldsTo' | 'settingsRows'> & {
+  pref?: keyof Prefs
+  prefValues?: string[]
+  ungated?: string
+  /**
+   * The feature's own copy, for the settings page: a feature that declares
+   * settings rows carries its lines so the page can label them whether the
+   * feature is installed or not (D72).
+   */
+  copy?: CopyEntries
+}
 
 /** A feature main module's `install`. */
 export type FeatureInstall = (ctx: HostContext, ui: Ui) => (() => void) | void
@@ -184,9 +215,13 @@ export function setFeatureRegistry(features: readonly Feature[]) {
   registry = features
 }
 
-/** The features whose manifest places a switch row on this settings tab. */
-export function switchRowFeatures(tab: SettingsTabId) {
-  return registry.filter((feature): feature is Feature & { pref: keyof Prefs, switchRow: FeatureSwitchRow } => feature.switchRow?.tab === tab)
+/** One settings row on a tab, with the feature that owns it (its copy carries the row's lines). */
+export function settingsRowsOf(tab: SettingsTabId) {
+  const out: { feature: Feature, row: FeatureSettingsRow }[] = []
+  for (const feature of registry) {
+    for (const row of feature.settingsRows ?? []) if (row.tab === tab) out.push({ feature, row })
+  }
+  return out
 }
 
 /** Whether a feature reading this preference stands down right now for a plugin it yields to. */

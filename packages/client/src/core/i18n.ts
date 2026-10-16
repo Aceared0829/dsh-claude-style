@@ -91,16 +91,3 @@ export function copyIn(entries: CopyEntries, key: string, locale: string, params
   const text = pair === undefined ? '' : (pair[locale] || pair[COPY_FALLBACK_LOCALE] || '')
   return fillTemplate(text === '' ? key : text, params)
 }
-
-/**
- * One settings-page string out of the copy document. What is left in the
- * document's `settings` block is the copy a feature manifest's settings row
- * names (`title`, `desc`, `choices`, `requires.note`): those lines travel with
- * the manifest as data, so the page reads them here until the row and its copy
- * live in the feature that owns them (D72). Every other interface string is the
- * feature's own copy (`featureCopy`).
- */
-export function settingsCopy(key: string, fallback: string, params?: CopyParams) {
-  const text = modelCopy === null || !modelCopy.settings ? '' : localized(modelCopy.settings[key])
-  return fillTemplate(text || fallback, params)
-}

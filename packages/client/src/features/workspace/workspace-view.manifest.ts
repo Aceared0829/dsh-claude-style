@@ -6,12 +6,13 @@ export default {
   contracts: [],
   pref: 'workspaceView',
   stylesheets: [{ file: 'workspace.css', rank: 120 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'sidebar',
     rank: 30,
-    title: { key: 'workspaceTitle', fallback: 'In progress / Archived view' },
-    desc: { key: 'workspaceDesc', fallback: 'Split the sidebar\'s workspace section into In progress and Archived; archived conversations can be restored or deleted. Off restores the host\'s workspace list.' },
-  },
+    pref: 'workspaceView',
+    title: 'workspaceTitle',
+    desc: 'workspaceDesc',
+  }],
   cases: ['switches', 'popovers'],
   description: {
     zh: {

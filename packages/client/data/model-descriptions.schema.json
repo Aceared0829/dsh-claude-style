@@ -7,7 +7,6 @@
   "properties": {
     "version": { "type": "integer" },
     "fallback": { "description": "The locale id read when the shell language has no line.", "type": "string", "minLength": 1 },
-    "settings": { "$ref": "#/$defs/localizedTable" },
     "families": { "type": "array", "items": { "$ref": "#/$defs/copyRule" } },
     "tiers": { "type": "array", "items": { "$ref": "#/$defs/copyRule" } },
     "brands": {

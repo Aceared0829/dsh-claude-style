@@ -10,11 +10,12 @@ export default {
   stylesheets: [{ file: 'send-flight.css', rank: 200 }],
   // The sent message's entrance has its own switch on the Motion tab, with the
   // two answers as the option under it (settings-tab-motion.ts).
-  switchRow: {
+  settingsRows: [{
     tab: 'motion',
     rank: 50,
-    title: { key: 'messageEnterTitle', fallback: 'Message bubble animation' },
-  },
+    pref: 'chatSend',
+    title: 'messageEnterTitle',
+  }],
   cases: ['chat-send'],
   description: {
     zh: {

@@ -6,12 +6,13 @@ export default {
   contracts: ['api.window-controls', 'shell.fullscreen', 'shell.platform', 'shell.top-clearance', 'shell.windows-titlebar'],
   pref: 'viewTabs',
   stylesheets: [{ file: 'view-tabs.css', rank: 60 }],
-  switchRow: {
+  settingsRows: [{
     tab: 'conversation',
     rank: 50,
-    title: { key: 'viewTabsTitle', fallback: 'Chat / Trajectory tabs' },
-    desc: { key: 'viewTabsDesc', fallback: 'Redraw the Chat / Trajectory tab strip at the top of the conversation, lifted onto the title\'s line when it fits. Off restores the host\'s tab strip.' },
-  },
+    pref: 'viewTabs',
+    title: 'viewTabsTitle',
+    desc: 'viewTabsDesc',
+  }],
   cases: ['view-tabs', 'switches'],
   description: {
     zh: {

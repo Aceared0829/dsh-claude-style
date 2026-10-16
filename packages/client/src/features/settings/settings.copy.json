@@ -60,11 +60,6 @@
   "scopeHero": { "zh": "仅首页", "en": "Home only" },
   "scopeConversation": { "zh": "仅对话", "en": "Conversation only" },
   "scopeAll": { "zh": "全部", "en": "All" },
-  "banLocaleTitle": { "zh": "封号彩蛋", "en": "Account-hold easter egg" },
-  "banLocaleDesc": { "zh": "点账户弹层顶部的用户名行打开的彩蛋页，按这里选的语言显示；关闭后用户名行只显示名字。", "en": "The account row in the account popover opens a replica of Claude's account-hold page, in the language chosen here; Off leaves a plain name." },
-  "banLocaleOff": { "zh": "关闭", "en": "Off" },
-  "banLocaleZh": { "zh": "中文", "en": "中文" },
-  "banLocaleEn": { "zh": "English", "en": "English" },
   "tabGeneral": { "zh": "通用", "en": "General" },
   "tabAppearance": { "zh": "外观", "en": "Appearance" },
   "tabComposer": { "zh": "输入区", "en": "Composer" },
@@ -123,5 +118,6 @@
   "statusDetailSampleRead": { "zh": "正在阅读 README.md", "en": "Reading README.md" },
   "statusDetailSampleCheckout": { "zh": "正在检出当前工作树", "en": "Checking out current tree" },
   "statusDetailSampleThinking": { "zh": "正在思考", "en": "Thinking…" },
-  "title": { "zh": "Claude Style", "en": "Claude Style" }
+  "title": { "zh": "Claude Style", "en": "Claude Style" },
+  "composerRequired": { "zh": "「重绘对话框」为「关闭」时不生效。", "en": "No effect while Composer restyle is Off." }
 }

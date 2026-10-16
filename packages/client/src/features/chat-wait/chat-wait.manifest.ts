@@ -10,11 +10,12 @@ export default {
   // The line has its own switch on the Motion tab, with the paint it wears as
   // the option under it (settings-tab-motion.ts): the row says what the switch
   // turns on and off, and the cards show the two paints.
-  switchRow: {
+  settingsRows: [{
     tab: 'motion',
     rank: 15,
-    title: { key: 'statusMotionTitle', fallback: 'Waiting-line animation' },
-  },
+    pref: 'chatWait',
+    title: 'statusMotionTitle',
+  }],
   cases: ['chat-wait'],
   description: {
     zh: {

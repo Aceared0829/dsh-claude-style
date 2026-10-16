@@ -6,5 +6,6 @@
   "chatWaitTools": { "zh": "正在调用工具", "en": "Running tools…" },
   "chatWaitReading": { "zh": "正在读取 {file}", "en": "Reading {file}" },
   "chatWaitEditing": { "zh": "正在编辑 {file}", "en": "Editing {file}" },
-  "chatWaitWritingFile": { "zh": "正在写入 {file}", "en": "Writing {file}" }
+  "chatWaitWritingFile": { "zh": "正在写入 {file}", "en": "Writing {file}" },
+  "statusMotionTitle": { "zh": "状态行动画", "en": "Waiting-line animation" }
 }
