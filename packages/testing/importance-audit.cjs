@@ -500,29 +500,46 @@ function opponentsInPage({ sheet, selector, prop, pseudo }) {
     return found
   }
   const declaredNames = (style) => [prop, ...names].filter((name) => style.getPropertyValue(name) !== '')
-  const takeAway = (style) => {
-    const saved = declaredNames(style).map((name) => [name, style.getPropertyValue(name), style.getPropertyPriority(name)])
+  const takeAway = (style, only) => {
+    const wanted = only ?? declaredNames(style)
+    const saved = wanted.filter((name) => style.getPropertyValue(name) !== '')
+      .map((name) => [name, style.getPropertyValue(name), style.getPropertyPriority(name)])
     for (const [name] of saved) style.removeProperty(name)
     return () => { for (const [name, value, priority] of saved) style.setProperty(name, value, priority) }
   }
+  const transitions = () => new Set(document.getAnimations().filter((animation) => animation instanceof CSSTransition))
+  /**
+   * Whether taking one candidate away is what the value was standing on: the
+   * reading moves, or a transition starts — the audit counts both, since a
+   * declaration's weight can be the only thing holding a transitionable property
+   * at its resolved value. The candidate goes back either way, and a transition
+   * the trial started is cancelled.
+   */
+  const held = (take) => {
+    const running = transitions()
+    const restore = take()
+    const moved = read() !== after
+    const started = [...transitions()].filter((animation) => !running.has(animation))
+    restore()
+    for (const animation of started) animation.cancel()
+    return moved || started.length > 0
+  }
   for (const element of targets) {
     if (declaredNames(element.style).length === 0) continue
-    const restore = takeAway(element.style)
-    const moved = read() !== after
-    restore()
-    if (moved) note('inline', 'element')
+    if (held(() => takeAway(element.style))) note('inline', 'element')
   }
   for (const { rule, owner } of rulesOf()) {
-    if (declaredNames(rule.style).length === 0) continue
     if (!targets.some((element) => { try { return element.matches(rule.selectorText) } catch { return false } })) continue
-    // The declaration the audit is asking about is dropped already; the same
-    // selector still holding the property by weight is that declaration itself.
-    if (owner === 'skin' && rule.selectorText === selector) continue
+    // On the rule the audit is asking about, only the declaration under test has
+    // lost its importance: what may still be holding the value there is another
+    // declaration of the same property's names — a longhand written beside the
+    // shorthand — so those are what get taken away, and the dropped shorthand is
+    // left where the audit put it.
+    const isTest = owner === 'skin' && rule.selectorText === selector
+    const candidates = isTest ? declaredNames(rule.style).filter((name) => name !== prop) : declaredNames(rule.style)
+    if (candidates.length === 0) continue
     const priority = rule.style.getPropertyPriority(prop)
-    const restore = takeAway(rule.style)
-    const moved = read() !== after
-    restore()
-    if (!moved) continue
+    if (!held(() => takeAway(rule.style, candidates))) continue
     if (owner === 'skin') note('another-skin-rule', rule.selectorText)
     else note(priority === 'important' ? 'host-important' : 'host-rule', rule.selectorText)
   }

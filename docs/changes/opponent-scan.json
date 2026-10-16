@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 13,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**对手分类按走查自己的口径补齐两处，并记下试过的死路**：判定为需要的依据里包含「去掉重要性之后有过渡开始」，分类现在也把这一条算作「这个候选正托着值」；同一条规则里与简写并排写的长属性（`border` 旁边的 `border-color`）此前被整条跳过，现在也是候选。两处补齐没有改变本次的归属数（仍是十六处里三处），台账的说明把试过的三条死路一并写下：过渡、同规则长属性、以及只看第一个匹配元素。",
+  "en": "**The opponent classification now matches the walk's own criteria in two places, and the dead ends are written down**: a declaration counts as necessary when dropping its importance starts a transition, and the classification counts that as the candidate holding the value too; a longhand written beside a shorthand in the very rule under test (`border-color` next to `border`) used to be skipped with the whole rule and is a candidate now. Neither changed today's tally (three of sixteen), and the ledger's note records the three dead ends tried: transitions, same-rule longhands, and reading only the first matching element."
+}
