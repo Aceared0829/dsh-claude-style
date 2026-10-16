@@ -14,6 +14,7 @@
  * scenario wheels once, mid-turn, and reads the frames it recorded.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 
 /** The host's page markers this scenario reads, as packages/testing/lane.cjs names them. */
 const HOST = {
@@ -25,9 +26,9 @@ const HOST = {
 const READER_HOLD = '[data-dsh-claude-reader-hold]'
 
 /** How much of the pinned row's own height a frame may sit within and still count as floating at the pin. */
-const PIN_SLACK_PX = 40
+const PIN_SLACK_PX = bound('readerScrollPinSlackPx')
 /** How far the tail has to sit from the end for the pin to have something to hold against. */
-const TAIL_THRESHOLD_PX = 25
+const TAIL_THRESHOLD_PX = bound('readerScrollTailThresholdPx')
 
 /** How far the position is from the conversation's end. */
 const gapOf = (page) => page.evaluate((host) => {

@@ -21,6 +21,7 @@
  * the host draws its whale tail, resting on the wording's line.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -35,7 +36,7 @@ const READ_WORD = /^(Reading app\.js|正在读取 app\.js)$/
  * writes the wording, so the slack covers only a change landing between two
  * frames of that write.
  */
-const MIN_GAP_MS = 850
+const MIN_GAP_MS = bound('waitLineMinGapMs')
 /** The file the scripted read opens: written before the turn, so the call has something to read. */
 const APP = 'const first = 1\n'
 

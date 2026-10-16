@@ -19,6 +19,7 @@
  * leaves nothing to guard.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 
 /** The host's own classes this scenario reads, the seat the skin keeps out of the row, and the skin's own control, which the rail has no heading to lay over. */
 const RAIL = {
@@ -33,7 +34,7 @@ const RAIL = {
 }
 
 /** How far a control's centre may stand from the column's own line and still read as on it. */
-const LINE_TOLERANCE_PX = 1
+const LINE_TOLERANCE_PX = bound('sidebarRailLineTolerancePx')
 
 /**
  * Collapse the rail, once: the host's own toggle is pressed unless the frame

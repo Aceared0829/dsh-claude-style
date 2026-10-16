@@ -19,6 +19,7 @@
  * while the reasoning streams.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 
 /** The host's page markers this scenario reads, as packages/testing/lane.cjs names them. */
 const HOST = {
@@ -36,9 +37,9 @@ const SKIN = {
 }
 
 /** Long enough for a door to roll and its settle to land before the next press. */
-const DOOR_SETTLE_MS = 450
+const DOOR_SETTLE_MS = bound('doorPinSettleMs')
 /** The frames on each side of the doors whose status line is held to the same spot. */
-const AROUND_FRAMES = 30
+const AROUND_FRAMES = bound('doorPinAroundFrames')
 
 /**
  * Sample the page once per frame until the turn settles: the row's place on

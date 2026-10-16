@@ -15,6 +15,7 @@
  * scenarios share, so the scenario writes the theme style back before it ends.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 const { waitForSkin, dismissOverlays } = require('./dsh-web.cjs')
 const { openSkinSettings, SETTINGS_PAGE } = require('./settings-route.cjs')
 
@@ -33,7 +34,7 @@ const SKIN = {
 }
 
 /** How long a written value may take to reach the other page. */
-const FOLLOW_TIMEOUT_MS = 15000
+const FOLLOW_TIMEOUT_MS = bound('remoteSettingsFollowTimeoutMs')
 
 const brandOf = (page) => page.evaluate((attribute) => document.body.getAttribute(attribute), SKIN.brand)
 

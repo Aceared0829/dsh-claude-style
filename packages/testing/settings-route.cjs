@@ -10,15 +10,16 @@
  * settings page come in through here, so the route lives in one place.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 
 /** The skin's settings root: what both routes end on. */
 const SETTINGS_PAGE = '.dsh-claude-settings'
 
 /** How long the host may take to answer the shortcut with its account menu. */
-const MENU_WAIT_MS = 1500
+const MENU_WAIT_MS = bound('settingsRouteMenuWaitMs')
 
 /** How long the settings dialog may take after its entry is pressed. */
-const SETTINGS_WAIT_MS = 20000
+const SETTINGS_WAIT_MS = bound('settingsRouteDialogWaitMs')
 
 /**
  * Open the skin's settings page in the host's shell.

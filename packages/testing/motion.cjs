@@ -15,6 +15,7 @@
  * The page runs the studio home, which draws the usage panel.
  */
 'use strict'
+const { bound } = require('./bounds.cjs')
 const { waitForSkin } = require('./dsh-web.cjs')
 const { openSkinSettings } = require('./remote-settings.cjs')
 
@@ -40,7 +41,7 @@ const SKIN = {
 }
 
 /** Longer than any entrance or exit the token table holds. */
-const SETTLE_MS = 600
+const SETTLE_MS = bound('motionSettleMs')
 
 /** Record every hand-over the usage panel plays, from the page's first frame. */
 function watchReveal(marks) {
