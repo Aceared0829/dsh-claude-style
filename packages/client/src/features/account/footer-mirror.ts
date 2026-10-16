@@ -1,13 +1,15 @@
 import { FOOTER_ACTIONS_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea } from '../../core/host'
 import { copyLabel } from '../../core/i18n'
+import { hasSkinClass } from '../../shared/dom'
 import { buildPopoverItem } from '../../shared/popover'
 
 /**
  * The host's sidebar footer entries, mirrored as rows of the account popover:
  * the row model, the two mount points and the popover's own behaviour belong to
- * account-footer.ts, and this module only reads the host's footer action slot
- * and rebuilds those entries inside the popover body.
+ * account-footer.ts, and this module only reads what the footer holds — the
+ * action slot's entries and any card a plugin mounted beside them — and rebuilds
+ * those entries inside the popover body.
  */
 export function createFooterMirror(options: {
   body(): HTMLElement | null
@@ -23,11 +25,12 @@ export function createFooterMirror(options: {
   }
 
   /**
-   * The `sidebar.footer.action` list slot accepts arbitrary plugin
+   * Hide the footer's own controls in place and return the units the drawer
+   * mirrors. The `sidebar.footer.action` list slot accepts arbitrary plugin
    * controls, not just buttons: a plugin may render a composite widget
    * (toggles, selects, status chips) straight into the sidebar footer.
-   * Redirection therefore works on ENTRIES (direct children of
-   * footerActions), not on `querySelectorAll('button')`:
+   * Redirection therefore works on ENTRIES, not on
+   * `querySelectorAll('button')`:
    *   - every entry is marked `data-dsh-claude-footer-entry` (CSS
    *     collapses its box so nothing paints in the sidebar);
    *   - entries without a floating overlay are hidden wholesale via
@@ -38,9 +41,8 @@ export function createFooterMirror(options: {
    *     is hidden, so only the overlay itself can surface.
    * Returns the live entry list for popover mirroring.
    */
-  function syncFooterActionVisibility(footerActions: Element | null) {
-    if (!footerActions) return []
-    const entries = footerEntriesOf(footerActions)
+  function syncFooterVisibility(footArea: Element) {
+    const entries = footerEntriesIn(footArea)
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i]
       entry.setAttribute('data-dsh-claude-footer-entry', '')
@@ -56,6 +58,34 @@ export function createFooterMirror(options: {
         if (overlay) el.setAttribute('data-dsh-claude-footer-overlay', '')
       }
       markFooterHiddenBranches(entry)
+    }
+    return entries
+  }
+
+  /**
+   * The units the drawer mirrors, in the footer's own order: the action slot's
+   * entries, read where the slot stands, and any card a plugin mounted beside
+   * them.
+   *
+   * The slot is not the only way into the footer: a plugin may mount its own
+   * card straight into the foot area — the usage plugin's foot card sits
+   * between the slot and the settings area — and the takeover collects what the
+   * footer holds wherever the plugin put it. The slot container is read through,
+   * and the settings area (which carries the host's own account row) and the
+   * skin's own nodes are no entries.
+   */
+  function footerEntriesIn(footArea: Element) {
+    const entries: Element[] = []
+    const kids = footArea.children
+    for (let i = 0; i < kids.length; i++) {
+      const kid = kids[i]
+      if (kid.matches(FOOTER_ACTIONS_SELECTOR)) {
+        entries.push(...footerEntriesOf(kid))
+        continue
+      }
+      if (kid.matches('[data-dsh-claude-part~="settings-area"]')) continue
+      if (hasSkinClass(kid)) continue
+      entries.push(kid)
     }
     return entries
   }
@@ -340,8 +370,7 @@ export function createFooterMirror(options: {
   }
 
   function sync(footArea: Element) {
-    const footerActions = footArea.querySelector(FOOTER_ACTIONS_SELECTOR)
-    const footerEntries = syncFooterActionVisibility(footerActions)
+    const footerEntries = syncFooterVisibility(footArea)
     const body = options.body()
 
     // A closed host drawer has no container to mirror into, but the entries
@@ -387,8 +416,12 @@ export function createFooterMirror(options: {
         // Rich widgets (progress bars, stat panels) cannot collapse into
         // a text menu item — embed a live clone instead, forwarding
         // clicks to the entry's trigger when it has one (the cost-meter
-        // balance stack is itself clickable).
-        if (!entryIsActionLike(entry, trigger)) {
+        // balance stack is itself clickable). A card a plugin mounted into
+        // the footer itself is one of those whatever its own text says: the
+        // usage card reads as one line, and a text row would drop the
+        // figures it draws, so it keeps its own markup.
+        const inSlot = entry.closest(FOOTER_ACTIONS_SELECTOR) !== null
+        if (!inSlot || !entryIsActionLike(entry, trigger)) {
           removeActionMirror(idx)
           if (hasContent) {
             syncEmbedMirror(entry, idx, trigger)
@@ -428,8 +461,7 @@ export function createFooterMirror(options: {
               // stored node was detached by a host re-render while the
               // popover was open.
               const fa = findFootArea()
-              const actions = fa ? fa.querySelector(FOOTER_ACTIONS_SELECTOR) : null
-              const liveEntries = actions ? footerEntriesOf(actions) : []
+              const liveEntries = fa ? footerEntriesIn(fa) : []
               const liveEntry = liveEntries[idx] || null
               live = liveEntry ? findFooterTrigger(liveEntry) : null
             }

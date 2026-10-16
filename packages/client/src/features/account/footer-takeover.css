@@ -57,28 +57,23 @@ body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-pa
   overflow: visible;
 }
 
-/* Generic footer-action redirection. The `sidebar.footer.action` slot accepts
-   arbitrary plugin controls, not just buttons; overrides.js marks every
-   mirrored entry (`data-dsh-claude-footer-entry`) and hides it in place
-   (`data-dsh-claude-footer-hidden`) once it is redirected into the account
-   popover. Entries that host a floating overlay (a fixed panel or dialog)
-   keep their subtree visible — the overlay must stay reachable after the
-   mirrored popover item opens it — but the entry box itself collapses so it
-   never paints inside the zero-sized footerActions container. */
-body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-hidden] {
-  display: none;
+/* Generic footer redirection. The unit the takeover collects is whatever the
+   footer holds: the `sidebar.footer.action` slot's entries, and a card a plugin
+   mounted beside them (features/account/footer-mirror.ts). Each one is marked
+   `data-dsh-claude-footer-entry` and hidden in place once it is rebuilt into
+   the account popover. An entry that hosts a floating overlay (a fixed panel or
+   a dialog) keeps its subtree visible — the overlay must stay reachable after
+   the mirrored popover item opens it — while the entry's own box goes, so only
+   the overlay surfaces. A plugin writes its entry's box inline, which no plain
+   rule beats, so the box is taken away by weight: `display: contents` drops the
+   box and leaves the overlay laying out as if the entry were not there. */
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-entry]:not([data-dsh-claude-footer-hidden]) {
+  display: contents !important;
 }
-body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-entry] {
-  width: 0;
-  height: 0;
-  min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  overflow: visible;
+/* A collected entry goes whole, subtree and all. The weight here stands over
+   the plugin's own inline `display` on the entry it wrote. */
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-hidden] {
+  display: none !important;
 }
 
 /* Collapsed rail mode adaptations */

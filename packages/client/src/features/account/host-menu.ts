@@ -1,5 +1,6 @@
 import { SETTINGS_BUTTON_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea, findHostMenu } from '../../core/host'
+import { hasSkinClass } from '../../shared/dom'
 
 /** Rhythm and give-up point of the poll for the host's account menu after the trigger's own click. */
 const MENU_LOOK_INTERVAL_MS = 40
@@ -54,7 +55,7 @@ export function createHostAccountMenu(options: { close(): void }) {
     for (const scope of scopes) {
       if (scope === null) continue
       const el = scope.querySelector<HTMLElement>('[aria-haspopup="menu"][data-signed-out]')
-      if (el !== null && !String(el.className || '').includes('dsh-claude-')) return el
+      if (el !== null && !hasSkinClass(el)) return el
     }
     return null
   }

@@ -170,8 +170,9 @@ module.exports = {
   },
   desktop(r) {
     check('apply() completes', r.applyError === null, r.applyError)
-    check('the footer entries are hidden in place before the drawer is ever opened',
-      Array.isArray(r.footerEntriesBeforeOpen) && r.footerEntriesBeforeOpen.length === 2 &&
+    check('every unit the footer holds is hidden in place before the drawer is ever opened, the plugin\'s inline box included',
+      Array.isArray(r.footerEntriesBeforeOpen) && r.footerEntriesBeforeOpen.length === 3 &&
+        same(r.footerEntriesBeforeOpen.map(function (entry) { return entry.kind }), ['slot', 'slot', 'card']) &&
         r.footerEntriesBeforeOpen.every(function (entry) { return entry.hidden === true && entry.display === 'none' }),
       JSON.stringify(r.footerEntriesBeforeOpen))
     check("the host's own account row stays visible; the skin builds no trigger",
@@ -185,8 +186,8 @@ module.exports = {
     check("our container is injected as the list's first child",
       r.injectInViewport === true && r.injectFirst === true,
       JSON.stringify({ inViewport: r.injectInViewport, first: r.injectFirst }))
-    check('the injected container carries the header and the plugin rows',
-      same(r.injectRows, ['header', 'action', 'embed']) && r.injectName === 'Ada',
+    check('the injected container carries the header and the plugin rows, the card mounted outside the slot keeping its own markup among them',
+      same(r.injectRows, ['header', 'action', 'embed', 'embed']) && r.injectName === 'Ada',
       JSON.stringify({ rows: r.injectRows, name: r.injectName }))
     check('the injected header names the same user as the host account row',
       r.injectName !== null && r.injectName === r.hostRowText,

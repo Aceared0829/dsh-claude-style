@@ -81,6 +81,21 @@ export function hasLocalClass(element: Element, local: string): boolean {
 }
 
 /**
+ * Whether `element` is one of the skin's own nodes (D3). The skin spells its
+ * classes with the `dsh-claude-` prefix as whole tokens, so compared whole and
+ * never as a substring: no host class and no other plugin's class can be
+ * mistaken for one.
+ *
+ * @param element - the element to test.
+ */
+export function hasSkinClass(element: Element): boolean {
+  for (const token of element.classList) {
+    if (token.startsWith('dsh-claude-')) return true
+  }
+  return false
+}
+
+/**
  * One host element the skin marks for its stylesheet, followed across
  * re-renders. React replaces host nodes freely, so the mark has to move
  * with the element the pass finds this time and come off the one it

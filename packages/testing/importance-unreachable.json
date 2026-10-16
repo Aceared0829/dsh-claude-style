@@ -448,7 +448,7 @@
       "selectors": [
         "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area]>[data-dsh-claude-part~=footer-actions] :is([data-dsh-claude-part~=footer-buttons],>button)",
         "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-hidden]",
-        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-entry]"
+        "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-entry]:not([data-dsh-claude-footer-hidden])"
       ]
     },
     {

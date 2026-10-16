@@ -29,14 +29,18 @@
       for (var n = 0; n < 4; n++) { document.body.appendChild(document.createElement('i')); await sleep(80) }
     })
     await probe.onlyFor(['desktop'], async function () {
-      // The footer entries are hidden in place from the first pass: nothing in
-      // this case has opened the drawer yet, so this read is the state a fresh
-      // page shows beside the account row. (The first pass runs on a frame.)
+      // Every unit the footer holds — the action slot's two entries and the
+      // card a plugin mounted beside them — is hidden in place from the first
+      // pass: nothing in this case has opened the drawer yet, so this read is
+      // the state a fresh page shows beside the account row. (The first pass
+      // runs on a frame.) One entry writes its own box inline, so this read is
+      // where the takeover's weight over an inline style is judged.
       await sleep(500)
       r.footerEntriesBeforeOpen = Array.prototype.map.call(
-        document.querySelectorAll('[data-dsh-claude-part~="footer-actions"] [data-slot] > *'),
+        document.querySelectorAll('[data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-entry]'),
         function (entry) {
           return {
+            kind: entry.getAttribute('data-dsh-usage-foot-card') === null ? 'slot' : 'card',
             hidden: entry.hasAttribute('data-dsh-claude-footer-hidden'),
             display: getComputedStyle(entry).display,
           }

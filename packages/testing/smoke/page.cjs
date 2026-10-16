@@ -95,9 +95,17 @@ function page(name, tier, cases) {
   // `settings.launcher` slot inside the host's `triggerRow`, and the settings
   // button the web-style footer has is gone. Every other case keeps the
   // web-style footer unchanged.
-  var footerActions = '<div class="_footerActions_x_1"><div data-slot="sidebar.footer.action"><button id="plugin-action" aria-label="Cost meter" data-cordis-badge="3"><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg></button><div class="_balance_p_1" role="group"><span>Balance 10.07</span><div role="progressbar" aria-valuenow="40"></div></div></div></div>'
+  //
+  // Two shapes a real footer carries are reproduced here. The action slot's
+  // first entry writes its own box inline (the chat-import plugin's footer
+  // button does), which is what the takeover's weight has to stand over. And a
+  // plugin mounts a card of its own straight into the foot area above the
+  // settings area (the usage plugin's `data-dsh-usage-foot-card`), outside the
+  // slot: the takeover collects whatever the footer holds.
+  var footerActions = '<div class="_footerActions_x_1"><div data-slot="sidebar.footer.action"><button id="plugin-action" aria-label="Cost meter" data-cordis-badge="3" style="box-sizing:border-box;display:flex;align-items:center;width:100%;height:42px;padding:0 10px;background:transparent;border:none"><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg></button><div class="_balance_p_1" role="group"><span>Balance 10.07</span><div role="progressbar" aria-valuenow="40"></div></div></div></div>'
+  var footCard = '<div data-dsh-usage-foot-card=""><div class="_usageCard_u_1"><button type="button" aria-label="Open usage settings"><svg viewBox="0 0 16 16"><path d="M2.5 12.5h11"></path></svg><span>Today 3.49M tokens</span></button></div></div>'
   var footer = name === 'desktop'
-    ? '<div class="_footArea_x_1">' + footerActions +
+    ? '<div class="_footArea_x_1">' + footerActions + footCard +
         '<div class="_settingsArea_x_1"><div data-slot="sidebar.settings"><div class="_triggerRow_s_1">' +
           '<div data-slot="settings.launcher"><div class="_root_a_1"><span>' +
             // data-signed-out is the host's own mark on the account trigger (ui-shell's
@@ -108,6 +116,7 @@ function page(name, tier, cases) {
         '</div></div></div>' +
       '</div>'
     : '<div class="_footArea_x_1">\n' +
+        '  ' + footCard + '\n' +
         '  <div class="_settingsArea_x_1"><button aria-haspopup="dialog">Settings</button></div>\n' +
         '  ' + footerActions + '\n' +
       '</div>'

@@ -2157,6 +2157,16 @@
       "selector": "html[data-dsh-theme-transitioning] body[data-dsh-claude-style][data-dsh-theme-transitioning] *",
       "prop": "transition",
       "verdict": "transient state"
+    },
+    "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-entry]:not([data-dsh-claude-footer-hidden]){display:contents!}|display": {
+      "selector": "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-entry]:not([data-dsh-claude-footer-hidden])",
+      "prop": "display",
+      "verdict": "unmatched"
+    },
+    "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-hidden]{display:none!}|display": {
+      "selector": "body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~=foot-area] [data-dsh-claude-footer-hidden]",
+      "prop": "display",
+      "verdict": "unmatched"
     }
   }
 }
