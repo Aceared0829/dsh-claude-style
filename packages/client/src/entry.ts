@@ -1,5 +1,6 @@
-import { HANDOFF_ATTR, LIVE_PREFS, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
+import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, LIVE_PREFS, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
 import type { LivePref } from './constants'
+import { installParts } from '@dsh-claude-style/engine/parts'
 import { adoptSkin } from '@dsh-claude-style/engine/skin'
 import { motionReduced } from './core/prefs'
 import { loadHdsl, loadUsername, setHostContext } from './core/host'
@@ -8,7 +9,6 @@ import { loadModelCopy } from './core/model-copy'
 import { adoptPrefs, adoptSettingsForm, clearPrefsAttributes, disposePrefsBinding, prefs, readPrefs, retireComposerRestyle, retireFooterTakeover, subscribePrefs } from './core/prefs'
 import { installScheduler, reportFeatureFailure } from './core/scheduler'
 import type { HandleName, Ui } from './core/scheduler'
-import { installParts } from './core/parts'
 import { mountStylesheet, parkForeignSheets } from './core/stylesheet'
 import { peerPresent, subscribePeerPresence } from './shared/peer-plugin'
 import { pageOwner, subscribePageOwner } from './shared/visual-owner'
@@ -345,7 +345,11 @@ export function apply(ctx: HostContext) {
     // the marks style reads the settled numbers; the scheduler is installed
     // below, so `schedule` is looked up when the batch runs.
     if (stopParts === null) {
-      stopParts = installParts(() => {
+      stopParts = installParts({
+    part: PART_ATTR,
+    holds: HOLDS_ATTR,
+    regions: { account: ACCOUNT_MENU_ATTR, hero: HERO_MENU_ATTR },
+  }, () => {
         if (typeof ui.schedule === 'function') ui.schedule()
       })
     }

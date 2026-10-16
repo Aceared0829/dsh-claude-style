@@ -23,6 +23,11 @@ import postcss from 'postcss'
 import { SyntaxKind, skipTrivia } from 'typescript/unstable/ast'
 import { API } from 'typescript/unstable/sync'
 
+/** The property names a hand-over object literal carries an attribute name under. */
+const HANDED_OVER = new Set(['quiet', 'readerHold', 'part', 'holds', 'account', 'hero'])
+/** The engine's own accessors for the vocabulary the skin handed over. */
+const SEAM_READERS = new Set(['skin', 'vocabulary'])
+
 /** The DOM calls that write an attribute, by the method's name; the name is their first argument. */
 const ATTRIBUTE_WRITERS = new Set(['setAttribute', 'toggleAttribute'])
 /** shared/motion.ts's readers; each takes the token's name first. */
@@ -168,14 +173,29 @@ function collect(project, root, srcDirs) {
   }
 
   /**
-   * An attribute name read off the engine's seam (`skin().quiet`): the engine
-   * writes whatever the skin handed over, and that hand-over is read where it
-   * is made (the adoptSkin call below), so this expression carries no literal
-   * of its own.
+   * An attribute name read off the engine's own vocabulary (`skin().quiet`,
+   * `vocabulary().part`): the engine writes whatever the skin handed over, and
+   * that hand-over is read where it is made (the adoptSkin and installParts
+   * calls), so this expression carries no literal of its own.
    */
   const isSeamRead = (expression) => expression.kind === SyntaxKind.PropertyAccessExpression
     && expression.expression.kind === SyntaxKind.CallExpression
-    && calleeName(expression.expression) === 'skin'
+    && SEAM_READERS.has(calleeName(expression.expression))
+
+  /** The attribute names a hand-over object literal spells, the nested `regions` included. */
+  const namesHandedOver = (seam, record) => {
+    if (seam?.kind !== SyntaxKind.ObjectLiteralExpression) return
+    for (const property of seam.properties) {
+      if (property.kind !== SyntaxKind.PropertyAssignment) continue
+      const spelt = propertyName(property.name)
+      if (spelt === 'regions') {
+        namesHandedOver(property.initializer, record)
+        continue
+      }
+      if (!HANDED_OVER.has(spelt)) continue
+      follow(property.initializer, record, 'hands the engine an attribute name that is no literal the build can read; give it a literal type')
+    }
+  }
 
   const attributes = new Map()
   const motion = new Map()
@@ -184,18 +204,11 @@ function collect(project, root, srcDirs) {
     if (call.expression.kind === SyntaxKind.PropertyAccessExpression && ATTRIBUTE_WRITERS.has(name)) {
       follow(call.arguments[0], firstAt(attributes), 'writes an attribute whose name is no literal the build can read; give it a literal type', isSeamRead)
     }
-    // The engine writes the skin's own attribute names through the seam it is
-    // handed (packages/engine/src/skin.ts, D73), so the hand-over names them here.
-    if (name === 'adoptSkin') {
-      const seam = call.arguments[0]
-      if (seam?.kind === SyntaxKind.ObjectLiteralExpression) {
-        for (const property of seam.properties) {
-          if (property.kind !== SyntaxKind.PropertyAssignment) continue
-          const spelt = propertyName(property.name)
-          if (spelt !== 'quiet' && spelt !== 'readerHold') continue
-          follow(property.initializer, firstAt(attributes), 'hands the engine an attribute name that is no literal the build can read; give it a literal type')
-        }
-      }
+    // The engine writes the skin's own attribute names through the vocabulary it
+    // is handed (packages/engine/src/skin.ts, parts.ts, D73), so the hand-over
+    // names them here.
+    if (name === 'adoptSkin' || name === 'installParts') {
+      namesHandedOver(call.arguments[0], firstAt(attributes))
     }
     if (MOTION_READERS.has(name) && call.arguments[0] !== undefined) {
       follow(call.arguments[0], firstAt(motion), 'asks shared/motion.ts for a token whose name is no literal the build can read (D9)')

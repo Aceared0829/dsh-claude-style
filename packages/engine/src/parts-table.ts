@@ -1,4 +1,16 @@
 /**
+ * What the tables are built from: the two attributes the marking pass writes,
+ * and the anchors two of the host's own menus stand in. They are the skin's, so
+ * they arrive with the install (packages/engine/src/parts.ts, D73).
+ */
+export interface PartsTableVocabulary {
+  /** The attribute a marked node carries: the part names it stands for, space-separated. */
+  part: string
+  /** The anchors the skin's own menus stand in, which the menu parts are read under. */
+  regions: { account: string, hero: string }
+}
+
+/**
  * The host class names the skin reads, as data (D3): host CSS-module local name
  * → the skin's own part name.
  *
@@ -18,7 +30,6 @@
  * part gate) and holds every part a stylesheet reads to the table here. A host
  * rename is one line in this file.
  */
-import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } from '../constants'
 import { CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /** Host CSS-module local name → the skin's part name. */
@@ -256,36 +267,36 @@ export interface PartRegion {
 }
 
 /** Every region, in the order the walk enters them. */
-export const PART_REGIONS: PartRegion[] = [
-  { within: 'body', parts: PAGE_PARTS },
-  {
+export function partRegions(vocabulary: PartsTableVocabulary): PartRegion[] {
+  return [
+    { within: 'body', parts: PAGE_PARTS },
+    {
     within: ROOT_SLOT_SELECTOR,
     parts: FRAME_PARTS,
     rootParts: { frame: 'layout-frame' },
-  },
-  {
+    },
+    {
     within: SIDEBAR_SLOT_SELECTOR,
     parts: SIDEBAR_PARTS,
     rootParts: { root: 'sidebar-root', collapsed: 'sidebar-collapsed', quietBars: 'sidebar-quiet', fading: 'sidebar-fading' },
-  },
-  { within: CONVERSATION_HEADER_SLOT_SELECTOR, parts: HEADER_PARTS },
-  { within: CONVERSATION_SCROLL_SELECTOR, parts: CONVERSATION_PARTS },
-  { within: RIGHTBAR_COLUMN_SELECTOR, parts: RIGHTBAR_PARTS },
-  { within: `[${ACCOUNT_MENU_ATTR}], [${HERO_MENU_ATTR}]`, parts: MENU_PARTS },
-]
+    },
+    { within: CONVERSATION_HEADER_SLOT_SELECTOR, parts: HEADER_PARTS },
+    { within: CONVERSATION_SCROLL_SELECTOR, parts: CONVERSATION_PARTS },
+    { within: RIGHTBAR_COLUMN_SELECTOR, parts: RIGHTBAR_PARTS },
+    { within: `[${vocabulary.regions.account}], [${vocabulary.regions.hero}]`, parts: MENU_PARTS },
+  ]
+}
 
 /** Every part name the tables define, sorted: the whole vocabulary a sheet may read. */
-export const PART_NAMES: string[] = (() => {
+export function partNames(vocabulary: PartsTableVocabulary): string[] {
   const names = new Set<string>()
-  for (const region of PART_REGIONS) {
+  for (const region of partRegions(vocabulary)) {
     for (const part of Object.values(region.parts)) names.add(part)
     for (const part of Object.values(region.rootParts ?? {})) names.add(part)
   }
   return [...names].sort()
-})()
+}
 
-/** The selector for one part name, so the relations below spell their sides in this vocabulary. */
-const part = (name: string) => `[${PART_ATTR}~="${name}"]`
 
 /**
  * The structural relations a stylesheet reads as a hold: a rule naming an
@@ -317,10 +328,13 @@ export interface HoldRelation {
 }
 
 /** Every relation a stylesheet reads, and the rule that reads it. */
-export const HOLD_RELATIONS: HoldRelation[] = [
-  // theme/chrome.css, theme/wallpaper.css: the frame paints to the window's top
-  // only where its own first column is the sidebar.
-  { name: 'sidebar-column', holder: part('layout-frame'), held: part('sidebar-column'), direct: true, attributes: [] },
+export function holdRelations(vocabulary: PartsTableVocabulary): HoldRelation[] {
+  /** The selector for one part name, so the relations below spell their sides in this vocabulary. */
+  const part = (name: string) => `[${vocabulary.part}~="${name}"]`
+  return [
+    // theme/chrome.css, theme/wallpaper.css: the frame paints to the window's top
+    // only where its own first column is the sidebar.
+    { name: 'sidebar-column', holder: part('layout-frame'), held: part('sidebar-column'), direct: true, attributes: [] },
   // theme/chrome.css, theme/wallpaper.css, features/view-tabs/view-tabs.css: the
   // header owns the tab strip, and only that header loses its bottom edge.
   { name: 'view-tabs', holder: part('conversation-header'), held: part('view-tabs'), attributes: [] },
@@ -349,4 +363,5 @@ export const HOLD_RELATIONS: HoldRelation[] = [
     scope: part('foot-area'),
     attributes: ['data-dsh-claude-account-host-row'],
   },
-]
+  ]
+}

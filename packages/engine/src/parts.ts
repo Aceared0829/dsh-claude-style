@@ -1,8 +1,7 @@
-import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, PART_ATTR } from '../constants'
-import { HOLD_RELATIONS, PART_REGIONS } from './parts-table'
-import type { HoldRelation, PartTable } from './parts-table'
-import { localClassName, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
-import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { holdRelations, partRegions } from './parts-table'
+import type { HoldRelation, PartTable, PartsTableVocabulary } from './parts-table'
+import { localClassName, setAttributeIfChanged } from './dom'
+import { subscribeMutations } from './bus'
 
 /**
  * The marking pass behind the skin's part vocabulary (D3) and the holds a
@@ -36,14 +35,38 @@ interface RegionLookup {
   rootParts: Map<string, string> | null
 }
 
-const LOOKUPS: RegionLookup[] = PART_REGIONS.map((region) => ({
-  within: region.within,
-  parts: new Map(Object.entries(region.parts)),
-  rootParts: region.rootParts === undefined ? null : new Map(Object.entries(region.rootParts)),
-}))
+/** What the skin handed over at install: its own attributes and the anchors its menus stand in (D73). */
+export interface PartsVocabulary extends PartsTableVocabulary {
+  /** The attribute a holder carries: the hold words it answers for. */
+  holds: string
+}
+
+/** The vocabulary the current generation installed, or null before one did. */
+let adopted: PartsVocabulary | null = null
+
+/**
+ * The vocabulary, or a refusal: the marking pass writes the skin's own
+ * attributes, so a pass running before the hand-over is a wiring mistake.
+ */
+function vocabulary(): PartsVocabulary {
+  if (adopted === null) throw new Error('dsh-claude-style engine: parts were marked before the skin handed its vocabulary over')
+  return adopted
+}
+
+/** Every region's lookup, compiled from the skin's own anchors. */
+function buildLookups(vocabulary: PartsTableVocabulary): RegionLookup[] {
+  return partRegions(vocabulary).map((region) => ({
+    within: region.within,
+    parts: new Map(Object.entries(region.parts)),
+    rootParts: region.rootParts === undefined ? null : new Map(Object.entries(region.rootParts)),
+  }))
+}
 
 /** Every region's anchor as one selector, so a subtree the walk enters is tested once. */
-const ANCHOR_SELECTOR = PART_REGIONS.map((region) => region.within).join(', ')
+let ANCHOR_SELECTOR = ''
+
+/** The regions the current generation installed, in the order the walk enters them. */
+let LOOKUPS: RegionLookup[] = []
 
 /** The parts one element's class list carries, as one attribute value, or null when it plays none. */
 function partsOf(element: Element, lookups: readonly RegionLookup[], rootParts: Map<string, string> | null) {
@@ -72,12 +95,12 @@ function partsOf(element: Element, lookups: readonly RegionLookup[], rootParts: 
 function writeParts(element: Element, lookups: readonly RegionLookup[], rootParts: Map<string, string> | null) {
   const parts = partsOf(element, lookups, rootParts)
   if (parts === null) {
-    if (!element.hasAttribute(PART_ATTR)) return false
-    element.removeAttribute(PART_ATTR)
+    if (!element.hasAttribute(vocabulary().part)) return false
+    element.removeAttribute(vocabulary().part)
     return true
   }
-  if (element.getAttribute(PART_ATTR) === parts) return false
-  setAttributeIfChanged(element, PART_ATTR, parts)
+  if (element.getAttribute(vocabulary().part) === parts) return false
+  setAttributeIfChanged(element, vocabulary().part, parts)
   return true
 }
 
@@ -89,13 +112,13 @@ interface HoldState {
   held: Map<Element, Element[]>
 }
 
-const HOLD_STATES: HoldState[] = HOLD_RELATIONS.map((spec) => ({ spec, held: new Map() }))
+let HOLD_STATES: HoldState[] = []
 
 /** The held side of every relation as one selector: a node the pass can skip in a single test. */
-const HELD_SELECTOR = HOLD_RELATIONS.map((relation) => relation.held).join(', ')
+let HELD_SELECTOR = ''
 
 /** Every attribute whose change can move a mark. */
-const HOLD_ATTRIBUTES = new Set(HOLD_RELATIONS.flatMap((relation) => relation.attributes))
+let HOLD_ATTRIBUTES = new Set<string>()
 
 /** How many held nodes keep each relation's mark on an element. */
 const HOLD_COUNTS = new Map<Element, Map<string, number>>()
@@ -105,10 +128,10 @@ function writeHolds(element: Element) {
   const counts = HOLD_COUNTS.get(element)
   const value = counts === undefined || counts.size === 0 ? '' : [...counts.keys()].sort().join(' ')
   if (value === '') {
-    if (element.hasAttribute(HOLDS_ATTR)) element.removeAttribute(HOLDS_ATTR)
+    if (element.hasAttribute(vocabulary().holds)) element.removeAttribute(vocabulary().holds)
     return
   }
-  setAttributeIfChanged(element, HOLDS_ATTR, value)
+  setAttributeIfChanged(element, vocabulary().holds, value)
 }
 
 /** One more held node keeping `name` on this element. */
@@ -293,9 +316,9 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
 
 /** Take every part and hold mark off, for the teardown. */
 export function clearParts(root: ParentNode = document) {
-  for (const element of root.querySelectorAll(`[${PART_ATTR}], [${HOLDS_ATTR}]`)) {
-    element.removeAttribute(PART_ATTR)
-    element.removeAttribute(HOLDS_ATTR)
+  for (const element of root.querySelectorAll(`[${vocabulary().part}], [${vocabulary().holds}]`)) {
+    element.removeAttribute(vocabulary().part)
+    element.removeAttribute(vocabulary().holds)
   }
   for (const state of HOLD_STATES) state.held.clear()
   HOLD_COUNTS.clear()
@@ -322,10 +345,17 @@ export function markParts(root: Element) {
  * for one more pass, through `onMarked`. The next pass writes nothing (every
  * mark already holds) and the walk settles.
  *
+ * @param next - the skin's own attribute vocabulary and menu anchors (D73).
  * @param onMarked - called once per batch that changed a mark.
  * @returns teardown.
  */
-export function installParts(onMarked?: () => void) {
+export function installParts(next: PartsVocabulary, onMarked?: () => void) {
+  adopted = next
+  LOOKUPS = buildLookups(next)
+  ANCHOR_SELECTOR = partRegions(next).map((region) => region.within).join(', ')
+  HOLD_STATES = holdRelations(next).map((spec) => ({ spec, held: new Map() }))
+  HELD_SELECTOR = holdRelations(next).map((relation) => relation.held).join(', ')
+  HOLD_ATTRIBUTES = new Set(holdRelations(next).flatMap((relation) => relation.attributes))
   const settle = () => { if (onMarked !== undefined) onMarked() }
   if (walk(document.body, [], null)) settle()
   const stop = subscribeMutations(document.body, {
@@ -337,7 +367,7 @@ export function installParts(onMarked?: () => void) {
     // relations' own attributes are watched too: the node they belong to can
     // take one after it was mounted, and the mark answers what the subtree
     // holds from there on.
-    attributeFilter: ['class', ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, ...HOLD_ATTRIBUTES],
+    attributeFilter: ['class', next.regions.account, next.regions.hero, ...HOLD_ATTRIBUTES],
     skipQuiet: true,
   }, (records) => {
     let changed = false

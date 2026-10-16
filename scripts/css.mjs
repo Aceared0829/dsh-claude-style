@@ -530,14 +530,36 @@ function checkAttributes(read, sources) {
  * @param parts - part name → where a selector first reads it.
  */
 function checkParts(parts) {
-  const { PART_NAMES } = loadModule('packages/client/src/core/parts-table.ts')
-  if (!Array.isArray(PART_NAMES) || PART_NAMES.length === 0) {
-    throw new Error('build: packages/client/src/core/parts-table.ts exports no PART_NAMES')
+  const known = new Set(partNames())
+  if (known.size === 0) {
+    throw new Error('build: packages/engine/src/parts-table.ts defines no part names')
   }
-  const known = new Set(PART_NAMES)
   for (const [name, where] of parts) {
-    if (!known.has(name)) throw new Error(`build: ${where} reads the part "${name}", which packages/client/src/core/parts-table.ts does not define`)
+    if (!known.has(name)) throw new Error(`build: ${where} reads the part "${name}", which packages/engine/src/parts-table.ts does not define`)
   }
+}
+
+/**
+ * The part names and hold relations the marking pass answers from, read in Node
+ * the way the browser half builds them: the tables are functions of the skin's
+ * own attribute vocabulary, which this reads from the browser half's constants
+ * (packages/client/src/core/parts.ts, D73).
+ */
+function partsVocabulary() {
+  const { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } = loadModule('packages/client/src/constants.ts')
+  return { part: PART_ATTR, regions: { account: ACCOUNT_MENU_ATTR, hero: HERO_MENU_ATTR } }
+}
+
+/** Every part name the tables define, sorted. */
+function partNames() {
+  const { partNames } = loadModule('packages/engine/src/parts-table.ts')
+  return partNames(partsVocabulary())
+}
+
+/** Every relation a stylesheet reads. */
+function holdRelations() {
+  const { holdRelations } = loadModule('packages/engine/src/parts-table.ts')
+  return holdRelations(partsVocabulary())
 }
 
 /**
@@ -550,23 +572,23 @@ function checkParts(parts) {
  * @param relations - relation name → where a selector first reads it.
  */
 function checkHolds(relations) {
-  const { HOLD_RELATIONS, PART_NAMES } = loadModule('packages/client/src/core/parts-table.ts')
-  if (!Array.isArray(HOLD_RELATIONS)) throw new Error('build: packages/client/src/core/parts-table.ts exports no HOLD_RELATIONS')
-  const known = new Set(PART_NAMES)
+  const relationsTable = holdRelations()
+  if (!Array.isArray(relationsTable)) throw new Error('build: packages/engine/src/parts-table.ts exports no hold relations')
+  const known = new Set(partNames())
   const declared = new Set()
-  for (const relation of HOLD_RELATIONS) {
+  for (const relation of relationsTable) {
     declared.add(relation.name)
     for (const side of [relation.holder, relation.held, relation.scope]) {
       if (typeof side !== 'string') continue
       for (const match of side.matchAll(/\[data-dsh-claude-part~="([^"]+)"\]/g)) {
         if (!known.has(match[1])) {
-          throw new Error(`build: the hold relation "${relation.name}" names the part "${match[1]}", which packages/client/src/core/parts-table.ts does not define`)
+          throw new Error(`build: the hold relation "${relation.name}" names the part "${match[1]}", which packages/engine/src/parts-table.ts does not define`)
         }
       }
     }
   }
   for (const [name, where] of relations) {
-    if (!declared.has(name)) throw new Error(`build: ${where} reads the hold "${name}", which packages/client/src/core/parts-table.ts does not declare`)
+    if (!declared.has(name)) throw new Error(`build: ${where} reads the hold "${name}", which packages/engine/src/parts-table.ts does not declare`)
   }
   for (const name of declared) {
     if (!relations.has(name)) throw new Error(`build: the hold relation "${name}" is declared but no stylesheet reads it — take it out of HOLD_RELATIONS`)
