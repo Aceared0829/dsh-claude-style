@@ -430,12 +430,12 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-w
   }
 }
 
-/* The words sweep under a highlight band: a copy of them laid over the words
-   and clipped to their glyphs, so the words themselves keep their own colour.
-   The band and its cadence are the host's own TextShimmer's — the period, the
-   steps, the rest between passes (the last third of each), the shimmer tint
-   and the band's width — so the line, a running group's header and the host's
-   own rows all sweep as one.
+/* The words sweep under a highlight band: the host's own TextShimmer, a tinted
+   copy of them inside a masked window laid over the words, so the words
+   themselves keep their own colour (shared/sweep-band.ts). The band and its
+   cadence are the host's — the period, the steps, the delay, the rest between
+   passes (the last third of each), the shimmer tint and the mask — so the line,
+   a running group's header and the host's own rows all sweep as one.
 
    The wording swaps in place when the turn moves on: the motion itself is
    shared/swapping-text.css, transitions.dev's "Text states swap" composed the

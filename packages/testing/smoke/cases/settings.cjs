@@ -1,5 +1,5 @@
 'use strict'
-const { same, check, basicChecks, commonChecks } = require('./_shared.cjs')
+const { BAND_ANIMATION, same, check, basicChecks, commonChecks } = require('./_shared.cjs')
 
 module.exports = {
   'late-forms'(r) {
@@ -77,9 +77,9 @@ module.exports = {
         cards.every((card) => Array.isArray(card.words) && card.words.length === 2 && card.words[0] !== card.words[1]) &&
         cards[0].active === true && cards[0].pressed === 'true' && cards[1].active === false && cards[1].pressed === 'false',
       JSON.stringify(cards))
-    check('each card previews its own paint: the band sweeps the words, the wash fills them with seven orbiting washes over the ramp',
-      previews.sweep?.animation === 'dsh-claude-sweep' && previews.sweep?.washes === 0 &&
-        previews.wash?.animation === 'dsh-claude-wash-hue, dsh-claude-wash-drift' && previews.wash?.washes === 7 &&
+    check('each card previews its own paint: the host\'s band crosses a copy of the words, the wash fills them with seven orbiting washes over the ramp',
+      previews.sweep?.band?.animation === BAND_ANIMATION && previews.sweep?.band?.matches === true && previews.sweep?.washes === 0 &&
+        previews.wash?.band === null && previews.wash?.animation === 'dsh-claude-wash-hue, dsh-claude-wash-drift' && previews.wash?.washes === 7 &&
         previews.sweep?.words?.join() === previews.wash?.words?.join(),
       JSON.stringify(previews))
     const delayOf = (value) => Number.parseFloat(value || '0')

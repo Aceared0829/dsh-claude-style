@@ -1,5 +1,6 @@
 import { motionReduced } from '../core/prefs'
 import { motionMs, motionValue } from './motion'
+import { buildSweepBand } from './sweep-band'
 
 /**
  * One line of words that swaps in place, after transitions.dev's "Text states
@@ -90,6 +91,22 @@ function enteringOf(element: HTMLElement): HTMLElement | null {
     if (!copy.classList.contains('is-exit')) return copy
   }
   return null
+}
+
+/**
+ * Write the words onto one copy. A copy carrying the highlight takes a band of
+ * its own (shared/sweep-band.ts) beside its words, built fresh with them, so a
+ * copy rewritten mid-swap starts its band over with its new words; the band
+ * draws its copy from `data-text`, which keeps the copy's own text the words
+ * alone for every measure that reads it (wordsIn). The class carrying the band
+ * is written on the copy showing the words and never on the label: the label's
+ * box stands taller than the text by the swap's travel (shared/swapping-text.css),
+ * and a band laid over that box would sweep that far above the glyphs.
+ */
+function fillCopy(copy: HTMLElement, text: string, withShimmer: boolean) {
+  copy.replaceChildren(text)
+  copy.setAttribute('data-text', text)
+  if (withShimmer) copy.appendChild(buildSweepBand(text).band)
 }
 
 /**
@@ -232,8 +249,7 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
     const sizer = sizerOf(element)
     const standing = document.createElement('span')
     standing.className = COPY_CLASS + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
-    standing.textContent = text
-    standing.setAttribute('data-text', text)
+    fillCopy(standing, text, withShimmer)
     // The sizer is the only thing in the flow, so the words standing are
     // replaced outright; nothing moves and nothing measures them.
     while (element.childNodes.length > 1) element.removeChild(element.lastChild!)
@@ -257,8 +273,7 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   // settles on the newest of them rather than playing the ones in between back.
   const arriving = state.timer === null ? null : enteringOf(element)
   if (arriving !== null) {
-    arriving.textContent = text
-    arriving.setAttribute('data-text', text)
+    fillCopy(arriving, text, withShimmer)
     element.dataset.text = text
     return
   }
@@ -276,8 +291,7 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   // ones start.
   const leaving = document.createElement('span')
   leaving.className = COPY_CLASS + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
-  leaving.textContent = was ?? ''
-  leaving.setAttribute('data-text', was ?? '')
+  fillCopy(leaving, was ?? '', withShimmer)
   leaving.setAttribute('aria-hidden', 'true')
   while (element.childNodes.length > 1) element.removeChild(element.lastChild!)
   element.appendChild(leaving)
@@ -285,8 +299,7 @@ export function setSwappingText(element: HTMLElement, text: string, withShimmer 
   leaving.classList.add('is-exit')
   const entering = document.createElement('span')
   entering.className = COPY_CLASS + ' is-enter-start' + (withShimmer ? ' dsh-claude-swap-shimmer' : '')
-  entering.textContent = text
-  entering.setAttribute('data-text', text)
+  fillCopy(entering, text, withShimmer)
   entering.setAttribute('aria-hidden', 'true')
   element.appendChild(entering)
   element.dataset.text = text

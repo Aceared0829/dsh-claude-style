@@ -4,6 +4,7 @@ import { prefYielded } from '../../core/feature'
 import { motionReduced } from '../../core/prefs'
 import { copyLabel, hostChatCopy, settingsCopy } from '../../core/i18n'
 import { motionMs } from '../../shared/motion'
+import { SWEEP_BAND_CLASS, SWEEP_GLYPHS_CLASS } from '../../shared/sweep-band'
 import { waitingWord } from '../../shared/turn-activity'
 import { managedDesc } from './settings-controls'
 import type { Prefs } from '../../constants'
@@ -128,7 +129,8 @@ export function createSettingsMotionTab(): SettingsTab {
         },
         // Each wording wears the card's paint by carrying the shared look's own
         // class (shared/motion.css), so the band or the wash rides the words
-        // that are standing.
+        // that are standing; the band is the host's own, built the way
+        // shared/sweep-band.ts builds it on the line.
         React.createElement(
           'span',
           { className: 'dsh-claude-motion-sample', 'aria-hidden': 'true' },
@@ -139,7 +141,9 @@ export function createSettingsMotionTab(): SettingsTab {
             className: `dsh-claude-motion-word dsh-claude-${option.value}`
               + (props.prefs.statusDetail ? (at === 0 ? ' dsh-claude-word-out' : ' dsh-claude-word-in') : ''),
             'data-text': word,
-          }, word)),
+          }, word, option.value === STATUS_MOTION_SWEEP
+            ? React.createElement('span', { className: SWEEP_BAND_CLASS }, React.createElement('span', { className: SWEEP_GLYPHS_CLASS, 'data-text': word }))
+            : null)),
         ),
       )),
     )

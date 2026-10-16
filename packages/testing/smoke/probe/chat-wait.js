@@ -35,6 +35,19 @@
       var foreignLine = document.createElement('div')
       foreignLine.textContent = 'Third-party status'
       words.parentElement.appendChild(foreignLine)
+      // The paint one copy wears: the host's band (shared/sweep-band.ts) is a
+      // child the copy carries, drawn only under the sweep, and its two halves
+      // run one animation each; the wash rides the copy's pseudo-element.
+      var paintOf = function (copy) {
+        var band = copy.querySelector('.dsh-claude-sweep-band')
+        if (band !== null && getComputedStyle(band).display !== 'none') {
+          var held = getComputedStyle(band)
+          var glyphs = getComputedStyle(band.firstElementChild)
+          return { name: held.animationName + ', ' + glyphs.animationName, state: held.animationPlayState }
+        }
+        var paint = getComputedStyle(copy, '::before')
+        return { name: paint.animationName, state: paint.animationPlayState }
+      }
       var lineOf = function () {
         var line = row.querySelector('.dsh-claude-chat-wait')
         if (line === null) return null
@@ -73,15 +86,13 @@
           // box stands taller by the swap's travel — so the reading is taken
           // off the last copy (the one arriving while a swap runs). Which paint
           // that is comes from the Motion tab's choice, read here off the
-          // document as well so a name and a choice that disagree are caught.
-          sweep: copies.length > 0
-            ? getComputedStyle(copies[copies.length - 1], '::before').animationName
-            : 'none',
+          // document as well so a name and a choice that disagree are caught:
+          // the band's two halves while the band is drawn, the wash's
+          // pseudo-element otherwise.
+          sweep: copies.length > 0 ? paintOf(copies[copies.length - 1]).name : 'none',
           // Whether that paint is running or held: the Reduced choice freezes
           // it, and a pressed animation left running would flicker.
-          sweepState: copies.length > 0
-            ? getComputedStyle(copies[copies.length - 1], '::before').animationPlayState
-            : 'none',
+          sweepState: copies.length > 0 ? paintOf(copies[copies.length - 1]).state : 'none',
           statusMotion: document.body.getAttribute('data-dsh-claude-status-motion'),
           sweepOnLabel: label.classList.contains('dsh-claude-swap-shimmer'),
           filter: movingStyle === null ? 'none' : movingStyle.filter,

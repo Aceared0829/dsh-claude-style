@@ -160,9 +160,18 @@
               // arrive nested (the module passes the mapped array as one child,
               // as React flattens it), so the walk is what finds the words.
               var words = []
+              // The band a wording carries under the sweep (shared/sweep-band.ts):
+              // its window and the copy inside it, as the tree holds them.
+              var bands = []
               walk(sampleProps.children, function (word) {
                 var wordProps = word.props || {}
-                if (/(^| )dsh-claude-motion-word( |$)/.test(wordProps.className || '')) words.push([].concat(wordProps.children || []).join(''))
+                if (!/(^| )dsh-claude-motion-word( |$)/.test(wordProps.className || '')) return
+                var parts = [].concat(wordProps.children || [])
+                words.push(parts.filter(function (part) { return typeof part === 'string' }).join(''))
+                var band = parts.filter(function (part) { return part !== null && typeof part === 'object' })[0]
+                if (band === undefined) return
+                var glyphs = [].concat((band.props || {}).children || [])[0] || {}
+                bands.push({ window: band.props.className, glyphs: (glyphs.props || {}).className, text: (glyphs.props || {})['data-text'] })
               })
               out.cards.push({
                 label: props['aria-label'],
@@ -172,6 +181,7 @@
                 // text of its own, and the sample is the words taking turns.
                 sample: kids.length === 1 && /(^| )dsh-claude-motion-sample( |$)/.test(sampleProps.className || ''),
                 words: words,
+                bands: bands,
                 sampleHidden: sampleProps['aria-hidden'] === 'true',
               })
             }
@@ -190,6 +200,17 @@
               word.className = 'dsh-claude-motion-word dsh-claude-' + kinds[ki]
               word.setAttribute('data-text', wordings[wi])
               word.textContent = wordings[wi]
+              // The band stands up the way the card's own tree carries it.
+              var carried = ((out.cards[ki] || {}).bands || [])[wi]
+              if (carried !== undefined) {
+                var bandNode = document.createElement('span')
+                bandNode.className = carried.window
+                var glyphsNode = document.createElement('span')
+                glyphsNode.className = carried.glyphs
+                glyphsNode.setAttribute('data-text', carried.text)
+                bandNode.appendChild(glyphsNode)
+                word.appendChild(bandNode)
+              }
               box.appendChild(word)
             }
             card.appendChild(box)
@@ -197,6 +218,7 @@
             var nodes = [].slice.call(box.children)
             var style = nodes.length === 0 ? null : getComputedStyle(nodes[0])
             var paint = nodes.length === 0 ? null : getComputedStyle(nodes[0], '::before')
+            var bandOf = nodes.length === 0 ? null : nodes[0].querySelector('.dsh-claude-sweep-band')
             var round = function (value) { return Math.round(value) }
             var centreOf = function (node) {
               var rect = node.getBoundingClientRect()
@@ -204,6 +226,11 @@
             }
             out.previews[kinds[ki]] = {
               words: nodes.map(function (node) { return node.textContent }),
+              // The band's two halves, and whether its copy reads the words it lies over.
+              band: bandOf === null ? null : {
+                animation: getComputedStyle(bandOf).animationName + ', ' + getComputedStyle(bandOf.firstElementChild).animationName,
+                matches: bandOf.firstElementChild.getAttribute('data-text') === nodes[0].getAttribute('data-text'),
+              },
               wordAnimations: nodes.map(function (node) { return getComputedStyle(node).animationName }),
               wordDelays: nodes.map(function (node) { return getComputedStyle(node).animationDelay }),
               wordCentres: nodes.map(centreOf),

@@ -5,6 +5,7 @@ import { copyLabel } from '../../core/i18n'
 import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { motionMs } from '../../shared/motion'
+import { SWEEP_BAND_CLASS, buildSweepBand } from '../../shared/sweep-band'
 import { ASSISTANT_STEP_KIND, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_REASONING, FLOW_KIND_ATTRIBUTE, PROCESS_ACTIVITY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_GROUP_SELECTOR, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, TOOL_CALL_KIND } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -72,7 +73,7 @@ const FULL_SEPARATOR = () => copyLabel('processSummaryFullSeparator', ', ')
 const COMPACT_SEPARATOR = ' · '
 /** On a group root while its header shows the summary; the stylesheet hides the host's words under it. */
 export const PROCESS_SUMMARY_ATTR = 'data-dsh-claude-summary'
-/** On the summary while the group's section still runs: the stylesheet sweeps it the way the host sweeps its words. */
+/** On the summary while the group's section still runs, which is while its band stands (syncBand). */
 export const PROCESS_SUMMARY_RUNNING_ATTR = 'data-dsh-claude-summary-running'
 /** On the summary: the wording it stands in. */
 export const PROCESS_SUMMARY_FORM_ATTR = 'data-dsh-claude-summary-form'
@@ -83,6 +84,8 @@ const ROLL_MS = motionMs('--dsh-claude-duration-roll')
 const SUMMARY_CLASS = 'dsh-claude-process-summary'
 /** The hidden span holding the sentence, whose natural width tells whether the header has room for it. */
 const FIT_CLASS = 'dsh-claude-process-summary-fit'
+/** On the band's copy of the figures, which lays them out the way the summary does (fold.css). */
+const GLYPHS_CLASS = 'dsh-claude-process-summary-glyphs'
 
 /**
  * What one group holds: its body's own rows, a thought or an output by the step
@@ -192,6 +195,8 @@ export function createProcessSummary() {
    * and asking again would write the span's text and lay it out again (D9).
    */
   const fitWidths = new Map<string, number>()
+  /** What each running summary's band copy says, so a pass that changes nothing writes nothing. */
+  const bandSentences = new WeakMap<HTMLElement, string>()
 
   /** One figure's count, rolled from the one it showed. */
   function setCount(roll: HTMLElement, count: number) {
@@ -295,6 +300,40 @@ export function createProcessSummary() {
     return { full, compact: summaryParts(counts, 'compact'), name: summaryText(full, 'full') }
   }
 
+  /**
+   * The band over a running summary (shared/sweep-band.ts), the host's own
+   * sweep over the words it replaced. Its copy holds the figures as they stand
+   * and is written again only when what they say changes, so a summary drawn
+   * again on every pass of a run keeps one band and its pass. A digit rolling
+   * in the summary stands settled in the copy: the roll is over in a tenth of
+   * one pass of the band.
+   */
+  function syncBand(summary: HTMLElement, running: boolean, sentence: string) {
+    const standing = summary.querySelector<HTMLElement>(`:scope > .${SWEEP_BAND_CLASS}`)
+    if (!running) {
+      standing?.remove()
+      bandSentences.delete(summary)
+      return
+    }
+    if (standing !== null && bandSentences.get(summary) === sentence) return
+    let target = standing === null ? null : standing.firstElementChild
+    if (target === null) {
+      const built = buildSweepBand(null)
+      built.glyphs.classList.add(GLYPHS_CLASS)
+      summary.appendChild(built.band)
+      target = built.glyphs
+    }
+    const copies: Node[] = []
+    for (const part of summary.querySelectorAll(':scope > [data-figure]')) {
+      const copy = part.cloneNode(true) as HTMLElement
+      for (const digit of copy.querySelectorAll(`[${ROLL_ATTR}="exit"]`)) digit.remove()
+      for (const digit of copy.querySelectorAll(`[${ROLL_ATTR}]`)) digit.setAttribute(ROLL_ATTR, 'settled')
+      copies.push(copy)
+    }
+    target.replaceChildren(...copies)
+    bandSentences.set(summary, sentence)
+  }
+
   /** Draw one header's summary part by part, so each count rolls in place. */
   function render(summary: HTMLElement, parts: readonly SummaryPart[], form: SummaryForm, running: boolean) {
     summary.setAttribute(PROCESS_SUMMARY_FORM_ATTR, form)
@@ -302,7 +341,7 @@ export function createProcessSummary() {
     const separator = summarySeparator(form)
     const kept = new Set(parts.map(part => part.figure))
     for (const stale of [...summary.children]) {
-      if (stale === fitOf(summary)) continue
+      if (stale === fitOf(summary) || stale.classList.contains(SWEEP_BAND_CLASS)) continue
       if (!kept.has((stale as HTMLElement).dataset.figure as ProcessFigure)) stale.remove()
     }
     let previous: Element | null = null
@@ -324,6 +363,7 @@ export function createProcessSummary() {
       setCount(roll, part.count)
       previous = element
     }
+    syncBand(summary, running, summaryText(parts, form))
   }
 
   /** Take one header's summary down and give the host's words back. */

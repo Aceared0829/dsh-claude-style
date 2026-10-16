@@ -1,5 +1,5 @@
 'use strict'
-const { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonChecks } = require('./_shared.cjs')
+const { MARKUP, SKIN_FACE, SKIN_HAT, BAND_ANIMATION, same, check, contrast, basicChecks, commonChecks } = require('./_shared.cjs')
 const { bound } = require('../../bounds.cjs')
 
 /**
@@ -110,10 +110,14 @@ module.exports = {
       summary.marked === true && summary.text === '1 thought, 1 tool call' && summary.form === 'full' &&
         summary.name === '1 thought, 1 tool call' && summary.wordsShown === false && summary.summaryShown === true,
       JSON.stringify(summary))
-    check('the summary sweeps while the section runs', summary.running === true, JSON.stringify(summary))
+    check('the summary sweeps while the section runs: the host\'s band crosses a copy of its figures',
+      summary.running === true && summary.band?.animation === BAND_ANIMATION &&
+        summary.band?.text === summary.text && summary.band?.rolling === false,
+      JSON.stringify(summary))
     const grown = fold.grown || {}
-    check('a call arriving rolls its figure to the new count',
-      grown.text === '1 thought, 2 tool calls' && grown.name === '1 thought, 2 tool calls' && grown.rolling === true,
+    check('a call arriving rolls its figure to the new count, and the band\'s copy stands on that count at once',
+      grown.text === '1 thought, 2 tool calls' && grown.name === '1 thought, 2 tool calls' && grown.rolling === true &&
+        grown.band?.text === grown.text && grown.band?.rolling === false,
       JSON.stringify(grown))
     const narrow = fold.narrow || {}
     const wide = fold.wide || {}
@@ -126,7 +130,7 @@ module.exports = {
     const after = fold.after || {}
     check('the thinking row folds back when the reasoning stops', after.thinkOpen === false, JSON.stringify(after))
     check('the process group folds back when the section ends, and its summary stops sweeping',
-      after.groupOpen === false && (after.summary || {}).running === false, JSON.stringify(after))
+      after.groupOpen === false && (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
     check('a group the reader opened himself in that phase stays open', fold.readerOpen === true, JSON.stringify(fold.readerOpen))
     // The reasoning's streamed window: transitions.dev's "Reasoning stream",
     // adapted to live text — a window that grows with the reasoning up to the cap
@@ -447,14 +451,14 @@ module.exports = {
       working.wordsMarked === true && working.foreignShown === true && wait.foreignAfter?.foreignShown === true,
       JSON.stringify({ working, after: wait.foreignAfter }))
     check('the line says what the turn is doing, sweeping, with the turn\'s clock in the host\'s units',
-      working.word === 'Thinking…' && working.sweep === 'dsh-claude-sweep' && working.statusMotion === 'sweep' && /^1m [5-9]s$/.test(working.clock || ''),
+      working.word === 'Thinking…' && working.sweep === BAND_ANIMATION && working.statusMotion === 'sweep' && /^1m [5-9]s$/.test(working.clock || ''),
       JSON.stringify(working))
     check('the band rides the copy holding the words, never the label (a first write and a reduced-motion one alike)',
       working.sweepOnLabel === false && wait.reduced?.sweepOnLabel === false,
       JSON.stringify({ working: working.sweepOnLabel, reduced: wait.reduced?.sweepOnLabel }))
     check('the Motion tab\'s other paint takes the line\'s words over: the copy runs the wash and its two loops, and the band returns when it is picked again',
       wait.wash?.statusMotion === 'wash' && wait.wash?.sweep === 'dsh-claude-wash-hue, dsh-claude-wash-drift' &&
-        wait.sweepAgain?.statusMotion === 'sweep' && wait.sweepAgain?.sweep === 'dsh-claude-sweep',
+        wait.sweepAgain?.statusMotion === 'sweep' && wait.sweepAgain?.sweep === BAND_ANIMATION,
       JSON.stringify({ wash: wait.wash, sweepAgain: wait.sweepAgain }))
     check('a model at work shows no overtime badge', working.badge === null, JSON.stringify(working))
     const silent = wait.silent || []
@@ -473,8 +477,8 @@ module.exports = {
     const overlap = silent.filter((frame) => frame.copies > 1)
     check('the two halves overlap: both copies stand in the box across the leaving one\'s whole fade, and the band keeps sweeping throughout',
       overlap.length > 2 && overlap.some((frame) => Number(frame.opacity) > 0.3) && overlap.some((frame) => Number(frame.opacity) < 0.3) &&
-        silent.every((frame) => frame.sweep === 'dsh-claude-sweep'),
-      JSON.stringify({ overlapping: overlap.length, opacities: overlap.map((frame) => frame.opacity), sweepOff: silent.filter((frame) => frame.sweep !== 'dsh-claude-sweep').length }))
+        silent.every((frame) => frame.sweep === BAND_ANIMATION),
+      JSON.stringify({ overlapping: overlap.length, opacities: overlap.map((frame) => frame.opacity), sweepOff: silent.filter((frame) => frame.sweep !== BAND_ANIMATION).length }))
     const enter = wait.enterFrames || []
     check('the wording arriving rises from below through a blur, its opacity climbing to rest',
       enter.some((frame) => frame.opacity > 0.05 && frame.opacity < 0.95) && enter[0].opacity < 0.5 && blurOf(enter[0]) > 0.5 &&

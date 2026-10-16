@@ -1,6 +1,9 @@
 'use strict'
 const { MARKUP, SKIN_FACE, SKIN_HAT, same, check } = require('../shared.cjs')
 
+/** The host's highlight band, read as its window's animation and then its copy's (shared/motion.css). */
+const BAND_ANIMATION = 'dsh-claude-sweep-window, dsh-claude-sweep-glyphs'
+
 /** WCAG contrast ratio between two `rgb(r, g, b)` readings. */
 function contrast(a, b) {
   const luminance = (css) => {
@@ -76,4 +79,4 @@ function commonChecks(r) {
     JSON.stringify(r.hostRowEnd))
 }
 
-module.exports = { MARKUP, SKIN_FACE, SKIN_HAT, same, check, contrast, basicChecks, commonChecks }
+module.exports = { MARKUP, SKIN_FACE, SKIN_HAT, BAND_ANIMATION, same, check, contrast, basicChecks, commonChecks }

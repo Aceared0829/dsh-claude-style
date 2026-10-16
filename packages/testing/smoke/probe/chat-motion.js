@@ -248,6 +248,16 @@
       // as the header's name. The width check's own numbers come along, so a
       // failing case carries them.
       var foldWords = document.getElementById('debugGroupWords')
+      // The figures one holder lays out — the summary itself, or the band's copy
+      // of it — read as the words around each standing digit; a roll's sizer
+      // holds the digit too, so its text is no reading.
+      var figuresOf = function (holder) {
+        return Array.prototype.map.call(holder.querySelectorAll(':scope > .dsh-claude-process-summary-part'), function (part) {
+          var words = part.querySelectorAll('.dsh-claude-process-summary-words')
+          var digit = part.querySelector('.dsh-claude-process-summary-roll [data-dsh-claude-roll]:not([data-dsh-claude-roll="exit"])')
+          return words[0].textContent + (digit === null ? '' : digit.textContent) + words[1].textContent
+        }).join('')
+      }
       var summaryOf = function () {
         var summary = foldHeader.querySelector('.dsh-claude-process-summary')
         if (summary === null) return null
@@ -269,15 +279,25 @@
           marked: foldGroup.hasAttribute('data-dsh-claude-summary'),
           name: foldHeader.getAttribute('aria-label'),
           form: summary.getAttribute('data-dsh-claude-summary-form'),
-          text: Array.prototype.map.call(summary.querySelectorAll('.dsh-claude-process-summary-part'), function (part) {
-            var words = part.querySelectorAll('.dsh-claude-process-summary-words')
-            var digit = part.querySelector('.dsh-claude-process-summary-roll [data-dsh-claude-roll]:not([data-dsh-claude-roll="exit"])')
-            return words[0].textContent + (digit === null ? '' : digit.textContent) + words[1].textContent
-          }).join(''),
+          // The summary's own figures: the band over a running one holds a copy
+          // of them, which is read on its own below.
+          text: figuresOf(summary),
           sentence: fit === null ? null : Math.round(fit.getBoundingClientRect().width),
           room: Math.round(room),
           headerWidth: foldHeader.clientWidth,
           running: summary.hasAttribute('data-dsh-claude-summary-running'),
+          // The host's band over the running summary (shared/sweep-band.ts):
+          // the two halves it runs, and the figures its copy holds.
+          band: (function () {
+            var band = summary.querySelector(':scope > .dsh-claude-sweep-band')
+            if (band === null) return null
+            return {
+              animation: getComputedStyle(band).animationName + ', ' + getComputedStyle(band.firstElementChild).animationName,
+              text: figuresOf(band.firstElementChild),
+              // The copy's digits stand still while the summary's own roll.
+              rolling: band.querySelector('[data-dsh-claude-roll="enter"], [data-dsh-claude-roll="exit"]') !== null,
+            }
+          })(),
           rolling: summary.querySelector('[data-dsh-claude-roll="enter"]') !== null,
           wordsShown: getComputedStyle(foldWords).display !== 'none',
           summaryShown: getComputedStyle(summary).display !== 'none',

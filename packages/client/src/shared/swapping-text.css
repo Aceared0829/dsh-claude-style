@@ -79,26 +79,6 @@ body[data-dsh-claude-style] .dsh-claude-swap-copy.is-enter-start {
   opacity: 0;
 }
 
-/* The masked highlight: a copy of the words clipped to their glyphs, painted
-   over a gradient that sweeps. The box carrying the class owns the whole
-   pseudo-element — `attr(data-text)` and `inset: 0` are read off it — so the
-   class is written on the copy showing the words (shared/swapping-text.ts) and
-   never on the label: the label's box stands taller than the text by the swap's
-   travel (above), and a band read off that box would sweep that far above the
-   glyphs. Only the gradient and its cadence are the caller's. */
-body[data-dsh-claude-style] .dsh-claude-swap-shimmer::before {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-size: 400% 100%;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
 /* The reader's animation choice, resolved onto <body> by core/prefs.ts (D40).
    The helper writes the words without a swap on that setting, so this is the
    second net for a swap already in flight when the choice changes — the copies'
