@@ -16,6 +16,7 @@
     "docs:index": "node scripts/decisions-index.mjs",
     "docs:check": "node scripts/decisions-index.mjs --check",
     "docs:numbers": "node scripts/doc-numbers.mjs",
+    "checks:numbers": "node packages/testing/check-numbers.cjs",
     "agents": "node scripts/agents-commands.mjs",
     "agents:check": "node scripts/agents-commands.mjs --check",
     "decision:number": "node scripts/decision-number.mjs",

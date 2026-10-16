@@ -3,7 +3,7 @@
 - **状态**：待实施
 - **分组**：分发与流程
 - **关联**：取代 D66；D40、D42、D44、D46、D47、D51、D69
-- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素；静置按等一段时间判定；`shots` 场景只截图给人看，不与任何快照比对；端到端的每个场景各起一个宿主实例。边界已经开始收进 `packages/testing/bounds.json`：长会话场景在其中一轮量的两个长度上比较查找次数、长时间任务与 p95 帧时（`packages/testing/long-session.cjs`），其余检查仍把数字写在代码里。迁移完成之前，以现状为准修改代码。
+- **现状**：入口、锁、结论缓存、分批与各档参数已由 `scripts/verify.mjs` 实施。冒烟跑在手搭的替代宿主上（`packages/testing/smoke/stand-in/` 与 `smoke/host-half.cjs`），宿主交互的检查写在 `smoke/cases/` 与 `smoke/probe/`；冒烟与端到端场景里的动效检查读钟点、帧数与像素；静置按等一段时间判定；`shots` 场景只截图给人看，不与任何快照比对；端到端的每个场景各起一个宿主实例。边界已经开始收进 `packages/testing/bounds.json`：长会话场景在其中一轮量的两个长度上比较查找次数、长时间任务与 p95 帧时（`packages/testing/long-session.cjs`），其余检查仍把数字写在代码里，这些数字逐条记在 `packages/testing/check-numbers.json` 里。快照比对要等外观层落地，`scripts/ci-scope.mjs` 的那条约束也随它写。迁移完成之前，以现状为准修改代码。
 
 ## 决定
 
@@ -21,7 +21,8 @@
 - 外观层是计算值快照：走查在每个页面状态下按部件记录一份固定属性清单的计算值，快照进版本管理；快照运行只用随包分发的 OFL 字体，判定只在云端那个平台上作数。
 - 冒烟层读构建产物与最小加载器，只回答：产物能装载、每个功能的安装与卸载成对、开关能翻转、卸载后 `<body>` 不留属性、延后的块能取到、控制台没有报错；宿主交互不在冒烟层判定。
 - 长会话场景在两个会话长度上各测量一个回合：插件发出的整份文档查找次数与每批变更的脚本耗时，两个长度之比不超出边界。
-- 检查里的数值边界只写在 `packages/testing/` 下的边界表 bounds.json，每条带理由；lint 拒绝检查代码与数字字面量比较。快照改变而同一次推送没有改动 `packages/client/src` 时，`scripts/ci-scope.mjs` 判定失败。
+- 检查表达式里的每个数字字面量记在 `packages/testing/check-numbers.json`，由 `npm run checks:numbers` 生成、闸门核对；改动一个检查接受的数值，这份记录跟着变，放宽因此出现在 diff 里。
+- 边界值本身住在 `packages/testing/bounds.json`，每条带 `reason`；检查读它，不把数字写进表达式。快照改变而同一次推送没有改动 `packages/client/src` 时，`scripts/ci-scope.mjs` 判定失败。
 - 行为层的失败默认是产品缺陷；放宽断言的提交在说明里写出旧断言误判了哪一种产品行为。
 - 验证工具都在 `packages/testing/`：找浏览器、开上下文与页面、关浏览器只有 `browser.cjs` 一处实现。
 

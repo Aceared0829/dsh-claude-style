@@ -93,6 +93,7 @@ jobs:
       - run: npm run docs:check
       - run: npm run changelog:check
       - run: npm run agents:check
+      - run: npm run checks:numbers -- --check
       - run: npm run build
       - run: npm test
       - run: npm run smoke

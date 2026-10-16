@@ -58,10 +58,10 @@ jobs:
         run: node scripts/ci-scope.mjs --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
 
   # The gates that need no build: the lint rules, the feature list, the decisions
-  # index against the files it lists, the changelog and AGENTS.md's command
-  # table. A change to a document is exactly what these answer for, so this job
-  # runs on every event — and it runs while the `changed` job above is still
-  # reading the diff, which the lanes below wait on.
+  # index against the files it lists, the changelog, AGENTS.md's command table
+  # and the numbers the checks decide on. A change to a document is exactly what
+  # these answer for, so this job runs on every event — and it runs while the
+  # `changed` job above is still reading the diff, which the lanes below wait on.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -79,6 +79,7 @@ jobs:
       - run: npm run docs:check
       - run: npm run changelog:check
       - run: npm run agents:check
+      - run: npm run checks:numbers -- --check
 
   # The build, the unit tests in a real browser and the smoke over the built
   # plugin. The smoke's scope comes from the `changed` job: a change inside one

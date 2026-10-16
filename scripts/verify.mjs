@@ -222,6 +222,7 @@ function gatesFor(request) {
     { id: 'docs', script: 'scripts/decisions-index.mjs', args: ['--check'] },
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
+    { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]

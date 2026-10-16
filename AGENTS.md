@@ -100,6 +100,7 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm run docs:index` | write docs/decisions/README.md from the decision files themselves |
 | `npm run docs:check` | fail when the committed decisions index differs from the decision files; the cloud job runs this |
 | `npm run docs:numbers` | fail when a document states a number that no token or constant holds (D48) |
+| `npm run checks:numbers` | every number a check decides on, as a generated record (D00, 断言的写法) |
 | `npm run agents` | write this table into AGENTS.md from `package.json` and each script's own header |
 | `npm run agents:check` | fail when AGENTS.md's command table differs from `package.json`; the cloud job runs this |
 | `npm run decision:number` | assign a draft decision its real number |

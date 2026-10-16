@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 2,
+  "at": "2026-10-15",
+  "external": false,
+  "zh": "**检查接受的数值成了一份会被核对的记录**：一个检查失败时，最省事的回应是把表达式里那个数字放宽，而这一步此前不留痕迹。现在两个通道里每个检查所决定的数字字面量都写进 `packages/testing/check-numbers.json`（`npm run checks:numbers` 生成），闸门与云端核对这份记录：改动一个检查接受的数值，记录跟着变，放宽因此在 diff 里看得见。需要理由的边界本身继续住在 `packages/testing/bounds.json` 里，每条带 `reason`，检查读它。",
+  "en": "**The numbers a check accepts are a record the gates verify**: when a check failed, the cheapest answer was to loosen whichever number stood in its expression, and that edit left no trace. Every numeric literal a check in either lane decides on is now written into `packages/testing/check-numbers.json` (`npm run checks:numbers` writes it), and the gates and the cloud verify that record: change what a check accepts and the record moves with it, so a loosened bound is visible in the diff. The bounds that need a reason keep living in `packages/testing/bounds.json`, each with its `reason`, and the checks read them from there."
+}
