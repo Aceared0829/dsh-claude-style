@@ -1,11 +1,12 @@
-import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } from '../constants'
-import { PART_REGIONS } from './parts-table'
-import type { PartTable } from './parts-table'
+import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, PART_ATTR } from '../constants'
+import { HOLD_RELATIONS, PART_REGIONS } from './parts-table'
+import type { HoldRelation, PartTable } from './parts-table'
 import { localClassName, setAttributeIfChanged } from '../shared/dom'
 import { subscribeMutations } from './bus'
 
 /**
- * The marking pass behind the skin's part vocabulary (D3).
+ * The marking pass behind the skin's part vocabulary (D3) and the holds a
+ * stylesheet reads as structure (D9).
  *
  * The tables in core/parts-table.ts say which host class names the skin reads
  * and what it calls each one; this module walks the page once, reads each host
@@ -20,6 +21,12 @@ import { subscribeMutations } from './bus'
  * the conversation's — and keeps the walk off the rest of the page. A region is
  * entered where its anchor matches, so the walk carries the regions in force
  * down and asks each element once.
+ *
+ * A rule that names an element because of what its subtree contains used to ask
+ * the browser the same question on every change below it. The walk visits every
+ * node anyway, so the relations in the same table are answered here and written
+ * as `data-dsh-claude-holds`: one attribute read in the stylesheet, and the
+ * count behind a mark moves only where a held node arrived, left, or changed.
  */
 
 /** One region's lookup, compiled from its table. */
@@ -74,6 +81,168 @@ function writeParts(element: Element, lookups: readonly RegionLookup[], rootPart
   return true
 }
 
+/* ---------- the holds a stylesheet reads as structure ---------- */
+
+/** One relation, with the held nodes the walk has found and the holders marked for each. */
+interface HoldState {
+  spec: HoldRelation
+  held: Map<Element, Element[]>
+}
+
+const HOLD_STATES: HoldState[] = HOLD_RELATIONS.map((spec) => ({ spec, held: new Map() }))
+
+/** The held side of every relation as one selector: a node the pass can skip in a single test. */
+const HELD_SELECTOR = HOLD_RELATIONS.map((relation) => relation.held).join(', ')
+
+/** Every attribute whose change can move a mark. */
+const HOLD_ATTRIBUTES = new Set(HOLD_RELATIONS.flatMap((relation) => relation.attributes))
+
+/** How many held nodes keep each relation's mark on an element. */
+const HOLD_COUNTS = new Map<Element, Map<string, number>>()
+
+/** Write one element's mark from its counts, or take the attribute off when nothing holds. */
+function writeHolds(element: Element) {
+  const counts = HOLD_COUNTS.get(element)
+  const value = counts === undefined || counts.size === 0 ? '' : [...counts.keys()].sort().join(' ')
+  if (value === '') {
+    if (element.hasAttribute(HOLDS_ATTR)) element.removeAttribute(HOLDS_ATTR)
+    return
+  }
+  setAttributeIfChanged(element, HOLDS_ATTR, value)
+}
+
+/** One more held node keeping `name` on this element. */
+function addMark(element: Element, name: string) {
+  let counts = HOLD_COUNTS.get(element)
+  if (counts === undefined) {
+    counts = new Map()
+    HOLD_COUNTS.set(element, counts)
+  }
+  const next = (counts.get(name) ?? 0) + 1
+  counts.set(name, next)
+  if (next === 1) writeHolds(element)
+}
+
+/** One held node fewer keeping `name` on this element. */
+function removeMark(element: Element, name: string) {
+  const counts = HOLD_COUNTS.get(element)
+  if (counts === undefined) return
+  const next = (counts.get(name) ?? 0) - 1
+  if (next > 0) {
+    counts.set(name, next)
+    return
+  }
+  counts.delete(name)
+  if (counts.size === 0) HOLD_COUNTS.delete(element)
+  writeHolds(element)
+}
+
+/**
+ * The holders of one held node: the ancestors the relation's mark belongs on.
+ *
+ * A relation with a scope marks only nodes strictly inside it, so the answer is
+ * empty for a node that stands outside the scope — the held side of a scoped
+ * relation is a node the page may show anywhere, while the rule reads one box.
+ */
+function holdersOf(spec: HoldRelation, node: Element): Element[] {
+  const parent = node.parentElement
+  if (parent === null) return []
+  if (spec.scope !== undefined && node.closest(spec.scope) === null) return []
+  if (spec.direct === true) {
+    if (spec.scope !== undefined && parent.matches(spec.scope)) return []
+    return parent.matches(spec.holder) ? [parent] : []
+  }
+  const holders: Element[] = []
+  for (let ancestor: Element | null = parent; ancestor !== null; ancestor = ancestor.parentElement) {
+    if (spec.scope !== undefined && ancestor.matches(spec.scope)) break
+    if (ancestor.matches(spec.holder)) holders.push(ancestor)
+  }
+  return holders
+}
+
+/** Whether two holder lists name the same elements, in the same order. */
+function sameHolders(before: readonly Element[], after: readonly Element[]) {
+  return before.length === after.length && before.every((element, at) => element === after[at])
+}
+
+/** Move one held node's marks from the holders that had them to the holders that should. */
+function remark(state: HoldState, node: Element, next: Element[]): boolean {
+  const before = state.held.get(node)
+  if (before !== undefined && sameHolders(before, next)) return false
+  if (before !== undefined) for (const holder of before) removeMark(holder, state.spec.name)
+  if (next.length === 0) state.held.delete(node)
+  else state.held.set(node, next)
+  for (const holder of next) addMark(holder, state.spec.name)
+  return true
+}
+
+/**
+ * Answer the relations for one node the walk visits or a mutation moved: mark
+ * its holders when it arrived, drop the marks when it left, move them when a
+ * change around it took its holders away.
+ */
+function applyHolds(node: Element): boolean {
+  let tracked = false
+  for (const state of HOLD_STATES) if (state.held.has(node)) { tracked = true; break }
+  if (!tracked && !node.matches(HELD_SELECTOR)) return false
+  let changed = false
+  for (const state of HOLD_STATES) {
+    const was = state.held.has(node)
+    const held = node.matches(state.spec.held)
+    if (!was && !held) continue
+    if (remark(state, node, held ? holdersOf(state.spec, node) : [])) changed = true
+  }
+  return changed
+}
+
+/** Drop a node's marks and those of everything under it, for a subtree the host took out. */
+function dropHolds(node: Element): boolean {
+  let changed = false
+  for (const state of HOLD_STATES) {
+    const holders = state.held.get(node)
+    if (holders === undefined) continue
+    state.held.delete(node)
+    for (const holder of holders) removeMark(holder, state.spec.name)
+    changed = true
+  }
+  for (const child of node.children) if (dropHolds(child)) changed = true
+  return changed
+}
+
+/**
+ * Re-answer the relations of every held node inside one element. A holder's own
+ * mark or a scope anchor can arrive after the node it holds: the host adds
+ * `data-phase` to a box its transcript already stands in, and the box is the
+ * holder the rule reads.
+ */
+function remarkInside(element: Element): boolean {
+  let changed = false
+  for (const state of HOLD_STATES) {
+    for (const [node, holders] of state.held) {
+      if (node === element || !element.contains(node)) continue
+      if (remark(state, node, holdersOf(state.spec, node))) changed = true
+    }
+  }
+  return changed
+}
+
+/**
+ * Take up the held nodes under an element that has just become a holder. A node
+ * the pass walked before the holder existed was never taken up — the relation
+ * had no mark to give it — so its side is read here, once, on the attribute
+ * that turned the element into a holder. Only the relations watching that
+ * attribute are asked, so a walk of the page is never the price of one.
+ */
+function adoptHeldInside(element: Element, attribute: string): boolean {
+  let changed = false
+  for (const state of HOLD_STATES) {
+    if (!state.spec.attributes.includes(attribute)) continue
+    if (!element.matches(state.spec.holder)) continue
+    for (const node of element.querySelectorAll(state.spec.held)) if (applyHolds(node)) changed = true
+  }
+  return changed
+}
+
 /**
  * The regions in force at one element, read off its ancestors: the walk passes
  * them down, and an element the host mounted on its own — a menu card portalled
@@ -115,12 +284,21 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
   }
   let changed = writeParts(element, lookups, roots)
   for (const child of element.children) if (walk(child, lookups, childRoots)) changed = true
+  if (applyHolds(element)) changed = true
+  // The element's own mark decides whether its ancestors are a holder or a
+  // scope for the nodes under it, so a mark written here re-answers them.
+  if (changed) remarkInside(element)
   return changed
 }
 
-/** Take every part mark off, for the teardown. */
+/** Take every part and hold mark off, for the teardown. */
 export function clearParts(root: ParentNode = document) {
-  for (const element of root.querySelectorAll(`[${PART_ATTR}]`)) element.removeAttribute(PART_ATTR)
+  for (const element of root.querySelectorAll(`[${PART_ATTR}], [${HOLDS_ATTR}]`)) {
+    element.removeAttribute(PART_ATTR)
+    element.removeAttribute(HOLDS_ATTR)
+  }
+  for (const state of HOLD_STATES) state.held.clear()
+  HOLD_COUNTS.clear()
 }
 
 /**
@@ -155,8 +333,11 @@ export function installParts(onMarked?: () => void) {
     subtree: true,
     attributes: true,
     // A class rewrite moves an element's parts, and a menu stamp turns the card
-    // under it into a region. Nothing else a class or a stamp means here.
-    attributeFilter: ['class', ACCOUNT_MENU_ATTR, HERO_MENU_ATTR],
+    // under it into a region. Nothing else a class or a stamp means here. The
+    // relations' own attributes are watched too: the node they belong to can
+    // take one after it was mounted, and the mark answers what the subtree
+    // holds from there on.
+    attributeFilter: ['class', ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, ...HOLD_ATTRIBUTES],
     skipQuiet: true,
   }, (records) => {
     let changed = false
@@ -172,8 +353,18 @@ export function installParts(onMarked?: () => void) {
             ? walk(record.target, lookups, roots)
             : writeParts(record.target, lookups, roots)
           if (moved) changed = true
+          if (applyHolds(record.target)) changed = true
+          // A holder's own attribute — the host's phase mark, the skin's row
+          // mark — can arrive under a held node that is already standing.
+          if (record.attributeName !== null && HOLD_ATTRIBUTES.has(record.attributeName)) {
+            if (adoptHeldInside(record.target, record.attributeName)) changed = true
+            if (remarkInside(record.target)) changed = true
+          }
         }
         continue
+      }
+      for (const node of record.removedNodes) {
+        if (node instanceof Element && dropHolds(node)) changed = true
       }
       for (const node of record.addedNodes) {
         if (!(node instanceof Element)) continue

@@ -394,6 +394,15 @@ export const QUIET_ATTR = 'data-dsh-claude-quiet'
  */
 export const PART_ATTR = 'data-dsh-claude-part'
 /**
+ * On a host element, naming the parts its own subtree holds
+ * (packages/client/src/core/parts.ts, core/parts-table.ts). A rule that used to ask
+ * the browser whether an element contains another (`A:has(B)`) reads this
+ * mark instead: the marking pass already walks the subtree, so the answer
+ * costs one attribute read rather than a style pass over every candidate
+ * (D9). The values are the relation names declared in the parts table.
+ */
+export const HOLDS_ATTR = 'data-dsh-claude-holds'
+/**
  * On the element the fold glide is pressing right now (packages/client/src/features/chat-fold/
  * fold-glide.ts): while it stands, the elements inside lay out at their
  * natural height instead of being squeezed by flex (fold-motion.css).

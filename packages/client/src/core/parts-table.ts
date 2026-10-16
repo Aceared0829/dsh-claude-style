@@ -18,7 +18,7 @@
  * part gate) and holds every part a stylesheet reads to the table here. A host
  * rename is one line in this file.
  */
-import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR } from '../constants'
+import { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } from '../constants'
 import { CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /** Host CSS-module local name → the skin's part name. */
@@ -283,3 +283,70 @@ export const PART_NAMES: string[] = (() => {
   }
   return [...names].sort()
 })()
+
+/** The selector for one part name, so the relations below spell their sides in this vocabulary. */
+const part = (name: string) => `[${PART_ATTR}~="${name}"]`
+
+/**
+ * The structural relations a stylesheet reads as a hold: a rule naming an
+ * element because of what its subtree contains (`A:has(B)`) reads
+ * `data-dsh-claude-holds` instead, and core/parts.ts keeps that mark current
+ * (D9). Each entry answers one question the walk already knows the answer to.
+ *
+ * `holder` names the element that takes the mark; `*` marks whichever ancestor
+ * holds the node, which is what a rule styling an unnamed wrapper needs.
+ * `scope` keeps the mark inside one box: nothing at or above the scope is
+ * marked. `direct` is the `>` in `:has(> B)`: only the held node's own parent
+ * counts. `attributes` are the names whose change can move this mark, so the
+ * marking pass watches them; a part-based side needs no attribute because the
+ * pass already watches class names.
+ */
+export interface HoldRelation {
+  /** The word a stylesheet reads in `[data-dsh-claude-holds~="…"]`. */
+  name: string
+  /** The element that takes the mark, or `*` for any ancestor that holds the node. */
+  holder: string
+  /** The held side, matched on each node the pass walks. */
+  held: string
+  /** Only nodes strictly inside this element are marked. */
+  scope?: string
+  /** Only the held node's own parent counts. */
+  direct?: boolean
+  /** Attributes whose changes can move this mark. */
+  attributes: string[]
+}
+
+/** Every relation a stylesheet reads, and the rule that reads it. */
+export const HOLD_RELATIONS: HoldRelation[] = [
+  // theme/chrome.css, theme/wallpaper.css: the frame paints to the window's top
+  // only where its own first column is the sidebar.
+  { name: 'sidebar-column', holder: part('layout-frame'), held: part('sidebar-column'), direct: true, attributes: [] },
+  // theme/chrome.css, theme/wallpaper.css, features/view-tabs/view-tabs.css: the
+  // header owns the tab strip, and only that header loses its bottom edge.
+  { name: 'view-tabs', holder: part('conversation-header'), held: part('view-tabs'), attributes: [] },
+  // theme/hero.css: the headline takes the display cut where it carries the mark.
+  { name: 'hero-mark', holder: part('hero-headline'), held: part('hero-mark'), attributes: [] },
+  // features/home/home-panel.css: the boxes the host's `display: contents` slot
+  // anchors expose are the ones that sort the studio's greeting.
+  { name: 'hero-headline', holder: '*', held: part('hero-headline'), scope: part('composer-hero'), attributes: [] },
+  // features/composer/card.css: the classic tray sorts the boxes above the card.
+  { name: 'composer-card', holder: '*', held: '[data-composer-card]', scope: part('composer-stack'), attributes: ['data-composer-card'] },
+  // theme/wallpaper.css: the phase box holding the transcript paints the canvas.
+  { name: 'conversation-scroll', holder: '[data-phase]', held: '[data-conversation-scroll]', attributes: ['data-phase', 'data-conversation-scroll'] },
+  // features/composer/inline-bar.css: the host's own statistics dialogs stand down.
+  {
+    name: 'host-stats',
+    holder: '[role="dialog"]',
+    held: '[data-session-stats-details], [data-session-stats-usage]',
+    attributes: ['data-session-stats-details', 'data-session-stats-usage'],
+  },
+  // features/account/account-footer.css, footer-takeover.css: only the footer
+  // boxes around the host's own account row keep their size.
+  {
+    name: 'account-row',
+    holder: '*',
+    held: '[data-dsh-claude-account-host-row]',
+    scope: part('foot-area'),
+    attributes: ['data-dsh-claude-account-host-row'],
+  },
+]

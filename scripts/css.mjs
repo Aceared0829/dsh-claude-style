@@ -40,6 +40,8 @@ import { loadModule } from './shared/ts-module.cjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'
+/** The element a rule painting the document has to be written on. */
+const DOCUMENT_TAG = 'html'
 const SCOPE_ATTRIBUTE = 'data-dsh-claude-style'
 const SCOPE = `${SCOPE_TAG}[${SCOPE_ATTRIBUTE}]`
 /**
@@ -81,6 +83,8 @@ const EASE_PATTERN = /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out)(?![\w-])|c
 const SKIN_ATTRIBUTE_PREFIX = 'data-dsh-'
 /** The attribute carrying the skin's own names for host elements; the one host anchor a rule reads (D3). */
 const PART_ATTRIBUTE = 'data-dsh-claude-part'
+/** The attribute carrying what an element's subtree holds; a relation the pass answers (D9). */
+const HOLDS_ATTRIBUTE = 'data-dsh-claude-holds'
 
 /* ---------- selectors ---------- */
 
@@ -140,6 +144,25 @@ function checkHasPlacement(where, selector) {
       if (level.parent.type !== 'pseudo') return
       node = level.parent
     }
+  })
+}
+
+/**
+ * Refuse a `:has()` that asks about a mark (D9). What the argument selects on is
+ * what the skin already knows — a part, a host `data-*` mark, one of the skin's
+ * own markers — so the pass answers it as `data-dsh-claude-holds`
+ * (core/parts-table.ts) and the rule reads the answer. Two shapes stay: a
+ * `:has()` over state the skin cannot mark (a pseudo-class, a class name), and
+ * the document element's own entry into scope, where the whole gate compound
+ * sits inside the `:has()` (D51) and nothing else can carry the rule.
+ */
+function checkHasMarks(where, selector) {
+  selector.walkPseudos((pseudo) => {
+    if (pseudo.value.toLowerCase() !== ':has') return
+    if (compoundOf(pseudo).some((node) => node.type === 'tag' && node.value === DOCUMENT_TAG)) return
+    pseudo.walkAttributes((attribute) => {
+      throw new Error(`build: ${where} has a :has() asking whether an element holds [${attribute.attribute}]; write the relation in packages/client/src/core/parts-table.ts and read ${HOLDS_ATTRIBUTE} instead`)
+    })
   })
 }
 
@@ -243,9 +266,10 @@ function sheetLabel(sheet) {
  *
  * @param read - collects the skin attributes the sheet's selectors read, each with where.
  * @param keyframes - signature → where, across the sheets, for the repeat check (D65).
+ * @param relations - relation name → where, for the hold-mark check (D9).
  * @returns the sheet's text, comments and formatting kept.
  */
-function processSheet(sheet, text, gates, names, read, parts, keyframes) {
+function processSheet(sheet, text, gates, names, read, parts, relations, keyframes) {
   const label = sheetLabel(sheet)
   const root = postcss.parse(text, { from: label })
   const surface = sheet.scope === 'surface'
@@ -265,6 +289,9 @@ function processSheet(sheet, text, gates, names, read, parts, keyframes) {
     const selectors = selectorParser().astSync(rule.selector)
     selectors.walkAttributes((attribute) => {
       if (attribute.attribute.startsWith(SKIN_ATTRIBUTE_PREFIX) && !read.has(attribute.attribute)) read.set(attribute.attribute, where)
+      if (attribute.attribute === HOLDS_ATTRIBUTE && attribute.operator === '~=' && typeof attribute.value === 'string' && !relations.has(attribute.value)) {
+        relations.set(attribute.value, where)
+      }
       if (attribute.attribute !== PART_ATTRIBUTE || attribute.operator !== '~=') return
       if (typeof attribute.value === 'string' && !parts.has(attribute.value)) parts.set(attribute.value, where)
     })
@@ -273,6 +300,7 @@ function processSheet(sheet, text, gates, names, read, parts, keyframes) {
       const scopes = scopeCompounds(selector, scopeAttribute)
       if (scopes.length === 0) throw new Error(`build: ${where} selector "${selector.toString().trim()}" is not under ${SCOPE_TAG}[${scopeAttribute}]`)
       checkHasPlacement(where, selector)
+      checkHasMarks(where, selector)
       if (!stamp) continue
       for (const { attribute } of scopes) attribute.parent.insertAfter(attribute, selectorParser.attribute({ attribute: gates.composer }))
     }
@@ -512,6 +540,39 @@ function checkParts(parts) {
 }
 
 /**
+ * Hold every relation a stylesheet reads to the table the pass answers from
+ * (D9), in both directions: a rule reading a mark no relation declares matches
+ * nothing, and a declared relation no rule reads is a mark written for nobody.
+ * The selectors inside the declarations are checked too, so a part name they
+ * name is one the table defines.
+ *
+ * @param relations - relation name → where a selector first reads it.
+ */
+function checkHolds(relations) {
+  const { HOLD_RELATIONS, PART_NAMES } = loadModule('packages/client/src/core/parts-table.ts')
+  if (!Array.isArray(HOLD_RELATIONS)) throw new Error('build: packages/client/src/core/parts-table.ts exports no HOLD_RELATIONS')
+  const known = new Set(PART_NAMES)
+  const declared = new Set()
+  for (const relation of HOLD_RELATIONS) {
+    declared.add(relation.name)
+    for (const side of [relation.holder, relation.held, relation.scope]) {
+      if (typeof side !== 'string') continue
+      for (const match of side.matchAll(/\[data-dsh-claude-part~="([^"]+)"\]/g)) {
+        if (!known.has(match[1])) {
+          throw new Error(`build: the hold relation "${relation.name}" names the part "${match[1]}", which packages/client/src/core/parts-table.ts does not define`)
+        }
+      }
+    }
+  }
+  for (const [name, where] of relations) {
+    if (!declared.has(name)) throw new Error(`build: ${where} reads the hold "${name}", which packages/client/src/core/parts-table.ts does not declare`)
+  }
+  for (const name of declared) {
+    if (!relations.has(name)) throw new Error(`build: the hold relation "${name}" is declared but no stylesheet reads it — take it out of HOLD_RELATIONS`)
+  }
+}
+
+/**
  * Every sheet in cascade order, checked, gated and joined.
  *
  * @param options.sheets - `{ file, rank, gate?, scope? }` or `{ generated, rank }` in cascade order (TOKEN_SHEET generated).
@@ -528,6 +589,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
   const names = { claude: new Set(), host: new Set() }
   const read = new Map()
   const parts = new Map()
+  const relations = new Map()
   const keyframes = new Map()
   const processed = sheets.map((sheet) => {
     const source = sheet.file === TOKEN_SHEET
@@ -535,7 +597,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
       : sheet.generated !== undefined
         ? featureSheet(sheet.generated, featureConstants)
         : fs.readFileSync(path.join(srcDir, sheet.file), 'utf8').replace(/\r\n/g, '\n')
-    return { sheet, text: processSheet(sheet, source, gates, names, read, parts, keyframes).replace(/\n+$/, '') }
+    return { sheet, text: processSheet(sheet, source, gates, names, read, parts, relations, keyframes).replace(/\n+$/, '') }
   })
   const joined = (surface) => processed.filter((item) => (item.sheet.scope === 'surface') === surface).map((item) => item.text).join('\n\n')
   for (const name of names.claude) {
@@ -543,6 +605,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
   }
   checkAttributes(read, sources)
   checkParts(parts)
+  checkHolds(relations)
   // The token sheet declares every token, so it is no reader of any: what reads
   // a token is another sheet, or another token's value (a shorthand).
   const readers = [

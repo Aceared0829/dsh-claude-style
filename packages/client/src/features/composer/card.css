@@ -170,7 +170,7 @@ body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-ds
   --dsh-claude-bar-h: 96px;
 }
 
-body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] *:has([data-composer-card]) {
+body[data-dsh-claude-style]:not([data-dsh-claude-home-layout="studio"]) [data-dsh-claude-part~="composer-stack"][data-composer-variant="hero"] [data-dsh-claude-holds~="composer-card"] {
   order: 1;
   padding-bottom: 0 !important;
 }

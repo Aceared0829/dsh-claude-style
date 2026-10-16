@@ -37,12 +37,12 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallp
    up through it (D31). Under a wallpaper the frame and those two fills stand
    down whole, so the caption row lies under the same mask as the rest of the
    window (D61); the row's own background is cleared either way. */
-html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~="layout-frame"]:has(> [data-dsh-claude-part~="sidebar-column"]) {
+html[data-windows-titlebar] body[data-dsh-claude-style]:not([data-we-wallpaper]) [data-dsh-claude-part~="layout-frame"][data-dsh-claude-holds~="sidebar-column"] {
   --dsh-windows-content-radius: 0px;
   background: var(--dsh-claude-canvas) !important;
 }
 
-html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-part~="layout-frame"]:has(> [data-dsh-claude-part~="sidebar-column"])::before {
+html[data-windows-titlebar] body[data-dsh-claude-style] [data-dsh-claude-part~="layout-frame"][data-dsh-claude-holds~="sidebar-column"]::before {
   background: transparent !important;
 }
 
@@ -266,9 +266,10 @@ body[data-dsh-claude-style] [data-slot="conversation.session.header.actions"] > 
    only if the host changes its geometry. */
 
 /* The conversation header carries the host's own bottom border — the line under
-   the tabs; the transcript's top fade below takes over that job. Scoped with
-   :has() to the header that owns the tab strip, so no other header loses its edge. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"]:has([data-dsh-claude-part~="view-tabs"]) {
+   the tabs; the transcript's top fade below takes over that job. Scoped by the
+   hold mark to the header that owns the tab strip, so no other header loses its
+   edge (D9). */
+body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"][data-dsh-claude-holds~="view-tabs"] {
   border-bottom-color: transparent;
   /* The host's header rule sets no position, so it is static and an absolutely
      positioned band would anchor to a far ancestor. The stickiness lives on the
@@ -280,7 +281,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"]:has([d
 /* The transcript's top fade: the header already covers the transcript, so the
    band hangs off the header's own bottom edge and follows it. One knob,
    --dsh-transcript-fade-h, matching the composer's own fade. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"]:has([data-dsh-claude-part~="view-tabs"])::after {
+body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"][data-dsh-claude-holds~="view-tabs"]::after {
   content: "";
   position: absolute;
   left: 0;

@@ -40,7 +40,7 @@ body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~="
 
 /* Order is written on the boxes the host's `display: contents` slot anchors
    expose, because an anchor with `display: contents` generates no box to sort. */
-body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > :has([data-dsh-claude-part~="hero-headline"]) {
+body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > [data-dsh-claude-holds~="hero-headline"] {
   order: 0;
   height: auto;
   justify-content: flex-start;

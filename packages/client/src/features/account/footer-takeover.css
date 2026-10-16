@@ -42,7 +42,7 @@ body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-pa
 /* A settingsArea that holds the host's account row gets its box back: that row
    has to paint in the footer, not inside a zero-sized cell. Everything else
    keeps the geometric collapse. */
-body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] > [data-dsh-claude-part~="settings-area"]:has([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] > [data-dsh-claude-part~="settings-area"][data-dsh-claude-holds~="account-row"] {
   width: 100% !important;
   height: auto !important;
 }
@@ -139,7 +139,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-clau
    in the rail. Reachability is unaffected — the popover's settings item opens
    the real trigger programmatically (`realTrigger.click()`), which
    display:none does not block. */
-body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-area"] :is(button, [data-dsh-claude-part~="settings-trigger"]):not([data-dsh-claude-account-host-row]):not(:has([data-dsh-claude-account-host-row])) {
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-area"] :is(button, [data-dsh-claude-part~="settings-trigger"]):not([data-dsh-claude-account-host-row]):not([data-dsh-claude-holds~="account-row"]) {
   display: none !important;
 }
 /* The rail's host account row is a 36px square with neither label nor chevron,

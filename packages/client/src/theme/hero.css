@@ -36,7 +36,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="hero-preview-badge"] {
 
 /* Headline: the shipped 26px/32px editorial display, then 15% back off that
    (52 -> 44.2) and one weight step below the display rule. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="hero-headline"]:has([data-dsh-claude-part~="hero-mark"]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="hero-headline"][data-dsh-claude-holds~="hero-mark"] {
   font-size: 44.2px;
   line-height: 54.4px;
   font-weight: 400;

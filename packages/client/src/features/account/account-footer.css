@@ -300,12 +300,12 @@ body[data-dsh-claude-style] [data-dsh-claude-account-host-row]::after {
 /* The host wraps its row in its own slot markup. Every branch on the way to the
    marked row becomes a full-width flex box, so the row can fill the footer
    whatever the host's hashed wrapper classes are. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"]:has([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"][data-dsh-claude-holds~="account-row"] {
   display: flex !important;
   align-items: center !important;
   width: 100% !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] :has([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] [data-dsh-claude-holds~="account-row"] {
   display: flex !important;
   align-items: center !important;
   flex: 1 1 auto !important;
