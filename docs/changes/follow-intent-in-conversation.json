@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 5,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**在侧边栏或旁边的子代理转录里滚动、点击，不再让主会话停止跟随**：只有落在主会话滚动区里的滚轮、按压与拖动，以及没有焦点时按下的滚动键，才算读者离开了末尾；之前页面上任何一处的滚轮或点击都会让主会话停在原处，流式输出不再往下跟。",
+  "en": "**Scrolling or clicking in the sidebar or a subagent transcript beside the conversation no longer stops the main conversation from following**: only a wheel, press or drag inside the main conversation's scroller, or a scroll key pressed with nothing focused, counts as the reader leaving the end; before, a wheel or click anywhere on the page left the main conversation where it was and the stream stopped being followed."
+}

@@ -205,13 +205,15 @@ function claim(container: Element, source: ScrollSource) {
  */
 export function readerHolds(container: Element) {
   if (!held.has(container)) return false
+  // Only a move toward the end can end a hold, so a hold without one is
+  // answered without reading the position: every following source asks on
+  // every frame it runs, and a reading taken after the host's writes is a
+  // layout pass over the whole page (D9).
+  if (!heldTowardEnd.has(container)) return true
   const threshold = container.matches(PROCESS_BODY_SELECTOR) ? PROCESS_RELEASE_THRESHOLD_PX : FOLLOW_THRESHOLD_PX
   if (container.scrollHeight - container.clientHeight - container.scrollTop > threshold) return true
-  if (heldTowardEnd.has(container)) {
-    setHeld(container, false)
-    return false
-  }
-  return true
+  setHeld(container, false)
+  return false
 }
 
 /** End the reader's hold on a container that no longer shows its own position (a folded body). */
@@ -275,6 +277,20 @@ function claimConversation() {
   seen = null
 }
 
+/**
+ * Whether an intent is the reader's move in the conversation: the event landed
+ * inside its scroller, or it is a key pressed with nothing else focused, which
+ * the page scrolls. A press or a wheel anywhere else — the sidebar, a child
+ * transcript open beside the conversation, a panel — moves something else, and
+ * taken as a hold it would stop the follow and leave every following source
+ * reading the position on every frame (readerHolds).
+ */
+function intentReaches(scroller: Element, event: Event) {
+  const target = event.target
+  if (event.type === 'keydown') return target === document.body || target === document.documentElement || (target instanceof Node && scroller.contains(target))
+  return target instanceof Node && scroller.contains(target)
+}
+
 function noteIntent(event: Event) {
   if (!isReaderScrollIntent(event)) return
   const moving = MOVING_INTENT_TYPES.has(event.type)
@@ -288,7 +304,7 @@ function noteIntent(event: Event) {
     const scroller = conversationScroller()
     claimConversation()
     // Only once the content has grown a scrollbar: before that there is nothing to hold.
-    if (scroller !== null && scroller.scrollHeight - scroller.clientHeight > 0) {
+    if (scroller !== null && intentReaches(scroller, event) && scroller.scrollHeight - scroller.clientHeight > 0) {
       if (moving && towardEnd) heldTowardEnd.add(scroller)
       setHeld(scroller, true)
     }

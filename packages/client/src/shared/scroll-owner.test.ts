@@ -79,6 +79,21 @@ test('the reader holds the conversation until he comes back to its end; only fol
   expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(true)
 })
 
+test('a press or a wheel outside the conversation is no hold on it: the follow keeps going', () => {
+  setMotion(MOTION_FULL)
+  join()
+  const scroller = scrollBox('data-conversation-scroll')
+  // A child transcript open beside the conversation scrolls on its own.
+  const beside = scrollBox('data-beside')
+  beside.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: -120 }))
+  beside.firstElementChild!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+  expect(readerHolds(scroller)).toBe(false)
+  expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(true)
+  // A scroll key with nothing focused moves the conversation, and is his.
+  document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true }))
+  expect(readerHolds(scroller)).toBe(true)
+})
+
 test('a jump to a turn holds the follow and the stream off until the reader comes back to the end', async () => {
   setMotion(MOTION_FULL)
   join()
