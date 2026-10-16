@@ -15,13 +15,13 @@ The shape of the tree, the two halves and the invariants that cross them are in 
 
 ## Behavioral Red Lines
 
-- Import needed libraries directly; never guard imports with try/catch. The one recorded exception is the host half's guarded schemastery import (D11); any new exception is written into a decision first.
+- Import needed libraries directly; never guard imports with try/catch. The one exception is the host half's guarded schemastery import in `packages/host/src/settings.ts`, its reason beside it; any new exception carries its reason beside the import the same way (D12).
 - Never enter plan mode on your own initiative.
 - Never use Git to roll back code. "Roll back" from the user always means restoring the previous state by hand with the edit tools.
 - Never read from or write to the system temp directory; intermediate artifacts go to `.debug/` (gitignored).
 - When the user provides a web link, read its full content before starting; when a library turns out to be used wrongly, re-read that link in full first.
 - Do not reinvent a wheel to avoid a dependency. The package has zero *runtime* dependencies: React and the host packages come from the host at runtime (D36).
-- Fail fast: throw where the error is, never swallow it, never fall back silently. The only catches allowed are the ones D12 lists, each with its reason beside it.
+- Fail fast: throw where the error is, never swallow it, never fall back silently. A catch is allowed only where it isolates one failure from the rest or where the comment beside it states why the error may stop there (D12).
 - No mocks, no fake implementations, no workarounds that exist only to make tests pass.
 - The user may withdraw or modify your changes at any time: re-read a file before continuing to edit it, build on the latest state, never re-add what the user deleted.
 - If the user asks about something else mid-task, answer at once if you can, then resume the original task; never leave a task half-done.
@@ -128,7 +128,7 @@ DSH_IMPORTANCE_REFERENCE=<old.css> node packages/testing/e2e.cjs --scenario impo
 node packages/testing/mock-llm.cjs                      # the scripted model service on its own, printing the base URL to configure a route with
 ```
 
-Every test run goes through `npm run verify` (D66), and a run belongs to the stretch before a push. `node scripts/verify.mjs --help` prints the tiers, what each one walks, the lock the lanes share and the verdict cache. The quick tier leaves out the motion cases; a feature whose cases all watch motion is covered by naming it (`--feature <dir>`), which drops the quick tier. A lane that reads frames — the smoke's motion cases, the end-to-end scenarios that sample the page — is what a loaded machine disturbs: both lanes take `--jobs <n>` (default from the machine's core count) and `--jobs 1` drives one page or scenario at a time. probe, probe-timing and shoot need a running `dsh web` (default `http://127.0.0.1:3080`, `--url` for another; the token is the `/?token=…` in the GUI URL or `DSH_WEB_TOKEN`). All of them need a local Chrome/Edge (`CHROME_PATH` to choose one). `packages/testing/e2e.cjs` boots its own host and needs no running instance; its scenarios, their scripts and their bounds are in D66.
+Every test run goes through `npm run verify` (D66), and a run belongs to the stretch before a push. `node scripts/verify.mjs --help` prints the tiers and what each one walks; the lock the lanes share and the verdict cache are described at the top of `scripts/verify.mjs`. The quick tier leaves out the motion cases; a feature whose cases all watch motion is covered by naming it (`--feature <dir>`), which drops the quick tier. A lane that reads frames — the smoke's motion cases, the end-to-end scenarios that sample the page — is what a loaded machine disturbs: both lanes take `--jobs <n>` (default from the machine's core count) and `--jobs 1` drives one page or scenario at a time. probe, probe-timing and shoot need a running `dsh web` (default `http://127.0.0.1:3080`, `--url` for another; the token is the `/?token=…` in the GUI URL or `DSH_WEB_TOKEN`). All of them need a local Chrome/Edge (`CHROME_PATH` to choose one). `packages/testing/e2e.cjs` boots its own host and needs no running instance; its scenarios and their scripts are in `packages/testing/scenarios.cjs`, and the bounds its checks read are in `packages/testing/bounds.json`.
 
 ### Live Inspection
 
