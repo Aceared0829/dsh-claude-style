@@ -7,6 +7,19 @@ import { readPrefs } from './prefs'
 /** Values for a copy string's `{name}` slots. */
 export type CopyParams = Record<string, string | number>
 
+/** One copy line: the text in each language it ships in. */
+export type CopyPair = Readonly<Record<string, string>>
+
+/** A feature's own copy, by key (its `<功能>.copy.json`). */
+export type CopyEntries = Readonly<Record<string, CopyPair>>
+
+/**
+ * The language a copy line falls back to when the shell's own language has no
+ * line for it. A feature's copy ships with the bundle, so every line is written
+ * in this language as well (`<功能>.copy.json` beside the feature).
+ */
+export const COPY_FALLBACK_LOCALE = 'en'
+
 /** The shell's active locale id, or the document fallback when it cannot be read. */
 export function activeLocale(ctx?: HostContext | null): string {
   const active = (ctx || hostCtx)?.get('locale')?.getSnapshot().active
@@ -56,6 +69,28 @@ export function localized(pair: Record<string, unknown> | null | undefined, ctx?
   const fallbackPrefixed = pair[fallbackPrefix]
   if (fallbackPrefix && typeof fallbackPrefixed === 'string' && fallbackPrefixed) return fallbackPrefixed
   return ''
+}
+
+/**
+ * One line of a feature's own copy: the shell's language first, then the
+ * language the copy ships in. The key is the feature's own — its copy file is
+ * the only place the line exists — and the build holds every call to one, so a
+ * line that is not there is a build failure rather than a runtime question.
+ */
+export function featureCopy(entries: CopyEntries, key: string, params?: CopyParams) {
+  const pair = entries[key]
+  return fillTemplate(pair === undefined ? key : localized(pair), params)
+}
+
+/**
+ * One line of a feature's copy in a language named by a preference rather than
+ * by the shell: the account-hold screen reproduces a real Claude page, so it is
+ * read in the language that page was written in whatever the UI is set to.
+ */
+export function copyIn(entries: CopyEntries, key: string, locale: string, params?: CopyParams) {
+  const pair = entries[key]
+  const text = pair === undefined ? '' : (pair[locale] || pair[COPY_FALLBACK_LOCALE] || '')
+  return fillTemplate(text === '' ? key : text, params)
 }
 
 /**

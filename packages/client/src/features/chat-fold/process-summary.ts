@@ -1,7 +1,8 @@
 import { QUIET_ATTR } from '../../constants'
 import { observeSize, subscribeMutations } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
-import { copyLabel } from '../../core/i18n'
+import { copy } from './copy'
+import type { CopyKey } from './copy'
 import { motionReduced } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { motionMs } from '../../shared/motion'
@@ -29,8 +30,8 @@ export type SummaryForm = 'full' | 'compact'
 
 const FIGURES: readonly ProcessFigure[] = ['thinking', 'output', 'tool', 'record']
 
-/** One copied string: the document's key and the English the bundle carries when it cannot be read. */
-interface CopyText { key: string, fallback: string }
+/** This figure's words, by the key they stand under in the feature's own copy. */
+type CopyText = CopyKey
 
 /**
  * Each figure's words. The sentence names the act and its count, and English
@@ -40,36 +41,36 @@ interface CopyText { key: string, fallback: string }
 const FIGURE_COPY: Record<ProcessFigure, { full: { one: CopyText, other: CopyText }, compact: CopyText }> = {
   thinking: {
     full: {
-      one: { key: 'processSummaryFullThoughtOne', fallback: '{count} thought' },
-      other: { key: 'processSummaryFullThoughtOther', fallback: '{count} thoughts' },
+      one: 'processSummaryFullThoughtOne',
+      other: 'processSummaryFullThoughtOther',
     },
-    compact: { key: 'processSummaryThinking', fallback: 'Thinking×{count}' },
+    compact: 'processSummaryThinking',
   },
   output: {
     full: {
-      one: { key: 'processSummaryFullOutputOne', fallback: '{count} output' },
-      other: { key: 'processSummaryFullOutputOther', fallback: '{count} outputs' },
+      one: 'processSummaryFullOutputOne',
+      other: 'processSummaryFullOutputOther',
     },
-    compact: { key: 'processSummaryOutput', fallback: 'Output×{count}' },
+    compact: 'processSummaryOutput',
   },
   tool: {
     full: {
-      one: { key: 'processSummaryFullToolOne', fallback: '{count} tool call' },
-      other: { key: 'processSummaryFullToolOther', fallback: '{count} tool calls' },
+      one: 'processSummaryFullToolOne',
+      other: 'processSummaryFullToolOther',
     },
-    compact: { key: 'processSummaryTool', fallback: 'Tools×{count}' },
+    compact: 'processSummaryTool',
   },
   record: {
     full: {
-      one: { key: 'processSummaryFullRecordOne', fallback: '{count} record' },
-      other: { key: 'processSummaryFullRecordOther', fallback: '{count} records' },
+      one: 'processSummaryFullRecordOne',
+      other: 'processSummaryFullRecordOther',
     },
-    compact: { key: 'processSummaryRecord', fallback: 'Records×{count}' },
+    compact: 'processSummaryRecord',
   },
 }
 
 /** The sentence's separator; the compact figures keep the host's own (message.turnProcess.separator). */
-const FULL_SEPARATOR = () => copyLabel('processSummaryFullSeparator', ', ')
+const FULL_SEPARATOR = () => copy('processSummaryFullSeparator')
 const COMPACT_SEPARATOR = ' · '
 /** On a group root while its header shows the summary; the stylesheet hides the host's words under it. */
 export const PROCESS_SUMMARY_ATTR = 'data-dsh-claude-summary'
@@ -108,10 +109,9 @@ export function countProcessItems(content: Element): ProcessCounts {
 
 /** One figure's words in one form, the count standing where `{count}` is. */
 export function figureWords(figure: ProcessFigure, form: SummaryForm, count: number) {
-  const copy = FIGURE_COPY[figure]
-  if (form === 'compact') return copyLabel(copy.compact.key, copy.compact.fallback)
-  const chosen = count === 1 ? copy.full.one : copy.full.other
-  return copyLabel(chosen.key, chosen.fallback)
+  const words = FIGURE_COPY[figure]
+  if (form === 'compact') return copy(words.compact)
+  return copy(count === 1 ? words.full.one : words.full.other)
 }
 
 /** The separator between two figures of one form. */

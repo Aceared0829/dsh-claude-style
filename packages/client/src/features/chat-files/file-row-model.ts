@@ -1,5 +1,6 @@
 import { callString } from '../../shared/call-args'
 import type { CallArgs } from '../../shared/call-args'
+import type { CopyKey } from './copy'
 import type { HostText } from '../../core/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 
@@ -137,7 +138,7 @@ export const CHAT_FILE_MERGE_HEAD = 'head'
 export const CHAT_FILE_MERGE_MEMBER = 'member'
 export const CHAT_FILE_MERGE_GONE = 'gone'
 /** The merged row's screen-reader sentence: the calls its file's other rows held. */
-export const CHAT_FILE_MERGED_COPY = 'fileRowMergedOperations'
+export const CHAT_FILE_MERGED_COPY: CopyKey = 'fileRowMergedOperations'
 /** The expanded body. */
 export const CHAT_FILE_BODY_CLASS = 'dsh-claude-file-body'
 /** The diff card inside an expanded body. */
