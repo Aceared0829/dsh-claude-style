@@ -2,10 +2,10 @@ import * as React from 'react'
 import { BRAND_IMAGE_MAX_BYTES, BRAND_IMAGE_TYPES } from '@dsh-claude-style/contracts/brand'
 import type { BrandImageKind } from '@dsh-claude-style/contracts/brand'
 import { BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, PALETTE_HOST } from '../../constants'
-import { settingsCopy } from '../../core/i18n'
 import { loadBrandImages, readBrandImages, removeBrandImage, subscribeBrandImages, uploadBrandImage } from '../../shared/custom-brand'
 import type { SegmentOption, SettingsRow, SettingsView } from './settings-controls'
 import type { Prefs } from '../../constants'
+import { copy } from './copy'
 
 /**
  * The Appearance tab's custom brand rows (D30), after the mascot: the brand
@@ -67,7 +67,7 @@ function BrandNameInput(props: { stored: string, write: SettingsView['write'] })
     className: 'dsh-claude-settings-input',
     value: draft,
     maxLength: BRAND_NAME_MAX,
-    placeholder: settingsCopy('brandNamePlaceholder', 'The chosen brand'),
+    placeholder: copy('brandNamePlaceholder'),
     spellCheck: false,
     autoComplete: 'off',
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => change(event.target.value),
@@ -114,7 +114,7 @@ function BrandImageControl(props: { kind: BrandImageKind }) {
     // A refusal from the host half is said on the row; the stored image stays (D12).
     pending.then(() => setBusy(false), (reason: { message?: string }) => {
       setBusy(false)
-      setError(settingsCopy('brandImageFailed', 'Saving failed: {detail}', { detail: reason?.message ?? String(reason) }))
+      setError(copy('brandImageFailed', { detail: reason?.message ?? String(reason) }))
     })
   }
   const pick = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,11 +122,11 @@ function BrandImageControl(props: { kind: BrandImageKind }) {
     event.target.value = ''
     if (file === undefined) return
     if (BRAND_IMAGE_TYPES[file.type] === undefined) {
-      setError(settingsCopy('brandImageType', 'Only PNG, SVG or WebP images are accepted.'))
+      setError(copy('brandImageType'))
       return
     }
     if (file.size > BRAND_IMAGE_MAX_BYTES) {
-      setError(settingsCopy('brandImageSize', 'The image is larger than 2 MB.'))
+      setError(copy('brandImageSize'))
       return
     }
     run(uploadBrandImage(props.kind, file))
@@ -151,13 +151,13 @@ function BrandImageControl(props: { kind: BrandImageKind }) {
         className: 'dsh-claude-settings-button',
         disabled: busy,
         onClick: () => picker.current!.click(),
-      }, image === null ? settingsCopy('brandImageUpload', 'Upload') : settingsCopy('brandImageReplace', 'Replace')),
+      }, image === null ? copy('brandImageUpload') : copy('brandImageReplace')),
       image === null ? null : React.createElement('button', {
         type: 'button',
         className: 'dsh-claude-settings-button',
         disabled: busy,
         onClick: () => run(removeBrandImage(props.kind)),
-      }, settingsCopy('brandImageRemove', 'Remove')),
+      }, copy('brandImageRemove')),
     ),
     error === null ? null : React.createElement('div', { className: 'dsh-claude-brand-image-error', role: 'alert' }, error),
   )
@@ -180,18 +180,18 @@ function BrandAccentControl(props: { stored: string, write: SettingsView['write'
       className: 'dsh-claude-settings-color',
       value: shown,
       disabled: props.disabled === true,
-      'aria-label': settingsCopy('brandAccentTitle', 'Accent colour'),
+      'aria-label': copy('brandAccentTitle'),
       onChange: (event: React.ChangeEvent<HTMLInputElement>) => change(event.target.value),
       onBlur: () => flush(draft),
     }),
     draft === ''
-      ? React.createElement('span', { className: 'dsh-claude-brand-accent-note' }, settingsCopy('brandAccentUnset', 'Brand\'s own'))
+      ? React.createElement('span', { className: 'dsh-claude-brand-accent-note' }, copy('brandAccentUnset'))
       : React.createElement('button', {
         type: 'button',
         className: 'dsh-claude-settings-button',
         disabled: props.disabled === true,
         onClick: () => flush(''),
-      }, settingsCopy('brandAccentReset', 'Use the brand\'s accent')),
+      }, copy('brandAccentReset')),
   )
 }
 
@@ -207,8 +207,8 @@ export function accentRow(view: SettingsView): SettingsRow {
     rank: 15,
     node: controls.subRow(
       'brandAccent',
-      settingsCopy('brandAccentTitle', 'Accent colour'),
-      settingsCopy('brandAccentDesc', 'The colour of buttons, selected marks, links and focus rings; unset keeps the brand\'s own. No effect while Colours follows the host.'),
+      copy('brandAccentTitle'),
+      copy('brandAccentDesc'),
       React.createElement(BrandAccentControl, { stored: prefs.brandAccent, write, disabled: !enabled }),
       enabled,
     ),
@@ -219,16 +219,16 @@ export function accentRow(view: SettingsView): SettingsRow {
 export function brandRows(view: SettingsView): SettingsRow[] {
   const { prefs, write, controls } = view
   const inkOptions: SegmentOption<Prefs['brandInk']>[] = [
-    { value: BRAND_INK_ORIGINAL, label: settingsCopy('brandInkOriginal', 'Original') },
-    { value: BRAND_INK_TEXT, label: settingsCopy('brandInkText', 'Text colour') },
+    { value: BRAND_INK_ORIGINAL, label: copy('brandInkOriginal') },
+    { value: BRAND_INK_TEXT, label: copy('brandInkText') },
   ]
   return [
     {
       rank: 50,
       node: controls.row(
         'brandName',
-        settingsCopy('brandNameTitle', 'Brand name'),
-        settingsCopy('brandNameDesc', 'Replaces the brand text at the top of the sidebar. Leave empty to keep the chosen brand\'s own wordmark.'),
+        copy('brandNameTitle'),
+        copy('brandNameDesc'),
         React.createElement(BrandNameInput, { stored: prefs.brandName, write }),
       ),
     },
@@ -236,8 +236,8 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       rank: 51,
       node: controls.row(
         'brandMark',
-        settingsCopy('brandMarkTitle', 'Brand mark'),
-        settingsCopy('brandMarkDesc', 'Replaces the brand mark in the sidebar, the collapsed rail, the home page and the account row\'s fallback picture. PNG, SVG or WebP, up to 2 MB.'),
+        copy('brandMarkTitle'),
+        copy('brandMarkDesc'),
         React.createElement(BrandImageControl, { kind: 'mark' }),
       ),
     },
@@ -245,8 +245,8 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       rank: 52,
       node: controls.row(
         'brandWordmark',
-        settingsCopy('brandWordmarkTitle', 'Wordmark'),
-        settingsCopy('brandWordmarkDesc', 'Replaces the brand name beside the mark, sized from the image\'s proportions, and wins over the brand name. PNG, SVG or WebP, up to 2 MB.'),
+        copy('brandWordmarkTitle'),
+        copy('brandWordmarkDesc'),
         React.createElement(BrandImageControl, { kind: 'wordmark' }),
       ),
     },
@@ -254,8 +254,8 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       rank: 53,
       node: controls.row(
         'brandInk',
-        settingsCopy('brandInkTitle', 'Image colours'),
-        settingsCopy('brandInkDesc', 'Original keeps the images\' own colours; Text colour fills each image with the text colour where it stands, legible in light and dark.'),
+        copy('brandInkTitle'),
+        copy('brandInkDesc'),
         controls.segment(inkOptions, prefs.brandInk, value => { write({ brandInk: value }) }),
       ),
     },

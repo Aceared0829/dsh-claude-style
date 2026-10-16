@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATTR, SETTINGS_SECTION_SLOT, USERNAME_MAX } from '../../constants'
 import { SEGMENT_CLASS } from '../../shared/segment-control'
-import { settingsCopy } from '../../core/i18n'
 import { loadModelCopy, onModelCopyLoaded } from '../../core/model-copy'
 import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
 import { cacheFirstMatch } from '../../core/host'
@@ -22,6 +21,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './settings.manifest'
 import type { SettingsTab, SettingsView } from './settings-controls'
 import type { QuickProvidersHandle } from './quick-providers'
+import { copy } from './copy'
 
 /** Pause after the last keystroke before the username is written to the settings store. */
 const USERNAME_SAVE_DEBOUNCE_MS = 600
@@ -113,11 +113,11 @@ export function ClaudeStyleSettingsTabStrip(props: { active: SettingsTabId, onPi
  * address and paint are the stylesheet's business (settings.css).
  */
 function ClaudeStyleSettingsHeading() {
-  const label = settingsCopy('repository', 'Open the plugin on GitHub')
+  const label = copy('repository')
   return React.createElement(
     'div',
     { className: 'dsh-claude-settings-title' },
-    React.createElement('span', null, settingsCopy('title', 'Claude Style')),
+    React.createElement('span', null, copy('title')),
     React.createElement('a', {
       className: 'dsh-claude-settings-repo',
       href: REPOSITORY_URL,
@@ -219,7 +219,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
     setError(null)
     setPrefs(Object.assign({}, prefs, patch))
     savePrefs(patch).then(result => {
-      if (result === null) setError(settingsCopy('unavailable', 'The settings store is unavailable, so changes will not be saved.'))
+      if (result === null) setError(copy('unavailable'))
     })
   }
 
@@ -229,7 +229,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
     setError(null)
     setPrefs(Object.assign({}, readPrefs(), { username: next }))
     savePrefs({ username: next }).then(result => {
-      if (result === null) setError(settingsCopy('unavailable', 'The settings store is unavailable, so changes will not be saved.'))
+      if (result === null) setError(copy('unavailable'))
     })
   }
 
@@ -289,7 +289,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
     'div',
     { ref: pageRef, className: embedded ? 'dsh-claude-settings dsh-claude-settings-embedded' : 'dsh-claude-settings' },
     embedded ? null : React.createElement(ClaudeStyleSettingsHeading),
-    readOnly ? React.createElement('div', { className: 'dsh-claude-settings-notice', role: 'note' }, settingsCopy('remoteReadOnly', 'This page reaches DSH through a remote address, and DSH saves settings only from a page opened at a local address such as localhost. The values shown are the ones DSH holds; change them on the computer running DSH.')) : null,
+    readOnly ? React.createElement('div', { className: 'dsh-claude-settings-notice', role: 'note' }, copy('remoteReadOnly')) : null,
     React.createElement(ClaudeStyleSettingsTabStrip, { active: activeTab, onPick: pickTab }),
     React.createElement(
       'div',
@@ -315,7 +315,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
  */
 export function ClaudeStyleBundleConfig(props: { view?: string }) {
   if (props && props.view === 'summary') {
-    return React.createElement('span', null, settingsCopy('title', 'Claude Style'))
+    return React.createElement('span', null, copy('title'))
   }
   return React.createElement(ClaudeStyleSettingsSection, { embed: true })
 }
@@ -403,7 +403,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       {
         name: BUNDLE_CONFIG_SLOT,
         key: PACKAGE_NAME,
-        label() { return settingsCopy('title', 'Claude Style') },
+        label() { return copy('title') },
       },
       ClaudeStyleBundleConfig,
     )), 'dsh-claude-style: plugin page')
@@ -419,7 +419,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         order: 22,
         // A function, so the navigation entry localizes once the copy
         // document has arrived; the literal is the pre-fetch fallback.
-        label() { return settingsCopy('title', 'Claude Style') },
+        label() { return copy('title') },
       },
       ClaudeStyleSettingsSection,
     )), 'dsh-claude-style: settings section')

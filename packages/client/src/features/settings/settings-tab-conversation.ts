@@ -1,5 +1,5 @@
-import { settingsCopy } from '../../core/i18n'
 import type { SettingsRow, SettingsTab, SettingsView } from './settings-controls'
+import { copy } from './copy'
 
 /**
  * The settings page's Conversation tab: the conversation navigator, the ported
@@ -13,5 +13,5 @@ export function createSettingsConversationTab(): SettingsTab {
   function rows(_view: SettingsView): SettingsRow[] {
     return []
   }
-  return { id: 'conversation', label: () => settingsCopy('tabConversation', 'Conversation'), rows }
+  return { id: 'conversation', label: () => copy('tabConversation'), rows }
 }

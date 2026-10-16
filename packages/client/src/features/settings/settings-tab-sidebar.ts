@@ -1,7 +1,7 @@
 import { BAN_LOCALE_EN, BAN_LOCALE_OFF, BAN_LOCALE_ZH, SEARCH_STYLE_ICON, SEARCH_STYLE_OVERLAY, SEARCH_STYLE_STANDALONE, SIDEBAR_LAYOUT_COMPACT, SIDEBAR_LAYOUT_RELAXED } from '../../constants'
-import { settingsCopy } from '../../core/i18n'
 import type { SegmentOption, SettingsRow, SettingsTab, SettingsView } from './settings-controls'
 import type { Prefs } from '../../constants'
+import { copy } from './copy'
 
 /**
  * The settings page's Sidebar tab: the footer takeover, the search box and
@@ -23,27 +23,27 @@ export function createSettingsSidebarTab(): SettingsTab {
     const controls = view.controls
     const footerOn = prefs.collapseFooter !== false
     const banOptions: SegmentOption<Prefs['banLocale']>[] = [
-      { value: BAN_LOCALE_OFF, label: settingsCopy('banLocaleOff', 'Off') },
-      { value: BAN_LOCALE_ZH, label: settingsCopy('banLocaleZh', '中文') },
-      { value: BAN_LOCALE_EN, label: settingsCopy('banLocaleEn', 'English') },
+      { value: BAN_LOCALE_OFF, label: copy('banLocaleOff') },
+      { value: BAN_LOCALE_ZH, label: copy('banLocaleZh') },
+      { value: BAN_LOCALE_EN, label: copy('banLocaleEn') },
     ]
     const searchOn = prefs.sidebarSearch !== false
     const searchStyleOptions: SegmentOption<Prefs['searchStyle']>[] = [
-      { value: SEARCH_STYLE_ICON, label: settingsCopy('searchStyleIcon', 'Icon') },
-      { value: SEARCH_STYLE_OVERLAY, label: settingsCopy('searchStyleOverlay', 'Cover the brand') },
-      { value: SEARCH_STYLE_STANDALONE, label: settingsCopy('searchStyleStandalone', 'Standalone') },
+      { value: SEARCH_STYLE_ICON, label: copy('searchStyleIcon') },
+      { value: SEARCH_STYLE_OVERLAY, label: copy('searchStyleOverlay') },
+      { value: SEARCH_STYLE_STANDALONE, label: copy('searchStyleStandalone') },
     ]
     const layoutOptions: SegmentOption<Prefs['sidebarLayout']>[] = [
-      { value: SIDEBAR_LAYOUT_RELAXED, label: settingsCopy('sidebarLayoutRelaxed', 'Relaxed') },
-      { value: SIDEBAR_LAYOUT_COMPACT, label: settingsCopy('sidebarLayoutCompact', 'Compact') },
+      { value: SIDEBAR_LAYOUT_RELAXED, label: copy('sidebarLayoutRelaxed') },
+      { value: SIDEBAR_LAYOUT_COMPACT, label: copy('sidebarLayoutCompact') },
     ]
     return [
       {
         rank: 15,
         node: controls.subRow(
           'banLocale',
-          settingsCopy('banLocaleTitle', 'Account-hold easter egg'),
-          settingsCopy('banLocaleDesc', 'The account row in the account popover opens a replica of Claude\'s account-hold page, in the language chosen here; Off leaves a plain name.'),
+          copy('banLocaleTitle'),
+          copy('banLocaleDesc'),
           controls.segment(banOptions, prefs.banLocale, value => { write({ banLocale: value }) }, !footerOn),
           footerOn,
         ),
@@ -52,8 +52,8 @@ export function createSettingsSidebarTab(): SettingsTab {
         rank: 30,
         node: controls.subRow(
           'searchStyle',
-          settingsCopy('searchStyleTitle', 'Search box style'),
-          settingsCopy('searchStyleDesc', 'Where the search box stands: over the brand, on a row of its own, or as the host\'s own search icon.'),
+          copy('searchStyleTitle'),
+          copy('searchStyleDesc'),
           controls.segment(searchStyleOptions, prefs.searchStyle, value => { write({ searchStyle: value }) }, !searchOn),
           searchOn,
         ),
@@ -62,8 +62,8 @@ export function createSettingsSidebarTab(): SettingsTab {
         rank: 40,
         node: controls.row(
           'dockCards',
-          settingsCopy('dockCardsTitle', 'Float docked panels'),
-          settingsCopy('dockCardsDesc', 'Draws the right sidebar\'s docked panels as floating cards; Off fills the column edge to edge.'),
+          copy('dockCardsTitle'),
+          copy('dockCardsDesc'),
           view.controls.toggle(view.prefs.dockCards !== false, value => { view.write({ dockCards: value }) }),
         ),
       },
@@ -71,12 +71,12 @@ export function createSettingsSidebarTab(): SettingsTab {
         rank: 50,
         node: controls.row(
           'sidebarLayout',
-          settingsCopy('sidebarLayoutTitle', 'Sidebar layout'),
-          settingsCopy('sidebarLayoutDesc', 'How tight the sidebar is: Relaxed is the default look; Compact trims row heights, gaps and padding.'),
+          copy('sidebarLayoutTitle'),
+          copy('sidebarLayoutDesc'),
           controls.segment(layoutOptions, prefs.sidebarLayout, value => { write({ sidebarLayout: value }) }),
         ),
       },
     ]
   }
-  return { id: 'sidebar', label: () => settingsCopy('tabSidebar', 'Sidebar'), rows }
+  return { id: 'sidebar', label: () => copy('tabSidebar'), rows }
 }

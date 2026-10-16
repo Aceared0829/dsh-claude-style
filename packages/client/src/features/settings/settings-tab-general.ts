@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, USERNAME_MAX } from '../../constants'
-import { settingsCopy } from '../../core/i18n'
 import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
+import { copy } from './copy'
 
 /**
  * The settings page's General tab: the theme style, the username and the
@@ -22,8 +22,8 @@ export function createSettingsGeneralTab(): SettingsTab {
    */
   function themePicker(prefs: Prefs, write: SettingsView['write']) {
     const brandOptions: SegmentOption<Prefs['brand']>[] = [
-      { value: BRAND_DEEPSEEK, label: settingsCopy('brandDeepseek', 'DeepSeek') },
-      { value: BRAND_CLAUDE, label: settingsCopy('brandClaude', 'Claude') },
+      { value: BRAND_DEEPSEEK, label: copy('brandDeepseek') },
+      { value: BRAND_CLAUDE, label: copy('brandClaude') },
     ]
     return React.createElement(
       'div',
@@ -49,9 +49,9 @@ export function createSettingsGeneralTab(): SettingsTab {
     const write = view.write
     const controls = view.controls
     const autoPopoverOptions: SegmentOption<Prefs['autoPopover']>[] = [
-      { value: AUTO_POPOVER_OFF, label: settingsCopy('autoPopoverOff', 'Off') },
-      { value: AUTO_POPOVER_ACCOUNT, label: settingsCopy('autoPopoverAccount', 'Account only') },
-      { value: AUTO_POPOVER_ALL, label: settingsCopy('autoPopoverAll', 'All') },
+      { value: AUTO_POPOVER_OFF, label: copy('autoPopoverOff') },
+      { value: AUTO_POPOVER_ACCOUNT, label: copy('autoPopoverAccount') },
+      { value: AUTO_POPOVER_ALL, label: copy('autoPopoverAll') },
     ]
     const username = view.username
     return [
@@ -59,8 +59,8 @@ export function createSettingsGeneralTab(): SettingsTab {
         rank: 10,
         node: controls.row(
           'brand',
-          settingsCopy('brandTitle', 'Theme style'),
-          settingsCopy('brandDesc', 'The brand mark and its colour family: warm for Claude, blue for DeepSeek. While Colours follows the host, only the mark changes.'),
+          copy('brandTitle'),
+          copy('brandDesc'),
           themePicker(prefs, write),
           { block: true },
         ),
@@ -69,14 +69,14 @@ export function createSettingsGeneralTab(): SettingsTab {
         rank: 20,
         node: controls.row(
           'username',
-          settingsCopy('usernameTitle', 'Username'),
-          settingsCopy('usernameDesc', 'The name shown in the greeting and the account row; empty falls back to the signed-in account, then the launcher, then the system user.'),
+          copy('usernameTitle'),
+          copy('usernameDesc'),
           React.createElement('input', {
             type: 'text',
             className: 'dsh-claude-settings-input',
             value: username.value,
             maxLength: USERNAME_MAX,
-            placeholder: settingsCopy('usernamePlaceholder', 'Auto-detect account or host user'),
+            placeholder: copy('usernamePlaceholder'),
             spellCheck: false,
             autoComplete: 'off',
             onChange: username.onChange,
@@ -89,12 +89,12 @@ export function createSettingsGeneralTab(): SettingsTab {
         rank: 40,
         node: controls.row(
           'autoPopover',
-          settingsCopy('autoPopoverTitle', 'Open popovers on hover'),
-          settingsCopy('autoPopoverDesc', 'Which popovers open on hover: the account popover alone, or also the permission, model, session-stats and home-page pickers.'),
+          copy('autoPopoverTitle'),
+          copy('autoPopoverDesc'),
           controls.segment(autoPopoverOptions, prefs.autoPopover, value => { write({ autoPopover: value }) }),
         ),
       },
     ]
   }
-  return { id: 'general', label: () => settingsCopy('tabGeneral', 'General'), rows }
+  return { id: 'general', label: () => copy('tabGeneral'), rows }
 }

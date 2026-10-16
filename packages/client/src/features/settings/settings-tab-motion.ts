@@ -2,13 +2,14 @@ import * as React from 'react'
 import { CARET_MOTION_OFF, CARET_MOTION_TYPING, CHAT_REVEAL_OFF, CHAT_REVEAL_ON, MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW, MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, STATUS_MOTION_SWEEP, STATUS_MOTION_WASH } from '../../constants'
 import { prefYielded } from '../../core/feature'
 import { motionReduced } from '../../core/prefs'
-import { copyLabel, hostChatCopy, settingsCopy } from '../../core/i18n'
+import { hostChatCopy } from '../../core/i18n'
 import { motionMs } from '../../shared/motion'
 import { SWEEP_BAND_CLASS, SWEEP_GLYPHS_CLASS } from '../../shared/sweep-band'
 import { waitingWord } from '../../shared/turn-activity'
 import { managedDesc } from './settings-controls'
 import type { Prefs } from '../../constants'
 import type { SettingsTab, SettingsView, SegmentOption } from './settings-controls'
+import { copy } from './copy'
 
 /**
  * The share of the reveal preview's period the sample takes to arrive; the
@@ -82,13 +83,13 @@ export function createSettingsMotionTab(): SettingsTab {
     // because three wordings cannot share the two-word paint loop
     // (settings-cards.css reads data-dsh-claude-precise).
     const preciseWords = [
-      settingsCopy('statusDetailSampleRead', '正在阅读README.md'),
-      settingsCopy('statusDetailSampleCheckout', 'Checking out current tree'),
-      settingsCopy('statusDetailSampleThinking', '正在思考'),
+      copy('statusDetailSampleRead'),
+      copy('statusDetailSampleCheckout'),
+      copy('statusDetailSampleThinking'),
     ]
     const plainWords = [
       waitingWord(props.prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
-      copyLabel('chatWaitTools', 'Running tools…'),
+      copy('chatWaitTools'),
     ]
     const [preciseTurn, setPreciseTurn] = React.useState(0)
     React.useEffect(() => {
@@ -109,8 +110,8 @@ export function createSettingsMotionTab(): SettingsTab {
       ]
       : plainWords
     const options: SegmentOption<Prefs['statusMotion']>[] = [
-      { value: STATUS_MOTION_SWEEP, label: settingsCopy('statusMotionSweep', 'Highlight sweep') },
-      { value: STATUS_MOTION_WASH, label: settingsCopy('statusMotionWash', 'Colour wash') },
+      { value: STATUS_MOTION_SWEEP, label: copy('statusMotionSweep') },
+      { value: STATUS_MOTION_WASH, label: copy('statusMotionWash') },
     ]
     return React.createElement(
       'div',
@@ -164,7 +165,7 @@ export function createSettingsMotionTab(): SettingsTab {
    * it as `--dsh-claude-caret-x` (settings-cards.css).
    */
   function CaretPicker(props: { prefs: Prefs, write: SettingsView['write'], disabled: boolean }) {
-    const sample = settingsCopy('caretSample', 'Hello World!')
+    const sample = copy('caretSample')
     const pieces = Array.from(sample)
     const [at, setAt] = React.useState(0)
     const pickerRef = React.useRef<HTMLDivElement | null>(null)
@@ -196,8 +197,8 @@ export function createSettingsMotionTab(): SettingsTab {
       picker.style.setProperty('--dsh-claude-caret-x', `${edge - line.getBoundingClientRect().left}px`)
     }, [at, sample])
     const options: SegmentOption<Prefs['caretMotion']>[] = [
-      { value: CARET_MOTION_TYPING, label: settingsCopy('caretOn', 'On') },
-      { value: CARET_MOTION_OFF, label: settingsCopy('caretOff', 'Off') },
+      { value: CARET_MOTION_TYPING, label: copy('caretOn') },
+      { value: CARET_MOTION_OFF, label: copy('caretOff') },
     ]
     return React.createElement(
       'div',
@@ -254,7 +255,7 @@ export function createSettingsMotionTab(): SettingsTab {
    * the sample is resolved inside the same share of it whatever its length.
    */
   function RevealPicker(props: { prefs: Prefs, write: SettingsView['write'], disabled: boolean }) {
-    const sample = settingsCopy('chatRevealSample', 'New characters fade in')
+    const sample = copy('chatRevealSample')
     const [tick, setTick] = React.useState(0)
     React.useEffect(() => {
       const count = Array.from(sample).length
@@ -274,8 +275,8 @@ export function createSettingsMotionTab(): SettingsTab {
     }, [sample])
     const shown = Math.min(tick, Array.from(sample).length)
     const options: SegmentOption<Prefs['chatReveal']>[] = [
-      { value: CHAT_REVEAL_ON, label: settingsCopy('chatRevealOn', 'Fade in') },
-      { value: CHAT_REVEAL_OFF, label: settingsCopy('chatRevealOff', 'Appears at once') },
+      { value: CHAT_REVEAL_ON, label: copy('chatRevealOn') },
+      { value: CHAT_REVEAL_OFF, label: copy('chatRevealOff') },
     ]
     return React.createElement(
       'div',
@@ -322,9 +323,9 @@ export function createSettingsMotionTab(): SettingsTab {
     // What the reader watches arrive, in the order the card takes turns: one
     // message asking for a star, one for an issue, one for a pull request.
     const texts = [
-      settingsCopy('messageEnterSampleStar', '帮我给dsh-claude-style点个star'),
-      settingsCopy('messageEnterSampleIssue', '帮我给dsh-claude-style提个issue'),
-      settingsCopy('messageEnterSamplePr', '帮我给dsh-claude-style提个pr'),
+      copy('messageEnterSampleStar'),
+      copy('messageEnterSampleIssue'),
+      copy('messageEnterSamplePr'),
     ]
     const pickerRef = React.useRef<HTMLDivElement | null>(null)
     // The messages standing on the cards, by their own number rather than by
@@ -368,8 +369,8 @@ export function createSettingsMotionTab(): SettingsTab {
       }
     }, [shown])
     const options: SegmentOption<Prefs['messageEnter']>[] = [
-      { value: MESSAGE_ENTER_GROW, label: settingsCopy('messageEnterGrow', 'Grows into its place') },
-      { value: MESSAGE_ENTER_FLIGHT, label: settingsCopy('messageEnterFlight', 'Flies up from the composer') },
+      { value: MESSAGE_ENTER_GROW, label: copy('messageEnterGrow') },
+      { value: MESSAGE_ENTER_FLIGHT, label: copy('messageEnterFlight') },
     ]
     return React.createElement(
       'div',
@@ -416,9 +417,9 @@ export function createSettingsMotionTab(): SettingsTab {
     const prefs = view.prefs
     const write = view.write
     const motionOptions: SegmentOption<Prefs['motion']>[] = [
-      { value: MOTION_SYSTEM, label: settingsCopy('motionSystem', 'Follow the system') },
-      { value: MOTION_REDUCED, label: settingsCopy('motionReduced', 'Reduced') },
-      { value: MOTION_FULL, label: settingsCopy('motionFull', 'Always') },
+      { value: MOTION_SYSTEM, label: copy('motionSystem') },
+      { value: MOTION_REDUCED, label: copy('motionReduced') },
+      { value: MOTION_FULL, label: copy('motionFull') },
     ]
     const caretYielded = prefYielded('caretMotion')
     const revealYielded = prefYielded('chatReveal')
@@ -429,8 +430,8 @@ export function createSettingsMotionTab(): SettingsTab {
         rank: 5,
         node: view.controls.row(
           'motion',
-          settingsCopy('motionTitle', 'Animation'),
-          settingsCopy('motionDesc', 'Adjust the animation as you need: animations put rendering pressure on the device.'),
+          copy('motionTitle'),
+          copy('motionDesc'),
           view.controls.segment(motionOptions, prefs.motion, value => { write({ motion: value }) }),
         ),
       },
@@ -441,7 +442,7 @@ export function createSettingsMotionTab(): SettingsTab {
         rank: 16,
         node: view.controls.row(
           'statusDetail',
-          settingsCopy('statusDetailTitle', 'Precise status line'),
+          copy('statusDetailTitle'),
           null,
           view.controls.toggle(prefs.statusDetail, value => { write({ statusDetail: value }) }),
           // It belongs to the switch above it: no hairline between the two.
@@ -465,7 +466,7 @@ export function createSettingsMotionTab(): SettingsTab {
         rank: 20,
         node: view.controls.row(
           'caretMotion',
-          settingsCopy('caretTitle', 'Composer caret motion'),
+          copy('caretTitle'),
           // The preview cards are the description; only a yielded control still needs a line (D49).
           caretYielded ? managedDesc('', true) : null,
           React.createElement(CaretPicker, { prefs, write, disabled: caretYielded }),
@@ -476,7 +477,7 @@ export function createSettingsMotionTab(): SettingsTab {
         rank: 40,
         node: view.controls.row(
           'chatReveal',
-          settingsCopy('chatRevealTitle', 'New-text fade'),
+          copy('chatRevealTitle'),
           // The preview cards are the description; only a yielded control still needs a line (D49).
           revealYielded ? managedDesc('', true) : null,
           React.createElement(RevealPicker, { prefs, write, disabled: revealYielded }),
@@ -497,5 +498,5 @@ export function createSettingsMotionTab(): SettingsTab {
       },
     ]
   }
-  return { id: 'motion', label: () => settingsCopy('tabMotion', 'Motion'), rows }
+  return { id: 'motion', label: () => copy('tabMotion'), rows }
 }

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_OFF } from '../../constants'
-import { settingsCopy } from '../../core/i18n'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 import type { Prefs } from '../../constants'
+import { copy } from './copy'
 
 /**
  * The settings page's Composer tab: the composer restyle's scope, the model
@@ -17,8 +17,8 @@ import type { Prefs } from '../../constants'
 export function createSettingsComposerTab(): SettingsTab {
   /** What the quick-provider trigger reads: how many, or nothing chosen. */
   function quickSummary(chosen: string[]) {
-    if (chosen.length === 0) return settingsCopy('quickNone', 'None')
-    return settingsCopy('quickCount', '{count} providers', { count: chosen.length })
+    if (chosen.length === 0) return copy('quickNone')
+    return copy('quickCount', { count: chosen.length })
   }
 
   function rows(view: SettingsView) {
@@ -26,10 +26,10 @@ export function createSettingsComposerTab(): SettingsTab {
     const write = view.write
     const controls = view.controls
     const scopeOptions: SegmentOption<Prefs['composerScope']>[] = [
-      { value: COMPOSER_SCOPE_OFF, label: settingsCopy('scopeOff', 'Off') },
-      { value: COMPOSER_SCOPE_HERO, label: settingsCopy('scopeHero', 'Home only') },
-      { value: COMPOSER_SCOPE_CONVERSATION, label: settingsCopy('scopeConversation', 'Conversation only') },
-      { value: COMPOSER_SCOPE_ALL, label: settingsCopy('scopeAll', 'All') },
+      { value: COMPOSER_SCOPE_OFF, label: copy('scopeOff') },
+      { value: COMPOSER_SCOPE_HERO, label: copy('scopeHero') },
+      { value: COMPOSER_SCOPE_CONVERSATION, label: copy('scopeConversation') },
+      { value: COMPOSER_SCOPE_ALL, label: copy('scopeAll') },
     ]
     const pickerOn = prefs.modelPicker && prefs.composerScope !== COMPOSER_SCOPE_OFF
     const quickTrigger = view.quickTrigger
@@ -38,8 +38,8 @@ export function createSettingsComposerTab(): SettingsTab {
         rank: 10,
         node: controls.row(
           'composerScope',
-          settingsCopy('composerTitle', 'Composer restyle'),
-          settingsCopy('composerDesc', 'Which input area the skin restyles: the new-conversation page, the conversation, or both. Off restores the host\'s composer.'),
+          copy('composerTitle'),
+          copy('composerDesc'),
           controls.segment(scopeOptions, prefs.composerScope, value => { write({ composerScope: value }) }),
         ),
       },
@@ -49,8 +49,8 @@ export function createSettingsComposerTab(): SettingsTab {
         rank: 35,
         node: controls.subRow(
           'modelDescriptions',
-          settingsCopy('modelDescriptionsTitle', 'Model descriptions'),
-          settingsCopy('modelDescriptionsDesc', 'A line under each model in the picker\'s first level saying what it is. Off leaves every row with the model\'s name alone.'),
+          copy('modelDescriptionsTitle'),
+          copy('modelDescriptionsDesc'),
           controls.toggle(prefs.modelDescriptions !== false, value => { write({ modelDescriptions: value }) }, !pickerOn),
           pickerOn,
         ),
@@ -59,8 +59,8 @@ export function createSettingsComposerTab(): SettingsTab {
         rank: 40,
         node: controls.subRow(
           'quickProviders',
-          settingsCopy('quickTitle', 'Quick providers'),
-          settingsCopy('quickDesc', 'Picked providers follow the official service in the picker\'s first level; one removed from the catalog stays marked "Removed" until unchecked.'),
+          copy('quickTitle'),
+          copy('quickDesc'),
           React.createElement('button', {
             type: 'button',
             ref: quickTrigger,
@@ -84,13 +84,13 @@ export function createSettingsComposerTab(): SettingsTab {
         rank: 45,
         node: controls.subRow(
           'peakrate',
-          settingsCopy('peakrateTitle', 'Peak rate meter'),
-          settingsCopy('peakrateDesc', 'Marks every row of the model menu with the peak, off-peak or promotional rate in force right now, and how long it lasts. Off leaves the rows bare.'),
+          copy('peakrateTitle'),
+          copy('peakrateDesc'),
           controls.toggle(prefs.peakrate !== false, value => { write({ peakrate: value }) }, !pickerOn),
           pickerOn,
         ),
       },
     ]
   }
-  return { id: 'composer', label: () => settingsCopy('tabComposer', 'Composer'), rows }
+  return { id: 'composer', label: () => copy('tabComposer'), rows }
 }

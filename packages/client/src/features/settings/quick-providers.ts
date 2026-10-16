@@ -1,5 +1,4 @@
 import { MODEL_OFFICIAL_GROUP } from '../model/copy-fallbacks'
-import { settingsCopy } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem, closeOtherPopovers, positionAnchoredPopover, registerPopover, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
@@ -8,6 +7,7 @@ import type { CloseReason, FeatureHandle } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './quick-providers.manifest'
 import type { CatalogProvider } from '../model/catalog'
+import { copy } from './copy'
 
 /** Writes the chosen provider ids back to the preferences. */
 type QuickProvidersWrite = (next: string[]) => void
@@ -72,7 +72,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     row.setAttribute('aria-checked', chosen ? 'true' : 'false')
     built.text.textContent = provider.name
     // badge and check were both asked for above.
-    built.badge!.textContent = stale ? settingsCopy('quickRemoved', 'Removed') : String(provider.count)
+    built.badge!.textContent = stale ? copy('quickRemoved') : String(provider.count)
     built.check!.innerHTML = chosen ? POPOVER_CHECK_SVG : ''
     row.addEventListener('click', e => {
       e.stopPropagation()
@@ -90,7 +90,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (cardBody === null) return
     while (cardBody.firstChild) cardBody.removeChild(cardBody.firstChild)
     if (providers.length === 0) {
-      cardBody.appendChild(buildElement('div', 'dsh-claude-popover-status', settingsCopy('quickLoading', 'Loading providers…')))
+      cardBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('quickLoading')))
       return
     }
     const chosen = readPrefs().quickProviders

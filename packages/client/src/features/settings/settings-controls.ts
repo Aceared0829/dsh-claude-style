@@ -7,6 +7,7 @@ import { createSlidingPill } from '../../shared/sliding-pill'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
 import type { QuickProvidersHandle } from './quick-providers'
+import { copy } from './copy'
 
 /**
  * The settings page's controls: the segmented control, the switch, the row
@@ -109,7 +110,7 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
         yielded || unmet,
       )
     const text = row.desc === undefined ? '' : settingsCopy(row.desc.key, row.desc.fallback)
-    const note = waits ?? (offWindows ? settingsCopy('windowsOnlyNote', 'Takes effect in the Windows desktop window only.') : null)
+    const note = waits ?? (offWindows ? copy('windowsOnlyNote') : null)
     // A yielded row says who manages it even when it carries no description of
     // its own: the switch rows over the preview cards have none.
     const description = yielded
@@ -130,7 +131,7 @@ function switchRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
 
 /** A row's description, with the line naming the plugin that manages it while one does. */
 export function managedDesc(text: string, managed: boolean): React.ReactNode {
-  return noteDesc(text, managed ? settingsCopy('chatUxManaged', 'Managed by dsh-chat-ux') : null)
+  return noteDesc(text, managed ? copy('chatUxManaged') : null)
 }
 
 /**
