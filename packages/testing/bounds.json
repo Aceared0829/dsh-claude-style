@@ -20,6 +20,21 @@
       "name": "longSessionGrowthFloorMs",
       "value": 120,
       "reason": "The short round can finish without one long task and with a p95 frame near the frame budget, so both time ratios are compared against a floor in milliseconds as well as the factor; without it the comparison divides by a number too small to mean anything."
+    },
+    {
+      "name": "longSessionWorstFrameMs",
+      "value": 250,
+      "reason": "The worst frame a long session may take over the measured turn: about fifteen 60 Hz frames. A frame that costs more than this is a stall the reader would see, and the reading is a wall clock between animation frames on a headless runner, so it sits far above one frame on purpose."
+    },
+    {
+      "name": "longSessionLongTaskBudgetMs",
+      "value": 3000,
+      "reason": "All long tasks together over the measured turn. The turn streams a long scripted answer, so some long tasks are the host rendering it; the budget is what the skin's own passes may add on top before the turn counts as blocked."
+    },
+    {
+      "name": "laneFollowMaxGapPx",
+      "value": 220,
+      "reason": "How far behind the tail the scroller may lag while the reader follows it. The gap opens only while content arrives faster than the glide closes it — the lane's long script measures 151px at its fastest burst — so the bound is a third of that scenario's 600px viewport: a follow that stopped working leaves hundreds of pixels more, and a glide that stutters stays inside it."
     }
   ]
 }

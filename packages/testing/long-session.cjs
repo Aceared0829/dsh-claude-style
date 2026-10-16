@@ -20,9 +20,8 @@
  * scenario).
  */
 'use strict'
-const fs = require('node:fs')
-const path = require('node:path')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
+const { bound } = require('./bounds.cjs')
 
 /**
  * How many turns the transcript is grown by before the measured one. The
@@ -35,23 +34,18 @@ const FILL_TURNS = Number(process.env.DSH_LONG_SESSION_TURNS ?? 8)
 const SHORT_TURNS = 2
 /** The pause between the scripted answer's pieces: fast enough for eight fill turns, slow enough to stream. */
 const STREAM_DELAY_MS = 60
-/** A frame in a long session stays under this: about fifteen 60 Hz frames. */
-const WORST_FRAME_MS = 250
-/** Long tasks together stay under this over the measured turn. */
-const LONG_TASK_BUDGET_MS = 3000
+/** A frame in a long session stays under this; the value and its reason are in packages/testing/bounds.json. */
+const WORST_FRAME_MS = bound('longSessionWorstFrameMs')
+/** Long tasks together stay under this over the measured turn; the value and its reason are in packages/testing/bounds.json. */
+const LONG_TASK_BUDGET_MS = bound('longSessionLongTaskBudgetMs')
 /**
  * The two lengths of the same turn as one ratio, and the growth the longer one
  * may cost: its own page is about four times the shorter one's, so a cost that
  * follows the page's size travels with that factor, and one that follows its
  * square (a scan per row, a document query per element) lands near sixteen and
- * trips. The slack covers what a shared runner adds between two rounds.
+ * trips. The slack covers what a shared runner adds between two rounds. Every
+ * value and its reason are in packages/testing/bounds.json.
  */
-const BOUNDS = JSON.parse(fs.readFileSync(path.join(__dirname, 'bounds.json'), 'utf8'))
-const bound = (name) => {
-  const entry = BOUNDS.bounds.find((item) => item.name === name)
-  if (entry === undefined) throw new Error(`bounds.json has no bound named ${name}`)
-  return entry.value
-}
 const GROWTH_RATIO = bound('longSessionGrowthRatio')
 const GROWTH_SLACK = bound('longSessionGrowthSlack')
 const QUERY_SLACK = bound('longSessionQuerySlack')

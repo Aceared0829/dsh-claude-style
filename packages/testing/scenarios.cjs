@@ -35,15 +35,13 @@ const { customBrandScenario } = require('./custom-brand.cjs')
 const { dsBotScenario } = require('./ds-bot.cjs')
 const { CANVAS } = require('./shoot.cjs')
 const { sanitizePage } = require('../../scripts/shared/privacy.cjs')
+const { bound } = require('./bounds.cjs')
 
 /**
- * How far behind the tail the scroller may lag while the reader follows it. The
- * gap opens only while content arrives faster than the glide closes it — the
- * lane's long script measures 151px at its fastest burst — so the bound is a
- * third of the scenario's 600px viewport: a follow that stopped working leaves
- * hundreds of pixels more, and a glide that stutters stays inside it.
+ * How far behind the tail the scroller may lag while the reader follows it: the
+ * value and the reason it holds it are in packages/testing/bounds.json.
  */
-const MAX_FOLLOW_GAP_PX = 220
+const MAX_FOLLOW_GAP_PX = bound('laneFollowMaxGapPx')
 
 /**
  * Capture the page in both palettes and prove the capture is fit to keep: the
