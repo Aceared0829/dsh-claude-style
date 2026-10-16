@@ -5,7 +5,6 @@ import * as reactDom from 'react-dom/client'
 import { SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
 import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, sessionOutline, turnForSeq } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
 import type { ContentHit, SearchFilter, SearchRow } from './sources'
@@ -17,6 +16,8 @@ import { createTurnNavHost } from '../turn-nav/turn-nav-host'
 import type { HostContext } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './search.manifest'
+import { copy } from './copy'
+import type { CopyKey } from './copy'
 
 /**
  * The sidebar's brand row, the host element this feature reads every pass: read
@@ -49,13 +50,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const sources = createSearchSources(ctx, revealHit)
   /** The host-side navigator, which lands a picked hit on its turn */
   const hostTurns = createTurnNavHost(ctx)
-  const FILTERS: { id: SearchFilter, key: string, fallback: string }[] = [
-    { id: 'all', key: 'searchFilterAll', fallback: 'All' },
-    { id: 'session', key: 'searchFilterSessions', fallback: 'Sessions' },
-    { id: 'project', key: 'searchFilterProjects', fallback: 'Projects' },
-    { id: 'plugin', key: 'searchFilterPlugins', fallback: 'Plugins' },
-    { id: 'skill', key: 'searchFilterSkills', fallback: 'Skills' },
-    { id: 'shortcut', key: 'searchFilterShortcuts', fallback: 'Shortcuts' }
+  const FILTERS: { id: SearchFilter, key: CopyKey }[] = [
+    { id: 'all', key: 'searchFilterAll' },
+    { id: 'session', key: 'searchFilterSessions' },
+    { id: 'project', key: 'searchFilterProjects' },
+    { id: 'plugin', key: 'searchFilterPlugins' },
+    { id: 'skill', key: 'searchFilterSkills' },
+    { id: 'shortcut', key: 'searchFilterShortcuts' }
   ]
   /** Pause between the latest keystroke and a content-index request, as the host's sidebar search waits. */
   const CONTENT_DEBOUNCE_MS = 250
@@ -206,7 +207,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (trigger.parentElement !== row) row.insertBefore(trigger, brand.nextSibling)
       rowStamp.mark(row)
     }
-    const label = copyLabel('searchPlaceholder', 'Search')
+    const label = copy('searchPlaceholder')
     const text = trigger.children[1]
     if (text.textContent !== label) text.textContent = label
     setAttributeIfChanged(trigger, 'aria-label', label)
@@ -276,7 +277,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     modalRoot.render(React.createElement(primitives.Modal, {
       open: isOpen || closing,
       onClose: closePalette,
-      title: copyLabel('searchPlaceholder', 'Search'),
+      title: copy('searchPlaceholder'),
       headless: true,
       shortcutModal: 'dsh-claude-search',
       className: 'dsh-claude-search-dialog',
@@ -313,7 +314,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     field.spellcheck = false
     field.setAttribute('autocomplete', 'off')
     field.setAttribute('data-modal-autofocus', '')
-    field.placeholder = copyLabel('searchPlaceholder', 'Search')
+    field.placeholder = copy('searchPlaceholder')
     field.value = query
     field.addEventListener('input', () => {
       if (!isOpen) return
@@ -326,7 +327,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     head.appendChild(field)
     const close = buildElement('button', 'dsh-claude-search-close')
     close.type = 'button'
-    close.setAttribute('aria-label', copyLabel('searchClose', 'Close'))
+    close.setAttribute('aria-label', copy('searchClose'))
     close.innerHTML = ICONS.close
     close.addEventListener('click', closePalette)
     head.appendChild(close)
@@ -336,7 +337,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     filterBar = chips
     chips.setAttribute('role', 'radiogroup')
     for (let i = 0; i < FILTERS.length; i++) {
-      const chip = buildElement('button', 'dsh-claude-search-filter', copyLabel(FILTERS[i].key, FILTERS[i].fallback))
+      const chip = buildElement('button', 'dsh-claude-search-filter', copy(FILTERS[i].key))
       chip.type = 'button'
       chip.tabIndex = -1
       chip.setAttribute('role', 'radio')
@@ -355,9 +356,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     card.appendChild(listbox)
 
     const foot = buildElement('div', 'dsh-claude-search-foot')
-    foot.appendChild(footHint(copyLabel('searchClose', 'Close'), ['Esc']))
-    foot.appendChild(footHint(copyLabel('searchFilterHint', 'Filters'), ['Tab']))
-    foot.appendChild(footHint(copyLabel('searchOpenHint', 'Open'), ['↵']))
+    foot.appendChild(footHint(copy('searchClose'), ['Esc']))
+    foot.appendChild(footHint(copy('searchFilterHint'), ['Tab']))
+    foot.appendChild(footHint(copy('searchOpenHint'), ['↵']))
     card.appendChild(foot)
     return field
   }
@@ -532,7 +533,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     if (rows.length === 0) {
       const waiting = sources.pending(filter) || (q !== '' && contentQuery !== q && (filter === 'all' || filter === 'session'))
-      list.appendChild(buildElement('div', 'dsh-claude-search-status', waiting ? copyLabel('searchLoading', 'Searching…') : copyLabel('searchEmpty', 'No results')))
+      list.appendChild(buildElement('div', 'dsh-claude-search-status', waiting ? copy('searchLoading') : copy('searchEmpty')))
     }
     if (active >= rows.length) active = Math.max(0, rows.length - 1)
     paintActive(true)

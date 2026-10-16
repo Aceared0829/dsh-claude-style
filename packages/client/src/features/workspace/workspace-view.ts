@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SESSION_DELETE_ROUTE } from '../../constants'
-import { copyLabel } from '../../core/i18n'
 import { findSidebarRoot } from '../../core/host'
 import { observeMatches } from '../../core/bus'
 import type { MatchList } from '../../core/bus'
@@ -15,6 +14,8 @@ import type { HostContext, HostValue } from '../../core/host'
 import type { HostSessionsService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './workspace-view.manifest'
+import { copy } from './copy'
+import type { CopyKey } from './copy'
 
 /**
  * The sidebar's workspace section, re-cut as a two-state view.
@@ -53,9 +54,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const viewStamp = createStamp('data-dsh-claude-ws-view')
   const labelStamp = createStamp('data-dsh-claude-ws-label')
   const treeStamp = createStamp('data-dsh-claude-ws-tree')
-  const SEGMENTS = [
-    { id: 'active', key: 'archiveActive', fallback: 'Active' },
-    { id: 'archived', key: 'archiveArchived', fallback: 'Archived' }
+  const SEGMENTS: { id: string, key: CopyKey }[] = [
+    { id: 'active', key: 'archiveActive' },
+    { id: 'archived', key: 'archiveArchived' }
   ]
   let view = 'active'
   let control: HTMLElement | null = null
@@ -150,11 +151,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function relativeTime(at: unknown) {
     if (typeof at !== 'number' || !isFinite(at)) return ''
     const minutes = Math.floor((Date.now() - at) / 60000)
-    if (minutes < 1) return copyLabel('archiveJustNow', 'Just now')
-    if (minutes < 60) return copyLabel('archiveMinutes', '{count} min', { count: minutes })
+    if (minutes < 1) return copy('archiveJustNow')
+    if (minutes < 60) return copy('archiveMinutes', { count: minutes })
     const hours = Math.floor(minutes / 60)
-    if (hours < 24) return copyLabel('archiveHours', '{count} h', { count: hours })
-    return copyLabel('archiveDays', '{count} d', { count: Math.floor(hours / 24) })
+    if (hours < 24) return copy('archiveHours', { count: hours })
+    return copy('archiveDays', { count: Math.floor(hours / 24) })
   }
 
   /**
@@ -273,8 +274,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }).catch((reason: { status?: number, message?: string }) => {
       console.warn('dsh-claude-style: session delete rejected:', reason)
       notifyToast(reason?.status === 409
-        ? copyLabel('archiveDeleteOpen', 'The conversation is still held open by this app; restart it, then delete again')
-        : copyLabel('archiveDeleteFailed', 'Delete failed: {detail}', { detail: reason?.message ?? String(reason) }))
+        ? copy('archiveDeleteOpen')
+        : copy('archiveDeleteFailed', { detail: reason?.message ?? String(reason) }))
     })
   }
 
@@ -337,11 +338,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The host's archived rows offer an unarchive action; the skin's list
     // carries the same pair, so leaving the archived view is not the only way
     // back to a conversation.
-    row.appendChild(actionButton('restore', copyLabel('archiveRestore', 'Unarchive conversation'), event => {
+    row.appendChild(actionButton('restore', copy('archiveRestore'), event => {
       event.stopPropagation()
       restoreArchived(item.id)
     }))
-    row.appendChild(actionButton('delete', copyLabel('archiveDelete', 'Delete conversation'), event => {
+    row.appendChild(actionButton('delete', copy('archiveDelete'), event => {
       event.stopPropagation()
       removeArchived(item.id)
     }))
@@ -359,11 +360,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     actionRoots = []
     while (listHost.firstChild) listHost.removeChild(listHost.firstChild)
     if (items === null) {
-      listHost.appendChild(buildElement('div', 'dsh-claude-archive-status', copyLabel('archiveLoading', 'Loading…')))
+      listHost.appendChild(buildElement('div', 'dsh-claude-archive-status', copy('archiveLoading')))
       return
     }
     if (items.length === 0) {
-      listHost.appendChild(buildElement('div', 'dsh-claude-archive-status', copyLabel('archiveEmpty', 'No archived conversations')))
+      listHost.appendChild(buildElement('div', 'dsh-claude-archive-status', copy('archiveEmpty')))
       return
     }
     for (let i = 0; i < items.length; i++) listHost.appendChild(buildArchivedRow(items[i]))
@@ -443,7 +444,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       const id = item.getAttribute('data-view')
       for (let s = 0; s < SEGMENTS.length; s++) {
         if (SEGMENTS[s].id !== id) continue
-        const text = copyLabel(SEGMENTS[s].key, SEGMENTS[s].fallback)
+        const text = copy(SEGMENTS[s].key)
         if (item.textContent !== text) item.textContent = text
       }
       const on = id === view

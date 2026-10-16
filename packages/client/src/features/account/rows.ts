@@ -1,8 +1,8 @@
 import { HDSL_SKIN_ROUTE } from '../../constants'
 import { resolveAvatarUrl, resolveDisplayName } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
 import { buildElement } from '../../shared/dom'
 import type { HostAccountMenu } from './host-menu'
+import { copy } from './copy'
 
 /**
  * The account rows: the header with the hold-screen easter egg, the
@@ -215,7 +215,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
       const label = (hostRow.textContent || '').trim()
       if (label) return label
     }
-    return copyLabel('accountNameFallback', 'User')
+    return copy('accountNameFallback')
   }
 
   /**
@@ -306,7 +306,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
    */
   function syncSettingsItem(settingsItem: Element | null) {
     if (settingsItem === null) return
-    let labelText = copyLabel('accountSettingsRow', 'Settings')
+    let labelText = copy('accountSettingsRow')
     const trigger = hostMenu.settingsTrigger()
     if (trigger) {
       let txt = (trigger.textContent || '').trim()

@@ -1,9 +1,9 @@
 import { SESSION_SEARCH_ROUTE } from '../../constants'
 import { currentSessionId } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
 import type { HostContext, HostValue } from '../../core/host'
 import type { ContentHit, SearchAnswer } from '@dsh-claude-style/contracts/usage'
 import type { HostBundleListAnswer, HostConversationInput, HostConversationService, HostInventoryAnswer, HostPluginBundle, HostSessionBinding, HostSessionSummary, HostShortcutRow, HostShortcutsService, HostSkill, HostSkillListAnswer, HostSlotsService, HostSlotStore, HostWorkspaceListSnapshot } from '@dsh-claude-style/contracts/services'
+import { copy } from './copy'
 
 /** The kinds of thing the palette lists, and the filter that shows them all. */
 export type SearchKind = 'session' | 'project' | 'plugin' | 'skill' | 'shortcut' | 'action'
@@ -376,7 +376,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
       kind: 'action',
       id: 'action:new-session',
       icon: 'newSession',
-      title: copyLabel('searchActionNewSession', 'New session'),
+      title: copy('searchActionNewSession'),
       keys: commandKeys('session.new'),
       run() { service('uiWorkspace').startSession() },
     }]
@@ -385,7 +385,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
         kind: 'action',
         id: 'action:plugins',
         icon: 'plugin',
-        title: copyLabel('searchActionPlugins', 'Plugins'),
+        title: copy('searchActionPlugins'),
         run() { service('layout').selectPanel('plugins') },
       })
     }
@@ -394,7 +394,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
         kind: 'action',
         id: 'action:settings',
         icon: 'settings',
-        title: copyLabel('searchActionSettings', 'Settings'),
+        title: copy('searchActionSettings'),
         keys: commandKeys('settings.open'),
         run() { slotStore('sidebar.settings')?.actions.open() },
       })
@@ -404,7 +404,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
         kind: 'action',
         id: 'action:shortcuts',
         icon: 'shortcut',
-        title: copyLabel('searchActionShortcuts', 'Keyboard shortcuts'),
+        title: copy('searchActionShortcuts'),
         keys: commandKeys('shortcuts.open'),
         run() { openShortcutReference('') },
       })
@@ -484,19 +484,19 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
     }
     const limit = (kind: SearchKind) => filter === 'all' ? SECTION_LIMIT[kind] : KIND_LIMIT
     if (query === '' && filter === 'all') {
-      push('session', copyLabel('searchRecents', 'Recents'), recentSessions())
-      push('action', copyLabel('searchActions', 'Actions'), actionRows())
+      push('session', copy('searchRecents'), recentSessions())
+      push('action', copy('searchActions'), actionRows())
       return out
     }
     if (filter === 'all' || filter === 'session') {
       const rows = query === '' ? openableSessions().map(entry => sessionRow(entry)) : matchSessions(query, contentHits)
-      push('session', copyLabel('searchSessions', 'Sessions'), rows.slice(0, limit('session')))
+      push('session', copy('searchSessions'), rows.slice(0, limit('session')))
     }
-    if (filter === 'all' || filter === 'project') push('project', copyLabel('searchProjects', 'Projects'), ranked(projectRows(), query).slice(0, limit('project')))
-    if (filter === 'all' || filter === 'plugin') push('plugin', copyLabel('searchPlugins', 'Plugins'), ranked(pluginRows(), query).slice(0, limit('plugin')))
-    if (filter === 'all' || filter === 'skill') push('skill', copyLabel('searchSkills', 'Skills'), ranked(skillRows(), query).slice(0, limit('skill')))
-    if (filter === 'all' || filter === 'shortcut') push('shortcut', copyLabel('searchShortcuts', 'Shortcuts'), ranked(shortcutRows(), query).slice(0, limit('shortcut')))
-    if (filter === 'all') push('action', copyLabel('searchActions', 'Actions'), ranked(actionRows(), query))
+    if (filter === 'all' || filter === 'project') push('project', copy('searchProjects'), ranked(projectRows(), query).slice(0, limit('project')))
+    if (filter === 'all' || filter === 'plugin') push('plugin', copy('searchPlugins'), ranked(pluginRows(), query).slice(0, limit('plugin')))
+    if (filter === 'all' || filter === 'skill') push('skill', copy('searchSkills'), ranked(skillRows(), query).slice(0, limit('skill')))
+    if (filter === 'all' || filter === 'shortcut') push('shortcut', copy('searchShortcuts'), ranked(shortcutRows(), query).slice(0, limit('shortcut')))
+    if (filter === 'all') push('action', copy('searchActions'), ranked(actionRows(), query))
     return out
   }
 

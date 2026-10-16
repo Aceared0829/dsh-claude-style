@@ -1,0 +1,7 @@
+{
+  "ratePeak": { "zh": "峰价", "en": "Peak rate" },
+  "rateOffPeak": { "zh": "谷价", "en": "Off-peak rate" },
+  "rateCampaign": { "zh": "活动价", "en": "Promotion" },
+  "rateNow": { "zh": "此刻 {rate}", "en": "Now {rate}" },
+  "rateNext": { "zh": "{countdown} 后转为 {next}", "en": "in {countdown} → {next}" }
+}

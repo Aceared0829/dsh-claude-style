@@ -1,6 +1,6 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
 import { MODEL_EMPTY_LABEL, MODEL_FALLBACK_LABEL, MODEL_LOADING_LABEL, MODEL_MORE_LABEL, MODEL_OFFICIAL_GROUP, MODEL_TRIGGER_LABEL } from './copy-fallbacks'
-import { activeLocale, copyLabel } from '../../core/i18n'
+import { activeLocale } from '../../core/i18n'
 import { loadModelCopy } from '../../core/model-copy'
 import { readPrefs } from '../../core/prefs'
 import { cacheFirstMatch } from '../../core/host'
@@ -13,6 +13,7 @@ import type { FeatureHandle } from '../../core/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './model-picker.manifest'
 import type { CatalogProvider, ModelCatalog } from './catalog'
+import { copy } from './copy'
 
 /** What the effort picker and the settings page read off the model picker (ui.model). */
 export interface ModelHandle extends FeatureHandle {
@@ -263,7 +264,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const divider = buildElement('div', 'dsh-claude-model-divider')
     divider.setAttribute('role', 'separator')
     modelFooter.appendChild(divider)
-    modelFooter.appendChild(modelRows.buildModelCell(copyLabel('moreLabel', MODEL_MORE_LABEL)))
+    modelFooter.appendChild(modelRows.buildModelCell(copy('moreLabel')))
   }
 
   /**
@@ -303,12 +304,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // nothing to show yet falls back to the loading line.
     const seated = groups.length > 0 && current !== null
     if (!seated && (status === 'idle' || status === 'loading' || status === 'selecting')) {
-      modelBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copyLabel('loading', MODEL_LOADING_LABEL)))
+      modelBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('loading')))
       layoutModelFooter(false)
     } else {
       const sections = modelRows.levelOneSections(groups)
       if (sections.length === 0) {
-        modelBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copyLabel('empty', MODEL_EMPTY_LABEL)))
+        modelBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('empty')))
       } else {
         for (let s = 0; s < sections.length; s++) {
           const section = sections[s]
@@ -400,7 +401,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       modelSubBody.appendChild(groupSection)
     }
     if (modelSubBody.firstChild === null) {
-        modelSubBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copyLabel('empty', MODEL_EMPTY_LABEL)))
+        modelSubBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('empty')))
     }
   }
 
@@ -569,7 +570,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const snap = modelCatalog.snapshot()
     const current = modelCatalog.current(snap)
     const groupsNow = (snap && snap.groups) || []
-    const label = current ? current.model.name : copyLabel('fallbackLabel', MODEL_FALLBACK_LABEL)
+    const label = current ? current.model.name : copy('fallbackLabel')
     const labelEl = modelBtn.querySelector('.dsh-claude-model-btn-label')
     if (labelEl) {
       // Same-value guards: syncModelControl runs on every scheduler pass,
@@ -592,7 +593,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // an older generation is swept rather than reused.
     const staleEffortEl = modelBtn.querySelector('.dsh-claude-model-btn-effort')
     if (staleEffortEl !== null) staleEffortEl.remove()
-    const triggerAria = copyLabel('triggerLabel', MODEL_TRIGGER_LABEL, { model: label })
+    const triggerAria = copy('triggerLabel', { model: label })
     setAttributeIfChanged(modelBtn, 'aria-label', triggerAria)
     modelBtn.disabled = false
 

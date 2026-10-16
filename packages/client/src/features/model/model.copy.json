@@ -1,0 +1,7 @@
+{
+  "fallbackLabel": { "zh": "选择模型", "en": "Select model" },
+  "triggerLabel": { "zh": "选择模型，当前 {model}", "en": "Select model, currently {model}" },
+  "loading": { "zh": "正在加载模型…", "en": "Loading models…" },
+  "empty": { "zh": "没有可用的模型。", "en": "No models available." },
+  "moreLabel": { "zh": "更多模型", "en": "More models" }
+}

@@ -88,7 +88,7 @@ export function createSettingsMotionTab(): SettingsTab {
       copy('statusDetailSampleThinking'),
     ]
     const plainWords = [
-      waitingWord(props.prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving')),
+      waitingWord(props.prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving'), copy('chatWaitThinking')),
       copy('chatWaitTools'),
     ]
     const [preciseTurn, setPreciseTurn] = React.useState(0)

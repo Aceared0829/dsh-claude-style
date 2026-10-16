@@ -1,7 +1,7 @@
-import { copyLabel } from '../../core/i18n'
 import { sessionStatsCacheHit, sessionStatsDuration, sessionStatsSpeed, sessionStatsTokens } from './stats-format'
 import type { HostText } from '../../core/host'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import { copy } from './copy'
 
 /**
  * The block's rows and sections: the host's own row rules
@@ -29,7 +29,7 @@ function statsTimeRows(stats: HostSessionStatsProjection, chat: HostText, compac
   if (compact) {
     const totalMs = (stats.llmMs > 0 ? stats.llmMs : 0) + (stats.toolMs > 0 ? stats.toolMs : 0)
     if (totalMs > 0) {
-      rows.push({ label: copyLabel('contextTotalTime', 'Total time'), value: sessionStatsDuration(totalMs, chat) })
+      rows.push({ label: copy('contextTotalTime'), value: sessionStatsDuration(totalMs, chat) })
     }
   } else {
     if (stats.llmMs > 0) rows.push({ label: chat('stats.dialog.llmTime'), value: sessionStatsDuration(stats.llmMs, chat) })

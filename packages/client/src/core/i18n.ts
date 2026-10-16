@@ -2,7 +2,6 @@ import { MODEL_COPY_FALLBACK_LOCALE } from '../features/model/copy-fallbacks'
 import { hostCtx } from './host'
 import type { HostContext, HostText } from './host'
 import { modelCopy } from './model-copy'
-import { readPrefs } from './prefs'
 
 /** Values for a copy string's `{name}` slots. */
 export type CopyParams = Record<string, string | number>
@@ -94,38 +93,14 @@ export function copyIn(entries: CopyEntries, key: string, locale: string, params
 }
 
 /**
- * One picker label: the document's localized string, else the neutral
- * English constant the bundle carries. `{name}` placeholders are filled
- * from `params`, so a label with a slot stays translatable.
- */
-export function copyLabel(key: string, fallback: string, params?: CopyParams) {
-  const text = modelCopy === null || !modelCopy.ui ? '' : localized(modelCopy.ui[key])
-  return fillTemplate(text || fallback, params)
-}
-
-/**
- * One settings-page string. The settings copy rides the same document as
- * the picker copy, so the page follows the shell language too — and the
- * English constants stay as the fallback for a failed fetch.
+ * One settings-page string out of the copy document. What is left in the
+ * document's `settings` block is the copy a feature manifest's settings row
+ * names (`title`, `desc`, `choices`, `requires.note`): those lines travel with
+ * the manifest as data, so the page reads them here until the row and its copy
+ * live in the feature that owns them (D72). Every other interface string is the
+ * feature's own copy (`featureCopy`).
  */
 export function settingsCopy(key: string, fallback: string, params?: CopyParams) {
   const text = modelCopy === null || !modelCopy.settings ? '' : localized(modelCopy.settings[key])
-  return fillTemplate(text || fallback, params)
-}
-
-/**
- * One account-hold easter-egg string, in the language the `banLocale`
- * preference names — NOT the shell's language. The page reproduces a real
- * Claude screen, so it is read in the language Claude wrote it in whatever
- * the rest of the UI is set to; `localized` is bypassed on purpose rather
- * than fed a fake locale, so a missing translation still falls through the
- * document's own fallback locale.
- */
-export function banCopy(key: string, fallback: string, params?: CopyParams) {
-  const pair = modelCopy === null || !modelCopy.ban ? null : modelCopy.ban[key]
-  const want = readPrefs().banLocale
-  const wanted = pair && typeof pair === 'object' ? pair[want] : undefined
-  let text = typeof wanted === 'string' ? wanted : ''
-  if (!text) text = localized(pair)
   return fillTemplate(text || fallback, params)
 }

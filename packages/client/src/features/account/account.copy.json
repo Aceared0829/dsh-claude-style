@@ -1,0 +1,5 @@
+{
+  "accountNameFallback": { "zh": "用户", "en": "User" },
+  "accountSettingsRow": { "zh": "设置", "en": "Settings" },
+  "footerPluginRow": { "zh": "插件", "en": "Plugin" }
+}

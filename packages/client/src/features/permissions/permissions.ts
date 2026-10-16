@@ -2,7 +2,7 @@ import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
 import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
 import { currentPreset, currentSession, findAccessTrigger } from '../../core/host'
-import { activeLocale, copyLabel } from '../../core/i18n'
+import { activeLocale } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { buildElement, closestFrom, setAttributeIfChanged } from '../../shared/dom'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
@@ -12,6 +12,7 @@ import type { HostContext, HostFiber } from '../../core/host'
 import type { HostPermissionCatalogAnswer, HostPermissionOption } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './permissions.manifest'
+import { copy } from './copy'
 
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let segments: HTMLElement | null = null
@@ -266,7 +267,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function buildSegments(onPick: (preset: string | null) => void, specs: { label: string, preset: string }[]) {
     const group = buildElement('div', SEGMENTS_CLASS)
     group.setAttribute('role', 'radiogroup')
-    group.setAttribute('aria-label', copyLabel('permissionGroupLabel', 'Permission'))
+    group.setAttribute('aria-label', copy('permissionGroupLabel'))
     group.setAttribute('data-composer-segments', '')
     for (let i = 0; i < specs.length; i++) {
       const spec = specs[i]

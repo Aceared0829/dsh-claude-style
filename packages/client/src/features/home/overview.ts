@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { copyLabel } from '../../core/i18n'
 import { formatHomeCount, homeShortDate, homeShortDateFormat } from './data'
 import type { HeatCell, HomePanel } from './data'
 import { formatCompactTokens } from '../../shared/format'
+import { copy } from './copy'
 
 /**
  * The panel's Overview tab: the six stat cells, the heat grid, and Claude
@@ -35,7 +35,7 @@ export function createHomeOverview() {
    * so every cell reads the same figure the cell's own heat is bucketed from.
    */
   function heatTip(format: Intl.DateTimeFormat, cell: HeatCell) {
-    return copyLabel('homeHeatTipTokens', '{date} — {tokens} tokens', {
+    return copy('homeHeatTipTokens', {
       date: homeShortDate(format, cell.date),
       tokens: formatCompactTokens(cell.tokens),
     })
@@ -51,12 +51,12 @@ export function createHomeOverview() {
       React.createElement(
         'div',
         { className: 'dsh-claude-home-stats' },
-        statCell('sessions', copyLabel('homeSessions', 'Sessions'), data.sessions === null ? '—' : formatHomeCount(data.sessions), skeleton),
-        statCell('calls', copyLabel('homeCalls', 'Messages'), data.calls === null ? '—' : formatHomeCount(data.calls), skeleton),
-        statCell('tokens', copyLabel('homeTokens', 'Total tokens'), formatCompactTokens(data.tokens), skeleton),
-        statCell('days', copyLabel('homeActiveDays', 'Active days'), data.activeDays === null ? '—' : formatHomeCount(data.activeDays), skeleton),
-        statCell('peak', copyLabel('homePeakHour', 'Peak hour'), data.peakHour === null ? '—' : data.peakHour, skeleton),
-        statCell('model', copyLabel('homeTopModel', 'Favorite model'), data.model === null ? '—' : data.model, skeleton),
+        statCell('sessions', copy('homeSessions'), data.sessions === null ? '—' : formatHomeCount(data.sessions), skeleton),
+        statCell('calls', copy('homeCalls'), data.calls === null ? '—' : formatHomeCount(data.calls), skeleton),
+        statCell('tokens', copy('homeTokens'), formatCompactTokens(data.tokens), skeleton),
+        statCell('days', copy('homeActiveDays'), data.activeDays === null ? '—' : formatHomeCount(data.activeDays), skeleton),
+        statCell('peak', copy('homePeakHour'), data.peakHour === null ? '—' : data.peakHour, skeleton),
+        statCell('model', copy('homeTopModel'), data.model === null ? '—' : data.model, skeleton),
       ),
       React.createElement(
         'div',

@@ -4,7 +4,6 @@ import { PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } from '../../constants'
 import type { Prefs } from '../../constants'
 import { COMPOSER_STACK, cacheFirstMatch } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
 import { HOME_RANGES, createHomeUsage, homePanelData } from './data'
@@ -15,6 +14,7 @@ import { buildElement } from '../../shared/dom'
 import type { HostContext, HostFiber } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './home-layout.manifest'
+import { copy } from './copy'
 
 /**
  * The home page's second layout, and the usage panel that fills it.
@@ -190,8 +190,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         React.createElement(
           'div',
           { className: 'dsh-claude-home-tabs' },
-          tabButton('overview', copyLabel('homeTabOverview', 'Overview')),
-          tabButton('models', copyLabel('homeTabModels', 'Models')),
+          tabButton('overview', copy('homeTabOverview')),
+          tabButton('models', copy('homeTabModels')),
         ),
         React.createElement(
           'div',
@@ -206,7 +206,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
               'data-active': range === item.id ? '' : undefined,
               'aria-pressed': range === item.id,
               onClick() { setRange(item.id) },
-            }, copyLabel(item.labelKey, item.fallback))),
+            }, copy(item.labelKey))),
           ),
         ),
       ),

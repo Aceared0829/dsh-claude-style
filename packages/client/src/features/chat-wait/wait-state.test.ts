@@ -29,14 +29,14 @@ test('the newest block says what the model is doing: thinking, drawing up a call
   const thinking = turn(1, 'open', [step('running', ['reasoning'])])
   expect(activityWords(snapshot([thinking]), thinking, true)).toBe(ACTIVITY_THINKING)
   const drawing = turn(1, 'open', [step('running', ['reasoning', 'tool-call'])])
-  expect(activityWords(snapshot([drawing]), drawing, true)?.fallback).toBe('Preparing a tool call…')
+  expect(activityWords(snapshot([drawing]), drawing, true)?.key).toBe('chatWaitToolCall')
   const writing = turn(1, 'open', [step('running', ['reasoning', 'tool-call', 'text'])])
-  expect(activityWords(snapshot([writing]), writing, true)?.fallback).toBe('Writing…')
+  expect(activityWords(snapshot([writing]), writing, true)?.key).toBe('chatWaitWriting')
 })
 
 test('a running tool call is its own state, and one from another turn does not count', () => {
   const tooling = turn(1, 'open', [step('settled', ['reasoning', 'tool-call'])])
-  expect(activityWords(snapshot([tooling], [{ turn: 1 }]), tooling, true)?.fallback).toBe('Running tools…')
+  expect(activityWords(snapshot([tooling], [{ turn: 1 }]), tooling, true)?.key).toBe('chatWaitTools')
   expect(activityWords(snapshot([tooling], [{ turn: 2 }]), tooling, true)).toBeNull()
 })
 
@@ -54,15 +54,15 @@ test('a call that names no file keeps the tool state, and one still arriving nam
   const tooling = turn(1, 'open', [step('settled', ['reasoning', 'tool-call'])])
   const command = { turn: 1, phase: 'start', name: 'pwsh', argsRaw: '{"command":"ls"}' }
   const arriving = { turn: 1, phase: 'preparing', name: 'read', argsRaw: '{"file_path":"app' }
-  expect(activityWords(snapshot([tooling], [command]), tooling, true)?.fallback).toBe('Running tools…')
-  expect(activityWords(snapshot([tooling], [arriving]), tooling, true)?.fallback).toBe('Running tools…')
+  expect(activityWords(snapshot([tooling], [command]), tooling, true)?.key).toBe('chatWaitTools')
+  expect(activityWords(snapshot([tooling], [arriving]), tooling, true)?.key).toBe('chatWaitTools')
 })
 
 test('reasoning that says what it is doing hands the line its own clause', () => {
   const thinking = turn(1, 'open', [step('running', [{ kind: 'reasoning', text: 'Let me look. I am checking the file is true. ' }])])
   const words = activityWords(snapshot([thinking]), thinking, true)
   expect(words?.key).toBeNull()
-  expect(words?.fallback).toBe('Checking the file is true')
+  expect(words?.text).toBe('Checking the file is true')
   const quiet = turn(1, 'open', [step('running', [{ kind: 'reasoning', text: '先看清工作区。' }])])
   expect(activityWords(snapshot([quiet]), quiet, true)).toBe(ACTIVITY_THINKING)
 })

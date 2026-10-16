@@ -5,11 +5,11 @@ import { observeSize, subscribeMutations } from '../../core/bus'
 import { desktopBand } from '../../core/desktop-band'
 import { cacheFirstMatch, findSidebarBrand, findSidebarRoot, findSidebarToggle, findWindowsMenu } from '../../core/host'
 import { requestFrame } from '../../core/frame'
-import { copyLabel } from '../../core/i18n'
 import { onModelCopyLoaded } from '../../core/model-copy'
 import { mountStylesheet } from '../../core/stylesheet'
 import { buildElement, createStamp, setAttributeIfChanged } from '../../shared/dom'
 import { dsBotInstalled, dsBotSurfaceActive, subscribePageOwner } from '../../shared/visual-owner'
+import { copy } from './copy'
 
 /**
  * The Chat / Code switch at the top of the sidebar, the way Claude's desktop
@@ -143,9 +143,9 @@ export function install() {
   }
 
   function writeCopy() {
-    setAttributeIfChanged(root, 'aria-label', copyLabel('surfaceSwitch', 'Interface'))
+    setAttributeIfChanged(root, 'aria-label', copy('surfaceSwitch'))
     for (const { mode, button } of options) {
-      const label = mode === 'chat' ? copyLabel('surfaceChat', 'Chat') : copyLabel('surfaceCode', 'Code')
+      const label = mode === 'chat' ? copy('surfaceChat') : copy('surfaceCode')
       setAttributeIfChanged(button, 'aria-label', label)
       setAttributeIfChanged(button, 'title', label)
     }

@@ -1,6 +1,5 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
 import { MODEL_EFFORT_LABEL } from '../model/copy-fallbacks'
-import { copyLabel } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { createEffortControl } from './control'
 import type { HostContext } from '../../core/host'
@@ -10,6 +9,7 @@ import type manifest from './effort-picker.manifest'
 import type { ModelCatalog } from '../model/catalog'
 import { setAttributeIfChanged } from '../../shared/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { copy } from './copy'
 
 /**
  * The reasoning-effort picker: its own seat trigger and its own card.
@@ -371,7 +371,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // setAttribute queues a record the scheduler's observer sees).
     const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
     if (labelEl !== null && labelEl.textContent !== info.label) labelEl.textContent = info.label
-    const aria = `${copyLabel('effortLabel', MODEL_EFFORT_LABEL)} ${info.label}`
+    const aria = `${copy('effortLabel')} ${info.label}`
     setAttributeIfChanged(effortBtn, 'aria-label', aria)
     if (effortSlider !== null) effortSlider.update()
     applyEffortTrigger()

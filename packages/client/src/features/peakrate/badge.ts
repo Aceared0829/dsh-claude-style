@@ -1,7 +1,8 @@
-import { copyLabel } from '../../core/i18n'
 import { formatCountdown } from './schedule'
 import { buildElement } from '../../shared/dom'
 import type { RatePeriod, RateState } from '@dsh-claude-style/contracts/peakrate'
+import { copy } from './copy'
+import type { CopyKey } from './copy'
 
 /**
  * The rate badge and its wording
@@ -24,16 +25,16 @@ const ICONS: Record<RatePeriod, string> = {
   campaign: '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 2.4l1.6 4 4 1.6-4 1.6L8 13.6l-1.6-4-4-1.6 4-1.6z"/></svg>',
 }
 
-/** The state's own name, and the neutral English constant that stands until the copy document answers. */
-const NAMES: Record<RatePeriod, { key: string, fallback: string }> = {
-  peak: { key: 'ratePeak', fallback: 'Peak rate' },
-  offPeak: { key: 'rateOffPeak', fallback: 'Off-peak rate' },
-  campaign: { key: 'rateCampaign', fallback: 'Promotion' },
+/** The state's own name, as the key it stands under in this feature's copy. */
+const NAMES: Record<RatePeriod, CopyKey> = {
+  peak: 'ratePeak',
+  offPeak: 'rateOffPeak',
+  campaign: 'rateCampaign',
 }
 
 /** One state's name in the shell's language. */
 export function rateName(period: RatePeriod) {
-  return copyLabel(NAMES[period].key, NAMES[period].fallback)
+  return copy(NAMES[period])
 }
 
 /** `峰价 2×`, in one string: the state's name and the multiplier the source prints. */
@@ -47,11 +48,11 @@ function rateText(period: RatePeriod, badge: string) {
  * only what it is.
  */
 export function rateDetail(state: RateState) {
-  const now = copyLabel('rateNow', 'Now {rate}', { rate: rateText(state.period, state.badge) })
+  const now = copy('rateNow', { rate: rateText(state.period, state.badge) })
   const countdown = formatCountdown(state.minutesUntilSwitch)
   if (state.nextPeriod === undefined || countdown === '') return now
   const next = rateText(state.nextPeriod, state.nextBadge ?? '')
-  return `${now} · ${copyLabel('rateNext', 'in {countdown} → {next}', { countdown, next })}`
+  return `${now} · ${copy('rateNext', { countdown, next })}`
 }
 
 /**

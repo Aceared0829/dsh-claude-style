@@ -1,10 +1,10 @@
 import { requestFrame } from '../../core/frame'
 import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_FASTER, MODEL_EFFORT_LABEL, MODEL_EFFORT_NONE, MODEL_EFFORT_SMARTER } from '../model/copy-fallbacks'
-import { copyLabel } from '../../core/i18n'
 import { orderEffortIds } from './ladder'
 import { createEffortMatrix } from './matrix'
 import { buildElement, setAttributeIfChanged } from '../../shared/dom'
 import type { ModelCatalog } from '../model/catalog'
+import { copy } from './copy'
 
 /** One rung of the ladder: the level's id (undefined for the model's own default) and its name. */
 interface EffortStep {
@@ -187,9 +187,9 @@ export function createEffortControl(opts: {
       steps: list,
       index,
       labels: {
-        label: copyLabel('effortLabel', MODEL_EFFORT_LABEL),
-        faster: copyLabel('effortFaster', MODEL_EFFORT_FASTER),
-        smarter: copyLabel('effortSmarter', MODEL_EFFORT_SMARTER),
+        label: copy('effortLabel'),
+        faster: copy('effortFaster'),
+        smarter: copy('effortSmarter'),
         none: MODEL_EFFORT_NONE,
       },
     }

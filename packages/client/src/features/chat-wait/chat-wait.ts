@@ -2,13 +2,13 @@ import { QUIET_ATTR } from '../../constants'
 import { observeMatches } from '../../core/bus'
 import { requestFrame } from '../../core/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '../../core/host'
-import { copyLabel, hostChatCopy, hostChatSeat } from '../../core/i18n'
+import { hostChatCopy, hostChatSeat } from '../../core/i18n'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { buildElement } from '../../shared/dom'
 import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
-import { ACTIVITY_THINKING, activityWords, waitingWord } from '../../shared/turn-activity'
+import { activityWords, waitingWord, THINKING_KEY } from '../../shared/turn-activity'
 import { startWaitLoader, releaseWaitLoader } from './wait-loader'
 import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
@@ -18,6 +18,7 @@ import type { HostChatTarget } from '@dsh-claude-style/contracts/services'
 import type { HostContext, HostText } from '../../core/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-wait.manifest'
+import { copy, copyState } from './copy'
 
 /** One row's line: its box, the parts every pass writes into it, and the turn it speaks for. */
 interface WaitLine {
@@ -241,11 +242,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // host's own under the DeepSeek brand. The thinking state answers no word of
     // its own — that word is the one below — so the clause standing from before
     // holds the line instead of a fallback and a return.
-    const waiting = waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving', ctx))
+    const waiting = waitingWord(prefs.brand, hostChatCopy('chat.deepDiving', 'Deep diving', ctx), copy(THINKING_KEY))
     const own = activity !== null && activity.key === null && activity.aboutCall === undefined
-    const said = activity === null || activity.key === ACTIVITY_THINKING.key
+    const said = activity === null || activity.key === THINKING_KEY
       ? null
-      : activity.key === null ? activity.fallback : copyLabel(activity.key, activity.fallback, activity.params)
+      : activity.key === null ? (activity.text ?? '') : copyState(activity.key, activity.params)
     const pass = wordForPass({
       word: said,
       own,
@@ -284,7 +285,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (overtime) {
       badge.removeAttribute(BADGE_LEAVING_ATTR)
       badge.hidden = false
-      writeText(badge, copyLabel('chatWaitOvertime', 'No response yet'))
+      writeText(badge, copy('chatWaitOvertime'))
       return
     }
     if (badge.hidden || badge.hasAttribute(BADGE_LEAVING_ATTR)) return

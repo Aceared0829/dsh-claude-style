@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { copyLabel } from '../../core/i18n'
 import { HOME_MODEL_ROWS, formatHomeCount, homeShortDate, homeShortDateFormat } from './data'
 import type { HomeModel, HomePanel } from './data'
 import { formatCompactTokens } from '../../shared/format'
+import { copy } from './copy'
 
 /**
  * The panel's Models tab: Claude Code's own shape — a per-day stacked chart
@@ -137,7 +137,7 @@ export function createHomeModels() {
     const skeleton = !data.known
     if (models === null || models.length === 0) {
       if (data.listed !== null || !skeleton) {
-        return React.createElement('div', { className: 'dsh-claude-home-models-empty' }, copyLabel('homeModelsEmpty', 'No model data yet'))
+        return React.createElement('div', { className: 'dsh-claude-home-models-empty' }, copy('homeModelsEmpty'))
       }
       return React.createElement(
         React.Fragment,
@@ -183,7 +183,7 @@ export function createHomeModels() {
               className: 'dsh-claude-home-model',
               title: entry.sessions === undefined
                 ? entry.id
-                : `${entry.id} · ${copyLabel('homeModelSessions', '{count} sessions', { count: formatHomeCount(entry.sessions) })}`,
+                : `${entry.id} · ${copy('homeModelSessions', { count: formatHomeCount(entry.sessions) })}`,
             },
             React.createElement('span', { className: 'dsh-claude-home-model-swatch', 'data-rank': Math.min(rank, RANK_LAST) }),
             React.createElement('span', { className: 'dsh-claude-home-model-name' }, entry.id),
@@ -207,8 +207,8 @@ export function createHomeModels() {
             onClick() { setExpanded(!expanded) },
           },
           expanded
-            ? copyLabel('homeModelsLess', 'Show less')
-            : copyLabel('homeModelsMore', 'Show {count} more', { count: hidden }),
+            ? copy('homeModelsLess')
+            : copy('homeModelsMore', { count: hidden }),
         ),
       ),
     )

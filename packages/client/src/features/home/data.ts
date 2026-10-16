@@ -1,10 +1,12 @@
 import { HOME_HEAT_RAMP, USAGE_ROUTE } from '../../constants'
-import { activeLocale, copyLabel } from '../../core/i18n'
+import { activeLocale } from '../../core/i18n'
 import { pad2 } from '../../shared/format'
 import { notifyAll } from '../../shared/notify'
 import type { HostContext } from '../../core/host'
 import type { HostRemoteListAnswer, HostSessionRow } from '@dsh-claude-style/contracts/services'
 import type { UsageAnswer, UsageDay, UsageModel, UsageReport, UsageTotals } from '@dsh-claude-style/contracts/usage'
+import { copy } from './copy'
+import type { CopyKey } from './copy'
 
 /**
  * The roll-up store's snapshot: the route's last answer (the host half's
@@ -85,82 +87,83 @@ export const HOME_HEAT_STEPS = HOME_HEAT_RAMP.length
  * volumes, To Live and Ordinary World at the 0.96 tokens a character that
  * tokenizer measures on modern simplified-Chinese prose).
  */
-export const HOME_BOOKS = [
-  { key: 'homeBookTaoTeChing', title: 'Tao Te Ching', tokens: 7607 },
-  { key: 'homeBookYellowWallpaper', title: 'The Yellow Wallpaper', tokens: 7778 },
-  { key: 'homeBookMetamorphosis', title: 'Metamorphosis', tokens: 27557 },
-  { key: 'homeBookJekyllAndHyde', title: 'The Strange Case of Dr Jekyll and Mr Hyde', tokens: 34713 },
-  { key: 'homeBookAlice', title: "Alice's Adventures in Wonderland", tokens: 37248 },
-  { key: 'homeBookAnimalFarm', title: 'Animal Farm', tokens: 39000 },
-  { key: 'homeBookChristmasCarol', title: 'A Christmas Carol', tokens: 40306 },
-  { key: 'homeBookCallOfTheWild', title: 'The Call of the Wild', tokens: 42383 },
-  { key: 'homeBookTimeMachine', title: 'The Time Machine', tokens: 42817 },
-  { key: 'homeBookWizardOfOz', title: 'The Wonderful Wizard of Oz', tokens: 51004 },
-  { key: 'homeBookHeartOfDarkness', title: 'Heart of Darkness', tokens: 52163 },
-  { key: 'homeBookFaust', title: 'Faust', tokens: 53930 },
-  { key: 'homeBookTurnOfTheScrew', title: 'The Turn of the Screw', tokens: 57484 },
-  { key: 'homeBookAesopsFables', title: "Aesop's Fables", tokens: 60707 },
-  { key: 'homeBookPeterPan', title: 'Peter Pan', tokens: 63821 },
-  { key: 'homeBookGatsby', title: 'The Great Gatsby', tokens: 65763 },
-  { key: 'homeBookPrince', title: 'The Prince', tokens: 66670 },
-  { key: 'homeBookInvisibleMan', title: 'The Invisible Man', tokens: 68163 },
-  { key: 'homeBookAndersensFairyTales', title: "Andersen's Fairy Tales", tokens: 73931 },
-  { key: 'homeBookWarOfTheWorlds', title: 'The War of the Worlds', tokens: 80168 },
-  { key: 'homeBookBeyondGoodAndEvil', title: 'Beyond Good and Evil', tokens: 89836 },
-  { key: 'homeBookWhiteFang', title: 'White Fang', tokens: 96418 },
-  { key: 'homeBookMeditations', title: 'Meditations', tokens: 96973 },
-  { key: 'homeBookFrankenstein', title: 'Frankenstein', tokens: 97886 },
-  { key: 'homeBookPhilosophersStone', title: "Harry Potter and the Philosopher's Stone", tokens: 100000 },
-  { key: 'homeBookDorianGray', title: 'The Picture of Dorian Gray', tokens: 106339 },
-  { key: 'homeBookToLive', title: 'To Live', tokens: 115000 },
-  { key: 'homeBookHobbit', title: 'The Hobbit', tokens: 123000 },
-  { key: 'homeBookGrimmsFairyTales', title: "Grimms' Fairy Tales", tokens: 132467 },
-  { key: 'homeBook1984', title: 'Nineteen Eighty-Four', tokens: 136278 },
-  { key: 'homeBookSherlockHolmes', title: 'The Adventures of Sherlock Holmes', tokens: 138725 },
-  { key: 'homeBookGulliversTravels', title: "Gulliver's Travels", tokens: 138958 },
-  { key: 'homeBookWalden', title: 'Walden', tokens: 152659 },
-  { key: 'homeBookRobinsonCrusoe', title: 'Robinson Crusoe', tokens: 153596 },
-  { key: 'homeBookHuckleberryFinn', title: 'Adventures of Huckleberry Finn', tokens: 154263 },
-  { key: 'homeBookDivineComedy', title: 'The Divine Comedy', tokens: 157765 },
-  { key: 'homeBookMadameBovary', title: 'Madame Bovary', tokens: 159575 },
-  { key: 'homeBookZarathustra', title: 'Thus Spoke Zarathustra', tokens: 161488 },
-  { key: 'homeBookPride', title: 'Pride and Prejudice', tokens: 171701 },
-  { key: 'homeBookOdyssey', title: 'The Odyssey', tokens: 173150 },
-  { key: 'homeBookTaleOfTwoCities', title: 'A Tale of Two Cities', tokens: 187333 },
-  { key: 'homeBookThreeBody', title: 'The Three-Body Problem', tokens: 202000 },
-  { key: 'homeBookDracula', title: 'Dracula', tokens: 213648 },
-  { key: 'homeBookGreatExpectations', title: 'Great Expectations', tokens: 252176 },
-  { key: 'homeBookJaneEyre', title: 'Jane Eyre', tokens: 256179 },
-  { key: 'homeBookRepublic', title: 'The Republic', tokens: 279539 },
-  { key: 'homeBookCrimeAndPunishment', title: 'Crime and Punishment', tokens: 285009 },
-  { key: 'homeBookLeviathan', title: 'Leviathan', tokens: 304696 },
-  { key: 'homeBookMobyDick', title: 'Moby-Dick', tokens: 306522 },
-  { key: 'homeBookDarkForest', title: 'The Dark Forest', tokens: 307000 },
-  { key: 'homeBookDeathsEnd', title: "Death's End", tokens: 336000 },
-  { key: 'homeBookAnnaKarenina', title: 'Anna Karenina', tokens: 481659 },
-  { key: 'homeBookBrothersKaramazov', title: 'The Brothers Karamazov', tokens: 487590 },
-  { key: 'homeBookDonQuixote', title: 'Don Quixote', tokens: 574243 },
-  { key: 'homeBookLordOfTheRings', title: 'The Lord of the Rings', tokens: 625000 },
-  { key: 'homeBookThreeKingdoms', title: 'Romance of the Three Kingdoms', tokens: 638009 },
-  { key: 'homeBookCountOfMonteCristo', title: 'The Count of Monte Cristo', tokens: 651128 },
-  { key: 'homeBookWarAndPeace', title: 'War and Peace', tokens: 769001 },
-  { key: 'homeBookJourneyWest', title: 'Journey to the West', tokens: 783200 },
-  { key: 'homeBookLesMiserables', title: 'Les Misérables', tokens: 801791 },
-  { key: 'homeBookRedChamber', title: 'Dream of the Red Chamber', tokens: 903956 },
-  { key: 'homeBookWaterMargin', title: 'Water Margin', tokens: 958242 },
-  { key: 'homeBookOrdinaryWorld', title: 'Ordinary World', tokens: 998000 },
-  { key: 'homeBookHarryPotter', title: 'the whole Harry Potter series', tokens: 1409000 },
-  { key: 'homeBookLostTime', title: 'In Search of Lost Time', tokens: 1647000 },
+/** The yardstick line's books, shortest first: the copy key of each title, and its length in tokens. */
+export const HOME_BOOKS: { key: CopyKey, tokens: number }[] = [
+  { key: 'homeBookTaoTeChing', tokens: 7607 },
+  { key: 'homeBookYellowWallpaper', tokens: 7778 },
+  { key: 'homeBookMetamorphosis', tokens: 27557 },
+  { key: 'homeBookJekyllAndHyde', tokens: 34713 },
+  { key: 'homeBookAlice', tokens: 37248 },
+  { key: 'homeBookAnimalFarm', tokens: 39000 },
+  { key: 'homeBookChristmasCarol', tokens: 40306 },
+  { key: 'homeBookCallOfTheWild', tokens: 42383 },
+  { key: 'homeBookTimeMachine', tokens: 42817 },
+  { key: 'homeBookWizardOfOz', tokens: 51004 },
+  { key: 'homeBookHeartOfDarkness', tokens: 52163 },
+  { key: 'homeBookFaust', tokens: 53930 },
+  { key: 'homeBookTurnOfTheScrew', tokens: 57484 },
+  { key: 'homeBookAesopsFables', tokens: 60707 },
+  { key: 'homeBookPeterPan', tokens: 63821 },
+  { key: 'homeBookGatsby', tokens: 65763 },
+  { key: 'homeBookPrince', tokens: 66670 },
+  { key: 'homeBookInvisibleMan', tokens: 68163 },
+  { key: 'homeBookAndersensFairyTales', tokens: 73931 },
+  { key: 'homeBookWarOfTheWorlds', tokens: 80168 },
+  { key: 'homeBookBeyondGoodAndEvil', tokens: 89836 },
+  { key: 'homeBookWhiteFang', tokens: 96418 },
+  { key: 'homeBookMeditations', tokens: 96973 },
+  { key: 'homeBookFrankenstein', tokens: 97886 },
+  { key: 'homeBookPhilosophersStone', tokens: 100000 },
+  { key: 'homeBookDorianGray', tokens: 106339 },
+  { key: 'homeBookToLive', tokens: 115000 },
+  { key: 'homeBookHobbit', tokens: 123000 },
+  { key: 'homeBookGrimmsFairyTales', tokens: 132467 },
+  { key: 'homeBook1984', tokens: 136278 },
+  { key: 'homeBookSherlockHolmes', tokens: 138725 },
+  { key: 'homeBookGulliversTravels', tokens: 138958 },
+  { key: 'homeBookWalden', tokens: 152659 },
+  { key: 'homeBookRobinsonCrusoe', tokens: 153596 },
+  { key: 'homeBookHuckleberryFinn', tokens: 154263 },
+  { key: 'homeBookDivineComedy', tokens: 157765 },
+  { key: 'homeBookMadameBovary', tokens: 159575 },
+  { key: 'homeBookZarathustra', tokens: 161488 },
+  { key: 'homeBookPride', tokens: 171701 },
+  { key: 'homeBookOdyssey', tokens: 173150 },
+  { key: 'homeBookTaleOfTwoCities', tokens: 187333 },
+  { key: 'homeBookThreeBody', tokens: 202000 },
+  { key: 'homeBookDracula', tokens: 213648 },
+  { key: 'homeBookGreatExpectations', tokens: 252176 },
+  { key: 'homeBookJaneEyre', tokens: 256179 },
+  { key: 'homeBookRepublic', tokens: 279539 },
+  { key: 'homeBookCrimeAndPunishment', tokens: 285009 },
+  { key: 'homeBookLeviathan', tokens: 304696 },
+  { key: 'homeBookMobyDick', tokens: 306522 },
+  { key: 'homeBookDarkForest', tokens: 307000 },
+  { key: 'homeBookDeathsEnd', tokens: 336000 },
+  { key: 'homeBookAnnaKarenina', tokens: 481659 },
+  { key: 'homeBookBrothersKaramazov', tokens: 487590 },
+  { key: 'homeBookDonQuixote', tokens: 574243 },
+  { key: 'homeBookLordOfTheRings', tokens: 625000 },
+  { key: 'homeBookThreeKingdoms', tokens: 638009 },
+  { key: 'homeBookCountOfMonteCristo', tokens: 651128 },
+  { key: 'homeBookWarAndPeace', tokens: 769001 },
+  { key: 'homeBookJourneyWest', tokens: 783200 },
+  { key: 'homeBookLesMiserables', tokens: 801791 },
+  { key: 'homeBookRedChamber', tokens: 903956 },
+  { key: 'homeBookWaterMargin', tokens: 958242 },
+  { key: 'homeBookOrdinaryWorld', tokens: 998000 },
+  { key: 'homeBookHarryPotter', tokens: 1409000 },
+  { key: 'homeBookLostTime', tokens: 1647000 },
 ]
 /** The models chart's own window, in days: Claude Code's chart spans a month. */
 export const HOME_CHART_DAYS = 30
 /** Models the ranked list shows before its "show more" row. */
 export const HOME_MODEL_ROWS = 6
 /** The range pills: all time, or the last 30/7 calendar days including today. */
-export const HOME_RANGES = [
-  { id: 'all', labelKey: 'homeRangeAll', fallback: 'All', days: 0 },
-  { id: '30d', labelKey: 'homeRange30d', fallback: '30d', days: 30 },
-  { id: '7d', labelKey: 'homeRange7d', fallback: '7d', days: 7 },
+export const HOME_RANGES: { id: string, labelKey: CopyKey, days: number }[] = [
+  { id: 'all', labelKey: 'homeRangeAll', days: 0 },
+  { id: '30d', labelKey: 'homeRange30d', days: 30 },
+  { id: '7d', labelKey: 'homeRange7d', days: 7 },
 ]
 
 /** A local calendar day, matching the host half's day keys. */
@@ -196,7 +199,7 @@ export function formatHomeCount(count: unknown) {
 /** A settlement hour as Claude Code writes it: "5 AM" / "下午 3 点". */
 export function formatHomeHour(hour: number) {
   const h12 = hour % 12 === 0 ? 12 : hour % 12
-  return copyLabel(hour < 12 ? 'homeHourAm' : 'homeHourPm', hour < 12 ? '{hour} AM' : '{hour} PM', { hour: h12 })
+  return copy(hour < 12 ? 'homeHourAm' : 'homeHourPm', { hour: h12 })
 }
 
 /**
@@ -617,9 +620,9 @@ export function homePanelData(state: HomeUsageState, listed: ListSummary | null,
   while (bookIndex >= 0 && tokens < HOME_BOOKS[bookIndex].tokens) bookIndex -= 1
   if (bookIndex >= 0) {
     const book = HOME_BOOKS[bookIndex]
-    fun = copyLabel('homeFunBook', "You've used ~{count}× the tokens in {book}.", {
+    fun = copy('homeFunBook', {
       count: formatHomeCount(Math.round(tokens / book.tokens)),
-      book: copyLabel(book.key, book.title),
+      book: copy(book.key),
     })
   }
   const models = homeModelList(value, listed)

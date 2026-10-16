@@ -1,6 +1,5 @@
 import { readTurnActivity } from '../core/host'
 import { BRAND_DEEPSEEK } from '../constants'
-import { copyLabel } from '../core/i18n'
 import { activityPhrase } from './activity-phrase'
 import { callDescription } from './call-description'
 import { fileToolCall } from './file-tool'
@@ -9,14 +8,14 @@ import type { FileToolOperation } from './file-tool'
 import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } from '@dsh-claude-style/contracts/services'
 
 /**
- * What an open turn is doing now, in words (D49): the states the
- * waiting line says, the one line that speaks for a running turn.
+ * What an open turn is doing now, in words (D49): the states the waiting line
+ * says, the one line that speaks for a running turn.
  *
- * Most of the words are the copy document's own (`chatWait*`,
- * model-descriptions.json) and a line that cannot read a state stands on one
- * word of the brand's (waitingWord). Three states are not copy, and the
- * `precise` choice decides whether the line reads them at all: the file a call
- * in flight works on
+ * The words themselves are the waiting line's own copy
+ * (features/chat-wait/chat-wait.copy.json): a state carries the key it stands
+ * under, and the feature that draws the line reads that key through its own
+ * copy. Three states are not copy, and the `precise` choice decides whether the
+ * line reads them at all: the file a call in flight works on
  * (shared/file-tool), which fills the copy's `{file}` slot, the description a
  * command call declares for itself (shared/call-description), and the clause
  * the model's own reasoning says it is on (shared/activity-phrase). The last
@@ -24,10 +23,12 @@ import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } f
  * choice reads none of them: every state is its bare copy.
  */
 
-/** One line of copy: its key in the copy document, or null for words the model itself wrote. */
+/** One state's words: the key they stand under in the line's copy, or the model's own text. */
 export interface ActivityWords {
+  /** The waiting line's own copy key, or null where the model wrote the words itself (then `text`). */
   key: string | null
-  fallback: string
+  /** The model's own words; set only where `key` is null. */
+  text?: string
   /**
    * Set on the words that are about a tool call: `detail` marks the words one
    * call carries of its own (the file it works on, the description it
@@ -41,15 +42,15 @@ export interface ActivityWords {
 }
 
 /** The thinking state's copy key, which is also the word a brand waits on while the model thinks (waitingWord). */
-const THINKING_KEY = 'chatWaitThinking'
+export const THINKING_KEY = 'chatWaitThinking'
 /** The model is thinking, and its reasoning says nothing the line can take. */
-export const ACTIVITY_THINKING: ActivityWords = { key: THINKING_KEY, fallback: 'Thinking…' }
+export const ACTIVITY_THINKING: ActivityWords = { key: THINKING_KEY }
 /** The model is writing its answer. */
-export const ACTIVITY_WRITING: ActivityWords = { key: 'chatWaitWriting', fallback: 'Writing…' }
+export const ACTIVITY_WRITING: ActivityWords = { key: 'chatWaitWriting' }
 /** The model is drawing up a tool call. */
-export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', fallback: 'Preparing a tool call…', aboutCall: 'generic' }
+export const ACTIVITY_TOOL_CALL: ActivityWords = { key: 'chatWaitToolCall', aboutCall: 'generic' }
 /** The turn's tool calls are running, and the running call says nothing of its own. */
-export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: 'Running tools…', aboutCall: 'generic' }
+export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', aboutCall: 'generic' }
 
 /**
  * The one word a wait stands on: what the line says while the model is thinking
@@ -60,16 +61,17 @@ export const ACTIVITY_TOOLS: ActivityWords = { key: 'chatWaitTools', fallback: '
  *
  * @param brand - the brand in force (core/prefs, `BRAND_ATTR`).
  * @param hostWord - the host's own word for a wait (`hostChatCopy('chat.deepDiving', …)`).
+ * @param skinWord - the skin's own word, read from the caller's copy.
  */
-export function waitingWord(brand: string, hostWord: string) {
-  return brand === BRAND_DEEPSEEK ? hostWord : copyLabel(THINKING_KEY, ACTIVITY_THINKING.fallback)
+export function waitingWord(brand: string, hostWord: string, skinWord: string) {
+  return brand === BRAND_DEEPSEEK ? hostWord : skinWord
 }
 
 /** Reading, editing and writing one file: the file's own name fills the copy's slot. */
 const ACTIVITY_FILE: Record<FileToolOperation, ActivityWords> = {
-  read: { key: 'chatWaitReading', fallback: 'Reading {file}', aboutCall: 'detail' },
-  edit: { key: 'chatWaitEditing', fallback: 'Editing {file}', aboutCall: 'detail' },
-  write: { key: 'chatWaitWritingFile', fallback: 'Writing {file}', aboutCall: 'detail' },
+  read: { key: 'chatWaitReading', aboutCall: 'detail' },
+  edit: { key: 'chatWaitEditing', aboutCall: 'detail' },
+  write: { key: 'chatWaitWritingFile', aboutCall: 'detail' },
 }
 
 /**
@@ -89,7 +91,7 @@ export function activityWords(snapshot: HostChatSnapshot | null, turn: HostTurn 
   if (newest === 'reasoning') {
     if (!precise) return ACTIVITY_THINKING
     const phrase = reasoningPhrase(activity.assistant)
-    return phrase === null ? ACTIVITY_THINKING : { key: null, fallback: phrase }
+    return phrase === null ? ACTIVITY_THINKING : { key: null, text: phrase }
   }
   if (newest === 'tool-call') return ACTIVITY_TOOL_CALL
   if (newest === null) return null
@@ -101,7 +103,7 @@ function toolWords(call: HostRunningCall): ActivityWords {
   const file = fileToolCall(call)
   if (file !== null) return { ...ACTIVITY_FILE[file.operation], params: { file: file.file } }
   const description = callDescription(call)
-  if (description !== null) return { key: null, fallback: description, aboutCall: 'detail' }
+  if (description !== null) return { key: null, text: description, aboutCall: 'detail' }
   return ACTIVITY_TOOLS
 }
 

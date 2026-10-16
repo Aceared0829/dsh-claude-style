@@ -1,8 +1,8 @@
 import { FOOTER_ACTIONS_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea } from '../../core/host'
-import { copyLabel } from '../../core/i18n'
 import { hasSkinClass } from '../../shared/dom'
 import { buildPopoverItem } from '../../shared/popover'
+import { copy } from './copy'
 
 /**
  * The host's sidebar footer entries, mirrored as rows of the account popover:
@@ -438,7 +438,7 @@ export function createFooterMirror(options: {
         const activator = trigger!
         let item = body.querySelector<HTMLElement>(`[data-action-index="${idx}"]`)
         const iconEl = (trigger && trigger.querySelector('svg')) || entry.querySelector('svg')
-        const text = activator.getAttribute('aria-label') || (activator.textContent || '').trim() || copyLabel('footerPluginRow', 'Plugin')
+        const text = activator.getAttribute('aria-label') || (activator.textContent || '').trim() || copy('footerPluginRow')
         const badge = activator.getAttribute('data-cordis-badge') || entry.getAttribute('data-cordis-badge') || ''
 
         if (!item) {
