@@ -204,7 +204,7 @@ function planImportance(text) {
     else if (rule.parent.type === 'rule') keep = 'nested'
     else if (props.length !== important.length) keep = 'declared twice'
     else if (parts.every((part) => part.pseudo !== null && !READABLE_PSEUDO.has(part.pseudo))) keep = 'unreadable pseudo-element'
-    rules.push({ id, selector: rule.selector, parts: parts.filter((part) => part.pseudo === null || READABLE_PSEUDO.has(part.pseudo)), props, keep, conditions })
+    rules.push({ id, key, selector: rule.selector, parts: parts.filter((part) => part.pseudo === null || READABLE_PSEUDO.has(part.pseudo)), props, keep, conditions })
   })
   return { annotated: root.toString(), rules, selectors }
 }
@@ -260,6 +260,22 @@ const SETTLE = `function settleTransitions() {
     }
   }
   throw new Error('importance: animations keep starting after forty rounds of landing them')
+}
+/**
+ * The longhands a property stands for, cached for the page's lifetime: a
+ * shorthand is decided by the values under it, and no computed style exposes the
+ * shorthand itself, so every comparison here goes through these names.
+ */
+const longhandCache = new Map()
+window.longhandsOf = (prop) => {
+  if (prop.startsWith('--')) return [prop]
+  if (!longhandCache.has(prop)) {
+    const probe = document.createElement('div').style
+    probe.setProperty(prop, 'initial')
+    const names = [...Array(probe.length)].map((_, at) => probe.item(at))
+    longhandCache.set(prop, names.length === 0 ? [prop] : names)
+  }
+  return longhandCache.get(prop)
 }`
 
 /**
@@ -284,17 +300,7 @@ function tryInPage({ sheet, mark, rules, skip }) {
   walk(style.sheet.cssRules)
   // Land what the last state change set moving, so each trial starts from settled values.
   settleTransitions()
-  const longhandsOf = new Map()
-  const longhands = (prop) => {
-    if (prop.startsWith('--')) return [prop]
-    if (!longhandsOf.has(prop)) {
-      const probe = document.createElement('div').style
-      probe.setProperty(prop, 'initial')
-      const names = [...Array(probe.length)].map((_, at) => probe.item(at))
-      longhandsOf.set(prop, names.length === 0 ? [prop] : names)
-    }
-    return longhandsOf.get(prop)
-  }
+  const longhands = (prop) => window.longhandsOf(prop)
   const transitions = () => new Set(document.getAnimations().filter((animation) => animation instanceof CSSTransition))
   /** Every matched element and pseudo-element's value of each longhand, in one string per target. */
   const read = (targets, names) => targets.map(([element, pseudo]) => {
@@ -447,6 +453,83 @@ function culpritsInPage({ rules, dropped, differences }) {
 }
 
 /**
+ * What stands in a declaration's place once its `!important` is gone (D51).
+ *
+ * The stylesheet is installed with that one declaration's importance already
+ * dropped, so the value read here is the one the page falls back to. Every other
+ * candidate for the same property — the element's own inline style, and each
+ * rule of each stylesheet that matches the element and declares it — is then
+ * taken away in turn: the value moves only where that candidate was the one in
+ * force, so the answer comes from the browser's own cascade rather than from
+ * cascade arithmetic written here. Each candidate is put back before the next.
+ *
+ * @returns `{ after, opponents }`: the value without the importance, and one
+ *     entry per candidate that held it, `{ kind, owner }` — `kind` one of
+ *     `inline`, `host-important`, `host-rule`, `another-skin-rule`.
+ */
+function opponentsInPage({ sheet, selector, prop, pseudo }) {
+  const style = document.querySelector(sheet)
+  let targets = []
+  try { targets = [...document.querySelectorAll(selector)] } catch { return null }
+  if (targets.length === 0) return null
+  const names = window.longhandsOf(prop)
+  const read = () => targets.map((element) => {
+    const computed = getComputedStyle(element, pseudo ?? undefined)
+    return names.map((name) => computed.getPropertyValue(name)).join('\u0001')
+  }).join('\u0002')
+  const after = read()
+  const opponents = []
+  const note = (kind, owner) => {
+    if (opponents.some((entry) => entry.kind === kind && entry.owner === owner)) return
+    opponents.push({ kind, owner })
+  }
+  /** Every rule of every sheet the page can read, grouping rules walked into. */
+  const rulesOf = () => {
+    const found = []
+    const walk = (list, owner) => {
+      for (const rule of list) {
+        if (rule.cssRules !== undefined) walk(rule.cssRules, owner)
+        else if (rule.style !== undefined) found.push({ rule, owner })
+      }
+    }
+    for (const sheet of document.styleSheets) {
+      let list = null
+      try { list = sheet.cssRules } catch { continue }
+      walk(list, sheet.ownerNode === style ? 'skin' : 'host')
+    }
+    return found
+  }
+  const declaredNames = (style) => [prop, ...names].filter((name) => style.getPropertyValue(name) !== '')
+  const takeAway = (style) => {
+    const saved = declaredNames(style).map((name) => [name, style.getPropertyValue(name), style.getPropertyPriority(name)])
+    for (const [name] of saved) style.removeProperty(name)
+    return () => { for (const [name, value, priority] of saved) style.setProperty(name, value, priority) }
+  }
+  for (const element of targets) {
+    if (declaredNames(element.style).length === 0) continue
+    const restore = takeAway(element.style)
+    const moved = read() !== after
+    restore()
+    if (moved) note('inline', 'element')
+  }
+  for (const { rule, owner } of rulesOf()) {
+    if (declaredNames(rule.style).length === 0) continue
+    if (!targets.some((element) => { try { return element.matches(rule.selectorText) } catch { return false } })) continue
+    // The declaration the audit is asking about is dropped already; the same
+    // selector still holding the property by weight is that declaration itself.
+    if (owner === 'skin' && rule.selectorText === selector) continue
+    const priority = rule.style.getPropertyPriority(prop)
+    const restore = takeAway(rule.style)
+    const moved = read() !== after
+    restore()
+    if (!moved) continue
+    if (owner === 'skin') note('another-skin-rule', rule.selectorText)
+    else note(priority === 'important' ? 'host-important' : 'host-rule', rule.selectorText)
+  }
+  return { after, opponents }
+}
+
+/**
  * The dead-selector sweep's one question, asked of the page as it stands: which
  * of these selectors match an element here. A selector the page cannot parse is
  * reported apart — the sweep never calls it dead, and a selector list of its
@@ -487,6 +570,8 @@ async function createImportanceAudit(page, reference) {
   const dropped = new Set()
   const needed = new Set()
   const matched = new Set()
+  /** `"<rule id>:<property>"` → what that declaration beats where it was decided (D51). */
+  const evidence = new Map()
   /** Selectors of the sheet a state matched an element with, and the ones the page could not parse. */
   const swept = new Set()
   const unparsed = new Set()
@@ -546,6 +631,24 @@ async function createImportanceAudit(page, reference) {
     for (const key of verdict.matched) matched.add(key)
     for (const key of verdict.removable) dropped.add(key)
     for (const key of verdict.needed) needed.add(key)
+    // What each declaration that has to keep its weight beats where it was
+    // decided: the sheet goes in with that one importance dropped, the fall-back
+    // value is read, and every candidate that held it is named (D51).
+    for (const key of verdict.needed) {
+      if (evidence.has(key)) continue
+      const separatrix = key.lastIndexOf(':')
+      const rule = rules.find((own) => own.id === Number(key.slice(0, separatrix)))
+      if (rule === undefined) continue
+      const prop = key.slice(separatrix + 1)
+      await install(dropImportance(annotated, new Set([key])))
+      for (const part of rule.parts) {
+        const found = await page.evaluate(opponentsInPage, { sheet: SHEET, selector: part.base, prop, pseudo: part.pseudo })
+        if (found === null) continue
+        evidence.set(key, { ruleKey: rule.key, selector: rule.selector, prop, state: name, after: found.after, opponents: found.opponents })
+        break
+      }
+      await install(original)
+    }
     // The dead-selector sweep: ask this state about every selector no state has
     // matched yet, so a selector that never matches one costs one pass per state.
     const pending = [...selectors.keys()].filter((selector) => selectors.get(selector) === null && !swept.has(selector) && !unparsed.has(selector))
@@ -581,15 +684,17 @@ async function createImportanceAudit(page, reference) {
 
   /**
    * What the states decided: every `!important`, and why each kept one stays;
-   * and the sweep's tally — the selectors some state matched an element with,
-   * the ones none did, the ones the page could not parse, and the ones the
-   * inventory already excused.
+   * what each declaration that has to keep its weight beats; and the sweep's
+   * tally — the selectors some state matched an element with, the ones none did,
+   * the ones the page could not parse, and the ones the inventory already
+   * excused.
    */
   function result() {
     const declarations = rules.flatMap((rule) => rule.props.map((prop) => {
       const key = `${rule.id}:${prop}`
       const verdict = rule.keep !== null ? rule.keep : dropped.has(key) ? 'removable' : needed.has(key) ? 'needed' : matched.has(key) ? 'needed' : 'unmatched'
-      return { key, selector: rule.selector, prop, verdict }
+      const beaten = evidence.get(key)
+      return { key, ruleKey: rule.key, selector: rule.selector, prop, verdict, opponents: beaten === undefined ? [] : beaten.opponents }
     }))
     const excused = [...selectors].filter(([, keep]) => keep !== null)
     const dead = [...selectors].filter(([selector, keep]) => keep === null && !swept.has(selector) && !unparsed.has(selector)).map(([selector]) => selector)
@@ -600,7 +705,7 @@ async function createImportanceAudit(page, reference) {
       unparsed: [...unparsed],
       excused: Object.fromEntries([...new Set(excused.map(([, keep]) => keep))].map((keep) => [keep, excused.filter(([, own]) => own === keep).length])),
     }
-    return { states, declarations, drift, sheet: original, sweep }
+    return { states, declarations, drift, sheet: original, sweep, evidence: [...evidence].map(([key, value]) => ({ key, ...value })) }
   }
 
   return { state, hoverTargets, result }

@@ -134,7 +134,9 @@ function numbersOf(expression) {
 function record(file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8')
   const found = {}
-  for (const match of text.matchAll(/(?<![\w.])check\s*\(/g)) {
+  // `check(` and the lane's own `lane.check(` both count; a helper named
+  // `basicChecks(` is no check of its own, which the lookbehind keeps out.
+  for (const match of text.matchAll(/(?<![\w])check\s*\(/g)) {
     const call = callText(text, match.index + match[0].length - 1)
     if (call === null) continue
     const args = argumentsOf(call.body)

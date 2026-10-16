@@ -8,25 +8,37 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
+- **用量记录的体积缩到约四成**：记录里一天的量按路由存放（模型，以及没有归到任何模型的余量），当天总量由这些路由相加得出，小时直方图只记非零的格子，日志已不在的会话不再存指纹。用本机上这一份记录量：146 KB 降到 57 KB，一趟只剩解析与写回；与记录一致的那一趟不再写盘。
 - **界面每帧少做整份文档的查找**：查不到东西的查找此前每趟刷新都重新走一遍整份文档，而绝大多数页面上这些座位本来就不存在——会话页没有首屏根，对话框没打开时没有设置导航列。现在这类「什么都没找到」的答案在页面结构变化之前一直有效；设置页的导航格、侧栏的已归档清单清理、账户卡片的清理都收窄到它们各自所在的侧栏里。在 28568 个节点的页面上量同一个回合：插件发出的整份文档查找从 584 次降到 395 次，其中首屏根的查找从 273 次降到 26 次。
 - **长对话里收走状态行的那一趟不再按对话长度平方增长**：宿主一次交还多行时，插件要把每一行还站着的状态线摘掉，此前每条站着的线都要在一份运行行清单里从头找一遍。现在这份清单改作一次集合，摘除的一趟随行数线性走完。
+
+### 问题修复
+
+- **删除对话不再带走它的用量**：面板的账此前每趟都从现存的会话日志重算，日志一删，那个会话的日子就从「全部」里消失。现在本地的这本账记在插件自己的目录里，日志已不在的会话照旧留着它结算过的日子，面板继续给出这些日子的 tokens、模型排行与小时分布；早先留在折算缓存里的日子在首次读取时迁移过来。
 
 ### 其他变更
 
 - **样式表里判断「谁包含谁」的规则改为读一处标记**：此前 16 条规则用 `:has()` 问浏览器「这个元素的子树里有没有那个部件或标记」，页面下方每次变化这些规则都要重新匹配。现在盖部件的同一趟走查顺带把答案写成一处标记，规则只读这处标记；页面上的 `:has()` 只剩进入作用域的两处与跟随焦点状态的一处。构建同时开始拒绝在 `:has()` 里读属性、核对每个标记都有声明的来源、并核对声明里的部件名。
 - **每趟刷新与每一帧上的整份文档查找改走记下的答案**：界面切换的横带每趟刷新要问八次「对方的控件在不在」「侧栏的切换键在不在」「窗口菜单在不在」，聊天跟随每帧要问一次「宿主还在流式输出吗」，桌面端的页头每趟刷一次「窗口菜单在哪」——这些座位在多数页面上根本不存在，而每次问都要把整份文档走一遍。这一次改掉九处（界面切换七处、页头一处、聊天跟随一处）：这些答案由宿主访问模块记住，页面结构变了才重新查找；聊天跟随改在消息列里读那个标记，与它自己的另一处读法一致。剩下的四十六处逐条登记在册并写明缘由，脚本会拒绝新增的查找，也会拒绝与代码对不上的登记。
 - **检查接受的数值成了一份会被核对的记录**：一个检查失败时，最省事的回应是把表达式里那个数字放宽，而这一步此前不留痕迹。现在两个通道里每个检查所决定的数字字面量都写进 `packages/testing/check-numbers.json`（`npm run checks:numbers` 生成），闸门与云端核对这份记录：改动一个检查接受的数值，记录跟着变，放宽因此在 diff 里看得见。需要理由的边界本身继续住在 `packages/testing/bounds.json` 里，每条带 `reason`，检查读它。
+- **每处保留下来的 `!important` 都记下它压过谁**：重要性走查此前只回答「去掉它画出的样子变不变」，现在把判定为需要的每一处写进 `packages/testing/importance-ledger.json`——在哪个页面形态上判定需要，以及去掉重要性之后接过这个属性的候选（元素自己的行内样式、宿主的 `!important`、宿主权重更高的规则、皮肤的另一条规则）。走查把该处的重要性单独去掉，按属性展开的每一条长属性读页面退回的值，再逐个拿走其余候选：值动了的那些就是它压过的。台账里新出现或不再需要的条目会让走查失败，`DSH_IMPORTANCE_LEDGER=write` 从一次运行重写它，差别在 diff 里读。本次十六处里三处认出了对手，其余记作未认出（走查读不到那个候选）。
 
 <h3 id="en-unreleased">Improvements</h3>
 
+- **The usage record shrinks to about two fifths of its size**: a day is stored per route (a model, plus the remainder no model claimed), the day's own total is the sum of those routes, the hour histogram keeps its non-zero slots alone, and a session whose log is gone no longer carries a fingerprint. Measured on this machine's own record: 146 KB becomes 57 KB, and a pass pays for parsing and writing alone; a pass that matches the record writes nothing.
 - **Fewer whole-document lookups per frame**: a lookup that found nothing used to walk the whole document again on every pass, while on most pages the seat it asks for is simply absent — a conversation page carries no hero root, and the settings navigation column does not exist until the dialog opens. That "nothing matched" answer now stands until the page's structure changes; the settings navigation cell, the sidebar's archived-list sweep and the account card's sweep are scoped to the sidebar they live in. Measured over one turn on a page of 28568 nodes: the skin's whole-document lookups fall from 584 to 395, and its hero-root lookups from 273 to 26.
 - **The pass that takes the state lines down no longer grows with the square of the conversation**: when the host hands back several rows at once, the skin takes the status line off every row that still stands, and each standing line used to search the running-row list from the start. That list is a set now, so the pass walks it once per line.
+
+### Bug Fixes
+
+- **Deleting a conversation no longer takes its usage with it**: the panel's own account was folded again from the stored logs on every pass, so a log deleted took that session's days out of the all-time figures. The local account now lives in the plugin's own directory, and a session whose log is gone keeps the days it settled on — the panel still gives those days' tokens, its model ranking and its hour histogram. The days an earlier build kept in its fold cache are migrated on the first read.
 
 ### Chores
 
 - **Rules asking whether one element holds another read one mark again**: sixteen rules used to ask the browser, through `:has()`, whether an element's subtree carried a part or a mark, and every change below one of them re-matched those rules. The pass that marks the parts now writes that answer as one attribute, and the rules read it; the two `:has()` entries into scope and the one following focus state remain. The build refuses a `:has()` that reads an attribute, holds every mark read to a declared relation, and checks the part names those relations name.
 - **Whole-document lookups in a pass or a frame now read a kept answer**: the interface switch's band asked eight times a pass whether the other side's controls, the sidebar's collapse toggle and the window menu were on the page, the chat follow asked once a frame whether the host was still streaming, and the desktop header band asked once a pass where the window menu stood — seats most pages do not have at all, each question walking the whole document. Nine of them go (seven in the switch, one in the band, one in the follow): the host access module keeps those answers until the page's structure changes, and the follow reads its mark inside the message column, as its own other reading already did. The forty-six that remain are recorded one by one with the reason each stays, and the lint step refuses a new lookup as well as a record the code no longer matches.
 - **The numbers a check accepts are a record the gates verify**: when a check failed, the cheapest answer was to loosen whichever number stood in its expression, and that edit left no trace. Every numeric literal a check in either lane decides on is now written into `packages/testing/check-numbers.json` (`npm run checks:numbers` writes it), and the gates and the cloud verify that record: change what a check accepts and the record moves with it, so a loosened bound is visible in the diff. The bounds that need a reason keep living in `packages/testing/bounds.json`, each with its `reason`, and the checks read them from there.
+- **Every `!important` that stays now records what it beats**: the importance walk used to answer only whether the page still paints the same without it; it now writes each declaration it proved necessary into `packages/testing/importance-ledger.json` — the page state that decided it, and the candidates that take the property over once its importance is gone (the element's own inline style, the host's `!important`, a host rule of higher weight, another skin rule). The walk drops that one importance, reads the value the page falls back to over every longhand the property stands for, and takes each other candidate away in turn: the ones that move the value are what it beats. A declaration that appears or stops being needed fails the walk, and `DSH_IMPORTANCE_LEDGER=write` rewrites the record from a run so the difference is read in the diff. Three of this run's sixteen attributed an opponent; the rest are recorded as unattributed, the walk finding no candidate it can scan.
 
 ## [0.15.0] - 2026-10-15
 

@@ -39,6 +39,17 @@ const UNREACHABLE = new Map(UNREACHABLE_FILE.groups.flatMap((group) => group.sel
  * way; every other entry still only shrinks.
  */
 const EITHER = new Set(UNREACHABLE_FILE.groups.filter((group) => group.either === true).flatMap((group) => group.selectors))
+/**
+ * Every `!important` the walk proved necessary, with what it beats where it was
+ * decided (D51): keyed by the rule's own text and the property, so a build check
+ * can compute the same key from the source stylesheet without sharing an index.
+ * The run fails when a declaration it needs is not recorded, or a recorded one
+ * is no longer needed; `DSH_IMPORTANCE_LEDGER=write` writes the record from the
+ * run so the difference is read in the diff.
+ */
+const LEDGER_FILE = path.join(__dirname, 'importance-ledger.json')
+const LEDGER = JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8'))
+const evidenceKey = (item) => `${item.ruleKey}|${item.prop}`
 /* ---------- the lane's scenario ---------- */
 
 /** The skin's own triggers, each opening the surface its rules paint. */
@@ -283,8 +294,8 @@ function importanceScenario(lane) {
       }
     },
     async assert({ session, audit, out }) {
-      const { states, declarations, drift, sheet, sweep } = audit.result()
-      fs.writeFileSync(path.join(out, 'importance-verdicts.json'), `${JSON.stringify({ states, declarations, drift, sweep }, null, 2)}\n`)
+      const { states, declarations, drift, sheet, sweep, evidence } = audit.result()
+      fs.writeFileSync(path.join(out, 'importance-verdicts.json'), `${JSON.stringify({ states, declarations, drift, sweep, evidence }, null, 2)}\n`)
       // The stylesheet the verdicts number their rules in, for whoever acts on them.
       fs.writeFileSync(path.join(out, 'importance-sheet.css'), sheet)
       const count = (verdict) => declarations.filter((item) => item.verdict === verdict).length
@@ -294,22 +305,35 @@ function importanceScenario(lane) {
       const dead = new Set(sweep.dead)
       const unrecorded = sweep.dead.filter((selector) => !UNREACHABLE.has(selector))
       const reached = [...UNREACHABLE.keys()].filter((selector) => !dead.has(selector) && !EITHER.has(selector))
+      if (process.env.DSH_IMPORTANCE_LEDGER === 'write') {
+        const entries = {}
+        for (const item of evidence) entries[evidenceKey(item)] = { selector: item.selector, prop: item.prop, state: item.state, opponents: item.opponents }
+        fs.writeFileSync(LEDGER_FILE, `${JSON.stringify({ note: LEDGER.note, entries }, null, 2)}\n`)
+      }
+      const ledgerNow = process.env.DSH_IMPORTANCE_LEDGER === 'write' ? JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8')) : LEDGER
+      const recorded = new Set(Object.keys(ledgerNow.entries))
+      const evidenceKeys = new Set(evidence.map(evidenceKey))
+      const missingEvidence = [...evidenceKeys].filter((key) => !recorded.has(key))
+      const unknownEvidence = [...recorded].filter((key) => !evidenceKeys.has(key))
+      const briefKeys = (keys) => keys.slice(0, 3).map((key) => key.replace(/\s+/g, ' ').slice(0, 90)).join('；')
       const brief = (selectors) => selectors.slice(0, 3).map((selector) => selector.replace(/\s+/g, ' ').slice(0, 90)).join('；')
-      const recorded = UNREACHABLE_FILE.groups.map((group) => `${group.reason} ${group.selectors.length}`).join('，')
+      const recordedGroups = UNREACHABLE_FILE.groups.map((group) => `${group.reason} ${group.selectors.length}`).join('，')
       const checks = [
         lane.check('每个页面形态都审过', named.length >= 12, `${named.map((item) => `${item.name}: ${item.removable}/${item.needed}${item.sentBack === 0 ? '' : `/退回 ${item.sentBack}`}`).join('；')}；悬停 ${hovered} 处`),
-        // A declaration the audit proved removable — one that matched an element
-        // in a state and changed nothing there — is weight to drop. One that
-        // never matched an element is not: the host element it dresses (a docked
-        // panel, a scrollable table, the settings area) is outside the surfaces
-        // this scenario walks, and no state could decide it.
+        // Every `!important` the walk found necessary is written down with what
+        // it beats where it was decided (D51). The set of declarations is
+        // enforced: a run that needs one the ledger has not recorded, or no
+        // longer needs one it records, fails until the ledger is written again
+        // and the difference read.
+        lane.check('保留下来的 !important 都有对手的记录', missingEvidence.length === 0 && unknownEvidence.length === 0,
+          `${evidence.length} 处有记录（其中 ${evidence.filter((item) => item.opponents.length > 0).length} 处认出了对手：${[...new Set(evidence.flatMap((item) => item.opponents.map((entry) => entry.kind)))].join('、') || '无'}），${missingEvidence.length} 处新需要（${briefKeys(missingEvidence)}），${unknownEvidence.length} 处记录里已不需要（${briefKeys(unknownEvidence)}）`),
         lane.check('没有多余的 !important', idle.length === 0, `${declarations.length} 处：需要 ${count('needed')}，多余 ${idle.length}${idle.length === 0 ? '' : `（${idle.slice(0, 3).map((item) => `${item.selector.replace(/\s+/g, ' ').slice(0, 70)} { ${item.prop} }`).join('；')}…）`}；另有 ${count('unmatched')} 处从未匹配到元素（本次页面形态未覆盖），${count('declared twice')} 处重复声明，${count('third-party')} 处属于第三方应答，${count('transient state')} 处只在短暂标记下生效，${count('unreadable pseudo-element')} 处伪元素读不到计算值`),
         // The other half of "every line is necessary": a selector no state
         // matches an element with is a rule the page never reads. One the walk
         // cannot reach is recorded with its reason; anything else fails, and so
         // does a recorded selector the page has started matching — the record
         // is a debt, and it is only allowed to shrink.
-        lane.check('没有从不匹配元素的皮肤选择器', unrecorded.length === 0, `${sweep.total} 个选择器：${sweep.matched} 个在某个页面形态里匹配到元素，${sweep.dead.length} 个从未匹配（登记在册 ${sweep.dead.length - unrecorded.length}${recorded === '' ? '' : `：${recorded}`}${unrecorded.length === 0 ? '' : `；未登记 ${unrecorded.length}：${brief(unrecorded)}…`}）${sweep.unparsed.length === 0 ? '' : `；${sweep.unparsed.length} 个页面解析不了（${sweep.unparsed.slice(0, 2).join('；')}）`}；${Object.entries(sweep.excused).map(([keep, many]) => `${many} 个按契约不扫（${keep}）`).join('，') || '没有按契约豁免的'}`),
+        lane.check('没有从不匹配元素的皮肤选择器', unrecorded.length === 0, `${sweep.total} 个选择器：${sweep.matched} 个在某个页面形态里匹配到元素，${sweep.dead.length} 个从未匹配（登记在册 ${sweep.dead.length - unrecorded.length}${recordedGroups === '' ? '' : `：${recordedGroups}`}${unrecorded.length === 0 ? '' : `；未登记 ${unrecorded.length}：${brief(unrecorded)}…`}）${sweep.unparsed.length === 0 ? '' : `；${sweep.unparsed.length} 个页面解析不了（${sweep.unparsed.slice(0, 2).join('；')}）`}；${Object.entries(sweep.excused).map(([keep, many]) => `${many} 个按契约不扫（${keep}）`).join('，') || '没有按契约豁免的'}`),
         lane.check('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}${EITHER.size === 0 ? '' : `；另有 ${EITHER.size} 条记录，抓到与否都算数`}`),
         lane.check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
