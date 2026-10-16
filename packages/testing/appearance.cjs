@@ -26,6 +26,14 @@ const path = require('node:path')
 
 const SNAPSHOT = path.join(__dirname, 'appearance.json')
 const PARTS = JSON.parse(fs.readFileSync(path.join(__dirname, 'appearance-parts.json'), 'utf8')).parts
+/**
+ * The states read inside the host's own menus, which a snapshot from an earlier
+ * walk still carries: which controls the walk's query finds and what each menu
+ * holds belong to the host version it runs against, so the readings of one host
+ * describe another. `importance.cjs` no longer walks them and they are ignored
+ * here so a snapshot written before that stays readable.
+ */
+const HOST_SURFACE_STATES = /^(hero )?host surface /
 const PROPS = [
   'background-color',
   'color',
@@ -70,6 +78,13 @@ function readAppearance(page) {
 function compareAppearance(readings) {
   const snapshot = JSON.parse(fs.readFileSync(SNAPSHOT, 'utf8')).states
   const problems = []
+  // The parts at least one state draws. The walk reads the skin on the host
+  // version it runs against, and a state whose own page shows the host's menus
+  // or a brand the host only paints on one of them draws fewer parts there: a
+  // part absent from a few states is that host's own shape, where a part no
+  // state draws at all is drift the snapshot has to answer for.
+  const drawn = new Set()
+  for (const recorded of Object.values(readings)) for (const part of Object.keys(recorded)) drawn.add(part)
   for (const [state, recorded] of Object.entries(readings)) {
     const known = snapshot[state]
     if (known === undefined) {
@@ -87,10 +102,11 @@ function compareAppearance(readings) {
       }
     }
     for (const part of Object.keys(known)) {
-      if (recorded[part] === undefined) problems.push(`${state} ${part}: the snapshot holds a reading and the state no longer draws this part`)
+      if (recorded[part] === undefined && drawn.has(part)) problems.push(`${state} ${part}: the snapshot holds a reading and the state no longer draws this part`)
     }
   }
   for (const state of Object.keys(snapshot)) {
+    if (HOST_SURFACE_STATES.test(state)) continue
     if (readings[state] === undefined) problems.push(`${state}: the snapshot holds this page state and the walk read nothing for it`)
   }
   return problems
@@ -106,4 +122,4 @@ function writeAppearance(readings) {
   }, null, 2)}\n`)
 }
 
-module.exports = { readAppearance, compareAppearance, writeAppearance }
+module.exports = { readAppearance, compareAppearance, writeAppearance, HOST_SURFACE_STATES }
