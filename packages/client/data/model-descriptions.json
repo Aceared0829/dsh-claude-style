@@ -472,7 +472,7 @@
         "brand": "claude",
         "note": "Claude rows draw Claude's own lockup, not the parent Anthropic one: the label names the model line, and a wordmark has to match the word it stands in for — the same reason Grok rows draw Grok's rather than xAI's. Anthropic stays the fallback for the `anthropic` route."
       },
-      { "match": "gpt|(^|[/-])o[1-9](-|$)", "brand": "openai" },
+      { "match": "gpt|(^|[^a-z0-9])o[1-9](-|$)", "brand": "openai" },
       {
         "match": "nano-?banana",
         "brand": "nanobanana",
@@ -489,10 +489,18 @@
         "note": "A Gemini row shows the model line's mark; the provider group header above it shows Google's, because providers resolve from `providers` and never from here."
       },
       { "match": "glm", "brand": "zai" },
-      { "match": "kimi|(^|-)k3($|-)", "brand": "kimi" },
+      {
+        "match": "kimi|(^|[^a-z0-9])k3($|-)",
+        "brand": "kimi",
+        "note": "The id can carry the serving provider's namespace (`cn:k3`, `moonshot/k3`), so the segment start accepts any character outside a letter or a digit. Requiring `k3` to start a segment is what leaves `mk3` unclaimed."
+      },
       { "match": "qwen", "brand": "qwen" },
       { "match": "step", "brand": "stepfun" },
-      { "match": "minimax|(^|-)m[23]($|-)", "brand": "minimax" },
+      {
+        "match": "minimax|(^|[^a-z0-9])m[23]($|-)",
+        "brand": "minimax",
+        "note": "The id can carry the serving provider's namespace (`cn:m3`), so the segment start accepts any character outside a letter or a digit. Requiring `m2` or `m3` to start a segment is what leaves `pm2` unclaimed."
+      },
       { "match": "muse-spark|llama", "brand": "meta" },
       { "match": "celeris", "brand": "celestoai" },
       { "match": "mercury|inception", "brand": "inception" },
@@ -511,7 +519,11 @@
       { "match": "mistral|magistral|codestral", "brand": "mistral" },
       { "match": "north|command-?[ar]|cohere", "brand": "cohere" },
       { "match": "phi-?\\d", "brand": "microsoft" },
-      { "match": "nova", "brand": "nova" },
+      {
+        "match": "(^|[^a-z0-9])nova(-|$)",
+        "brand": "nova",
+        "note": "The vendor name has to start a segment and end one: unanchored, this rule claims `sensenova-6.8-flash-lite` for Amazon and lands that lockup in the middle of the name."
+      },
       { "match": "mimo", "brand": "xiaomimimo" },
       { "match": "longcat", "brand": "longcat" },
       { "match": "sonar|perplexity", "brand": "perplexity" }
@@ -706,8 +718,8 @@
     },
 
     {
-      "match": "kimi.*(k3|k-?3)|^k3",
-      "note": "Anchored to the K3 line: the 2.8T size belongs to it, and the catalog's `k3` and `k3-256k` spellings are the same line.",
+      "match": "kimi.*(k3|k-?3)|(^|[^a-z0-9])k-?3",
+      "note": "Anchored to the K3 line: the 2.8T size belongs to it, and the catalog's `k3` and `k3-256k` spellings are the same line. The K3 mentions carry the same segment start as the lockup rule, so an id spelled `cn:k3` reads this line.",
       "text": {
         "zh": "面向编程与知识工作的 2.8T 开放权重模型。",
         "en": "An open-weight 2.8T model for coding and knowledge work."
@@ -806,7 +818,7 @@
     { "match": "step", "text": { "zh": "覆盖文本推理、多模态与语音，经官方开放平台提供。", "en": "Reasoning, multimodal understanding and voice, served through the official open platform." } },
 
     {
-      "match": "minimax.*m3|(^|-)m3($|-)",
+      "match": "minimax.*m3|(^|[^a-z0-9])m3($|-)",
       "note": "The M3 line's own claims; the catalog's `minimax-m3-1m` is the same line at a longer context.",
       "text": {
         "zh": "首个集前沿编程、1M 上下文与原生多模态于一身的开放权重模型。",
@@ -814,7 +826,7 @@
       }
     },
     {
-      "match": "minimax|(^|-)m2[-.]?\\d",
+      "match": "minimax|(^|[^a-z0-9])m2[-.]?\\d",
       "text": {
         "zh": "主打智能体推理、工具调用、编程与多模态输入，面向长上下文任务。",
         "en": "Agentic reasoning, tool use, coding and multimodal input for long-context work."
@@ -957,7 +969,11 @@
       "match": "phi-?\\d",
       "text": { "zh": "面向边缘与本地部署，Phi-4 以 14B 专注推理、数学与代码。", "en": "For edge and local use; Phi-4 (14B) targets reasoning, math and code." }
     },
-    { "match": "nova", "text": { "zh": "Micro/Lite/Pro/Premier 四档，支持文本、图像与视频输入。", "en": "Micro, Lite, Pro and Premier tiers taking text, image and video." } },
+    {
+      "match": "(^|[^a-z0-9])nova(-|$)",
+      "note": "Every mention of the line reads the same boundary as the lockup rule: unanchored, this rule gives `sensenova-6.8-flash-lite` Amazon Nova's description.",
+      "text": { "zh": "Micro/Lite/Pro/Premier 四档，支持文本、图像与视频输入。", "en": "Micro, Lite, Pro and Premier tiers taking text, image and video." }
+    },
     {
       "match": "sonar|perplexity",
       "text": { "zh": "结合实时网络信息与引用的搜索 API，从轻量 Sonar 到多步深研 Sonar Pro。", "en": "Search APIs answering with fresh web data and citations, from light Sonar to deep-research Sonar Pro." }
