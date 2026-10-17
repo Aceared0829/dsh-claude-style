@@ -42,6 +42,9 @@
           workspaceView: document.querySelectorAll('.dsh-claude-ws-segments').length,
           sidebarSearch: document.querySelectorAll('[data-dsh-claude-search-row], .dsh-claude-search-trigger').length,
           viewTabs: document.querySelectorAll('[data-dsh-view-tabs]').length,
+          // The composer restyle's gate: the feature writes it on <body> and
+          // takes it off again when its scope choice is off.
+          composerScope: document.body.hasAttribute('data-dsh-claude-composer-active') ? 1 : 0,
         }
       }
       var settleSwitch = async function (patch) {
@@ -50,7 +53,18 @@
         await sleep(300)
         return switchMarks()
       }
-      var switchKeys = ['permissionsControl', 'workspaceView', 'sidebarSearch', 'viewTabs']
+      var switchKeys = ['permissionsControl', 'workspaceView', 'sidebarSearch', 'viewTabs', 'composerScope']
+      // The value each switch is off and on at: a boolean's false and true, and
+      // a choice's own off beside the value the feature runs under.
+      var switchValues = { composerScope: { off: 'off', on: 'all' } }
+      var offValue = function (key) {
+        var values = switchValues[key]
+        return values === undefined ? false : values.off
+      }
+      var onValue = function (key) {
+        var values = switchValues[key]
+        return values === undefined ? true : values.on
+      }
       // The sixth switched feature, the file change rows, takes seat keys over
       // rather than drawing marks on the page, so its switch is driven and
       // checked in its own case ('chat-files': offSeats/backSeats). The header
@@ -58,7 +72,7 @@
       // is driven in its own case too ('header-band': off/back).
       var allSwitches = function (value) {
         var patch = {}
-        for (var ki = 0; ki < switchKeys.length; ki++) patch[switchKeys[ki]] = value
+        for (var ki = 0; ki < switchKeys.length; ki++) patch[switchKeys[ki]] = value ? onValue(switchKeys[ki]) : offValue(switchKeys[ki])
         return patch
       }
       await sleep(300)
@@ -66,10 +80,10 @@
       await probe.onlyFor(['switches'], async function () {
         for (var si = 0; si < switchKeys.length; si++) {
           var offPatch = {}
-          offPatch[switchKeys[si]] = false
+          offPatch[switchKeys[si]] = offValue(switchKeys[si])
           var off = await settleSwitch(offPatch)
           var onPatch = {}
-          onPatch[switchKeys[si]] = true
+          onPatch[switchKeys[si]] = onValue(switchKeys[si])
           var on = await settleSwitch(onPatch)
           r.switches.steps.push({ key: switchKeys[si], off: off, on: on })
         }

@@ -65,6 +65,12 @@ module.exports = {
       JSON.stringify(r.classicSegments) === JSON.stringify(['Read', 'Edit', 'Auto', 'Yolo']) && r.classicPermTrigger === false,
       JSON.stringify({ segments: r.classicSegments, trigger: r.classicPermTrigger }))
     check('the classic hero page carries the crab too', r.classicCrab === true, JSON.stringify(r.classicCrab))
+    const ripple = r.ripple || {}
+    check('the glyph field is off until its switch turns it on', ripple.off === true, JSON.stringify(ripple.off))
+    check('the hero root carries the glyph field\'s canvas, under its content and taking no press',
+      ripple.stamped === true && ripple.canvas === true && ripple.pointerEvents === 'none' && ripple.order === '-1', JSON.stringify(ripple))
+    check('the glyph field\'s switch takes the canvas off the hero root, and putting it back mounts it again',
+      ripple.gone === true && ripple.back === true, JSON.stringify({ gone: ripple.gone, back: ripple.back }))
     commonChecks(r)
   },
   // The conversation header's tab strip: the pill is drawn under the active tab
@@ -217,6 +223,15 @@ module.exports = {
     check('the closed drawer takes its parked rows out of the paint tree',
       r.syntheticVisibility === 'hidden' && r.syntheticRowVisibility === 'hidden',
       JSON.stringify({ panel: r.syntheticVisibility, row: r.syntheticRowVisibility }))
+    // The account area's switch is live: its teardown takes the row and the
+    // drawer away and hands the host's own footer back.
+    const footerSwitch = r.footerSwitch || {}
+    check('switching the sidebar account area off takes its row and drawer off the page, and on builds them again',
+      footerSwitch.before !== undefined && footerSwitch.before.row === true && footerSwitch.before.drawer === true &&
+        footerSwitch.before.takeover === true && footerSwitch.off !== undefined &&
+        footerSwitch.off.row === false && footerSwitch.off.drawer === false && footerSwitch.off.takeover === false &&
+        footerSwitch.back !== undefined && footerSwitch.back.row === true && footerSwitch.back.drawer === true,
+      JSON.stringify(footerSwitch))
     commonChecks(r)
   },
   // The permission control's ladder: the catalog in the skin order, with the

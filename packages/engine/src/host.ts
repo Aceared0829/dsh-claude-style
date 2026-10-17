@@ -1,4 +1,4 @@
-import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRemoteSettings, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
@@ -100,6 +100,13 @@ function cacheFirst<T extends Element>(selector: string) {
  */
 export const findAccessTrigger = cacheFirst<HTMLButtonElement>(PERMISSION_TRIGGER_SELECTOR)
 
+/**
+ * The host's hero-phase conversation root: the page before a session is chosen.
+ * The composer reads it once per pass, and the home page's own features mount
+ * against the same element.
+ */
+export const findHeroRoot = cacheFirst<HTMLElement>(`[${PHASE_ATTRIBUTE}="hero"]`)
+
 /** The sidebar footer, where the account row and the plugin footer entries live. */
 export const findFootArea = cacheFirst<HTMLElement>(FOOT_AREA_SELECTOR)
 
@@ -170,6 +177,30 @@ export function findComposerStats() {
   if (bar !== null) return bar
   const figure = document.querySelector<HTMLElement>(COMPOSER_STAT_SELECTOR)
   return figure === null ? null : figure.parentElement
+}
+
+/**
+ * The host's context meter inside `card`'s dock line, or null when the page
+ * carries none.
+ *
+ * The dock is the card's next sibling (a notice line, when there is one, sits
+ * before it), and the meter is the dialog trigger in it that draws a ring of
+ * `<circle>`s — the statistics pills draw none. The composer pass marks the
+ * node it finds, and the statistics feature reads the meter while that pass is
+ * not installed, so the answer is taken here rather than in either of them.
+ */
+export function findDockedContextMeter(card: Element | null) {
+  const dock = card === null ? null : card.nextElementSibling
+  if (dock === null) return null
+  const triggers = dock.querySelectorAll<HTMLElement>(DIALOG_TRIGGER_SELECTOR)
+  for (let i = 0; i < triggers.length; i++) {
+    const trigger = triggers[i]
+    if (trigger.querySelector(':scope > svg > circle') === null) continue
+    let node: HTMLElement = trigger
+    while (node.parentElement !== null && node.parentElement !== dock) node = node.parentElement
+    return node
+  }
+  return null
 }
 
 /** The editable draft inside `scope`: the element the caret and the send flight read. */

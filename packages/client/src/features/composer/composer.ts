@@ -1,7 +1,7 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '@dsh-claude-style/engine/bus'
-import { COMPOSER_STACK, cacheFirstMatch, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
+import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findDockedContextMeter, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -9,15 +9,9 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './composer.manifest'
 import { closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
+import { inPageBox } from '../../shared/page-zoom'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
-
-/**
- * The host's hero-phase conversation root, kept while it stays the first
- * match (D40). The composer reads it once per pass, and every other feature's
- * reading of the page follows from that answer.
- */
-const HERO_ROOT = cacheFirstMatch<HTMLElement>(`[${PHASE_ATTRIBUTE}="hero"]`)
 
 /** What other features read off the composer's reading (ui.composer). */
 export interface ComposerHandle extends FeatureHandle {
@@ -78,7 +72,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // conversation page the hero marker is absent, so a bare query re-walked
     // the document every frame for an answer that only the host's own
     // re-render can change (D9).
-    hero = HERO_ROOT() !== null
+    hero = findHeroRoot() !== null
     const scope = readPrefs().composerScope
     active = !composerRestyleRetired && (scope === 'all' || (hero ? scope === 'hero' : scope === 'conversation'))
     studioHome = hero && readPrefs().homeLayout === HOME_LAYOUT_STUDIO
@@ -189,31 +183,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const card of cards) card.toggleAttribute(DRAFT_EMPTY_ATTR, findComposerPlaceholder(card) !== null)
   }
 
-  /**
-   * The composer's dock line, which the host renders right after the card
-   * (a notice line, when there is one, sits before it).
-   */
-  function composerDock(card: Element) {
-    return card.nextElementSibling
-  }
-
-  /**
-   * The meter the host parks in that dock, or null when it is not there.
-   * Its trigger is told apart by its glyph (ui-conversation ContextMeter):
-   * the dialog trigger that draws a ring of `<circle>`s; the stats pills
-   * draw none.
-   */
-  function dockedContextMeter(dock: Element | null) {
-    if (dock === null) return null
-    for (const trigger of dock.querySelectorAll<HTMLElement>(DIALOG_TRIGGER_SELECTOR)) {
-      if (trigger.querySelector(':scope > svg > circle') === null) continue
-      let node: HTMLElement = trigger
-      while (node.parentElement !== null && node.parentElement !== dock) node = node.parentElement
-      return node
-    }
-    return null
-  }
-
   /** The custom properties the dock overlay reads to copy the toolbar row's own box. */
   const METER_ROW_OFFSET = '--dsh-claude-meter-row-offset'
   const METER_ROW_HEIGHT = '--dsh-claude-meter-row-height'
@@ -297,9 +266,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       meterRow = ''
     }
     if (meterRow !== '') return
-    const rowBox = row.getBoundingClientRect()
+    // The row and the stack in the pixels the two properties are read in
+    // (shared/page-zoom.ts).
+    const rowBox = inPageBox(row.getBoundingClientRect())
     if (rowBox.height <= 0) return
-    const stackBox = stack.getBoundingClientRect()
+    const stackBox = inPageBox(stack.getBoundingClientRect())
     const round = (value: number) => Math.round(value * 100) / 100
     meterRow = `${round(stackBox.bottom - rowBox.bottom)} ${round(rowBox.height)}`
     const [offset, height] = meterRow.split(' ')
@@ -342,8 +313,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       releaseMobileStats()
       return
     }
-    const stripBox = strip.getBoundingClientRect()
-    const dockBox = dock.getBoundingClientRect()
+    const stripBox = inPageBox(strip.getBoundingClientRect())
+    const dockBox = inPageBox(dock.getBoundingClientRect())
     const sharesBand = stripBox.height > 0 && stripBox.top < dockBox.bottom && stripBox.bottom > dockBox.top
     const lift = sharesBand ? Math.round(stripBox.height * 100) / 100 : 0
     const next = lift <= 0 ? '' : `${lift}px`
@@ -384,8 +355,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function meterPillWidth(meter: HTMLElement) {
     const trigger = meter.querySelector('button')
     if (trigger === null) return meter.offsetWidth
-    const wrapper = meter.getBoundingClientRect()
-    const face = trigger.getBoundingClientRect()
+    const wrapper = inPageBox(meter.getBoundingClientRect())
+    const face = inPageBox(trigger.getBoundingClientRect())
     // Rounded up: the room is a whole number of pixels, and one pixel more than
     // the pill takes never leaves the row's text under its face.
     return Math.ceil(Math.max(wrapper.right, face.right) - Math.min(wrapper.left, face.left))
@@ -423,7 +394,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     let meter = meterNode
     if (card === undefined) meter = null
-    else if (meter === null) meter = dockedContextMeter(composerDock(card))
+    else if (meter === null) meter = findDockedContextMeter(card)
     let room = ''
     if (meter !== null) {
       meter.toggleAttribute('data-dsh-claude-context-meter', true)

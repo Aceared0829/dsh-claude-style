@@ -554,8 +554,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   // Re-insert when a re-render swapped the host row, then mirror the running preset.
   function syncSegments() {
-    const isHero = ui.composer!.isHero()
-    const composerOn = ui.composer!.isActive()
+    // The composer feature leaves the page while its scope preference is off.
+    const isHero = ui.composer?.isHero() ?? false
+    const composerOn = ui.composer?.isActive() ?? false
 
     const { containers: existingPermContainers, segments: existingSegments, popover: strayPopover } = strayScan.existing(permContainer, segments)
 
@@ -601,7 +602,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // its composer in the conversation's single-line form, where this control is
     // the conversation's trigger and card; the composer pass reads the home
     // layout's answer (packages/client/src/features/composer/composer.ts).
-    const segmentsHere = isHero && !ui.composer!.isStudioHome()
+    const segmentsHere = isHero && !(ui.composer?.isStudioHome() ?? false)
 
     if (segmentsHere) {
       for (let i = 0; i < existingPermContainers.length; i++) {

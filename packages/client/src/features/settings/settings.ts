@@ -2,6 +2,7 @@ import * as React from 'react'
 import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATTR, SETTINGS_SECTION_SLOT, USERNAME_MAX } from '../../constants'
 import { SEGMENT_CLASS } from '../../shared/segment-control'
 import { loadModelCopy, onModelCopyLoaded } from '../model/model-copy'
+import { createHostAccountMenu } from '../account/host-menu'
 import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
 import { cacheFirstMatch, hostSlots } from '@dsh-claude-style/engine/host'
 import { motionMs } from '../../shared/motion'
@@ -380,12 +381,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // time, so retry the official-form binding before choosing a seat. It is
   // idempotent.
   adoptSettingsForm(ctx)
+  // The host's settings drive behind Ctrl+,: it presses the host's own entry,
+  // which outlives the account area's switch, and it has no drawer to fold.
+  const hostSettings = createHostAccountMenu({ close() {} })
   if (ui) {
     ui.settingsNav = {
       sync: syncSettingsNav,
       /** A pointer press anywhere: the nav's class changes are outside the
        * observer's attributeFilter, so no pass would fire for them. */
       onPointerDown() { syncSettingsNav() },
+      /** Ctrl+, opens settings, and the key goes no further. It rides this
+       * page rather than the account area, whose switch can take that away. */
+      onKey(e: KeyboardEvent) {
+        if (!(e.ctrlKey || e.metaKey) || e.key !== ',') return
+        e.preventDefault()
+        hostSettings.openSettings()
+      },
     }
     quickProviderHandle = () => ui.quickProviders ?? null
   }
@@ -426,6 +437,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   })
   return () => {
     stopThemeFlip()
+    hostSettings.stopSettingsDrive()
     if (ui && ui.settingsNav) {
       delete ui.settingsNav
     }

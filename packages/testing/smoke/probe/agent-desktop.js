@@ -256,10 +256,24 @@
         }
         return false
       }).length
-      // Ctrl+, opens the host's settings dialog through the account menu.
+      // Ctrl+, opens the host's settings dialog through the account menu. The
+      // shortcut rides the settings page, not the account area: switching that
+      // area off takes its row and drawer away and leaves the shortcut working.
+      window.__pushForm({ collapseFooter: false })
+      await sleep(400)
+      r.areaOff = {
+        takeover: document.body.hasAttribute('data-dsh-claude-footer-takeover'),
+        marked: document.querySelector('[data-dsh-claude-account-host-row]') !== null,
+      }
       document.dispatchEvent(new KeyboardEvent('keydown', { key: ',', ctrlKey: true, bubbles: true, cancelable: true }))
       await sleep(700)
       r.dialogAfterShortcut = document.querySelectorAll('[data-dsh-claude-part~="settings-area"] [role="dialog"]').length
+      window.__pushForm({ collapseFooter: true })
+      await sleep(400)
+      r.areaBack = {
+        takeover: document.body.hasAttribute('data-dsh-claude-footer-takeover'),
+        marked: document.querySelector('[data-dsh-claude-account-host-row]') !== null,
+      }
     })
   })
 })()

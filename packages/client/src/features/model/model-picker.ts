@@ -8,6 +8,7 @@ import { createModelCatalog } from './catalog'
 import { byModelId, createModelRows } from './rows'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { pageViewport } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -413,13 +414,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       const w2 = modelSubPop.offsetWidth
       const h2 = modelSubPop.offsetHeight
       const h1 = modelPop.offsetHeight
+      // The window in the same pixels as the two cards' sizes and the
+      // position the first level just took (shared/page-zoom.ts).
+      const viewport = pageViewport()
       // Beside the first level; flip to its left when the viewport is tight.
       let x2 = pos.x + modelPop.offsetWidth + 2
-      if (x2 + w2 > window.innerWidth - POPOVER_MARGIN) x2 = Math.max(POPOVER_MARGIN, pos.x - 4 - w2)
+      if (x2 + w2 > viewport.width - POPOVER_MARGIN) x2 = Math.max(POPOVER_MARGIN, pos.x - 4 - w2)
       // Bottom-aligned with the first level; a level 2 TALLER than level 1
       // keeps its top instead, so it cannot push itself off the top edge.
       let y2 = pos.y + Math.max(0, h1 - h2)
-      y2 = Math.max(POPOVER_MARGIN, Math.min(y2, window.innerHeight - h2 - POPOVER_MARGIN))
+      y2 = Math.max(POPOVER_MARGIN, Math.min(y2, viewport.height - h2 - POPOVER_MARGIN))
       modelSubPop.style.left = `${x2}px`
       modelSubPop.style.top = `${y2}px`
     }
@@ -513,10 +517,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Build/refresh the trigger, its label and the popover rows. */
   function syncModelControl() {
-    // Two ways to be off: the composer restyle does not apply to this page, or
-    // the picker preference is off. Both hand the host's own model seat and
-    // menu back, so both run the same sweep.
-    if (!ui.composer!.isActive() || !readPrefs().modelPicker) {
+    // The picker's own switch tears this feature down, so the composer restyle
+    // is the one way left to be off the page: it hands the host's own model
+    // seat and menu back through the same sweep.
+    if (ui.composer?.isActive() !== true) {
       dropModelControl()
       return
     }

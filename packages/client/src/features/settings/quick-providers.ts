@@ -50,6 +50,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     onWrite = null
     document.removeEventListener('pointerdown', onOutsidePointerDown, true)
     document.removeEventListener('keydown', onKeyDown, true)
+    if (unsubscribe !== null) {
+      unsubscribe()
+      unsubscribe = null
+    }
   }
 
   function onOutsidePointerDown(e: PointerEvent) {
@@ -117,6 +121,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     anchor.setAttribute('aria-expanded', 'true')
     onWrite = write
     providers = typeof ui.model?.providers === 'function' ? ui.model.providers() : []
+    // The catalog arrives after the card is up, and the picker's own switch
+    // takes the handle away and installs a fresh one, so the follow is taken
+    // per opening rather than once at install.
+    if (typeof ui.model?.onProviders === 'function') {
+      unsubscribe = ui.model.onProviders(list => {
+        providers = list
+        renderBody()
+      })
+    }
     card = buildElement('div', 'dsh-claude-popover-card dsh-claude-quick-popover')
     setMenuPopoverOpen(card, true)
     cardBody = buildElement('div', 'dsh-claude-popover-body')
@@ -131,15 +144,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function toggle(trigger: HTMLElement, write: QuickProvidersWrite) {
     if (card === null) open(trigger, write)
     else close()
-  }
-
-  // The catalog arrives after the settings page may already be open, so an
-  // open card follows it rather than showing an empty list until reopened.
-  if (typeof ui.model?.onProviders === 'function') {
-    unsubscribe = ui.model.onProviders(list => {
-      providers = list
-      if (card !== null) renderBody()
-    })
   }
 
   registerPopover('quickProviders', close)
@@ -161,10 +165,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   return () => {
     close()
     unregisterPopover('quickProviders')
-    if (unsubscribe !== null) {
-      unsubscribe()
-      unsubscribe = null
-    }
     delete ui.quickProviders
   }
 }

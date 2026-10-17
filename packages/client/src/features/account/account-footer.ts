@@ -9,6 +9,7 @@ import { createAccountRows } from './rows'
 import { createAccountSurface } from './surface'
 import type { AccountSurfaceMode } from './surface'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, unregisterPopover } from '../../shared/popover'
+import { inPageBox } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -557,7 +558,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const synthetic = surface.mode() === 'synthetic'
     const row = synthetic ? accountBtn : hostMenu.trigger()
     if (row === null) return
-    rowBoxes = { row, rowRect: row.getBoundingClientRect(), footRect: synthetic ? footArea.getBoundingClientRect() : null }
+    rowBoxes = { row, rowRect: inPageBox(row.getBoundingClientRect()), footRect: synthetic ? inPageBox(footArea.getBoundingClientRect()) : null }
   }
 
   /**
@@ -575,7 +576,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const synthetic = surface.mode() === 'synthetic'
     const measured = rowBoxes !== null && rowBoxes.row === row
       ? rowBoxes
-      : { row, rowRect: row.getBoundingClientRect(), footRect: synthetic ? footArea.getBoundingClientRect() : null }
+      : { row, rowRect: inPageBox(row.getBoundingClientRect()), footRect: synthetic ? inPageBox(footArea.getBoundingClientRect()) : null }
     const rowRect = measured.rowRect
     const rowWidth = Math.round(rowRect.width)
     if (rowWidth > 0 && rowWidth !== accountWidth) {
@@ -659,12 +660,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       closePopover()
     },
     openSettings: hostMenu.openSettings,
-    /** Ctrl+, opens settings, and the key goes no further. */
-    onKey(e: KeyboardEvent) {
-      if (!(e.ctrlKey || e.metaKey) || e.key !== ',') return
-      e.preventDefault()
-      hostMenu.openSettings()
-    },
     owns(target: Node) {
       if (!target) return false
       if (accountBtn !== null && accountBtn.contains(target)) return true

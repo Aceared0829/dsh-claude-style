@@ -1,4 +1,4 @@
-import { COMPOSER_STACK, conversationSessionId, findComposerSeat, findConversationSession } from '@dsh-claude-style/engine/host'
+import { COMPOSER_STACK, conversationSessionId, findComposerCard, findComposerSeat, findConversationSession, findHeroRoot } from '@dsh-claude-style/engine/host'
 import { motionReduced } from '../../core/prefs'
 import { createMascotSignals } from './mascot-signals'
 import type { MascotMoment } from './mascot-signals'
@@ -142,7 +142,12 @@ export function createMascotPlayer(ctx: HostContext, ui: FeatureUi<typeof manife
    * when neither is on screen.
    */
   function findStand(conversation: boolean): { element: Element, session: string | null, place: string } | null {
-    const heroCard = ui.composer ? ui.composer.heroCard() : null
+    // The composer pass answers with the card it read; with that feature off
+    // the page (its scope preference) the hero root and the page's first card
+    // are the same answer.
+    const heroCard = ui.composer
+      ? ui.composer.heroCard()
+      : findHeroRoot() === null ? null : findComposerCard()
     if (heroCard !== null) return { element: heroCard, session: null, place: 'card' }
     if (!conversation) return null
     if (ui.composer !== undefined && ui.composer.isChatHidden()) return null

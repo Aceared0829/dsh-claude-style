@@ -237,7 +237,12 @@ module.exports = {
       JSON.stringify({ containers: r.injectAfterClose, menus: r.hostMenuAfterClose }))
     check('closing the host menu clears the skin marker',
       r.accountMenuMarkAfterClose === 0, JSON.stringify(r.accountMenuMarkAfterClose))
-    check('Ctrl+, opens the host dialog', r.dialogAfterShortcut === 1, JSON.stringify(r.dialogAfterShortcut))
+    check('with the account area switched off, its takeover mark and the host row\'s go, and the switch brings them back',
+      !!r.areaOff && r.areaOff.takeover === false && r.areaOff.marked === false &&
+        !!r.areaBack && r.areaBack.takeover === true && r.areaBack.marked === true,
+      JSON.stringify({ off: r.areaOff, back: r.areaBack }))
+    check('Ctrl+, opens the host dialog while the account area is off',
+      r.dialogAfterShortcut === 1, JSON.stringify(r.dialogAfterShortcut))
     check('the first account frame reads the profile exactly once',
       r.profileReadsAfterFirst === 1, JSON.stringify(r.profileReadsAfterFirst))
     check('a repeated same-state frame reads nothing more',

@@ -1,6 +1,6 @@
 import { COMPOSER_STAT_SELECTOR, DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { observeMatches } from '@dsh-claude-style/engine/bus'
-import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
+import { cacheFirstMatch, findComposerCard, findDockedContextMeter } from '@dsh-claude-style/engine/host'
 import { removeStrayNodes } from '../../shared/popover'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 
@@ -29,11 +29,16 @@ const HOST_STATS_DIALOGS = '[data-session-stats-details], [data-session-stats-us
 let dialogs: MatchList<HTMLElement> | null = null
 
 /**
- * The context meter, stamped by the composer pass
- * (features/composer/composer.ts), which is also what tells this feature the
- * composer restyle covers the page.
+ * The host's context meter: the node the composer pass marks
+ * (features/composer/composer.ts), else the host's own docked meter — that
+ * pass is gone while the composer's scope preference is off, and the numbers
+ * this feature writes into the panel are read either way.
  */
-export const findContextMeter = cacheFirstMatch<HTMLElement>('[data-dsh-claude-context-meter]')
+const markedMeter = cacheFirstMatch<HTMLElement>('[data-dsh-claude-context-meter]')
+
+export function findContextMeter() {
+  return markedMeter() ?? findDockedContextMeter(findComposerCard())
+}
 
 /**
  * The occupancy the meter reads, as a percentage, or null when the reading

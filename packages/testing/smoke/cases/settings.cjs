@@ -16,8 +16,8 @@ module.exports = {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['brand', 'username', 'autoPopover'],
-      appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
+      general: ['brand', 'username', 'pageZoom', 'autoPopover'],
+      appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'statsPosition', 'viewTabs', 'headerBand'],
@@ -60,6 +60,15 @@ module.exports = {
       !!hero.composer && JSON.stringify(hero.composer.disabled) === '[]' &&
         !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition","headerBand"]',
       JSON.stringify(hero))
+    const pageZoom = settings.pageZoom || {}
+    const zoomed = pageZoom.zoomed || {}
+    const shrunk = pageZoom.shrunk || {}
+    const following = pageZoom.following || {}
+    check('page zoom reaches the document and the page is drawn at it above and below its own size; following the system writes neither',
+      zoomed.attr === '1.5' && zoomed.zoom === '1.5' &&
+        shrunk.attr === '0.8' && shrunk.zoom === '0.8' &&
+        following.attr === null && following.zoom === '1',
+      JSON.stringify(pageZoom))
     const link = settings.link || {}
     const mark = settings.mark || {}
     check('the heading carries the plugin\'s repository link, opening in a new tab with an accessible name',
@@ -146,7 +155,7 @@ module.exports = {
     const sw = r.switches || {}
     const keys = Object.keys(sw.start || {})
     const present = (marks, key) => !!marks && marks[key] > 0
-    check('every switched feature is on by default', keys.length === 4 && keys.every((key) => present(sw.start, key)), JSON.stringify(sw.start))
+    check('every switched feature is on by default', keys.length === 5 && keys.every((key) => present(sw.start, key)), JSON.stringify(sw.start))
     for (const step of sw.steps || []) {
       check(`switching ${step.key} off leaves none of its marks and keeps the others`,
         !present(step.off, step.key) && keys.filter((key) => key !== step.key).every((key) => present(step.off, key)),
@@ -171,7 +180,7 @@ module.exports = {
     const sw = r.switches || {}
     const keys = Object.keys(sw.start || {})
     check('a feature switched off before the page loads never installs',
-      keys.length === 4 && keys.every((key) => sw.start[key] === 0), JSON.stringify(sw.start))
+      keys.length === 5 && keys.every((key) => sw.start[key] === 0), JSON.stringify(sw.start))
     check('switching them on installs every one, live',
       !!sw.allOn && keys.every((key) => sw.allOn[key] > 0), JSON.stringify(sw.allOn))
     commonChecks(r)

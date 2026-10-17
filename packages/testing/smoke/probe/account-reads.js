@@ -141,4 +141,26 @@
     r.modelSeat.markedRoot = getComputedStyle(modelSeatRoot).display
     modelHolder.remove()
   })
+
+  // The account area's own switch is live: off runs the footer's teardown, which
+  // takes the self-built row and its drawer away and gives the host's footer
+  // back; on builds both again.
+  probe.step(async function () {
+    await probe.onlyFor(['account'], async function () {
+      var read = function () {
+        return {
+          takeover: document.body.hasAttribute('data-dsh-claude-footer-takeover'),
+          drawer: document.querySelector('.dsh-claude-account-popover') !== null,
+          row: document.querySelector('.dsh-claude-account-btn') !== null,
+        }
+      }
+      var before = read()
+      window.__pushForm({ collapseFooter: false })
+      await sleep(500)
+      var off = read()
+      window.__pushForm({ collapseFooter: true })
+      await sleep(500)
+      r.footerSwitch = { before: before, off: off, back: read() }
+    })
+  })
 })()

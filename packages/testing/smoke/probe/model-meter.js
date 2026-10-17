@@ -118,6 +118,23 @@
         secondLevelLines: lineCount(r.modelMeter.levelTwo),
         bareSecondLevelLines: lineCount(bareLevelTwo),
       }
+      // The picker's own switch is live: off hands the host's seat back, on
+      // puts the skin's trigger into it again.
+      window.__pushForm({ modelPicker: false })
+      await sleep(400)
+      var pickerOff = {
+        trigger: document.querySelector('.dsh-claude-model-btn') !== null,
+        hostMarked: document.querySelector('[data-dsh-claude-model-host]') !== null,
+      }
+      window.__pushForm({ modelPicker: true })
+      await sleep(500)
+      r.modelPicker = {
+        off: pickerOff,
+        back: {
+          trigger: document.querySelector('.dsh-claude-model-btn') !== null,
+          hostMarked: document.querySelector('[data-dsh-claude-model-host]') !== null,
+        },
+      }
       card.remove()
     })
   })

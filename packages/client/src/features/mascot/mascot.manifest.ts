@@ -1,3 +1,4 @@
+import { MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -7,6 +8,7 @@ export default {
   reads: ['composer'],
   contracts: ['chat.think-running', 'composer.fallback-panel', 'composer.seat', 'composer.stack', 'conversation.session', 'conversation.session-attribute'],
   pref: 'mascot',
+  prefValues: [MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY],
   stylesheets: [
     { file: 'crab.css', rank: 350 },
     { file: 'whale.css', rank: 360 },

@@ -61,5 +61,12 @@ module.exports = {
         descriptions.bareListed === 3 && descriptions.bareLines === 0 &&
         descriptions.secondLevelLines === 0 && descriptions.bareSecondLevelLines === 0,
       JSON.stringify(descriptions))
+    // The picker's switch is live: its teardown hands the host's own seat and
+    // menu back, and installing it again takes the seat over once more.
+    const picker = r.modelPicker || {}
+    check('switching the model picker off hands the host\'s own seat back, and on takes it over again',
+      picker.off !== undefined && picker.off.trigger === false && picker.off.hostMarked === false &&
+        picker.back !== undefined && picker.back.trigger === true && picker.back.hostMarked === true,
+      JSON.stringify(picker))
   },
 }
