@@ -1522,8 +1522,8 @@
       "prop": "flex",
       "verdict": "transient state"
     },
-    "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window]>[data-markdown-variant]{transform:none!;transition:none}|transform": {
-      "selector": "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window]>[data-markdown-variant]",
+    "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text]{transform:none!;transition:none}|transform": {
+      "selector": "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text]",
       "prop": "transform",
       "verdict": "transient state"
     },

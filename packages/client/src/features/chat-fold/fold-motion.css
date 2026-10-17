@@ -98,7 +98,6 @@ body[data-dsh-claude-style] [data-dsh-claude-rolling] > * {
    window is exactly as tall as the text and nothing is faded. */
 
 body[data-dsh-claude-style] [data-dsh-claude-reason-window] {
-  --dsh-claude-reason-hold: var(--dsh-claude-period-hold);
   --dsh-claude-reason-lines: 2;
   --dsh-claude-reason-window-lines: 4;
   --dsh-claude-reason-window-cap: 400px;
@@ -114,7 +113,7 @@ body[data-dsh-claude-style] [data-dsh-claude-reason-window][data-dsh-claude-reas
   mask-image: linear-gradient(transparent 0, black var(--dsh-claude-reason-fade), black calc(100% - var(--dsh-claude-reason-fade)), transparent 100%);
 }
 
-body[data-dsh-claude-style] [data-dsh-claude-reason-window] > [data-markdown-variant] {
+body[data-dsh-claude-style] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text] {
   transform: translateY(0);
   transition: transform var(--dsh-claude-reason-step) var(--dsh-claude-reason-ease);
   will-change: transform;
@@ -130,7 +129,7 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-r
   mask-image: none;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-reason-window] > [data-markdown-variant] {
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text] {
   transform: none !important;
   transition: none;
 }

@@ -1,6 +1,7 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { observeMatches } from '@dsh-claude-style/engine/bus'
 import { motionReduced } from '../../core/prefs'
+import { motionMs } from '../../shared/motion'
 import { EXPANDED_ATTRIBUTE, REASONING_TEXT_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -11,10 +12,13 @@ import { EXPANDED_ATTRIBUTE, REASONING_TEXT_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNI
  *
  * What the snippet loops over a fixed transcript, this reads as live text: no
  * copy, no wrap, and the stepping stops at the newest line, so the reader never
- * loses the end of the reasoning. The host keeps its row, its header and its own
+ * loses the end of the reasoning. A model can write faster than two lines a
+ * step, so one step rises by as many two-line steps as the text has grown past
+ * the window since the last. The host keeps its row, its header and its own
  * collapsing: the window is the nearest ancestor of the host's rendered Markdown
  * that has a box of its own — one host version wraps it in a slot that generates
- * none — and what slides inside that is the Markdown itself.
+ * none — and what slides inside that is the Markdown itself, marked for the
+ * stylesheet, since the slot between the two leaves it no child of the window.
  *
  * The window grows with the reasoning and stops at the height reasoning is
  * allowed to reach — the host's own cap on a process group's body, the tallest
@@ -32,17 +36,26 @@ import { EXPANDED_ATTRIBUTE, REASONING_TEXT_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNI
 
 /** On the reasoning's window while it stands: the stylesheet clips it and hangs the step on the text. */
 export const REASON_WINDOW_ATTR = 'data-dsh-claude-reason-window'
+/** On the Markdown the window slides: the stylesheet hangs the step's transition on it. */
+export const REASON_TEXT_ATTR = 'data-dsh-claude-reason-text'
 /** On the window once the text has filled the cap: the stylesheet masks its edges. */
 export const REASON_CAPPED_ATTR = 'data-dsh-claude-reason-capped'
 /** The window's height in pixels: the text's own height, held under the cap. */
 export const REASON_WINDOW_HEIGHT_PROPERTY = '--dsh-claude-reason-window-height'
 
 /**
- * What each of the snippet's tokens falls back to when the stylesheet's own
+ * What each of the snippet's lengths falls back to when the stylesheet's own
  * value cannot be read. `cap` mirrors the host's max-height on a process group's
  * body, which the stylesheet's --dsh-claude-reason-window-cap carries.
  */
-const FALLBACKS = { hold: 840, lines: 2, cap: 400 }
+const FALLBACKS = { lines: 2, cap: 400 }
+
+/**
+ * The wait between two steps, read off the token table (D9): the shipped
+ * stylesheet is minified and writes a time in seconds, so a computed value read
+ * as a number of milliseconds turns the wait into a one-millisecond loop.
+ */
+const HOLD_MS = motionMs('--dsh-claude-period-hold')
 
 /** A duration, a count or a length written in a CSS token. */
 function tokenNumber(value: string, fallback: number) {
@@ -106,13 +119,15 @@ export function createReasoningStream() {
     state.window.removeAttribute(REASON_WINDOW_ATTR)
     state.window.removeAttribute(REASON_CAPPED_ATTR)
     state.window.style.removeProperty(REASON_WINDOW_HEIGHT_PROPERTY)
+    state.text.removeAttribute(REASON_TEXT_ATTR)
     state.text.style.removeProperty('transform')
   }
 
   /**
    * One wait of the window: the window takes the text's own height up to the cap,
-   * the text rises by the snippet's step once it stands at the cap, never past
-   * the newest line, and the next wait is booked for when this one has landed.
+   * the text rises by whole steps once it stands at the cap — one, or as many as
+   * the text has grown past the window — never past the newest line, and the
+   * next wait is booked for when this one has landed.
    * The wait is also where the text is re-measured, so a reasoning that has
    * grown since the last step is met at its new height on this one.
    */
@@ -134,7 +149,6 @@ export function createReasoningStream() {
     const lineHeight = lineHeightOf(state.text)
     const capPx = Math.round(tokenNumber(style.getPropertyValue('--dsh-claude-reason-window-cap'), FALLBACKS.cap))
     const stepPx = Math.round(lineHeight * tokenNumber(style.getPropertyValue('--dsh-claude-reason-lines'), FALLBACKS.lines))
-    const holdMs = tokenNumber(style.getPropertyValue('--dsh-claude-reason-hold'), FALLBACKS.hold)
     const height = Math.min(state.text.offsetHeight, capPx)
     const capped = height >= capPx
     // Only what changes is written: the fold watches the row's attributes, and a
@@ -144,7 +158,8 @@ export function createReasoningStream() {
     if (capped !== viewport.hasAttribute(REASON_CAPPED_ATTR)) viewport.toggleAttribute(REASON_CAPPED_ATTR, capped)
     if (capped) {
       const reachable = Math.max(0, state.text.offsetHeight - height)
-      const next = Math.min(state.offset + stepPx, reachable)
+      const steps = Math.max(1, Math.floor((reachable - state.offset) / Math.max(1, stepPx)))
+      const next = Math.min(state.offset + steps * stepPx, reachable)
       if (next !== state.offset) {
         state.offset = next
         state.text.style.transform = `translateY(${-next}px)`
@@ -153,7 +168,7 @@ export function createReasoningStream() {
       state.offset = 0
       state.text.style.removeProperty('transform')
     }
-    state.timer = window.setTimeout(() => tick(row, state), Math.max(1, holdMs))
+    state.timer = window.setTimeout(() => tick(row, state), HOLD_MS)
   }
 
   /** Give one row the window its phase asks for, or take it off. */
@@ -173,6 +188,7 @@ export function createReasoningStream() {
     // The mark is what the stylesheet clips and what the fold's own readers
     // look for; the capped mark joins it from the first wait that reaches the cap.
     viewport.setAttribute(REASON_WINDOW_ATTR, '')
+    text.setAttribute(REASON_TEXT_ATTR, '')
     tick(row, state)
   }
 

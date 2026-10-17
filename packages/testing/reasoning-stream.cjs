@@ -15,6 +15,10 @@
  */
 'use strict'
 const { settlePage, recordUntil } = require('./lane.cjs')
+const { bound } = require('./bounds.cjs')
+
+/** The least wait between two steps of the window; the value and its reason are in packages/testing/bounds.json. */
+const STEP_MIN_GAP_MS = bound('reasonStepMinGapMs')
 
 /** The thinking row, the window the module puts on it and the text it slides. */
 const HOST = {
@@ -90,6 +94,10 @@ function readInPage(host) {
     masked: mask.startsWith('linear-gradient'),
     textHeight: Math.round(text.getBoundingClientRect().height),
     offset: matrix === null ? 0 : -Number(matrix[1]),
+    // The step the module wrote, apart from where the transition has carried
+    // the text so far: it changes once per wait, which is what times the clock.
+    target: text.style.transform,
+    at: Math.round(performance.now()),
     lineHeight: Math.round(Number.parseFloat(getComputedStyle(text).lineHeight)),
   }
 }
@@ -199,6 +207,19 @@ function reasoningStreamScenario({ check }) {
       const final = samples[samples.length - 1]
       const unclosed = final !== undefined && final.capped === false && lagging(final) ? [final] : []
       const door = notes.door ?? {}
+      // When the written step changed, frame by frame: the wait between two of
+      // them is the snippet's hold, and a wait read in the wrong unit steps the
+      // text on every timer turn.
+      const stepped = samples.filter((sample, index) => index > 0 && sample.target !== samples[index - 1].target)
+      const gaps = stepped.slice(1).map((sample, index) => sample.at - stepped[index].at)
+      // Where each step was written to, against the end the text had then: a step
+      // rises as far as the text has grown, so it lands within one step of the
+      // newest line and never past it.
+      const landings = cap === null ? [] : stepped.map((sample) => {
+        const written = /translateY\((-?[\d.]+)px\)/.exec(sample.target)
+        return { to: written === null ? 0 : -Number(written[1]), end: Math.max(0, sample.textHeight - cap) }
+      })
+      const short = landings.filter((landing) => landing.to > landing.end + 0.5 || landing.to < landing.end - step)
       return [
         // The feature's own fold of this row is a press down the fold glide's
         // capture path, so the body it folds has to roll like any other door; a
@@ -223,10 +244,13 @@ function reasoningStreamScenario({ check }) {
           Math.max(0, ...offsets) > 0 &&
             offsets.some((offset) => Math.round(offset) % (step === 0 ? 1 : step) !== 0),
           JSON.stringify({ offsets: offsets.slice(0, 8), step })),
-        check('走到的位置不超过内容的末尾，最新一行始终留在窗口里',
+        check('两步之间隔着一整段停留，文本不会每个计时器周期都往上走',
+          gaps.length > 0 && Math.min(...gaps) >= STEP_MIN_GAP_MS,
+          JSON.stringify({ steps: stepped.length, gaps: gaps.slice(0, 8) })),
+        check('走到的位置不超过内容的末尾，每一步都走到最新一行',
           cap !== null && offsets.every((offset) => offset <= reachable + 0.5) &&
-            Math.max(...offsets) >= reachable - step,
-          JSON.stringify({ max: Math.max(...offsets), reachable, step, cap, last })),
+            landings.length > 0 && short.length === 0,
+          JSON.stringify({ max: Math.max(...offsets), reachable, step, cap, landings: landings.slice(-6), short: short.slice(0, 3) })),
         check('推理结束后窗口撤下，整段文本原样站着，不再被裁也不再位移',
           standing.windowed === false && standing.offset === 0 && standing.masked === false &&
             (standing.textHeight ?? 0) >= tallest &&
