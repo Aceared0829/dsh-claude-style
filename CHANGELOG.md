@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- **搜索面板的分类页签，按下哪一枚滑块就滑向哪一枚**：点「会话」「项目」这些分类时，背后的滑块在按下的一刻出发，不再等到列表下一次重绘才移动。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- **The search palette's filter highlight follows the tab pressed**: the sliding background starts toward a pressed category — Sessions, Projects and the rest — within the press itself, instead of waiting for the list to be drawn again.
+
 ## [0.16.1] - 2026-10-17
 
 [中文](#cn-0.16.1) | [English](#en-0.16.1)
