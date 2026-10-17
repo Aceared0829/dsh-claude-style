@@ -34,6 +34,8 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const DEFAULT_HOME = path.join(ROOT, '.debug', 'e2e', 'home')
 /** Preloaded into the host so it ends with the process that started it. */
 const LIFELINE = path.join(__dirname, 'lifeline.cjs')
+/** A console line the GPU process writes into the page on a runner without one. */
+const DRIVER_MESSAGE = /^\[\.WebGL-[^\]]*\]GL Driver Message/
 
 /**
  * Give the home a workspace of the lane's own when it has none.
@@ -139,7 +141,7 @@ async function start(options = {}) {
   fs.mkdirSync(home, { recursive: true })
   provisionHome(home)
   // The Anthropic faces are the reader's own download and never ship in the
-  // package (D11): the lane plants this checkout's copies in the scratch home's
+  // package (D75): the lane plants this checkout's copies in the scratch home's
   // drop point, so a capture shows the intended typography instead of falling
   // back per face and logging a 404 for each.
   const dropPoint = path.join(home, 'dsh-claude-style', 'fonts')
@@ -251,11 +253,27 @@ async function openPage(url, options = {}) {
     : await sharedOn(options.browser, options)
   const problems = []
   opened.page.on('console', (message) => {
-    if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`)
+    const problem = consoleProblem(message)
+    if (problem !== null) problems.push(problem)
   })
   opened.page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
   await opened.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
   return { page: opened.page, context: opened.context, browser: opened.browser, problems, close: opened.close }
+}
+
+/**
+ * What one console message means for a check that reads the page's problems:
+ * an error or a warning the page itself wrote. The GPU process speaks through
+ * the page's console on a runner without one, and a driver message is the
+ * machine's, not the page's.
+ *
+ * @param message - a Playwright console message.
+ * @returns the problem's line, or null when the message is not the page's.
+ */
+function consoleProblem(message) {
+  if (DRIVER_MESSAGE.test(message.text())) return null
+  if (message.type() !== 'error' && message.type() !== 'warning') return null
+  return `${message.type()}: ${message.text()}`
 }
 
 /** One page in a context of its own on a browser the caller owns. */
@@ -379,7 +397,7 @@ async function firstRunOverlayText(page) {
   return text.replace(/\s+/g, ' ').trim().slice(0, 200)
 }
 
-module.exports = { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, DEFAULT_HOME }
+module.exports = { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, consoleProblem, DEFAULT_HOME }
 
 if (require.main === module) {
   const home = argOf('home')
