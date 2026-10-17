@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 10,
-  "at": "2026-10-17",
-  "external": false,
-  "zh": "**流式输出时，写回的 tokens 随文字上涨**：会话数字里写回的那一数在答案流式输出期间按已经到达的文字估算着上涨，不再等整段答案写完才跳一次；这一步结算时换成提供方给出的真实值，读入的 tokens、缓存命中率与计量饼的占用都不动。",
-  "en": "**The tokens written back climb while an answer streams**: the session numbers' written-back figure grows with the text that has arrived instead of standing still until the answer ends, and takes the provider's own number once that step settles; the tokens read in, the cache-hit share and the meter's occupancy stay as they were."
-}

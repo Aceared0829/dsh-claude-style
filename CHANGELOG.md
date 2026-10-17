@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.16.2] - 2026-10-17
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.16.2) | [English](#en-0.16.2)
+
+<h3 id="cn-0.16.2">新增功能</h3>
 
 - **侧栏里进行中的对话标记可以换回滚动的圆环**：「动效」页新增「进行中的对话」一行，两张卡片带出「呼吸灯」（默认）与「滚动圆环」两档（设置项 `ongoingIndicator` 的取值为 `breathe` 与 `ring`）；侧栏里正在跑的那一行立刻换过来，动画设为「减弱」时两档都停住。
 
@@ -23,8 +25,9 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **搜索面板的分类页签，按下哪一枚滑块就滑向哪一枚**：点「会话」「项目」这些分类时，背后的滑块在按下的一刻出发，不再等到列表下一次重绘才移动。
 - **思考行回放推理时不再拖慢页面**：推理窗口里的文字每 0.84 秒平滑上移一步，一步追到最新一行，正在思考的回合里页面保持流畅（本机实测：修复前单帧最长 470 毫秒、主线程阻塞 406 毫秒，修复后 29 秒内没有超过 100 毫秒的帧）。
+- **推理窗口的高度跟着文字一起长**：正在思考的回合里，推理每写出新的一段，窗口就在同一帧长到文字自己的高度，最新的几行不再被下缘裁住、等到下一个节拍才露出来；长到上限高度之后照旧按原来的节拍上移。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.16.2">New Features</h3>
 
 - **The sidebar's mark for a running conversation can be the turning ring again**: the Motion tab gains Ongoing conversations, whose two cards offer Breathing light (the default) and Turning ring (the `ongoingIndicator` setting is `breathe` or `ring`); the running row changes at once, and with Animation set to Reduced both stand still.
 
@@ -41,6 +44,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **The search palette's filter highlight follows the tab pressed**: the sliding background starts toward a pressed category — Sessions, Projects and the rest — within the press itself, instead of waiting for the list to be drawn again.
 - **Replaying the reasoning in the thinking row no longer slows the page**: the text in the reasoning window glides up one step every 0.84 seconds, each step reaching the newest line, and the page stays smooth while the model thinks (measured locally: the longest frame went from 470 ms with 406 ms of main-thread blocking to no frame over 100 ms across 29 seconds).
+- **The reasoning window grows with its text**: while the model reasons, the window takes the text's own height within the frame the text arrives, so the newest lines are no longer held behind its lower edge until the next beat; once the window reaches the cap it steps up on the same clock as before.
 
 ## [0.16.1] - 2026-10-17
 
