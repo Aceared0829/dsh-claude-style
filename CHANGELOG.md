@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- **设置页里刚改动的开关不再先跳回原值**：改动交给宿主的这段时间里，宿主重读设置文档不会再把页面上的值盖回改动之前，控件停在读者按下的那一档，宿主给出答复时再按答复校正。
 - **关闭「聊天区滚动动画」后，进行中的状态行留在文档里**：此时滚动整份交回宿主，这一行不再停在输入框上方，读者往回翻看时它随内容一起滚走。
 
 <h3 id="en-unreleased">New Features</h3>
@@ -20,6 +21,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- **A control just changed in the settings page no longer snaps back first**: while the change is crossing to the host, a re-read of the settings document no longer puts the pre-change value back on the page — the control stays where the reader left it and follows the host's answer when it arrives.
 - **With the chat-area scrolling animation off, the running status line keeps its document place**: the host owns the scroll then, so the line no longer rests above the composer and wheels away with the content as you read back.
 
 ## [0.16.2] - 2026-10-17
