@@ -47,11 +47,11 @@ REACT = 'https://unpkg.com/@lobehub/icons@1.95.0'
 VERSION = '1.95.0'
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-COPY = os.path.join(ROOT, 'src', 'model-descriptions.json')
-OUT_DIR = os.path.join(ROOT, 'src', 'assets', 'icons', 'combine')
+COPY = os.path.join(ROOT, 'packages', 'client', 'data', 'model-descriptions.json')
+OUT_DIR = os.path.join(ROOT, 'packages', 'assets', 'src', 'icons', 'combine')
 # Hand-provided artwork (a ready-made lockup, or one file holding both halves) is
 # preferred over anything fetched: <brand>.svg here wins.
-COMBINE_SRC = os.path.join(ROOT, 'src', 'assets', 'icons')
+COMBINE_SRC = os.path.join(ROOT, 'packages', 'assets', 'src', 'icons')
 
 # Canvas colours the contrast check is run against (packages/client/src/theme/tokens.css).
 LIGHT_CANVAS = '#fcfcfb'
@@ -486,6 +486,17 @@ def main():
                         mark_part = '<g fill="currentColor">%s</g>' % mark_part
                     if 'fill=' not in text_part:
                         text_part = '<g fill="currentColor">%s</g>' % text_part
+                    # Such an artwork is mono, so its colour layer is the mark repainted
+                    # in the `tint` the copy document names; a colour that would not read
+                    # on the ivory canvas is dropped the way a fetched one is.
+                    colour_body = None
+                    tint_colour = spec.get('tint')
+                    if tint_colour is not None:
+                        if contrast(tint_colour, LIGHT_CANVAS) >= MIN_CONTRAST:
+                            colour_body = tint(mark_part, tint_colour)
+                            tinted.append(brand)
+                        else:
+                            mono_only.append((brand, tint_colour))
                     mark_ink = ink_box(mark_part)
                     text_ink = ink_box(text_part)
                     svg = compose(
@@ -494,7 +505,7 @@ def main():
                         [mark_ink[0], mark_ink[1], mark_ink[2] - mark_ink[0], mark_ink[3] - mark_ink[1]],
                         text_part,
                         [text_ink[0], text_ink[1], text_ink[2] - text_ink[0], text_ink[3] - text_ink[1]],
-                        None, word, 1.0, float(spec.get('textFrom', 0.0)),
+                        colour_body, word, 1.0, float(spec.get('textFrom', 0.0)),
                     )
                 else:
                     mono = inner(jobs[urls['mark']])[1]

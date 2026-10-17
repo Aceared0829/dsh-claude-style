@@ -82,6 +82,9 @@ export const SOURCE_ONLY = new Set([
   'mascot/crab-laptop-ink.png',
   // scripts/fetch-lobe-combines.py composes the openai lockup from this mark.
   'icons/openai.svg',
+  // No upstream icon carries Beam's vendor, so its lockup is composed from this
+  // artwork the same way.
+  'icons/reflection.svg',
 ])
 
 /**

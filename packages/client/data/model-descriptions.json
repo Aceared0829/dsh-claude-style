@@ -65,17 +65,23 @@
       },
       { "match": "mimo", "brand": "xiaomimimo" },
       { "match": "longcat", "brand": "longcat" },
-      { "match": "sonar|perplexity", "brand": "perplexity" }
+      { "match": "sonar|perplexity", "brand": "perplexity" },
+      {
+        "match": "beam",
+        "brand": "reflection",
+        "note": "Beam is Reflection's own line, so its rows draw the vendor's lockup — whose word is the vendor's, and the catalog's own name never spells it (`Beam Free · OpenCode Go`), so the label leads with the lockup instead of replacing a word in it."
+      }
     ],
     "lockups": {
-      "note": "Per-brand overrides for the vendored lockup, applied by scripts/fetch-lobe-combines.py. `word` is the word the lockup stands in for inside a model name (it must match how the catalog spells it, which is not always Lobe's TITLE), `mark` and `text` name the Lobe icons the two halves are taken from (so a model line can wear its own mark with its parent's wordmark), and `keep` crops a wordmark to a fraction of its ink width (GLM-V's \"-V\" is not part of the name).",
+      "note": "Per-brand overrides for the vendored lockup, applied by scripts/fetch-lobe-combines.py. `word` is the word the lockup stands in for inside a model name (it must match how the catalog spells it, which is not always Lobe's TITLE), `mark` and `text` name the Lobe icons the two halves are taken from (so a model line can wear its own mark with its parent's wordmark), `keep` crops a wordmark to a fraction of its ink width (GLM-V's \"-V\" is not part of the name), and `tint` is the brand colour a hand-provided mark wears on the ivory canvas, where a fetched mark carries Lobe's own.",
       "meta": { "word": "Meta", "lockup": true },
       "openai": { "word": "GPT", "local": "openai.svg", "textFrom": 0.529 },
       "tencent": { "word": "Hunyuan", "mark": "hunyuan", "text": "tencent" },
       "stepfun": { "word": "Step", "mark": "stepfun", "text": "stepfun" },
       "xiaomimimo": { "word": "MiMo", "mark": "xiaomimimo", "text": "xiaomimimo" },
       "nanobanana": { "word": "Nano Banana" },
-      "zai": { "word": "GLM", "mark": "zai", "text": "glmv", "keep": 0.62 }
+      "zai": { "word": "GLM", "mark": "zai", "text": "glmv", "keep": 0.62 },
+      "reflection": { "word": "Reflection", "tint": "#1e3207" }
     }
   },
   "families": [
