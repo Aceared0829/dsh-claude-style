@@ -15,10 +15,11 @@
  * work on a machine that has never reached the source, and a copy newer than
  * the cache (a plugin upgrade) wins over a stale download.
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { statSync } from 'node:fs'
 import { join } from 'node:path'
 import type { PeakCatalog, RateProfile } from '@dsh-claude-style/contracts/peakrate'
-import type { DshContext } from './dsh.js'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 import { cachePath, readJsonDocument, writeJsonDocument } from './cache-file.js'
 import { packageRoot } from './package-root.js'
 import { parseCatalog } from './peakrate-catalog.js'
@@ -101,7 +102,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     if (parsed === null) {
       // The shipped copy is produced from the source at release time; one that
       // no longer parses means the build shipped the wrong document.
-      warn(`dsh-claude-style: lib/${PEAKRATE_CATALOG_FILE} is not a catalog this build understands`)
+      warn(`${PACKAGE_NAME}: lib/${PEAKRATE_CATALOG_FILE} is not a catalog this build understands`)
       return undefined
     }
     return parsed
@@ -155,7 +156,7 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
       try {
         const response = await fetch(PEAKRATE_CATALOG_URL, { signal: controller.signal })
         if (!response.ok) {
-          warn(`dsh-claude-style: peak rate source answered ${response.status}; keeping the current catalog`)
+          warn(`${PACKAGE_NAME}: peak rate source answered ${response.status}; keeping the current catalog`)
           return false
         }
         raw = await response.json()
@@ -166,12 +167,12 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     } catch (error) {
       // A source that cannot be reached is not a fault here: the meter keeps
       // judging by the catalog already held
-      warn(`dsh-claude-style: peak rate source unreachable, keeping the current catalog: ${(error as { message?: string }).message}`)
+      warn(`${PACKAGE_NAME}: peak rate source unreachable, keeping the current catalog: ${(error as { message?: string }).message}`)
       return false
     }
     const parsed = parseCatalog(raw)
     if (parsed === null) {
-      warn('dsh-claude-style: peak rate source answered a document this build does not understand; keeping the current catalog')
+      warn(`${PACKAGE_NAME}: peak rate source answered a document this build does not understand; keeping the current catalog`)
       return false
     }
     catalog = parsed

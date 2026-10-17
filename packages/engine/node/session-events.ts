@@ -1,8 +1,7 @@
 /**
  * Reading raw session logs through the host's own reader.
  *
- * Both host-half readers (the usage roll-up and the content search) go through
- * this one call, and which `sessionQuery` entry point it uses is a performance
+ * Every host-half reader of stored sessions goes through this one call, and which `sessionQuery` entry point it uses is a performance
  * decision as much as a correctness one:
  *
  *   - `readSession` resolves one session by id, but the service finds that id by
@@ -26,11 +25,12 @@
  * for the events, so the caller names the shape it reads.
  *
  * @param ctx - host plugin context, for the `sessionQuery` service.
+ * @param packageName - the plugin's name, which prefixes the warning a tolerated failure leaves.
  * @param sessionId - the session whose log is read.
  * @param label - what the caller is doing, for the warning a tolerated failure leaves.
  * @returns the events, or null when there is no reader or the log cannot be read.
  */
-import type { DshContext, DshSessionObservation } from './dsh.js'
+import type { DshContext, DshSessionObservation } from './dsh'
 
 /** The `sessionQuery` service, in the members this module reads. */
 interface QueryReader {
@@ -58,8 +58,8 @@ function unreadableLog(error: unknown): { message?: string } | null {
 }
 
 /** Report one session the reader refused, naming the pass it was left out of. */
-function reportUnreadable(ctx: DshContext, error: unknown, sessionId: string, label: string) {
-  ctx.logger?.warn?.(`dsh-claude-style: session ${sessionId} left out of ${label}: ${unreadableLog(error)?.message}`)
+function reportUnreadable(ctx: DshContext, packageName: string, error: unknown, sessionId: string, label: string) {
+  ctx.logger?.warn?.(`${packageName}: session ${sessionId} left out of ${label}: ${unreadableLog(error)?.message}`)
 }
 
 /**
@@ -74,7 +74,7 @@ function releaseObservation(observation: DshSessionObservation) {
   else if (Symbol.dispose in observation) (observation as unknown as { [Symbol.dispose](): void })[Symbol.dispose]()
 }
 
-export async function readEvents<T>(ctx: DshContext, sessionId: string, label: string): Promise<T[] | null> {
+export async function readEvents<T>(ctx: DshContext, packageName: string, sessionId: string, label: string): Promise<T[] | null> {
   const query = ctx.get('sessionQuery') as QueryReader | null | undefined
   if (query === null || query === undefined) return null
   try {
@@ -94,7 +94,7 @@ export async function readEvents<T>(ctx: DshContext, sessionId: string, label: s
     return eventsOf<T>(snapshot?.events)
   } catch (error) {
     if (unreadableLog(error) === null) throw error
-    reportUnreadable(ctx, error, sessionId, label)
+    reportUnreadable(ctx, packageName, error, sessionId, label)
     return null
   }
 }

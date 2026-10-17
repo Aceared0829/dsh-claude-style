@@ -11,9 +11,10 @@
  * The preference list itself is the shared table, so both halves declare the
  * fields from one declaration (`@dsh-claude-style/contracts/prefs`, D73).
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { PREFS } from '@dsh-claude-style/contracts/prefs'
 import type { PrefKey } from '@dsh-claude-style/contracts/prefs'
-import type { DshContext, DshScope } from './dsh.ts'
+import type { DshContext, DshScope } from '@dsh-claude-style/engine/node/dsh'
 
 /**
  * The schemastery instance the HARNESS itself resolves.
@@ -134,7 +135,7 @@ export function registerSettings(ctx: DshContext) {
     if (typeof settings?.configure !== 'function') return
     scope.effect(
       () => settings.configure({ auto: false }, ctx.fiber),
-      'dsh-claude-style: settings presentation',
+      `${PACKAGE_NAME}: settings presentation`,
     )
   })
 }

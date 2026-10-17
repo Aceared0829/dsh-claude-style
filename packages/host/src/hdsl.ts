@@ -7,7 +7,7 @@
  * under the launcher's data directory, so this module reads the contract out of
  * the launch environment and the routes in routes.ts serve it.
  */
-import type { DshContext } from './dsh.ts'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 
 /** The contract version this half understands; any other value voids the whole group. */
 const HDSL_CONTRACT = '1'

@@ -16,7 +16,7 @@
  */
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import type { DshContext } from './dsh.js'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 import { BUCKET_KEYS, addBuckets, emptyBuckets } from './usage-ledger.js'
 import type { Buckets, DayBuckets } from './usage-ledger.js'
 

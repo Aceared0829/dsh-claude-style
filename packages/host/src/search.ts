@@ -110,9 +110,10 @@ interface CachedSession {
   messages: SearchMessage[]
 }
 
-import type { DshContext } from './dsh.ts'
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 import { cachePath, readJsonDocument, writeJsonDocument } from './cache-file.js'
-import { readEvents } from './session-events.js'
+import { readEvents } from '@dsh-claude-style/engine/node/session-events'
 
 /**
  * The query service's own text rule (dsh-session-query `compileSessionTextFilter`):
@@ -244,7 +245,7 @@ export function createSessionSearch(ctx: DshContext) {
 
   /** Fold one session's complete log into a corpus. */
   async function rebuild(sessionId: string, revision: string) {
-    const events = await readEvents<LogEvent>(ctx, sessionId, 'content search')
+    const events = await readEvents<LogEvent>(ctx, PACKAGE_NAME, sessionId, 'content search')
     const messages = events === null ? [] : messagesOf(events)
     // The next seq to read, off the log itself: a fold that stopped at the last
     // message would re-read the events after it on every live tail read.

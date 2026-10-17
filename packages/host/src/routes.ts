@@ -11,15 +11,17 @@
  *
  * The paths are the shared contract (`@dsh-claude-style/contracts/routes`, * D73): the browser half addresses the same names.
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, ROUTE_PREFIX, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
 import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'
 import { userInfo } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
-import { brotliDecompressSync } from 'node:zlib'
 import { brandRoutes } from './brand.js'
-import type { DshContext, DshRequest, DshResponse, DshRoute, DshScope } from './dsh.js'
-import { harnessPath, pluginPath } from './harness-home.js'
-import { fenceRefused, methodRefused, readRequestBody, refusalOf, sendJson } from './http.js'
+import type { DshContext, DshRequest, DshResponse, DshRoute, DshScope } from '@dsh-claude-style/engine/node/dsh'
+import { harnessPath } from '@dsh-claude-style/engine/node/harness-home'
+import { pluginPath } from './harness-home.js'
+import { fenceRefused, methodRefused, readRequestBody, refusalOf, sendJson } from '@dsh-claude-style/engine/node/http'
+import { createStaticFiles } from '@dsh-claude-style/engine/node/static-files'
 import { createHdslAccount } from './hdsl.js'
 import type { HdslReading } from './hdsl.js'
 import { packageRoot } from './package-root.js'
@@ -64,8 +66,6 @@ const FONT_FILES = {
  * gets it decompressed, so the package carries the sheets once, small.
  */
 const ASSETS_PATH = `${ROUTE_PREFIX}/assets/`
-/** The build's asset manifest: which names exist, their type and their storage. */
-const ASSETS_MANIFEST = 'manifest.json'
 /** How long a computed roll-up is served before a background refresh is kicked. */
 const USAGE_TTL_MS = 5 * 60 * 1000
 /** Session ids are the harness's own shape; anything else is refused before it reaches a path. */
@@ -207,101 +207,11 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
   /** Where a user's own faces live; resolved per request, so a file added while the host runs is served. */
   const userFontsDir = () => pluginPath(ctx, 'fonts')
   const assetsDir = join(root, 'lib', 'assets')
-  /** The decompressed payload of each brotli-stored asset served to a client that cannot take it. */
-  const unpressed = new Map()
-
-  /**
-   * Answer one request under the route prefix with a static file.
-   * @param res - node response.
-   * @param method - request method; HEAD sends headers only.
-   * @param path - absolute file to read.
-   * @param headers - content-type / cache-control pair for the payload.
-   * @param body - the payload, when the caller already holds it.
-   */
-  const sendFile = (res: DshResponse, method: string, path: string, headers: Record<string, string>, body: Buffer | null = null) => {
-    // An optional font the user never dropped in, or a name no build shipped,
-    // is absent: 404.
-    if (body === null && !existsSync(path)) {
-      res.writeHead(404)
-      res.end()
-      return
-    }
-    // Read per request: the files are small, and an in-place edit then shows
-    // up on reload without restarting the host.
-    const payload = body ?? readFileSync(path)
-    res.writeHead(200, {
-      ...headers,
-      'content-length': String(payload.byteLength),
-    })
-    res.end(method === 'HEAD' ? undefined : payload)
-  }
-
-  /**
-   * Answer one request for a routed asset.
-   *
-   * The manifest is read per request, like every other file here: the build
-   * decides what exists, and a rebuild then shows up without restarting the
-   * host. A name the manifest does not carry is a 404 — that is also what
-   * keeps the directory unreachable by any other spelling.
-   *
-   * @param req - node request (its accept-encoding decides the payload).
-   * @param res - node response.
-   * @param name - the file name from the request path.
-   * @returns whether the request was answered.
-   */
-  const sendAsset = (req: DshRequest, res: DshResponse, name: string) => {
-    const manifest = readManifest()
-    const asset = manifest?.[name]
-    if (asset === undefined) return false
-    const stored = join(assetsDir, asset.encoding === 'br' ? `${name}.br` : name)
-    const headers = {
-      'content-type': asset.type,
-      'cache-control': 'public, max-age=31536000, immutable',
-    }
-    if (asset.encoding === 'br') {
-      if (/\bbr\b/.test(req.headers['accept-encoding'] ?? '')) {
-        sendFile(res, req.method ?? 'GET', stored, { ...headers, 'content-encoding': 'br' })
-        return true
-      }
-      // A client that does not take brotli: the sheet is decompressed, so it
-      // is served rather than missing. Cached: the same few sheets are asked
-      // for again on every reload of a page that never got them compressed.
-      const cached = unpressed.get(name)
-      if (cached !== undefined) {
-        sendFile(res, req.method ?? 'GET', stored, headers, cached)
-        return true
-      }
-      if (!existsSync(stored)) {
-        res.writeHead(404)
-        res.end()
-        return true
-      }
-      const body = brotliDecompressSync(readFileSync(stored))
-      unpressed.set(name, body)
-      sendFile(res, req.method ?? 'GET', stored, headers, body)
-      return true
-    }
-    sendFile(res, req.method ?? 'GET', stored, headers)
-    return true
-  }
-
-  /** The build's asset manifest, or undefined when the build has not run. */
-  const readManifest = () => {
-    const path = join(assetsDir, ASSETS_MANIFEST)
-    if (!existsSync(path)) return undefined
-    try {
-      return JSON.parse(readFileSync(path, 'utf8')).assets
-    } catch (error) {
-      // A manifest that cannot be read is a build that did not finish; say so
-      // once per request and answer 404 rather than failing the route (D12).
-      ctx.logger?.warn?.(`dsh-claude-style: lib/assets/${ASSETS_MANIFEST} is unreadable: ${(error as { message?: string } | null)?.message ?? String(error)}`)
-      return undefined
-    }
-  }
+  const { sendFile, sendAsset } = createStaticFiles(ctx, PACKAGE_NAME, assetsDir)
 
   scope.effect(() => {
     const disposers: (() => void)[] = []
-    const report = (message: string, error: unknown) => ctx.logger?.warn?.(`dsh-claude-style: ${message}: ${(error as { message?: string } | null)?.message ?? String(error)}`)
+    const report = (message: string, error: unknown) => ctx.logger?.warn?.(`${PACKAGE_NAME}: ${message}: ${(error as { message?: string } | null)?.message ?? String(error)}`)
 
     /**
      * Register one route. The web server refuses a path another plugin already
@@ -542,5 +452,5 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         }
       }
     }
-  }, 'dsh-claude-style: host routes')
+  }, `${PACKAGE_NAME}: host routes`)
 }

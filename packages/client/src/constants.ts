@@ -15,9 +15,11 @@
  * gates, and the identity constants.
  */
 export * from '@dsh-claude-style/contracts/prefs'
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
+export { PACKAGE_NAME }
 
 export const STYLE_ID = 'dsh-claude-style-style'
-/** The surface sheets' own element, which stays while ds-bot's surface has the page (D49). */
+/** The surface sheets' own element, which stays while ds-bot's surface has the page (D74). */
 export const SURFACE_STYLE_ID = 'dsh-claude-style-surface'
 
 /**
@@ -33,7 +35,6 @@ export const SURFACE_STYLE_ID = 'dsh-claude-style-surface'
  * package name, which is what makes it render on this plugin's page.
  */
 export const SETTINGS_ENTRY_FALLBACK = 'ui-skin-claude-style'
-export const PACKAGE_NAME = 'dsh-claude-style'
 /**
  * The skin stylesheet's own key in the client module system's bookkeeping:
  * the sheet is mounted tagged `data-plugin="<PACKAGE_NAME>"` and

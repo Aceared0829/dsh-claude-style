@@ -36,11 +36,12 @@
  * The routes live in routes.ts, the HDSL account contract in hdsl.ts, and the
  * settings surface in settings.ts; this file only mounts them.
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { registerRoutes } from './routes.js'
-import type { DshContext, DshScope } from './dsh.ts'
+import type { DshContext, DshScope } from '@dsh-claude-style/engine/node/dsh'
 import { registerSettings } from './settings.js'
 
-export const name = 'dsh-claude-style'
+export const name = PACKAGE_NAME
 export { Config } from './settings.js'
 
 /**

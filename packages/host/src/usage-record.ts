@@ -24,8 +24,9 @@
  * in while it exists and removed once a record holding it is written, so the
  * days of sessions deleted before the record are carried across.
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { existsSync, renameSync, unlinkSync } from 'node:fs'
-import type { DshContext } from './dsh.js'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 import { cachePath, readJsonDocument, writeJsonDocument } from './cache-file.js'
 import { pluginPath } from './harness-home.js'
 import { BUCKET_KEYS, addBuckets, emptyBuckets } from './usage-ledger.js'
@@ -289,13 +290,13 @@ function readStored(ctx: DshContext): StoredRecord {
     if (existsSync(path)) {
       const aside = `${path}.corrupt-${Date.now()}`
       renameSync(path, aside)
-      ctx.logger?.warn?.(`dsh-claude-style: usage record moved aside to ${aside}; it is rebuilt from the session logs`)
+      ctx.logger?.warn?.(`${PACKAGE_NAME}: usage record moved aside to ${aside}; it is rebuilt from the session logs`)
     }
     return { kind: 'absent' }
   }
   const document = parsed as { version?: unknown, sessions?: unknown }
   if (document.version !== RECORD_VERSION) {
-    ctx.logger?.warn?.(`dsh-claude-style: usage record version ${String(document.version)} is not one this build reads; it is left as it stands`)
+    ctx.logger?.warn?.(`${PACKAGE_NAME}: usage record version ${String(document.version)} is not one this build reads; it is left as it stands`)
     return { kind: 'foreign' }
   }
   const sessions = new Map<string, RecordSession>()

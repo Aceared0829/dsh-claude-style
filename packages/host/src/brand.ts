@@ -13,9 +13,9 @@ import type { BrandAnswer, BrandImageKind, BrandImageState } from '@dsh-claude-s
 import { BRAND_MARK_PATH, BRAND_PATH, BRAND_WORDMARK_PATH } from '@dsh-claude-style/contracts/routes'
 import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { DshContext, DshRequest, DshResponse, DshRoute } from './dsh.js'
+import type { DshContext, DshRequest, DshResponse, DshRoute } from '@dsh-claude-style/engine/node/dsh'
 import { pluginPath } from './harness-home.js'
-import { fenceRefused, methodRefused, readRequestBody, sendJson } from './http.js'
+import { fenceRefused, methodRefused, readRequestBody, sendJson } from '@dsh-claude-style/engine/node/http'
 
 /** Each image's route. */
 const IMAGE_PATHS: Record<BrandImageKind, string> = { mark: BRAND_MARK_PATH, wordmark: BRAND_WORDMARK_PATH }

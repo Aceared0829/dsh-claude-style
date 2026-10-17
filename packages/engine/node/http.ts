@@ -2,7 +2,7 @@
  * The request handling every private route shares: the fence in front of the
  * user's own data, the method check, the bounded body read and the JSON answer.
  */
-import type { DshContext, DshRequest, DshResponse } from './dsh.js'
+import type { DshContext, DshRequest, DshResponse } from './dsh'
 
 /**
  * Why a request to a route reading the user's own data must be refused, or

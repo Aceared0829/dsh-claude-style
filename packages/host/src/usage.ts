@@ -26,12 +26,13 @@
  * A host that publishes cross-session usage totals, or keeps the usage of deleted
  * sessions, retires the matching path here.
  */
+import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { join, resolve } from 'node:path'
-import type { DshContext } from './dsh.js'
-import { harnessPath } from './harness-home.js'
+import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
+import { harnessPath } from '@dsh-claude-style/engine/node/harness-home'
 import { readRecord, writeRecord } from './usage-record.js'
 import type { RecordSession } from './usage-record.js'
-import { readEvents } from './session-events.js'
+import { readEvents } from '@dsh-claude-style/engine/node/session-events'
 import { foldSession, listSessionLogs } from './usage-fold.js'
 import type { SessionLog, UsageEvent } from './usage-fold.js'
 import { readLedger } from './usage-ledger.js'
@@ -110,7 +111,7 @@ export function createUsage(ctx: DshContext) {
       // Each changed log is read by id. That read resolves the session through
       // the host's listing-free observation, so a pass costs one `stat`
       // per log read and never walks the stored corpus.
-      const events = await readEvents<UsageEvent>(ctx, log.id, 'the usage roll-up')
+      const events = await readEvents<UsageEvent>(ctx, PACKAGE_NAME, log.id, 'the usage roll-up')
       if (events === null) {
         // The reader refused (no `sessionQuery` service, or a log it cannot
         // parse). Leave the entry as it stands, so the next pass retries this log

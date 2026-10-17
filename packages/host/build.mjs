@@ -5,9 +5,10 @@
  * build output, so the packaged layout holds one `lib/` and no source tree.
  * Each module is built on its own: the half is ESM and the module loader
  * imports it by file, so the relative specifiers stay as they are. The values
- * of `@dsh-claude-style/contracts` are inlined into each module that reads
- * them — the contracts package is not among the published files, so a bare
- * specifier left in the output would not resolve at runtime — and every other
+ * of `@dsh-claude-style/contracts` and the engine's Node-side modules
+ * (`@dsh-claude-style/engine/node/*`) are inlined into each module that reads
+ * them — neither package is among the published files, so a bare specifier
+ * left in the output would not resolve at runtime — and every other
  * import (relative paths, `cordis`, `schemastery`, `node:*`) stays external.
  * The type check over these modules is its own pass (see the decision).
  *
@@ -21,24 +22,25 @@ import esbuild from 'esbuild'
 const PACKAGE = path.resolve(import.meta.dirname)
 const ROOT = path.resolve(PACKAGE, '..', '..')
 const SOURCE = path.join(PACKAGE, 'src')
-/** The shared contract's package name: the one specifier a module's build resolves and inlines. */
-const CONTRACTS_PREFIX = '@dsh-claude-style/contracts/'
-/** The contract's own source directory: a relative import inside it is inlined too. */
-const CONTRACTS_DIR = path.join(ROOT, 'packages', 'contracts', 'src')
+/** The package names a module's build resolves and inlines, each with the directory whose relative imports are inlined with it. */
+const INLINED = [
+  { prefix: '@dsh-claude-style/contracts/', dir: path.join(ROOT, 'packages', 'contracts', 'src') },
+  { prefix: '@dsh-claude-style/engine/node/', dir: path.join(ROOT, 'packages', 'engine', 'node') },
+]
 
 /**
- * Keep every import but the shared contract's external: marking a specifier
+ * Keep every import but the shared packages' external: marking a specifier
  * external leaves it in the output verbatim, so the published file imports the
- * same relative modules and host packages it did before. A contract module that
+ * same relative modules and host packages it did before. A shared module that
  * imports its neighbour (`./services`) resolves here as well — left external,
  * the published file would ask for a file the package does not ship.
  */
-const externalButContracts = {
-  name: 'external-but-contracts',
+const externalButShared = {
+  name: 'external-but-shared',
   setup(build) {
     const inlined = (args) => args.kind === 'entry-point'
-      || args.path.startsWith(CONTRACTS_PREFIX)
-      || (args.path.startsWith('.') && args.importer.startsWith(CONTRACTS_DIR))
+      || INLINED.some(({ prefix }) => args.path.startsWith(prefix))
+      || (args.path.startsWith('.') && INLINED.some(({ dir }) => args.importer.startsWith(dir)))
     build.onResolve({ filter: /.*/ }, (args) => (inlined(args) ? undefined : { path: args.path, external: true }))
   },
 }
@@ -93,7 +95,7 @@ export async function buildHostHalf({ outDir = path.join(ROOT, 'lib') } = {}) {
       format: 'esm',
       target: 'es2023',
       logLevel: 'silent',
-      plugins: [externalButContracts],
+      plugins: [externalButShared],
     })
     const code = outputFiles[0]?.text ?? ''
     // A module that carries types only (the context contract) has nothing to ship.
