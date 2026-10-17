@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 0,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**读者自己发出的长消息可以收起来**：一条比对话装得下的更长的消息收在一个上限高度里，下缘渐隐，气泡下面多出一个「展开全文」；按下它整条消息放回来，再按收起，按过之后这条消息在本次会话里保持读者选的样子。消息一出现就收，宿主那一条即时回显也一样，之后换成正式那一条时仍然收着；附件、时间与复制按钮都不受影响。设置页把「自动开合与卷帘门」关掉时这项跟着关掉。",
+  "en": "**A long message the reader sent can be folded away**: a message taller than the conversation can spare is held under a cap with its bottom edge softened, and the skin draws a Show the whole message control under the bubble; pressing it hands the whole message back and pressing it again folds it, and after that the message keeps what he chose for the rest of the session. The fold lands as soon as the message does — the host's own echo included — and stands when the durable row takes its place; the attachments, the time and the copy action are untouched. Turning the chat area's folding off turns this off with it."
+}
