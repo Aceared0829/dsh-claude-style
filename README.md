@@ -88,6 +88,12 @@ dsh plugin --profile web add dsh-claude-style                  # npm 包（推�
 
 > **重要：Anthropic 没有对其字体进行公开发行，[`点击此处可以查看`](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic)，请自行下载，仅供学习或研究用途**。
 
+| 字体 | 用途 | 文件 |
+|---|---|---|
+| Anthropic Sans Web Text | 界面 | [`packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf) |
+| Anthropic Serif Web Text | 对话正文 / Markdown | [`packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf) |
+| Anthropic Mono Web | 代码 / 行内代码 | [`packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf) |
+
 Anthropic 字体启用（二选一）：
 
 ① 安装到系统——Windows 双击 `.ttf` → 「安装」，macOS 用「字体册」导入；

@@ -18,9 +18,9 @@
   font-display: swap;
 }
 
-/* The Anthropic text faces are not in the npm package, so these registrations
-   resolve only when the user dropped the files into `$DSH_HOME/dsh-claude-style/fonts/`;
-   otherwise the stacks fall back to a system-installed copy. Both are static
+/* The Anthropic faces are not in the npm package, so these registrations resolve
+   only when the user dropped the files into `$DSH_HOME/dsh-claude-style/fonts/`;
+   otherwise the stacks fall back to a system-installed copy. All three are static
    Regular cuts, so one 400 declaration covers them and the browser synthesizes
    the heavier weights. */
 @font-face {
@@ -34,6 +34,14 @@
 @font-face {
   font-family: 'Anthropic Serif Web Text';
   src: url('/dsh-claude-style/fonts/AnthropicSerifWebText.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Anthropic Mono Web';
+  src: url('/dsh-claude-style/fonts/AnthropicMonoWeb.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

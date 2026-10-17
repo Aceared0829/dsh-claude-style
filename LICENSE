@@ -24,8 +24,9 @@ SOFTWARE.
 
 Font files notice:
 
-- `packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf` and
-  `packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf` are
+- `packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`,
+  `packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf` and
+  `packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf` are
   proprietary typefaces of Anthropic, extracted from Anthropic's web products.
   They are included in this repository for personal use only and are **not**
   covered by the MIT license above; all rights remain with Anthropic. The npm

@@ -50,6 +50,7 @@ const FONT_FILES = {
   'JetBrainsMonoItalicVariable.ttf': 'font/ttf',
   'AnthropicSansWebText.ttf': 'font/ttf',
   'AnthropicSerifWebText.ttf': 'font/ttf',
+  'AnthropicMonoWeb.ttf': 'font/ttf',
   'InterVariable.woff2': 'font/woff2',
   'NotoSerifVariable.woff2': 'font/woff2',
 }

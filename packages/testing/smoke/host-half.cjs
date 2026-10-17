@@ -554,13 +554,18 @@ async function hostHalf() {
   check('a face the package does not carry is a 404 until the user drops one in',
     absent.status === 404, `HTTP ${absent.status}`)
   fs.mkdirSync(droppedDir, { recursive: true })
-  fs.writeFileSync(path.join(droppedDir, 'AnthropicSansWebText.ttf'), Buffer.from('dropped-anthropic'))
   fs.writeFileSync(path.join(droppedDir, 'JetBrainsMonoVariable.ttf'), Buffer.from('dropped-mono'))
-  const dropped = await requestAsset(fontHost, '/dsh-claude-style/fonts/AnthropicSansWebText.ttf')
-  check('a face dropped under the harness home is served from there',
-    dropped.status === 200 && dropped.headers['content-type'] === 'font/ttf' &&
-      dropped.raw !== null && dropped.raw.toString('utf8') === 'dropped-anthropic',
-    `HTTP ${dropped.status} ${JSON.stringify(dropped.headers)}`)
+  // The three faces the package does not carry: the drop point answers each of
+  // their names, so a name missing from the route's whitelist shows up here.
+  for (const name of ['AnthropicSansWebText.ttf', 'AnthropicSerifWebText.ttf', 'AnthropicMonoWeb.ttf']) {
+    const payload = `dropped-${name}`
+    fs.writeFileSync(path.join(droppedDir, name), Buffer.from(payload))
+    const dropped = await requestAsset(fontHost, `/dsh-claude-style/fonts/${name}`)
+    check(`the face ${name} the package does not carry is served from the drop point`,
+      dropped.status === 200 && dropped.headers['content-type'] === 'font/ttf' &&
+        dropped.raw !== null && dropped.raw.toString('utf8') === payload,
+      `HTTP ${dropped.status} ${JSON.stringify(dropped.headers)}`)
+  }
   const overridden = await requestAsset(fontHost, '/dsh-claude-style/fonts/JetBrainsMonoVariable.ttf')
   check("the user's own copy wins over the bundled face of the same name",
     overridden.status === 200 && overridden.raw !== null && overridden.raw.toString('utf8') === 'dropped-mono',
