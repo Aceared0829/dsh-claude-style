@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, USERNAME_MAX } from '../../constants'
+import { COMBINE_SVGS } from 'virtual:dsh-claude-style/generated'
 import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 import { copy } from './copy'
@@ -36,10 +37,20 @@ export function createSettingsGeneralTab(): SettingsTab {
           className: 'dsh-claude-brand-card',
           'data-active': option.value === prefs.brand ? '' : undefined,
           'aria-pressed': option.value === prefs.brand ? 'true' : 'false',
+          'aria-label': option.label,
           onClick: () => { if (option.value !== prefs.brand) write({ brand: option.value }) },
         },
-        React.createElement('span', { className: 'dsh-claude-brand-card-logo', 'data-brand': option.value }),
-        React.createElement('span', { className: 'dsh-claude-brand-card-name' }, option.label),
+        option.value === BRAND_DEEPSEEK
+          // DeepSeek's lockup is one piece of art that already draws the mark with its word.
+          ? React.createElement('span', {
+            className: 'dsh-claude-brand-card-lockup',
+            'aria-hidden': 'true',
+            dangerouslySetInnerHTML: { __html: COMBINE_SVGS.deepseek },
+          })
+          : [
+            React.createElement('span', { key: 'mark', className: 'dsh-claude-brand-card-logo', 'data-brand': option.value, 'aria-hidden': 'true' }),
+            React.createElement('span', { key: 'word', className: 'dsh-claude-brand-card-word dsh-claude-masked-word', 'aria-hidden': 'true' }),
+          ],
       )),
     )
   }

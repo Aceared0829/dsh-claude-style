@@ -75,10 +75,39 @@ body[data-dsh-claude-style] .dsh-claude-brand-card-logo[data-brand="deepseek"] {
   background-image: var(--dsh-claude-image-deepseek-mark);
 }
 
-body[data-dsh-claude-style] .dsh-claude-brand-card-name {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
+/* The theme style's card reads left to right: the mark, then the brand's word.
+   Claude's word is the sidebar's own wordmark, masked over the label colour;
+   DeepSeek's lockup carries its whale and its word as one piece, the whale in
+   brand blue on either canvas. */
+body[data-dsh-claude-style] .dsh-claude-brand-card {
+  flex-direction: row;
+  gap: 10px;
+  min-height: 64px;
+  padding: 14px 12px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-word {
+  flex: none;
+  width: calc(16px * 512.22 / 121.54);
+  height: 16px;
+  background-color: currentColor;
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-lockup {
+  display: block;
+  height: 22px;
+  max-width: 100%;
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-lockup svg {
+  display: block;
+  height: 100%;
+  width: auto;
+  overflow: visible;
+}
+
+body[data-dsh-claude-style] .dsh-claude-brand-card-lockup .dsh-combine-mark-mono:not(.dsh-combine-mark-color) {
+  display: none;
 }
 
 /* A paint card holds nothing but the words, centred: the card gives a preview
