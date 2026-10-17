@@ -1,10 +1,12 @@
-import { CHAT_FLOW_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_KIND_ATTRIBUTE, FOLLOW_THRESHOLD_PX, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
 
 /**
- * The chat area's DOM helpers: the three reads the ported chat interactions and
- * the conversation navigator make on the column itself. The literals they use
- * are the host contract's (packages/contracts/src/dom.ts, D3); everything the skin
- * writes stays with the feature that writes it.
+ * The chat area's DOM helpers: the column and the session's scroll container, the
+ * scrollbar strip, the host's own follow button, and the reads the chat's
+ * features make on a submitted message — the row selectors, the bubble a row
+ * paints, and the colours a fill is decided by. The literals they use are the
+ * host contract's (packages/contracts/src/dom.ts, D3); everything the skin writes
+ * stays with the feature that writes it.
  */
 /** The keys that scroll the viewport; the same set the host reads. */
 export const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '])
@@ -85,4 +87,55 @@ export function findFollowTailButton() {
   })()
   if (root === null || root.nextElementSibling === null) return null
   return root.nextElementSibling.querySelector('button')
+}
+
+/**
+ * The two faces of one submitted message: the settled user row, and the echo
+ * the host mounts in its place before that row arrives. Their marks sit a level
+ * apart, so each is asked for on its own.
+ */
+export const CHAT_USER_ROW_SELECTOR = `${CHAT_FLOW_SELECTOR} [${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]`
+export const SUBMISSION_ROW_SELECTOR = `[${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"], ${SUBMISSION_ECHO_SELECTOR}`
+/** Both faces inside the chat column, asked in one query. */
+export const CHAT_ROW_SELECTOR = `${CHAT_USER_ROW_SELECTOR}, ${SUBMISSION_ECHO_SELECTOR}`
+
+/** Split the numbers out of an `rgb()` / `rgba()` colour; null when it does not read as one. */
+export function colorParts(color: string) {
+  const match = /^rgba?\(([^)]+)\)$/.exec(color.trim())
+  if (match === null) return null
+  const raw = match[1]
+  if (raw === undefined) return null
+  const parts = raw.split(',').map(part => Number.parseFloat(part))
+  if (parts.length < 3 || parts.some(part => !Number.isFinite(part))) return null
+  return parts
+}
+
+/** How opaque a computed colour is. An unreadable one counts as 0: an unknown colour is never taken for a fill. */
+export function colorAlpha(color: string) {
+  const parts = colorParts(color)
+  if (parts === null) return 0
+  return parts[3] ?? 1
+}
+
+/**
+ * The element inside a user row that really paints a fill, which is the bubble.
+ *
+ * The depth cannot be assumed: the echo row is the bubble's own row (the echo
+ * mark sits on it) while the real row has a flow-block wrapper around it, so the
+ * two differ by a level. So the walk goes down level by level and takes the
+ * first element that paints a fill; attachment rows and quote summaries paint
+ * none and are skipped.
+ *
+ * @param row - a settled user row, or the echo row standing in for one.
+ * @returns the bubble, or null where the row paints no fill of its own.
+ */
+export function userBubble(row: Element) {
+  const queue = Array.from(row.children)
+  while (queue.length > 0) {
+    const node = queue.shift()
+    if (node === undefined) break
+    if (node instanceof HTMLElement && colorAlpha(window.getComputedStyle(node).backgroundColor) > 0) return node
+    for (const child of node.children) queue.push(child)
+  }
+  return null
 }

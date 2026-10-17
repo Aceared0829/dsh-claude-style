@@ -118,6 +118,26 @@ test('the words are laid out in steps that cover the flight end to end, the draf
   expect(windows[0].until).toBeLessThanOrEqual(handoff)
 })
 
+test('a stand-in for a message the fold holds stands on the line to the landed row, whatever its words need', () => {
+  const words = bubble('The same passage again: it wraps many times at the widths the flight goes through, so the words on their own would push the shape well past the box the message is held in once it lands in its row.')
+  // The samples start on the line, as the shape builder hands them over (send-morph.ts).
+  const held = narrowing(620, 240, 240)
+  held.forEach((sample) => { sample.height = 240 - 140 * sample.m })
+  const windows = chatSendTextWindows(words, getComputedStyle(words), held, 24, 10, 240, 100, true)
+  // Every step is the line from the composer's own box to the row's, and the words
+  // beyond it are the shell's to clip. The first step is the draft's own window and it
+  // is over at once: the message's own words are the ones the reader watches.
+  held.forEach((sample) => expect(sample.height).toBeCloseTo(240 - 140 * sample.m, 6))
+  expect(windows[0]!.until).toBe(0)
+  expect(windows[1]!.from).toBe(0)
+
+  // The same words on a flight that takes off as the card push the shape past the row.
+  const free = narrowing(620, 240, 240)
+  free.forEach((sample) => { sample.height = 240 - 140 * sample.m })
+  chatSendTextWindows(words, getComputedStyle(words), free, 24, 10, 240, 100)
+  expect(Math.max(...free.map(sample => sample.height))).toBeGreaterThan(100)
+})
+
 /** How many lines the bubble's words take at one width, laid out on their own. */
 function linesAt(words: HTMLElement, width: number) {
   const probe = words.cloneNode(true) as HTMLElement

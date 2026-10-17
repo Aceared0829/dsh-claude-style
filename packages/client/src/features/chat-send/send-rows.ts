@@ -1,17 +1,13 @@
-import { CHAT_FLOW_SELECTOR, FLOW_KIND_ATTRIBUTE, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { SUBMISSION_ECHO_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_ROW_SELECTOR, CHAT_USER_ROW_SELECTOR } from '@dsh-claude-style/engine/chat-dom'
 
 /**
  * The rows a submission is recognised by, for both answers to how a sent
  * message arrives (constants.ts MESSAGE_ENTER_MODES): the flight
  * (send-flight.ts) and the growth (send-grow.ts) watch the same two moments,
- * so the row queries live here rather than in either of them.
+ * so the row queries live beside the other chat reads (engine/chat-dom.ts)
+ * rather than in either of them.
  */
-
-/** A settled user row. It and the echo row are two faces of one component, a level apart. */
-export const CHAT_USER_ROW_SELECTOR = `${CHAT_FLOW_SELECTOR} [${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]`
-
-/** The two kinds of row a submission is watched through, asked in one query: the real user row and the echo before it. */
-export const CHAT_ROW_SELECTOR = CHAT_USER_ROW_SELECTOR + ', ' + SUBMISSION_ECHO_SELECTOR
 
 /**
  * Take one echo row that has not been dealt with.

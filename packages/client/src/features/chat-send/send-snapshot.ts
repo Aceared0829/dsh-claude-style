@@ -1,3 +1,4 @@
+import { colorAlpha, colorParts } from '@dsh-claude-style/engine/chat-dom'
 import { COMPOSER_SCROLL_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { inPageBox } from '../../shared/page-zoom'
 
@@ -83,24 +84,6 @@ export function chatSendPixel(value: string) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-/** Split the numbers out of an `rgb()` / `rgba()` colour; null when it does not read as one. */
-export function chatSendColorParts(color: string) {
-  const match = /^rgba?\(([^)]+)\)$/.exec(color.trim())
-  if (match === null) return null
-  const raw = match[1]
-  if (raw === undefined) return null
-  const parts = raw.split(',').map(part => Number.parseFloat(part))
-  if (parts.length < 3 || parts.some(part => !Number.isFinite(part))) return null
-  return parts
-}
-
-/** How opaque a computed colour is. An unreadable one counts as 0: skipping the flight beats painting an unknown colour. */
-export function chatSendAlpha(color: string) {
-  const parts = chatSendColorParts(color)
-  if (parts === null) return 0
-  return parts[3] ?? 1
-}
-
 /**
  * One colour painted the way the screen paints it: `color` composited over
  * `behind`, at full opacity.
@@ -118,11 +101,11 @@ export function chatSendAlpha(color: string) {
  * @returns an `rgb()` / `rgba()` string.
  */
 export function chatSendOpaque(color: string, behind: string) {
-  const front = chatSendColorParts(color)
+  const front = colorParts(color)
   if (front === null) return color
   const alpha = front[3] ?? 1
   if (alpha >= 1) return color
-  const back = chatSendColorParts(behind)
+  const back = colorParts(behind)
   if (back === null) return color
   const backAlpha = back[3] ?? 1
   // The backdrop's own alpha counts: over nothing, a translucent backdrop is
@@ -158,13 +141,13 @@ export function chatSendOpaque(color: string, behind: string) {
  *          when the card is the surface).
  */
 export function chatSendSurface(card: HTMLElement, cardStyle: CSSStyleDeclaration): { element: HTMLElement, path: number[] } {
-  if (chatSendAlpha(cardStyle.backgroundColor) > 0) return { element: card, path: [] }
+  if (colorAlpha(cardStyle.backgroundColor) > 0) return { element: card, path: [] }
   const queue = Array.from(card.children)
   while (queue.length > 0) {
     const node = queue.shift()
     if (node === undefined) break
     if (!(node instanceof HTMLElement)) continue
-    if (chatSendAlpha(window.getComputedStyle(node).backgroundColor) > 0) {
+    if (colorAlpha(window.getComputedStyle(node).backgroundColor) > 0) {
       const path: number[] = []
       for (let walk: HTMLElement = node; walk !== card && walk.parentElement !== null; walk = walk.parentElement) {
         path.unshift(Array.from(walk.parentElement.children).indexOf(walk))
@@ -185,7 +168,7 @@ export function chatSendSurfaceShadow(style: CSSStyleDeclaration) {
   const parts: string[] = []
   const shadow = style.boxShadow
   if (shadow !== '' && shadow !== 'none') parts.push(shadow)
-  if (chatSendPixel(style.borderTopWidth) > 0 && chatSendAlpha(style.borderTopColor) > 0) {
+  if (chatSendPixel(style.borderTopWidth) > 0 && colorAlpha(style.borderTopColor) > 0) {
     parts.push('0 0 0 ' + style.borderTopWidth + ' ' + style.borderTopColor)
   }
   return parts.join(', ')

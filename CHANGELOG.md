@@ -8,6 +8,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">新增功能</h3>
 
+- **读者自己发出的长消息可以收起来**：一条比对话装得下的更长的消息收在一个上限高度里，下缘渐隐，气泡下面多出一个「展开全文」；按下它整条消息放回来，再按收起，按过之后这条消息在本次会话里保持读者选的样子。消息一出现就收，宿主那一条即时回显也一样，之后换成正式那一条时仍然收着；附件、时间与复制按钮都不受影响。设置页把「自动开合与卷帘门」关掉时这项跟着关掉。
 - **新会话页有了水波纹字符背景**：页面背景是一片每秒重绘两次的数字与字母，被缓缓漂移的云层遮住；点击页面荡开水波，波速在点击处最快、越远越慢，被扫过的字符显现出来，波前染蓝、尾迹留灰并淡去。设置页「外观」页首页版面下新增同名开关，默认关闭、标题旁带「实验性」标记，设置存为 `homeRipple`；宿主半边是旧版本时（更新插件后没有重启宿主），这一项改动保存不下来，重启宿主后恢复正常。
 - **设置页「通用」多了页面缩放**：整页按 0.8x、1x、1.25x、1.5x 绘制，界面、文字与控件一起变大或变小，窗口尺寸不变、页面按缩放之后剩下的空间重新排布，「随系统」保持系统与 DSH 给出的尺寸；设置页自己也按同一倍数绘制，档位可以在这一页上直接比出来。贴着输入区展开的模型、努力度与权限弹层仍与各自的按钮对齐。设置存为 `pageZoom`。
 - **代码字体先试 Anthropic Mono**：把 Anthropic 的等宽字体装进系统或放进 `$DSH_HOME/dsh-claude-style/fonts/` 之后，代码块、行内代码与等宽标签都由这款字体绘制；没有这份文件时仍用随包分发的 JetBrains Mono，中文照旧落到系统中文字体。字体文件只在仓库里提供，npm 包不带。
@@ -25,11 +26,17 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- **长消息的起飞带着消息自己的字**：折叠收住的长消息在飞行时，替身从第一帧起就显示这条消息的开头，也就是它落到那一行里显示的内容；盒子从输入框自己的高度收拢到折好之后的高度，读者看到的是消息从输入框里出来、一边飞一边收成它自己的样子。
 - **另一款皮肤作画时本主题整页让出，设置页也随主题撤下**：页面上的侧栏、对话、输入区与设置页一起离场，只留那款皮肤与宿主自己的界面；在皮肤中心里本插件那一行选回本主题，这些内容与读者存下的偏好一起回来。
 - **深色模式下分段控件的滑块有了底色**：设置页的页签与并排开关、经典首页的权限分段这几处同一种控件，当前项在深色里读得出来——滑块比它的底座亮一档，不再与底座同色；浅色与 DeepSeek 深色配色下同样成立。
 
+### 其他变更
+
+- **用户消息的两处宿主查询移进引擎层**：气泡的查找（按是否真的刷上底色逐层向下）与用户行的选择器此前分别写在 chat-send 与 scroll-owner 里，折叠消息也要用它们；现在都放在 `packages/engine/src/chat-dom.ts`，两处改为引用，颜色分量与透明度的读取也一并搬过去。读者看到的行为不变。
+
 <h3 id="en-unreleased">New Features</h3>
 
+- **A long message the reader sent can be folded away**: a message taller than the conversation can spare is held under a cap with its bottom edge softened, and the skin draws a Show the whole message control under the bubble; pressing it hands the whole message back and pressing it again folds it, and after that the message keeps what he chose for the rest of the session. The fold lands as soon as the message does — the host's own echo included — and stands when the durable row takes its place; the attachments, the time and the copy action are untouched. Turning the chat area's folding off turns this off with it.
 - **The new-conversation page gets a ripple glyph background**: the page's background is a field of digits and letters redrawn twice a second under a slowly drifting cloud; a press sends out waves that are fastest at the click and slow with distance, and the characters a wave passes show, blue at its front and grey in its wake before fading. A switch of the same name sits under the home layout on the Appearance tab, off until it is turned on and marked experimental, stored as `homeRipple`; with an older host half still running (the plugin updated without restarting the host), a change to it does not save until the host restarts.
 - **The settings page's General tab gains page zoom**: the page is drawn at 0.8x, 1x, 1.25x or 1.5x — the interface, its text and its controls growing or shrinking together while the window keeps its size and the page lays itself out in the room left over — and Follow the system keeps the size the system and DSH give it; the settings page is drawn at the same scale, so a level can be compared on it. The model, reasoning-effort and permission popovers that open off the composer stay on their own triggers. The setting is stored as `pageZoom`.
 - **Code is drawn in Anthropic Mono first**: once Anthropic's mono face is installed on the system or dropped into `$DSH_HOME/dsh-claude-style/fonts/`, code blocks, inline code and the mono labels take it; without the file the JetBrains Mono copy the package carries still answers, and Chinese text keeps falling through to the system's Chinese faces. The face is served from this repository only, not from the npm package.
@@ -47,8 +54,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- **A folded message's flight carries the message's own words**: the stand-in of a long message the fold holds shows the message from its own first line — what the row holds — from its first frame, and its box closes from the composer's own height down to the folded one, so the reader watches his message leave the composer and settle into the shape it lands in.
 - **With another skin painting the page this skin hands over the whole page, its settings page included**: the sidebar, the conversation, the composer and the settings page all leave together, and the skin and the host paint the page alone; picking this plugin's row in the skin center brings them back together with the preferences the reader saved.
 - **The segmented controls' slider carries a fill in dark mode**: the settings page's tabs and paired switches and the classic home's permission presets show which item is current, the pill sitting one step lighter than its groove instead of the same grey; the light and DeepSeek dark palettes read the same way.
+
+### Chores
+
+- **Two host reads of a user message moved into the engine**: the bubble lookup (walking down to the first element that really paints a fill) and the user row selector lived in chat-send and scroll-owner; the message fold needs both, so they now stand in `packages/engine/src/chat-dom.ts` and the two former homes read them from there, with the colour-part and alpha reads moved along. Nothing the reader sees changes.
 
 ## [0.16.0] - 2026-10-16
 

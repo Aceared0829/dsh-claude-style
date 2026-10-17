@@ -73,11 +73,14 @@ export function chatSendSamples(start: DOMRect, end: DOMRect, from: TextInsets, 
  * @param snapshot - the composer card taken at take-off.
  * @param bubble - the destination bubble (in layout already, and hidden).
  * @param end - the bubble's viewport rect.
+ * @param capped - the fold holds this message under a cap (feature chat-fold): its
+ *     words are its own from the first frame and every step stands on the line from the
+ *     composer's own box to the row's, so the reader watches the folded message arrive.
  * @returns the morph, or null when the bubble has no box. `shell` is the drawn
  *          shape itself, which send-flight.ts measures to know the stand-in has
  *          arrived before it shows the real row.
  */
-export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end: DOMRect) {
+export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end: DOMRect, capped = false) {
   if (end.width === 0 || end.height === 0) return null
   const start = snapshot.box
   const style = window.getComputedStyle(bubble)
@@ -92,13 +95,16 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   const H1 = Math.max(end.height, inPagePixels(bubble.getBoundingClientRect().height))
   const R0 = snapshot.radius
   const R1 = chatSendPixel(style.borderTopLeftRadius)
-  const from = snapshot.text
   const to = {
     left: bubble.clientLeft + chatSendPixel(style.paddingLeft),
     top: bubble.clientTop + chatSendPixel(style.paddingTop),
     right: chatSendPixel(style.borderRightWidth) + chatSendPixel(style.paddingRight),
     lineHeight: chatSendPixel(style.lineHeight),
   }
+  // A message the fold holds carries its own words from the first frame, at the place
+  // the row will hold them: the composer's draft, with its own inset and its own scroll,
+  // belongs to the flight that takes off as the card.
+  const from = capped ? to : snapshot.text
   const boxWidth = Math.max(W0, W1)
   const boxHeight = Math.max(H0, H1)
   const dx = end.left - start.left
@@ -141,6 +147,11 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   // Written flat — see chatSendOpaque: a translucent token would composite again
   // over the row this stand-in fades across.
   shell.style.backgroundColor = chatSendOpaque(style.backgroundColor, window.getComputedStyle(chatSendGhostHost()).backgroundColor)
+  // The shape carries the destination's own edge as well: a bubble the fold holds
+  // softens its bottom with a mask, and the stand-in is that bubble until it lands. A
+  // bubble nothing holds computes to `none`, which writes nothing.
+  shell.style.setProperty('mask-image', style.maskImage)
+  shell.style.setProperty('-webkit-mask-image', style.maskImage)
   for (const [name, value] of snapshot.context) shell.style.setProperty(name, value)
   // The shell does two things only: it scales (the shape) and it clips
   // (`overflow: hidden`). The `scaler` inside takes the reciprocal of every
@@ -196,7 +207,7 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   // steps by equal breaks and one line-height notch. The first step is the
   // draft inside the cloned card itself; every other is a layer of its own.
   const bottomPadding = chatSendPixel(style.paddingBottom) + chatSendPixel(style.borderBottomWidth)
-  const windows = chatSendTextWindows(bubble, style, samples, to.lineHeight, bottomPadding, H0, H1)
+  const windows = chatSendTextWindows(bubble, style, samples, to.lineHeight, bottomPadding, H0, H1, capped)
   const draftWindow = windows[0]
   const layers = windows.slice(1).map((window) => {
     const layer = chatSendTextLayer(bubble, style)

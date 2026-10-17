@@ -192,8 +192,8 @@ async function startTrace(page) {
       // floor and send-snapshot.ts's flattened fill exist to prevent.
       const shell = ghost === null ? null : ghost.firstElementChild?.children[1] ?? null
       // The bubble is the first element inside the row that paints a fill, as
-      // send-flight.ts's findBubble looks for it: the host's class names are not
-      // a contract this lane may lean on.
+      // engine/chat-dom.ts's userBubble looks for it: the host's class names are
+      // not a contract this lane may lean on.
       const bubble = last === null ? null : [...last.querySelectorAll('*')].find((node) => {
         const value = getComputedStyle(node).backgroundColor
         const match = /rgba?\(([^)]+)\)/.exec(value)
