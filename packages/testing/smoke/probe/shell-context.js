@@ -97,9 +97,15 @@
         return (s.textContent || '').trim()
       })
       // A projection frame while the popover is open: the block is rewritten
-      // from the new value, with no pass and no second hover.
+      // from the new value, with no pass and no second hover. The figures count
+      // to the new reading (features/context-stats/stats-count.ts), so the
+      // reading waits for the count to arrive and the value part way there is
+      // neither the one before nor the one it heads for.
       window.__pushStats('sessionStats', { llmMs: 61000 })
-      await sleep(150)
+      await sleep(120)
+      var statsDuring = document.querySelector('.dsh-claude-context-stats .dsh-claude-context-stats-value')
+      r.context.pushedDuring = statsDuring === null ? null : (statsDuring.textContent || '').trim()
+      await sleep(330)
       var statsPushed = document.querySelector('.dsh-claude-context-stats .dsh-claude-context-stats-value')
       r.context.pushed = statsPushed === null ? null : (statsPushed.textContent || '').trim()
       if (statsMeter !== null) statsMeter.dispatchEvent(new MouseEvent('mouseleave'))

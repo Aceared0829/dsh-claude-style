@@ -108,33 +108,6 @@ const readFit = (page) => Promise.race([
 ])
 
 /**
- * What one rewritten figure does to the scroller the conversation and the
- * composer share: a figure that moved re-enters by sliding its characters up
- * from below their place (features/context-stats/stats-digits.ts), and that
- * overhang reaches past the composer's bottom edge unless the row it stands in
- * clips it. Every answer rewrites figures on every frame, so a scrollable height
- * that grows here grows the column with it.
- */
-const readEntrance = (page) => page.evaluate(() => {
-  const line = document.querySelector('[data-dsh-claude-inline-stats]')
-  const group = line?.querySelector('.dsh-claude-digit-group') ?? null
-  const scroller = document.querySelector('[data-dsh-claude-part~="scroll-body"]')
-  if (group === null || scroller === null) return null
-  const original = [...group.childNodes]
-  const before = scroller.scrollHeight
-  const spans = [...'12,345'].map((character) => {
-    const span = document.createElement('span')
-    span.className = 'dsh-claude-digit'
-    span.textContent = character
-    return span
-  })
-  group.replaceChildren(...spans)
-  const during = scroller.scrollHeight
-  group.replaceChildren(...original)
-  return { before, during, grow: during - before }
-})
-
-/**
  * The row the numbers stand on, with and without the meter's reading: the
  * ladder's third step gives that reading up to win width, and the trigger's own
  * box is what the composer's bottom row is as tall as. The conversation above
@@ -228,7 +201,6 @@ function statsPositionScenario({ check }) {
       const state = await readPosition(page)
       const wide = await readFit(page)
       const step = await readMeterStep(page)
-      const entrance = await readEntrance(page)
       const linePanel = await readLinePanel(page)
       // A card narrower than the whole line: the line gives up steps until it
       // fits, and takes them back when the room returns. A ladder that never
@@ -259,9 +231,6 @@ function statsPositionScenario({ check }) {
           step !== null && step.withReading === step.withoutReading &&
             narrowStep !== null && narrowStep.withReading === narrowStep.withoutReading,
           JSON.stringify({ roomyCard: step, narrowCard: narrowStep })),
-        check('a rewritten figure re-enters inside the row: the column the composer shares with the conversation keeps its scrollable height',
-          entrance !== null && entrance.grow === 0,
-          JSON.stringify(entrance)),
         check('the figures stand apart by their own gap alone: no separator glyph between them',
           linePanel !== null && linePanel.separators === 0,
           JSON.stringify(linePanel === null ? null : linePanel.separators)),

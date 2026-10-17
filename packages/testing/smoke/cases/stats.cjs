@@ -48,6 +48,10 @@ module.exports = {
       JSON.stringify(r.context.values))
     check('a projection frame rewrites the block while the popover is open',
       r.context.pushed === '1m1s', JSON.stringify(r.context.pushed))
+    check('the block\'s figures count to a new reading instead of jumping to it',
+      r.context.pushedDuring !== null && r.context.pushedDuring !== '1.2s' &&
+        r.context.pushedDuring !== '1m1s',
+      JSON.stringify({ during: r.context.pushedDuring, after: r.context.pushed }))
     checkPanelEdge(r)
     check('leaving the meter closes the popover and takes the block with it',
       r.context.closedAfterLeave === true, JSON.stringify(r.context.closedAfterLeave))

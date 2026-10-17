@@ -6,13 +6,25 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- **上下文弹层里的数字改为连续计数**：弹层里那一列数字接到新读数时从眼前的数计数到新值，与输入卡片下面那一行同一套动作，不再逐字弹入；弹层每次打开都从当时的读数写起。
+- **流式输出时，写回的 tokens 随文字上涨**：会话数字里写回的那一数在答案流式输出期间按已经到达的文字估算着上涨，不再等整段答案写完才跳一次；这一步结算时换成提供方给出的真实值，读入的 tokens、缓存命中率与计量饼的占用都不动。
+
+### 问题修复
 
 - **搜索面板的分类页签，按下哪一枚滑块就滑向哪一枚**：点「会话」「项目」这些分类时，背后的滑块在按下的一刻出发，不再等到列表下一次重绘才移动。
+- **思考行回放推理时不再拖慢页面**：推理窗口里的文字每 0.84 秒平滑上移一步，一步追到最新一行，正在思考的回合里页面保持流畅（本机实测：修复前单帧最长 470 毫秒、主线程阻塞 406 毫秒，修复后 29 秒内没有超过 100 毫秒的帧）。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- **The context popover's figures count to their readings**: a row's number travels from the value on show to a new reading, the same motion the line under the input card makes, instead of each character popping in; a panel that opens writes the reading of the moment where it stands.
+- **The tokens written back climb while an answer streams**: the session numbers' written-back figure grows with the text that has arrived instead of standing still until the answer ends, and takes the provider's own number once that step settles; the tokens read in, the cache-hit share and the meter's occupancy stay as they were.
+
+### Bug Fixes
 
 - **The search palette's filter highlight follows the tab pressed**: the sliding background starts toward a pressed category — Sessions, Projects and the rest — within the press itself, instead of waiting for the list to be drawn again.
+- **Replaying the reasoning in the thinking row no longer slows the page**: the text in the reasoning window glides up one step every 0.84 seconds, each step reaching the newest line, and the page stays smooth while the model thinks (measured locally: the longest frame went from 470 ms with 406 ms of main-thread blocking to no frame over 100 ms across 29 seconds).
 
 ## [0.16.1] - 2026-10-17
 

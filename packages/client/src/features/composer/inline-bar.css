@@ -254,13 +254,10 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-value {
    (`flex: none`), so a line with more figures than the card holds is shortened
    by that writer's own ladder instead of drawing its figures over one another
    and over the meter's reading. */
-/* The line and the conversation share one scroller, so the digits' entrance —
-   each new character sliding up from 8px below its place
-   (--dsh-claude-digit-distance, features/context-stats/stats-digits.ts) — reaches
-   past the composer's bottom edge and grows that scroller's scrollable height by
-   a few pixels on every rewritten figure. The tail pinning answers by moving the
-   whole column, once per entrance. Clipping to the row keeps the entrance and
-   the column both.
+/* The line and the conversation share one scroller: a figure the card cannot
+   hold is clipped here rather than painted past the composer's bottom edge,
+   which would grow that scroller's scrollable height. The ladder gives figures
+   up before the clip has to hide one (features/context-stats/inline-stats.ts).
 
    The figures stand apart by this gap alone: no separator glyph sits between
    them, so the gap carries what the glyph used to. The line is the button that
@@ -318,37 +315,12 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
   display: none;
 }
 
-/* ---------- Number pop-in (transitions.dev) ---------- */
-/* A number that moved re-enters one character at a time, from below with a
-   short blur, the last two characters riding in behind the rest
-   (features/context-stats/stats-digits.ts rewrites a figure's characters and the
-   new spans play this). The popover's own values are the figures that carry it;
-   the line of numbers counts its figures to their readings (stats-count.ts) and
-   writes them as text, so no span of its own is animated. The skin's own motion
-   choice governs it — theme/chrome.css stills every dsh-claude-* animation when
-   the reader chose reduced motion, and following the system is that choice's
-   default (D40). */
-@keyframes dsh-claude-digit-pop-in {
-  0% {
-    transform: translate(calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-x)), calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-y)));
-    opacity: 0;
-    filter: blur(var(--dsh-claude-digit-blur));
-  }
-  100% { transform: translate(0, 0); opacity: 1; filter: blur(0); }
-}
+/* ---------- the line's figures ---------- */
+/* A figure is its words laid out in a row, on the line's baseline
+   (features/context-stats/inline-stats.ts builds one). */
 body[data-dsh-claude-style] .dsh-claude-digit-group {
   display: inline-flex;
   align-items: baseline;
-}
-body[data-dsh-claude-style] .dsh-claude-digit {
-  display: inline-block;
-  animation: dsh-claude-digit-pop-in var(--dsh-claude-digit-dur) var(--dsh-claude-digit-ease) both;
-}
-body[data-dsh-claude-style] .dsh-claude-digit[data-stagger="1"] {
-  animation-delay: var(--dsh-claude-digit-stagger);
-}
-body[data-dsh-claude-style] .dsh-claude-digit[data-stagger="2"] {
-  animation-delay: calc(var(--dsh-claude-digit-stagger) * 2);
 }
 
 /* ---------- the colour band a reading takes ---------- */

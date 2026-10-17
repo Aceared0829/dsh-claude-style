@@ -66,21 +66,20 @@ function usageBilled(usage: HostTokenUsageProjection): number | null {
  * nothing else, so the usage section keeps only the cache-hit row — the
  * four figures a reader who chose that row still wants.
  *
- * @param read - one projection's current whole value.
+ * @param stats - the session statistics reading, or null while it is absent.
+ * @param usage - the token usage reading, or null while it is absent.
  * @param chat - the host's `chat` translate seat.
  * @param compact - whether the host rendered its compact statistics row.
  */
-export function sessionStatsSections(read: StatsValueReader, chat: HostText, compact: boolean) {
+export function sessionStatsSections(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, chat: HostText, compact: boolean) {
   const sections: { title: string, rows: StatsRow[] }[] = []
-  const stats = read<HostSessionStatsProjection>('sessionStats')
   if (compact) {
     const rows: StatsRow[] = []
-    if (stats !== undefined && stats !== null) {
+    if (stats !== null) {
       const timeRows = statsTimeRows(stats, chat, true)
       for (let i = 0; i < timeRows.length; i++) rows.push(timeRows[i])
     }
-    const usage = read<HostTokenUsageProjection>('tokenUsage')
-    if (usage !== undefined && usage !== null) {
+    if (usage !== null) {
       const billed = usageBilled(usage)
       if (billed !== null) {
         const hit = sessionStatsCacheHit(usage.cacheReadTokens, billed)
@@ -90,12 +89,11 @@ export function sessionStatsSections(read: StatsValueReader, chat: HostText, com
     if (rows.length > 0) sections.push({ title: '', rows })
     return sections
   }
-  if (stats !== undefined && stats !== null) {
+  if (stats !== null) {
     const rows = statsTimeRows(stats, chat, false)
     if (rows.length > 0) sections.push({ title: chat('stats.dialog.title'), rows })
   }
-  const usage = read<HostTokenUsageProjection>('tokenUsage')
-  if (usage !== undefined && usage !== null) {
+  if (usage !== null) {
     const billed = usageBilled(usage)
     if (billed !== null) {
       const rows: StatsRow[] = []

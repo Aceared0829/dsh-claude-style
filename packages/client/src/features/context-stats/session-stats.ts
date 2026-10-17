@@ -6,11 +6,12 @@ import { STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
+import { createStreamEstimate } from './stream-estimate'
 import { paintContextPie, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
-import type { HostSnapshotSource } from '@dsh-claude-style/contracts/services'
+import type { HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 
 /**
  * The session's numbers, read from the host's own projections
@@ -29,7 +30,10 @@ import type { HostSnapshotSource } from '@dsh-claude-style/contracts/services'
  * key-addressed read faces (`session.projections.faceOf`) — the same seat the
  * host's own `useProjection` resolves. The host's two stat dialogs are never
  * opened, so nothing is rendered twice, and both surfaces are filled the moment
- * they appear (and again on every projection frame).
+ * they appear (and again on every projection frame). The written-back figure
+ * carries an estimate of the text streaming now (stream-estimate.ts): the host
+ * settles a step's usage at its end, so without it that figure would stand
+ * still through the answer.
  *
  * The WORDS come from the host's own `chat` locale namespace, the one its
  * pills read, so the three surfaces agree letter for letter and follow the
@@ -79,10 +83,27 @@ export function createSessionStats(ctx: HostContext) {
     return faces
   }
 
-  /** One projection's current whole value, or undefined while it is absent. */
+  /** The estimate of the text streaming now, riding on the settled written-back total. */
+  const estimate = createStreamEstimate()
+
+  /**
+   * One usage reading with the stream's estimate added: the host's settled
+   * total plus the tokens its streaming text has grown by, and the raw total
+   * again once the step settles.
+   */
+  function streamedUsage(usage: HostTokenUsageProjection) {
+    estimate.settle(usage.outputTokens)
+    const grown = estimate.tokens()
+    return grown <= 0 ? usage : { ...usage, outputTokens: Math.round(usage.outputTokens + grown) }
+  }
+
+  /** One projection's current whole value, with the stream's estimate on the usage side. */
   function statsValue<Value>(key: string): Value | undefined {
     const face = watch === null ? undefined : watch.faces[key]
-    return typeof face?.getSnapshot === 'function' ? face.getSnapshot() as Value : undefined
+    if (typeof face?.getSnapshot !== 'function') return undefined
+    const value = face.getSnapshot()
+    if (key !== 'tokenUsage' || value === undefined || value === null) return value as Value
+    return streamedUsage(value as HostTokenUsageProjection) as Value
   }
 
   /** The host's `chat` namespace translate seat, or null when it is absent (core/i18n). */
@@ -100,6 +121,9 @@ export function createSessionStats(ctx: HostContext) {
       for (let i = 0; i < watch.off.length; i++) watch.off[i]()
       watch = null
     }
+    // The stream's estimate belongs to the session it was read from; the next
+    // session counts its own text from a fresh baseline (stream-estimate.ts).
+    estimate.reset()
     // The skeleton's wait holds the panel's place, not the session's: it goes
     // whether a session was ever bound or not (stats-block.ts). The line keeps
     // the numbers it is showing: another session's readings are counted to
@@ -213,6 +237,9 @@ export function createSessionStats(ctx: HostContext) {
       // panel comes off with it (stats-binding.ts's release).
       binding.release()
       inline.clear()
+      // A count still running would write the block back after the nodes are
+      // taken off below (stats-block.ts).
+      block.stop()
       const meter = findContextMeter()
       if (meter !== null) {
         writeRamp(meter, 'context', null)
@@ -225,7 +252,6 @@ export function createSessionStats(ctx: HostContext) {
       }
       const panels = document.querySelectorAll(`[${CONTEXT_PANEL_ATTR}]`)
       for (let i = 0; i < panels.length; i++) panels[i].removeAttribute(CONTEXT_PANEL_ATTR)
-      block.resetContent()
     }
   }
 }

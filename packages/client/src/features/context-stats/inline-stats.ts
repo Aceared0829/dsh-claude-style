@@ -153,6 +153,8 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   let fitted = false
   /** The card width the last fit answered for; -1 asks for one. */
   let fittedWidth = -1
+  /** The words the fitted step would show, as their character count; -1 asks for a fit. */
+  let fittedShape = -1
 
   /** The figures counting from what the reader sees to the newest reading. */
   const count = createStatsCount((reading: StatsReading) => {
@@ -250,6 +252,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     level = 0
     fitted = false
     fittedWidth = -1
+    fittedShape = -1
   }
 
   /** Show or hide one segment. */
@@ -269,8 +272,13 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     const hit = usage === null ? null : sessionStatsCacheHit(Math.round(usage.cacheReadTokens), Math.round(billed))
     const hasCounts = stats !== null && (stats.turns > 0 || stats.steps > 0)
     const hasSpeed = stats !== null && stats.decodeMs > 0
-    const hasTokens = usage !== null && (billed > 0 || usage.outputTokens > 0)
-    const hasCache = hasTokens && hit !== null
+    // The prompt's tokens are known only once a request has settled; the
+    // written-back side can stand alone while the first answer streams, on the
+    // estimate the stream carries (stream-estimate.ts).
+    const hasInput = usage !== null && billed > 0
+    const hasOutput = usage !== null && usage.outputTokens > 0
+    const hasTokens = hasInput || hasOutput
+    const hasCache = hasInput && hit !== null
     const merged = at >= 4
     if (!hasCounts && !hasSpeed && !hasTokens) return
 
@@ -278,8 +286,8 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     show(shown.speed, hasSpeed)
     // The prompt tokens ride where the speed is; without a speed the room the
     // speed would have taken is theirs.
-    show(shown.input, hasTokens && !merged)
-    show(shown.output, hasTokens && !merged)
+    show(shown.input, hasInput && !merged)
+    show(shown.output, hasOutput && !merged)
     show(shown.total, hasTokens && merged)
     show(shown.cache, hasCache)
     shown.cell.cacheHead.hidden = at >= 1
@@ -339,6 +347,37 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     tightenMeter(next)
   }
 
+  /** The twin a fit measures on, built and marked on first use. */
+  function ensureProbe() {
+    if (probe === null) {
+      probe = buildLine()
+      probe.root.setAttribute(INLINE_PROBE_ATTR, '')
+      // Its coming and going is no page change for the scheduler (D40).
+      probe.root.setAttribute(QUIET_ATTR, '')
+      probe.root.setAttribute('aria-hidden', 'true')
+    }
+    return probe
+  }
+
+  /**
+   * The words the line would show for one reading on the step in force, as
+   * their character count. The figures use tabular numerals, so the width
+   * follows the number of characters: a reading whose words have not grown
+   * needs no new measurement. The estimate behind the written-back figure moves
+   * every frame while an answer streams, and a fit per frame would keep forcing
+   * layout under the composer.
+   */
+  function lineShape(reading: StatsReading, chat: HostText) {
+    const twin = ensureProbe()
+    writeLine(twin, level, chat, reading.stats, reading.usage)
+    let length = 0
+    for (let i = 0; i < twin.root.children.length; i++) {
+      const segment = twin.root.children[i] as HTMLElement
+      if (!segment.hidden) length += (segment.textContent ?? '').length
+    }
+    return length
+  }
+
   /**
    * How much room ladder step `at` would take, written with the reading the
    * count is moving to and read off the twin. The twin stands out of flow beside
@@ -349,18 +388,12 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    * gets the line's back after it.
    */
   function probeWidth(shown: Line, at: number, chat: HostText, reading: StatsReading) {
-    if (probe === null) {
-      probe = buildLine()
-      probe.root.setAttribute(INLINE_PROBE_ATTR, '')
-      // Its coming and going is no page change for the scheduler (D40).
-      probe.root.setAttribute(QUIET_ATTR, '')
-      probe.root.setAttribute('aria-hidden', 'true')
-    }
-    writeLine(probe, at, chat, reading.stats, reading.usage)
+    const twin = ensureProbe()
+    writeLine(twin, at, chat, reading.stats, reading.usage)
     tightenMeter(at)
-    shown.root.before(probe.root)
-    const needed = neededWidth(shown, inPagePixels(probe.root.getBoundingClientRect().width))
-    probe.root.remove()
+    shown.root.before(twin.root)
+    const needed = neededWidth(shown, inPagePixels(twin.root.getBoundingClientRect().width))
+    twin.root.remove()
     tightenMeter(level)
     return needed
   }
@@ -401,6 +434,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     const displayed = count.current()
     writeLine(shown, level, chat, displayed.stats, displayed.usage)
     fitted = true
+    fittedShape = lineShape(goal, chat)
     return level
   }
 
@@ -408,6 +442,11 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    * Write the line from the current projections, then fit it to the card. A
    * render that found the same reading keeps the count it is on and measures
    * nothing: this runs on every projection frame while an answer streams.
+   *
+   * A reading that moved only within the words the fitted step already shows
+   * keeps that step: the estimate behind the written-back figure ticks the
+   * number up every frame, and only the change from one character's worth of
+   * words to another can change the room the line needs.
    */
   function render() {
     const chat = chatText()
@@ -427,7 +466,10 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       return
     }
     const changed = count.to({ stats, usage })
-    if (changed || !fitted) fit(true)
+    if (!changed && fitted) return
+    const goal = count.goal()
+    const shape = goal === null ? -1 : lineShape(goal, chat)
+    if (!fitted || shape !== fittedShape) fit(true)
   }
 
   return {

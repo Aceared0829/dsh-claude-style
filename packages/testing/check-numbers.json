@@ -211,7 +211,11 @@
         0,
         1
       ],
-      "走到的位置不超过内容的末尾，最新一行始终留在窗口里": [
+      "两步之间隔着一整段停留，文本不会每个计时器周期都往上走": [
+        0
+      ],
+      "走到的位置不超过内容的末尾，每一步都走到最新一行": [
+        0,
         0.5
       ],
       "推理结束后窗口撤下，整段文本原样站着，不再被裁也不再位移": [
@@ -1015,9 +1019,6 @@
         0
       ],
       "the popover keeps none of the numbers here": [
-        0
-      ],
-      "a rewritten figure re-enters inside the row: the column the composer shares with the conversation keeps its scrollable height": [
         0
       ],
       "the figures stand apart by their own gap alone: no separator glyph between them": [

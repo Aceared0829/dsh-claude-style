@@ -1,19 +1,12 @@
 /* ---------- Composer values the rest of the page reads ---------- */
 
-/* The digit entrance, the fade band's height and the tone band are values, not
-   looks: the wait badge and the panels standing above the composer read them
-   too, so they are declared on the document outside the composer gate (D9). The
-   rules they feed stay under the gate. */
+/* The fade band's height and the tone band are values, not looks: the wait
+   badge and the panels standing above the composer read them too, so they are
+   declared on the document outside the composer gate (D9). The rules they feed
+   stay under the gate. */
 
 body[data-dsh-claude-style] {
   --dsh-composer-fade-h: 40px;
-  --dsh-claude-digit-dur: var(--dsh-claude-duration-pop);
-  --dsh-claude-digit-distance: var(--dsh-claude-distance-travel);
-  --dsh-claude-digit-stagger: var(--dsh-claude-duration-stagger);
-  --dsh-claude-digit-blur: var(--dsh-claude-blur-soft);
-  --dsh-claude-digit-ease: var(--dsh-claude-ease-spring);
-  --dsh-claude-digit-dir-x: 0;
-  --dsh-claude-digit-dir-y: 1;
   /* The colour band a reading takes (features/context-stats/stats-ramp.ts): the
      band is semantic, so its values are the skin's own and not the host's
      tokens. Each tone keeps its hue and lightness at about three fifths of its

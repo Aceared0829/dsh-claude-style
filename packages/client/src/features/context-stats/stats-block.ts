@@ -1,9 +1,11 @@
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { findComposerStats } from '@dsh-claude-style/engine/host'
-import { buildDigitGroup, writeDigits } from './stats-digits'
+import { createStatsCount } from './stats-count'
 import { sessionStatsSections } from './stats-model'
 import { CONTEXT_STATS_ATTR, contextPanel, hostStatsDetailed } from './stats-panel'
 import type { HostText } from '@dsh-claude-style/engine/host'
+import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { StatsReading } from './stats-count'
 import type { StatsValueReader } from './stats-model'
 
 /**
@@ -12,9 +14,14 @@ import type { StatsValueReader } from './stats-model'
  * numbers' place until the projections answer. Runtime strings land as
  * text nodes, never as markup.
  *
+ * The figures count from what the panel shows to a new reading
+ * (stats-count.ts), the same motion the line of its own makes: a number that
+ * moves while the panel is open travels there instead of jumping. The text is
+ * plain, rewritten in place.
+ *
  * The block's own content state is per generation, like the rest of this
  * feature: a client hot reload reuses the host's nodes and must not read the
- * previous generation's signature or skeleton timer.
+ * previous generation's signature, count or skeleton timer.
  */
 
 /** The mark on the block while it holds the numbers' place. */
@@ -33,6 +40,9 @@ const STATS_SKELETON_ROWS = 4
 /** The same, for the compact block: four items in a single 2x2 grid. */
 const COMPACT_SKELETON_ITEMS = 4
 
+/** What each value cell last showed, so a frame that moved nothing writes nothing. */
+const shownValues = new WeakMap<Element, string>()
+
 /**
  * The block's writer.
  *
@@ -41,7 +51,7 @@ const COMPACT_SKELETON_ITEMS = 4
  * @returns { render, stopSkeleton, resetContent }.
  */
 export function createStatsBlock(read: StatsValueReader, chatText: () => HostText | null) {
-  /** The block's last written rows, so an unchanged pass writes nothing. */
+  /** The block's last written rows, so an unchanged pass rebuilds nothing. */
   let blockSignature = ''
   /** The value cells of the block as built, in section order. */
   let blockCells: HTMLElement[] = []
@@ -50,6 +60,44 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
   let skeletonSince = 0
   /** The timer that gives the place up at the deadline, while one runs. */
   let skeletonTimer: ReturnType<typeof setTimeout> | null = null
+
+  /**
+   * The figures' count. Each frame writes the rows the count is standing on, so
+   * a reading that moves travels there; the panel being closed stops it (the
+   * next render's reset), and a panel just opened writes its reading as it is.
+   */
+  const count = createStatsCount((reading) => paint(reading))
+
+  /** One reading with every number a whole one, the way the formatters read them. */
+  function whole(reading: StatsReading): StatsReading {
+    const stats = reading.stats === null ? null : {
+      turns: Math.round(reading.stats.turns),
+      steps: Math.round(reading.stats.steps),
+      llmMs: Math.round(reading.stats.llmMs),
+      toolMs: Math.round(reading.stats.toolMs),
+      ttftMs: Math.round(reading.stats.ttftMs),
+      ttftSteps: Math.round(reading.stats.ttftSteps),
+      decodeMs: Math.round(reading.stats.decodeMs),
+      decodeTokens: Math.round(reading.stats.decodeTokens),
+    }
+    const usage = reading.usage === null ? null : {
+      uncachedInputTokens: Math.round(reading.usage.uncachedInputTokens),
+      cacheReadTokens: Math.round(reading.usage.cacheReadTokens),
+      cacheWriteTokens: Math.round(reading.usage.cacheWriteTokens),
+      outputTokens: Math.round(reading.usage.outputTokens),
+    }
+    return { stats, usage }
+  }
+
+  /** Write one reading onto the open panel, wherever the count stands between two. */
+  function paint(reading: StatsReading) {
+    const panel = contextPanel()
+    if (panel === null) return
+    const root = findComposerStats()
+    const chat = chatText()
+    if (root === null || chat === null) return
+    writeBlock(panel, whole(reading), chat, !hostStatsDetailed(root))
+  }
 
   /** Give up the numbers' place, if the block is holding it. */
   function stopSkeleton() {
@@ -136,31 +184,28 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
     return grid
   }
 
+  /** Write one figure only when the words changed. */
+  function writeValue(value: HTMLElement, text: string) {
+    if (shownValues.get(value) === text) return
+    shownValues.set(value, text)
+    value.textContent = text
+  }
+
   /**
    * Write the numbers into the open panel, or keep the panel as the host
-   * drew it while there is nothing to show. A block whose content has not
-   * changed is left alone; a block with no sections at all is taken out,
-   * so no hairline is left standing over nothing.
+   * drew it while there is nothing to show. The structure is the sections and
+   * their labels; the figures are written into the cells that structure built,
+   * so a frame that only moved a number rewrites that one value. A block with
+   * no sections at all is taken out, so no hairline is left standing over
+   * nothing.
    */
-  function renderContextStats() {
-    const panel = contextPanel()
-    if (panel === null) return
-    const root = findComposerStats()
-    if (root === null) return
-    const chat = chatText()
-    if (chat === null) return
-    const compact = !hostStatsDetailed(root)
-    const waiting = read('sessionStats') === undefined && read('tokenUsage') === undefined
-    const sections = waiting ? [] : sessionStatsSections(read, chat, compact)
+  function writeBlock(panel: Element, reading: StatsReading, chat: HostText, compact: boolean) {
+    const sections = sessionStatsSections(reading.stats, reading.usage, chat, compact)
     if (sections.length === 0) {
-      if (waiting) renderContextSkeleton(panel, chat, compact)
-      else removeContextBlock(panel)
+      removeContextBlock(panel)
       return
     }
     stopSkeleton()
-    // The structure is the sections and their labels; the figures are written
-    // into the cells that structure built, so a frame that only moved a number
-    // re-enters that one figure instead of rebuilding the panel (stats-digits.ts).
     let structure = compact ? 'compact' : ''
     for (const section of sections) {
       if (section.title) structure += `\u0001${section.title}`
@@ -178,9 +223,7 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
         for (const row of section.rows) {
           const item = buildElement('div', 'dsh-claude-context-stats-item')
           const value = buildElement('div', 'dsh-claude-context-stats-value')
-          const group = buildDigitGroup('')
-          value.appendChild(group)
-          cells.push(group)
+          cells.push(value)
           item.append(buildElement('div', 'dsh-claude-context-stats-label', row.label), value)
           grid.appendChild(item)
         }
@@ -192,11 +235,39 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
     let cell = 0
     for (const section of sections) {
       for (const row of section.rows) {
-        const group = blockCells[cell]
-        if (group !== undefined) writeDigits(group, row.value)
+        const value = blockCells[cell]
+        if (value !== undefined) writeValue(value, row.value)
         cell += 1
       }
     }
+  }
+
+  /**
+   * Write the numbers into the open panel, or hold their place: the reading
+   * counts to its new value while the panel is open, and a closed panel stops
+   * the count so the next open writes the reading of that moment.
+   */
+  function renderContextStats() {
+    const panel = contextPanel()
+    const root = panel === null ? null : findComposerStats()
+    const chat = root === null ? null : chatText()
+    if (panel === null || root === null || chat === null) {
+      count.reset()
+      return
+    }
+    const compact = !hostStatsDetailed(root)
+    const stats = read<HostSessionStatsProjection>('sessionStats')
+    const usage = read<HostTokenUsageProjection>('tokenUsage')
+    if (stats === undefined && usage === undefined) {
+      count.reset()
+      renderContextSkeleton(panel, chat, compact)
+      return
+    }
+    const changed = count.to({ stats: stats ?? null, usage: usage ?? null })
+    // A new reading is written by its own frames; a pass that found the same
+    // reading still writes the block, so a label that followed the language
+    // lands and the figures are left where they stood.
+    if (!changed) writeBlock(panel, whole(count.current()), chat, compact)
   }
 
   return {
@@ -204,6 +275,12 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
     render: renderContextStats,
     /** Give up the numbers' place, if the block is holding it. */
     stopSkeleton,
+    /** Stop the count and forget the block (the teardown). */
+    stop() {
+      count.reset()
+      blockSignature = ''
+      blockCells = []
+    },
     /** Forget the last written content, so the next pass writes (a switch of session). */
     resetContent() {
       blockSignature = ''

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 5,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**上下文弹层里的数字改为连续计数**：弹层里那一列数字接到新读数时从眼前的数计数到新值，与输入卡片下面那一行同一套动作，不再逐字弹入；弹层每次打开都从当时的读数写起。",
+  "en": "**The context popover's figures count to their readings**: a row's number travels from the value on show to a new reading, the same motion the line under the input card makes, instead of each character popping in; a panel that opens writes the reading of the moment where it stands."
+}

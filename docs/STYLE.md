@@ -291,9 +291,9 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-bounce` | `350ms` | a switch's knob travelling across with its double bounce |
 | `--dsh-claude-duration-flight` | `400ms` | the sent message flying from the composer to its row |
 | `--dsh-claude-duration-step` | `500ms` | one step of the reasoning window's text rising two lines |
-| `--dsh-claude-duration-pop` | `500ms` | something popping into place: a changed digit of the session numbers, the overtime badge's own pill |
+| `--dsh-claude-duration-pop` | `500ms` | something popping into place: the overtime badge's own pill |
 | `--dsh-claude-duration-rise` | `500ms` | a line of the home greeting rising into place |
-| `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the last two popping digits, the greeting's second line |
+| `--dsh-claude-duration-stagger` | `70ms` | how far behind the piece before it a staggered piece starts: the greeting's second line |
 | `--dsh-claude-period-dot-orbit` | `2400ms` | one turn of the waiting line's loader dots that swap corners: four quarter-turns of the two pairs, which leaves every dot where it started |
 | `--dsh-claude-period-dot-rotate` | `10s` | how long one of the waiting line's loader motions stands before another takes its place, the next one picked so a motion never follows itself |
 | `--dsh-claude-duration-reduced` | `0.01ms` | every skin animation and transition under the Reduced animation choice (D40) |
@@ -319,15 +319,15 @@ edit the JSON, not the table.
 | `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
 | `--dsh-claude-ease-glide` | `cubic-bezier(0.22, 0.61, 0.36, 1)` | travel along a track: the sliding highlight, the reasoning slider, the search dialog's entrance, the reasoning window's step, the wording box's width, the stream's slide |
 | `--dsh-claude-ease-roll` | `cubic-bezier(0.4, 0, 0.2, 1)` | digits rolling over: the file rows' tail and the process group header's counts |
-| `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the session numbers' digits and the overtime badge popping in, a switch's knob bouncing past its end |
+| `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the overtime badge popping in, a switch's knob bouncing past its end |
 | `--dsh-claude-ease-settle` | `cubic-bezier(0.22, 1, 0.36, 1)` | a surface or a page settling into place out of its anchor: menus and dialogs opening and closing, a settings page sliding, the overtime badge sliding onto its line, the greeting's lines rising |
 | `--dsh-claude-ease-host-sweep` | `steps(48, end)` | the band across the waiting line's words and a running process group's header |
 | `--dsh-claude-ease-damped-out` | `cubic-bezier(0.33, 1, 0.68, 1)` | a loader dot slowing into the end of its line: the damping the line motion carries, so a dot dwells at its turning point before it comes back |
 | `--dsh-claude-ease-damped-in` | `cubic-bezier(0.32, 0, 0.67, 0)` | a loader dot leaving the end of its line and gathering speed towards the middle |
 | `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, and a small row's wording swap travels |
-| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, the distance a popping digit comes from, a settings page's slide, the overtime badge's sideways slide, and both directions of the waiting line's loader dots: the lift off their floor and the reach along their own lines |
+| `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, a settings page's slide, the overtime badge's sideways slide, and both directions of the waiting line's loader dots: the lift off their floor and the reach along their own lines |
 | `--dsh-claude-distance-rise` | `12px` | how far below its place a line of the home greeting starts, and the overtime badge's upward slide |
-| `--dsh-claude-blur-soft` | `2px` | the blur words, digits and badges pass through while they swap or pop in, and a placeholder passes through as it hands its place over |
+| `--dsh-claude-blur-soft` | `2px` | the blur words and badges pass through while they swap or pop in, and a placeholder passes through as it hands its place over |
 | `--dsh-claude-blur-enter` | `3px` | the blur a settings page or a line of the home greeting passes through as it slides or rises in |
 | `--dsh-claude-scale-surface` | `0.98` | the scale a surface grows from as it rises |
 | `--dsh-claude-scale-dropdown` | `0.97` | the scale a menu grows from out of its trigger |
