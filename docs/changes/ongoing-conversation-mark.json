@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 10,
+  "at": "2026-10-17",
+  "external": true,
+  "zh": "**侧栏里进行中的对话标记可以换回滚动的圆环**：「动效」页新增「进行中的对话」一行，两张卡片带出「呼吸灯」（默认）与「滚动圆环」两档（设置项 `ongoingIndicator` 的取值为 `breathe` 与 `ring`）；侧栏里正在跑的那一行立刻换过来，动画设为「减弱」时两档都停住。",
+  "en": "**The sidebar's mark for a running conversation can be the turning ring again**: the Motion tab gains Ongoing conversations, whose two cards offer Breathing light (the default) and Turning ring (the `ongoingIndicator` setting is `breathe` or `ring`); the running row changes at once, and with Animation set to Reduced both stand still."
+}

@@ -99,6 +99,15 @@ export const SIDEBAR_LAYOUT_RELAXED = 'relaxed'
 export const SIDEBAR_LAYOUT_COMPACT = 'compact'
 export const SIDEBAR_LAYOUTS = [SIDEBAR_LAYOUT_RELAXED, SIDEBAR_LAYOUT_COMPACT] as const
 
+/**
+ * The mark a conversation still running carries in the sidebar: a light
+ * breathing in place over the idle seat's hollow circle, or the ring turning
+ * that the skin drew before the light.
+ */
+export const ONGOING_INDICATOR_BREATHE = 'breathe'
+export const ONGOING_INDICATOR_RING = 'ring'
+export const ONGOING_INDICATORS = [ONGOING_INDICATOR_BREATHE, ONGOING_INDICATOR_RING] as const
+
 /** The chat area's animation switch: on plays the ported set (features/chat-*), off leaves the area to the host. */
 export const CHAT_ANIMATIONS_OFF = 'off'
 
@@ -221,6 +230,7 @@ export const PREFS = {
   sidebarSearch: { type: 'boolean', default: true },
   searchStyle: { type: 'choice', values: SEARCH_STYLES, default: SEARCH_STYLE_OVERLAY },
   sidebarLayout: { type: 'choice', values: SIDEBAR_LAYOUTS, default: SIDEBAR_LAYOUT_RELAXED },
+  ongoingIndicator: { type: 'choice', values: ONGOING_INDICATORS, default: ONGOING_INDICATOR_BREATHE },
   turnNav: { type: 'boolean', default: true },
   viewTabs: { type: 'boolean', default: true },
   headerBand: { type: 'boolean', default: true },

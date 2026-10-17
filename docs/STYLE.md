@@ -309,6 +309,7 @@ edit the JSON, not the table.
 | `--dsh-claude-period-flash` | `1450ms` | one flash of the reasoning slider's top-rung matrix |
 | `--dsh-claude-period-blink` | `1000ms` | one blink of the composer caret |
 | `--dsh-claude-period-breathe` | `2400ms` | one breath of the sidebar's ongoing-conversation light |
+| `--dsh-claude-period-spin` | `850ms` | one turn of the sidebar's ongoing-conversation ring |
 | `--dsh-claude-period-landed` | `1400ms` | the mark on the turn the conversation navigator landed on |
 | `--dsh-claude-period-hold` | `840ms` | how long the reasoning window's text stands between two steps |
 | `--dsh-claude-period-dot-bounce` | `500ms` | one bounce of the waiting line's loader dots under the Claude brand, and the period each dot's own start is measured against |

@@ -21,7 +21,7 @@ module.exports = {
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'statsPosition', 'viewTabs', 'headerBand'],
-      motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'chatReveal', 'chatSend', 'messageEnter'],
+      motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
     }
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window.
@@ -122,6 +122,28 @@ module.exports = {
       fade.animation === 'dsh-claude-reveal-piece' && Number.parseFloat(fade.duration) === 0.12 && fade.fill === 'both' &&
         waiting.opacity === '0' && plain.animation === 'none' && plain.opacity === '1',
       JSON.stringify(revealPreview))
+    const ongoing = settings.ongoingCards || {}
+    const ongoingCards = ongoing.cards || []
+    check('the ongoing-mark row is two cards carrying the pair a sidebar row leads with, the mark first and a title beside it: each card names its own mark, the stored choice alone is drawn as picked, and the sample takes no reading',
+      ongoingCards.length === 2 &&
+        ongoingCards.map((card) => card.look).join() === 'breathe,ring' &&
+        ongoingCards.every((card) => typeof card.label === 'string' && card.label.length > 0 &&
+          card.sample === true && typeof card.title === 'string' && card.title.length > 0) &&
+        ongoingCards[0].active === true && ongoingCards[0].pressed === 'true' &&
+        ongoingCards[1].active === false && ongoingCards[1].pressed === 'false',
+      JSON.stringify(ongoingCards))
+    const marks = settings.ongoingMarks || {}
+    check('each card wears its own mark: the breathing dot is the idle seat\'s filled 6px circle pulsing on the shared breath, the ring a wider ring with a drawn track whose lit head turns on its own period',
+      marks.breathe?.width === '6px' && marks.breathe?.border === '0px' &&
+        marks.breathe?.animation === 'dsh-claude-pulse' && Number.parseFloat(marks.breathe?.duration) === 2.4 &&
+        marks.ring?.width === '10px' && parseFloat(marks.ring?.border) >= 1 &&
+        marks.ring?.animation === 'dsh-claude-ongoing-spin' && Number.parseFloat(marks.ring?.duration) === 0.85,
+      JSON.stringify(marks))
+    const stored = settings.ongoingStored || {}
+    check('the reader\'s stored mark reaches the page and repaints the running row\'s own mark, live',
+      stored.ring?.attribute === 'ring' && stored.ring?.width === '10px' && stored.ring?.animation === 'dsh-claude-ongoing-spin' &&
+        stored.breathe?.attribute === 'breathe' && stored.breathe?.width === '6px' && stored.breathe?.animation === 'dsh-claude-pulse',
+      JSON.stringify(stored))
     commonChecks(r)
   },
   'dock-cards'(r) {

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, STATUS_MOTION_WASH, USERNAME_MAX } from '../constants'
+import { BRAND_CLAUDE, BRAND_DEEPSEEK, BRAND_DEEPSEEK_LEGACY, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRAND_NAME_MAX, CHAT_ANIMATIONS_OFF, MASCOT_CRAB, MASCOT_DEEPY, MASCOT_OFF, ONGOING_INDICATOR_RING, PREF_DEFAULTS, PROVIDER_ID_MAX, QUICK_PROVIDERS_MAX, STATUS_MOTION_WASH, USERNAME_MAX } from '../constants'
 import { MODEL_OFFICIAL_GROUP } from '../features/model/copy-fallbacks'
 import { resolveMascot } from './prefs'
 import { clampPrefs as normalizePrefs } from '@dsh-claude-style/contracts/prefs'
@@ -25,6 +25,8 @@ test('a choice outside its set reads as its default', () => {
   expect(normalizePrefs({ statusDetail: 'simple' }).statusDetail).toBe(false)
   expect(normalizePrefs({ statusDetail: 'precise' }).statusDetail).toBe(true)
   expect(normalizePrefs({ statusDetail: 'verbose' }).statusDetail).toBe(PREF_DEFAULTS.statusDetail)
+  expect(normalizePrefs({ ongoingIndicator: ONGOING_INDICATOR_RING }).ongoingIndicator).toBe(ONGOING_INDICATOR_RING)
+  expect(normalizePrefs({ ongoingIndicator: 'pulse' }).ongoingIndicator).toBe(PREF_DEFAULTS.ongoingIndicator)
 })
 
 test('the caret switch reads the retired explicit-moves tier as on', () => {

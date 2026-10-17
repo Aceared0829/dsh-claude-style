@@ -804,6 +804,16 @@
       "the new-text fade row previews its two answers: the fade card's character lands faint and settles over the reveal's own duration, the other stands solid as it arrives, and a character waiting for its turn is unseen": [
         0.12
       ],
+      "the ongoing-mark row is two cards carrying the pair a sidebar row leads with, the mark first and a title beside it: each card names its own mark, the stored choice alone is drawn as picked, and the sample takes no reading": [
+        0,
+        1,
+        2
+      ],
+      "each card wears its own mark: the breathing dot is the idle seat's filled 6px circle pulsing on the shared breath, the ring a wider ring with a drawn track whose lit head turns on its own period": [
+        0.85,
+        1,
+        2.4
+      ],
       "every switched feature is on by default": [
         5
       ],

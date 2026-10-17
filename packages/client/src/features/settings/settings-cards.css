@@ -7,7 +7,7 @@
    the row shell, the switches, the brand editor and the tab strip are the
    other. */
 
-body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker) {
+body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker) {
   align-self: stretch;
 }
 
@@ -16,18 +16,19 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-bra
    over its name; the waiting line's paint cards carry the line's words wearing
    the paint itself, which is why both read shared/motion.css; the caret's cards
    carry a sample line with the caret doing what the choice says; the reveal's
-   carry a sample line whose characters arrive one after another. The brand
+   carry a sample line whose characters arrive one after another; the ongoing
+   mark's carry one sidebar row led by the mark the choice gives it. The brand
    marks are the same assets the sidebar and hero paint — Claude's clay
    starburst, DeepSeek's whale in brand blue — inlined as CSS data URIs, so they
    read in full colour on either theme: a new brand is one option in
    settings-tab-general.ts and one [data-brand] rule here. */
-body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker) {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card) {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card) {
   appearance: none;
   margin: 0;
   display: flex;
@@ -46,16 +47,16 @@ body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card,
   transition: border-color var(--dsh-claude-timing-feedback);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card):hover {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card):hover {
   border-color: var(--dsw-alias-border-l2);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card):focus-visible {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card):focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
   outline-offset: 1px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card)[data-active] {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card)[data-active] {
   border-color: var(--dsw-alias-brand-primary, #d97757);
 }
 
@@ -429,6 +430,33 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-
 
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-stack {
   transition: none;
+}
+
+/* An ongoing-mark card holds the pair a sidebar row leads with: the mark the
+   choice gives it, then a title in the quiet ink. The mark's own paint is the
+   sidebar's (theme/sidebar.css), so the card wears the mark rather than a
+   picture of it, and the two cards are the same pair with the mark swapped. */
+body[data-dsh-claude-style] .dsh-claude-ongoing-card {
+  min-height: 64px;
+  padding: 14px 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-ongoing-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-ongoing-sample-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- The cards while the animation choice is reduced (D40) ---------- */

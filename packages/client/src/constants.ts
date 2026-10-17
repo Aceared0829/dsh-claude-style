@@ -93,6 +93,11 @@ export const TYPEFACE_ATTR = 'data-dsh-claude-typeface'
 export const MASCOT_ATTR = 'data-dsh-claude-mascot'
 export const SEARCH_STYLE_ATTR = 'data-dsh-claude-search-style'
 export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
+/**
+ * The mark a running conversation carries in the sidebar (theme/sidebar.css):
+ * its presence and value pick the breathing light or the turning ring.
+ */
+export const ONGOING_INDICATOR_ATTR = 'data-dsh-claude-ongoing-indicator'
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
 /**
  * The page zoom in force, as the factor the stylesheet scales the page by
