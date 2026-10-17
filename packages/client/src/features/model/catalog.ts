@@ -1,6 +1,6 @@
 import { MODEL_EFFORT_DEFAULT } from './copy-fallbacks'
-import { currentSessionId, hostModelDirectories, hostSessions } from '../../core/host'
-import type { HostContext } from '../../core/host'
+import { currentSessionId, hostModelDirectories, hostSessions } from '@dsh-claude-style/engine/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelCatalogSnapshot, HostModelDirectory, HostModelEntry, HostModelGroup, HostModelReasoning } from '@dsh-claude-style/contracts/services'
 import { notifyAll } from '@dsh-claude-style/engine/notify'
 

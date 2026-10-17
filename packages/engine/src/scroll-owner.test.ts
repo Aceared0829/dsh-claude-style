@@ -8,6 +8,7 @@ const MOTION_FULL = 'full'
 const MOTION_REDUCED = 'reduced'
 const READER_HOLD_ATTR = 'data-test-reader-hold'
 adoptSkin({
+  packageName: 'dsh-test-skin',
   quiet: 'data-test-quiet',
   readerHold: READER_HOLD_ATTR,
   motionReduced: () => document.body.getAttribute(MOTION_ATTR) === MOTION_REDUCED,

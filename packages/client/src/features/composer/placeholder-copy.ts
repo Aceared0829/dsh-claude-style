@@ -1,4 +1,4 @@
-import { findComposerInput, findComposerPlaceholder } from '../../core/host'
+import { findComposerInput, findComposerPlaceholder } from '@dsh-claude-style/engine/host'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 
 /** The hero composer's own hint, which the skin's placeholder stands in for. */

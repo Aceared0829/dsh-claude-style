@@ -1,4 +1,4 @@
-import { MODEL_COPY_FALLBACK_LOCALE, MODEL_COPY_ROUTE } from '../features/model/copy-fallbacks'
+import { MODEL_COPY_FALLBACK_LOCALE, MODEL_COPY_ROUTE } from './copy-fallbacks'
 import { createHostResource } from '@dsh-claude-style/engine/resource'
 import type { HostAnswer } from '@dsh-claude-style/engine/resource'
 

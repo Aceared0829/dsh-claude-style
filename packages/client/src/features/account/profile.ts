@@ -1,7 +1,8 @@
 import { CLIENT_VERSION } from 'virtual:dsh-claude-style/generated'
-import { hostRemote, hostRemoteAccount, setAccountIdentity } from '../../core/host'
+import { hostRemote, hostRemoteAccount } from '@dsh-claude-style/engine/host'
+import { setAccountIdentity } from '../../shared/identity'
 import { activeLocale } from '../../core/i18n'
-import type { HostContext, HostFiber } from '../../core/host'
+import type { HostContext, HostFiber } from '@dsh-claude-style/engine/host'
 import type { HostAccountAnswer, HostAccountClient, HostAccountFrame, HostAccountService, HostStream, HostStreamStep } from '@dsh-claude-style/contracts/services'
 
 /**

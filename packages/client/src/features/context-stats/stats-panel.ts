@@ -1,6 +1,6 @@
 import { COMPOSER_STAT_SELECTOR, DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { observeMatches } from '@dsh-claude-style/engine/bus'
-import { cacheFirstMatch } from '../../core/host'
+import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { removeStrayNodes } from '../../shared/popover'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 

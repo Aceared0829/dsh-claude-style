@@ -1,10 +1,7 @@
-import { HDSL_ROUTE, HDSL_SKIN_ROUTE, USERNAME_MAX, USERNAME_ROUTE } from '../constants'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRemoteSettings, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService } from '@dsh-claude-style/contracts/services'
-import { readPrefs } from './prefs'
-import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
-import { closestFrom } from '@dsh-claude-style/engine/dom'
-import { createHostResource } from '@dsh-claude-style/engine/resource'
+import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRemoteSettings, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
+import { observeMatches, subscribeMutations } from './bus'
+import { closestFrom } from './dom'
 
 /**
  * The host's client context (cordis), handed to `apply` and to every feature.
@@ -340,109 +337,6 @@ export function outlineSeq(outline: HostOutlineTurn[] | undefined, turn: number)
 }
 
 /**
- * Who the skin shows. Nickname: the custom nickname, the signed-in account's
- * name, the HDSL launcher's account name, the cached OS-user probe, the fresh
- * probe. Picture: the signed-in account's avatar, the HDSL launcher's avatar,
- * then nothing, which lets the brand mark show (D11).
- */
-export let accountName = ''
-export let accountAvatar = ''
-
-/** The account profile's contribution; called when its read answers. */
-export function setAccountIdentity(name: unknown, avatar: unknown) {
-  accountName = typeof name === 'string' ? name.trim() : ''
-  accountAvatar = typeof avatar === 'string' ? avatar : ''
-}
-
-/**
- * The host half owns the OS user (`os.userInfo().username`); this side fetches
- * it once, caches it and mirrors the answer into local storage so a reload
- * shows the name from the first frame. No workspace parsing, no polling.
- */
-let usernameFromHost = ''
-
-/** Last OS-user probe this browser saw; the cache that outlives the page. */
-const PROBED_USERNAME_KEY = 'dsh-claude-style.probed-username'
-let probedUsername = readStoredProbeUsername()
-
-function readStoredProbeUsername() {
-  return localStorage.getItem(PROBED_USERNAME_KEY) || ''
-}
-
-function storeProbeUsername(value: string) {
-  if (value) localStorage.setItem(PROBED_USERNAME_KEY, value)
-}
-
-/** The host half's OS user; an answer the contract does not carry is not adopted. */
-const usernameResource = createHostResource(USERNAME_ROUTE, (data) => {
-  if (!data || data.ok !== true || typeof data.username !== 'string') return undefined
-  usernameFromHost = data.username.trim().slice(0, USERNAME_MAX)
-  if (usernameFromHost) {
-    probedUsername = usernameFromHost
-    storeProbeUsername(usernameFromHost)
-  }
-  return usernameFromHost
-})
-
-export function onUsernameLoaded(listener: (username: string) => void) {
-  return usernameResource.onLoaded(listener)
-}
-
-export function loadUsername() {
-  usernameResource.load()
-}
-
-let hdslContract = false
-let hdslName = ''
-let hdslAvatar = false
-
-/**
- * The HDSL launcher's account contract, when this instance was launched by it.
- * An answer that is no contract is not adopted, so the chain skips the
- * launcher (D11).
- */
-const hdslResource = createHostResource(HDSL_ROUTE, (data) => {
-  if (!data || data.ok !== true || data.contract !== true) return undefined
-  hdslContract = true
-  hdslName = typeof data.name === 'string' ? data.name.trim().slice(0, USERNAME_MAX) : ''
-  hdslAvatar = data.hasSkinImage === true
-  return true
-})
-
-export function onHdslLoaded(listener: (adopted: true) => void) {
-  return hdslResource.onLoaded(listener)
-}
-
-export function loadHdsl() {
-  hdslResource.load()
-}
-
-/** The nickname every skin surface shows, or '' when nothing resolved. */
-export function resolveDisplayName() {
-  const custom = readPrefs().username
-  if (custom) return custom
-  if (accountName) return accountName
-  if (hdslName) return hdslName
-  if (probedUsername) return probedUsername
-  return usernameFromHost
-}
-
-export function getUsername() {
-  return resolveDisplayName() || 'User'
-}
-
-/** The picture every skin surface shows, or '' to let the brand mark show. */
-export function resolveAvatarUrl() {
-  if (accountAvatar) return accountAvatar
-  if (hdslContract && hdslAvatar) return HDSL_SKIN_ROUTE
-  return ''
-}
-
-/**
- * Host context reference for services that read host state outside apply(ctx)'s call stack.
- */
-export let hostCtx: HostContext | null = null
-/**
  * The host's client services, each read here once (D3).
  *
  * A feature asks for what it does with a service, not for the service's name:
@@ -515,22 +409,50 @@ export function hostRemotePermissionPresets(lookup: HostServiceLookup | null | u
   return lookup?.get('remote.permissionPresets')
 }
 
+/** The workspace list, archived and live. */
+export function hostWorkspaces(lookup: HostServiceLookup | null | undefined): HostWorkspacesService | null {
+  const workspaces = lookup?.get('workspaces') as HostWorkspacesService | undefined
+  return workspaces ?? null
+}
+
+/** The shell's workspace actions: open a session, start one. */
+export function hostUiWorkspace(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('uiWorkspace')
+}
+
+/** The shell's plugin page navigation. */
+export function hostPluginNavigation(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('pluginNavigation')
+}
+
+/** The shell's panel layout. */
+export function hostLayout(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('layout')
+}
+
+/** The installed plugin inventory, behind the remote. */
+export function hostRemotePluginInventory(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote.pluginInventory')
+}
+
+/** The plugin manager behind the remote. */
+export function hostRemotePluginManager(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote.pluginManager')
+}
+
+/** The skill catalog behind the remote. */
+export function hostRemoteSkills(lookup: HostServiceLookup | null | undefined): HostValue {
+  return lookup?.get('remote.skills')
+}
+
+/** The host's settings-form service (`configForms`, D11); null where the host serves no namespaces to the browser. */
+export function hostConfigForms(lookup: HostServiceLookup | null | undefined): HostConfigFormsService | null {
+  const forms = lookup?.get('configForms') as HostConfigFormsService | undefined
+  return typeof forms?.get === 'function' ? forms : null
+}
+
 /** The settings document behind the remote, on a page with no writable form (D11). */
 export function hostRemoteSettings(ctx: HostServiceLookup): HostRemoteSettings | null {
   const settings = ctx.get('remote.settings') as HostRemoteSettings | undefined
   return settings ?? null
-}
-
-export function setHostContext(ctx: HostContext | null) {
-  hostCtx = ctx
-  // A new host context means a new OS user and a new launcher, so the next
-  // apply resolves again. The probe cache survives on purpose: same machine.
-  usernameResource.reset()
-  usernameFromHost = ''
-  hdslResource.reset()
-  hdslContract = false
-  hdslName = ''
-  hdslAvatar = false
-  accountName = ''
-  accountAvatar = ''
 }

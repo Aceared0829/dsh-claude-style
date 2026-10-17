@@ -1,9 +1,9 @@
 import { buildElement } from '@dsh-claude-style/engine/dom'
-import { findComposerStats } from '../../core/host'
+import { findComposerStats } from '@dsh-claude-style/engine/host'
 import { buildDigitGroup, writeDigits } from './stats-digits'
 import { sessionStatsSections } from './stats-model'
 import { CONTEXT_STATS_ATTR, contextPanel, hostStatsDetailed } from './stats-panel'
-import type { HostText } from '../../core/host'
+import type { HostText } from '@dsh-claude-style/engine/host'
 import type { StatsValueReader } from './stats-model'
 
 /**

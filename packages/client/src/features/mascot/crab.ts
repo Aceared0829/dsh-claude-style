@@ -1,7 +1,7 @@
 import { CRAB_FRAME_MS, CRAB_SHEETS } from './sheets'
 import { createMascotPlayer } from './mascot-player'
 import { CRAB_SHEET_URLS } from 'virtual:dsh-claude-style/generated'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './mascot.manifest'
 

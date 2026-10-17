@@ -1,7 +1,7 @@
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelEntry } from '@dsh-claude-style/contracts/services'
 import { localized } from '../../core/i18n'
-import { modelCopy } from '../../core/model-copy'
+import { modelCopy } from './model-copy'
 import { textOf } from '../../shared/format'
 
 /**
@@ -58,7 +58,7 @@ export function tierModelCopy(modelId: unknown) {
 export function modelDescription(ctx: HostContext | null, groupId: unknown, model: HostModelEntry): string {
   const id = typeof model.id === 'string' ? model.id : ''
   const pair = familyModelCopy(groupId, id) || tierModelCopy(id)
-  const text = localized(pair, ctx)
+  const text = localized(pair, ctx, modelCopy === null ? undefined : modelCopy.fallback)
   if (text) return text
   return typeof model.description === 'string' ? model.description : ''
 }

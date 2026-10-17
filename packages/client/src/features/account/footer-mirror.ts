@@ -1,5 +1,5 @@
 import { FOOTER_ACTIONS_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { findFootArea } from '../../core/host'
+import { findFootArea } from '@dsh-claude-style/engine/host'
 import { hasSkinClass } from '@dsh-claude-style/engine/dom'
 import { buildPopoverItem } from '../../shared/popover'
 import { copy } from './copy'

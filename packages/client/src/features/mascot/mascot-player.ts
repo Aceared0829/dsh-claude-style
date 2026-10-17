@@ -1,11 +1,11 @@
-import { COMPOSER_STACK, conversationSessionId, findComposerSeat, findConversationSession } from '../../core/host'
+import { COMPOSER_STACK, conversationSessionId, findComposerSeat, findConversationSession } from '@dsh-claude-style/engine/host'
 import { motionReduced } from '../../core/prefs'
 import { createMascotSignals } from './mascot-signals'
 import type { MascotMoment } from './mascot-signals'
 import { decideStage, finishStage, freshStage, nextDecisionAt, switchSettles, takeMoment } from './mascot-stage'
 import type { MascotPick, PlayMode } from './mascot-stage'
 import { buildElement, createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './mascot.manifest'
 

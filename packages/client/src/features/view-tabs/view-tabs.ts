@@ -1,9 +1,9 @@
 import { windowsDesktop } from '@dsh-claude-style/engine/desktop-band'
-import { cacheFirstMatch } from '../../core/host'
+import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './view-tabs.manifest'
 

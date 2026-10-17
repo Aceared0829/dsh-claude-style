@@ -1,4 +1,4 @@
-import { conversationSessionId, findConversationSession, hostSessions } from '../../core/host'
+import { conversationSessionId, findConversationSession, hostSessions } from '@dsh-claude-style/engine/host'
 import { hostChatSeat } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
 import { STATS_POSITION_INLINE } from '../../constants'
@@ -7,7 +7,7 @@ import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
-import type { HostContext, HostText } from '../../core/host'
+import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
 import type { HostSnapshotSource } from '@dsh-claude-style/contracts/services'
 
 /**

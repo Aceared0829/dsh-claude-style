@@ -1,6 +1,6 @@
 import { SESSION_SEARCH_ROUTE } from '../../constants'
-import { currentSessionId, hostConversation } from '../../core/host'
-import type { HostContext, HostValue } from '../../core/host'
+import { currentSessionId, hostConversation, hostLayout, hostLocale, hostPluginNavigation, hostRemotePluginInventory, hostRemotePluginManager, hostRemoteSkills, hostSessions, hostShortcuts, hostSlots, hostUiWorkspace, hostWorkspaces } from '@dsh-claude-style/engine/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { ContentHit, SearchAnswer } from '@dsh-claude-style/contracts/usage'
 import type { HostBundleListAnswer, HostConversationInput, HostConversationService, HostInventoryAnswer, HostPluginBundle, HostSessionBinding, HostSessionSummary, HostShortcutRow, HostShortcutsService, HostSkill, HostSkillListAnswer, HostSlotsService, HostSlotStore, HostWorkspaceListSnapshot } from '@dsh-claude-style/contracts/services'
 import { copy } from './copy'
@@ -77,18 +77,9 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
   let skillSessionId: string | null = null
   let generation = 0
 
-  /**
-   * A host service or remote namespace (`remote.skills`), read when the
-   * palette needs it: the namespaces register as their packages load, and
-   * the palette opens long after that.
-   */
-  function service(name: string): HostValue {
-    return ctx.get(name)
-  }
-
   /** The host's shortcut row for a command id, for the keycaps an action row shows. */
   function commandKeys(id: string): string[] {
-    const shortcuts = service('shortcuts')
+    const shortcuts = hostShortcuts(ctx)
     if (!shortcuts) return []
     const rows = shortcuts.catalog.getSnapshot()
     for (let i = 0; i < rows.length; i++) {
@@ -99,7 +90,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
 
   /** The store a host slot registration declares, e.g. the settings shell or the shortcut reference. */
   function slotStore(key: string, id?: string): HostSlotStore | null {
-    const slots = service('slots')
+    const slots = hostSlots(ctx)
     if (!slots) return null
     const entries = slots.entries(key)
     for (let i = 0; i < entries.length; i++) {
@@ -135,8 +126,8 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
    * tree's own visibility rule with the archived filter off.
    */
   function openableSessions() {
-    const sessions = service('sessions')
-    const workspaces = service('workspaces')
+    const sessions = hostSessions(ctx)
+    const workspaces = hostWorkspaces(ctx)
     if (!sessions || !workspaces) return []
     const list = sessions.list.getSnapshot()
     const archive = workspaces.list.getSnapshot()
@@ -163,7 +154,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
       snippet: hit === undefined ? '' : hit.snippet,
       snippetMatch: hit === undefined ? null : hit.match,
       run() {
-        service('uiWorkspace').openSession(id)
+        hostUiWorkspace(ctx).openSession(id)
         // A content hit names the message it matched, so the conversation does
         // not stop at the session: the turn holding that message is revealed
         // once the session is the shown one.
@@ -228,7 +219,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
   }
 
   function projectRows(): SearchRow[] {
-    const workspaces = service('workspaces')
+    const workspaces = hostWorkspaces(ctx)
     if (!workspaces) return []
     const items: HostWorkspaceListSnapshot['items'] = workspaces.list.getSnapshot().items
     return items.map(workspace => ({
@@ -237,13 +228,14 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
       title: workspace.title,
       detail: workspace.path,
       label: workspace.path,
-      run() { service('uiWorkspace').startSession(workspace.workspaceId) },
+      run() { hostUiWorkspace(ctx).startSession(workspace.workspaceId) },
     }))
   }
 
   function pluginText(value: unknown): string {
-    const locale = service('locale')
-    return value === undefined || !locale ? '' : locale.resolveText(value)
+    const locale = hostLocale(ctx)
+    const text = value === undefined ? undefined : locale?.resolveText?.(value)
+    return typeof text === 'string' ? text : ''
   }
 
   /** The part of a package name a person reads: `@scope/name` → `name`. */
@@ -263,7 +255,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
         detail: (bundle.meta && pluginText(bundle.meta.description)) || bundle.description || '',
         image: bundle.meta && typeof bundle.meta.icon === 'string' ? bundle.meta.icon : '',
         label: bundle.name,
-        run() { service('pluginNavigation').openBundle(bundle.name) },
+        run() { hostPluginNavigation(ctx).openBundle(bundle.name) },
       }
     })
   }
@@ -275,9 +267,9 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
    * @returns a promise that settles once the list is in (or known absent).
    */
   function loadPlugins(owner: number): Promise<void> {
-    const inventory = service('remote.pluginInventory')
-    const manager = service('remote.pluginManager')
-    if (!inventory || !manager || !service('pluginNavigation')) {
+    const inventory = hostRemotePluginInventory(ctx)
+    const manager = hostRemotePluginManager(ctx)
+    if (!inventory || !manager || !hostPluginNavigation(ctx)) {
       plugins = []
       return Promise.resolve()
     }
@@ -295,12 +287,12 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
   }
 
   function currentOpenSession() {
-    const sessions = service('sessions')
+    const sessions = hostSessions(ctx)
     if (!sessions) return null
     const id = currentSessionId(ctx, sessions)
     if (typeof id !== 'string') return null
     const binding = sessions.binding(id)
-    if (!binding || !binding.session || binding.session.getSnapshot().openState !== 'open') return null
+    if (!binding || !binding.session || binding.session.getSnapshot?.().openState !== 'open') return null
     return { id, binding }
   }
 
@@ -319,7 +311,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
 
   function skillRows(): SearchRow[] {
     if (skills === null || skillSessionId === null) return []
-    const sessions = service('sessions')
+    const sessions = hostSessions(ctx)
     const binding = sessions ? sessions.binding(skillSessionId) : null
     if (!binding) return []
     return skills.map(skill => ({
@@ -334,7 +326,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
 
   function loadSkills(owner: number): Promise<void> {
     const open = currentOpenSession()
-    const catalog = service('remote.skills')
+    const catalog = hostRemoteSkills(ctx)
     if (open === null || !catalog) {
       skills = []
       skillSessionId = null
@@ -349,7 +341,7 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
   }
 
   function shortcutRows() {
-    const shortcuts = service('shortcuts')
+    const shortcuts = hostShortcuts(ctx)
     if (!shortcuts) return []
     const rows: SearchRow[] = []
     const seen = new Set<string>()
@@ -378,15 +370,15 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
       icon: 'newSession',
       title: copy('searchActionNewSession'),
       keys: commandKeys('session.new'),
-      run() { service('uiWorkspace').startSession() },
+      run() { hostUiWorkspace(ctx).startSession() },
     }]
-    if (service('pluginNavigation')) {
+    if (hostPluginNavigation(ctx)) {
       rows.push({
         kind: 'action',
         id: 'action:plugins',
         icon: 'plugin',
         title: copy('searchActionPlugins'),
-        run() { service('layout').selectPanel('plugins') },
+        run() { hostLayout(ctx).selectPanel('plugins') },
       })
     }
     if (slotStore('sidebar.settings') !== null) {

@@ -5,7 +5,7 @@ import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { caretClipToField, caretMeasurePlain, caretMeasureRich, noteFacesLoaded } from './caret-measure'
 import type { CaretBox, CaretReading } from './caret-measure'
 import { COMPOSER_INPUT_SELECTOR, COMPOSER_TEXTAREA_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './caret.manifest'
 

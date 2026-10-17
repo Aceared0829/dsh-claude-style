@@ -1,5 +1,5 @@
 import { HDSL_SKIN_ROUTE } from '../../constants'
-import { resolveAvatarUrl, resolveDisplayName } from '../../core/host'
+import { resolveAvatarUrl, resolveDisplayName } from '../../shared/identity'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import type { HostAccountMenu } from './host-menu'
 import { copy } from './copy'

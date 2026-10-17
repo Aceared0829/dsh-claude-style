@@ -1,13 +1,15 @@
-import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, LIVE_PREFS, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
+import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, LIVE_PREFS, PACKAGE_NAME, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
 import type { LivePref } from './constants'
 import { installParts } from '@dsh-claude-style/engine/parts'
 import { adoptSkin } from '@dsh-claude-style/engine/skin'
 import { motionReduced } from './core/prefs'
-import { loadHdsl, loadUsername, setHostContext } from './core/host'
-import type { HostContext } from './core/host'
-import { loadModelCopy } from './core/model-copy'
+import { setHostContext } from './core/host-context'
+import { loadHdsl, loadUsername } from './shared/identity'
+import type { HostContext } from '@dsh-claude-style/engine/host'
+import { loadModelCopy } from './features/model/model-copy'
 import { adoptPrefs, adoptSettingsForm, clearPrefsAttributes, disposePrefsBinding, prefs, readPrefs, retireComposerRestyle, retireFooterTakeover, subscribePrefs } from './core/prefs'
-import { installScheduler, reportFeatureFailure } from './core/scheduler'
+import { reportFeatureFailure } from '@dsh-claude-style/engine/scheduler'
+import { installScheduler } from './core/scheduler'
 import type { HandleName, Ui } from './core/scheduler'
 import { mountStylesheet, parkForeignSheets } from './core/stylesheet'
 import { peerPresent, subscribePeerPresence } from './shared/peer-plugin'
@@ -23,6 +25,7 @@ import { BUILD_ID } from 'virtual:dsh-claude-style/generated'
 // writes, and the two answers only the skin can give (D73). Handed over before
 // anything installs, and before the module-scope sweep below reads any of it.
 adoptSkin({
+  packageName: PACKAGE_NAME,
   quiet: QUIET_ATTR,
   readerHold: READER_HOLD_ATTR,
   motionReduced,
@@ -387,8 +390,8 @@ export function apply(ctx: HostContext) {
   // Preferences are read asynchronously from the host settings namespace;
   // applying the defaults first keeps every gated rule in a defined state
   // for the frames before that read settles, and is exactly the shipped
-  // behaviour when it never does. This runs while yielded too: the reader
-  // must still reach the settings page and see their own values (D49).
+  // behaviour when it never does. This runs while yielded too, so the page
+  // comes back wearing the reader's own values (D74).
   adoptPrefs(prefs)
 
   setFeatureRegistry(FEATURES)

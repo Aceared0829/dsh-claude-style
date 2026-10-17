@@ -1,4 +1,4 @@
-import { normalizeModelId } from '../../core/model-copy'
+import { normalizeModelId } from '../model/model-copy'
 import type { RateProfile } from '@dsh-claude-style/contracts/peakrate'
 
 /**

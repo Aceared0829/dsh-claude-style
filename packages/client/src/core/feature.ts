@@ -1,9 +1,10 @@
 import type * as React from 'react'
 import type { Prefs } from '../constants'
 import { peerPresent } from '../shared/peer-plugin'
-import type { HostContext } from './host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CopyEntries } from './i18n'
-import type { HandleName, Handles, Ui, UiCalls } from './scheduler'
+import type { SchedulerCalls } from '@dsh-claude-style/engine/scheduler'
+import type { HandleName, Handles, Ui } from './scheduler'
 
 /**
  * A feature's manifest (D72): every fact about the feature that something
@@ -243,7 +244,7 @@ type ReadHandles<M> = M extends { reads: readonly (infer R extends HandleName)[]
  * handle and the handles its manifest `reads` (D72). Its install takes `ui` as
  * `FeatureUi<typeof manifest>`, with the manifest imported as a type.
  */
-export type FeatureUi<M> = UiCalls & { [K in OwnHandle<M> | ReadHandles<M>]?: Handles[K] }
+export type FeatureUi<M> = SchedulerCalls & { [K in OwnHandle<M> | ReadHandles<M>]?: Handles[K] }
 
 /** The registry the entry installs from, kept for readers outside the install loop (the settings page). */
 let registry: readonly Feature[] = []

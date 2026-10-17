@@ -8,10 +8,10 @@ import {
 } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
 import { desktopBand } from '@dsh-claude-style/engine/desktop-band'
-import { findWindowsMenu } from '../../core/host'
+import { findWindowsMenu } from '@dsh-claude-style/engine/host'
 import { createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import type { FeatureUi } from '../../core/feature'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type manifest from './header-band.manifest'
 
 /**

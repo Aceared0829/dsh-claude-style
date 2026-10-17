@@ -6,7 +6,7 @@ import { modelDescription } from './copy-lookup'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem } from '../../shared/popover'
 import type { createHoverIntent } from '../../shared/popover'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelEntry, HostModelGroup } from '@dsh-claude-style/contracts/services'
 
 /**

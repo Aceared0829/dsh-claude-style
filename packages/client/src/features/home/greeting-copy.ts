@@ -1,5 +1,5 @@
 import { HOME_LAYOUT_STUDIO } from '../../constants'
-import { getUsername } from '../../core/host'
+import { getUsername } from '../../shared/identity'
 import { readPrefs } from '../../core/prefs'
 import { pickHeroGreeting, pickStudioGreeting } from './greetings'
 

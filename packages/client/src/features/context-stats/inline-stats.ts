@@ -1,12 +1,12 @@
 import { QUIET_ATTR } from '../../constants'
 import { buildElement } from '@dsh-claude-style/engine/dom'
-import { findComposerCard, findComposerStats } from '../../core/host'
+import { findComposerCard, findComposerStats } from '@dsh-claude-style/engine/host'
 import { formatCompactTokens } from '../../shared/format'
 import { buildDigitGroup, writeDigits } from './stats-digits'
 import { CACHE_HIT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { sessionStatsCacheHit, sessionStatsGrouped, sessionStatsSpeed } from './stats-format'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
-import type { HostText } from '../../core/host'
+import type { HostText } from '@dsh-claude-style/engine/host'
 import type { StatsValueReader } from './stats-model'
 
 /**

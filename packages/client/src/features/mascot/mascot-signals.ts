@@ -1,5 +1,5 @@
-import { findChatTarget, hostSessions, hostUiSession, readTurnActivity } from '../../core/host'
-import type { HostContext } from '../../core/host'
+import { findChatTarget, hostSessions, hostUiSession, readTurnActivity } from '@dsh-claude-style/engine/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostChatSnapshot, HostChatTarget, HostFeedEntry, HostSessionEvent, HostSessionListSnapshot, HostSessionStatusSnapshot, HostSnapshotSource, HostSubagentEntry } from '@dsh-claude-style/contracts/services'
 
 /** A state the mascot shows: its name, the animation that plays it, and how much it outranks. */

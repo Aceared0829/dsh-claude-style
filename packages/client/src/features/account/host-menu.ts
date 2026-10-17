@@ -1,5 +1,5 @@
 import { SETTINGS_BUTTON_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { findFootArea, findHostMenu } from '../../core/host'
+import { findFootArea, findHostMenu } from '@dsh-claude-style/engine/host'
 import { hasSkinClass } from '@dsh-claude-style/engine/dom'
 
 /** Rhythm and give-up point of the poll for the host's account menu after the trigger's own click. */

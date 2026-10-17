@@ -4,7 +4,7 @@ import { observeMatches, observeSize, subscribeMutations } from './bus'
 
 /** The skin's own vocabulary, as this test hands it over. */
 const QUIET_ATTR = 'data-test-quiet'
-adoptSkin({ quiet: QUIET_ATTR, readerHold: 'data-test-reader-hold', motionReduced: () => false })
+adoptSkin({ packageName: 'dsh-test-skin', quiet: QUIET_ATTR, readerHold: 'data-test-reader-hold', motionReduced: () => false })
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))

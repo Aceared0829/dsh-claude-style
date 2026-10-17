@@ -11,6 +11,8 @@
 
 /** What the engine needs from the skin it serves. */
 export interface SkinSeam {
+  /** The package the skin ships as: what a console line names it by. */
+  packageName: string
   /**
    * The attribute on a node the skin owns purely for its own bookkeeping: a
    * change to such a node is not a page change and wakes no subscriber.

@@ -462,7 +462,9 @@ export interface HostRunningCall extends HostChatBlock {
 /** The `locale` service: a namespace's translate seat, and its raw resolver. */
 export interface HostLocaleService {
   bind(namespace: string): HostText
-  resolveText?(key: string, params?: Record<string, string | number>): unknown
+  /** Listen to a language switch; the function it returns stops listening. */
+  subscribe?(listener: () => void): () => void
+  resolveText?(value: unknown, params?: Record<string, string | number>): unknown
 }
 
 /**

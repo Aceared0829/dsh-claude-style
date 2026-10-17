@@ -7,9 +7,9 @@ import { CHAT_CALL_SELECTOR, CHAT_RUNNING_SELECTOR, CONVERSATION_SCROLL_SELECTOR
 import { conversationColumn, conversationScroller, findFollowTailButton } from '@dsh-claude-style/engine/chat-dom'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { motionEase, motionMs } from '../../shared/motion'
-import { observeComposerCards } from '../../core/host'
+import { observeComposerCards } from '@dsh-claude-style/engine/host'
 import { SCROLL_EASE_LEAD_PX, handBackFollow, joinScrollOwner, readerHolds, submissionHolds } from '@dsh-claude-style/engine/scroll-owner'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-follow.manifest'
 

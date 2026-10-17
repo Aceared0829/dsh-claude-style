@@ -1,5 +1,5 @@
 import { sessionStatsCacheHit, sessionStatsDuration, sessionStatsSpeed, sessionStatsTokens } from './stats-format'
-import type { HostText } from '../../core/host'
+import type { HostText } from '@dsh-claude-style/engine/host'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import { copy } from './copy'
 

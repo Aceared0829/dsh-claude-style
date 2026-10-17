@@ -1,7 +1,7 @@
 import { callString } from '../../shared/call-args'
 import type { CallArgs } from '../../shared/call-args'
 import type { CopyKey } from './copy'
-import type { HostText } from '../../core/host'
+import type { HostText } from '@dsh-claude-style/engine/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 
 /**

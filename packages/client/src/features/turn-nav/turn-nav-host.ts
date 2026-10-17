@@ -1,9 +1,9 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
-import { closestConversationSession, conversationSessionId, findChatTarget, findConversationSession, sessionOutline } from '../../core/host'
+import { closestConversationSession, conversationSessionId, findChatTarget, findConversationSession, sessionOutline } from '@dsh-claude-style/engine/host'
 import { hostChatSeat } from '../../core/i18n'
 import { CONVERSATION_SCROLL_SELECTOR, TURN_RAIL_CURRENT_SELECTOR, TURN_RAIL_INSET, TURN_RAIL_MARK_SELECTOR, TURN_RAIL_PITCH, TURN_RAIL_SCROLLER_SELECTOR, TURN_RAIL_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { closestFrom } from '@dsh-claude-style/engine/dom'
-import type { HostContext, HostText } from '../../core/host'
+import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
 import type { HostLoadedTurn, HostOutlineTurn } from '@dsh-claude-style/contracts/services'
 
 /** One turn the rail shows: its number, the prompt that opened it, and whether the chat snapshot holds it. */

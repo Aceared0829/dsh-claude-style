@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SESSION_DELETE_ROUTE } from '../../constants'
-import { findSidebarRoot, hostLocale } from '../../core/host'
+import { findSidebarRoot, hostLocale, hostSessions, hostWorkspaces } from '@dsh-claude-style/engine/host'
 import { observeMatches } from '@dsh-claude-style/engine/bus'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 import { buildElement, closestFrom, createStamp } from '@dsh-claude-style/engine/dom'
@@ -10,7 +10,7 @@ import { removeStrayNodes } from '../../shared/popover'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import type { HostAnswer } from '@dsh-claude-style/engine/resource'
 import { createSlidingPill } from '../../shared/sliding-pill'
-import type { HostContext, HostValue } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostSessionsService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './workspace-view.manifest'
@@ -78,10 +78,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let sessions: HostSessionsService | null = null
   let unwatch: (() => void) | null = null
   let disposed = false
-
-  function service(name: string): HostValue {
-    return ctx.get(name)
-  }
 
   /**
    * The workspace section's label: the skin's own part for it (D3), kept only
@@ -168,8 +164,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function watch() {
     if (unwatch !== null) return true
-    const nextWorkspaces = service('workspaces')
-    const nextSessions = service('sessions')
+    const nextWorkspaces = hostWorkspaces(ctx)
+    const nextSessions = hostSessions(ctx)
     if (nextWorkspaces === undefined || nextWorkspaces === null || nextWorkspaces.list === undefined) return false
     if (nextSessions === undefined || nextSessions === null || nextSessions.list === undefined) return false
     workspaces = nextWorkspaces

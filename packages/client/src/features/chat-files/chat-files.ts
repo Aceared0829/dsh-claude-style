@@ -8,11 +8,11 @@ import { motionReduced } from '../../core/prefs'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { motionMs } from '../../shared/motion'
 import type { FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
-import type { HostContext, HostFiber, HostText } from '../../core/host'
+import type { HostContext, HostFiber, HostText } from '@dsh-claude-style/engine/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './chat-files.manifest'
-import { hostSlots } from '../../core/host'
+import { hostSlots } from '@dsh-claude-style/engine/host'
 
 /** The seat's owner payload for a file tool row, plus the seat's copy. */
 interface ChatFileRowProps {

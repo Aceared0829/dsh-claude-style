@@ -231,7 +231,7 @@ function refuseLedgerGrowth() {
   }
   if (problems.length === 0) return
   for (const problem of problems) console.error(`ci-scope: ${problem}`)
-  console.error('ci-scope: these records only shrink — reach the selector from the walk, or read the seat through core/host.ts and core/bus.ts, rather than recording it')
+  console.error('ci-scope: these records only shrink — reach the selector from the walk, or read the seat through the engine host.ts and bus.ts, rather than recording it')
   process.exit(1)
 }
 

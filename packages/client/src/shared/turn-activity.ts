@@ -1,4 +1,4 @@
-import { readTurnActivity } from '../core/host'
+import { readTurnActivity } from '@dsh-claude-style/engine/host'
 import { BRAND_DEEPSEEK } from '../constants'
 import { activityPhrase } from './activity-phrase'
 import { callDescription } from './call-description'

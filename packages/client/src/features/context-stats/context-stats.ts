@@ -1,7 +1,7 @@
 import { SESSION_STATS_ATTR } from '../../constants'
 import { createSessionStats } from './session-stats'
-import type { HostContext } from '../../core/host'
-import type { CloseReason } from '../../core/scheduler'
+import type { HostContext } from '@dsh-claude-style/engine/host'
+import type { CloseReason } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './context-stats.manifest'
 

@@ -1,4 +1,4 @@
-import { QUIET_ATTR, READER_HOLD_ATTR } from '../client/src/constants'
+import { PACKAGE_NAME, QUIET_ATTR, READER_HOLD_ATTR } from '../client/src/constants'
 import { motionReduced } from '../client/src/core/prefs'
 import { adoptSkin } from '@dsh-claude-style/engine/skin'
 
@@ -12,6 +12,7 @@ import { adoptSkin } from '@dsh-claude-style/engine/skin'
  * engine's own tests hand their own values instead (packages/engine/src).
  */
 adoptSkin({
+  packageName: PACKAGE_NAME,
   quiet: QUIET_ATTR,
   readerHold: READER_HOLD_ATTR,
   motionReduced,

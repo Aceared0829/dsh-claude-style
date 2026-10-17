@@ -88,7 +88,7 @@ for (const file of sources) {
 // nothing of the skin it serves — no client or host module, no generated module
 // carrying the skin's own vocabulary.
 const ENGINE = path.join(ROOT, 'packages', 'engine', 'src')
-for (const file of sources.filter((candidate) => relative(candidate).startsWith('packages/engine/src/'))) {
+for (const file of sources.filter((candidate) => /^packages\/engine\/(?:src|node)\//.test(relative(candidate)))) {
   const text = fs.readFileSync(file, 'utf8')
   for (const match of text.matchAll(/from '([^']+)'/g)) {
     const specifier = match[1]
@@ -176,6 +176,12 @@ for (const file of featureModules) {
   const text = fs.readFileSync(file, 'utf8')
   if (/\bFeatureUi\b/.test(text)) featureUiChecked += 1
   if (/^import type \{[^}]*\bUi\b[^}]*\} from '[./]+core\/scheduler'/m.test(text)) problems.push(`${relative(file)}: imports the whole ui registry type; type ui as FeatureUi<typeof manifest> and list the handles it reads in the manifest (D72)`)
+  // A host service is read through an accessor in the engine's host.ts, which owns its
+  // name, its shape and the answer where the host carries none (D3, D73).
+  text.split('\n').forEach((line, at) => {
+    if (/^\s*(\*|\/\/|\/\*)/.test(line)) return
+    if (/\b(?:ctx|scope|lookup)\??\.get\(/.test(line)) problems.push(`${relative(file)}:${at + 1}: reads a host service by name; add an accessor to packages/engine/src/host.ts and call it (D73)`)
+  })
 }
 
 // 6. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy
@@ -199,15 +205,15 @@ if (copies.status !== 0) {
 // regressions behind that cost was one such call. A query by an element's id is
 // not counted: the browser answers it from its own index rather than by walking
 // the tree. The sanctioned readers are the accessors and registries that cache
-// their answer — packages/client/src/core/host.ts, core/bus.ts, shared/chat-dom.ts, and
-// the sheet the engine's stylesheet.ts mounts itself. Every other site is recorded in
+// their answer — the engine's host.ts, bus.ts and chat-dom.ts, and the sheet the
+// engine's stylesheet.ts mounts itself. Every other site is recorded in
 // packages/testing/document-lookups.json with the reason it is still there: a
 // file's count has to match its entry, and an entry whose count reaches zero
 // comes out of the file. That the record's total never rises is held against
 // the base by scripts/ci-scope.mjs --ledgers.
 const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|document\.body\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|removeStrayNodes\(\s*document\b/g
 const LOOKUP_OWNERS = new Set([
-  'packages/client/src/core/host.ts',
+  'packages/engine/src/host.ts',
   'packages/engine/src/bus.ts',
   'packages/engine/src/stylesheet.ts',
   'packages/engine/src/chat-dom.ts',
@@ -225,7 +231,7 @@ for (const file of sources) {
     continue
   }
   if (entry === undefined) {
-    problems.push(`${relative(file)}: ${count} whole-document ${count === 1 ? 'lookup' : 'lookups'} with no entry in packages/testing/document-lookups.json — read the seat through core/host.ts's accessors or core/bus.ts's registry, or record it there with the reason it stays`)
+    problems.push(`${relative(file)}: ${count} whole-document ${count === 1 ? 'lookup' : 'lookups'} with no entry in packages/testing/document-lookups.json — read the seat through the engine's host.ts accessors or bus.ts registry, or record it there with the reason it stays`)
     continue
   }
   if (entry.count !== count) {

@@ -1,7 +1,7 @@
 import { DEEPY_FRAME_MS, DEEPY_GUTTER, DEEPY_SHEETS } from './sheets'
 import { createMascotPlayer } from './mascot-player'
 import { createMascotWhaleSheets } from './whale-sheets'
-import type { HostContext } from '../../core/host'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './mascot.manifest'
 
