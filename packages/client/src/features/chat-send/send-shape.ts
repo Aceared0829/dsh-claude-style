@@ -281,9 +281,13 @@ export function chatSendTextLayer(bubble: Element, style: CSSStyleDeclaration) {
  * @param destinationHeight - the row's height as it stands now. It is read again here
  *   rather than taken from the samples: a row measured while the host was still growing
  *   it into place is short, and the stand-in would land on a row taller than itself.
+ * @param held - the message stands under the fold's cap: every step is the line from the
+ *   composer's own box to the row's whatever the words need, so the reader watches that
+ *   box close, and the words beyond it are left to the shell's clip exactly as the
+ *   reader's own row leaves them.
  * @returns the steps in time order; the first step's content is the draft clone's job, so it only gets a time window here.
  */
-export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration, samples: ShapeSample[], finalLineHeight: number, bottomPadding: number, fromHeight: number, destinationHeight: number) {
+export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration, samples: ShapeSample[], finalLineHeight: number, bottomPadding: number, fromHeight: number, destinationHeight: number, held = false) {
   const probeHost = document.createElement('div')
   // Marked quiet: the probe is built, measured and removed inside this call,
   // and the shared scheduler must not read that as a change worth a pass
@@ -362,8 +366,10 @@ export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration,
     // (u = 1 puts this floor at destinationHeight exactly), so the stand-in fades
     // across the whole row rather than part of it.
     const floor = fromHeight + (destinationHeight - fromHeight) * sample.m
-    const needed = sample.top + layout.lines * sample.lineHeight + bottomPadding
-    if (needed > sample.height) sample.height = needed
+    if (!held) {
+      const needed = sample.top + layout.lines * sample.lineHeight + bottomPadding
+      if (needed > sample.height) sample.height = needed
+    }
     if (sample.height < floor) sample.height = floor
     // With one line the line height does not move the glyphs (the difference is
     // made up by the translation), so it needs no layer of its own.
@@ -382,7 +388,10 @@ export function chatSendTextWindows(bubble: Element, style: CSSStyleDeclaration,
   // The first step is the draft clone's job, but it is handed over by
   // CHAT_DRAFT_HANDOFF_AT at the latest: past that the same breaks use the
   // bubble's own setting.
-  const handoff = samples.find(sample => sample.m >= CHAT_DRAFT_HANDOFF_AT)?.u ?? 1
+  // A message the fold holds is its own box from the first step, so its words are its
+  // own layout from the first step too: the composer's draft, which the reader left
+  // scrolled to the caret, belongs to the flight that takes off as the card.
+  const handoff = held ? 0 : samples.find(sample => sample.m >= CHAT_DRAFT_HANDOFF_AT)?.u ?? 1
   const first = windows[0]
   if (first !== undefined && first.until > handoff) {
     windows.splice(1, 0, { key: first.key, from: handoff, until: first.until, width: first.width, lineHeight: first.lineHeight })

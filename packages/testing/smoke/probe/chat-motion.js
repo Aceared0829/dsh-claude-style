@@ -461,6 +461,50 @@
       foldHeader.click()
       await probe.settle()
       r.fold.readerOpen = !foldBody.hasAttribute('hidden')
+
+      // A message the reader sent, taller than the cap (message-fold.ts): the
+      // skin clamps the bubble and softens its bottom edge, and the control it
+      // draws under the bubble hands the whole message back. The bubble is the
+      // element that paints a fill, which is how the module finds it.
+      var foldedColumn = document.createElement('div')
+      foldedColumn.setAttribute('data-chat-flow', '')
+      var foldedRow = document.createElement('div')
+      foldedRow.setAttribute('data-chat-flow-kind', 'user')
+      var foldedBubble = document.createElement('div')
+      foldedBubble.style.background = 'rgb(20, 20, 19)'
+      // The message arrives before its own words do (the host mounts the row, the
+      // fill and the text land after): the box moves once they land, and that is
+      // when the fold has to be decided — a long message standing whole through
+      // the whole turn was the page bug this covers.
+      var foldedWords = document.createElement('div')
+      foldedWords.style.height = '200px'
+      foldedBubble.appendChild(foldedWords)
+      foldedRow.appendChild(foldedBubble)
+      foldedColumn.appendChild(foldedRow)
+      document.body.appendChild(foldedColumn)
+      await probe.settle()
+      var messageOf = function () {
+        var toggle = foldedRow.querySelector('.dsh-claude-message-fold-toggle')
+        var style = getComputedStyle(foldedBubble)
+        return {
+          marked: foldedBubble.getAttribute('data-dsh-claude-message-fold'),
+          capped: Math.round(foldedBubble.clientHeight),
+          full: Math.round(foldedBubble.scrollHeight),
+          cap: Math.round(parseFloat(style.getPropertyValue('--dsh-claude-message-fold-cap')) || 0),
+          mask: style.maskImage,
+          toggle: toggle === null ? null : toggle.textContent,
+        }
+      }
+      r.fold.messageShort = messageOf()
+      foldedWords.style.height = '900px'
+      await probe.settle()
+      r.fold.message = messageOf()
+      var foldedToggle = foldedRow.querySelector('.dsh-claude-message-fold-toggle')
+      foldedToggle.click()
+      await probe.settle()
+      r.fold.messageOpen = messageOf()
+      foldedColumn.remove()
+      await probe.settle()
       // A row the host wraps in a header: the door has to step out of that
       // wrapper for its body, and the accessory beside the row is not it.
       var wrappedRow = document.getElementById('debugWrappedRow')

@@ -134,6 +134,19 @@ module.exports = {
     check('the process group folds back when the section ends, and its summary stops sweeping',
       after.groupOpen === false && (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
     check('a group the reader opened himself in that phase stays open', fold.readerOpen === true, JSON.stringify(fold.readerOpen))
+    const message = fold.message || {}
+    const messageOpen = fold.messageOpen || {}
+    const messageShort = fold.messageShort || {}
+    check('a message that lands before its words do stands whole until its own box moves',
+      messageShort.marked === null && messageShort.toggle === null, JSON.stringify(messageShort))
+    check('a message the reader sent that overflows the cap is clamped once its words land, with the cut softened at its lower edge',
+      message.marked === 'collapsed' && message.full > message.cap && message.capped === message.cap &&
+        typeof message.mask === 'string' && message.mask.startsWith('linear-gradient'),
+      JSON.stringify(message))
+    check('the control the skin draws under it names what pressing it does, and hands the whole message back',
+      message.toggle === 'Show the whole message' && messageOpen.marked === null &&
+        messageOpen.toggle === 'Show less' && messageOpen.capped > message.capped && messageOpen.mask === 'none',
+      JSON.stringify({ message, open: messageOpen }))
     // The reasoning's streamed window: transitions.dev's "Reasoning stream",
     // adapted to live text — a window that grows with the reasoning up to the cap
     // it may reach, where it holds still and the text steps on the snippet's clock.
