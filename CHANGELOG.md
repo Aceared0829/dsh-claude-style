@@ -11,6 +11,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **上下文弹层里的数字改为连续计数**：弹层里那一列数字接到新读数时从眼前的数计数到新值，与输入卡片下面那一行同一套动作，不再逐字弹入；弹层每次打开都从当时的读数写起。
 - **流式输出时，写回的 tokens 随文字上涨**：会话数字里写回的那一数在答案流式输出期间按已经到达的文字估算着上涨，不再等整段答案写完才跳一次；这一步结算时换成提供方给出的真实值，读入的 tokens、缓存命中率与计量饼的占用都不动。
 - **流式输出时，上下文计量饼不再拖慢页面**：计量饼需要的两种颜色改在每一帧开头读取，回答流式输出期间不再让页面额外重算一次样式（本机实测：皮肤每次更新页面的耗时从约 37 毫秒降到约 14 毫秒，其中上下文组件从约 27 毫秒降到不足 1 毫秒）。
+- **推理强度滑块不再在每次更新里重排页面**：滑块轨道与滑钮的宽度改在每一帧开头读取，卡片收起时也不再让页面额外排一次版（本机实测：推理强度选择器在每次更新里的耗时从约 18 毫秒降到约 1 毫秒）。
 
 ### 问题修复
 
@@ -22,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The context popover's figures count to their readings**: a row's number travels from the value on show to a new reading, the same motion the line under the input card makes, instead of each character popping in; a panel that opens writes the reading of the moment where it stands.
 - **The tokens written back climb while an answer streams**: the session numbers' written-back figure grows with the text that has arrived instead of standing still until the answer ends, and takes the provider's own number once that step settles; the tokens read in, the cache-hit share and the meter's occupancy stay as they were.
 - **The context meter's pie no longer slows the page while an answer streams**: the two colours the pie is drawn in are read at the start of each frame, so a streaming answer no longer makes the page recompute its styles a second time (measured locally: each of the skin's page updates went from about 37 ms to about 14 ms, the context component's share from about 27 ms to under 1 ms).
+- **The reasoning-effort slider no longer lays the page out again on each update**: the widths of its track and knob are read at the start of each frame, so the slider no longer costs the page an extra layout, its card closed or open (measured locally: the effort picker's share of each update went from about 18 ms to about 1 ms).
 
 ### Bug Fixes
 

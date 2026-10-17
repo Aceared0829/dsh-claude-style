@@ -21,6 +21,12 @@ interface EffortLabels {
   none: string
 }
 
+/** The knob's width and the track's, in the pixels the travel is written in. */
+export interface EffortTrackBox {
+  size: number
+  width: number
+}
+
 /**
  * The reasoning-effort slider inside the effort picker's card
  * (packages/client/src/features/effort/effort-picker.ts).
@@ -196,10 +202,23 @@ export function createEffortControl(opts: {
     }
   }
 
+  /** The knob's width and the track's, as the pass's read phase took them for the update in hand. */
+  let passBox: EffortTrackBox | null = null
+
+  /** The knob's width and the track's: the pass's reading inside its update, a fresh one anywhere else. */
+  function trackBox(): EffortTrackBox {
+    return passBox ?? measureTrack()
+  }
+
+  /** Read the knob's width and the track's off the layout. */
+  function measureTrack(): EffortTrackBox {
+    return { size: knob.offsetWidth || 16, width: track.clientWidth }
+  }
+
   /** How wide the knob is, and how far its centre may travel. */
   function geometry() {
-    const size = knob.offsetWidth || 16
-    return { size, span: Math.max(0, track.clientWidth - size) }
+    const box = trackBox()
+    return { size: box.size, span: Math.max(0, box.width - box.size) }
   }
 
   /** The knob's x for one level. No levels (or a single one) rest at the end. */
@@ -330,7 +349,7 @@ export function createEffortControl(opts: {
    * the passed ones, and the opaque knob swallows the current one.
    */
   function paintTicks() {
-    const w = track.clientWidth
+    const w = trackBox().width
     if (!w || w === ticksWidth) return
     ticksWidth = w
     while (ticks.firstChild) ticks.removeChild(ticks.firstChild)
@@ -580,8 +599,14 @@ export function createEffortControl(opts: {
    * Re-point the control at the model in force. The ladder is rebuilt only
    * when the levels themselves change; the knob is only animated when the
    * selected level moved on its own (the host echoing a selection back).
+   *
+   * @param box - the track's reading from the pass's read phase (D40): the
+   *   card keeps its layout box while closed, so a read here, after the pass's
+   *   writes, would force a layout on every pass. Left out, the update reads
+   *   the layout itself.
    */
-  function update() {
+  function update(box?: EffortTrackBox | null) {
+    passBox = box ?? null
     const next = state()
     let changed = next.steps.length !== steps.length
     if (!changed) {
@@ -607,6 +632,8 @@ export function createEffortControl(opts: {
       painted = true
     }
     paintTicks()
+    // A drag or a key between passes reads the layout it acts on.
+    passBox = null
     paintAria(next.labels)
     paintValue()
   }
@@ -614,6 +641,7 @@ export function createEffortControl(opts: {
   return {
     el: root,
     update,
+    measure: measureTrack,
     // The picker's hover-close guard keys on the PHYSICAL hold: from
     // pointerdown until the real release, wherever it lands. `pressed`
     // ends earlier — at the boundary settle — which is exactly when the

@@ -2,6 +2,7 @@ import { AUTO_POPOVER_ALL } from '../../constants'
 import { MODEL_EFFORT_LABEL } from '../model/copy-fallbacks'
 import { readPrefs } from '../../core/prefs'
 import { createEffortControl } from './control'
+import type { EffortTrackBox } from './control'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CloseReason } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -136,14 +137,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** What the read phase resolved for this frame's placement of the trigger. */
   let effortPlan: { modelBtn: HTMLElement, box: DOMRect, need: number, height: number, marginChanged: boolean } | null | 'hide' | 'none' = null
+  /** The slider's track as the same read phase found it, for the pass's update of the slider. */
+  let sliderBox: EffortTrackBox | null = null
 
   /**
-   * The pass's read phase: where the seat stands, and how much room this
-   * trigger needs on its right edge. The seat moves with the window and with
-   * the composer's own growth, so it is read every pass — before this frame's
-   * writes, which is where a read of it is cheap.
+   * The pass's read phase: where the seat stands, how much room this trigger
+   * needs on its right edge, and the slider's track. The seat moves with the
+   * window and with the composer's own growth, so it is read every pass —
+   * before this frame's writes, which is where a read of it is cheap.
    */
   function measureEffortTrigger() {
+    sliderBox = effortSlider === null ? null : effortSlider.measure()
     if (effortBtn === null) {
       effortPlan = 'none'
       return
@@ -323,7 +327,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // "selector crashed" report — a pick blanks the snapshot for seconds and
     // the trigger (with its open card) disappeared with it.
     if (seatInFlight()) {
-      if (effortSlider !== null) effortSlider.update()
+      if (effortSlider !== null) effortSlider.update(sliderBox)
       return
     }
     const info = effortInfo()
@@ -375,7 +379,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (labelEl !== null && labelEl.textContent !== info.label) labelEl.textContent = info.label
     const aria = `${copy('effortLabel')} ${info.label}`
     setAttributeIfChanged(effortBtn, 'aria-label', aria)
-    if (effortSlider !== null) effortSlider.update()
+    if (effortSlider !== null) effortSlider.update(sliderBox)
     applyEffortTrigger()
 
     if (effortPop !== null && effortPop.getAttribute('data-open') === 'true') positionEffortPopover()

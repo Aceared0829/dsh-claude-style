@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 40,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**推理强度滑块不再在每次更新里重排页面**：滑块轨道与滑钮的宽度改在每一帧开头读取，卡片收起时也不再让页面额外排一次版（本机实测：推理强度选择器在每次更新里的耗时从约 18 毫秒降到约 1 毫秒）。",
+  "en": "**The reasoning-effort slider no longer lays the page out again on each update**: the widths of its track and knob are read at the start of each frame, so the slider no longer costs the page an extra layout, its card closed or open (measured locally: the effort picker's share of each update went from about 18 ms to about 1 ms)."
+}
