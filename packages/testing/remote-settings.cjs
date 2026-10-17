@@ -30,7 +30,7 @@ const SKIN = {
   notice: '.dsh-claude-settings-notice',
   error: '.dsh-claude-settings-error',
   // The theme style's choices carry the brand they pick on their logo.
-  brandCard: (brand) => `.dsh-claude-brand-card:has(.dsh-claude-brand-card-logo[data-brand="${brand}"])`,
+  brandCard: (brand) => `.dsh-claude-brand-card[data-brand="${brand}"]`,
 }
 
 /** How long a written value may take to reach the other page. */
