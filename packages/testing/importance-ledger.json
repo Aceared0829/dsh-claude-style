@@ -131,17 +131,17 @@
       "prop": "font-size",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 0 0 3px #00000059,0 8px 28px #000000a6,0 2px 8px #00000073!}|background": {
+    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 8px 28px #000000a6,0 2px 8px #00000073!}|background": {
       "selector": "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu])",
       "prop": "background",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 0 0 3px #00000059,0 8px 28px #000000a6,0 2px 8px #00000073!}|border-color": {
+    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 8px 28px #000000a6,0 2px 8px #00000073!}|border-color": {
       "selector": "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu])",
       "prop": "border-color",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 0 0 3px #00000059,0 8px 28px #000000a6,0 2px 8px #00000073!}|box-shadow": {
+    "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu]){background:var(--dsh-claude-raised)!;border-color:var(--dsw-alias-border-l1)!;box-shadow:0 8px 28px #000000a6,0 2px 8px #00000073!}|box-shadow": {
       "selector": "body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu],[data-dsh-claude-hero-menu])",
       "prop": "box-shadow",
       "verdict": "unmatched"

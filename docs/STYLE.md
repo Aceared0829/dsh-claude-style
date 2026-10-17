@@ -434,7 +434,7 @@ the shell itself. What it carries is described under "Context popover" below.
 | background | `var(--dsw-alias-bg-overlay)`; dark `#1e1e1d` |
 | border | `1px solid var(--dsw-alias-border-l1)`; dark the same stroke, which the dark ladder makes a highlight. The edge stays the card's own border: the box the placement reads and the opening animation scales keeps the paint path it has always had, and no stroke is drawn inside it |
 | radius | 12px |
-| shadow | `0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.08)`; dark a 3px `rgba(0,0,0,.35)` falloff outside the border first — it separates the lit edge from the near-black canvas — then `0 8px 28px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.45)` |
+| shadow | `0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.08)`; dark `0 8px 28px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.45)` |
 | padding | 6px |
 | layout | flex column, `gap: 6px`; a list body stacks its rows 3px apart |
 | z-index | 99999, above the host's own menus (1100) |

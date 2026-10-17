@@ -6,11 +6,19 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- **深色弹层的边只剩边框本身**：皮肤自建的弹层卡片与它重绘的账户菜单、首页选择器不再在边框外侧铺一道 3px 的黑色沉降，卡片的外缘就是那道高光边线，两层投影照旧。
+
+### 问题修复
 
 - **另一款皮肤作画时本主题整页让出，设置页也随主题撤下**：页面上的侧栏、对话、输入区与设置页一起离场，只留那款皮肤与宿主自己的界面；在皮肤中心里本插件那一行选回本主题，这些内容与读者存下的偏好一起回来。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- **A dark popover's edge is its border again**: the skin's own popover cards and the account menu and hero-row pickers it repaints no longer lay a 3px black falloff outside the border, so the card's outer edge is the highlight line itself and the two drops stay as they were.
+
+### Bug Fixes
 
 - **With another skin painting the page this skin hands over the whole page, its settings page included**: the sidebar, the conversation, the composer and the settings page all leave together, and the skin and the host paint the page alone; picking this plugin's row in the skin center brings them back together with the preferences the reader saved.
 
