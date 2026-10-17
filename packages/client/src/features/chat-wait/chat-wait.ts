@@ -4,7 +4,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { closestConversationSession, conversationSessionId, findChatTarget } from '@dsh-claude-style/engine/host'
 import { hostChatCopy, hostChatSeat } from '../../core/i18n'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
-import { buildElement } from '@dsh-claude-style/engine/dom'
+import { buildElement, writeTextInPlace } from '@dsh-claude-style/engine/dom'
 import { formatHostDuration } from '../../shared/format'
 import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
@@ -203,10 +203,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return parts
   }
 
-  function writeText(element: Element, text: string) {
-    if (element.textContent !== text) element.textContent = text
-  }
-
   /** Bring one row's line to what the host's snapshot says now. */
   function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>, live: Set<string>) {
     const words = row.querySelector<HTMLElement>(CHAT_RUNNING_TEXT_SELECTOR)
@@ -259,7 +255,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The loader no longer follows that wording: its three motions rotate on
     // their own clock (wait-loader.ts), set going once with the line itself.
     clock.hidden = turn === undefined || turn.start === undefined
-    if (turn !== undefined && turn.start !== undefined) writeText(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
+    if (turn !== undefined && turn.start !== undefined) writeTextInPlace(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false
     if (snapshot !== null && turn !== undefined && activity === null) {
       const key = `${sessionId}:${turn.turn}`
@@ -285,7 +281,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (overtime) {
       badge.removeAttribute(BADGE_LEAVING_ATTR)
       badge.hidden = false
-      writeText(badge, copy('chatWaitOvertime'))
+      writeTextInPlace(badge, copy('chatWaitOvertime'))
       return
     }
     if (badge.hidden || badge.hasAttribute(BADGE_LEAVING_ATTR)) return

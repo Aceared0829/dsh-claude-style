@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 50,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**计数中的上下文数字与等待计时不再让整页重算样式**：状态行与上下文弹层里随流式输出上涨的数字、等待行的计时，都改为原地改写文字，页面上其他插件的 `:has()` 规则不再因此在每一帧重算整页样式（本机桌面端实测：流式输出期间每帧少付约 10 毫秒的样式重算）。",
+  "en": "**Counting context figures and the wait timer no longer make the whole page recompute its styles**: the figures that rise with a streaming answer on the status line and in the context panel, and the wait line's timer, rewrite their text in place, so another plugin's `:has()` rules on the page no longer recompute the whole page's styles every frame (measured locally on the desktop app: about 10 ms less style recalculation per frame while an answer streams)."
+}

@@ -30,6 +30,26 @@ export function setAttributeIfChanged(element: Element, name: string, value: str
 }
 
 /**
+ * Write an element's words only when they differ, by rewriting its one text
+ * node in place. `textContent =` swaps the node out, a change of the element's
+ * children, and a `:has()` rule anywhere on the page (the host's or another
+ * plugin's) can make each such change recalculate the whole document's styles;
+ * a text node's data is no change of structure. A figure that moves every frame
+ * is written through here.
+ *
+ * @param element - the element whose words are written.
+ * @param text - the words it must show.
+ */
+export function writeTextInPlace(element: Element, text: string) {
+  const node = element.firstChild
+  if (node instanceof Text && node.nextSibling === null) {
+    if (node.data !== text) node.data = text
+    return
+  }
+  element.textContent = text
+}
+
+/**
  * `node.closest(selector)` for a node that came out of an event or a walk:
  * text nodes, the document and a detached window have no `closest`, and
  * the answer for them is "nothing here".

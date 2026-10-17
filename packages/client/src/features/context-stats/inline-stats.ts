@@ -1,5 +1,5 @@
 import { QUIET_ATTR } from '../../constants'
-import { buildElement } from '@dsh-claude-style/engine/dom'
+import { buildElement, writeTextInPlace } from '@dsh-claude-style/engine/dom'
 import { findComposerCard, findComposerStats } from '@dsh-claude-style/engine/host'
 import { formatCompactTokens } from '../../shared/format'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
@@ -82,9 +82,6 @@ interface Line {
   }
 }
 
-/** What each figure last showed, so a frame that moved nothing writes nothing. */
-const shownFigures = new WeakMap<Element, string>()
-
 /** One figure of the line: its element, and the words its template puts after it. */
 function figure(className: string) {
   const group = buildFigure()
@@ -97,16 +94,6 @@ function figure(className: string) {
 /** One figure's element: plain text a count rewrites in place. */
 function buildFigure() {
   return buildElement('span', 'dsh-claude-digit-group')
-}
-
-/**
- * Write one figure only when its text changed: a count in flight rewrites every
- * frame, and most of the figures stand still between two readings.
- */
-function writeFigure(element: HTMLElement, text: string) {
-  if (shownFigures.get(element) === text) return
-  shownFigures.set(element, text)
-  element.textContent = text
 }
 
 /**
@@ -293,25 +280,25 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     shown.cell.cacheHead.hidden = at >= 1
 
     if (hasCounts && counts !== null && stats !== null) {
-      writeFigure(shown.cell.turns, String(Math.round(stats.turns)))
+      writeTextInPlace(shown.cell.turns, String(Math.round(stats.turns)))
       writeText(shown.cell.between, counts[1] ?? '')
-      writeFigure(shown.cell.steps, String(Math.round(stats.steps)))
+      writeTextInPlace(shown.cell.steps, String(Math.round(stats.steps)))
       writeText(shown.cell.countsTail, counts[2] ?? '')
     }
     if (hasSpeed && stats !== null) {
-      writeFigure(shown.cell.speed, sessionStatsSpeed(stats.decodeTokens / (stats.decodeMs / 1_000)))
+      writeTextInPlace(shown.cell.speed, sessionStatsSpeed(stats.decodeTokens / (stats.decodeMs / 1_000)))
       writeText(shown.cell.speedTail, speedParts[1] ?? '')
     }
     if (hasTokens && usage !== null) {
       // Every token figure folds into k / M / B at the ladder's last step.
       const readTokens = (value: number) => at >= FIT_MAX ? formatCompactTokens(Math.round(value)) : sessionStatsGrouped(Math.round(value), chat)
-      writeFigure(shown.cell.input, readTokens(billed))
+      writeTextInPlace(shown.cell.input, readTokens(billed))
       writeText(shown.cell.inputTail, tokenParts[1] ?? '')
-      writeFigure(shown.cell.output, readTokens(usage.outputTokens))
+      writeTextInPlace(shown.cell.output, readTokens(usage.outputTokens))
       writeText(shown.cell.outputTail, tokenParts[1] ?? '')
-      writeFigure(shown.cell.total, readTokens(billed + usage.outputTokens))
+      writeTextInPlace(shown.cell.total, readTokens(billed + usage.outputTokens))
       writeLabel(shown.cell.cacheHead, cacheParts[0] ?? '')
-      if (hit !== null) writeFigure(shown.cell.cache, hit)
+      if (hit !== null) writeTextInPlace(shown.cell.cache, hit)
       writeLabel(shown.cell.cacheTail, cacheParts[1] ?? '')
       writeRamp(shown.cache.wrap, 'cache', hit === null ? null : rampPosition(Number(hit), CACHE_HIT_STOPS))
     }

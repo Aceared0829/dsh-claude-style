@@ -1,4 +1,4 @@
-import { buildElement } from '@dsh-claude-style/engine/dom'
+import { buildElement, writeTextInPlace } from '@dsh-claude-style/engine/dom'
 import { findComposerStats } from '@dsh-claude-style/engine/host'
 import { createStatsCount } from './stats-count'
 import { sessionStatsSections } from './stats-model'
@@ -39,9 +39,6 @@ const STATS_SKELETON_MS = 2000
 const STATS_SKELETON_ROWS = 4
 /** The same, for the compact block: four items in a single 2x2 grid. */
 const COMPACT_SKELETON_ITEMS = 4
-
-/** What each value cell last showed, so a frame that moved nothing writes nothing. */
-const shownValues = new WeakMap<Element, string>()
 
 /**
  * The block's writer.
@@ -184,13 +181,6 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
     return grid
   }
 
-  /** Write one figure only when the words changed. */
-  function writeValue(value: HTMLElement, text: string) {
-    if (shownValues.get(value) === text) return
-    shownValues.set(value, text)
-    value.textContent = text
-  }
-
   /**
    * Write the numbers into the open panel, or keep the panel as the host
    * drew it while there is nothing to show. The structure is the sections and
@@ -236,7 +226,7 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
     for (const section of sections) {
       for (const row of section.rows) {
         const value = blockCells[cell]
-        if (value !== undefined) writeValue(value, row.value)
+        if (value !== undefined) writeTextInPlace(value, row.value)
         cell += 1
       }
     }
