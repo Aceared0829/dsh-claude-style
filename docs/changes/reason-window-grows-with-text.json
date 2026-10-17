@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 30,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**推理窗口的高度跟着文字一起长**：正在思考的回合里，推理每写出新的一段，窗口就在同一帧长到文字自己的高度，最新的几行不再被下缘裁住、等到下一个节拍才露出来；长到上限高度之后照旧按原来的节拍上移。",
+  "en": "**The reasoning window grows with its text**: while the model reasons, the window takes the text's own height within the frame the text arrives, so the newest lines are no longer held behind its lower edge until the next beat; once the window reaches the cap it steps up on the same clock as before."
+}
