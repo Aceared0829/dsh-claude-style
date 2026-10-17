@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 20,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**深色模式下分段控件的滑块有了底色**：设置页的页签与并排开关、经典首页的权限分段这几处同一种控件，当前项在深色里读得出来——滑块比它的底座亮一档，不再与底座同色；浅色与 DeepSeek 深色配色下同样成立。",
+  "en": "**The segmented controls' slider carries a fill in dark mode**: the settings page's tabs and paired switches and the classic home's permission presets show which item is current, the pill sitting one step lighter than its groove instead of the same grey; the light and DeepSeek dark palettes read the same way."
+}

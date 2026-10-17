@@ -13,6 +13,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - **另一款皮肤作画时本主题整页让出，设置页也随主题撤下**：页面上的侧栏、对话、输入区与设置页一起离场，只留那款皮肤与宿主自己的界面；在皮肤中心里本插件那一行选回本主题，这些内容与读者存下的偏好一起回来。
+- **深色模式下分段控件的滑块有了底色**：设置页的页签与并排开关、经典首页的权限分段这几处同一种控件，当前项在深色里读得出来——滑块比它的底座亮一档，不再与底座同色；浅色与 DeepSeek 深色配色下同样成立。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -21,6 +22,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - **With another skin painting the page this skin hands over the whole page, its settings page included**: the sidebar, the conversation, the composer and the settings page all leave together, and the skin and the host paint the page alone; picking this plugin's row in the skin center brings them back together with the preferences the reader saved.
+- **The segmented controls' slider carries a fill in dark mode**: the settings page's tabs and paired switches and the classic home's permission presets show which item is current, the pill sitting one step lighter than its groove instead of the same grey; the light and DeepSeek dark palettes read the same way.
 
 ## [0.16.0] - 2026-10-16
 
