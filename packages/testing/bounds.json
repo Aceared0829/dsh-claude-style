@@ -19,7 +19,7 @@
     {
       "name": "longSessionGrowthFloorMs",
       "value": 120,
-      "reason": "The short round can finish without one long task and with a p95 frame near the frame budget, so both time ratios are compared against a floor in milliseconds as well as the factor; without it the comparison divides by a number too small to mean anything."
+      "reason": "The short round's p95 frame sits near the frame budget on a fast runner, so the p95 ratio is compared against a floor in milliseconds as well as the factor; without it the comparison divides by a number too small to mean anything."
     },
     {
       "name": "longSessionWorstFrameMs",

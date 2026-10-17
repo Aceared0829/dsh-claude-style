@@ -180,8 +180,13 @@ function longSessionScenario({ check }) {
           ratio >= GROWTH_RATIO && measured.rows > short.rows,
           readings),
         check('整份文档的查找次数不随会话长度放大', measured.queries <= short.queries * ratio * QUERY_SLACK + 1, readings),
-        check('这一轮的长时间任务不随会话长度放大',
-          longCost.longTotal <= shortCost.longTotal * allowed + GROWTH_FLOOR_MS, readings),
+        // The long tasks are printed with the two checks below and bounded by
+        // the budget above, not compared between the rounds: the host commits
+        // every streamed batch in a frame task of its own, and on a long
+        // transcript that task alone is over the long-task mark, so the sum
+        // measures the host's frame size as much as the skin's pass. A cost
+        // that follows the rows or their square shows in the two checks that
+        // do compare — the whole-document lookups and the p95 frame.
         check('这一轮的 p95 帧时不随会话长度放大',
           longCost.p95 <= shortCost.p95 * allowed + GROWTH_FLOOR_MS, readings),
       )
