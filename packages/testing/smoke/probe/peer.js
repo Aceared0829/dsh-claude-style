@@ -136,6 +136,15 @@
         return entry.key === 'settings.section' || entry.key === 'plugins.bundle.config'
       }).length
     }
+    // The seats arrive on a later turn than the install that registers them
+    // (settings.ts registers through ctx.inject): a loaded runner took longer
+    // than one fixed wait, so a reading asks for the count it expects and
+    // gives it up to a few seconds to stand.
+    var seatsSettled = async function (wanted) {
+      var until = Date.now() + 3000
+      while (settingsSeats() !== wanted && Date.now() < until) await sleep(50)
+      return settingsSeats()
+    }
     // The other owner of the page, a skin, from the first frame (D74): the theme
     // stands its whole visual down, settings page included, then takes the page
     // back when the skin leaves.
@@ -159,7 +168,7 @@
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
         handoff: document.body.hasAttribute('data-dsh-claude-style-handoff'),
-        settingsSeats: settingsSeats(),
+        settingsSeats: await seatsSettled(2),
       }
       // And it returns: the theme gives the page back without a reload.
       document.documentElement.setAttribute('data-dsh-skin', 'blue-fantasy')
@@ -179,7 +188,7 @@
         before: {
           sheet: document.getElementById('dsh-claude-style-style') !== null,
           live: document.body.hasAttribute('data-dsh-claude-style'),
-          settingsSeats: settingsSeats(),
+          settingsSeats: await seatsSettled(2),
         },
       }
       document.documentElement.setAttribute('data-dsh-skin', 'blue-fantasy')
@@ -195,7 +204,7 @@
       arrival.back = {
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
-        settingsSeats: settingsSeats(),
+        settingsSeats: await seatsSettled(2),
       }
       r.arrival = arrival
     })
