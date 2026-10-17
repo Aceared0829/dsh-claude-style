@@ -11,15 +11,18 @@ import { findConversationScroller } from '@dsh-claude-style/engine/host'
  * is enough to let the figure move, and the settlement replaces the estimate
  * with the provider's own number.
  *
- * A character counts as a share of a token — a wide (CJK) one at `WIDE_TOKENS`,
- * everything else at `NARROW_TOKENS` — which is rough on purpose: the figure is
- * corrected as soon as the step's usage lands. Only the written-back side is
- * estimated; a request's prompt is fixed while it streams.
+ * The page's text is thinner than what the provider bills: a tool call's
+ * arguments stream through a summary line rather than the page, and the
+ * renderer drops the markers it parses. The ratios below are calibrated so the
+ * estimate tracks settled usage on that thinner text — a wide (CJK) character
+ * at `WIDE_TOKENS`, everything else at `NARROW_TOKENS` — and the figure is
+ * corrected as soon as the step's usage lands, so only the written-back side
+ * rides on them: a request's prompt is fixed while it streams.
  */
 
 /** A wide character's share of a token, and a narrow one's. */
-const WIDE_TOKENS = 0.6
-const NARROW_TOKENS = 0.25
+const WIDE_TOKENS = 1.2
+const NARROW_TOKENS = 0.5
 /** How old the last reading may be before the streamed text is read again, in milliseconds. */
 const SCAN_MS = 100
 

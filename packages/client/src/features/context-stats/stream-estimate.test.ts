@@ -29,7 +29,7 @@ test('the text that arrives after the first reading is counted at its token shar
   const estimate = createStreamEstimate()
   expect(estimate.tokens(1000)).toBe(0)
   container.textContent = 'hello world'
-  expect(estimate.tokens(2000)).toBeCloseTo(1.5)
+  expect(estimate.tokens(2000)).toBeCloseTo(3)
 })
 
 test('a wide character counts for more than a narrow one', () => {
@@ -37,7 +37,7 @@ test('a wide character counts for more than a narrow one', () => {
   const estimate = createStreamEstimate()
   estimate.tokens(1000)
   container.textContent = '你好'
-  expect(estimate.tokens(2000)).toBeCloseTo(1.2)
+  expect(estimate.tokens(2000)).toBeCloseTo(2.4)
 })
 
 test('the page is read again only once the interval has passed', () => {
@@ -46,7 +46,7 @@ test('the page is read again only once the interval has passed', () => {
   estimate.tokens(1000)
   container.textContent = 'abcd'
   expect(estimate.tokens(1050)).toBe(0)
-  expect(estimate.tokens(1100)).toBeCloseTo(1)
+  expect(estimate.tokens(1100)).toBeCloseTo(2)
 })
 
 test('a settlement restarts the estimate, and the text it covers is not counted again', () => {
@@ -55,12 +55,12 @@ test('a settlement restarts the estimate, and the text it covers is not counted 
   estimate.settle(500)
   estimate.tokens(1000)
   container.textContent = 'abcd'
-  expect(estimate.tokens(1100)).toBeCloseTo(1)
+  expect(estimate.tokens(1100)).toBeCloseTo(2)
   estimate.settle(700)
   expect(estimate.tokens(1200)).toBe(0)
   expect(estimate.tokens(1300)).toBe(0)
   container.textContent = 'abcdef'
-  expect(estimate.tokens(1400)).toBeCloseTo(0.5)
+  expect(estimate.tokens(1400)).toBeCloseTo(1)
 })
 
 test('a reasoning body inside a streaming answer is counted once with its container', () => {
@@ -72,7 +72,7 @@ test('a reasoning body inside a streaming answer is counted once with its contai
   const estimate = createStreamEstimate()
   estimate.tokens(1000)
   inner.append('g')
-  expect(estimate.tokens(1100)).toBeCloseTo(0.25)
+  expect(estimate.tokens(1100)).toBeCloseTo(0.5)
 })
 
 test('a container that left the page stops counting, and one that arrives later starts from its own text', () => {
@@ -80,11 +80,11 @@ test('a container that left the page stops counting, and one that arrives later 
   const estimate = createStreamEstimate()
   estimate.tokens(1000)
   container.textContent = 'abcd'
-  expect(estimate.tokens(1100)).toBeCloseTo(1)
+  expect(estimate.tokens(1100)).toBeCloseTo(2)
   container.remove()
-  expect(estimate.tokens(1200)).toBeCloseTo(1)
+  expect(estimate.tokens(1200)).toBeCloseTo(2)
   streaming(document.body, 'efgh')
-  expect(estimate.tokens(1300)).toBeCloseTo(1)
+  expect(estimate.tokens(1300)).toBeCloseTo(2)
 })
 
 test('only the shown conversation\'s stream is counted', async () => {
@@ -98,7 +98,7 @@ test('only the shown conversation\'s stream is counted', async () => {
   estimate.tokens(1000)
   inside.textContent = 'abcd'
   outside.textContent = 'efgh'
-  expect(estimate.tokens(1100)).toBeCloseTo(1)
+  expect(estimate.tokens(1100)).toBeCloseTo(2)
 })
 
 test('a session switch forgets the text of the session before', () => {
@@ -107,9 +107,9 @@ test('a session switch forgets the text of the session before', () => {
   estimate.settle(500)
   estimate.tokens(1000)
   container.textContent = 'abcd'
-  expect(estimate.tokens(1100)).toBeCloseTo(1)
+  expect(estimate.tokens(1100)).toBeCloseTo(2)
   estimate.reset()
   expect(estimate.tokens(1200)).toBe(0)
   container.textContent = 'abcdef'
-  expect(estimate.tokens(1300)).toBeCloseTo(0.5)
+  expect(estimate.tokens(1300)).toBeCloseTo(1)
 })
