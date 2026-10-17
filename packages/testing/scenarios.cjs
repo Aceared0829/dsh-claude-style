@@ -15,7 +15,7 @@
  */
 'use strict'
 const path = require('node:path')
-const { HOST, SKIN, readFlow, check } = require('./lane.cjs')
+const { HOST, SKIN, readFlow, check, observe } = require('./lane.cjs')
 const { recordProbes } = require('./contract-probe.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { importanceScenario } = require('./importance.cjs')
@@ -470,7 +470,7 @@ const SCENARIOS = {
   /** What a frame costs in a transcript that is already long (long-session.cjs, D40). */
   longSession: longSessionScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D9). */
-  importance: importanceScenario({ check, sendPrompt, waitForTurn, host: HOST }),
+  importance: importanceScenario({ check, observe, sendPrompt, waitForTurn, host: HOST }),
   /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D11). */
   remoteSettings: remoteSettingsScenario({ check }),
   /** The reader's own brand images through the host half's routes and on the real shell (packages/testing/custom-brand.cjs, D30). */
