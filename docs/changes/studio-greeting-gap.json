@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 20,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**工作台首页的问候语与用量面板之间只剩一个列间距**：标题块不再为下方预留 30px，面板随之整体上移 30px，问候语与面板之间只留首屏列自己的 10px 间距；经典版面上问候语与输入卡片之间的那份间距保持原样。",
+  "en": "**The studio home's greeting and usage panel sit one column gap apart**: the headline block no longer reserves 30px below itself, so the panel moves up by 30px and only the hero column's own 10px gap stands between them; the classic layout keeps the spacing under its greeting."
+}

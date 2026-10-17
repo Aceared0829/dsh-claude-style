@@ -9,6 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - **深色弹层的边只剩边框本身**：皮肤自建的弹层卡片与它重绘的账户菜单、首页选择器不再在边框外侧铺一道 3px 的黑色沉降，卡片的外缘就是那道高光边线，两层投影照旧。
+- **工作台首页的问候语与用量面板之间只剩一个列间距**：标题块不再为下方预留 30px，面板随之整体上移 30px，问候语与面板之间只留首屏列自己的 10px 间距；经典版面上问候语与输入卡片之间的那份间距保持原样。
 
 ### 问题修复
 
@@ -18,6 +19,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - **A dark popover's edge is its border again**: the skin's own popover cards and the account menu and hero-row pickers it repaints no longer lay a 3px black falloff outside the border, so the card's outer edge is the highlight line itself and the two drops stay as they were.
+- **The studio home's greeting and usage panel sit one column gap apart**: the headline block no longer reserves 30px below itself, so the panel moves up by 30px and only the hero column's own 10px gap stands between them; the classic layout keeps the spacing under its greeting.
 
 ### Bug Fixes
 
