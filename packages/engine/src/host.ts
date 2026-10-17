@@ -1,5 +1,5 @@
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, SIDEBAR_BRAND_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRemoteSettings, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
 
@@ -9,7 +9,7 @@ import { closestFrom } from './dom'
  * here until the contract module types them (D3).
  */
 export interface HostContext {
-  /** The loader's fiber; its boot entry id names this plugin's settings namespace (D11). */
+  /** The loader's fiber; its boot entry id names this plugin's settings namespace (D75). */
   readonly fiber?: { entry?: { id?: unknown } }
   /** A service by name, or undefined when the host carries none (D12). */
   get(name: string): HostValue
@@ -413,7 +413,7 @@ export function hostShortcuts(lookup: HostServiceLookup | null | undefined): Hos
   return shortcuts ?? null
 }
 
-/** The slot registry, read from the scope that injected it (D11). */
+/** The slot registry, read from the scope that injected it (D75). */
 export function hostSlots(lookup: HostServiceLookup): HostSlotsService | null {
   const slots = lookup.get('slots') as HostSlotsService | undefined
   return slots ?? null
@@ -476,14 +476,8 @@ export function hostRemoteSkills(lookup: HostServiceLookup | null | undefined): 
   return lookup?.get('remote.skills')
 }
 
-/** The host's settings-form service (`configForms`, D11); null where the host serves no namespaces to the browser. */
+/** The host's settings-form service (`configForms`, D75); null where the host serves no namespaces to the browser. */
 export function hostConfigForms(lookup: HostServiceLookup | null | undefined): HostConfigFormsService | null {
   const forms = lookup?.get('configForms') as HostConfigFormsService | undefined
   return typeof forms?.get === 'function' ? forms : null
-}
-
-/** The settings document behind the remote, on a page with no writable form (D11). */
-export function hostRemoteSettings(ctx: HostServiceLookup): HostRemoteSettings | null {
-  const settings = ctx.get('remote.settings') as HostRemoteSettings | undefined
-  return settings ?? null
 }

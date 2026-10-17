@@ -9,7 +9,7 @@ import { pageOwner } from '../shared/visual-owner'
 /**
  * Skin preferences: the host settings namespace is the store, and every
  * value is mirrored onto the document as an attribute so the stylesheet
- * decides what it means (D11). Until the first read settles — and if
+ * decides what it means (D75). Until the first read settles — and if
  * it fails — the table's defaults hold. The clamp that turns a stored value
  * into one of these is the table's own (packages/contracts/src/prefs.ts, D73).
  */
@@ -22,7 +22,6 @@ const binding = createSettingsBinding({
     adoptPrefs(clampPrefs(value))
     moveLocalPrefs(value)
   },
-  adoptDocument(value) { adoptPrefs(clampPrefs(value)) },
 })
 
 /** Bind the official settings form (engine/src/settings-binding.ts); true once a form is bound. */
@@ -30,12 +29,7 @@ export function adoptSettingsForm(ctx: HostContext) {
   return binding.adopt(ctx)
 }
 
-/** Whether the preferences on show are the host's but this page cannot save them (D11). */
-export function prefsAreReadOnly() {
-  return binding.isReadOnly()
-}
-
-/** Release the form, directory and document subscriptions the binding opened. */
+/** Release the form and directory subscriptions the binding opened. */
 export function disposePrefsBinding() {
   binding.dispose()
 }

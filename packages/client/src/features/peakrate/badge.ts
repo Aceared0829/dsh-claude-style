@@ -15,7 +15,7 @@ import type { CopyKey } from './copy'
  *
  * The badge's text is the data source's own (`2×`, `0.5× credits`): it is
  * foreign text and is written with `textContent`, never as markup
- * (D11).
+ * (D75).
  */
 
 /** The mark each state draws, in a 16×16 box stroked with the current colour. */

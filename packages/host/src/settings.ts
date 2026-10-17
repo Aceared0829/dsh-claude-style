@@ -51,7 +51,7 @@ async function resolveSchemaFactory(): Promise<SchemaFactory | null> {
 
 /**
  * The schema factory the host provides (`@deepseek-ai/schemastery`), as far as
- * this half uses it: it is resolved at runtime and may be absent (D11), so the
+ * this half uses it: it is resolved at runtime and may be absent (D75), so the
  * shape is declared here rather than imported.
  */
 interface SchemaFactory {
@@ -101,7 +101,7 @@ function prefsField(Schema: SchemaFactory, key: PrefKey) {
  * bundle ships 3.18.2, so the marker is applied only when the installed
  * factory provides it.
  *
- * The import is guarded and top-level-awaited (D11): a
+ * The import is guarded and top-level-awaited (D75): a
  * host that cannot resolve schemastery must still load the skin — it just
  * loses the settings form.
  *

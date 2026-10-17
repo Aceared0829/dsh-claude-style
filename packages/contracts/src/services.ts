@@ -468,7 +468,7 @@ export interface HostLocaleService {
 }
 
 /**
- * The host's settings-form service (`configForms`, D11): one form per
+ * The host's settings-form service (`configForms`, D75): one form per
  * namespace, plus the catalogue of namespaces it serves.
  */
 export interface HostConfigFormsService {
@@ -477,26 +477,9 @@ export interface HostConfigFormsService {
   describe?(): HostSnapshotSource<HostFormsDescription> & { ensure?(): unknown }
 }
 
-/**
- * What the form service says it serves: one entry per served namespace.
- * `unavailable` is the catalogue a non-loopback page holds for good: the host
- * keeps that page's settings in memory and never reads the document.
- */
+/** What the form service says it serves: one entry per served namespace. */
 interface HostFormsDescription {
-  status?: string
   view?: { namespaces?: { ns?: unknown }[] }
-}
-
-/** The settings namespace of the remote (`remote.settings`): the read the form service itself is built on. */
-export interface HostRemoteSettings {
-  describe(): Promise<HostSettingsDescribeAnswer>
-}
-
-/** The settings document's answer: every namespace with its merged values, or the host's refusal. */
-export interface HostSettingsDescribeAnswer {
-  ok?: boolean
-  value?: { namespaces?: { ns?: unknown, value?: unknown }[] }
-  error?: { message?: string }
 }
 
 /** One namespace's form: its current values, their changes, and a field write. */

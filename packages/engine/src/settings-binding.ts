@@ -1,15 +1,13 @@
-import { hostConfigForms, hostRemote, hostRemoteSettings } from './host'
+import { hostConfigForms } from './host'
 import type { HostContext } from './host'
-import type { HostConfigForm, HostConfigFormsService, HostSettingsDescribeAnswer } from '@dsh-claude-style/contracts/services'
-import { skin } from './skin'
+import type { HostConfigForm, HostConfigFormsService } from '@dsh-claude-style/contracts/services'
 
 /**
- * The binding to the host's settings namespace (D11, D73): the host's form
+ * The binding to the host's settings namespace (D75, D73): the host's form
  * controller is the store, and this module finds the namespace the host serves,
- * follows its values, writes a change through it and, on a page whose settings
- * the host keeps to itself, reads the document instead. What the values mean
+ * follows its values and writes a change through it. What the values mean
  * (which keys exist, how a stored value is held to the table, what is mirrored
- * onto the page) is the skin's, and comes in through the two adopt functions.
+ * onto the page) is the skin's, and comes in through the adopt function.
  */
 
 export interface SettingsBindingOptions {
@@ -17,8 +15,6 @@ export interface SettingsBindingOptions {
   namespaces: string[]
   /** The form's current values, once it carries them; runs on every host change. */
   adoptForm(value: Record<string, unknown>): void
-  /** The settings document of a page with no form to write through. */
-  adoptDocument(value: unknown): void
 }
 
 /** The served-namespace entry a namespace candidate matched. */
@@ -41,10 +37,6 @@ export function createSettingsBinding(options: SettingsBindingOptions) {
   let watchOff: (() => void) | null = null
   /** Whether the served-namespace directory is already being watched. */
   let binding = false
-  /** Disposers for the document reads a non-loopback page follows; empty on a loopback page. */
-  let remoteReadOffs: (() => void)[] = []
-  /** Whether this page reads the host's settings document without a form to write through. */
-  let readOnly = false
 
   /**
    * Namespaces to try, best first: loader entry id, then the package's own
@@ -106,54 +98,13 @@ export function createSettingsBinding(options: SettingsBindingOptions) {
     if (!mirror) return
     binding = true
     const attempt = () => {
-      if (form === null && !bindServedForm(forms, ctx)) {
-        // The directory settled on "unavailable" after the watch began: this
-        // page's settings are the host's to keep, and the document is read instead.
-        if (mirror.getSnapshot?.()?.status === 'unavailable') {
-          stopWatching()
-          followHostDocument(ctx)
-        }
-        return
-      }
+      if (form === null && !bindServedForm(forms, ctx)) return
       stopWatching()
       read()
     }
     if (typeof mirror.subscribe === 'function') watchOff = mirror.subscribe(attempt)
     if (typeof mirror.ensure === 'function') mirror.ensure()
     attempt()
-  }
-
-  /**
-   * Follow the settings document on a page whose form service never reads it
-   * (D11): the host keeps a non-loopback page's settings in memory, but its own
-   * remote still answers the read the form service is built on. Read again when
-   * the document changes and after a reconnect, which can miss that event.
-   */
-  function followHostDocument(ctx: HostContext) {
-    if (typeof ctx.inject !== 'function') return
-    readOnly = true
-    const candidates = candidatesOf(ctx)
-    // The remote's namespaces are reachable only from a scope that injected them.
-    const fiber = ctx.inject(['remote.settings'], scope => {
-      const settings = hostRemoteSettings(scope)
-      if (settings === null) throw new Error(`${skin().packageName}: the host carries no remote settings service on a page that reads its document`)
-      const readDocument = () => {
-        settings.describe().then((answer: HostSettingsDescribeAnswer) => {
-          if (!readOnly) return
-          if (answer.ok !== true) throw new Error(`${skin().packageName}: the settings document refused the read: ${answer.error?.message}`)
-          const match = servedNamespace(answer.value?.namespaces, candidates)
-          if (match === null) return
-          options.adoptDocument(match.served.value)
-        })
-      }
-      scope.effect(() => {
-        const offs = [hostRemote(scope).$on('settings/document-updated', readDocument)]
-        if (typeof scope.on === 'function') offs.push(scope.on('connection/reset', readDocument))
-        readDocument()
-        return () => { for (const off of offs) off() }
-      }, `${skin().packageName}: settings document`)
-    })
-    remoteReadOffs.push(() => fiber.dispose())
   }
 
   return {
@@ -163,30 +114,17 @@ export function createSettingsBinding(options: SettingsBindingOptions) {
      * Bind the official form. Called once per install, before the first read,
      * and again when the settings page installs — the service may mount after
      * this plugin. A namespace the host does not serve yet leaves the form null
-     * and the defaults in place, so this never blocks or fails the skin. A page
-     * the host keeps its settings away from reads the document instead (D11).
+     * and the defaults in place, so this never blocks or fails the skin.
      */
     adopt(ctx: HostContext) {
-      if (form === null && !readOnly) {
+      if (form === null) {
         const forms = hostConfigForms(ctx)
         if (forms === null) return false
-        if (forms.describe?.()?.getSnapshot?.()?.status === 'unavailable') {
-          followHostDocument(ctx)
-          return false
-        }
         if (!bindServedForm(forms, ctx)) watchNamespace(forms, ctx)
       }
       if (form === null) return false
       read()
       return true
-    },
-
-    /**
-     * Whether the preferences on show are the host's but this page cannot save
-     * them: the host keeps a non-loopback page's settings to itself (D11).
-     */
-    isReadOnly() {
-      return readOnly
     },
 
     /**
@@ -224,7 +162,7 @@ export function createSettingsBinding(options: SettingsBindingOptions) {
       })
     },
 
-    /** Release the form, directory and document subscriptions this binding opened. */
+    /** Release the form and directory subscriptions this binding opened. */
     dispose() {
       if (formUnsubscribe !== null) {
         formUnsubscribe()
@@ -234,9 +172,6 @@ export function createSettingsBinding(options: SettingsBindingOptions) {
         watchOff()
         watchOff = null
       }
-      for (const off of remoteReadOffs) off()
-      remoteReadOffs = []
-      readOnly = false
       binding = false
       form = null
     },

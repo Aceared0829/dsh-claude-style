@@ -23,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **上下文占用那一环改成一枚饼**：已占用与未占用画成两段同心扇区，少数的那一块撑到画布半径、多数的那一块往里收一档，收多少随占用比例变化——越接近对半越小，15% 与 85% 互为镜像，对半时是两枚等大的半圆。两块之间是一道 1.2px 宽的缝，由两条描边各让一半：占用那块的一条从满宽收到 0，未占用那块的一条反过来，读数跨过对半时两边都不跳；撑出去的那一块压在上面。色带照旧按占用取色，读数与这一块同色；触发按钮的位置与高度、输入行给它留的宽度都不变，饼比原来那枚图标大一圈、与它同中心。
 - **独立成行的数字改成从当前读数计数到新读数**：每个数字都留在原位连续增长（或减少）到新值，答案流式输出期间接连更新时后一次从当时显示的值接着走，切换会话时也从上一段的数字计数到新一段的。缓存命中那一截的色带只染数字与百分号，「缓存命中」四个字留在这一行自己的颜色。
 - **五个开关改成直接装卸**：关闭输入框插入符动效、吉祥物、模型选择器、侧栏账号区或输入区重绘范围时，对应功能自己的监听、尺寸观察者与每帧同步一并撤掉，宿主原来的界面随即回来；重新打开就在原位装回并重画，不用刷新页面。Ctrl+, 打开设置的快捷键改由设置页承担，关掉侧栏账号区之后仍然可用。
+- **远程页面上的设置也能改**：宿主把它信任的地址上打开的页面当成同一个使用者的页面，经局域网地址或隧道打开的页面现在与运行 DSH 的电脑上那一页读写同一份设置，任意一边改动，另一边不需要刷新就会跟上；设置页不再带着说明行把控件全部禁用。
 
 ### 问题修复
 
@@ -51,6 +52,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The context meter's ring is a pie**: the occupied share and the rest are two sectors on one centre. The smaller share keeps the box's radius and the larger one steps in by up to 1.3px, easing to nothing as the split comes even — so 15% and 85% mirror each other and an even split is two half discs of one radius. The 1.2px seam between them is shared by two strokes, the occupied sector's running from its whole width down to nothing and the plate's the mirror, so no edge jumps as the reading crosses the even split, and the part that stands out is painted last. It still takes the colour band its occupancy falls on, and the reading beside it is painted the same colour. The trigger keeps its box, its height and the room the row keeps for it, and the pie is one pixel larger than the old icon on each side, centred on it.
 - **The line of numbers counts to a new reading from the one it shows**: each figure stays where it is and grows (or falls) continuously to its new value, a reading that lands while the count is in flight carries on from the value on show, and another session's numbers are counted to from the ones the line was showing. The cache share's colour band marks its figure and percent sign alone, the words before them keeping the line's own tone.
 - **Five switches now install and remove their feature whole**: turning off the composer caret motion, the mascot, the model picker, the sidebar account area or the composer restyle's scope takes that feature's listeners, size observers and per-frame work off the page with the host's own interface coming back, and turning it on again installs it in place and repaints without a reload. The Ctrl+, shortcut for settings now belongs to the settings page, so it keeps working with the sidebar account area switched off.
+- **Settings can be changed from a remote page**: the host treats a page opened at an address it trusts as the same reader's page, so a page reached through a LAN address or a tunnel now reads and writes the same settings document as the page on the computer running DSH — a change made on one side reaches the other without a reload, and the settings page no longer opens with a notice and every control disabled.
 
 ### Bug Fixes
 

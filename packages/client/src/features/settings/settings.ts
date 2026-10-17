@@ -3,7 +3,7 @@ import { BUNDLE_CONFIG_SLOT, PACKAGE_NAME, REPOSITORY_URL, SETTINGS_SCROLLER_ATT
 import { SEGMENT_CLASS } from '../../shared/segment-control'
 import { loadModelCopy, onModelCopyLoaded } from '../model/model-copy'
 import { createHostAccountMenu } from '../account/host-menu'
-import { adoptSettingsForm, motionReduced, prefsAreReadOnly, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
+import { adoptSettingsForm, motionReduced, readPrefs, savePrefs, subscribePrefs } from '../../core/prefs'
 import { cacheFirstMatch, hostSlots } from '@dsh-claude-style/engine/host'
 import { motionMs } from '../../shared/motion'
 import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './settings-controls'
@@ -282,15 +282,10 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
   // description, so the embedded rendering drops the skin's title rather
   // than printing it twice.
   const embedded = !!(props && props.embed)
-  // A page the host keeps its settings away from shows the host's values and
-  // takes no input (D11): the disabled fieldset disables every control in
-  // every tab, and the tabs themselves stay open to browse.
-  const readOnly = prefsAreReadOnly()
   return React.createElement(
     'div',
     { ref: pageRef, className: embedded ? 'dsh-claude-settings dsh-claude-settings-embedded' : 'dsh-claude-settings' },
     embedded ? null : React.createElement(ClaudeStyleSettingsHeading),
-    readOnly ? React.createElement('div', { className: 'dsh-claude-settings-notice', role: 'note' }, copy('remoteReadOnly')) : null,
     React.createElement(ClaudeStyleSettingsTabStrip, { active: activeTab, onPick: pickTab }),
     React.createElement(
       'div',
@@ -298,7 +293,7 @@ export function ClaudeStyleSettingsSection(props: { embed?: boolean }) {
       // The leaving page's holder renders no children of its own: the still
       // copy pickTab puts there is never one React has to reconcile.
       React.createElement('div', { ref: leavingRef, className: 'dsh-claude-settings-leaving' }),
-      React.createElement('fieldset', { ref: rowsRef, className: 'dsh-claude-settings-rows', role: 'tabpanel', key: tab.id, disabled: readOnly, [PAGE_ENTER_ATTR]: enterState[0] ?? undefined }, tabRows(tab, view)),
+      React.createElement('fieldset', { ref: rowsRef, className: 'dsh-claude-settings-rows', role: 'tabpanel', key: tab.id, [PAGE_ENTER_ATTR]: enterState[0] ?? undefined }, tabRows(tab, view)),
     ),
     error === null ? null : React.createElement('div', { className: 'dsh-claude-settings-error' }, error),
   )

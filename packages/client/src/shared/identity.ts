@@ -6,7 +6,7 @@ import { createHostResource } from '@dsh-claude-style/engine/resource'
  * Who the skin shows. Nickname: the custom nickname, the signed-in account's
  * name, the HDSL launcher's account name, the cached OS-user probe, the fresh
  * probe. Picture: the signed-in account's avatar, the HDSL launcher's avatar,
- * then nothing, which lets the brand mark show (D11).
+ * then nothing, which lets the brand mark show (D75).
  */
 export let accountName = ''
 export let accountAvatar = ''
@@ -62,7 +62,7 @@ let hdslAvatar = false
 /**
  * The HDSL launcher's account contract, when this instance was launched by it.
  * An answer that is no contract is not adopted, so the chain skips the
- * launcher (D11).
+ * launcher (D75).
  */
 const hdslResource = createHostResource(HDSL_ROUTE, (data) => {
   if (!data || data.ok !== true || data.contract !== true) return undefined

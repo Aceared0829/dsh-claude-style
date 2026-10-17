@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 40,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**远程页面上的设置也能改**：宿主把它信任的地址上打开的页面当成同一个使用者的页面，经局域网地址或隧道打开的页面现在与运行 DSH 的电脑上那一页读写同一份设置，任意一边改动，另一边不需要刷新就会跟上；设置页不再带着说明行把控件全部禁用。",
+  "en": "**Settings can be changed from a remote page**: the host treats a page opened at an address it trusts as the same reader's page, so a page reached through a LAN address or a tunnel now reads and writes the same settings document as the page on the computer running DSH — a change made on one side reaches the other without a reload, and the settings page no longer opens with a notice and every control disabled."
+}

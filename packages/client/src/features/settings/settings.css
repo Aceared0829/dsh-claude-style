@@ -170,15 +170,7 @@ body[data-dsh-claude-style] .dsh-claude-settings-rows[data-dsh-claude-page-leave
   to { opacity: 0; transform: translateX(var(--dsh-claude-page-shift)); filter: blur(var(--dsh-claude-blur-enter)); }
 }
 
-body[data-dsh-claude-style] .dsh-claude-settings-rows:disabled :is(button, input) {
-  cursor: not-allowed;
-}
-
-body[data-dsh-claude-style] .dsh-claude-settings-rows:disabled input {
-  opacity: .45;
-}
-
-/* The line a read-only page opens with: why its controls take no input. */
+/* A tab's opening line, above its first row, which keeps no hairline under it. */
 body[data-dsh-claude-style] .dsh-claude-settings-notice {
   font-size: 12px;
   line-height: 18px;
@@ -189,8 +181,6 @@ body[data-dsh-claude-style] .dsh-claude-settings-rows > :first-child {
   border-top: none;
 }
 
-/* A tab's opening line (the read-only notice a remote page opens with) sits
-   above its first row, which keeps no hairline under it. */
 body[data-dsh-claude-style] .dsh-claude-settings-tab-notice {
   padding-top: 16px;
 }

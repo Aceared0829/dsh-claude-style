@@ -31,7 +31,7 @@ import type { CopyKey } from './copy'
  * plugin keeps private (`createWorkspaceViewStore`), reachable only by clicking
  * its menu. The rows are recomputed by the host's own archived-only rule so
  * the two lists agree; a host release that changes the rule has to be read
- * back into `refreshItems`. Deleting goes through the host half's route (D11),
+ * back into `refreshItems`. Deleting goes through the host half's route (D75),
  * then re-pulls the session list so the stale summary leaves. A filter opened
  * as a client service retires this list.
  *

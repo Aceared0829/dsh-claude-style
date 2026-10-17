@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 /**
  * remote-settings.cjs — a page under a non-loopback name on the real host
- * (D11, D66).
+ * (D75, D66).
  *
- * The host's settings-form service keeps a page whose hostname is not loopback
- * in memory: it never reads the settings document and saves nothing. The skin
- * reads its own namespace through the remote instead and makes its settings
- * page read-only there. The scenario starts the host trusting one more name,
- * maps that name onto the loopback address in the browser, and opens the same
- * instance under both names. It writes the theme style from the loopback page
- * and asserts the remote page follows without a reload, reads the same value
- * at boot, and shows its settings page with the notice and every control
- * disabled. The settings document lives in the scratch home the other
- * scenarios share, so the scenario writes the theme style back before it ends.
+ * The host serves a page whose hostname it was told to trust the same settings
+ * document it serves the loopback page: one instance, two names, one store. The
+ * scenario starts the host trusting one more name, maps that name onto the
+ * loopback address in the browser, and opens the same instance under both names.
+ * It writes the theme style from the loopback page and asserts the remote page
+ * follows without a reload, then writes it back from the remote page and asserts
+ * the loopback page follows, and reads the stored value at boot on the remote
+ * one. The settings document lives in the scratch home the other scenarios
+ * share, so the scenario writes the theme style back before it ends.
  */
 'use strict'
 const { bound } = require('./bounds.cjs')
-const { waitForSkin, dismissOverlays } = require('./dsh-web.cjs')
+const { waitForSkin, dismissOverlays, consoleProblem } = require('./dsh-web.cjs')
 const { openSkinSettings, SETTINGS_PAGE } = require('./settings-route.cjs')
 
 /** The non-loopback name the remote page is opened under; the browser maps it onto 127.0.0.1. */
@@ -27,9 +26,8 @@ const SKIN = {
   brand: 'data-dsh-claude-brand', // BRAND_ATTR
   page: SETTINGS_PAGE,
   rows: 'fieldset.dsh-claude-settings-rows',
-  notice: '.dsh-claude-settings-notice',
   error: '.dsh-claude-settings-error',
-  // The theme style's choices carry the brand they pick on their logo.
+  // The theme style's choices carry the brand they pick on their card.
   brandCard: (brand) => `.dsh-claude-brand-card[data-brand="${brand}"]`,
 }
 
@@ -51,14 +49,13 @@ const readSettingsPage = (page) => page.evaluate((skin) => {
   const rows = root.querySelector(skin.rows)
   const controls = [...rows.querySelectorAll('button, input')]
   return {
-    notice: root.querySelector(skin.notice)?.textContent ?? null,
     disabled: rows.disabled,
     controls: controls.length,
     enabled: controls.filter((control) => !control.matches(':disabled')).length,
     tabs: [...root.querySelectorAll('[role="tab"]')].filter((tab) => !tab.disabled).length,
     error: root.querySelector(skin.error)?.textContent ?? null,
   }
-}, { page: SKIN.page, rows: SKIN.rows, notice: SKIN.notice, error: SKIN.error })
+}, { page: SKIN.page, rows: SKIN.rows, error: SKIN.error })
 
 function remoteSettingsScenario({ check }) {
   return {
@@ -74,7 +71,10 @@ function remoteSettingsScenario({ check }) {
       address.hostname = REMOTE_NAME
       const remote = await session.context.newPage()
       const problems = []
-      remote.on('console', (message) => { if (message.type() === 'error' || message.type() === 'warning') problems.push(`${message.type()}: ${message.text()}`) })
+      remote.on('console', (message) => {
+        const problem = consoleProblem(message)
+        if (problem !== null) problems.push(problem)
+      })
       remote.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`))
       await remote.goto(address.href, { waitUntil: 'domcontentloaded' })
       await waitForSkin(remote)
@@ -83,6 +83,8 @@ function remoteSettingsScenario({ check }) {
       const target = original === 'deepseek' ? 'claude' : 'deepseek'
       const notes = { hostname: await remote.evaluate(() => location.hostname), original, target, remoteAtStart: await brandOf(remote), problems }
       context.notes.remoteSettings = notes
+      // The loopback page writes one value; the remote page follows it without
+      // a reload, and reads it back from the stored document after one.
       await openSkinSettings(local)
       await local.locator(SKIN.brandCard(target)).first().click()
       try {
@@ -92,14 +94,24 @@ function remoteSettingsScenario({ check }) {
         await waitForSkin(remote)
         await dismissOverlays(remote)
         notes.afterReload = (await reaches(remote, target)) ? target : await brandOf(remote)
+        // The remote page writes the other value back: the same store, from the
+        // far side. The loopback page follows without a reload, and the stored
+        // document carries it after the remote page reloads.
         await openSkinSettings(remote)
         notes.remotePage = await readSettingsPage(remote)
-        notes.localPage = await readSettingsPage(local)
+        await remote.locator(SKIN.brandCard(original)).first().click()
+        notes.remoteWrote = await reaches(remote, original)
+        notes.followedBack = await reaches(local, original)
+        await remote.reload({ waitUntil: 'domcontentloaded' })
+        await waitForSkin(remote)
+        await dismissOverlays(remote)
+        notes.keptWrite = (await reaches(remote, original)) ? original : await brandOf(remote)
       } finally {
+        // Whatever the walk did, the shared home ends on the value it started with.
         await local.locator(SKIN.brandCard(original)).first().click()
+        notes.restored = await reaches(local, original)
+        notes.localPage = await readSettingsPage(local)
       }
-      notes.restored = await reaches(local, original)
-      notes.followedBack = await reaches(remote, original)
     },
     async assert({ session, notes }) {
       const remote = notes.remoteSettings
@@ -111,12 +123,13 @@ function remoteSettingsScenario({ check }) {
         check('本机页面写入了另一种主题风格', remote.localWrote === true, `target=${remote.target}`),
         check('远程页面不刷新就跟上本机的改动', remote.followed === true, `target=${remote.target}`),
         check('远程页面刷新后读到的仍是宿主的值', remote.afterReload === remote.target, `afterReload=${remote.afterReload}`),
-        check('远程设置页开头有说明行', typeof page.notice === 'string' && page.notice !== '', page.notice ?? 'no notice'),
-        check('远程设置页的控件全部禁用', page.disabled === true && page.controls > 0 && page.enabled === 0, `controls=${page.controls} enabled=${page.enabled}`),
+        check('远程设置页的控件可以操作', page.disabled === false && page.controls > 0 && page.enabled === page.controls, `controls=${page.controls} enabled=${page.enabled}`),
         check('远程设置页的标签页仍可切换', page.tabs > 1, `tabs=${page.tabs}`),
         check('远程设置页没有报错行', page.error === null, page.error ?? ''),
-        check('本机设置页可写且没有说明行', local.disabled === false && local.notice === null && local.enabled > 0, `disabled=${local.disabled} enabled=${local.enabled}`),
-        check('写回原值后两边都回到原来的主题风格', remote.restored === true && remote.followedBack === true, `restored=${remote.restored} followedBack=${remote.followedBack}`),
+        check('远程页面写回的改动本机页面不刷新就跟上', remote.remoteWrote === true && remote.followedBack === true, `wrote=${remote.remoteWrote} followed=${remote.followedBack}`),
+        check('远程页面写入的值刷新后仍在', remote.keptWrite === remote.original, `kept=${remote.keptWrite}`),
+        check('本机设置页可写', local.disabled === false && local.enabled > 0, `enabled=${local.enabled}`),
+        check('写回原值后本机页面回到原来的主题风格', remote.restored === true, `restored=${remote.restored}`),
         check('远程页面的控制台没有异常', remote.problems.length === 0, remote.problems.slice(0, 3).join(' | ')),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]

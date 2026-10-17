@@ -51,7 +51,7 @@ function washLineScenario({ check }) {
     script: 'waitLine',
     prompt: 'check the file and answer',
     delayMs: 600,
-    /** The reader's stored choice, written into the host's own settings (D11). */
+    /** The reader's stored choice, written into the host's own settings (D75). */
     patch: [
       '- id: ui-skin-claude-style',
       '  config:',

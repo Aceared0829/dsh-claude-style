@@ -1,7 +1,7 @@
 /**
  * The smoke's host half, in Node: lib/host/index.js applied to a fake cordis
  * context, and its private routes driven with the request shapes that matter
- * (D11).
+ * (D75).
  */
 'use strict'
 const fs = require('fs')
@@ -164,7 +164,7 @@ function fakeHost(mod, options = {}) {
  * with the answer's bytes as `raw` (the skin route answers with a picture).
  *
  * `peer` is the socket address the route sees. The local stand-in reads it, so a
- * request made from this machine carries this machine's address (D11) unless a
+ * request made from this machine carries this machine's address (D75) unless a
  * check asks for another.
  */
 function request(host, route, method, body, headers, peer = '127.0.0.1') {
@@ -204,7 +204,7 @@ async function hostHalf() {
     const host = fakeHost(mod, { fenced, home: scratchHome })
     if (fenced) {
       // A profile entry the Config refuses keeps the host from starting the
-      // whole package (D11): the values earlier builds stored still pass. A
+      // whole package (D75): the values earlier builds stored still pass. A
       // `.volatile()` field resolves to an accessor, read through its `get()`.
       const resolved = (config) => {
         const [[key, stored]] = Object.entries(config)
@@ -531,7 +531,7 @@ async function hostHalf() {
   // package.json carries, and the route answers it byte for byte under its own
   // content type.
   //
-  // The user's own drop point is `$DSH_HOME/dsh-claude-style/fonts/` (D11): a
+  // The user's own drop point is `$DSH_HOME/dsh-claude-style/fonts/` (D75): a
   // copy there answers a name the package does not carry, and wins over a
   // bundled face of the same name. Both halves run against a scratch harness
   // home, so the answer says nothing about what the machine running this has

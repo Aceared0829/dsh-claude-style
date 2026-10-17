@@ -1,7 +1,7 @@
 /**
  * The plugin's host routes: everything the browser half cannot reach itself.
  *
- * These are the surfaces D11 describes — the model copy document, the webfonts,
+ * These are the surfaces D75 describes — the model copy document, the webfonts,
  * the OS user, the HDSL account, the routed assets, session deletion, the
  * usage and search roll-ups, the peak rate catalog and the reader's brand
  * images (packages/host/src/brand.ts) — each registered on the
@@ -38,7 +38,7 @@ const COPY_FILE = 'model-descriptions.json'
  * path traversal is possible.
  *
  * A name is looked up in the user's own drop point first — the harness home's
- * `dsh-claude-style/fonts/` — and then in the package's `lib/fonts/` (D11). The
+ * `dsh-claude-style/fonts/` — and then in the package's `lib/fonts/` (D75). The
  * JetBrains Mono files and the two look-alike faces behind the Anthropic ones
  * (Inter, Noto Serif) ship in the npm package; the Anthropic faces do not
  * (copyright), so only a copy the user dropped in answers them. A name neither
@@ -179,7 +179,7 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
   }
   // The comparison has to be between resolved paths: an entry inside the root
   // that is itself a symlink carries a recursive removal out of it, and
-  // `resolve` only normalizes the spelling (D11).
+  // `resolve` only normalizes the spelling (D75).
   const realRoot = realpathSync(root)
   if (!realpathSync(dir).startsWith(realRoot + sep)) {
     sendJson(res, 403, { ok: false, error: 'session directory outside the sessions root' })

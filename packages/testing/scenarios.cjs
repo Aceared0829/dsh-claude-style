@@ -471,7 +471,7 @@ const SCENARIOS = {
   longSession: longSessionScenario({ check }),
   /** Every `!important` the skin writes is needed on the real page (packages/testing/importance.cjs, D9). */
   importance: importanceScenario({ check, observe, sendPrompt, waitForTurn, host: HOST }),
-  /** A page under a non-loopback name reads the host's settings and takes no input (packages/testing/remote-settings.cjs, D11). */
+  /** A page under a non-loopback name reads and writes the host's settings beside the loopback one (packages/testing/remote-settings.cjs, D75). */
   remoteSettings: remoteSettingsScenario({ check }),
   /** The reader's own brand images through the host half's routes and on the real shell (packages/testing/custom-brand.cjs, D30). */
   customBrand: customBrandScenario({ check }),
