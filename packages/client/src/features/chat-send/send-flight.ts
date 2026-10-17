@@ -3,11 +3,12 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { CHAT_FLYING_ATTR, MESSAGE_ENTER_GROW } from '../../constants'
 import { motionReduced, readPrefs } from '../../core/prefs'
 import { startMorph } from './send-morph'
-import { CHAT_USER_ROW_SELECTOR, currentRow, lastUserRow, takeFreshEcho, touchesUserRow } from './send-rows'
+import { currentRow, lastUserRow, takeFreshEcho, touchesUserRow } from './send-rows'
 import { watchGrowEnter } from './send-grow'
 import { CHAT_FLIGHT_MS, CHAT_LANDING_MS } from './send-shape'
-import { chatSendAlpha, snapshotComposer } from './send-snapshot'
+import { snapshotComposer } from './send-snapshot'
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, FLOW_KIND_ATTRIBUTE, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { CHAT_USER_ROW_SELECTOR, userBubble } from '@dsh-claude-style/engine/chat-dom'
 import { motionEase } from '../../shared/motion'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
@@ -202,7 +203,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       row.setAttribute(CHAT_FLYING_ATTR, '')
       activeFlight.hidden = row
     }
-    activeFlight.bubble = findBubble(row)
+    activeFlight.bubble = userBubble(row)
     followTarget(activeFlight)
   }
   /** Stops the row watch; set only while a flight is in the air. */
@@ -395,7 +396,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // keeps its hide mark, so the reader never sees that message again. With
     // the reader sending twice, the last flight wins.
     settle()
-    const bubble = findBubble(echo)
+    const bubble = userBubble(echo)
     if (bubble === null) return
     const box = bubble.getBoundingClientRect()
     const card = draft.snapshot.box
@@ -540,7 +541,7 @@ export function followTarget(value: Flight, snap = false) {
   // stand-in then holds where it is for the rest of the flight — the reader
   // waits on a message that never arrives. So the destination is taken from the
   // row the flight is holding, every frame.
-  const held = value.hidden === null ? null : findBubble(value.hidden)
+  const held = value.hidden === null ? null : userBubble(value.hidden)
   if (held !== null && bubble !== held) bubble = held
   if (bubble === null) return
   let box = bubble.getBoundingClientRect()
@@ -552,7 +553,7 @@ export function followTarget(value: Flight, snap = false) {
   // watch uses. Once the row is back, the frame closes the difference whole.
   if (box.width === 0) {
     const row = currentRow(value.previous) ?? value.landedRow
-    const fresh = row === null ? null : findBubble(row)
+    const fresh = row === null ? null : userBubble(row)
     if (fresh === null || fresh === bubble) return
     bubble = fresh
     box = bubble.getBoundingClientRect()
@@ -577,34 +578,6 @@ export function followTarget(value: Flight, snap = false) {
   value.shiftedX = shiftX
   value.shiftedY = shiftY
   value.morph.wrapper.style.transform = 'translate(' + shiftX + 'px, ' + shiftY + 'px)'
-}
-
-/**
- * Take one echo row that has not been dealt with.
- *
- * Of a batch only the newest is taken (querySelectorAll is in document order)
- * and the rest are noted too, or they would be treated as new in later frames
- * and fly again.
- */
-
-/**
- * The element inside a user row that really paints a fill, which is the bubble.
- *
- * The depth cannot be assumed: the echo row is the bubble's own row (the echo
- * mark sits on it) while the real row has a flow-block wrapper around it, so
- * the two differ by a level. So the walk goes down level by level and takes the
- * first element that paints a fill; attachment rows and quote summaries paint
- * none and are skipped.
- */
-export function findBubble(row: Element) {
-  const queue = Array.from(row.children)
-  while (queue.length > 0) {
-    const node = queue.shift()
-    if (node === undefined) break
-    if (node instanceof HTMLElement && chatSendAlpha(window.getComputedStyle(node).backgroundColor) > 0) return node
-    for (const child of node.children) queue.push(child)
-  }
-  return null
 }
 
 /**

@@ -1,7 +1,7 @@
 import { subscribeMutations } from './bus'
 import { skin } from './skin'
-import { CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FLOW_KIND_ATTRIBUTE, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
-import { conversationScroller, findFollowTailButton, isScrollbarStrip } from './chat-dom'
+import { CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { SUBMISSION_ROW_SELECTOR, conversationScroller, findFollowTailButton, isScrollbarStrip } from './chat-dom'
 import { isReaderScrollIntent } from './reader-intent'
 import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, scrollEnd, stopScrollEase } from './scroll-ease'
 
@@ -63,14 +63,10 @@ const FOLLOWING_SOURCES = new Set<ScrollSource>(['follow', 'process'])
 /** How close to a process body's end the reader has to come for his hold on it to end. */
 const PROCESS_RELEASE_THRESHOLD_PX = 4
 /**
- * The two arrivals that are the reader's own submission rather than content
- * streaming in: his own message row, and the echo the host mounts in its
- * place before the real row takes over.
- */
-const SUBMISSION_SELECTOR = `[${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"], ${SUBMISSION_ECHO_SELECTOR}`
-/**
- * How long the stream slide stands down after one of them arrives. The
- * host's own jump to a freshly sent message is deliberate — the reader has to
+ * How long the stream slide stands down after a submission arrives. The two
+ * arrivals are chat-dom.ts's SUBMISSION_ROW_SELECTOR: the reader's own message
+ * row, and the echo the host mounts in its place before the real row takes over.
+ * The host's own jump to a freshly sent message is deliberate — the reader has to
  * see the message he just sent — and the echo is swapped for the real row
  * about a second later, which moves the position again. The stand-down
  * covers both.
@@ -322,7 +318,7 @@ function noteScroll(event: Event) {
 function noteSubmission(records: MutationRecord[]) {
   for (const record of records) {
     for (const node of [...record.addedNodes, ...record.removedNodes]) {
-      if (node instanceof Element && (node.matches(SUBMISSION_SELECTOR) || node.querySelector(SUBMISSION_SELECTOR) !== null)) {
+      if (node instanceof Element && (node.matches(SUBMISSION_ROW_SELECTOR) || node.querySelector(SUBMISSION_ROW_SELECTOR) !== null)) {
         submissionHoldUntil = performance.now() + SUBMISSION_HOLD_MS
         return
       }
