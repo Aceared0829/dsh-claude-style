@@ -1,4 +1,4 @@
-import { observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { observeMatches, observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { PROCESS_BODY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor } from '@dsh-claude-style/engine/scroll-owner'
 
@@ -45,6 +45,8 @@ export const CATCH_UP_GAP_PX = 40
  */
 export function createChatProcessFollow() {
   const leaveOwner = joinScrollOwner()
+  /** Every body on the page; taken before the mutation watch below, so the bus delivers a batch to it first. */
+  const bodies = observeMatches(PROCESS_BODY_SELECTOR)
   /** The bodies watched, each with the content layer it currently has and what stops watching the two. */
   const watched = new Map<Element, { content: Element | null, stopBody: () => void, stopContent: (() => void) | null }>()
   /** Set by the teardown, so an ease in flight stops with the feature. */
@@ -97,7 +99,7 @@ export function createChatProcessFollow() {
    * layer the old element stops reporting.
    */
   const sync = () => {
-    const present = new Set(document.querySelectorAll(PROCESS_BODY_SELECTOR))
+    const present = new Set(bodies.all())
     for (const body of present) {
       const content = body.querySelector(PROCESS_CONTENT_SELECTOR)
       let entry = watched.get(body)
@@ -163,6 +165,7 @@ export function createChatProcessFollow() {
   return () => {
     stopped = true
     stopWatch()
+    bodies.release()
     for (const [body, entry] of watched) {
       entry.stopBody()
       if (entry.stopContent !== null) entry.stopContent()

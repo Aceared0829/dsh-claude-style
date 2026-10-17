@@ -266,3 +266,13 @@ test('a match added inside a quiet container is registered too', async () => {
   await settle()
   expect(matches.all()).toEqual([added])
 })
+
+test('a subscription hears nothing that changed before it was made', async () => {
+  const root = host()
+  const seen: MutationRecord[] = []
+  cleanups.push(subscribeMutations(document.body, { childList: true, subtree: true }, () => {}))
+  root.appendChild(document.createElement('div'))
+  cleanups.push(subscribeMutations(root, { childList: true }, records => seen.push(...records)))
+  await settle()
+  expect(seen).toHaveLength(0)
+})

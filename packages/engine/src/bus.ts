@@ -86,8 +86,8 @@ function selects(subscription: MutationSubscription, record: MutationRecord) {
   return options.skipQuiet !== true || !isQuietRecord(record)
 }
 
-function routeRecords(records: MutationRecord[]) {
-  for (const subscription of mutationSubscriptions.slice()) {
+function routeRecords(records: MutationRecord[], audience: MutationSubscription[] = mutationSubscriptions.slice()) {
+  for (const subscription of audience) {
     // A subscription an earlier callback in this batch removed hears nothing more.
     if (!mutationSubscriptions.includes(subscription)) continue
     const selected = records.filter(record => selects(subscription, record))
@@ -98,13 +98,13 @@ function routeRecords(records: MutationRecord[]) {
 }
 
 /** Attach the observer to every subscribed target with the union of their options. */
-function refreshMutationObserver() {
+function refreshMutationObserver(joining?: MutationSubscription) {
   const pending = mutationObserver?.takeRecords() ?? []
   mutationObserver?.disconnect()
   if (mutationSubscriptions.length === 0) {
     mutationObserver = null
   } else {
-    if (mutationObserver === null) mutationObserver = new MutationObserver(routeRecords)
+    if (mutationObserver === null) mutationObserver = new MutationObserver(records => routeRecords(records))
     const merged = new Map<Node, MutationObserverInit>()
     for (const { target, options } of mutationSubscriptions) {
       const into = merged.get(target) ?? {}
@@ -129,8 +129,12 @@ function refreshMutationObserver() {
       mutationObserver.observe(target, init)
     }
   }
-  // Records the old attachment had gathered still belong to their subscribers.
-  if (pending.length > 0) queueMicrotask(() => routeRecords(pending))
+  // Records the old attachment had gathered still belong to their subscribers,
+  // and only to those: a subscription made after the change hears none of it.
+  if (pending.length > 0) {
+    const audience = mutationSubscriptions.filter(subscription => subscription !== joining)
+    queueMicrotask(() => routeRecords(pending, audience))
+  }
 }
 
 /**
@@ -140,7 +144,7 @@ function refreshMutationObserver() {
 export function subscribeMutations(target: Node, options: MutationOptions, callback: (records: MutationRecord[]) => void) {
   const subscription = { target, options, callback }
   mutationSubscriptions.push(subscription)
-  refreshMutationObserver()
+  refreshMutationObserver(subscription)
   return () => {
     const at = mutationSubscriptions.indexOf(subscription)
     if (at === -1) return

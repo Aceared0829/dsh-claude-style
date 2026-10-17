@@ -10,8 +10,8 @@
       "reason": "The host search box's clear button, read when the search box takes focus."
     },
     "packages/client/src/features/permissions/permissions.ts": {
-      "count": 7,
-      "reason": "Sweeps of the permission control's own nodes at install, in the pass that finds the control gone, on a preference change and at teardown. Debt: the control's own container is held while it stands, so the sweeps can be scoped to it."
+      "count": 3,
+      "reason": "The popover build and the teardown sweep the control's popover and nodes, and the cold start screen finds its mode strip inside the composer card."
     },
     "packages/client/src/features/model/model-picker.ts": {
       "count": 4,
@@ -27,11 +27,11 @@
     },
     "packages/client/src/features/chat-fold/process-summary.ts": {
       "count": 3,
-      "reason": "Debt: the process groups and the summary block, read outside the registries the fold already keeps."
+      "reason": "The process groups, read once at install and again when the shell language changes, and the summary marks swept at teardown."
     },
     "packages/client/src/features/chat-send/send-rows.ts": {
       "count": 3,
-      "reason": "Debt: the submission echo row and the sent row, read around one send."
+      "reason": "The submission echo row and the sent row, read once per batch of mutations around one send. The echo and row selectors carry attributes the host renders with the node, and the callers hold no registry lifetime for a bus list to be released against; moving them is a change to how send-flight and send-grow own their seats."
     },
     "packages/client/src/features/context-stats/stats-panel.ts": {
       "count": 2,
@@ -39,7 +39,7 @@
     },
     "packages/client/src/features/context-stats/session-stats.ts": {
       "count": 2,
-      "reason": "Debt: the context statistics' own block and panel marks, swept on install and at teardown."
+      "reason": "The context statistics' own block and panel marks, swept at teardown."
     },
     "packages/client/src/features/chat-send/send-flight.ts": {
       "count": 2,
@@ -51,19 +51,15 @@
     },
     "packages/client/src/features/chat-fold/process-fold.ts": {
       "count": 1,
-      "reason": "Debt: the running process group, read where the fold's own registry could serve it."
+      "reason": "The process groups already on the page, settled once right after install."
     },
     "packages/client/src/features/chat-fold/reasoning-fold.ts": {
       "count": 1,
-      "reason": "Debt: the running thinking row, read where the fold's own registry could serve it."
-    },
-    "packages/client/src/features/chat-follow/process-follow.ts": {
-      "count": 1,
-      "reason": "Debt: the capped process body, read where the follow's own registry could serve it."
+      "reason": "The thinking rows already on the page, settled once right after install."
     },
     "packages/client/src/features/chat-reveal/reveal-diff.ts": {
       "count": 1,
-      "reason": "The streaming containers, scanned when an attribute or structural batch arrives. Debt: the reveal engine's own registry."
+      "reason": "The streaming containers, scanned when an attribute or structural batch arrives. `data-streaming` is set and removed on a node that stays mounted, which a registry of added nodes cannot follow."
     },
     "packages/client/src/features/chat-reveal/reveal-engine.ts": {
       "count": 1,
@@ -71,11 +67,11 @@
     },
     "packages/client/src/features/chat-send/send-grow.ts": {
       "count": 1,
-      "reason": "Debt: the submission echo row, read around the send that grows in place."
+      "reason": "The echo rows lying on the page, noted once at install."
     },
     "packages/client/src/features/chat-wait/chat-wait.ts": {
       "count": 1,
-      "reason": "Debt: the waiting line's own rows, swept where a generation before this one may have left one behind."
+      "reason": "The waiting line's own marks, swept at teardown."
     },
     "packages/client/src/features/effort/effort-picker.ts": {
       "count": 1,
@@ -83,11 +79,15 @@
     },
     "packages/client/src/features/home/greeting-copy.ts": {
       "count": 1,
-      "reason": "Debt: the hero's title group, read where the greeting's copy is written."
+      "reason": "The hero's title groups, read in the pass that writes the greeting. The part mark is written onto the host's node after it mounts, which a registry of added nodes cannot see."
     },
     "packages/client/src/features/turn-nav/turn-nav.ts": {
       "count": 1,
       "reason": "The dialog or menu in front, read when a turn-navigation key is pressed."
+    },
+    "packages/client/src/features/permissions/stray-nodes.ts": {
+      "count": 3,
+      "reason": "The first pass of an install reads the control's nodes a previous generation left in the document (a client reload drops its disposals); later passes work from the nodes the feature holds."
     }
   }
 }

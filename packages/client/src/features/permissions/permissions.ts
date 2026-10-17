@@ -13,6 +13,7 @@ import type { HostPermissionCatalogAnswer, HostPermissionOption } from '@dsh-cla
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './permissions.manifest'
 import { copy } from './copy'
+import { createStrayScan } from './stray-nodes'
 
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let segments: HTMLElement | null = null
@@ -549,18 +550,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     submitPreset(preset)
   }
 
+  const strayScan = createStrayScan()
+
   // Re-insert when a re-render swapped the host row, then mirror the running preset.
   function syncSegments() {
     const isHero = ui.composer!.isHero()
     const composerOn = ui.composer!.isActive()
 
-    const existingPermContainers = document.querySelectorAll('.dsh-claude-perm-container')
-    const existingSegments = document.querySelectorAll<HTMLElement>(`.${SEGMENTS_CLASS}[data-composer-segments]`)
+    const { containers: existingPermContainers, segments: existingSegments, popover: strayPopover } = strayScan.existing(permContainer, segments)
 
     if (!composerOn) {
-      for (let ep = 0; ep < existingPermContainers.length; ep++) {
-        existingPermContainers[ep].remove()
-      }
+      for (const stray of existingPermContainers) stray.remove()
       if (permPopover && permPopover.parentElement) {
         permPopover.parentElement.removeChild(permPopover)
       }
@@ -569,12 +569,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       permLabel = null
       permPopover = null
 
-      for (let es0 = 0; es0 < existingSegments.length; es0++) {
-        existingSegments[es0].remove()
-      }
+      for (const stray of existingSegments) stray.remove()
       segments = null
       segmentPill.sync(null)
       coldStartShown = false
+      strayScan.settle()
       return
     }
 
@@ -595,6 +594,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (coldStart && !coldStartShown && catalogOptions !== null) probeAutoPreset()
     coldStartShown = coldStart
     if (host === null) return
+    strayScan.settle()
 
     const preset = coldStart ? defaultPreset : session === null ? null : currentPreset(session)
     // The segment group is the classic hero's own shape. The studio hero draws
@@ -650,12 +650,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       segments = null
       segmentPill.sync(null)
 
-      const allExisting = document.querySelectorAll<HTMLElement>('.dsh-claude-perm-container')
-      if (allExisting.length > 0) {
-        const adopted = allExisting[0]
+      if (existingPermContainers.length > 0) {
+        const adopted = existingPermContainers[0]
         permContainer = adopted
-        for (let p = 1; p < allExisting.length; p++) {
-          allExisting[p].remove()
+        for (let p = 1; p < existingPermContainers.length; p++) {
+          existingPermContainers[p].remove()
         }
         if (adopted.parentElement !== host) {
           host.insertBefore(adopted, host.firstChild)
@@ -665,7 +664,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         // The container can be adopted from a generation whose disposals a
         // client reload dropped; its popover is still in the document, and
         // without it updatePermState would early-return forever.
-        if (permPopover === null) permPopover = document.querySelector<HTMLElement>('.dsh-claude-perm-popover')
+        if (permPopover === null) permPopover = strayPopover
       } else {
         const res = buildPermTriggerAndPopover(pick)
         permContainer = res.container
