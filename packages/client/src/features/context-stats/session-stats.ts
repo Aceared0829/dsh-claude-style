@@ -1,10 +1,12 @@
 import { conversationSessionId, findConversationSession, hostSessions } from '@dsh-claude-style/engine/host'
 import { hostChatSeat } from '../../core/i18n'
 import { readPrefs } from '../../core/prefs'
+import { peerPresent } from '../../shared/peer-plugin'
 import { STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
+import { paintContextPie, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
@@ -99,7 +101,9 @@ export function createSessionStats(ctx: HostContext) {
       watch = null
     }
     // The skeleton's wait holds the panel's place, not the session's: it goes
-    // whether a session was ever bound or not (stats-block.ts).
+    // whether a session was ever bound or not (stats-block.ts). The line keeps
+    // the numbers it is showing: another session's readings are counted to
+    // from them (stats-count.ts).
     block.stopSkeleton()
   }
 
@@ -156,6 +160,10 @@ export function createSessionStats(ctx: HostContext) {
       binding.bindMeter(meter)
       const occupancy = meterOccupancy(meter)
       writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
+      // The pie is dsh-chat-ux's own reading of the same meter: while that
+      // plugin draws it, the host's ring is left to that plugin's draw
+      // (THIRD_PARTY_NOTICES.md).
+      paintContextPie(meter, peerPresent('dsh-chat-ux') ? null : occupancy)
     }
     // The line of numbers is the panel's second trigger, so it is bound (and
     // told whether the panel stands open) on every pass, in either position: a
@@ -206,7 +214,11 @@ export function createSessionStats(ctx: HostContext) {
       binding.release()
       inline.clear()
       const meter = findContextMeter()
-      if (meter !== null) writeRamp(meter, 'context', null)
+      if (meter !== null) {
+        writeRamp(meter, 'context', null)
+        // The host's ring comes back with the stylesheet the pie replaced.
+        releaseContextPie(meter)
+      }
       const blocks = document.querySelectorAll(`[${CONTEXT_STATS_ATTR}]`)
       for (let i = 0; i < blocks.length; i++) {
         blocks[i].remove()

@@ -62,6 +62,9 @@
         !foreignPopover.hasAttribute('data-dsh-claude-context-panel') &&
         !foreignPopover.hasAttribute('data-dsh-claude-context-aligned')
       r.context.expanded = statsMeter === null ? null : statsMeter.querySelector('button').getAttribute('aria-expanded')
+      // The meter's reading is a pie in both positions: the surface the numbers
+      // live on never changes the ring's own look.
+      r.context.meterPie = statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-meter-pie')
       // A press on the ring whose panel the dwell opened leaves the panel up:
       // the host's trigger toggles on a click, and the skin stops that press on
       // its way to the host (shared/popover.ts::pressKeepsPopoverOpen).
@@ -158,6 +161,24 @@
         await sleep(400)
       }
       r.context.bandRestored = readBand()
+
+      // The composer feature leaves the page while its scope preference is off.
+      // The numbers keep reading the host's own docked meter, so the pie and the
+      // ramp stand on it after the composer's mark has gone.
+      window.__pushForm({ composerScope: 'off' })
+      await sleep(600)
+      r.context.composerOff = {
+        gate: document.body.hasAttribute('data-dsh-claude-composer-active'),
+        marked: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-context-meter'),
+        ramp: statsMeter === null ? null : statsMeter.getAttribute('data-dsh-claude-ramp'),
+        pie: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-meter-pie'),
+      }
+      window.__pushForm({ composerScope: 'all' })
+      await sleep(600)
+      r.context.composerBack = {
+        gate: document.body.hasAttribute('data-dsh-claude-composer-active'),
+        marked: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-context-meter'),
+      }
     })
   })
 
@@ -186,10 +207,15 @@
       var meter = document.querySelector('[data-dsh-claude-context-meter]')
       var row = document.querySelector('[data-composer-stat]')
       var cache = line === null ? null : line.querySelector('[data-dsh-claude-ramp="cache"]')
-      var stroke = function (selector) {
-        var circle = meter === null ? null : meter.querySelector(selector)
-        return circle === null || circle === undefined ? null : getComputedStyle(circle).stroke
-      }
+      var cacheFigure = cache === null ? null : cache.querySelector('.dsh-claude-digit-group')
+      var cacheTail = cache === null ? null : cache.querySelector('.dsh-claude-inline-tail')
+      var cacheLabel = cache === null ? null : cache.querySelector('.dsh-claude-inline-label')
+      var meterTrigger = meter === null ? null : meter.querySelector('button')
+      var meterRing = meterTrigger === null ? null : meterTrigger.querySelector('svg')
+      var meterReading = meterTrigger === null ? null : meterTrigger.querySelector('span')
+      var pieImage = meterTrigger === null ? null : getComputedStyle(meterTrigger).backgroundImage
+      var pieDraw = pieImage === null || pieImage === 'none' ? null : decodeURIComponent(pieImage)
+      var readingColor = meterReading === null ? null : getComputedStyle(meterReading).color
       // The line keeps the figures the ladder has taken away in the document
       // (they are hidden rather than removed, so they can come back), so every
       // reading below counts what the reader can see.
@@ -204,21 +230,29 @@
           return (group.textContent || '').trim()
         }),
         digits: line === null ? 0 : line.querySelectorAll(visible + ' .dsh-claude-digit').length,
-        staggered: line === null ? 0 : line.querySelectorAll(visible + ' .dsh-claude-digit[data-stagger]').length,
         glyphs: line === null ? 0 : line.querySelectorAll('svg, img').length,
         rowDisplay: row === null ? null : getComputedStyle(row).display,
         dockPosition: dock === null ? null : getComputedStyle(dock).position,
         meterPosition: meter === null ? null : getComputedStyle(meter).position,
         cacheRamp: cache === null ? null : {
           span: cache.getAttribute('data-dsh-claude-ramp-span'),
-          color: getComputedStyle(cache).color,
+          // The band reaches the figure and the percent sign after it; the
+          // label before them keeps the line's own colour.
+          color: cacheFigure === null ? null : getComputedStyle(cacheFigure).color,
+          tail: cacheTail === null ? null : getComputedStyle(cacheTail).color,
         },
         meterRamp: meter === null ? null : {
           kind: meter.getAttribute('data-dsh-claude-ramp'),
           span: meter.getAttribute('data-dsh-claude-ramp-span'),
         },
-        ringStroke: stroke('circle[stroke-dasharray]'),
-        trackStroke: stroke('circle:not([stroke-dasharray])'),
+        cacheLabelColor: cacheLabel === null ? null : getComputedStyle(cacheLabel).color,
+        // The meter's reading is a pie in the band's own colour: the host's ring
+        // is hidden inside the cell it keeps, and the trigger's background is
+        // the image the browser half computed.
+        pie: meter !== null && meter.hasAttribute('data-dsh-claude-meter-pie'),
+        ringVisibility: meterRing === null ? null : getComputedStyle(meterRing).visibility,
+        pieTone: pieDraw !== null && readingColor !== null &&
+          pieDraw.indexOf('fill="' + readingColor + '"') !== -1,
         // The figures stand apart by the line's own gap: the host's separators
         // are gone, and the line's text is what a reader would copy out of it.
         separators: line === null ? null : (line.textContent || '').split('·').length - 1,
@@ -295,6 +329,21 @@
       wakePass()
       await sleep(350)
       r.statsInline.backToRoom = readFit()
+      // A new reading: the figures count to it instead of re-entering character
+      // by character. Read them just after the push, part way through the
+      // count's stretch, and once it has arrived.
+      var readFigures = function () {
+        return line === null ? [] : Array.prototype.map.call(line.querySelectorAll(visible + ' .dsh-claude-digit-group'), function (group) {
+          return (group.textContent || '').trim()
+        })
+      }
+      var countBefore = readFigures()
+      window.__pushStats('sessionStats', { turns: 8, steps: 400, decodeMs: 2000, decodeTokens: 240 })
+      await sleep(70)
+      var countDuring = readFigures()
+      await sleep(700)
+      var countAfter = readFigures()
+      r.statsInline.count = { before: countBefore, during: countDuring, after: countAfter }
       // The choice the other way, live: the popover's own surface takes the
       // numbers back and the line goes.
       window.__pushForm({ statsPosition: 'context' })

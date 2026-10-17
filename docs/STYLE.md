@@ -285,6 +285,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-swap-gap` | `50ms` | the offset the words arriving start after the words leaving, so the two halves of a wording swap travel together |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
 | `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
+| `--dsh-claude-duration-count` | `220ms` | a session number counting to its new reading |
 | `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight, a sidebar icon's quarter turn, the wording box taking the width of the words arriving, and streamed content sliding up from the bottom edge |
 | `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow, a placeholder handing its place to what it stood for |
 | `--dsh-claude-duration-bounce` | `350ms` | a switch's knob travelling across with its double bounce |
@@ -573,6 +574,38 @@ is open, so the position is handed over in two custom properties on the card
 (`--dsh-claude-hero-menu-x` / `--dsh-claude-hero-menu-y`, written by the same
 pass that stamps it) which `features/hero-menu/hero-menu.css` reads with
 `!important`; that declaration outranks the host's plain inline value.
+
+## Context meter · 上下文计量
+
+**The trigger is a pie.** Where the host draws a ring of two circles, the meter
+draws two sectors on one centre: the share taken in the colour its occupancy fell
+on, the rest of the plate in the quiet tone beside it. The smaller share keeps
+the box's radius (8px) and the larger one steps in by up to 1.3px — half the
+lift — so a lopsided split reads as the smaller part standing out to the edge,
+15% and 85% mirror each other, and an even split is two half discs of one radius;
+the step eases to nothing as the split comes even. The seam is one width, 1.2px,
+shared between two strokes by the split: the occupied sector's stroke runs from
+the whole width at nothing taken to nothing at everything taken, the plate's is
+the mirror, and each is half the width at the even split. Each sector is cut by
+the stroke around the other's path, so the seam follows the whole boundary — both
+radii, the outer arc and the apex — and the two edges move with the split as the
+reading crosses the middle. The part that stands out is painted last: the plate
+above the even split, the reading's colour below it. The pie is 16px across, one
+pixel more than the ring's 14px cell on each side, and concentric with it; the
+ring keeps its cell and is hidden while the pie stands, so the trigger's layout
+and the room the composer keeps for it are the host's. The occupied sector takes
+the reading's own colour (the occupancy ramp, below), the plate the quiet tone
+beside it.
+
+**The line of numbers.** On its own line under the card, each figure is plain
+text in the line's type (13px / 500, tabular figures), not a run of per-character
+spans: a reading that moves is chased from the value on show, closing about two
+thirds of the distance every 73ms and the rest within 220ms, a reading that lands
+mid-count becomes the new destination, and another session's numbers are chased
+from the ones on show too. Only the cache share's figure and the percent sign
+after it wear the band; the words before them keep the line's tone. A card too
+narrow drops figures in a fixed order, and the widest step folds each token
+figure into k / M / B.
 
 ## Search · 搜索
 

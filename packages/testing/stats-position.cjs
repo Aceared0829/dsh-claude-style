@@ -10,14 +10,15 @@
  * path is what the smoke's stand-in form cannot prove, so the scenario holds
  * `inline` and asserts what the reader sees: the host's own words around the
  * host's own figures under the card, no glyph of the host's statistics row,
- * every figure written so it can re-enter, and the cache share and the meter's
- * ring each painted with the colour their reading fell on — on the real host's
- * own nodes.
+ * the figures written as plain text the count rewrites in place, the cache
+ * share's figure and percent sign painted in the band their reading fell on,
+ * and the meter's reading drawn as a pie in the occupancy's own — on the real
+ * host's own nodes.
  */
 'use strict'
 const { statsOverlayScenario } = require('./stats-overlay.cjs')
 
-/** Read the composer's bottom line, the line of figures and the meter's ring. */
+/** Read the composer's bottom line, the line of figures and the meter's pie. */
 const readPosition = (page) => page.evaluate(() => {
   const card = document.querySelector('[data-composer-card]')
   const dock = card?.nextElementSibling ?? null
@@ -25,9 +26,12 @@ const readPosition = (page) => page.evaluate(() => {
   const meter = document.querySelector('[data-dsh-claude-context-meter]')
   const line = document.querySelector('[data-dsh-claude-inline-stats]')
   const cache = line?.querySelector('[data-dsh-claude-ramp="cache"]') ?? null
-  const digit = line?.querySelector('.dsh-claude-digit') ?? null
-  const fill = meter?.querySelector('circle[stroke-dasharray]') ?? null
-  const track = meter?.querySelector('circle:not([stroke-dasharray])') ?? null
+  const cacheFigure = cache?.querySelector('.dsh-claude-digit-group') ?? null
+  const cacheTail = cache?.querySelector('.dsh-claude-inline-tail') ?? null
+  const cacheWords = cache?.querySelector('.dsh-claude-inline-label') ?? null
+  const trigger = meter?.querySelector('button') ?? null
+  const ring = trigger?.querySelector('svg') ?? null
+  const reading = trigger?.querySelector('span') ?? null
   const shown = (element) => element !== null && element !== undefined && getComputedStyle(element).display !== 'none'
   return {
     attribute: document.body.getAttribute('data-dsh-claude-stats-position'),
@@ -37,12 +41,22 @@ const readPosition = (page) => page.evaluate(() => {
     figures: [...(line?.querySelectorAll('.dsh-claude-inline-seg:not([hidden]) .dsh-claude-digit-group') ?? [])]
       .map((group) => (group.textContent ?? '').trim()),
     glyphs: line?.querySelectorAll('svg, img').length ?? 0,
-    animation: digit === null ? null : getComputedStyle(digit).animationName,
+    // The figures are plain text the count rewrites: no character carries a
+    // span or an entrance of its own (features/context-stats/stats-count.ts).
+    digits: line?.querySelectorAll('.dsh-claude-digit').length ?? 0,
     rowDisplay: row === null ? null : getComputedStyle(row).display,
     lineShown: shown(line),
-    cacheColor: cache === null ? null : getComputedStyle(cache).color,
-    ringColor: fill === null ? null : getComputedStyle(fill).stroke,
-    trackColor: track === null ? null : getComputedStyle(track).stroke,
+    cacheColor: cacheFigure === null ? null : getComputedStyle(cacheFigure).color,
+    cacheTailColor: cacheTail === null ? null : getComputedStyle(cacheTail).color,
+    cacheWordsColor: cacheWords === null ? null : getComputedStyle(cacheWords).color,
+    // The meter's reading is a pie: the host's ring keeps its cell, hidden
+    // while the trigger's own background carries the image the feature drew.
+    pie: meter !== null && meter.hasAttribute('data-dsh-claude-meter-pie'),
+    ringVisibility: ring === null ? null : getComputedStyle(ring).visibility,
+    pieImage: trigger === null ? null : getComputedStyle(trigger).backgroundImage,
+    pieRest: trigger === null ? null : getComputedStyle(trigger).getPropertyValue('--dsh-claude-pie-rest').trim(),
+    reading: reading === null ? null : (reading.textContent ?? '').trim(),
+    readingColor: reading === null ? null : getComputedStyle(reading).color,
     dockPosition: dock === null ? null : getComputedStyle(dock).position,
     meterPosition: meter === null ? null : getComputedStyle(meter).position,
     blocks: document.querySelectorAll('.dsh-claude-context-stats').length,
@@ -50,23 +64,46 @@ const readPosition = (page) => page.evaluate(() => {
 })
 
 /**
- * After two frames, how wide the line stands against the card, how many of its
- * figures show, and whether the meter gave up its reading; null when the page
- * stays busy past the bound.
+ * Once the card's own width has held for two frames, how wide the line stands
+ * against the card, how many of its figures show, and whether the meter gave up
+ * its reading; null when the page stays busy past the bound.
+ *
+ * Both boxes come from `getBoundingClientRect`, so a page drawn at a scale
+ * compares like with like, and the reading waits for the card to stop moving:
+ * a viewport change animates the frame around the composer, and a width taken
+ * mid-slide says nothing about the card the line has to fit.
  */
 const readFit = (page) => Promise.race([
-  page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => {
-    const card = document.querySelector('[data-composer-card]')
-    const line = document.querySelector('[data-dsh-claude-inline-stats]')
-    const meter = document.querySelector('[data-dsh-claude-context-meter]')
-    const groups = [...(line?.querySelectorAll('.dsh-claude-digit-group') ?? [])]
-    resolve({
-      card: card === null ? null : card.clientWidth,
-      line: line === null ? null : line.getBoundingClientRect().width,
-      figures: groups.filter((group) => group.getClientRects().length > 0).length,
-      tight: meter !== null && meter.hasAttribute('data-dsh-claude-meter-tight'),
-    })
-  })))),
+  page.evaluate(() => new Promise((resolve) => {
+    const startedAt = performance.now()
+    let heldWidth = null
+    let heldFrames = 0
+    const tick = () => {
+      const card = document.querySelector('[data-composer-card]')
+      const line = document.querySelector('[data-dsh-claude-inline-stats]')
+      const meter = document.querySelector('[data-dsh-claude-context-meter]')
+      const groups = [...(line?.querySelectorAll('.dsh-claude-digit-group') ?? [])]
+      const width = card === null ? null : Math.round(card.getBoundingClientRect().width * 100) / 100
+      const reading = {
+        card: width,
+        line: line === null ? null : Math.round(line.getBoundingClientRect().width * 100) / 100,
+        figures: groups.filter((group) => group.getClientRects().length > 0).length,
+        tight: meter !== null && meter.hasAttribute('data-dsh-claude-meter-tight'),
+      }
+      if (width !== heldWidth) {
+        heldWidth = width
+        heldFrames = 0
+      } else {
+        heldFrames += 1
+      }
+      if (heldFrames >= 2 || performance.now() - startedAt > 4000) {
+        resolve(reading)
+        return
+      }
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  })),
   new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
 ])
 
@@ -160,6 +197,19 @@ const readLinePanel = (page) => page.evaluate(async () => {
   return { role, separators, hoverOpened, opened, expanded, rows, closed: panel() === null }
 })
 
+/**
+ * Whether the image on the trigger carries the colour the reading is painted
+ * with — the plate's own quiet tone instead when nothing has been taken, since
+ * an empty reading has no sector to wear it.
+ */
+const piePaints = (state) => {
+  if (state.pieImage === null || state.readingColor === null) return false
+  const image = decodeURIComponent(state.pieImage)
+  const occupancy = Number.parseFloat(state.reading ?? '')
+  const tone = Number.isFinite(occupancy) && occupancy > 0 ? state.readingColor : state.pieRest
+  return typeof tone === 'string' && tone !== '' && image.includes(`fill="${tone}"`)
+}
+
 function statsPositionScenario({ check }) {
   return {
     script: 'greeting',
@@ -196,12 +246,14 @@ function statsPositionScenario({ check }) {
             state.glyphs === 0 && state.rowDisplay === 'none' &&
             state.dockPosition === 'static' && state.meterPosition === 'static',
           JSON.stringify(state)),
-        check('every figure is written one character per span, so a number that moved re-enters',
-          state.animation === 'dsh-claude-digit-pop-in', JSON.stringify(state.animation)),
-        check('the cache share and the meter\'s ring each take the colour their reading fell on',
-          state.cacheColor !== null && state.ringColor !== null && state.trackColor !== null &&
-            state.ringColor !== state.trackColor,
-          JSON.stringify({ cache: state.cacheColor, ring: state.ringColor, track: state.trackColor })),
+        check('the figures are text a count rewrites in place, with no character carrying a span or an entrance of its own',
+          state.digits === 0, JSON.stringify(state.digits)),
+        check('the cache share\'s band colours its figure and percent sign alone, and the meter\'s reading is a pie in the occupancy\'s own colour',
+          state.cacheColor !== null && state.cacheTailColor === state.cacheColor &&
+            state.cacheWordsColor !== null && state.cacheWordsColor !== state.cacheColor &&
+            state.pie && state.ringVisibility === 'hidden' &&
+            state.pieImage !== null && state.pieImage.includes('data:image/svg+xml') && piePaints(state),
+          JSON.stringify({ cache: state.cacheColor, percent: state.cacheTailColor, words: state.cacheWordsColor, pie: state.pie, ring: state.ringVisibility, reading: state.reading, image: state.pieImage })),
         check('the popover keeps none of the numbers here', state.blocks === 0, JSON.stringify(state.blocks)),
         check('giving up the meter\'s reading takes width alone: the row under the card keeps its height, so the conversation above never moves',
           step !== null && step.withReading === step.withoutReading &&

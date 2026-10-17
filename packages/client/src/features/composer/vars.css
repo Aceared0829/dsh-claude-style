@@ -25,6 +25,9 @@ body[data-dsh-claude-style] {
   --dsh-claude-tone-lime: #b0c988;
   --dsh-claude-tone-green-light: #a2dda4;
   --dsh-claude-tone-green: #6faf73;
+  /* The plate the meter's pie has not taken (features/context-stats/
+     context-meter-pie.ts): the quiet end of the same band. */
+  --dsh-claude-pie-rest: rgba(250, 249, 245, 0.18);
 }
 
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) {
@@ -35,4 +38,5 @@ body[data-dsh-claude-style]:not([data-ds-dark-theme]) {
   --dsh-claude-tone-lime: #779756;
   --dsh-claude-tone-green-light: #6da173;
   --dsh-claude-tone-green: #46784e;
+  --dsh-claude-pie-rest: rgba(20, 20, 19, 0.14);
 }

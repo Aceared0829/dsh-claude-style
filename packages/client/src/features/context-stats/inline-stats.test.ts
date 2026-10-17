@@ -1,4 +1,5 @@
 import { afterEach, expect, test } from 'vitest'
+import { MOTION_ATTR, MOTION_FULL } from '../../constants'
 import { createInlineStats } from './inline-stats'
 import type { HostSessionStatsProjection, HostText, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 
@@ -116,4 +117,38 @@ test('a fit that keeps its step leaves the shown line untouched, on every step',
   }
   // Step 3 only takes the meter's reading, and there is no meter here.
   expect([...steps].sort()).toEqual([0, 1, 2, 4, 5])
+})
+
+test('the cache share\'s colour band reaches its figure and percent sign, never the label before them', () => {
+  mount(4000)
+  const inline = createInlineStats(read, () => chat, () => null)
+  inline.render()
+  const segment = document.querySelector('[data-dsh-claude-ramp="cache"]')!
+  expect(segment.getAttribute('data-dsh-claude-ramp-span')).toBe('low')
+  expect(segment.querySelector('.dsh-claude-inline-label')!.textContent!.trim()).toBe('cache hit')
+  expect(segment.querySelector('.dsh-claude-digit-group')!.textContent).toBe('86')
+  expect(segment.querySelector('.dsh-claude-inline-tail')!.textContent).toBe('%')
+  expect(segment.textContent).toBe('cache hit 86%')
+})
+
+test('another session\'s numbers are counted to from the ones the line shows', async () => {
+  document.body.setAttribute(MOTION_ATTR, MOTION_FULL)
+  mount(4000)
+  let current: HostSessionStatsProjection = { turns: 2, steps: 20, llmMs: 0, toolMs: 0, ttftMs: 0, ttftSteps: 0, decodeMs: 10_000, decodeTokens: 1_000 }
+  const sessionRead = <Value>(key: string) =>
+    (key === 'sessionStats' ? current : key === 'tokenUsage' ? usage : undefined) as Value | undefined
+  const inline = createInlineStats(sessionRead, () => chat, () => null)
+  inline.render()
+  const first = document.querySelector('[data-dsh-claude-inline-stats] .dsh-claude-digit-group')!
+  expect(first.textContent).toBe('2')
+  // A different session, read through the same seat.
+  current = { turns: 22, steps: 220, llmMs: 0, toolMs: 0, ttftMs: 0, ttftSteps: 0, decodeMs: 10_000, decodeTokens: 1_000 }
+  inline.render()
+  await new Promise((resolve) => setTimeout(resolve, 70))
+  const middle = Number(first.textContent)
+  expect(middle).toBeGreaterThan(2)
+  expect(middle).toBeLessThan(22)
+  await new Promise((resolve) => setTimeout(resolve, 900))
+  expect(first.textContent).toBe('22')
+  document.body.removeAttribute(MOTION_ATTR)
 })

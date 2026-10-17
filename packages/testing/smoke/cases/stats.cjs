@@ -7,6 +7,17 @@ const checkPanelEdge = (r) =>
     r.context.aligned === true && r.context.edgeAligned === true,
     JSON.stringify({ aligned: r.context.aligned, edgeAligned: r.context.edgeAligned }))
 
+/** Another plugin's popover on the page, and the marks a generation before this one left on it. */
+const checkForeignPopover = (r) =>
+  check('another plugin\'s popover is not taken for the host\'s panel, and the marks a previous generation left on it are cleared',
+    r.context.panelId === 'context-panel' && r.context.strayBlockGone === true && r.context.foreignUnmarked === true,
+    JSON.stringify({ panel: r.context.panelId, strayGone: r.context.strayBlockGone, foreignUnmarked: r.context.foreignUnmarked }))
+
+/** The meter's reading, drawn as a pie whichever surface the numbers live on. */
+const checkMeterPie = (r) =>
+  check('the meter draws its reading as a pie in the popover position too',
+    r.context.meterPie === true, JSON.stringify(r.context.meterPie))
+
 module.exports = {
   // The context popover's numbers: read from the host's session projections
   // (never by opening its stat dialogs) and rendered into the panel's block.
@@ -17,9 +28,8 @@ module.exports = {
       JSON.stringify({ hidden: r.statsHidden, cards: r.statsStrayCards }))
     check('the host\'s panel takes the skin\'s own entrance, stamped by the feature',
       r.context.panelStamped === true, JSON.stringify(r.context.panelStamped))
-    check('another plugin\'s popover is not taken for the host\'s panel, and the marks a previous generation left on it are cleared',
-      r.context.panelId === 'context-panel' && r.context.strayBlockGone === true && r.context.foreignUnmarked === true,
-      JSON.stringify({ panel: r.context.panelId, strayGone: r.context.strayBlockGone, foreignUnmarked: r.context.foreignUnmarked }))
+    checkMeterPie(r)
+    checkForeignPopover(r)
     check('with no projection frame yet the block holds the numbers\' place under the real headings',
       same(r.context.skeletonSections, ['Session statistics', 'Token usage']) &&
         r.context.skeletonRows === 8 && r.context.skeletonItemHeight === 37,
@@ -57,6 +67,17 @@ module.exports = {
       removed.gone === true && removed.lift === '' &&
         restored.stripHeight === withStrip.stripHeight && restored.lift === withStrip.lift,
       JSON.stringify({ removed: removed.lift, restored: restored.lift }))
+    // The composer's own switch is live, and the numbers outlive it: the meter
+    // is taken from the host's dock when the composer's mark is not there.
+    const composerOff = r.context.composerOff || {}
+    const composerBack = r.context.composerBack || {}
+    check('with the composer restyle switched off the numbers still read the host\'s docked meter',
+      composerOff.gate === false && composerOff.marked === false &&
+        composerOff.ramp === 'context' && composerOff.pie === true,
+      JSON.stringify(composerOff))
+    check('the composer restyle coming back marks the meter again',
+      composerBack.gate === true && composerBack.marked === true,
+      JSON.stringify(composerBack))
     commonChecks(r)
   },
   'stats-compact'(r) {
@@ -67,9 +88,8 @@ module.exports = {
     check('the compact row carries no trigger of its own; the meter still opens the panel',
       r.context.panelStamped === true && r.context.opened === true && r.context.expanded === 'true',
       JSON.stringify({ stamped: r.context.panelStamped, opened: r.context.opened, expanded: r.context.expanded }))
-    check('another plugin\'s popover is not taken for the host\'s panel, and the marks a previous generation left on it are cleared',
-      r.context.panelId === 'context-panel' && r.context.strayBlockGone === true && r.context.foreignUnmarked === true,
-      JSON.stringify({ panel: r.context.panelId, strayGone: r.context.strayBlockGone, foreignUnmarked: r.context.foreignUnmarked }))
+    checkMeterPie(r)
+    checkForeignPopover(r)
     check('with no projection frame yet the place is the compact one: four items in a 2x2 grid, no section headings',
       same(r.context.skeletonSections, []) &&
         r.context.skeletonRows === 4 && r.context.skeletonItemHeight === 37,
@@ -103,14 +123,20 @@ module.exports = {
         r.statsInline.text.indexOf('2 轮 374 步') === 0 &&
         r.statsInline.text.indexOf('缓存命中') !== -1,
       JSON.stringify({ figures: r.statsInline.figures, text: r.statsInline.text }))
-    check('every figure is written one character per span so a number that moved re-enters, the last two staggered',
-      r.statsInline.digits === 29 && r.statsInline.staggered === 11,
-      JSON.stringify({ digits: r.statsInline.digits, staggered: r.statsInline.staggered }))
-    check('the cache share and the meter\'s occupancy take their colour bands, and the ring is painted with the reading\'s own',
+    check('the figures are text a count rewrites in place, with no character carrying a span or an entrance of its own',
+      r.statsInline.digits === 0, JSON.stringify(r.statsInline.digits))
+    check('a new reading counts to its value: part way through the count the figures have moved without having arrived, and they settle on the reading',
+      (r.statsInline.count.before || []).length === 6 &&
+        r.statsInline.count.during.some((value, index) => value !== r.statsInline.count.before[index] && value !== r.statsInline.count.after[index]) &&
+        same(r.statsInline.count.after, ['8', '400', '120', '777,345,457', '7,345,457', '99']),
+      JSON.stringify(r.statsInline.count))
+    check('the cache share and the meter\'s occupancy take their colour bands: the share\'s band reaches its figure and percent sign alone, and the meter\'s reading is a pie cut in the occupancy\'s own colour',
       r.statsInline.cacheRamp !== null && r.statsInline.cacheRamp.span === 'high' &&
+        r.statsInline.cacheRamp.color === r.statsInline.cacheRamp.tail &&
+        r.statsInline.cacheLabelColor !== null && r.statsInline.cacheLabelColor !== r.statsInline.cacheRamp.color &&
         r.statsInline.meterRamp !== null && r.statsInline.meterRamp.kind === 'context' && r.statsInline.meterRamp.span === 'high' &&
-        r.statsInline.ringStroke !== null && r.statsInline.ringStroke !== r.statsInline.trackStroke,
-      JSON.stringify({ cache: r.statsInline.cacheRamp, meter: r.statsInline.meterRamp, ring: r.statsInline.ringStroke, track: r.statsInline.trackStroke }))
+        r.statsInline.pie === true && r.statsInline.ringVisibility === 'hidden' && r.statsInline.pieTone === true,
+      JSON.stringify({ cache: r.statsInline.cacheRamp, cacheWords: r.statsInline.cacheLabelColor, meter: r.statsInline.meterRamp, pie: r.statsInline.pie, ring: r.statsInline.ringVisibility, tone: r.statsInline.pieTone }))
     check('asking the numbers back into the popover takes the line away, live',
       r.statsInline.backAttr === 'context' && r.statsInline.backLine === 0,
       JSON.stringify({ attr: r.statsInline.backAttr, line: r.statsInline.backLine }))

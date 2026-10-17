@@ -322,10 +322,12 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
 /* A number that moved re-enters one character at a time, from below with a
    short blur, the last two characters riding in behind the rest
    (features/context-stats/stats-digits.ts rewrites a figure's characters and the
-   new spans play this). The reader asked for it on every step and while an
-   answer streams; the skin's own motion choice governs it — theme/chrome.css
-   stills every dsh-claude-* animation when the reader chose reduced motion, and
-   following the system is that choice's default (D40). */
+   new spans play this). The popover's own values are the figures that carry it;
+   the line of numbers counts its figures to their readings (stats-count.ts) and
+   writes them as text, so no span of its own is animated. The skin's own motion
+   choice governs it — theme/chrome.css stills every dsh-claude-* animation when
+   the reader chose reduced motion, and following the system is that choice's
+   default (D40). */
 @keyframes dsh-claude-digit-pop-in {
   0% {
     transform: translate(calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-x)), calc(var(--dsh-claude-digit-distance) * var(--dsh-claude-digit-dir-y)));
@@ -410,16 +412,33 @@ body[data-dsh-claude-style] [data-dsh-claude-ramp="context"][data-dsh-claude-ram
 body[data-dsh-claude-style] [data-dsh-claude-ramp="context"][data-dsh-claude-ramp-span="high"] {
   --dsh-claude-ramp-from: var(--dsh-claude-tone-red);
 }
-/* The reading takes the mixed colour, and the meter's ring is painted with the
-   same two ends, so the two can never disagree. */
+/* The reading takes the mixed colour, the ring the same two ends while it
+   stands in for a reading that could not be taken, and the pie samples the
+   reading's own colour, so the three can never disagree. The cache share's band
+   is written on the segment its figure and percent sign stand in, and reaches
+   those two alone: the label before them keeps the line's tone. */
 body[data-dsh-claude-style] .dsh-claude-inline-stats [data-dsh-claude-ramp="cache"] {
-  color: color-mix(in oklch, var(--dsh-claude-ramp-from), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from)) var(--dsh-claude-ramp-position, 0%));
+  --dsh-claude-ramp-ink: color-mix(in oklch, var(--dsh-claude-ramp-from), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from)) var(--dsh-claude-ramp-position, 0%));
+}
+body[data-dsh-claude-style] .dsh-claude-inline-stats [data-dsh-claude-ramp="cache"] > .dsh-claude-digit-group,
+body[data-dsh-claude-style] .dsh-claude-inline-stats [data-dsh-claude-ramp="cache"] > .dsh-claude-inline-tail {
+  color: var(--dsh-claude-ramp-ink);
 }
 body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-ramp="context"] button > span {
   color: color-mix(in oklch, var(--dsh-claude-ramp-from), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from)) var(--dsh-claude-ramp-position, 0%));
 }
 body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-ramp="context"] circle[stroke-dasharray] {
   stroke: color-mix(in oklch, var(--dsh-claude-ramp-from), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from)) var(--dsh-claude-ramp-position, 0%));
+}
+
+/* ---------- the meter's pie ---------- */
+/* The reading drawn as a pie (features/context-stats/context-meter-pie.ts): the
+   host's ring keeps its cell — the trigger's own layout and the room the row
+   keeps for it stay the host's — while the pie is the trigger's background
+   image. Nothing is drawn until the browser half has painted one, so a reading
+   it cannot take leaves the ring the host drew. */
+body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-meter-pie] button > svg {
+  visibility: hidden;
 }
 
 /* ---------- the block while the numbers are still on their way ---------- */
