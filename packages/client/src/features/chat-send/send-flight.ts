@@ -1,6 +1,6 @@
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
-import { CHAT_FLYING_ATTR, MESSAGE_ENTER_GROW } from '../../constants'
+import { CHAT_FLYING_ATTR, MESSAGE_ENTER_GROW, MESSAGE_FOLD_ATTR } from '../../constants'
 import { motionReduced, readPrefs } from '../../core/prefs'
 import { startMorph } from './send-morph'
 import { currentRow, lastUserRow, takeFreshEcho, touchesUserRow } from './send-rows'
@@ -403,7 +403,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const onSameScreen = sameScreen(card.left, box.left, window.innerWidth)
       && sameScreen(card.top, box.top, window.innerHeight)
     if (!onSameScreen) return
-    const morph = startMorph(draft.snapshot, bubble, box)
+    // A message the fold holds flies as the folded message it will stand as
+    // (send-morph.ts's capped flight).
+    const morph = startMorph(draft.snapshot, bubble, box, bubble.hasAttribute(MESSAGE_FOLD_ATTR))
     if (morph === null) return
     echo.setAttribute(CHAT_FLYING_ATTR, '')
     flight = {
