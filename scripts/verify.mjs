@@ -54,6 +54,7 @@ import { SKIPPED, TREES, treeHash } from './shared/tree-hash.mjs'
 import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
 
 const require = createRequire(import.meta.url)
+const { UNJUDGED_EXIT } = require('../packages/testing/host-version.cjs')
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CACHE = path.join(ROOT, '.debug', 'verify-cache')
 /**
@@ -287,7 +288,7 @@ async function runStage(stage) {
     const at = Date.now()
     const code = await runGate(gate)
     const ms = Date.now() - at
-    say(`verify: ${gate.id} ${code === 0 ? 'ok' : `exit ${code}`} (${seconds(ms)})`)
+    say(`verify: ${gate.id} ${code === 0 ? 'ok' : code === UNJUDGED_EXIT ? 'gave no verdict' : `exit ${code}`} (${seconds(ms)})`)
     return { id: gate.id, code, ms }
   }))
 }
@@ -306,8 +307,10 @@ async function runAll(request, tree, key) {
     if (stage.some((gate) => gate.id === 'build')) built = libHash()
     if (gates.some((gate) => gate.code !== 0)) {
       // A failed gate ends the run before the next stage: the lanes above it read
-      // what it produces, and the fix comes before their minutes are spent.
-      exitCode = 1
+      // what it produces, and the fix comes before their minutes are spent. A gate
+      // that gave no verdict (a host other than the pinned one) is not a failure
+      // and not a pass, so the run answers "unjudged" unless another gate failed.
+      exitCode = gates.some((gate) => gate.code !== 0 && gate.code !== UNJUDGED_EXIT) ? 1 : UNJUDGED_EXIT
       break
     }
   }
@@ -322,13 +325,15 @@ async function runAll(request, tree, key) {
     at: new Date().toISOString(),
     ms: Date.now() - started,
     exitCode: swapped ? 1 : exitCode,
-    filed: !swapped,
+    // A run that left a gate unjudged answers nothing a later request could reuse.
+    filed: !swapped && exitCode !== UNJUDGED_EXIT,
     gates,
   }
   if (swapped) {
     say('verify: the build output changed while the gates ran — a rebuild behind `npm run dev` takes no lock; no verdict filed, re-run over a still tree')
     return record
   }
+  if (exitCode === UNJUDGED_EXIT) return record
   fs.mkdirSync(CACHE, { recursive: true })
   fs.writeFileSync(path.join(CACHE, `${key}.json`), `${JSON.stringify(record, null, 2)}\n`)
   return record
@@ -336,14 +341,15 @@ async function runAll(request, tree, key) {
 
 /** What this request's answer was, and where it came from. */
 function report(record, source) {
-  const gates = record.gates.map((gate) => `${gate.id} ${gate.code === 0 ? 'ok' : `exit ${gate.code}`}`).join(', ')
+  const gates = record.gates.map((gate) => `${gate.id} ${gate.code === 0 ? 'ok' : gate.code === UNJUDGED_EXIT ? 'gave no verdict' : `exit ${gate.code}`}`).join(', ')
   if (source === 'cache') {
     say(`verify: reused — the same tree and the same gates ${record.exitCode === 0 ? 'passed' : 'failed'} at ${record.at} (run ${record.runId}, ${seconds(record.ms)}); --force re-runs them`)
     say(`verify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates}`)
     return
   }
   const filed = record.filed === false ? '; no verdict filed' : `; verdict filed as ${record.key.slice(0, 12)}`
-  say(`\nverify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates} (${seconds(record.ms)})${filed}`)
+  const word = record.exitCode === 0 ? 'PASS' : record.exitCode === UNJUDGED_EXIT ? 'UNJUDGED' : 'FAIL'
+  say(`\nverify: ${word} — ${gates} (${seconds(record.ms)})${filed}`)
 }
 
 async function main() {

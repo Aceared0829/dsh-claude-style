@@ -27,6 +27,11 @@
       "reason": "The worst frame a long session may take over the measured turn: about fifteen 60 Hz frames. A frame that costs more than this is a stall the reader would see, and the reading is a wall clock between animation frames on a headless runner, so it sits far above one frame on purpose."
     },
     {
+      "name": "longSessionMinSpanMs",
+      "value": 300,
+      "reason": "The least stretch of wall clock the sampled frames of the measured turn must cover: twenty frames of a 60 Hz display. The span is read in milliseconds so a display that draws fewer frames a second is judged on the same stretch as one that draws sixty."
+    },
+    {
       "name": "longSessionLongTaskBudgetMs",
       "value": 3000,
       "reason": "All long tasks together over the measured turn. The turn streams a long scripted answer, so some long tasks are the host rendering it; the budget is what the skin's own passes may add on top before the turn counts as blocked."

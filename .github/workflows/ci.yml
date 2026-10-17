@@ -29,13 +29,13 @@ name: CI
 # lanes that read a page wait on the checks and on the scope. `build-unit-smoke`
 # carries the build, the unit lane in a real browser and the smoke over the built
 # plugin; `smoke-windows` carries the same over the readers' own system;
-# `e2e` drives a scratch `dsh web` on the pinned host version with the scripted
-# model service (D66); `contract-host-alpha` walks the `contract` scenario
-# against the host's newest prerelease, ahead of the pin, so a selector or entry
-# that stopped holding shows up before the pin moves — advisory, it holds no
-# merge back. Every job carries a deadline, and every step that waits on the
-# network carries its own: the job's is the backstop, the step's ends a stuck
-# wait in minutes.
+# `e2e` drives a scratch `dsh web` on the newest host version published, under
+# whichever dist-tag (`packages/testing/host-version.cjs` reads the registry; the
+# lane gives no verdict on a machine whose host differs) with the scripted
+# model service (D66), so a selector or entry the host stopped honouring shows
+# up in the run that meets the new host. Every job carries a deadline, and
+# every step that waits on the network carries its own: the job's is the
+# backstop, the step's ends a stuck wait in minutes.
 #
 # The end-to-end lane's default table is sliced by
 # `packages/testing/e2e.cjs --shard <index>:<total>`, one slice per matrix entry,
@@ -56,11 +56,10 @@ name: CI
 #
 # Four things outside the repository decide this shape: the merge queue's
 # conclusion time, GitHub counting a skipped job as passed, the host version
-# pinned in `e2e`, and the Actions versions Dependabot proposes weekly
+# `e2e` installs, and the Actions versions Dependabot proposes weekly
 # (`.github/dependabot.yml`). When one of them moves, this file is where the
 # arrangement is read again: a shorter conclusion from the queue earns fewer
-# shards, GitHub's reading of a skipped job is what the aggregation rests on, and
-# the pin in `e2e` follows the prerelease `contract-host-alpha` already walks.
+# shards, and GitHub's reading of a skipped job is what the aggregation rests on.
 on:
   push:
     branches: [master]
@@ -216,7 +215,7 @@ jobs:
         timeout-minutes: 15
       # The lane boots the host's own CLI, which needs pnpm to install a
       # profile's plugins.
-      - run: npm install --global pnpm@11 @deepseek-ai/dsh@0.2.1-alpha.1
+      - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.cjs)
         timeout-minutes: 10
       # A named scenario takes its own deadline; this is the shard's backstop.
       - run: node packages/testing/e2e.cjs --shard ${{ matrix.shard }}:4
@@ -228,41 +227,9 @@ jobs:
           path: .debug/e2e/out
           if-no-files-found: ignore
 
-  contract-host-alpha:
-    needs: [changed, checks]
-    if: needs.changed.outputs.code == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/master')
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - uses: actions/cache@v6
-        with:
-          path: .debug/build-cache
-          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
-      - run: npm run build
-        timeout-minutes: 15
-      - run: npm install --global pnpm@11 @deepseek-ai/dsh@alpha
-        timeout-minutes: 10
-      - run: node packages/testing/e2e.cjs --scenario contract
-        timeout-minutes: 15
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: e2e-traces-host-alpha
-          path: .debug/e2e/out
-          if-no-files-found: ignore
-
   required:
     if: always()
-    needs: [changed, checks, build-unit-smoke, smoke-windows, e2e, contract-host-alpha]
+    needs: [changed, checks, build-unit-smoke, smoke-windows, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

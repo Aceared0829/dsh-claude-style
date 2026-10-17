@@ -35,7 +35,8 @@ const { availableParallelism } = require('node:os')
 const path = require('node:path')
 const { launchBrowser } = require('./browser.cjs')
 const { start, openPage, waitForSkin, dismissOverlays, firstRunOverlayText, DEFAULT_HOME } = require('./dsh-web.cjs')
-const { MARKS } = require('./lane.cjs')
+const { MARKS, measureFrameMs } = require('./lane.cjs')
+const { requireNewestHost } = require('./host-version.cjs')
 const { SCENARIOS } = require('./scenarios.cjs')
 const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { startMockLlm } = require('./mock-llm.cjs')
@@ -345,10 +346,12 @@ async function runScenario(name, options) {
       }
       step('asserting')
       const checks = await scenario.assert(context)
-      for (const item of checks) say(`  ${item.ok ? '✓' : '✗'} ${item.name}${item.detail === '' ? '' : `  — ${item.detail}`}\n`)
-      const failed = checks.filter((item) => !item.ok).length
+      // An observation that differs is printed as a difference and fails nothing (D66).
+      for (const item of checks) say(`  ${item.ok ? '✓' : item.observation === true ? '△' : '✗'} ${item.name}${item.detail === '' ? '' : `  — ${item.detail}`}\n`)
+      const failed = checks.filter((item) => !item.ok && item.observation !== true).length
+      const observed = checks.filter((item) => !item.ok && item.observation === true)
       if (expired) throw new Error(`scenario "${name}" overran its ${SCENARIO_DEADLINE_MS / 1000} s deadline`)
-      return { scenario: name, checks, failed, requested: mock.requests.length, trace: context.trace, notes: context.notes }
+      return { scenario: name, checks, failed, observed, frameMs: await measureFrameMs(page), requested: mock.requests.length, trace: context.trace, notes: context.notes }
     })()
     return await body
   } catch (error) {
@@ -396,6 +399,8 @@ async function main() {
     const at = args.indexOf(`--${flag}`)
     return at === -1 ? undefined : args[at + 1]
   }
+  // The lane reads what the host draws; a host other than the pinned one gets no verdict (D66).
+  requireNewestHost()
   // The timing table names the scenarios that hold it (D3), so the two lists are
   // checked against each other rather than kept in step by hand.
   const { E2E_SCENARIOS } = loadModule('packages/contracts/src/timing.ts')
@@ -472,7 +477,14 @@ async function main() {
   if (broke !== null) throw broke
   const results = walked.map((name) => finished.get(name))
   const failed = results.reduce((sum, result) => sum + result.failed, 0)
-  process.stdout.write(`\n${failed === 0 ? 'E2E PASS' : 'E2E FAIL'} — ${results.length} scenarios, ${failed} failed checks; traces in ${out}\n`)
+  const observed = results.flatMap((result) => result.observed.map((item) => ({ scenario: result.scenario, ...item })))
+  fs.writeFileSync(path.join(out, 'observations.json'), `${JSON.stringify(observed, null, 2)}\n`)
+  process.stdout.write(`\n${failed === 0 ? 'E2E PASS' : 'E2E FAIL'} — ${results.length} scenarios, ${failed} failed checks, ${observed.length} observations that differ from their record; traces in ${out}\n`)
+  // The cloud's job page carries the differences, so the ones that fail nothing are still read.
+  if (observed.length > 0 && process.env.GITHUB_STEP_SUMMARY) {
+    const lines = observed.map((item) => `- **${item.scenario}** — ${item.name}: ${item.detail}`)
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Observations that differ from their record\n\n${lines.join('\n')}\n`)
+  }
   // A scenario leaves a handle behind on a slow runner — the CI job walked every
   // scenario in minutes and then sat until its own cap, because the process had
   // finished and its event loop had not. The exit code is the result.

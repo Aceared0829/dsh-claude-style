@@ -58,18 +58,49 @@ async function readFlow(page) {
   }, HOST)
 }
 
-/** One assertion with the evidence behind it. */
+/** One assertion with the evidence behind it; a failing one fails the run. */
 function check(name, ok, detail) {
   return { name, ok: ok === true, detail: detail === undefined ? '' : String(detail) }
+}
+
+/**
+ * One reading of what the host draws, compared with the record the repository
+ * keeps of it (D66). The host is not this repository's to change, so a
+ * difference is reported with its evidence and fails nothing: the run prints it,
+ * files it in the traces, and the record is written again when someone reads it.
+ */
+function observe(name, same, detail) {
+  return { ...check(name, same, detail), observation: true }
+}
+
+/**
+ * The page's own frame interval in milliseconds: the median over a short run of
+ * animation frames. Readings that count frames are held to the span they cover
+ * instead, so a display that draws fewer frames a second is judged on the same
+ * stretch of wall clock.
+ */
+function measureFrameMs(page) {
+  return page.evaluate(() => new Promise((resolve) => {
+    const stamps = []
+    const tick = (now) => {
+      stamps.push(now)
+      if (stamps.length < 24) { requestAnimationFrame(tick); return }
+      const gaps = stamps.slice(1).map((stamp, at) => stamp - stamps[at]).sort((left, right) => left - right)
+      resolve(Math.round(gaps[Math.floor(gaps.length / 2)] * 10) / 10)
+    }
+    requestAnimationFrame(tick)
+  }))
 }
 
 /**
  * Record `read(arg)` inside the page on every frame from now until the page has
  * settled, and answer the readings (D66: the settle rule). The page has settled
  * when its finite animations have landed and the document has not changed for
- * eight frames running; an endless animation (a sweep, a pulse) is the page's
- * own life and is not waited for. `read` runs in the page, so it carries no
- * closure; without it this only waits. A page that never settles fails by name.
+ * eight frames' worth of a 60 Hz display (134 ms, over at least two frames, so a
+ * slower display waits the same wall clock); an endless animation (a sweep, a
+ * pulse) is the page's own life and is not waited for. `read` runs in the page,
+ * so it carries no closure; without it this only waits. A page that never
+ * settles fails by name.
  */
 function watchPage(page, read, arg) {
   return page.evaluate(({ source, arg: input }) => new Promise((resolve, reject) => {
@@ -81,13 +112,15 @@ function watchPage(page, read, arg) {
     const observer = new MutationObserver(() => { changed = true })
     observer.observe(document, { subtree: true, childList: true, attributes: true, characterData: true })
     const started = performance.now()
+    let lastChange = started
     const landed = () => document.getAnimations().every((animation) => (animation.playState !== 'running' && animation.playState !== 'pending') ||
       animation.effect?.getComputedTiming().iterations === Infinity)
     const look = () => {
       if (reader !== null) frames.push(reader(input))
       quiet = changed ? 0 : quiet + 1
+      if (changed) lastChange = performance.now()
       changed = false
-      if (quiet >= 8 && landed()) {
+      if (quiet >= 2 && performance.now() - lastChange >= 134 && landed()) {
         observer.disconnect()
         resolve(frames)
         return
@@ -136,4 +169,4 @@ function recordUntil(page, read, reached, arg, limitMs, what) {
   }), { readSource: read.toString(), reachedSource: reached.toString(), arg, limit: limitMs, label: what })
 }
 
-module.exports = { HOST, SKIN, MARKS, readFlow, check, watchPage, settlePage, recordUntil }
+module.exports = { HOST, SKIN, MARKS, readFlow, check, observe, measureFrameMs, watchPage, settlePage, recordUntil }

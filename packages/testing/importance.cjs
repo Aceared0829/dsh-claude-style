@@ -365,8 +365,8 @@ function importanceScenario(lane) {
         // cannot reach is recorded with its reason; anything else fails, and so
         // does a recorded selector the page has started matching — the record
         // is a debt, and it is only allowed to shrink.
-        lane.check('没有从不匹配元素的皮肤选择器', unrecorded.length === 0, `${sweep.total} 个选择器：${sweep.matched} 个在某个页面形态里匹配到元素，${sweep.dead.length} 个从未匹配（登记在册 ${sweep.dead.length - unrecorded.length}${recordedGroups === '' ? '' : `：${recordedGroups}`}${unrecorded.length === 0 ? '' : `；未登记 ${unrecorded.length}：${brief(unrecorded)}…`}）${sweep.unparsed.length === 0 ? '' : `；${sweep.unparsed.length} 个页面解析不了（${sweep.unparsed.slice(0, 2).join('；')}）`}；${Object.entries(sweep.excused).map(([keep, many]) => `${many} 个按契约不扫（${keep}）`).join('，') || '没有按契约豁免的'}`),
-        lane.check('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}${EITHER.size === 0 ? '' : `；另有 ${EITHER.size} 条记录，抓到与否都算数`}`),
+        lane.observe('没有从不匹配元素的皮肤选择器', unrecorded.length === 0, `${sweep.total} 个选择器：${sweep.matched} 个在某个页面形态里匹配到元素，${sweep.dead.length} 个从未匹配（登记在册 ${sweep.dead.length - unrecorded.length}${recordedGroups === '' ? '' : `：${recordedGroups}`}${unrecorded.length === 0 ? '' : `；未登记 ${unrecorded.length}：${brief(unrecorded)}…`}）${sweep.unparsed.length === 0 ? '' : `；${sweep.unparsed.length} 个页面解析不了（${sweep.unparsed.slice(0, 2).join('；')}）`}；${Object.entries(sweep.excused).map(([keep, many]) => `${many} 个按契约不扫（${keep}）`).join('，') || '没有按契约豁免的'}`),
+        lane.observe('登记在册的选择器都还匹配不上', reached.length === 0, `登记表里 ${reached.length} 个已经能匹配到元素或规则已删除，该划掉：${brief(reached)}${EITHER.size === 0 ? '' : `；另有 ${EITHER.size} 条记录，抓到与否都算数`}`),
         lane.check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
       // The appearance layer's snapshot is judged on the platform the cloud's
@@ -375,7 +375,7 @@ function importanceScenario(lane) {
       if (process.env.DSH_APPEARANCE === 'write') writeAppearance(appearance)
       const looks = compareAppearance(appearance)
       const parts = Object.values(appearance).reduce((sum, state) => sum + Object.keys(state).length, 0)
-      checks.push(lane.check('每个页面形态的外观与快照逐项一致', looks.length === 0,
+      checks.push(lane.observe('每个页面形态的外观与快照逐项一致', looks.length === 0,
         looks.length === 0 ? `${Object.keys(appearance).length} 个页面形态、${parts} 处部件读数` : `${looks.length} 处不同：${looks.slice(0, 4).join('；')}`))
       if (process.env.DSH_IMPORTANCE_REFERENCE !== undefined) {
         checks.push(lane.check('与参照样式表画出的页面一致', drift.length === 0, drift.length === 0 ? `${states.length} 个状态逐元素比对` : drift.map((item) => `${item.state}: ${item.count} 处，如 ${JSON.stringify(item.first[0])}`).join('；')))

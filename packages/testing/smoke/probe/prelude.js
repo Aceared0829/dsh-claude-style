@@ -25,11 +25,13 @@
    * Record `read()` on every frame from now until the page has settled, and
    * answer the readings with the settled one last (D66: the settle rule). The
    * page has settled when its finite animations have landed and the skin has
-   * asked for no pass on eight frames running. A clock of the page's own — the
-   * waiting line ticks four times a second while a turn runs — is its life, the
-   * way an endless animation is, so a quiet run between two ticks counts.
-   * `quietMs` adds a stretch of wall clock with no pass at all, for a reading
-   * that counts passes itself. A page that never settles fails the step by name.
+   * asked for no pass for eight frames' worth of a 60 Hz display (134 ms, over
+   * at least two frames, so a slower display waits the same wall clock). A clock
+   * of the page's own — the waiting line ticks four times a second while a turn
+   * runs — is its life, the way an endless animation is, so a quiet run between
+   * two ticks counts. `quietMs` adds a stretch of wall clock with no pass at
+   * all, for a reading that counts passes itself. A page that never settles
+   * fails the step by name.
    */
   async function watch(read, quietMs) {
     var readings = []
@@ -45,7 +47,7 @@
         quietFrames = 0
         lastPass = performance.now()
       }
-      if (quietFrames >= 8 && performance.now() - lastPass >= (quietMs || 0) && landed()) break
+      if (quietFrames >= 2 && performance.now() - lastPass >= Math.max(134, quietMs || 0) && landed()) break
       if (performance.now() - started > 8000) throw new Error('smoke: the page did not settle within eight seconds')
     }
     if (read !== undefined) readings.push(read())
