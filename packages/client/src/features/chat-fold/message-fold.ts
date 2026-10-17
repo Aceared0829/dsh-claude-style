@@ -222,11 +222,15 @@ export function createMessageFold(requestPass: () => void) {
     }
   }
 
-  /** Write every mark and toggle (the pass's write phase, D40). */
+  /**
+   * Write every mark and toggle (the pass's write phase, D40). The bubbles are
+   * the ones the read phase found: walking a row here reads computed styles
+   * after the other features' writes, a style recalculation on every pass.
+   */
   function sync() {
     for (const row of rows.all()) {
-      const bubble = bubbleOf(row)
-      if (bubble !== null) apply(bubble)
+      const bubble = bubbles.get(row)
+      if (bubble !== undefined && bubble.isConnected) apply(bubble)
     }
   }
 

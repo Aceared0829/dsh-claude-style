@@ -71,6 +71,20 @@ interface WindowState {
   offset: number
 }
 
+/** What one wait writes: the window's height, whether it stands at the cap, and how far the text has risen. */
+interface Step {
+  heightPx: string
+  capped: boolean
+  offset: number
+}
+
+/** One row read this frame: the window it takes (null: the one it holds comes off) and its first wait. */
+interface Plan {
+  row: Element
+  state: WindowState | null
+  step: Step | null
+}
+
 /** The rendered reasoning text of a row, or null while the host renders none. */
 function textOf(row: Element) {
   const text = row.querySelector<HTMLElement>(REASONING_TEXT_SELECTOR)
@@ -105,6 +119,8 @@ export function createReasoningStream() {
   const thinkRows = observeMatches<HTMLElement>(THINK_ROW_SELECTOR)
   let queued = false
   const pending = new Set<Element>()
+  /** What this frame's read phase found, for its write phase. */
+  const plans: Plan[] = []
   /** Set by the teardown: no row is queued any more, and the frame in flight is cancelled. */
   let stopped = false
   /** Cancels the frame the queued rows wait on. */
@@ -132,6 +148,11 @@ export function createReasoningStream() {
    * grown since the last step is met at its new height on this one.
    */
   function tick(row: Element, state: WindowState) {
+    writeStep(row, state, readStep(row, state))
+  }
+
+  /** What one wait reads off the page, before it writes anything; null once the window is not this module's any more. */
+  function readStep(row: Element, state: WindowState): Step | null {
     const live = row.isConnected && state.window.isConnected && state.text.isConnected
       && row.getAttribute(ROW_PHASE_ATTRIBUTE) === RUNNING_STATE
       && row.hasAttribute(EXPANDED_ATTRIBUTE)
@@ -139,66 +160,78 @@ export function createReasoningStream() {
     // The host can rebuild the body under the same row (a session switch, a fresh
     // stream): the window follows what the row holds now.
     const current = live ? textOf(row) : null
-    const viewport = current === null || current !== state.text ? null : state.window
-    if (viewport === null) {
+    if (current === null || current !== state.text) return null
+    const style = getComputedStyle(state.window)
+    const lineHeight = lineHeightOf(state.text)
+    const capPx = Math.round(tokenNumber(style.getPropertyValue('--dsh-claude-reason-window-cap'), FALLBACKS.cap))
+    const stepPx = Math.round(lineHeight * tokenNumber(style.getPropertyValue('--dsh-claude-reason-lines'), FALLBACKS.lines))
+    const textHeight = state.text.offsetHeight
+    const height = Math.min(textHeight, capPx)
+    const capped = height >= capPx
+    if (!capped) return { heightPx: `${Math.max(0, height)}px`, capped, offset: 0 }
+    const reachable = Math.max(0, textHeight - height)
+    const steps = Math.max(1, Math.floor((reachable - state.offset) / Math.max(1, stepPx)))
+    return { heightPx: `${Math.max(0, height)}px`, capped, offset: Math.min(state.offset + steps * stepPx, reachable) }
+  }
+
+  /** Write what one wait read and book the next one. */
+  function writeStep(row: Element, state: WindowState, step: Step | null) {
+    if (step === null) {
       // Not this module's window any more: the host's own body stands.
       if (windows.get(row) === state) clearWindow(row)
       return
     }
-    const style = getComputedStyle(viewport)
-    const lineHeight = lineHeightOf(state.text)
-    const capPx = Math.round(tokenNumber(style.getPropertyValue('--dsh-claude-reason-window-cap'), FALLBACKS.cap))
-    const stepPx = Math.round(lineHeight * tokenNumber(style.getPropertyValue('--dsh-claude-reason-lines'), FALLBACKS.lines))
-    const height = Math.min(state.text.offsetHeight, capPx)
-    const capped = height >= capPx
+    const viewport = state.window
     // Only what changes is written: the fold watches the row's attributes, and a
     // redundant write each wait would keep the frame scheduler awake.
-    const heightPx = `${Math.max(0, height)}px`
-    if (viewport.style.getPropertyValue(REASON_WINDOW_HEIGHT_PROPERTY) !== heightPx) viewport.style.setProperty(REASON_WINDOW_HEIGHT_PROPERTY, heightPx)
-    if (capped !== viewport.hasAttribute(REASON_CAPPED_ATTR)) viewport.toggleAttribute(REASON_CAPPED_ATTR, capped)
-    if (capped) {
-      const reachable = Math.max(0, state.text.offsetHeight - height)
-      const steps = Math.max(1, Math.floor((reachable - state.offset) / Math.max(1, stepPx)))
-      const next = Math.min(state.offset + steps * stepPx, reachable)
-      if (next !== state.offset) {
-        state.offset = next
-        state.text.style.transform = `translateY(${-next}px)`
-      }
-    } else if (state.offset !== 0) {
-      state.offset = 0
-      state.text.style.removeProperty('transform')
+    if (viewport.style.getPropertyValue(REASON_WINDOW_HEIGHT_PROPERTY) !== step.heightPx) viewport.style.setProperty(REASON_WINDOW_HEIGHT_PROPERTY, step.heightPx)
+    if (step.capped !== viewport.hasAttribute(REASON_CAPPED_ATTR)) viewport.toggleAttribute(REASON_CAPPED_ATTR, step.capped)
+    if (step.offset !== state.offset) {
+      state.offset = step.offset
+      if (step.offset === 0) state.text.style.removeProperty('transform')
+      else state.text.style.transform = `translateY(${-step.offset}px)`
     }
     state.timer = window.setTimeout(() => tick(row, state), HOLD_MS)
   }
 
-  /** Give one row the window its phase asks for, or take it off. */
-  function syncRow(row: Element) {
-    const running = row.getAttribute(ROW_PHASE_ATTRIBUTE) === RUNNING_STATE
-    const text = running && row.hasAttribute(EXPANDED_ATTRIBUTE) && !motionReduced() ? textOf(row) : null
-    const viewport = text === null ? null : windowOf(row, text)
-    const held = windows.get(row)
-    if (text === null || viewport === null) {
-      if (held !== undefined) clearWindow(row)
-      return
-    }
-    if (held !== undefined && held.text === text && held.window === viewport) return
-    if (held !== undefined) clearWindow(row)
-    const state: WindowState = { window: viewport, text, timer: 0, offset: 0 }
-    windows.set(row, state)
-    // The mark is what the stylesheet clips and what the fold's own readers
-    // look for; the capped mark joins it from the first wait that reaches the cap.
-    viewport.setAttribute(REASON_WINDOW_ATTR, '')
-    text.setAttribute(REASON_TEXT_ATTR, '')
-    tick(row, state)
-  }
-
-  function flush() {
+  /**
+   * Read what each queued row's phase asks for (the frame's read phase, D40):
+   * the text's box and its ancestors' display, and the first wait's lengths for
+   * a row taking a new window. Read after the other features' writes, these
+   * would force a layout of their own.
+   */
+  function readRows() {
     cancelFrame = null
     queued = false
     const rows = [...pending]
     pending.clear()
     for (const row of rows) {
-      if (row.isConnected) syncRow(row)
+      if (!row.isConnected) continue
+      const running = row.getAttribute(ROW_PHASE_ATTRIBUTE) === RUNNING_STATE
+      const text = running && row.hasAttribute(EXPANDED_ATTRIBUTE) && !motionReduced() ? textOf(row) : null
+      const viewport = text === null ? null : windowOf(row, text)
+      const held = windows.get(row)
+      if (text === null || viewport === null) {
+        if (held !== undefined) plans.push({ row, state: null, step: null })
+        continue
+      }
+      if (held !== undefined && held.text === text && held.window === viewport) continue
+      const state: WindowState = { window: viewport, text, timer: 0, offset: 0 }
+      plans.push({ row, state, step: readStep(row, state) })
+    }
+  }
+
+  /** Give each row read this frame the window its phase asks for, or take it off. */
+  function writeRows() {
+    for (const { row, state, step } of plans.splice(0)) {
+      if (windows.has(row)) clearWindow(row)
+      if (state === null) continue
+      windows.set(row, state)
+      // The mark is what the stylesheet clips and what the fold's own readers
+      // look for; the capped mark joins it from the first wait that reaches the cap.
+      state.window.setAttribute(REASON_WINDOW_ATTR, '')
+      state.text.setAttribute(REASON_TEXT_ATTR, '')
+      writeStep(row, state, step)
     }
     // A row the host replaced takes no wait with it.
     for (const row of [...windows.keys()]) {
@@ -212,7 +245,7 @@ export function createReasoningStream() {
     pending.add(row)
     if (queued) return
     queued = true
-    cancelFrame = requestFrame({ write: flush })
+    cancelFrame = requestFrame({ read: readRows, write: writeRows })
   }
 
   return {
@@ -230,6 +263,7 @@ export function createReasoningStream() {
       queued = false
       for (const row of [...windows.keys()]) clearWindow(row)
       pending.clear()
+      plans.length = 0
       thinkRows.release()
     },
   }

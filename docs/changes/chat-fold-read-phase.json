@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 45,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**长对话流式输出时，消息折叠与推理窗口不再拖慢页面**：折叠用户消息所需的气泡查找、推理窗口所需的高度与样式读取，都改在每一帧开头完成，写入阶段不再让页面额外重算样式与布局（本机桌面端实测：消息折叠每次更新从约 6.8 毫秒降到不足 0.1 毫秒，推理窗口每帧从约 5 到 14 毫秒降到约 0.1 毫秒）。",
+  "en": "**Message folding and the reasoning window no longer slow the page while a long conversation streams**: finding the bubble a user message folds on, and reading the reasoning window's heights and styles, happen at the start of each frame, so the writes that follow no longer make the page recompute its styles and layout a second time (measured locally on the desktop app: each message-fold update went from about 6.8 ms to under 0.1 ms, the reasoning window's frame work from about 5–14 ms to about 0.1 ms)."
+}
