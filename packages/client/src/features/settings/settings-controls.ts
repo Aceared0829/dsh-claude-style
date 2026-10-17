@@ -5,6 +5,7 @@ import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
 import { windowsDesktop } from '@dsh-claude-style/engine/desktop-band'
 import { prefYielded, settingsRowsOf } from '../../core/feature'
 import { featureCopy } from '../../core/i18n'
+import { motionReduced } from '../../core/prefs'
 import { copy, sharedLine } from './copy'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { Feature, FeatureSettingsRow } from '../../core/feature'
@@ -162,7 +163,8 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
           write,
           off,
         )
-    const note = waits ?? (offWindows ? sharedLine('windowsOnlyNote') : null)
+    const still = row.stillWhenReduced === true && motionReduced()
+    const note = waits ?? (offWindows ? sharedLine('windowsOnlyNote') : still ? sharedLine('motionStillNote') : null)
     // A yielded row says who manages it even when it carries no description of
     // its own: the switch rows over the preview cards have none.
     const description = yielded
@@ -171,8 +173,9 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     const node = row.parent === undefined
       ? controls.row(pref, title, description, control, {
         disabled: off,
-        // A row that is its control alone stacks it across the row.
-        block: own !== undefined && title === null && description === null,
+        // A feature's own control is a grid of preview cards: it takes the
+        // line under the row's text (or the whole row when it has none).
+        block: own !== undefined,
       })
       : controls.subRow(pref, title ?? '', description, control, !off)
     return { rank: row.rank, node }
@@ -291,7 +294,7 @@ export function createSettingsControls() {
     return React.createElement(
       'div',
       { className: 'dsh-claude-settings-row-text' },
-      React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
+      title === '' ? null : React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
       description === null ? null : React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
     )
   }
@@ -305,9 +308,10 @@ export function createSettingsControls() {
    * as such; its control is built disabled by the caller and its description
    * says why.
    *
-   * A row with neither title nor description is the control alone, across the
-   * row: the option under the switch that turns it on (the Motion tab's
-   * preview cards), whose own controls carry their accessible names. `sub`
+   * A row with no title is the option under the switch that turns it on (the
+   * Motion tab's preview cards), whose own controls carry their accessible
+   * names: with no description either it is the control alone, across the row,
+   * and with a note it carries that line over the cards. `sub`
    * marks a titled row that belongs to the row above it the same way, so the
    * group keeps no hairline between its members.
    */
@@ -315,11 +319,11 @@ export function createSettingsControls() {
     const classes = ['dsh-claude-settings-row']
     if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
-    // A row with neither title nor description is the option that belongs to
+    // A row with no title is the option that belongs to
     // the switch above it, and `sub` is the same belonging for a titled row
     // (the precise status line under that switch): the stylesheet keeps the
     // group's members together, with no hairline between them (settings.css).
-    if (options?.sub === true || (title === null && description === null)) classes.push('dsh-claude-settings-row-sub')
+    if (options?.sub === true || title === null) classes.push('dsh-claude-settings-row-sub')
     // The switch has no text of its own; its name is this row's title.
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
       ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title ?? '' })

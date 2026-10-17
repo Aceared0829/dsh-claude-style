@@ -15,6 +15,7 @@ export default {
     pref: 'chatReveal',
     title: 'chatRevealTitle',
     control: 'reveal-preview',
+    stillWhenReduced: true,
   }],
   cases: ['chat-reveal'],
   description: {

@@ -13,6 +13,7 @@ export default {
     pref: 'caretMotion',
     title: 'caretTitle',
     control: 'caret-preview',
+    stillWhenReduced: true,
   }],
   cases: ['caret'],
   description: {

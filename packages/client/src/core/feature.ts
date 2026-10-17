@@ -148,6 +148,12 @@ export interface FeatureSettingsRow {
    */
   windowsOnly?: boolean
   /**
+   * The row's cards show a motion: while the animation choice resolves to
+   * reduced they stand as stills that still tell the choices apart, the row
+   * says so, and the choice stays editable.
+   */
+  stillWhenReduced?: boolean
+  /**
    * The feature's own module that draws this row's control, beside its main
    * module: a preview card, a picker or an editor the generic switch cannot
    * draw. The build collects these modules for the settings page (D72).

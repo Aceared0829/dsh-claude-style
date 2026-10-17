@@ -430,3 +430,77 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-stack {
   transition: none;
 }
+
+/* ---------- The cards while the animation choice is reduced (D40) ---------- */
+/* The rows whose cards show a motion (`stillWhenReduced`, core/feature.ts) stand
+   as stills that keep the two choices apart: the choice stays editable and the
+   row says it takes no effect. The cards are dimmed with the row's note, and each
+   still is a frame of the effect the card stands for. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] :is(.dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card) {
+  opacity: 0.72;
+}
+
+/* The sweep's band parked across the middle of the words; the wash already
+   holds its own first frame. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-card .dsh-claude-sweep-band {
+  display: block;
+  transform: none;
+  animation: none;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-motion-card .dsh-claude-sweep-glyphs {
+  transform: none;
+  animation: none;
+}
+
+/* The caret stands at the end of the line; the glide's card trails the caret
+   with the distance it has just covered, the other's caret has none. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-caret-sample-bar {
+  left: auto;
+  right: 0;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-caret-sample-bar.dsh-claude-caret-typing::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: 18px;
+  background: linear-gradient(to left, currentColor, transparent);
+  opacity: 0.35;
+}
+
+/* The fade's last characters on the faintest steps of their arrival; the other
+   card's line is whole. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-card[data-fade] .dsh-claude-reveal-piece:nth-last-child(1) {
+  opacity: 0.2;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-card[data-fade] .dsh-claude-reveal-piece:nth-last-child(2) {
+  opacity: 0.4;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-card[data-fade] .dsh-claude-reveal-piece:nth-last-child(3) {
+  opacity: 0.6;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-reveal-card[data-fade] .dsh-claude-reveal-piece:nth-last-child(4) {
+  opacity: 0.8;
+}
+
+/* The arriving message caught mid-way: grown part of the size about its own
+   corner, or still below its place on the way up. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-card[data-enter="grow"] .dsh-claude-enter-bubble:not([data-standing]) {
+  transform: scale(0.78);
+}
+
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-enter-card[data-enter="flight"] .dsh-claude-enter-bubble:not([data-standing]) {
+  transform: translateY(10px) scale(0.92);
+}
+
+/* The precise card keeps both wordings in the box so the swap can play between
+   them; with no swap to play only the arriving one stands. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-dsh-claude-precise] .dsh-claude-motion-word:not(:last-child) {
+  visibility: hidden;
+}

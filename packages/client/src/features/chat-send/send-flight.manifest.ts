@@ -20,6 +20,7 @@ export default {
     rank: 51,
     pref: 'messageEnter',
     control: 'send-preview',
+    stillWhenReduced: true,
   }],
   cases: ['chat-send'],
   description: {

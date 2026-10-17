@@ -29,6 +29,7 @@ export default {
     rank: 17,
     pref: 'statusMotion',
     control: 'status-paint',
+    stillWhenReduced: true,
   }],
   cases: ['chat-wait'],
   description: {

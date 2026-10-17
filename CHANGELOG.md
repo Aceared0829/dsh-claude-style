@@ -11,6 +11,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **深色弹层的边只剩边框本身**：皮肤自建的弹层卡片与它重绘的账户菜单、首页选择器不再在边框外侧铺一道 3px 的黑色沉降，卡片的外缘就是那道高光边线，两层投影照旧。
 - **工作台首页的问候语与用量面板之间只剩一个列间距**：标题块不再为下方预留 30px，面板随之整体上移 30px，问候语与面板之间只留首屏列自己的 10px 间距；经典版面上问候语与输入卡片之间的那份间距保持原样。
 - **主题风格的两张卡片左图右文**：Claude 卡片是星芒标志加 Claude 文字标志，DeepSeek 卡片是它的标志与文字合成的一件图形，均沿用插件已有的图形资源，不再另写文字。
+- **「动画」设为「减弱」时，动效页的预览卡仍能分清两档**：状态行画法、光标动画、新文字淡入与消息气泡动画的卡片各停在一帧——扫光的高光带停在字中、光标带滑行拖尾、末几个字停在渐淡的各档、气泡停在长大或升起的途中；卡片略变暗，行下方写明这一项此时不生效，选择仍可修改。
 
 ### 问题修复
 
@@ -22,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **A dark popover's edge is its border again**: the skin's own popover cards and the account menu and hero-row pickers it repaints no longer lay a 3px black falloff outside the border, so the card's outer edge is the highlight line itself and the two drops stay as they were.
 - **The studio home's greeting and usage panel sit one column gap apart**: the headline block no longer reserves 30px below itself, so the panel moves up by 30px and only the hero column's own 10px gap stands between them; the classic layout keeps the spacing under its greeting.
 - **The theme style cards read mark left, word right**: the Claude card carries the starburst beside the Claude wordmark and the DeepSeek card its mark and word as one lockup, both from the plugin's own artwork instead of typed text.
+- **While Animation is Reduced the Motion tab's cards still tell their two choices apart**: the status paint, caret, text fade and message entrance cards each hold one frame — the sweep's band parked mid-word, the caret with its glide trail, the last characters on their fading steps, the bubble part-grown or part-risen; the cards dim and the row says the choice takes no effect now, while it stays editable.
 
 ### Bug Fixes
 

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 22,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**「动画」设为「减弱」时，动效页的预览卡仍能分清两档**：状态行画法、光标动画、新文字淡入与消息气泡动画的卡片各停在一帧——扫光的高光带停在字中、光标带滑行拖尾、末几个字停在渐淡的各档、气泡停在长大或升起的途中；卡片略变暗，行下方写明这一项此时不生效，选择仍可修改。",
+  "en": "**While Animation is Reduced the Motion tab's cards still tell their two choices apart**: the status paint, caret, text fade and message entrance cards each hold one frame — the sweep's band parked mid-word, the caret with its glide trail, the last characters on their fading steps, the bubble part-grown or part-risen; the cards dim and the row says the choice takes no effect now, while it stays editable."
+}
