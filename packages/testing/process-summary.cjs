@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * process-summary.cjs — the enhanced tier's waiting line and counted process
- * headers on the real host (D49, D66).
+ * headers on the real host (D74, D66).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
@@ -17,9 +17,13 @@
 /**
  * The shipped copy, so the assertions read the words the page is in rather than
  * one language: the lane runs under whatever locale the machine has, and the
- * host's own word for the fallback is read off the page itself.
+ * host's own word for the fallback is read off the page itself. The waiting
+ * line's words belong to chat-wait and the counted headers' to chat-fold (D72).
  */
-const COPY = require('../client/data/model-descriptions.json').ui
+const COPY = {
+  ...require('../client/src/features/chat-wait/chat-wait.copy.json'),
+  ...require('../client/src/features/chat-fold/chat-fold.copy.json'),
+}
 
 /** One template with its count filled in. */
 const fill = (template, count) => template.replace('{count}', String(count))
