@@ -1,5 +1,5 @@
 /* ---------- The settings page's pickers: one card per choice ---------- */
-/* The rows whose control is the effect itself (D49): a grid of cards spanning
+/* The rows whose control is the effect itself (D74): a grid of cards spanning
    the row, each card carrying a sample that wears the choice it stands for, so
    the control needs no label and the row needs no description. They stand
    apart from settings.css because they are a responsibility of their own — a

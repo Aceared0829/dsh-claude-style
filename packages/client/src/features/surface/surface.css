@@ -1,5 +1,5 @@
 /* ---------- Surface switch: Chat / Code ---------- */
-/* A surface sheet (D49): scoped to the switch's own body attribute, it stays
+/* A surface sheet (D74): scoped to the switch's own body attribute, it stays
    while ds-bot's Bot surface has the page and the theme's sheet is gone. It
    reads the host's tokens alone, so whoever paints them — the theme on the
    Code side, ds-bot on the Chat side — paints the switch, and its plate and

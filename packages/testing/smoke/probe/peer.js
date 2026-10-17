@@ -127,19 +127,29 @@
       }
       peerChat.remove()
     })
-    // The other owner of the page, a skin, from the first frame (D49): the theme
-    // stands its whole visual down and keeps the settings section, then takes
-    // the page back when the skin leaves.
+    // The two seats the settings page registers: the settings dialog's section
+    // and the plugin page's configuration entry (settings.ts). The stand-in's
+    // registry splices an entry when its feature comes down, so this answers
+    // whether the page stands on the page right now.
+    var settingsSeats = function () {
+      return (window.__slots || []).filter(function (entry) {
+        return entry.key === 'settings.section' || entry.key === 'plugins.bundle.config'
+      }).length
+    }
+    // The other owner of the page, a skin, from the first frame (D74): the theme
+    // stands its whole visual down, settings page included, then takes the page
+    // back when the skin leaves.
     await probe.onlyFor(['skin-center-handoff'], async function () {
-      // The settings section registers through ctx.inject, so its seat appears
-      // on a later turn than apply() returns.
+      // The settings page registers through ctx.inject, so its seats appear on
+      // a later turn than apply() returns. The live seat list is what says the
+      // page is on the page: the component map keeps what was registered.
       await sleep(400)
       var owner = {
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
         handoff: document.body.hasAttribute('data-dsh-claude-style-handoff'),
         bodyAttrs: attrs(document.body),
-        settingsRegistered: typeof (window.__slotComponents || {})['claude-style'] !== 'undefined',
+        settingsSeats: settingsSeats(),
         uncaught: window.__uncaught.length,
       }
       // The owner leaves: the theme takes the page back in one observer turn.
@@ -149,6 +159,7 @@
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
         handoff: document.body.hasAttribute('data-dsh-claude-style-handoff'),
+        settingsSeats: settingsSeats(),
       }
       // And it returns: the theme gives the page back without a reload.
       document.documentElement.setAttribute('data-dsh-skin', 'blue-fantasy')
@@ -156,10 +167,11 @@
       owner.afterReturn = {
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
+        settingsSeats: settingsSeats(),
       }
       r.owner = owner
     })
-    // The other owner arriving after the theme took the page (D49): the watch
+    // The other owner arriving after the theme took the page (D74): the watch
     // follows a flip whichever way the page booted.
     await probe.onlyFor(['skin-center-arrival'], async function () {
       await sleep(400)
@@ -167,6 +179,7 @@
         before: {
           sheet: document.getElementById('dsh-claude-style-style') !== null,
           live: document.body.hasAttribute('data-dsh-claude-style'),
+          settingsSeats: settingsSeats(),
         },
       }
       document.documentElement.setAttribute('data-dsh-skin', 'blue-fantasy')
@@ -175,13 +188,14 @@
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
         handoff: document.body.hasAttribute('data-dsh-claude-style-handoff'),
-        settingsRegistered: typeof (window.__slotComponents || {})['claude-style'] !== 'undefined',
+        settingsSeats: settingsSeats(),
       }
       document.documentElement.removeAttribute('data-dsh-skin')
       await sleep(300)
       arrival.back = {
         sheet: document.getElementById('dsh-claude-style-style') !== null,
         live: document.body.hasAttribute('data-dsh-claude-style'),
+        settingsSeats: settingsSeats(),
       }
       r.arrival = arrival
     })

@@ -31,9 +31,9 @@ import { motionMs } from '../../shared/motion'
  * the observation bus (D40): the scheduler's pass only hears
  * aria-label/aria-selected (D9), and this flag must not feed it.
  *
- * It lives with the settings page because that page is the one feature that
- * stays on a yielded page (D49); the sweep itself stands down there, since
- * another skin's transitions are not this one's to cancel.
+ * It lives with the settings page, and both exist exactly while this theme
+ * paints the page (D74). A skin arriving in the same task as a flip still
+ * reaches the sweep, which is why it asks for the stamp first.
  */
 export const THEME_FLIP_ATTR = 'data-dsh-theme-transitioning'
 export const THEME_FLIP_MS = motionMs('--dsh-claude-duration-fade')
@@ -84,9 +84,8 @@ export function installThemeFlip() {
   }
 
   function onThemeFlip() {
-    // A yielded page belongs to another skin: its transitions are not this
-    // one's to cancel, and the suppression rule cannot match without the
-    // skin's own stamp (D49).
+    // A skin arriving in the same task as this flip has already taken the
+    // page: its transitions are not this one's to cancel (D74).
     if (!body.hasAttribute('data-dsh-claude-style')) return
     setFlag(true)
     // Force the flip's style recalc right now — inside this microtask,

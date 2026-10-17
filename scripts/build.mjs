@@ -393,7 +393,7 @@ async function main() {
   // carries the ones its own modules read.
   const generated = generatedModule({
     STYLESHEET: css.main,
-    // The surface sheets apart: they stay mounted while ds-bot's surface has the page (D49).
+    // The surface sheets apart: they stay mounted while ds-bot's surface has the page (D74).
     SURFACE_STYLESHEET: css.surface,
     // Vendor lockups: one markup table plus the word each lockup stands in for.
     COMBINE_SVGS: Object.fromEntries(Object.entries(combines).map(([id, item]) => [id, item.svg])),

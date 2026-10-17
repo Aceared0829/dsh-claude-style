@@ -346,7 +346,7 @@ function page(name, tier, cases) {
     : ''
   // A skin owns the page from the first frame: the skin center injects this
   // attribute into the served document, before any bundle is evaluated, which
-  // is what lets the theme answer before it paints (D49).
+  // is what lets the theme answer before it paints (D74).
   var skinOwner = name === 'skin-center-handoff'
     ? '<script>document.documentElement.setAttribute("data-dsh-skin", "blue-fantasy")</script>'
     : ''

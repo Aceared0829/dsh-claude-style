@@ -766,8 +766,26 @@
       "the theme claims no body attribute while yielded": [
         0
       ],
+      "the settings page leaves with the theme": [
+        0
+      ],
       "yielding leaves no uncaught error behind": [
         0
+      ],
+      "the theme takes the page back when the skin leaves": [
+        2
+      ],
+      "and gives it back when a skin returns": [
+        0
+      ],
+      "the theme owns a page that booted with no skin on it": [
+        2
+      ],
+      "the settings page leaves through the late yield": [
+        0
+      ],
+      "the theme takes the page back when that skin leaves": [
+        2
       ]
     },
     "packages/testing/smoke/cases/settings.cjs": {

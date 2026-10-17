@@ -13,7 +13,7 @@ import { copy } from './copy'
 
 /**
  * The Chat / Code switch at the top of the sidebar, the way Claude's desktop
- * app moves between its two interfaces (D49): Chat is ds-bot's Bot surface,
+ * app moves between its two interfaces (D74): Chat is ds-bot's Bot surface,
  * Code is the shell's own interface under this theme.
  *
  * The mode is ds-bot's own: the switch presses ds-bot's controls — its

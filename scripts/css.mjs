@@ -7,7 +7,7 @@
  *
  *   scope        every selector holds `body[data-dsh-claude-style]` (outside :not());
  *                a sheet whose manifest entry says `scope: 'surface'` holds
- *                `body[data-dsh-claude-surface]` instead and ships apart (D49)
+ *                `body[data-dsh-claude-surface]` instead and ships apart (D74)
  *   :has()       only in its selector's last compound, at every nesting level (D9)
  *   token gates  a rule writing a host token carries the Claude palette or
  *                typeface gate, and every private token the Claude choice
@@ -47,7 +47,7 @@ const SCOPE_ATTRIBUTE = 'data-dsh-claude-style'
 const SCOPE = `${SCOPE_TAG}[${SCOPE_ATTRIBUTE}]`
 /**
  * The scope of the sheets that stay on the page while ds-bot's surface has it
- * (D49): the theme's own scope is gone then, and these rules are the surface
+ * (D74): the theme's own scope is gone then, and these rules are the surface
  * switch's whole look.
  */
 const SURFACE_SCOPE_ATTRIBUTE = 'data-dsh-claude-surface'
@@ -605,7 +605,7 @@ function checkHolds(relations) {
  * @param options.gates - `{ composer, palette: { attribute, claude, host }, typeface: { attribute, claude, host }, brand: { attribute, deepseek } }`.
  * @param options.images - brand mark name → its address, for the token sheet.
  * @param options.featureConstants - what the generated feature sheets are written from (scripts/feature-sheets.mjs).
- * @returns `{ main, surface }`: the theme's sheet and the surface sheets (D49),
+ * @returns `{ main, surface }`: the theme's sheet and the surface sheets (D74),
  *     each minified once every check has read every sheet.
  */
 export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, images, featureConstants }) {

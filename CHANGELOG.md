@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- **另一款皮肤作画时本主题整页让出，设置页也随主题撤下**：页面上的侧栏、对话、输入区与设置页一起离场，只留那款皮肤与宿主自己的界面；在皮肤中心里本插件那一行选回本主题，这些内容与读者存下的偏好一起回来。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- **With another skin painting the page this skin hands over the whole page, its settings page included**: the sidebar, the conversation, the composer and the settings page all leave together, and the skin and the host paint the page alone; picking this plugin's row in the skin center brings them back together with the preferences the reader saved.
+
 ## [0.16.0] - 2026-10-16
 
 [中文](#cn-0.16.0) | [English](#en-0.16.0)

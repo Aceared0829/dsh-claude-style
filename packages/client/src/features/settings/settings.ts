@@ -373,8 +373,8 @@ export function settingsSectionIndex() {
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   loadModelCopy()
-  // The one feature that stays on a yielded page also carries the theme
-  // flip's transition suppression (D49); it stands down there itself.
+  // The flip's transition suppression rides this page: both exist exactly
+  // while this theme paints the page (D74).
   const stopThemeFlip = installThemeFlip()
   // The settings services are up by now even when they were not at apply
   // time, so retry the official-form binding before choosing a seat. It is

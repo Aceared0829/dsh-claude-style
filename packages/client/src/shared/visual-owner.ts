@@ -3,7 +3,7 @@ import { SKIN_STAMP_ATTR } from '../constants'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 
 /**
- * Who has this page instead of the theme (D49): a skin, or ds-bot's Bot
+ * Who has this page instead of the theme (D74): a skin, or ds-bot's Bot
  * surface. Null leaves the page to the theme.
  *
  * The skin center stamps `html[data-dsh-skin]` while a skin is painting, and

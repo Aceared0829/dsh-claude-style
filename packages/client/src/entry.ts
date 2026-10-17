@@ -63,14 +63,15 @@ function isWanted(feature: Feature) {
 }
 
 /**
- * The features that stay while another owner has the page (D49): the
- * settings section always, the reader's way to this theme's own page; beside
- * ds-bot's Bot surface also the surface switch, the reader's way back to this
- * theme's page.
+ * The features that stay while another owner has the page (D74). A skin takes
+ * the page whole: the way back is the skin center's own row for this theme.
+ * Beside ds-bot's Bot surface the Chat / Code switch stays, because it is the
+ * reader's way back to the theme's own interface and carries the one sheet
+ * that reads the host's tokens alone.
  */
 const KEPT_FOR: Record<PageOwner, string[]> = {
-  'skin': ['settings'],
-  'ds-bot': ['settings', 'surface'],
+  'skin': [],
+  'ds-bot': ['surface'],
 }
 
 export function apply(ctx: HostContext) {
@@ -84,14 +85,14 @@ export function apply(ctx: HostContext) {
   let offSwitches: (() => void) | null = null
   /** Keeps the other chat plugin's presence watch alive; set once the features install. */
   let offPeerWatch: (() => void) | null = null
-  /** Watches the page owners' marks; D49. */
+  /** Watches the page owners' marks; D74. */
   let offOwnerWatch: (() => void) | null = null
   /** Unmounts this generation's stylesheet; set once the sheet is mounted. */
   let stopStylesheet: (() => void) | null = null
   /** Stops the part-marking pass; set once the page is taken (D3). */
   let stopParts: (() => void) | null = null
   let disposed = false
-  /** Who has the page while this theme stands down; null while the theme has it (D49). */
+  /** Who has the page while this theme stands down; null while the theme has it (D74). */
   let owner = pageOwner()
 
   /**
@@ -99,7 +100,7 @@ export function apply(ctx: HostContext) {
    * feature's teardown and take this package's body attributes and stylesheet
    * away. A yield keeps the owner's KEPT_FOR features and the preference
    * binding: another plugin taking the screen uninstalls nothing of the
-   * reader's (D49).
+   * reader's (D74).
    */
   function release(keep: string[] = []) {
     // First, so no preference flip installs a feature mid-release.
@@ -236,7 +237,8 @@ export function apply(ctx: HostContext) {
 
   /**
    * Whether a feature whose chunk just arrived still belongs on the page: the
-   * page may have been given to another owner (only its KEPT_FOR features * stay, D49), the feature switched off, or the generation ended while the
+   * page may have been given to another owner (only its KEPT_FOR features
+   * stay, D74), the feature switched off, or the generation ended while the
    * chunk was on its way.
    */
   function belongs(feature: Feature) {
@@ -301,7 +303,7 @@ export function apply(ctx: HostContext) {
   }
 
   /**
-   * Stand down for another owner (D49): install the features it leaves on the
+   * Stand down for another owner (D74): install the features it leaves on the
    * page that are not installed yet — a page booting yielded, or going from
    * one owner to the other — and release the rest. A kept feature that is
    * deferred installs when its chunk arrives (D72).
@@ -318,7 +320,7 @@ export function apply(ctx: HostContext) {
   /**
    * Take the page: stamp, mount the sheet, install the features, schedule.
    * Idempotent over what is already installed, so taking the page back after
-   * a yield leaves the features it kept alone (D49); a feature retired after
+   * a yield leaves the features it kept alone (D74); a feature retired after
    * failing stays retired (D12).
    *
    * FEATURES is the registry the build generates from the manifests (D72),
@@ -333,7 +335,7 @@ export function apply(ctx: HostContext) {
     // the attribute alone, and a live page reads which lib/client.js it runs.
     body.setAttribute('data-dsh-claude-style', BUILD_ID)
     // The handoff marker rides the live stamp: its presence is what lets the
-    // skin center offer this theme as a selectable look (D49).
+    // skin center offer this theme as a selectable look (D74).
     body.setAttribute(HANDOFF_ATTR, BUILD_ID)
     adoptPrefs(prefs)
     // The sheet carries this package's own tags and is unmounted by
@@ -398,7 +400,7 @@ export function apply(ctx: HostContext) {
   // subscription itself carries no logic.
   offPeerWatch = subscribePeerPresence(() => {})
   // An owner can arrive or leave whichever way the page booted; the
-  // verdict is read again on every change rather than remembered (D49).
+  // verdict is read again on every change rather than remembered (D74).
   offOwnerWatch = subscribePageOwner(next => {
     if (next === owner) return
     owner = next
@@ -406,7 +408,7 @@ export function apply(ctx: HostContext) {
     else yieldTo(next)
   })
 
-  // Another owner already has this page (D49): adoptPrefs mirrors nothing
+  // Another owner already has this page (D74): adoptPrefs mirrors nothing
   // onto it, and the release leaves the owner's KEPT_FOR features alone.
   if (owner !== null) yieldTo(owner)
   else own()

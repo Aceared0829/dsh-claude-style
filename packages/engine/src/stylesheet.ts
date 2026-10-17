@@ -50,7 +50,7 @@ export function parkForeignSheets(untaggedSelector: string, styleId: string, for
 }
 
 /**
- * Mount one of a package's stylesheets, once per generation (D49).
+ * Mount one of a package's stylesheets, once per generation (D74).
  *
  * The sheet wears the package's own `data-plugin` and its own `data-plugin-css`
  * from the moment it exists — the claim sweep reads untagged tags alone — so no

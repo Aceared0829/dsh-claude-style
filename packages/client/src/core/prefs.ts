@@ -249,7 +249,7 @@ const MIRROR_ATTRS: readonly string[] = [...MIRRORS.map(mirror => mirror.attr), 
 
 /**
  * Adopt a preference set: mirror it onto the document, then notify. A page a
- * skin or ds-bot owns carries none of this theme's attributes (D49): the set is
+ * skin or ds-bot owns carries none of this theme's attributes (D74): the set is
  * kept, and taking the page back mirrors it (entry.ts). The form answers
  * whenever it answers, and the settings section installs whenever its chunk
  * arrives (D72), so a yielded page hears adoptions too.
@@ -301,7 +301,7 @@ export function refreshMotionAttribute() {
 /**
  * Re-run everything that asked to hear about the environment without the
  * stored preferences having changed: the other chat plugin appearing or
- * leaving (packages/client/src/shared/peer-plugin.ts, D49).
+ * leaving (packages/client/src/shared/peer-plugin.ts, D74).
  */
 export function notifyEnvironmentChange() {
   notifyAll(prefsListeners, prefs)

@@ -309,7 +309,7 @@ export const PLATFORM_ATTRIBUTE = 'data-platform'
 export const FULLSCREEN_ATTRIBUTE = 'data-fullscreen'
 /** The host's declared caption-strip height, as a custom property on the document element. */
 export const FRAME_TOP_CLEARANCE_PROPERTY = '--dsh-frame-top-clearance'
-/** The skin center's stamp on the document element: another skin owns the page (D49). */
+/** The skin center's stamp on the document element: another skin owns the page (D74). */
 export const SKIN_CENTER_ATTRIBUTE = 'data-dsh-skin'
 /** The host's own light/dark flip, written on `<body>`. */
 export const DARK_THEME_ATTRIBUTE = 'data-ds-dark-theme'

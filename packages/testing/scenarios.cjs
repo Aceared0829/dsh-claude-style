@@ -294,7 +294,7 @@ const SCENARIOS = {
   },
   /**
    * The reader's own scrolling during a live turn: the status line's pin stands
-   * only while the skin's follow moves the position (D40, D49).
+   * only while the skin's follow moves the position (D40, D74).
    */
   readerScroll: readerScrollScenario({ check }),
   /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.cjs, D40). */
@@ -457,13 +457,13 @@ const SCENARIOS = {
   ...statsScenarios({ check }),
   /** The collapsed rail as one icon column, its chip centred on it (sidebar-rail.cjs). */
   sidebarRail: sidebarRailScenario({ check }),
-  /** The waiting line and the counted process headers (process-summary.cjs, D49). */
+  /** The waiting line and the counted process headers (process-summary.cjs, D74). */
   processSummary: processSummaryScenario({ check }),
   /** The file-change rows of one file read as one row (file-merge.cjs). */
   fileMerge: fileMergeScenario({ check }),
-  /** The reasoning's streamed window while the model thinks (reasoning-stream.cjs, D49). */
+  /** The reasoning's streamed window while the model thinks (reasoning-stream.cjs, D74). */
   reasoningStream: reasoningStreamScenario({ check }),
-  /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D49). */
+  /** The waiting line's own words: the model's clause and the file a call works on (wait-line.cjs, D74). */
   waitLine: waitLineScenario({ check }),
   /** The waiting line's second paint, chosen in the settings (wash-line.cjs, D40). */
   washLine: washLineScenario({ check }),
@@ -475,7 +475,7 @@ const SCENARIOS = {
   remoteSettings: remoteSettingsScenario({ check }),
   /** The reader's own brand images through the host half's routes and on the real shell (packages/testing/custom-brand.cjs, D30). */
   customBrand: customBrandScenario({ check }),
-  /** The Chat / Code switch beside ds-bot's published browser half (packages/testing/ds-bot.cjs, D49). */
+  /** The Chat / Code switch beside ds-bot's published browser half (packages/testing/ds-bot.cjs, D74). */
   dsBot: dsBotScenario({ check }),
   /** Both palettes captured to the run's out directory and swept for personal data. */
   shots: {

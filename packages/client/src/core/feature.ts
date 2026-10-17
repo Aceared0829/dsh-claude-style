@@ -49,7 +49,7 @@ export interface FeatureFields {
   reads?: HandleName[]
   /** Install order, and with it the scheduler's pass order: ascending, unique. */
   order: number
-  /** The plugin implementing the same behaviour: while it is on the page the feature stays uninstalled (D49). */
+  /** The plugin implementing the same behaviour: while it is on the page the feature stays uninstalled (D74). */
   yieldsTo?: PeerPlugin
   /**
    * `'deferred'`: the feature's own modules leave the bundle for a chunk of
@@ -92,7 +92,7 @@ export interface FeatureStylesheetFile {
   /**
    * `'surface'`: the sheet is scoped to `body[data-dsh-claude-surface]` and
    * ships apart from the theme's sheet, so it stays while ds-bot's surface has
-   * the page (D49).
+   * the page (D74).
    */
   scope?: 'surface'
 }

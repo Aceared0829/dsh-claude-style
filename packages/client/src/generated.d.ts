@@ -5,7 +5,7 @@
 declare module 'virtual:dsh-claude-style/generated' {
   /** The skin's stylesheet: the generated token sheet and the src/ stylesheets in order, the composer gate stamped (D9). */
   export const STYLESHEET: string
-  /** The surface sheets (`scope: 'surface'`), scoped to `body[data-dsh-claude-surface]` and mounted by the surface feature (D49). */
+  /** The surface sheets (`scope: 'surface'`), scoped to `body[data-dsh-claude-surface]` and mounted by the surface feature (D74). */
   export const SURFACE_STYLESHEET: string
   /** Vendor lockup markup by brand id (packages/assets/src/icons/combine/). */
   export const COMBINE_SVGS: Record<string, string>

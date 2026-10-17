@@ -23,7 +23,7 @@ export function parkForeignSheets() {
 
 /**
  * Mount one of the skin's stylesheets, once per generation: the theme's own by
- * default, or the surface sheets under their own id (D49).
+ * default, or the surface sheets under their own id (D74).
  *
  * @param id - the `<style>` element's id.
  * @param text - the sheet.
