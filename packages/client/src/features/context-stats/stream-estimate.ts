@@ -21,8 +21,8 @@ import { findConversationScroller } from '@dsh-claude-style/engine/host'
  */
 
 /** A wide character's share of a token, and a narrow one's. */
-const WIDE_TOKENS = 1.2
-const NARROW_TOKENS = 0.5
+const WIDE_TOKENS = 1
+const NARROW_TOKENS = 0.4
 /** How old the last reading may be before the streamed text is read again, in milliseconds. */
 const SCAN_MS = 100
 
