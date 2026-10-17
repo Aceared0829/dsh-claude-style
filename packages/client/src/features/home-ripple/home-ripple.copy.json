@@ -1,0 +1,4 @@
+{
+  "homeRippleTitle": { "zh": "水波纹字符背景", "en": "Ripple glyph background" },
+  "homeRippleDesc": { "zh": "新会话页的背景是一片淡淡的数字与字母，点击页面会荡开水波，把经过的字符染成蓝色。", "en": "The new-conversation page's background is a faint field of digits and letters; a press sends out waves that colour the characters they pass blue." }
+}

@@ -64,6 +64,22 @@
       r.classicPermTrigger = heroModes !== null && heroModes.querySelector('.dsh-claude-perm-btn') !== null
       // The crab stands on the classic home page's card too, as Deepy does.
       r.classicCrab = document.querySelector('[data-composer-card] > .dsh-claude-crab') !== null
+      // The glyph field stands in the hero root, under its content, and takes no
+      // press; its switch, off as the page opens, mounts it and takes it back off.
+      r.ripple = { off: greetRoot.querySelector('.dsh-claude-ripple-canvas') === null && !greetRoot.hasAttribute('data-dsh-claude-ripple') }
+      window.__pushForm({ homeRipple: true })
+      await sleep(150)
+      var rippleCanvas = greetRoot.querySelector(':scope > .dsh-claude-ripple-canvas')
+      r.ripple.stamped = greetRoot.hasAttribute('data-dsh-claude-ripple')
+      r.ripple.canvas = rippleCanvas !== null
+      r.ripple.pointerEvents = rippleCanvas === null ? null : getComputedStyle(rippleCanvas).pointerEvents
+      r.ripple.order = rippleCanvas === null ? null : getComputedStyle(rippleCanvas).zIndex
+      window.__pushForm({ homeRipple: false })
+      await sleep(150)
+      r.ripple.gone = !greetRoot.hasAttribute('data-dsh-claude-ripple') && greetRoot.querySelector('.dsh-claude-ripple-canvas') === null
+      window.__pushForm({ homeRipple: true })
+      await sleep(150)
+      r.ripple.back = greetRoot.hasAttribute('data-dsh-claude-ripple') && greetRoot.querySelector(':scope > .dsh-claude-ripple-canvas') !== null
       document.body.appendChild(document.createElement('i'))
       await sleep(150)
       r.greeting.held = greetSpan.textContent

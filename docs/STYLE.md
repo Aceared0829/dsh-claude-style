@@ -96,6 +96,8 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsh-claude-ink-strong` | — | — | `#f5f4ef` | `#e9edf6` | `var(--dsw-alias-label-primary)` | active row ink |
 | `--dsh-claude-session-ink` | — | — | `#8c8983` | `#8a91a0` | `var(--dsw-alias-label-secondary)` | session title at rest |
 | `--dsh-claude-table-head` | `#f0f0ef` | `#eff3fb` | `#242320` | `#212631` | `var(--dsw-alias-bg-layer-2)` | table header row |
+| `--dsh-claude-ripple-ink` | `#8a8a85` | `#8a92a6` | `#8c8a82` | `#8b93a7` | `var(--dsw-alias-label-secondary, #8a8a85)` | the new-conversation page's glyph field, and the wake a ripple leaves in it |
+| `--dsh-claude-ripple-wave` | `#3b6ef0` | `#3b6ef0` | `#7fa6ff` | `#7fa6ff` | `var(--dsw-alias-link, #3b6ef0)` | the front of a ripple in the new-conversation page's glyph field |
 | `--dsh-claude-scrollbar` | `rgba(208, 205, 193, 0.9)` | `rgba(206, 216, 233, 0.9)` | `rgba(58, 56, 51, 0.9)` | `rgba(54, 61, 75, 0.9)` | `var(--dsw-alias-border-l2)` | scrollbar thumb |
 | `--dsh-claude-scrollbar-hover` | `rgba(143, 138, 126, 0.8)` | `rgba(129, 133, 140, 0.8)` | `rgba(107, 106, 101, 0.9)` | `rgba(104, 112, 128, 0.9)` | `var(--dsw-alias-label-caption)` | scrollbar thumb under the pointer |
 | `--dsh-claude-link-hover` | `#a94f2f` | `#2c43b8` | `#f0a488` | `#b0c0ff` | `var(--dsw-alias-link)` | text link under the pointer |

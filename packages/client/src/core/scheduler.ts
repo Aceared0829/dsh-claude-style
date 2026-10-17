@@ -21,6 +21,7 @@ export interface Handles {
   brand: FeatureHandle
   composer: ComposerHandle
   homeLayout: FeatureHandle
+  homeRipple: FeatureHandle
   mascot: FeatureHandle
   permissions: FeatureHandle
   contextStats: FeatureHandle
