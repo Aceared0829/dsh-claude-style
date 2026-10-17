@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.16.1] - 2026-10-17
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.16.1) | [English](#en-0.16.1)
+
+<h3 id="cn-0.16.1">新增功能</h3>
 
 - **读者自己发出的长消息可以收起来**：一条比对话装得下的更长的消息收在一个上限高度里，下缘渐隐，气泡下面多出一个「展开全文」；按下它整条消息放回来，再按收起，按过之后这条消息在本次会话里保持读者选的样子。消息一出现就收，宿主那一条即时回显也一样，之后换成正式那一条时仍然收着；附件、时间与复制按钮都不受影响。设置页把「自动开合与卷帘门」关掉时这项跟着关掉。
 - **新会话页有了水波纹字符背景**：页面背景是一片每秒重绘两次的数字与字母，被缓缓漂移的云层遮住；点击页面荡开水波，波速在点击处最快、越远越慢，被扫过的字符显现出来，波前染蓝、尾迹留灰并淡去。设置页「外观」页首页版面下新增同名开关，默认关闭、标题旁带「实验性」标记，设置存为 `homeRipple`；宿主半边是旧版本时（更新插件后没有重启宿主），这一项改动保存不下来，重启宿主后恢复正常。
@@ -35,7 +37,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **用户消息的两处宿主查询移进引擎层**：气泡的查找（按是否真的刷上底色逐层向下）与用户行的选择器此前分别写在 chat-send 与 scroll-owner 里，折叠消息也要用它们；现在都放在 `packages/engine/src/chat-dom.ts`，两处改为引用，颜色分量与透明度的读取也一并搬过去。读者看到的行为不变。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.16.1">New Features</h3>
 
 - **A long message the reader sent can be folded away**: a message taller than the conversation can spare is held under a cap with its bottom edge softened, and the skin draws a Show the whole message control under the bubble; pressing it hands the whole message back and pressing it again folds it, and after that the message keeps what he chose for the rest of the session. The fold lands as soon as the message does — the host's own echo included — and stands when the durable row takes its place; the attachments, the time and the copy action are untouched. Turning the chat area's folding off turns this off with it.
 - **The new-conversation page gets a ripple glyph background**: the page's background is a field of digits and letters redrawn twice a second under a slowly drifting cloud; a press sends out waves that are fastest at the click and slow with distance, and the characters a wave passes show, blue at its front and grey in its wake before fading. A switch of the same name sits under the home layout on the Appearance tab, off until it is turned on and marked experimental, stored as `homeRipple`; with an older host half still running (the plugin updated without restarting the host), a change to it does not save until the host restarts.

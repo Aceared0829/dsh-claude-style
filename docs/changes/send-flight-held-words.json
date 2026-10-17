@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 4,
-  "at": "2026-10-17",
-  "external": false,
-  "zh": "**长消息的起飞带着消息自己的字**：折叠收住的长消息在飞行时，替身从第一帧起就显示这条消息的开头，也就是它落到那一行里显示的内容；盒子从输入框自己的高度收拢到折好之后的高度，读者看到的是消息从输入框里出来、一边飞一边收成它自己的样子。",
-  "en": "**A folded message's flight carries the message's own words**: the stand-in of a long message the fold holds shows the message from its own first line — what the row holds — from its first frame, and its box closes from the composer's own height down to the folded one, so the reader watches his message leave the composer and settle into the shape it lands in."
-}

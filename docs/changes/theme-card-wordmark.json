@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 21,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**主题风格的两张卡片左图右文**：Claude 卡片是星芒标志加 Claude 文字标志，DeepSeek 卡片是它的标志与文字合成的一件图形，均沿用插件已有的图形资源，不再另写文字。",
-  "en": "**The theme style cards read mark left, word right**: the Claude card carries the starburst beside the Claude wordmark and the DeepSeek card its mark and word as one lockup, both from the plugin's own artwork instead of typed text."
-}

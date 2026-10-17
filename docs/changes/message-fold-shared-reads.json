@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 17,
-  "at": "2026-10-17",
-  "external": false,
-  "zh": "**用户消息的两处宿主查询移进引擎层**：气泡的查找（按是否真的刷上底色逐层向下）与用户行的选择器此前分别写在 chat-send 与 scroll-owner 里，折叠消息也要用它们；现在都放在 `packages/engine/src/chat-dom.ts`，两处改为引用，颜色分量与透明度的读取也一并搬过去。读者看到的行为不变。",
-  "en": "**Two host reads of a user message moved into the engine**: the bubble lookup (walking down to the first element that really paints a fill) and the user row selector lived in chat-send and scroll-owner; the message fold needs both, so they now stand in `packages/engine/src/chat-dom.ts` and the two former homes read them from there, with the colour-part and alpha reads moved along. Nothing the reader sees changes."
-}

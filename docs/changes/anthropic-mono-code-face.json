@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 30,
-  "at": "2026-10-16",
-  "external": false,
-  "zh": "**代码字体先试 Anthropic Mono**：把 Anthropic 的等宽字体装进系统或放进 `$DSH_HOME/dsh-claude-style/fonts/` 之后，代码块、行内代码与等宽标签都由这款字体绘制；没有这份文件时仍用随包分发的 JetBrains Mono，中文照旧落到系统中文字体。字体文件只在仓库里提供，npm 包不带。",
-  "en": "**Code is drawn in Anthropic Mono first**: once Anthropic's mono face is installed on the system or dropped into `$DSH_HOME/dsh-claude-style/fonts/`, code blocks, inline code and the mono labels take it; without the file the JetBrains Mono copy the package carries still answers, and Chinese text keeps falling through to the system's Chinese faces. The face is served from this repository only, not from the npm package."
-}

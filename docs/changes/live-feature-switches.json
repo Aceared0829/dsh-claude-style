@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 24,
-  "at": "2026-10-17",
-  "external": false,
-  "zh": "**五个开关改成直接装卸**：关闭输入框插入符动效、吉祥物、模型选择器、侧栏账号区或输入区重绘范围时，对应功能自己的监听、尺寸观察者与每帧同步一并撤掉，宿主原来的界面随即回来；重新打开就在原位装回并重画，不用刷新页面。Ctrl+, 打开设置的快捷键改由设置页承担，关掉侧栏账号区之后仍然可用。",
-  "en": "**Five switches now install and remove their feature whole**: turning off the composer caret motion, the mascot, the model picker, the sidebar account area or the composer restyle's scope takes that feature's listeners, size observers and per-frame work off the page with the host's own interface coming back, and turning it on again installs it in place and repaints without a reload. The Ctrl+, shortcut for settings now belongs to the settings page, so it keeps working with the sidebar account area switched off."
-}
