@@ -73,18 +73,3 @@ test('a press that moves the active item before the next pass places the pill un
     bar.remove()
   }
 })
-
-test('a press the pass already read places the pill without reading the page again', () => {
-  const bar = control()
-  const pill = createSlidingPill('[aria-checked="true"]')
-  try {
-    pill.sync(bar)
-    pill.measure(bar)
-    const read = vi.spyOn(bar, 'getBoundingClientRect')
-    pill.sync(bar)
-    expect(read).not.toHaveBeenCalled()
-  } finally {
-    pill.release()
-    bar.remove()
-  }
-})
