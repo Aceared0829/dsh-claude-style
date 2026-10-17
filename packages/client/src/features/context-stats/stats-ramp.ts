@@ -65,8 +65,11 @@ export function rampPosition(value: number, stops: readonly number[]): RampPosit
  * @param element - the reading's own element, or the meter whose ring it paints.
  * @param kind - which ramp's colours apply.
  * @param position - where the reading fell, or null when it could not be read.
+ * @returns whether the element's ramp changed, so a caller that read colours
+ *   from it before this write knows they are stale.
  */
 export function writeRamp(element: HTMLElement, kind: RampKind, position: RampPosition | null) {
+  const before = rampState(element)
   if (position === null) {
     // A removal writes whatever the element carried: this runs on every
     // projection frame while a turn streams, and the reading is null for most
@@ -75,9 +78,15 @@ export function writeRamp(element: HTMLElement, kind: RampKind, position: RampPo
     if (element.hasAttribute(RAMP_ATTRIBUTE)) element.removeAttribute(RAMP_ATTRIBUTE)
     if (element.hasAttribute(RAMP_SPAN_ATTRIBUTE)) element.removeAttribute(RAMP_SPAN_ATTRIBUTE)
     if (element.style.getPropertyValue(RAMP_POSITION_VAR) !== '') element.style.removeProperty(RAMP_POSITION_VAR)
-    return
+  } else {
+    setAttributeIfChanged(element, RAMP_ATTRIBUTE, kind)
+    setAttributeIfChanged(element, RAMP_SPAN_ATTRIBUTE, position.span)
+    if (element.style.getPropertyValue(RAMP_POSITION_VAR) !== position.mix) element.style.setProperty(RAMP_POSITION_VAR, position.mix)
   }
-  setAttributeIfChanged(element, RAMP_ATTRIBUTE, kind)
-  setAttributeIfChanged(element, RAMP_SPAN_ATTRIBUTE, position.span)
-  if (element.style.getPropertyValue(RAMP_POSITION_VAR) !== position.mix) element.style.setProperty(RAMP_POSITION_VAR, position.mix)
+  return rampState(element) !== before
+}
+
+/** The three values a ramp writes, as one string to compare before and after a write. */
+function rampState(element: HTMLElement) {
+  return `${element.getAttribute(RAMP_ATTRIBUTE)}|${element.getAttribute(RAMP_SPAN_ATTRIBUTE)}|${element.style.getPropertyValue(RAMP_POSITION_VAR)}`
 }

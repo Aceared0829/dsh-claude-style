@@ -68,24 +68,49 @@ export function contextPieImage(percent: number, tone: string, rest: string) {
   return splitImage(percent, tone, rest)
 }
 
+/** The two colours a pie is drawn in, as the page computed them for one trigger. */
+export interface PieColours {
+  trigger: HTMLElement
+  tone: string
+  rest: string
+}
+
+/**
+ * Read the colours the meter's pie takes, or null while the meter has no
+ * trigger or reading to take them from. Reading a computed style settles the
+ * page's styles first, so the caller takes this in the pass's read phase (D40):
+ * there the styles are settled once for the frame, and a read after the pass's
+ * writes would settle them a second time.
+ *
+ * @param meter - the host's meter root.
+ */
+export function readPieColours(meter: HTMLElement): PieColours | null {
+  const trigger = meter.querySelector('button')
+  const reading = trigger === null ? null : trigger.querySelector('span')
+  if (!(trigger instanceof HTMLElement) || !(reading instanceof HTMLElement)) return null
+  // The reading's own colour is the band's answer, mixed by the browser
+  // (features/composer/inline-bar.css), so the two can never disagree.
+  return {
+    trigger,
+    tone: getComputedStyle(reading).color,
+    rest: getComputedStyle(trigger).getPropertyValue(REST_VAR).trim(),
+  }
+}
+
 /**
  * Paint the meter's reading as a pie, or give the host's ring back.
  *
  * @param meter - the host's meter root.
  * @param percent - the occupancy the reader sees, or null when no reading can
  *   be taken (the ring then stands, in whatever colour the host gives it).
+ * @param colours - the colours readPieColours took for the meter's current trigger.
  */
-export function paintContextPie(meter: HTMLElement, percent: number | null) {
-  const trigger = meter.querySelector('button')
-  const reading = trigger === null ? null : trigger.querySelector('span')
-  if (percent === null || !(trigger instanceof HTMLElement) || !(reading instanceof HTMLElement)) {
+export function paintContextPie(meter: HTMLElement, percent: number | null, colours: PieColours | null) {
+  if (percent === null || colours === null) {
     releaseContextPie(meter)
     return
   }
-  // The reading's own colour is the band's answer, mixed by the browser
-  // (features/composer/inline-bar.css), so the two can never disagree.
-  const tone = getComputedStyle(reading).color
-  const rest = getComputedStyle(trigger).getPropertyValue(REST_VAR).trim()
+  const { trigger, tone, rest } = colours
   // No stylesheet, no pie: the ring the host drew is the honest fallback.
   if (tone === '' || rest === '') {
     releaseContextPie(meter)

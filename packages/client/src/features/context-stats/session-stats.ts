@@ -7,11 +7,12 @@ import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
 import { createStreamEstimate } from './stream-estimate'
-import { paintContextPie, releaseContextPie } from './context-meter-pie'
+import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
 import type { HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { PieColours } from './context-meter-pie'
 
 /**
  * The session's numbers, read from the host's own projections
@@ -48,7 +49,7 @@ import type { HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-s
  * stats-binding.ts.
  *
  * @param ctx - client context: the session binding and the locale seat.
- * @returns { sync, close, reposition, teardown }.
+ * @returns { measure, sync, close, reposition, teardown }.
  */
 export function createSessionStats(ctx: HostContext) {
   /** The projections the block reads, in the order its sections appear. */
@@ -114,6 +115,9 @@ export function createSessionStats(ctx: HostContext) {
   const block = createStatsBlock(statsValue, chatText)
   const inline = createInlineStats(statsValue, chatText, findContextMeter)
   const binding = createContextStatsBinding()
+
+  /** The pie's colours this frame's read phase took, until the pass's sync uses them. */
+  let pieColours: PieColours | null = null
 
   /** Stop following the projections (a different session, or the teardown). */
   function releaseWatch() {
@@ -183,12 +187,19 @@ export function createSessionStats(ctx: HostContext) {
     if (meter !== null) {
       binding.bindMeter(meter)
       const occupancy = meterOccupancy(meter)
-      writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
+      const rampMoved = writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
       // The pie is dsh-chat-ux's own reading of the same meter: while that
       // plugin draws it, the host's ring is left to that plugin's draw
       // (THIRD_PARTY_NOTICES.md).
-      paintContextPie(meter, peerPresent('dsh-chat-ux') ? null : occupancy)
+      if (peerPresent('dsh-chat-ux')) paintContextPie(meter, null, null)
+      else {
+        // The read phase's colours hold until this pass moves the band they
+        // come from; only then are they read again, after the write (D40).
+        const stale = rampMoved || pieColours === null || pieColours.trigger !== meter.querySelector('button')
+        paintContextPie(meter, occupancy, stale ? readPieColours(meter) : pieColours)
+      }
     }
+    pieColours = null
     // The line of numbers is the panel's second trigger, so it is bound (and
     // told whether the panel stands open) on every pass, in either position: a
     // reader who switches back finds the same line driving the same panel.
@@ -208,6 +219,15 @@ export function createSessionStats(ctx: HostContext) {
   clearStrayContextNodes()
 
   return {
+    /**
+     * The pass's read phase: take the pie's colours while the frame's styles
+     * are settled anyway, since a read after the pass's writes would settle
+     * them a second time (D40).
+     */
+    measure() {
+      const meter = findContextMeter()
+      pieColours = meter === null || peerPresent('dsh-chat-ux') ? null : readPieColours(meter)
+    },
     /** One pass: keep the numbers current on whichever surface the position names. */
     sync() {
       syncNumbers()

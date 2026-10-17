@@ -19,6 +19,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const stats = createSessionStats(ctx)
 
   ui.contextStats = {
+    measure: stats.measure,
     sync: stats.sync,
     /**
      * A viewport move under the context panel: the panel is the host's,
