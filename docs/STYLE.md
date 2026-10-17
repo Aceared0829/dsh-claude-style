@@ -709,12 +709,13 @@ wear these same two paints (`packages/client/src/features/settings/settings.css`
 and take turns between a state word and the host's own word for a wait, so a card
 shows the wording swap as well as the paint.
 
-While the conversation follows its tail the row is pinned at the place the
-follow's glide comes to rest — the composer's own height, the fade band above it
-and the host's 16px transcript padding — the canvas painted behind it, since the
-transcript's tail would otherwise show through. The pin stands only while the
-host reports the tail (or the stream glide holds the position) and steps aside
-for the reader's own scrolling.
+With the chat area's own follow on, the row is pinned while the conversation
+follows its tail, at the place that follow's glide comes to rest — the
+composer's own height, the fade band above it and the host's 16px transcript
+padding — the canvas painted behind it, since the transcript's tail would
+otherwise show through. The pin stands only while the host reports the tail (or
+the stream glide holds the position) and steps aside for the reader's own
+scrolling.
 
 ## Home layouts · 首页版面
 

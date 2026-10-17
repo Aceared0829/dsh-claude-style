@@ -18,16 +18,22 @@
    every burst; above every place the end can stop, the line holds the row in
    every frame the tail is followed.
 
-   The gates say whose scroll this is: the host's own attribute and the stream
-   glide's hold mark (FOLLOW_HOLD_ATTR, features/chat-follow/chat-follow.ts) for
-   "the tail is being followed" — the mark is what a position held short of the
-   end and a rolling door need, because both make the host take its attribute
-   away mid-turn — and the reader's takeover (READER_HOLD_ATTR,
-   shared/scroll-owner.ts), carried on the conversation scroller the pin's
-   whole context sits under, for "the reader is the one scrolling", which drops
-   the pin even where the host still reports its follow. */
-body[data-dsh-claude-style] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running],
-body[data-dsh-claude-style] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running] {
+   The pin belongs to the chat area's follow, so it waits for that feature's
+   mark on the body (CHAT_FOLLOW_ATTR, features/chat-follow/chat-follow.ts):
+   with the chat area's animation off the host owns the scroll whole and the row
+   keeps its place in the document.
+
+   Under that mark the gates say whose scroll this is: the host's own attribute
+   and the stream glide's hold mark (FOLLOW_HOLD_ATTR,
+   features/chat-follow/chat-follow.ts) for "the tail is being followed" — the
+   mark is what a position held short of the end and a rolling door need,
+   because both make the host take its attribute away mid-turn — and the
+   reader's takeover (READER_HOLD_ATTR, shared/scroll-owner.ts), carried on the
+   conversation scroller the pin's whole context sits under, for "the reader is
+   the one scrolling", which drops the pin even where the host still reports its
+   follow. */
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running],
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running] {
   position: sticky;
   bottom: calc(var(--dsh-composer-height, 0px) + var(--dsh-composer-fade-h, 40px) + 16px + 1px);
   z-index: 1;

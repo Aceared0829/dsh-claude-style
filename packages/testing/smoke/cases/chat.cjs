@@ -581,6 +581,14 @@ module.exports = {
     check('switching the chat-area animations off takes the line down and gives the host\'s words back',
       off.line === false && off.marked === false && off.wordsShown === true && off.wordsMarked === false && off.foreignShown === true,
       JSON.stringify(off))
+    // 钉住状态行的是聊天区跟随自己的规则：跟随关掉后宿主自己管位置，这一行留在
+    // 文档里随内容走，再打开又钉回输入框上方。
+    const pin = wait.pin || {}
+    check('状态行的钉住随聊天区跟随的开关：跟随关掉后行留在文档里，再打开又钉回去',
+      pin.on?.follow === true && pin.on?.pinned === true &&
+        pin.off?.follow === false && pin.off?.pinned === false &&
+        pin.back?.follow === true && pin.back?.pinned === true,
+      JSON.stringify(pin))
     const replaced = wait.replaced || {}
     check('replacing the host words transfers their hiding marker without hiding the third-party line',
       replaced.previousMarked === false && replaced.current?.wordsMarked === true && replaced.current?.wordsShown === false &&

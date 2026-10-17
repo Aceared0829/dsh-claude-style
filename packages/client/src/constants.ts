@@ -110,10 +110,12 @@ export const PAGE_ZOOM_ATTR = 'data-dsh-claude-page-zoom'
 
 /**
  * Present while the ported chat-area follow is installed
- * (packages/client/src/features/chat-follow/). One rule hangs off it: a capped process
- * group's body scrolls vertically alone, so the catch-up measures the same
- * distance the host's own smooth scroll does. Switched off, the chat area
- * is handed back untouched.
+ * (packages/client/src/features/chat-follow/). The rules hanging off it are that
+ * feature's own: a capped process group's body scrolls vertically alone, so the
+ * catch-up measures the same distance the host's own smooth scroll does; the
+ * host's back-to-end button is placed over the composer; and the waiting line is
+ * pinned above it (packages/client/src/features/chat-wait/chat-wait.css).
+ * Switched off, the chat area is handed back untouched.
  */
 export const CHAT_FOLLOW_ATTR = 'data-dsh-claude-chat-follow'
 /**

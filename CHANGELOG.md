@@ -10,9 +10,17 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **Beam 的模型行画出厂商组合标**：目录里 `opencode-go/beam-free` 这类标识现在认领 Reflection 的组合标。字标是厂名的，模型名里从不写它，字标因此站在名字前面；标记在浅色画布上用厂商自己的品牌色，深色画布上随标签文字。
 
+### 问题修复
+
+- **关闭「聊天区滚动动画」后，进行中的状态行留在文档里**：此时滚动整份交回宿主，这一行不再停在输入框上方，读者往回翻看时它随内容一起滚走。
+
 <h3 id="en-unreleased">New Features</h3>
 
 - **Beam rows draw the vendor lockup**: an id such as `opencode-go/beam-free` now claims Reflection's lockup. The wordmark is the vendor's, which the catalog's name never spells, so it leads the label; the mark wears the vendor's own brand colour on the ivory canvas and the label's ink on the warm black one.
+
+### Bug Fixes
+
+- **With the chat-area scrolling animation off, the running status line keeps its document place**: the host owns the scroll then, so the line no longer rests above the composer and wheels away with the content as you read back.
 
 ## [0.16.2] - 2026-10-17
 

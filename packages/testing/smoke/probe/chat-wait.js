@@ -428,6 +428,32 @@
       }
       window.__pushForm({ chatWait: true })
       await probe.settle()
+      // The pin the waiting line stands on belongs to the chat area's follow
+      // (features/chat-follow/): the rule that pins it waits for that feature's
+      // mark on the body, so switching that animation off hands the row's place
+      // back to the host. The fixture carries the host's own tail mark here,
+      // which is the state a running turn leaves behind.
+      var pinOf = function () {
+        return {
+          follow: document.body.hasAttribute('data-dsh-claude-chat-follow'),
+          pinned: getComputedStyle(row).position === 'sticky',
+        }
+      }
+      waitSession.setAttribute('data-chat-following-tail', '')
+      await probe.settle()
+      r.wait.pin = { on: pinOf() }
+      window.__pushForm({ chatAnimations: false })
+      await probe.settle()
+      r.wait.pin.off = pinOf()
+      // The mark comes off while the follow is away: no guard of its own is
+      // watching the fixture's tail go out. It goes back on once the follow is
+      // installed again, which is what the rule is read against.
+      waitSession.removeAttribute('data-chat-following-tail')
+      window.__pushForm({ chatAnimations: true })
+      await probe.settle()
+      waitSession.setAttribute('data-chat-following-tail', '')
+      await probe.settle()
+      r.wait.pin.back = pinOf()
       waitSession.remove()
       await probe.settle()
       r.wait.removed = { wordsMarked: words.hasAttribute('data-dsh-claude-wait-words') }
