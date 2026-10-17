@@ -68,6 +68,10 @@ MIN_CONTRAST = 3.0
 # One number each is what the row actually needs.
 MARK_HEIGHT = 1.45
 MARK_GAP = 0.3
+# How far past the square a mark may reach and still count as fitting it. Lobe's
+# path data rounds to thousandths, so a mark drawn to the square's very edge lands
+# a few thousandths outside it; that is no reason to resize it.
+MARK_FIT_SLACK = 1.01
 
 # An upstream colour variant is trusted unless it is essentially invisible on the
 # ivory canvas — a logo may carry a white highlight, and a strict threshold would
@@ -331,10 +335,17 @@ def compose(brand, mark_body, mark_box, text_body, text_box, colour_body, word, 
     # height sizes the whole lockup and the mark — taller than the band — paints
     # outside it (the stylesheet keeps overflow visible). The mark is sized by its
     # box, the way Lobe renders its own icons, so every vendor's mark occupies the
-    # same square and the gap after it is the same width.
+    # same square and the gap after it is the same width. Artwork wider than that
+    # square is sized by its width instead: a hand-provided artwork has no box of
+    # its own to keep it in, and Reflection's two circles — twice as wide as they
+    # are tall — would otherwise make a mark wider than any Lobe icon's and push
+    # the wordmark that much further right.
     text_scale = 1.0 / cap_height  # text units -> composed units (cap band = 1)
     mark_height = MARK_HEIGHT
+    mark_ink_width = mark_ink[2] - mark_ink[0]
     mark_scale = mark_height / mark_h
+    if mark_ink_width > MARK_FIT_SLACK * mark_h:
+        mark_scale = mark_height / mark_ink_width
     mark_left = mark_ink[0] * mark_scale
     mark_width = (mark_ink[2] - mark_ink[0]) * mark_scale
     gap = MARK_GAP
@@ -347,8 +358,10 @@ def compose(brand, mark_body, mark_box, text_body, text_box, colour_body, word, 
 
     # The mark centres on the cap band; the wordmark's baseline is the box's bottom.
     # Both boxes carry their ink origin, because a hand-provided artwork is not
-    # drawn from (0,0) — Lobe's files are, so the extra term vanishes there.
-    mark_dy = (1 - mark_height) / 2 - mark_box[1] * mark_scale
+    # drawn from (0,0) — Lobe's files are, so the extra term vanishes there. The
+    # mark's own box is what centres, so a mark sized by its width — shorter than
+    # MARK_HEIGHT — sits on the band rather than riding above it.
+    mark_dy = (1 - mark_h * mark_scale) / 2 - mark_box[1] * mark_scale
     text_dy = -cap_top * text_scale
     text_dx = mark_width + gap - skip * art_width - text_ink[0] * text_scale
 
