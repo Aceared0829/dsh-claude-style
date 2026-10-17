@@ -1,4 +1,5 @@
 import { observeSize } from '@dsh-claude-style/engine/bus'
+import { inPageBox } from './page-zoom'
 
 /**
  * The sliding highlight of a segmented control: one pseudo-element on the
@@ -59,8 +60,10 @@ export function createSlidingPill(activeSelector: string) {
       return
     }
     const active = next.querySelector(activeSelector)
-    const box = next.getBoundingClientRect()
-    const itemBox = active === null ? null : active.getBoundingClientRect()
+    // Both boxes in the pixels the four properties are read in; the control's
+    // own border and padding already are (shared/page-zoom.ts).
+    const box = inPageBox(next.getBoundingClientRect())
+    const itemBox = active === null ? null : inPageBox(active.getBoundingClientRect())
     if (box.width === 0 || itemBox === null || itemBox.width === 0) {
       reading = null
       return

@@ -1,4 +1,5 @@
 import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
+import { inPageBox, pageViewport } from './page-zoom'
 
 /**
  * The skin's popovers: one card shell, one dwell and grace, one card on screen
@@ -26,6 +27,27 @@ export interface AnchorOptions {
   gap?: number
   /** Write the position with `!important` (positionAnchoredPopover). */
   important?: boolean
+  /**
+   * The window's size in the space the box and the card's laid-out size are
+   * given in (anchorSpace). Absent reads the window's own.
+   */
+  viewport?: { width: number, height: number }
+}
+
+/** The trigger's box and the window's size, both in the pixels a card's `left` and `top` are read in. */
+export interface AnchorSpace {
+  rect: DOMRect
+  viewport: { width: number, height: number }
+}
+
+/**
+ * The trigger's box and the window's size in the page's own pixels: a bounding
+ * rect is measured in the viewport's, while a card's laid-out size and every
+ * `left`/`top` written for it are read in the page's, which the reader's page
+ * zoom scales (shared/page-zoom.ts).
+ */
+export function anchorSpace(trigger: Element): AnchorSpace {
+  return { rect: inPageBox(trigger.getBoundingClientRect()), viewport: pageViewport() }
 }
 
 /**
@@ -42,23 +64,24 @@ export interface AnchorOptions {
  */
 export function resolveAnchoredPosition(rect: DOMRect, width: number, height: number, opts: AnchorOptions = {}) {
   const margin = opts.margin || POPOVER_MARGIN
+  const viewport = opts.viewport === undefined ? { width: window.innerWidth, height: window.innerHeight } : opts.viewport
   if (opts.side === 'right') {
     let x = rect.right + margin
-    if (x + width > window.innerWidth - margin) {
+    if (x + width > viewport.width - margin) {
       x = Math.max(margin, rect.left - margin - width)
     }
-    const y = Math.min(Math.max(margin, rect.bottom - height), Math.max(margin, window.innerHeight - height - margin))
+    const y = Math.min(Math.max(margin, rect.bottom - height), Math.max(margin, viewport.height - height - margin))
     return { x, y }
   }
   if (opts.side === 'above-left') {
-    const left = Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin))
+    const left = Math.max(margin, Math.min(rect.left, viewport.width - width - margin))
     let top = rect.top - (opts.gap || 0) - height
-    if (top < margin) top = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, window.innerHeight - height - margin))
+    if (top < margin) top = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, viewport.height - height - margin))
     return { x: left, y: top }
   }
-  const x = Math.max(margin, Math.min(rect.right - width, window.innerWidth - width - margin))
+  const x = Math.max(margin, Math.min(rect.right - width, viewport.width - width - margin))
   let y = rect.top - (opts.gap || 0) - height
-  if (y < margin) y = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, window.innerHeight - height - margin))
+  if (y < margin) y = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, viewport.height - height - margin))
   return { x, y }
 }
 
@@ -68,8 +91,8 @@ export function resolveAnchoredPosition(rect: DOMRect, width: number, height: nu
  * requires; the same-value guard skips a write that would only dirty layout.
  */
 export function positionAnchoredPopover(trigger: Element, pop: HTMLElement, opts: AnchorOptions = {}) {
-  const rect = trigger.getBoundingClientRect()
-  const { x, y } = resolveAnchoredPosition(rect, pop.offsetWidth, pop.offsetHeight, opts)
+  const space = anchorSpace(trigger)
+  const { x, y } = resolveAnchoredPosition(space.rect, pop.offsetWidth, pop.offsetHeight, { ...opts, viewport: space.viewport })
   const leftValue = `${Math.round(x)}px`
   const topValue = `${Math.round(y)}px`
   if (opts.important) {

@@ -3,6 +3,7 @@ import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
+import { inPageBox } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './view-tabs.manifest'
@@ -113,7 +114,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function rect(el: Element | null | undefined) {
     if (el === null || el === undefined) return null
-    const box = el.getBoundingClientRect()
+    // In the pixels the strip's own shift is read in (shared/page-zoom.ts).
+    const box = inPageBox(el.getBoundingClientRect())
     if (box.width === 0 && box.height === 0) return null
     return box
   }

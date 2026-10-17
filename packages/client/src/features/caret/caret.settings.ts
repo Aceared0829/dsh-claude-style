@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { CARET_MOTION_OFF, CARET_MOTION_TYPING } from '../../constants'
 import { motionMs } from '../../shared/motion'
+import { inPagePixels } from '../../shared/page-zoom'
 import { copy } from './copy'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
@@ -59,10 +60,13 @@ function CaretPicker(props: SettingsRowView) {
     const line = lineRef.current
     if (picker === null || line === null) return
     const last = at === 0 ? null : line.children[at - 1]
+    // The caret's place inside the sample line, in the pixels the property is
+    // read in (shared/page-zoom.ts).
+    const lineLeft = line.getBoundingClientRect().left
     const edge = last === null || last === undefined
-      ? line.getBoundingClientRect().left
+      ? lineLeft
       : last.getBoundingClientRect().right
-    picker.style.setProperty('--dsh-claude-caret-x', `${edge - line.getBoundingClientRect().left}px`)
+    picker.style.setProperty('--dsh-claude-caret-x', `${inPagePixels(edge - lineLeft)}px`)
   }, [at, sample])
   const options: { value: Prefs['caretMotion'], label: string }[] = [
     { value: CARET_MOTION_TYPING, label: copy('caretOn') },

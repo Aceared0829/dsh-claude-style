@@ -3,6 +3,7 @@ import { CHAT_ROLLING_ATTR } from '../../constants'
 import { CONVERSATION_SCROLL_SELECTOR, DISCLOSURE_HEADER_SELECTOR, DISCLOSURE_ROW_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { handBackFollow, readerMovedSince } from '@dsh-claude-style/engine/scroll-owner'
 import { motionMs } from '../../shared/motion'
+import { inPagePixels } from '../../shared/page-zoom'
 
 /**
  * The measuring and bookkeeping half of the fold glide (fold-glide.ts): what
@@ -76,7 +77,7 @@ export function markChatFoldBusy() {
  * be covered in 200 ms and read as a pop.
  *
  * @param element - the element the door pulls.
- * @returns the offset to the visible end, in pixels; 0 when it is entirely outside the viewport.
+ * @returns the offset to the visible end, in the pixels a written height is read in; 0 when it is entirely outside the viewport.
  */
 export function foldVisibleReach(element: Element) {
   const rect = element.getBoundingClientRect()
@@ -90,7 +91,7 @@ export function foldVisibleReach(element: Element) {
     if (style.overflowX === 'visible' && style.overflowY === 'visible') continue
     bottom = Math.min(bottom, ancestor.getBoundingClientRect().bottom)
   }
-  return Math.max(0, Math.min(rect.height, bottom - rect.top))
+  return inPagePixels(Math.max(0, Math.min(rect.height, bottom - rect.top)))
 }
 
 /**

@@ -874,4 +874,8 @@ plays its reaction.
   features share (the popover card and rows, the sliding highlight) are in
   `packages/client/src/shared/`. The host selector discipline and the style checks the build
   runs are in `docs/adr/` (D3, D9, D30).
+- The page's scale (settings › General) is the `zoom` the theme sheet puts on the body, so a
+  length written into the page is read in a smaller space than the one a bounding rect is
+  measured in: code that turns a measured box into a written length goes through
+  `packages/client/src/shared/page-zoom.ts`.
 

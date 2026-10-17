@@ -160,6 +160,8 @@ export interface FeatureSettingsRow {
    * draw. The build collects these modules for the settings page (D72).
    */
   control?: string
+  /** The row carries the host's experimental tag beside its title: the feature is on show but not settled. */
+  experimental?: boolean
 }
 
 /**

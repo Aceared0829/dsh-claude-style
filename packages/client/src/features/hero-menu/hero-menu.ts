@@ -2,7 +2,7 @@ import { AUTO_POPOVER_ALL, HERO_MENU_ATTR } from '../../constants'
 import { cacheFirstMatch, findHostMenu } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
 import { closestFrom, createStamp } from '@dsh-claude-style/engine/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, anchorSpace, closeOtherPopovers, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, registerPopover, resolveAnchoredPosition, unregisterPopover } from '../../shared/popover'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './hero-menu.manifest'
@@ -259,14 +259,15 @@ const findCardTrigger = cacheFirstMatch<HTMLElement>('[data-dsh-claude-part~="ca
    * than pinned to a zero-sized guess.
    */
   function placeCard(trigger: HTMLElement, card: HTMLElement) {
-    const rect = trigger.getBoundingClientRect()
     const width = card.offsetWidth
     const height = card.offsetHeight
     if (width === 0 || height === 0) return
     // The shared above-anchor geometry; the answer goes into custom
     // properties the host's own per-frame style writes never touch (see
-    // the header note).
-    const { x, y } = resolveAnchoredPosition(rect, width, height, { gap: GAP })
+    // the header note). The box and the window arrive in the pixels those
+    // properties are read in.
+    const space = anchorSpace(trigger)
+    const { x, y } = resolveAnchoredPosition(space.rect, width, height, { gap: GAP, viewport: space.viewport })
     card.style.setProperty('--dsh-claude-hero-menu-x', `${Math.round(x)}px`)
     card.style.setProperty('--dsh-claude-hero-menu-y', `${Math.round(y)}px`)
   }

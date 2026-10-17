@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import { PREFS } from '@dsh-claude-style/contracts/prefs'
 import { ROW_CONTROLS } from 'virtual:dsh-claude-style/settings-controls'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
@@ -176,8 +177,9 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
         // A feature's own control is a grid of preview cards: it takes the
         // line under the row's text (or the whole row when it has none).
         block: own !== undefined,
+        experimental: row.experimental === true,
       })
-      : controls.subRow(pref, title ?? '', description, control, !off)
+      : controls.subRow(pref, title ?? '', description, control, !off, row.experimental === true)
     return { rank: row.rank, node }
   })
 }
@@ -290,11 +292,17 @@ export function createSettingsControls() {
   }
 
   /** A row's text half: the title over the description; a row whose control is the explanation (a preview card) carries no description. */
-  function rowText(title: string, description: React.ReactNode) {
+  function rowText(title: string, description: React.ReactNode, experimental?: boolean) {
     return React.createElement(
       'div',
       { className: 'dsh-claude-settings-row-text' },
-      title === '' ? null : React.createElement('div', { className: 'dsh-claude-settings-row-title' }, title),
+      title === '' ? null : React.createElement(
+        'div',
+        { className: 'dsh-claude-settings-row-title', 'data-experimental': experimental === true ? '' : undefined },
+        title,
+        // The tag is the host's own control, the one its plugin page marks an experimental package with.
+        experimental === true ? React.createElement(Tag, { tone: 'info', className: 'dsh-claude-settings-row-tag' }, sharedLine('experimental')) : null,
+      ),
       description === null ? null : React.createElement('div', { className: 'dsh-claude-settings-row-desc' }, description),
     )
   }
@@ -315,7 +323,7 @@ export function createSettingsControls() {
    * marks a titled row that belongs to the row above it the same way, so the
    * group keeps no hairline between its members.
    */
-  function row(key: string, title: string | null, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean, sub?: boolean }) {
+  function row(key: string, title: string | null, description: React.ReactNode, control: React.ReactNode, options?: { block?: boolean, disabled?: boolean, sub?: boolean, experimental?: boolean }) {
     const classes = ['dsh-claude-settings-row']
     if (options?.block) classes.push('dsh-claude-settings-row-block')
     else if (React.isValidElement(control) && control.type === ClaudeStyleSegmentGroup) classes.push('dsh-claude-settings-row-segment')
@@ -332,7 +340,7 @@ export function createSettingsControls() {
     return React.createElement(
       'div',
       { className: classes.join(' '), key, 'aria-disabled': disabled ? 'true' : undefined, 'data-disabled': disabled ? '' : undefined },
-      title === null && description === null ? null : rowText(title ?? '', description),
+      title === null && description === null ? null : rowText(title ?? '', description, options?.experimental),
       named,
     )
   }
@@ -342,7 +350,7 @@ export function createSettingsControls() {
    * disabled while the parent is off. The control is built by the caller
    * with the same `disabled` flag, so it also refuses the keyboard.
    */
-  function subRow(key: string, title: string, description: React.ReactNode, control: React.ReactNode, enabled: boolean) {
+  function subRow(key: string, title: string, description: React.ReactNode, control: React.ReactNode, enabled: boolean, experimental?: boolean) {
     const named = React.isValidElement(control) && control.type === ClaudeStyleSwitch
       ? React.cloneElement(control as React.ReactElement<{ label?: string }>, { label: title })
       : control
@@ -354,7 +362,7 @@ export function createSettingsControls() {
         'aria-disabled': enabled ? undefined : 'true',
         'data-disabled': enabled ? undefined : '',
       },
-      rowText(title, description),
+      rowText(title, description, experimental),
       named,
     )
   }

@@ -10,6 +10,7 @@ import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
 import { desktopBand } from '@dsh-claude-style/engine/desktop-band'
 import { findWindowsMenu } from '@dsh-claude-style/engine/host'
 import { createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
+import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import type { FeatureUi } from '../../core/feature'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type manifest from './header-band.manifest'
@@ -134,8 +135,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function rect(element: Element | null) {
     if (element === null) return null
-    const box = element.getBoundingClientRect()
+    const box = inPageBox(element.getBoundingClientRect())
     return box.width === 0 && box.height === 0 ? null : box
+  }
+
+  /**
+   * The caption strip's own sizes, in the pixels the placement numbers are read
+   * in: the shell publishes them in the viewport's while every `left`, `top` and
+   * width this pass writes is read in the page's, which the reader's page zoom
+   * scales (shared/page-zoom.ts).
+   */
+  function pageBand(band: NonNullable<ReturnType<typeof desktopBand>>) {
+    return { ...band, height: inPagePixels(band.height), controls: { ...band.controls, size: inPagePixels(band.controls.size) } }
+  }
+
+  /** The window's width, in the pixels the placement numbers are read in. */
+  function pageWidth() {
+    return inPagePixels(document.documentElement.clientWidth)
   }
 
   /** Write one placement number, and nothing when it is already the one there. */
@@ -215,7 +231,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const corner = row.querySelector<HTMLElement>(HEADER_CORNER_SELECTOR)
     const stripEl = header === null ? null : header.querySelector<HTMLElement>(VIEW_TABS_STRIP_SELECTOR)
     reading = {
-      band,
+      band: pageBand(band),
       row,
       header,
       title,
@@ -256,7 +272,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const stripBox = current.stripBox
     const inBand = stripBox !== null && stripBox.top < band.height
     const stripWidth = stripBox === null || !inBand ? 0 : stripBox.width
-    const stripRight = stripWidth === 0 ? 0 : document.documentElement.clientWidth / 2 + stripWidth / 2
+    const stripRight = stripWidth === 0 ? 0 : pageWidth() / 2 + stripWidth / 2
     // The shell's own menu seat takes the row's left end, and the collapsed
     // sidebar's control sits left of it whether the seat is mounted or not.
     const menuBox = current.menuBox
@@ -273,7 +289,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The caption buttons' reserve, and the air this skin keeps off it. The
     // width is the one fixed boxes are placed in: the document's client width
     // leaves out a page scrollbar, which `innerWidth` counts.
-    const edge = document.documentElement.clientWidth - band.controls.size - GAP
+    const edge = pageWidth() - band.controls.size - GAP
     const cornerRight = band.controls.size + GAP
     // The controls hang off the right edge, so whether they fit does not
     // depend on the title; the title then takes what is left of the row's
@@ -283,7 +299,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const left = Math.max(rowBox.left, furniture + GAP)
     // Where the row's right-hand content ends: the controls when they are lifted,
     // the caption buttons when they stayed in the row.
-    const rightStop = liftActions ? edge - clusterWidth : document.documentElement.clientWidth - band.controls.size
+    const rightStop = liftActions ? edge - clusterWidth : pageWidth() - band.controls.size
     // The title's room runs up to that end, less the strip's own width and the
     // air on both sides of it: the strip is centred in what is left between the
     // two, so its width is reserved here rather than read off a position it is

@@ -9,6 +9,7 @@ import type manifest from './effort-picker.manifest'
 import type { ModelCatalog } from '../model/catalog'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { inPageBox } from '../../shared/page-zoom'
 import { copy } from './copy'
 
 /**
@@ -203,8 +204,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (marginChanged) modelBtn.style.marginRight = `${need}px`
     // An unchanged margin leaves the box at the one just read: a second
     // getBoundingClientRect after the write would force a reflow for the same
-    // numbers every pass.
-    const shifted = marginChanged ? modelBtn.getBoundingClientRect() : box
+    // numbers every pass. The box arrives in the pixels the style writes
+    // below are read in, the same ones the trigger's size is given in.
+    const shifted = inPageBox(marginChanged ? modelBtn.getBoundingClientRect() : box)
     const left = Math.round(shifted.right + 2)
     const top = Math.round(shifted.top + (shifted.height - height) / 2)
     if (left !== effortPlace.left) {

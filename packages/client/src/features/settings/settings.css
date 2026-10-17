@@ -288,6 +288,19 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-desc {
   color: var(--dsw-alias-label-tertiary);
 }
 
+/* A row marked experimental carries the host's tag beside its title, on the
+   title's own line while that fits. */
+body[data-dsh-claude-style] .dsh-claude-settings-row-title[data-experimental] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-row-tag {
+  flex: none;
+}
+
 /* A row whose behaviour another plugin owns right now, or whose feature waits for
    another setting: the control refuses input and dims, while the row's own copy
    stays readable and a line in the accent colour says who owns it or what it

@@ -347,6 +347,25 @@
         window.__pushForm({ composerScope: 'hero', collapseFooter: true })
         r.settings.heroOnly = { composer: renderTab('composer'), conversation: renderTab('conversation') }
         window.__pushForm({ composerScope: 'all' })
+        // Page zoom reaches the document through the preference mirror and the
+        // sheet draws the page at it, above and below the page's own size; the
+        // page the layout fills is read back in the sheet's dialogs and menus
+        // too, so the whole document is what stands on show.
+        var readZoom = function () {
+          return {
+            attr: document.body.getAttribute('data-dsh-claude-page-zoom'),
+            zoom: getComputedStyle(document.body).zoom,
+          }
+        }
+        window.__pushForm({ pageZoom: '1.5' })
+        await sleep(120)
+        var zoomed = readZoom()
+        window.__pushForm({ pageZoom: '0.8' })
+        await sleep(120)
+        var shrunk = readZoom()
+        window.__pushForm({ pageZoom: 'system' })
+        await sleep(120)
+        r.settings.pageZoom = { zoomed: zoomed, shrunk: shrunk, following: readZoom() }
         // On the Windows window the title-bar row takes input; everywhere else
         // it stays greyed with its note.
         document.documentElement.setAttribute('data-windows-titlebar', '')

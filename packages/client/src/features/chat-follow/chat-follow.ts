@@ -7,6 +7,7 @@ import { CHAT_CALL_SELECTOR, CHAT_RUNNING_SELECTOR, CONVERSATION_SCROLL_SELECTOR
 import { conversationColumn, conversationScroller, findFollowTailButton } from '@dsh-claude-style/engine/chat-dom'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { motionEase, motionMs } from '../../shared/motion'
+import { inPageBox, pageViewport } from '../../shared/page-zoom'
 import { observeComposerCards } from '@dsh-claude-style/engine/host'
 import { SCROLL_EASE_LEAD_PX, handBackFollow, joinScrollOwner, readerHolds, submissionHolds } from '@dsh-claude-style/engine/scroll-owner'
 import type { HostContext } from '@dsh-claude-style/engine/host'
@@ -88,10 +89,13 @@ function placeFollowTail(stamp: ReturnType<typeof createStamp<HTMLElement>>, car
     return
   }
   stamp.mark(button)
-  const cardBox = card.getBoundingClientRect()
-  const scrollBox = scroller.getBoundingClientRect()
+  // The boxes are measured in the viewport's pixels and the two properties are
+  // read in the page's own, which the reader's page zoom scales
+  // (shared/page-zoom.ts).
+  const cardBox = inPageBox(card.getBoundingClientRect())
+  const scrollBox = inPageBox(scroller.getBoundingClientRect())
   const left = `${Math.round(scrollBox.left + scrollBox.width / 2)}px`
-  const bottom = `${Math.round(window.innerHeight - cardBox.top + FOLLOW_TAIL_AIR_PX)}px`
+  const bottom = `${Math.round(pageViewport().height - cardBox.top + FOLLOW_TAIL_AIR_PX)}px`
   if (button.style.getPropertyValue(FOLLOW_TAIL_LEFT) !== left) button.style.setProperty(FOLLOW_TAIL_LEFT, left)
   if (button.style.getPropertyValue(FOLLOW_TAIL_BOTTOM) !== bottom) button.style.setProperty(FOLLOW_TAIL_BOTTOM, bottom)
 }

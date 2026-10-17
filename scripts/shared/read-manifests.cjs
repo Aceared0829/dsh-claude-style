@@ -122,6 +122,7 @@ function checkManifests(manifests) {
           const module = path.join(FEATURES, manifest.dir, `${manifest.dir}.settings.ts`)
           if (!fs.existsSync(module)) fail(manifest, `has a settings row naming the control "${row.control}", but packages/client/src/features/${manifest.dir}/${manifest.dir}.settings.ts is not there`)
         }
+        if (row.experimental !== undefined && typeof row.experimental !== 'boolean') fail(manifest, 'has a settings row whose "experimental" is not true or false')
         for (const key of [row.title, row.desc, row.requires?.note]) {
           if (key === undefined) continue
           if (typeof key !== 'string' || !carries(key)) fail(manifest, `names the copy key "${key}", which neither packages/client/src/features/${manifest.dir}/${manifest.dir}.copy.json nor the settings page's own copy carries`)

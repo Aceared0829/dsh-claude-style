@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, USERNAME_MAX } from '../../constants'
+import { AUTO_POPOVER_ACCOUNT, AUTO_POPOVER_ALL, AUTO_POPOVER_OFF, BRAND_CLAUDE, BRAND_DEEPSEEK, PAGE_ZOOM_08, PAGE_ZOOM_1, PAGE_ZOOM_125, PAGE_ZOOM_15, PAGE_ZOOM_SYSTEM, USERNAME_MAX } from '../../constants'
 import { COMBINE_SVGS } from 'virtual:dsh-claude-style/generated'
 import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 import { copy } from './copy'
 
 /**
- * The settings page's General tab: the theme style, the username and the
- * hover-open popovers.
+ * The settings page's General tab: the theme style, the username, the page's
+ * own scale and the hover-open popovers.
  *
  * Each tab is a `{ id, label, rows(view) }` record: `rows` runs on every
  * render of the page (packages/client/src/features/settings/settings.ts) with the page's
@@ -64,6 +64,13 @@ export function createSettingsGeneralTab(): SettingsTab {
       { value: AUTO_POPOVER_ACCOUNT, label: copy('autoPopoverAccount') },
       { value: AUTO_POPOVER_ALL, label: copy('autoPopoverAll') },
     ]
+    const pageZoomOptions: SegmentOption<Prefs['pageZoom']>[] = [
+      { value: PAGE_ZOOM_SYSTEM, label: copy('pageZoomSystem') },
+      { value: PAGE_ZOOM_08, label: copy('pageZoom08') },
+      { value: PAGE_ZOOM_1, label: copy('pageZoom1') },
+      { value: PAGE_ZOOM_125, label: copy('pageZoom125') },
+      { value: PAGE_ZOOM_15, label: copy('pageZoom15') },
+    ]
     const username = view.username
     return [
       {
@@ -94,6 +101,16 @@ export function createSettingsGeneralTab(): SettingsTab {
             onBlur: username.onBlur,
             onKeyDown: username.onKeyDown,
           }),
+        ),
+      },
+      {
+        rank: 30,
+        node: controls.row(
+          'pageZoom',
+          copy('pageZoomTitle'),
+          copy('pageZoomDesc'),
+          controls.segment(pageZoomOptions, prefs.pageZoom, value => { write({ pageZoom: value }) }),
+          { experimental: true },
         ),
       },
       {

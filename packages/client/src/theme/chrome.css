@@ -111,6 +111,32 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="rightbar-column"] [data-dsh-
   margin-bottom: auto !important;
 }
 
+/* ---------- the page's own scale ---------- */
+/* Page zoom (settings › General): the page the skin paints is drawn at the
+   chosen factor, below 1 included. It sits on the body because that is the box
+   the host's layout fills — the viewport's size in the scaled space, the host's
+   own dialogs and menus and the skin's popovers still coming out at the
+   window's edges. A factor is one rule each: `zoom` cannot read the number out
+   of the attribute. "Follow the system" writes no attribute, so the page keeps
+   the size the system and the host give it. The skin's geometry reads the
+   factor back through shared/page-zoom.ts: it measures the viewport's pixels
+   while these rules scale the space a `left` or a `top` is read in. */
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="0.8"] {
+  zoom: 0.8;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1"] {
+  zoom: 1;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.25"] {
+  zoom: 1.25;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.5"] {
+  zoom: 1.5;
+}
+
 /* ---------- clay accent: one emphasis color, disciplined ---------- */
 /* A host button anchor (`_linkButton`, e.g. the settings page's 充值) states its
    own ink; repainting it here would paint the label the same colour as its fill. */

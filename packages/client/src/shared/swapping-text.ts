@@ -1,5 +1,6 @@
 import { motionReduced } from '../core/prefs'
 import { motionMs, motionValue } from './motion'
+import { inPagePixels } from './page-zoom'
 import { buildSweepBand } from './sweep-band'
 
 /**
@@ -126,13 +127,14 @@ function sizerOf(element: HTMLElement): HTMLElement {
 }
 
 /**
- * The width an element's own layout takes. `offsetWidth` rounds to whole pixels
- * and the computed `width` to a sixty-fourth, and a pin written with either
- * steps the box — and the clock laid out beside it — as the pin goes on and
- * comes off again, so the width is read as the layout really takes it.
+ * The width an element's own layout takes, in the pixels a written width is
+ * read in (shared/page-zoom.ts). `offsetWidth` rounds to whole pixels and the
+ * computed `width` to a sixty-fourth, and a pin written with either steps the
+ * box — and the clock laid out beside it — as the pin goes on and comes off
+ * again, so the width is read as the layout really takes it.
  */
 function layoutWidth(element: HTMLElement) {
-  return element.getBoundingClientRect().width
+  return inPagePixels(element.getBoundingClientRect().width)
 }
 
 /**

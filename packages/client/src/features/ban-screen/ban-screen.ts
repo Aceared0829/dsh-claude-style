@@ -8,6 +8,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './ban-screen.manifest'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { motionMs } from '../../shared/motion'
+import { inPagePixels } from '../../shared/page-zoom'
 import { removeStrayNodes } from '../../shared/popover'
 import { copy } from './copy'
 
@@ -339,8 +340,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (band !== null) {
       root.setAttribute('data-dsh-ban-titlebar', '')
       root.setAttribute('data-dsh-ban-controls', band.controls.side)
-      root.style.setProperty('--dsh-ban-caption-height', `${band.height}px`)
-      root.style.setProperty('--dsh-ban-caption-controls', `${band.controls.size}px`)
+      // The strip is measured in the viewport's pixels; the two properties are
+      // read in the page's own, which the reader's page zoom scales
+      // (shared/page-zoom.ts).
+      root.style.setProperty('--dsh-ban-caption-height', `${inPagePixels(band.height)}px`)
+      root.style.setProperty('--dsh-ban-caption-controls', `${inPagePixels(band.controls.size)}px`)
       if (band.platform === 'win32') holdCaptionFill()
     }
   }

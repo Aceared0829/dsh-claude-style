@@ -2,6 +2,7 @@ import { CHAT_CHROME_GONE_AT, CHAT_CHROME_MIN_SCALE, CHAT_FLIGHT_MS, CHAT_HALO_G
 import type { ShapeSample } from './send-shape'
 import { CHAT_SEND_GHOST_ATTR, CHAT_SEND_LINK_ATTR, chatSendGhostHost, chatSendOpaque, chatSendPixel } from './send-snapshot'
 import type { ComposerSnapshot } from './send-snapshot'
+import { inPagePixels } from '../../shared/page-zoom'
 
 /** Where the words sit inside a box: its left, top and right insets and its line height. */
 interface TextInsets {
@@ -88,7 +89,7 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   // short of the one the stand-in lands on — measured on this build, 74 of the
   // row's 164. A stand-in shorter than its row fades across part of it and leaves
   // a stripe where the two paints meet (send-shape.ts's height floor).
-  const H1 = Math.max(end.height, bubble.getBoundingClientRect().height)
+  const H1 = Math.max(end.height, inPagePixels(bubble.getBoundingClientRect().height))
   const R0 = snapshot.radius
   const R1 = chatSendPixel(style.borderTopLeftRadius)
   const from = snapshot.text

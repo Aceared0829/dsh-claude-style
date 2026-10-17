@@ -94,6 +94,13 @@ export const MASCOT_ATTR = 'data-dsh-claude-mascot'
 export const SEARCH_STYLE_ATTR = 'data-dsh-claude-search-style'
 export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
+/**
+ * The page zoom in force, as the factor the stylesheet scales the page by
+ * (theme/chrome.css). Absent while the page follows the system; the scale every
+ * geometry that converts a measured box into the page's own pixels divides by
+ * reads it back (shared/page-zoom.ts).
+ */
+export const PAGE_ZOOM_ATTR = 'data-dsh-claude-page-zoom'
 
 
 /**

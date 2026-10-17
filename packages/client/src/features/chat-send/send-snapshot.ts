@@ -1,4 +1,5 @@
 import { COMPOSER_SCROLL_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { inPageBox } from '../../shared/page-zoom'
 
 /**
  * The send flight's capture, ported from dsh-chat-ux: everything taken off the
@@ -256,13 +257,16 @@ export function chatSendGhostHost() {
  * @returns the snapshot, or null when the card has no box or the draft area is not in the card.
  */
 export function snapshotComposer(input: HTMLElement, card: HTMLElement) {
-  const box = card.getBoundingClientRect()
+  // Every box here is in the page's own pixels — the space the stand-in's
+  // styles and animations are read in — while the computed styles already are
+  // (shared/page-zoom.ts).
+  const box = inPageBox(card.getBoundingClientRect())
   if (box.width === 0 || box.height === 0) return null
   const scroll = input.closest(COMPOSER_SCROLL_SELECTOR)
   if (scroll === null || scroll.parentElement !== card) return null
   const cardStyle = window.getComputedStyle(card)
   const inputStyle = window.getComputedStyle(input)
-  const inputBox = input.getBoundingClientRect()
+  const inputBox = inPageBox(input.getBoundingClientRect())
   const text = {
     left: inputBox.left - box.left + input.clientLeft + chatSendPixel(inputStyle.paddingLeft),
     top: inputBox.top - box.top + input.clientTop + chatSendPixel(inputStyle.paddingTop),
@@ -271,7 +275,7 @@ export function snapshotComposer(input: HTMLElement, card: HTMLElement) {
   }
   const surface = chatSendSurface(card, cardStyle)
   const surfaceStyle = surface.element === card ? cardStyle : window.getComputedStyle(surface.element)
-  const surfaceBox = surface.element.getBoundingClientRect()
+  const surfaceBox = inPageBox(surface.element.getBoundingClientRect())
   const surfaceRect = {
     left: surfaceBox.left - box.left,
     top: surfaceBox.top - box.top,
@@ -287,7 +291,7 @@ export function snapshotComposer(input: HTMLElement, card: HTMLElement) {
   // seat has no box of its own, so the walk goes through it.
   const paths: { path: number[], rect: number[] }[] = []
   const rectOf = (element: Element) => {
-    const r = element.getBoundingClientRect()
+    const r = inPageBox(element.getBoundingClientRect())
     return [r.left - box.left, r.top - box.top, r.width, r.height]
   }
   const collect = (element: Element, path: number[]) => {
@@ -401,7 +405,7 @@ export function snapshotComposer(input: HTMLElement, card: HTMLElement) {
   // The draft area's height is pinned: the hero state's minimum height hangs
   // off `.hero .input`, so the clone would collapse once it leaves `.hero`
   // and the toolbar would ride up with it.
-  const scrollBox = scroll.getBoundingClientRect()
+  const scrollBox = inPageBox(scroll.getBoundingClientRect())
   draft.style.height = scrollBox.height + 'px'
   draft.style.minHeight = '0px'
   draft.style.maxHeight = 'none'

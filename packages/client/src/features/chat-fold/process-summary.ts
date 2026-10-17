@@ -6,6 +6,7 @@ import type { CopyKey } from './copy'
 import { motionReduced } from '../../core/prefs'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { motionMs } from '../../shared/motion'
+import { inPagePixels } from '../../shared/page-zoom'
 import { SWEEP_BAND_CLASS, buildSweepBand } from '../../shared/sweep-band'
 import { ASSISTANT_STEP_KIND, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_REASONING, FLOW_KIND_ATTRIBUTE, PROCESS_ACTIVITY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_GROUP_SELECTOR, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, TOOL_CALL_KIND } from '@dsh-claude-style/contracts/dom'
 
@@ -257,7 +258,9 @@ export function createProcessSummary() {
       - (parseFloat(style.borderLeftWidth) || 0) - (parseFloat(style.borderRightWidth) || 0)
     for (const child of header.children) {
       if (child === summary) continue
-      const width = child.getBoundingClientRect().width
+      // The child's box in the pixels the styles around it are given in
+      // (shared/page-zoom.ts).
+      const width = inPagePixels(child.getBoundingClientRect().width)
       if (width > 0) room -= width + gap
     }
     return Math.max(0, room)
@@ -276,7 +279,7 @@ export function createProcessSummary() {
     const known = fitWidths.get(key)
     if (known !== undefined) return known
     if (fit.textContent !== sentence) fit.textContent = sentence
-    const width = fit.getBoundingClientRect().width
+    const width = inPagePixels(fit.getBoundingClientRect().width)
     fitWidths.set(key, width)
     return width
   }
