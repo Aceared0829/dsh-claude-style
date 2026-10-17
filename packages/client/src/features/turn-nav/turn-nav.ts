@@ -103,6 +103,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let cancelRefreshFrame: (() => void) | null = null
   /** The turn the last key went to, and when. */
   let keyJump: { sessionId: string, turn: number, at: number } | null = null
+  /** The rail's height limit as the stylesheet resolves it, read in the pass's read phase; -1 until then. */
+  let railMaxHeight = -1
   /** The turn whose first row should show the landing line once it is in the window. */
   let landing: { turn: number, since: number } | null = null
   let landedRow: Element | null = null
@@ -171,11 +173,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
+   * The rail's height: its marks' own height up to the limit the stylesheet
+   * gives it (turn-nav.css's `--dsh-claude-turn-rail-height` and `max-height`).
+   * The limit is read in the pass's read phase; a height read here would land
+   * after this frame's writes and lay the page out a second time (D40).
+   */
+  function railHeight() {
+    if (railMaxHeight < 0) return rail!.clientHeight
+    const marks = (drawnItems?.length ?? 0) * TURN_NAV_PITCH
+    return Math.min(marks, railMaxHeight)
+  }
+
+  /**
    * Scroll the track, kept within its turns, and say which ends have more.
    * Runs only while the rail is mounted with its marks drawn.
    */
   function setOffset(value: number) {
-    const height = rail!.clientHeight
+    const height = railHeight()
     const most = Math.max(0, drawnItems!.length * TURN_NAV_PITCH - height)
     offset = Math.round(Math.min(Math.max(value, 0), most))
     track!.style.transform = `translateY(${-offset}px)`
@@ -186,7 +200,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Bring the current mark into view, centred, when it is not well inside it. */
   function follow() {
     if (current < 0 || open || rail === null) return
-    const height = rail.clientHeight
+    const height = railHeight()
     const top = current * TURN_NAV_PITCH
     if (top >= offset + TURN_NAV_PITCH && top + 2 * TURN_NAV_PITCH <= offset + height) return
     setOffset(top - (height - TURN_NAV_PITCH) / 2)
@@ -463,7 +477,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   registerPopover(TURN_NAV_POPOVER, closeCard)
 
+  /**
+   * The pass's read phase (D40): the limit the stylesheet puts on the rail's
+   * height, read while the frame's style is still the one the pass started
+   * with. The redraw in `sync` writes the marks and their height, so a height
+   * read after it, in the same frame, lays the page out a second time.
+   */
+  function measure() {
+    if (rail === null) {
+      railMaxHeight = -1
+      return
+    }
+    const limit = Number.parseFloat(getComputedStyle(rail).maxHeight)
+    // No max-height leaves the rail as tall as its marks.
+    railMaxHeight = Number.isFinite(limit) ? limit : Infinity
+  }
+
   ui.turnNav = {
+    measure,
     sync() {
       const found = host.findRail()
       const sessionId = conversationSessionId(findConversationSession())
