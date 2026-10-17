@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 20,
+  "at": "2026-10-17",
+  "external": true,
+  "zh": "**设置页「通用」多了页面缩放**：整页按 0.8x、1x、1.25x、1.5x 绘制，界面、文字与控件一起变大或变小，窗口尺寸不变、页面按缩放之后剩下的空间重新排布，「随系统」保持系统与 DSH 给出的尺寸；设置页自己也按同一倍数绘制，档位可以在这一页上直接比出来。贴着输入区展开的模型、努力度与权限弹层仍与各自的按钮对齐。设置存为 `pageZoom`。",
+  "en": "**The settings page's General tab gains page zoom**: the page is drawn at 0.8x, 1x, 1.25x or 1.5x — the interface, its text and its controls growing or shrinking together while the window keeps its size and the page lays itself out in the room left over — and Follow the system keeps the size the system and DSH give it; the settings page is drawn at the same scale, so a level can be compared on it. The model, reasoning-effort and permission popovers that open off the composer stay on their own triggers. The setting is stored as `pageZoom`."
+}

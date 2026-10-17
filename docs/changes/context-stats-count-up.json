@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 24,
+  "at": "2026-10-16",
+  "external": false,
+  "zh": "**独立成行的数字改成从当前读数计数到新读数**：每个数字都留在原位连续增长（或减少）到新值，答案流式输出期间接连更新时后一次从当时显示的值接着走，切换会话时也从上一段的数字计数到新一段的。缓存命中那一截的色带只染数字与百分号，「缓存命中」四个字留在这一行自己的颜色。",
+  "en": "**The line of numbers counts to a new reading from the one it shows**: each figure stays where it is and grows (or falls) continuously to its new value, a reading that lands while the count is in flight carries on from the value on show, and another session's numbers are counted to from the ones the line was showing. The cache share's colour band marks its figure and percent sign alone, the words before them keeping the line's own tone."
+}

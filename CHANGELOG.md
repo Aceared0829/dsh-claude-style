@@ -6,24 +6,44 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
 
+- **新会话页有了水波纹字符背景**：页面背景是一片每秒重绘两次的数字与字母，被缓缓漂移的云层遮住；点击页面荡开水波，波速在点击处最快、越远越慢，被扫过的字符显现出来，波前染蓝、尾迹留灰并淡去。设置页「外观」页首页版面下新增同名开关，默认关闭、标题旁带「实验性」标记，设置存为 `homeRipple`；宿主半边是旧版本时（更新插件后没有重启宿主），这一项改动保存不下来，重启宿主后恢复正常。
+- **设置页「通用」多了页面缩放**：整页按 0.8x、1x、1.25x、1.5x 绘制，界面、文字与控件一起变大或变小，窗口尺寸不变、页面按缩放之后剩下的空间重新排布，「随系统」保持系统与 DSH 给出的尺寸；设置页自己也按同一倍数绘制，档位可以在这一页上直接比出来。贴着输入区展开的模型、努力度与权限弹层仍与各自的按钮对齐。设置存为 `pageZoom`。
+- **代码字体先试 Anthropic Mono**：把 Anthropic 的等宽字体装进系统或放进 `$DSH_HOME/dsh-claude-style/fonts/` 之后，代码块、行内代码与等宽标签都由这款字体绘制；没有这份文件时仍用随包分发的 JetBrains Mono，中文照旧落到系统中文字体。字体文件只在仓库里提供，npm 包不带。
+
+### 体验优化
+
+- **页面缩放的标题旁标出「实验性」**：设置页「通用」页的「页面缩放」一行带上一枚实验性标签，与插件页标记实验性插件的那一枚相同。
 - **深色弹层的边只剩边框本身**：皮肤自建的弹层卡片与它重绘的账户菜单、首页选择器不再在边框外侧铺一道 3px 的黑色沉降，卡片的外缘就是那道高光边线，两层投影照旧。
 - **工作台首页的问候语与用量面板之间只剩一个列间距**：标题块不再为下方预留 30px，面板随之整体上移 30px，问候语与面板之间只留首屏列自己的 10px 间距；经典版面上问候语与输入卡片之间的那份间距保持原样。
 - **主题风格的两张卡片左图右文**：Claude 卡片是星芒标志加 Claude 文字标志，DeepSeek 卡片是它的标志与文字合成的一件图形，均沿用插件已有的图形资源，不再另写文字。
 - **「动画」设为「减弱」时，动效页的预览卡仍能分清两档**：状态行画法、光标动画、新文字淡入与消息气泡动画的卡片各停在一帧——扫光的高光带停在字中、光标带滑行拖尾、末几个字停在渐淡的各档、气泡停在长大或升起的途中；卡片略变暗，行下方写明这一项此时不生效，选择仍可修改。
+- **上下文占用那一环改成一枚饼**：已占用与未占用画成两段同心扇区，少数的那一块撑到画布半径、多数的那一块往里收一档，收多少随占用比例变化——越接近对半越小，15% 与 85% 互为镜像，对半时是两枚等大的半圆。两块之间是一道 1.2px 宽的缝，由两条描边各让一半：占用那块的一条从满宽收到 0，未占用那块的一条反过来，读数跨过对半时两边都不跳；撑出去的那一块压在上面。色带照旧按占用取色，读数与这一块同色；触发按钮的位置与高度、输入行给它留的宽度都不变，饼比原来那枚图标大一圈、与它同中心。
+- **独立成行的数字改成从当前读数计数到新读数**：每个数字都留在原位连续增长（或减少）到新值，答案流式输出期间接连更新时后一次从当时显示的值接着走，切换会话时也从上一段的数字计数到新一段的。缓存命中那一截的色带只染数字与百分号，「缓存命中」四个字留在这一行自己的颜色。
+- **五个开关改成直接装卸**：关闭输入框插入符动效、吉祥物、模型选择器、侧栏账号区或输入区重绘范围时，对应功能自己的监听、尺寸观察者与每帧同步一并撤掉，宿主原来的界面随即回来；重新打开就在原位装回并重画，不用刷新页面。Ctrl+, 打开设置的快捷键改由设置页承担，关掉侧栏账号区之后仍然可用。
 
 ### 问题修复
 
 - **另一款皮肤作画时本主题整页让出，设置页也随主题撤下**：页面上的侧栏、对话、输入区与设置页一起离场，只留那款皮肤与宿主自己的界面；在皮肤中心里本插件那一行选回本主题，这些内容与读者存下的偏好一起回来。
 - **深色模式下分段控件的滑块有了底色**：设置页的页签与并排开关、经典首页的权限分段这几处同一种控件，当前项在深色里读得出来——滑块比它的底座亮一档，不再与底座同色；浅色与 DeepSeek 深色配色下同样成立。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
 
+- **The new-conversation page gets a ripple glyph background**: the page's background is a field of digits and letters redrawn twice a second under a slowly drifting cloud; a press sends out waves that are fastest at the click and slow with distance, and the characters a wave passes show, blue at its front and grey in its wake before fading. A switch of the same name sits under the home layout on the Appearance tab, off until it is turned on and marked experimental, stored as `homeRipple`; with an older host half still running (the plugin updated without restarting the host), a change to it does not save until the host restarts.
+- **The settings page's General tab gains page zoom**: the page is drawn at 0.8x, 1x, 1.25x or 1.5x — the interface, its text and its controls growing or shrinking together while the window keeps its size and the page lays itself out in the room left over — and Follow the system keeps the size the system and DSH give it; the settings page is drawn at the same scale, so a level can be compared on it. The model, reasoning-effort and permission popovers that open off the composer stay on their own triggers. The setting is stored as `pageZoom`.
+- **Code is drawn in Anthropic Mono first**: once Anthropic's mono face is installed on the system or dropped into `$DSH_HOME/dsh-claude-style/fonts/`, code blocks, inline code and the mono labels take it; without the file the JetBrains Mono copy the package carries still answers, and Chinese text keeps falling through to the system's Chinese faces. The face is served from this repository only, not from the npm package.
+
+### Improvements
+
+- **Page zoom is labelled experimental**: the row on the settings page's General tab carries the experimental tag, the same one the plugin page marks an experimental package with.
 - **A dark popover's edge is its border again**: the skin's own popover cards and the account menu and hero-row pickers it repaints no longer lay a 3px black falloff outside the border, so the card's outer edge is the highlight line itself and the two drops stay as they were.
 - **The studio home's greeting and usage panel sit one column gap apart**: the headline block no longer reserves 30px below itself, so the panel moves up by 30px and only the hero column's own 10px gap stands between them; the classic layout keeps the spacing under its greeting.
 - **The theme style cards read mark left, word right**: the Claude card carries the starburst beside the Claude wordmark and the DeepSeek card its mark and word as one lockup, both from the plugin's own artwork instead of typed text.
 - **While Animation is Reduced the Motion tab's cards still tell their two choices apart**: the status paint, caret, text fade and message entrance cards each hold one frame — the sweep's band parked mid-word, the caret with its glide trail, the last characters on their fading steps, the bubble part-grown or part-risen; the cards dim and the row says the choice takes no effect now, while it stays editable.
+- **The context meter's ring is a pie**: the occupied share and the rest are two sectors on one centre. The smaller share keeps the box's radius and the larger one steps in by up to 1.3px, easing to nothing as the split comes even — so 15% and 85% mirror each other and an even split is two half discs of one radius. The 1.2px seam between them is shared by two strokes, the occupied sector's running from its whole width down to nothing and the plate's the mirror, so no edge jumps as the reading crosses the even split, and the part that stands out is painted last. It still takes the colour band its occupancy falls on, and the reading beside it is painted the same colour. The trigger keeps its box, its height and the room the row keeps for it, and the pie is one pixel larger than the old icon on each side, centred on it.
+- **The line of numbers counts to a new reading from the one it shows**: each figure stays where it is and grows (or falls) continuously to its new value, a reading that lands while the count is in flight carries on from the value on show, and another session's numbers are counted to from the ones the line was showing. The cache share's colour band marks its figure and percent sign alone, the words before them keeping the line's own tone.
+- **Five switches now install and remove their feature whole**: turning off the composer caret motion, the mascot, the model picker, the sidebar account area or the composer restyle's scope takes that feature's listeners, size observers and per-frame work off the page with the host's own interface coming back, and turning it on again installs it in place and repaints without a reload. The Ctrl+, shortcut for settings now belongs to the settings page, so it keeps working with the sidebar account area switched off.
 
 ### Bug Fixes
 

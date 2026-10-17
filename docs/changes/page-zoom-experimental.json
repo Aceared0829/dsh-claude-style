@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 10,
+  "at": "2026-10-17",
+  "external": false,
+  "zh": "**页面缩放的标题旁标出「实验性」**：设置页「通用」页的「页面缩放」一行带上一枚实验性标签，与插件页标记实验性插件的那一枚相同。",
+  "en": "**Page zoom is labelled experimental**: the row on the settings page's General tab carries the experimental tag, the same one the plugin page marks an experimental package with."
+}

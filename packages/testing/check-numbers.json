@@ -472,7 +472,7 @@
       "closing the host menu clears the skin marker": [
         0
       ],
-      "Ctrl+, opens the host dialog": [
+      "Ctrl+, opens the host dialog while the account area is off": [
         1
       ],
       "the first account frame reads the profile exactly once": [
@@ -481,7 +481,7 @@
       "a repeated same-state frame reads nothing more": [
         1
       ],
-      "no feature reported a failure (line 245)": [
+      "no feature reported a failure (line 250)": [
         0
       ],
       "the skin's rail stands in the host rail's slot, one mark per turn, the host's rail hidden but laid out": [
@@ -801,7 +801,7 @@
         0.12
       ],
       "every switched feature is on by default": [
-        4
+        5
       ],
       "the host dropping the section heading takes the workspace control and the archived list off the page with it": [
         0
@@ -811,7 +811,7 @@
       ],
       "a feature switched off before the page loads never installs": [
         0,
-        4
+        5
       ],
       "switching them on installs every one, live": [
         0
@@ -948,9 +948,11 @@
         0,
         1
       ],
-      "every figure is written one character per span so a number that moved re-enters, the last two staggered": [
-        11,
-        29
+      "the figures are text a count rewrites in place, with no character carrying a span or an entrance of its own": [
+        0
+      ],
+      "a new reading counts to its value: part way through the count the figures have moved without having arrived, and they settle on the reading": [
+        6
       ],
       "asking the numbers back into the popover takes the line away, live": [
         0
@@ -1008,6 +1010,9 @@
       "the host's own figures stand on a line under the card, with none of the row's glyphs": [
         0,
         6
+      ],
+      "the figures are text a count rewrites in place, with no character carrying a span or an entrance of its own": [
+        0
       ],
       "the popover keeps none of the numbers here": [
         0
