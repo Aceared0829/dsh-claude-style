@@ -12,6 +12,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **流式输出时，写回的 tokens 随文字上涨**：会话数字里写回的那一数在答案流式输出期间按已经到达的文字估算着上涨，不再等整段答案写完才跳一次；这一步结算时换成提供方给出的真实值，读入的 tokens、缓存命中率与计量饼的占用都不动。
 - **流式输出时，上下文计量饼不再拖慢页面**：计量饼需要的两种颜色改在每一帧开头读取，回答流式输出期间不再让页面额外重算一次样式（本机实测：皮肤每次更新页面的耗时从约 37 毫秒降到约 14 毫秒，其中上下文组件从约 27 毫秒降到不足 1 毫秒）。
 - **推理强度滑块不再在每次更新里重排页面**：滑块轨道与滑钮的宽度改在每一帧开头读取，卡片收起时也不再让页面额外排一次版（本机实测：推理强度选择器在每次更新里的耗时从约 18 毫秒降到约 1 毫秒）。
+- **长对话流式输出时，消息折叠与推理窗口不再拖慢页面**：折叠用户消息所需的气泡查找、推理窗口所需的高度与样式读取，都改在每一帧开头完成，写入阶段不再让页面额外重算样式与布局（本机桌面端实测：消息折叠每次更新从约 6.8 毫秒降到不足 0.1 毫秒，推理窗口每帧从约 5 到 14 毫秒降到约 0.1 毫秒）。
+- **计数中的上下文数字与等待计时不再让整页重算样式**：状态行与上下文弹层里随流式输出上涨的数字、等待行的计时，都改为原地改写文字，页面上其他插件的 `:has()` 规则不再因此在每一帧重算整页样式（本机桌面端实测：流式输出期间每帧少付约 10 毫秒的样式重算）。
 
 ### 问题修复
 
@@ -24,6 +26,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The tokens written back climb while an answer streams**: the session numbers' written-back figure grows with the text that has arrived instead of standing still until the answer ends, and takes the provider's own number once that step settles; the tokens read in, the cache-hit share and the meter's occupancy stay as they were.
 - **The context meter's pie no longer slows the page while an answer streams**: the two colours the pie is drawn in are read at the start of each frame, so a streaming answer no longer makes the page recompute its styles a second time (measured locally: each of the skin's page updates went from about 37 ms to about 14 ms, the context component's share from about 27 ms to under 1 ms).
 - **The reasoning-effort slider no longer lays the page out again on each update**: the widths of its track and knob are read at the start of each frame, so the slider no longer costs the page an extra layout, its card closed or open (measured locally: the effort picker's share of each update went from about 18 ms to about 1 ms).
+- **Message folding and the reasoning window no longer slow the page while a long conversation streams**: finding the bubble a user message folds on, and reading the reasoning window's heights and styles, happen at the start of each frame, so the writes that follow no longer make the page recompute its styles and layout a second time (measured locally on the desktop app: each message-fold update went from about 6.8 ms to under 0.1 ms, the reasoning window's frame work from about 5–14 ms to about 0.1 ms).
+- **Counting context figures and the wait timer no longer make the whole page recompute its styles**: the figures that rise with a streaming answer on the status line and in the context panel, and the wait line's timer, rewrite their text in place, so another plugin's `:has()` rules on the page no longer recompute the whole page's styles every frame (measured locally on the desktop app: about 10 ms less style recalculation per frame while an answer streams).
 
 ### Bug Fixes
 
