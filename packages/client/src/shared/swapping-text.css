@@ -39,11 +39,20 @@ body[data-dsh-claude-style] .dsh-claude-swap-label {
   transition: width var(--dsh-claude-duration-slide) var(--dsh-claude-ease-glide);
 }
 
-/* The sizer paints nothing and is never read out; it is the box. */
+/* The sizer paints nothing and is never read out; it is the box. Every wording
+   a swap carries lies in its one grid cell, so it is as wide as the widest of
+   them, and it keeps its own content's width while the box is pinned — the
+   width shared/swapping-text.ts reads for the box to travel to. A label
+   narrower than that clips it with the copies. */
 body[data-dsh-claude-style] .dsh-claude-swap-sizer {
-  display: block;
+  display: grid;
+  width: max-content;
   visibility: hidden;
   white-space: nowrap;
+}
+
+body[data-dsh-claude-style] .dsh-claude-swap-sizer-word {
+  grid-area: 1 / 1;
 }
 
 /* Every copy lies over the sizer, so the box keeps its size whatever is
