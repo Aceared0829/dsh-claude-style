@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**用量面板里热力格的日期提示不再把面板撑出横向滚动条**：提示胶囊按自己当时的宽度决定贴向格子的哪一边，靠近两端的格子不再把它带出面板边缘，悬停时面板本身也不再横向滚动。",
+  "en": "**A heat cell's day tip no longer pushes the usage panel into a horizontal scrollbar**: the pill lines up with the side its own width needs, so a cell near either end keeps it inside the panel and hovering no longer scrolls the panel sideways."
+}

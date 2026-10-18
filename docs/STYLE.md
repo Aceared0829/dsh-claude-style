@@ -792,8 +792,10 @@ week can never fall past the edge. Hovering a cell shows Claude Code's day tip a
 once: a solid pill in the label ink with the canvas tone for text (so it inverts
 with the theme), 13px medium, reading the day in the shell's language and the
 tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure the cell's heat
-is bucketed from; over the three columns at either end the pill lines
-up with the cell's outer edge so it stays inside the panel.
+is bucketed from; the pill is centred on its cell except where its own width
+would carry it past the panel's edge, and there it lines up with that cell's
+outer edge so it stays inside the panel, the width being read off the cell the
+pointer is on (`packages/client/src/features/home/heat-tip.ts`).
 Models is Claude Code's own shape: one column
 per day of the chart's thirty-day window, stacked from the axis up with each
 model's slice in its rank's colour (ranks past the ramp share its last, grey

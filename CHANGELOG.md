@@ -17,6 +17,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- **用量面板里热力格的日期提示不再把面板撑出横向滚动条**：提示胶囊按自己当时的宽度决定贴向格子的哪一边，靠近两端的格子不再把它带出面板边缘，悬停时面板本身也不再横向滚动。
 - **设置页里刚改动的开关不再先跳回原值**：改动交给宿主的这段时间里，宿主重读设置文档不会再把页面上的值盖回改动之前，控件停在读者按下的那一档，宿主给出答复时再按答复校正。
 - **关闭「聊天区滚动动画」后，进行中的状态行留在文档里**：此时滚动整份交回宿主，这一行不再停在输入框上方，读者往回翻看时它随内容一起滚走。
 
@@ -31,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- **A heat cell's day tip no longer pushes the usage panel into a horizontal scrollbar**: the pill lines up with the side its own width needs, so a cell near either end keeps it inside the panel and hovering no longer scrolls the panel sideways.
 - **A control just changed in the settings page no longer snaps back first**: while the change is crossing to the host, a re-read of the settings document no longer puts the pre-change value back on the page — the control stays where the reader left it and follows the host's answer when it arrives.
 - **With the chat-area scrolling animation off, the running status line keeps its document place**: the host owns the scroll then, so the line no longer rests above the composer and wheels away with the content as you read back.
 

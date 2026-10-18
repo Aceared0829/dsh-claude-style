@@ -2,6 +2,7 @@ import * as React from 'react'
 import { formatHomeCount, homeShortDate, homeShortDateFormat } from './data'
 import type { HeatCell, HomePanel } from './data'
 import { formatCompactTokens } from '../../shared/format'
+import { HEAT_CELL_SELECTOR, placeHeatTip } from './heat-tip'
 import { copy } from './copy'
 
 /**
@@ -26,9 +27,6 @@ export function createHomeOverview() {
     )
   }
 
-  /** Columns at each end of the grid whose tip pill lines up with its cell's outer edge. */
-  const HOME_TIP_EDGE = 3
-
   /**
    * A heat cell's tip: the day and the tokens that day spent, "Sep 9 —
    * 15.9k tokens". Both sources behind the grid carry a per-day token total,
@@ -44,7 +42,6 @@ export function createHomeOverview() {
   function view(data: HomePanel) {
     const skeleton = !data.known
     const format = homeShortDateFormat()
-    const columns = Math.ceil(data.grid.cells.length / 7)
     return React.createElement(
       React.Fragment,
       null,
@@ -60,20 +57,25 @@ export function createHomeOverview() {
       ),
       React.createElement(
         'div',
-        { className: 'dsh-claude-home-heat', 'data-skeleton': data.known ? undefined : '' },
-        data.grid.cells.map((cell, index) => {
+        {
+          className: 'dsh-claude-home-heat',
+          'data-skeleton': data.known ? undefined : '',
+          // The pill a cell carries is wider than the cell, so where it may
+          // stand is decided from the width it takes on the cell the pointer
+          // is over, never from a column count (heat-tip.ts).
+          onMouseOver(event: React.MouseEvent<HTMLDivElement>) {
+            const cell = (event.target as HTMLElement).closest?.(HEAT_CELL_SELECTOR)
+            if (cell instanceof HTMLElement) placeHeatTip(cell, event.currentTarget)
+          },
+        },
+        data.grid.cells.map(cell => {
           const tip = skeleton ? undefined : heatTip(format, cell)
-          const column = Math.floor(index / 7)
           return React.createElement('span', {
             key: cell.date,
             className: 'dsh-claude-home-heat-cell',
             'data-level': cell.level,
             'data-tip': tip,
             'aria-label': tip,
-            // The pill is centred on its cell, except near the grid's two
-            // ends, where it lines up with the cell's outer edge and stays
-            // inside the panel.
-            'data-edge': column < HOME_TIP_EDGE ? 'start' : column >= columns - HOME_TIP_EDGE ? 'end' : undefined,
           })
         }),
       ),
