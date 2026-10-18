@@ -3,6 +3,6 @@
   "order": 0,
   "at": "2026-10-18",
   "external": false,
-  "zh": "**功能一览与设置说明两份文档移除了**：插件做什么由 README 的展示图与设置页本身说明，逐功能的清单与六个分页的设置表不再维护；清单里为中英文描述留的那一格也随之取消，加一个功能只写它的代码与开关行。",
-  "en": "**The feature list and the settings documents are removed**: what the plugin does is told by the README's screenshots and the settings page itself, so the per-feature list and the six-tab settings table are no longer maintained; the manifest's field for a two-language description goes with them, and a new feature is its code and its settings rows alone."
+  "zh": "移除功能一览与设置说明两份文档，功能清单不再写中英文描述。",
+  "en": "Remove the feature list and the settings documents; a feature manifest no longer carries a two-language description."
 }
