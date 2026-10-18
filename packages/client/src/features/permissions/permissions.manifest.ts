@@ -13,7 +13,6 @@ export default {
     rank: 50,
     pref: 'permissionsControl',
     title: 'permissionsTitle',
-    desc: 'permissionsDesc',
     // The segments are drawn into the restyled composer.
     requires: {
       pref: 'composerScope',

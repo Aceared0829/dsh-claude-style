@@ -11,7 +11,6 @@ export default {
     rank: 30,
     pref: 'workspaceView',
     title: 'workspaceTitle',
-    desc: 'workspaceDesc',
   }],
   cases: ['switches', 'popovers']
 } satisfies FeatureManifest

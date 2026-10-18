@@ -2,7 +2,6 @@
   "contextTotalTime": { "zh": "总用时", "en": "Total time" },
   "statsLineLabel": { "zh": "对话统计信息", "en": "Conversation statistics" },
   "statsPositionTitle": { "zh": "对话统计信息位置", "en": "Conversation statistics position" },
-  "statsPositionDesc": { "zh": "「收进上下文」把会话数字放进上下文圆环的弹层；「独立成行」写在输入卡片下面一行，末尾是圆环。", "en": "Inside the context popover puts the session's figures in the ring's panel; On its own line writes them under the input card, ending in the ring." },
   "statsPositionInline": { "zh": "独立成行", "en": "On its own line" },
   "statsPositionContext": { "zh": "收进上下文", "en": "Inside the context popover" },
   "statsComposerRequired": { "zh": "只在「重绘对话框」覆盖对话页时生效。", "en": "Takes effect only while Composer restyle covers the conversation." }

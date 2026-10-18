@@ -12,7 +12,6 @@ export default {
     rank: 20,
     pref: 'turnNav',
     title: 'turnNavTitle',
-    desc: 'turnNavDesc',
   }],
   cases: ['turn-nav']
 } satisfies FeatureManifest

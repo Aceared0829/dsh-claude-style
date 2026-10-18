@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**设置页的说明改成一句话，能省的就省**：此前有的写着整段——把开关两种状态各自的样子、每个选项分别是什么都讲一遍——有的只有一句，有的干脆不写；现在每条说明只说这一项给你什么，标题与选项已经说清的那几行只剩标题与控件。",
+  "en": "**Settings descriptions say one clause, and only where it adds something**: a line that used to spell out both states of a switch and every choice beside it now says only what the setting gives the reader, and a row whose title and choices already say it carries no line at all."
+}

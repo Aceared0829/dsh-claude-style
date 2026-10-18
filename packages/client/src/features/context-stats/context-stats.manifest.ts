@@ -16,7 +16,6 @@ export default {
     rank: 35,
     pref: 'statsPosition',
     title: 'statsPositionTitle',
-    desc: 'statsPositionDesc',
     choiceLabels: {
       [STATS_POSITION_INLINE]: 'statsPositionInline',
       [STATS_POSITION_CONTEXT]: 'statsPositionContext',

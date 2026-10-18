@@ -15,7 +15,6 @@ export default {
     rank: 10,
     pref: 'chatAnimations',
     title: 'chatAnimationsTitle',
-    desc: 'chatAnimationsDesc',
   }],
   cases: ['chat-follow']
 } satisfies FeatureManifest

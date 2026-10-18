@@ -3,5 +3,5 @@
   "accountSettingsRow": { "zh": "设置", "en": "Settings" },
   "footerPluginRow": { "zh": "插件", "en": "Plugin" },
   "collapseTitle": { "zh": "折叠侧栏设置区", "en": "Collapse the sidebar settings area" },
-  "collapseDesc": { "zh": "将侧栏底部的设置入口收进账户弹层。", "en": "Fold the sidebar footer's settings entry into the account popover. Off restores the host's footer." }
+  "collapseDesc": { "zh": "设置入口收进账户弹层。", "en": "The settings entry moves into the account popover." }
 }

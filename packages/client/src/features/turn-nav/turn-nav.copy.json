@@ -1,4 +1,3 @@
 {
-  "turnNavTitle": { "zh": "对话导航", "en": "Conversation navigator" },
-  "turnNavDesc": { "zh": "重绘对话导航区域。", "en": "Hover the turn marks at the conversation's right edge to open a list of every turn; the wheel scrolls it, a click jumps over. Alt+↑ / Alt+↓ jump between turns. Off restores the host's turn marks." }
+  "turnNavTitle": { "zh": "对话导航", "en": "Conversation navigator" }
 }

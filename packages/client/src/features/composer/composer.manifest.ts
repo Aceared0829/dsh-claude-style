@@ -18,7 +18,6 @@ export default {
     rank: 10,
     pref: 'composerScope',
     title: 'composerTitle',
-    desc: 'composerDesc',
     choiceLabels: { off: 'scopeOff', hero: 'scopeHero', conversation: 'scopeConversation', all: 'scopeAll' },
   }],
   cases: ['composer', 'sync-fault', 'hero', 'late-forms']

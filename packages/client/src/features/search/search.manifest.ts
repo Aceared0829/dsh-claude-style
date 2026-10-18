@@ -20,7 +20,6 @@ export default {
     pref: 'searchStyle',
     parent: 'sidebarSearch',
     title: 'searchStyleTitle',
-    desc: 'searchStyleDesc',
     choiceLabels: { icon: 'searchStyleIcon', overlay: 'searchStyleOverlay', standalone: 'searchStyleStandalone' },
   }],
   cases: ['search', 'switches']

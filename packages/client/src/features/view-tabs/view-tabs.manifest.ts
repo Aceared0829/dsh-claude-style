@@ -11,7 +11,6 @@ export default {
     rank: 50,
     pref: 'viewTabs',
     title: 'viewTabsTitle',
-    desc: 'viewTabsDesc',
   }],
   cases: ['view-tabs', 'switches']
 } satisfies FeatureManifest

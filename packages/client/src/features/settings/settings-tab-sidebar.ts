@@ -26,7 +26,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.row(
           'dockCards',
           copy('dockCardsTitle'),
-          copy('dockCardsDesc'),
+          null,
           view.controls.toggle(view.prefs.dockCards !== false, value => { view.write({ dockCards: value }) }),
         ),
       },
@@ -35,7 +35,7 @@ export function createSettingsSidebarTab(): SettingsTab {
         node: controls.row(
           'sidebarLayout',
           copy('sidebarLayoutTitle'),
-          copy('sidebarLayoutDesc'),
+          null,
           controls.segment(layoutOptions, prefs.sidebarLayout, value => { write({ sidebarLayout: value }) }),
         ),
       },

@@ -122,7 +122,7 @@ export function createSettingsGeneralTab(): SettingsTab {
         node: controls.row(
           'autoPopover',
           copy('autoPopoverTitle'),
-          copy('autoPopoverDesc'),
+          null,
           controls.segment(autoPopoverOptions, prefs.autoPopover, value => { write({ autoPopover: value }) }),
         ),
       },

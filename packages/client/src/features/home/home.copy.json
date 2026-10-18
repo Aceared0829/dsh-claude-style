@@ -84,7 +84,6 @@
   "homeTopModel": { "zh": "最常用模型", "en": "Favorite model" },
   "homeHeatTipTokens": { "zh": "{date} — {tokens} Token", "en": "{date} — {tokens} tokens" },
   "homeTitle": { "zh": "首页版面", "en": "Home layout" },
-  "homeDesc": { "zh": "新会话页的排版", "en": "The new-conversation page layout. Classic centers the hero and input card; Studio pins the composer to the bottom and shows usage." },
   "homeClassic": { "zh": "经典", "en": "Classic" },
   "homeStudio": { "zh": "工作台", "en": "Studio" }
 }

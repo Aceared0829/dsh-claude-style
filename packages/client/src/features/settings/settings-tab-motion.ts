@@ -67,7 +67,7 @@ export function createSettingsMotionTab(): SettingsTab {
         node: view.controls.row(
           'motion',
           copy('motionTitle'),
-          copy('motionDesc'),
+          null,
           view.controls.segment(motionOptions, prefs.motion, value => { write({ motion: value }) }),
         ),
       },
