@@ -4,11 +4,10 @@
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
- * The skin's per-frame cost used to follow the size of the page: a pass queried
- * the document for the host nodes it reads, and every streaming batch ran every
- * feature's sync. This scenario grows a transcript first, then streams one more
- * answer while an in-page probe times the frames, so a change to that cost is
- * judged on the numbers a long session really pays. The bounds are loose on
+ * The scenario grows a transcript first, then streams one more answer while an
+ * in-page probe times the frames, so what a frame costs once the conversation is
+ * long is judged on the numbers a long session really pays — a pass that grew
+ * with the page, or with its square, trips the bounds below. The bounds are loose on
  * purpose — a lane runner is a shared machine — and the readings are printed
  * with every check so a regression is visible before it trips one.
  *

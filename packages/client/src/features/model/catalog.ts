@@ -15,11 +15,9 @@ export interface CatalogProvider {
 export type ModelCatalog = ReturnType<typeof createModelCatalog>
 
 /**
- * Model catalog: the per-session ModelDirectory and its reactive store.
- *
- * Split out of the model picker's install (packages/client/src/features/model/model-picker.ts); this
- * fragment is the catalog half of that feature. It reaches outside its own
- * closure only through its options — `ctx` (the host context, for
+ * Model catalog: the per-session ModelDirectory and its reactive store — the
+ * catalog half of the model picker feature. It reaches outside its own closure
+ * only through its options — `ctx` (the host context, for
  * `sessions` / `modelDirectories`) and `schedule()` (the scheduler
  * wake-up the directory's store subscription calls). The directory
  * instance, the session id, the warm-up flag and the provider listeners

@@ -2,8 +2,8 @@ import { expect, test } from 'vitest'
 import { chatSendOpaque } from './send-snapshot'
 
 test('a translucent fill is written as the colour the screen paints', () => {
-  // The host's own light user bubble over its canvas: the pair measured on a
-  // live page, so the stand-in's plate matches what the row shows.
+  // The host's own light user bubble over its canvas, so the stand-in's plate
+  // matches what the row shows.
   expect(chatSendOpaque('rgba(0, 0, 0, 0.08)', 'rgb(252, 252, 251)')).toBe('rgb(232, 232, 231)')
   // An opaque fill is already the screen's colour and is left byte for byte.
   expect(chatSendOpaque('rgb(234, 240, 254)', 'rgb(251, 252, 255)')).toBe('rgb(234, 240, 254)')

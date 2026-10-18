@@ -70,10 +70,6 @@ function colour(context: CanvasRenderingContext2D, style: CSSStyleDeclaration, t
  * moves, the next draw is waited for on a timer set to the next change of
  * characters; frames run only while a wave or its afterglow is on the canvas.
  * The colours are read when a frame draws, and the size when the root resizes.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let mounted: Mounted | null = null

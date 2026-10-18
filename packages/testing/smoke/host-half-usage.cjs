@@ -89,9 +89,9 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   }
   const value = usage?.value ?? {}
   const days = Array.isArray(value.days) ? value.days : []
-  // Reading one changed log by id used to walk the whole stored corpus first, so
-  // a pass over a corpus grew with the square of the changed sessions; the
-  // listing-free observation resolves each one from a `stat` instead
+  // A pass over a corpus costs one observation per changed session and no
+  // listing of the stored corpus: a read that walked the whole archive first
+  // would grow with the square of the changed sessions.
   check('no changed log is read through a whole stored-corpus listing',
     usageListings.length === 0, JSON.stringify({ usageListings, usageReads }))
   check('every changed log is still read, by id, and its lease released',

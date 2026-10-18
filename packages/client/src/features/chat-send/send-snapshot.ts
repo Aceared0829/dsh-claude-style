@@ -89,8 +89,8 @@ export function chatSendPixel(value: string) {
  * `behind`, at full opacity.
  *
  * The stand-in's shell carries the bubble's own fill, and the host's user bubble
- * is often a translucent token — measured in this build, `rgba(0, 0, 0, 0.08)`
- * over the canvas. Left translucent, the stand-in is two paints at once: its own
+ * is often a translucent token over the canvas. Left translucent, the stand-in
+ * is two paints at once: its own
  * fill composited again over the real bubble it fades across, so the part of the
  * row it covers comes out a shade apart from the part left outside it. Written
  * flat, it is the page's own colour wherever it stands, alone or on the row.

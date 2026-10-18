@@ -248,8 +248,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The footer holds the divider and the More-models row, and nothing else:
-   * the effort slider moved to its own card (packages/client/src/features/effort/effort-picker.ts).
+   * The footer holds the divider and the More-models row, and nothing else.
    * Rebuilt only when the row set changes — the divider exists to close the
    * list off from what follows it, so with no More-models row it is a stray
    * line and is not drawn either.

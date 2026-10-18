@@ -47,10 +47,6 @@ import type manifest from './turn-nav.manifest'
  * the last target, since the reading position is still on its way there.
  *
  * A host interface for jumping to a turn replaces the pressed marks.
- *
- * @param ctx - client context.
- * @param ui - the shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** On the host's rail while the skin's rail stands in for it: the stylesheet hides it, keeping its layout. */

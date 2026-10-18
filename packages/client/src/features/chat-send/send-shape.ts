@@ -95,12 +95,10 @@ export const CHAT_RISE_OMEGA = 7.5
  * faster the shape is than the displacement (see CHAT_ACROSS_OMEGA): the shape
  * runs the same spring, compressed into this stretch.
  *
- * Earlier it was pushed later because the shape was written per frame on the
- * main thread and had to finish early; it is back at 0.45 for a different
- * reason — the earlier the shape finishes, the earlier the width is in place
- * and the earlier the right edge retreats into the column. Half the shape is
- * gone in twenty milliseconds, 79% in fifty, 99% in a hundred, and it is set
- * by a hundred and thirty-five; what is left is the rise and the landing.
+ * It finishes early so the width is in place early and the right edge retreats
+ * into the column: half the shape is gone in twenty milliseconds, 79% in fifty,
+ * 99% in a hundred, and it is set by a hundred and thirty-five; what is left is
+ * the rise and the landing.
  */
 export const CHAT_MORPH_END = 0.45
 
@@ -177,9 +175,8 @@ export function chatSendSpringProgress(u: number, damping: number, omega: number
 /**
  * The vertical progress: the under-damped rise, with what it has not yet
  * settled at the end of the flight taken out by a cubic that is all but zero
- * early on. Uncorrected it ends 0.3% past the target (1.5px over a 500px
- * rise), and the landing would show the stand-in and the real bubble that
- * far apart.
+ * early on. Uncorrected, the landing would show the stand-in and the real
+ * bubble that far apart.
  */
 export function chatSendRiseProgress(u: number) {
   const residual = chatSendSpringProgress(1, CHAT_RISE_DAMPING, CHAT_RISE_OMEGA) - 1

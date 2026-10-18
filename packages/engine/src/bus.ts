@@ -250,7 +250,7 @@ function registryFor(selector: string): MatchRegistry {
 /**
  * Read one selector's matches through a shared registry (D40). The list is
  * resolved once and kept current by the bus's child list records, so a pass
- * reads it where it used to query the document.
+ * reads it without walking the document.
  */
 export function observeMatches<T extends Element>(selector: string): MatchList<T> {
   const registry = registryFor(selector)

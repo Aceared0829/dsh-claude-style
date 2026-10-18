@@ -1,39 +1,19 @@
 /**
- * The words the model's own reasoning hands the waiting line (features/chat-wait):
- * the clause the model says it is on — "I am checking the file is true" — read
- * off the tail of the newest reasoning block. One scan reads a fixed window of
- * that text and runs inside the line's own tick, so it costs no timer, no host
- * query and no page read of its own.
+ * The words the model's own reasoning hands the waiting line (features/chat-wait,
+ * D70): the clause the model says it is on — "I am checking the file is true" —
+ * read off the tail of the newest reasoning block, carried whole and without the
+ * inline markers the reasoning is written with.
  *
- * Where a sentence ends is the page's own sentence rules (`Intl.Segmenter`): a
- * dot inside a file name, a version number or an abbreviation does not end one,
- * so "I am reading app.js now." hands the line that whole clause and `e.g.` no
- * longer cuts it short. A clause is taken once its sentence has ended: wording
- * that grew with every tick would swap in place several times inside one
- * sentence, and this line is read at a glance beside its clock.
+ * The shape is the whole rule: an auxiliary (`am`, `is`, `are`, their
+ * contractions, `have been`), up to two words of the closed class that may stand
+ * between it and its participle, and a participle. A negated clause, a plan the
+ * model has not started, anything inside a quotation, and reasoning in another
+ * language all hand the line nothing, and where a sentence ends is the page's
+ * own sentence rules (`Intl.Segmenter`), so a dot inside a file name does not
+ * cut a clause short. The direction and what it costs the reader are D70's.
  *
- * Inside that sentence the shape is the whole rule: an auxiliary (`am`, `is`,
- * `are`, their contractions, and the perfect `have been`), up to two words of
- * the closed class that may stand between it and its participle (`now`,
- * `currently`, `still`, …), and a participle. A negated clause ("I am not sure
- * …") is passed over, since it says what the model is not doing, and so is a
- * plan the model has not started ("Let me check …", "about to check …"): this
- * line says the work in hand. What a quotation carries is passed over as well —
- * a model quoting a sentence it read, the line's own waiting word among them, is
- * not a model saying what it is doing — and reasoning in another language hands
- * the line nothing: only this shape can be told apart from a mention of it. The
- * shape admits an adjective built the same way ("the file is missing"), which no
- * rule here can tell from a participle.
- *
- * The clause is carried whole, without the inline markers the reasoning is
- * written with (backticks, paired emphasis, a link's brackets). How much of it
- * the row can show is the row's own question, answered by the line's box and the
- * ellipsis it draws where the room runs out (features/chat-wait/chat-wait.css),
- * so a clause is never cut to a character count the window knows nothing about.
- *
- * The reading is remembered for the text it read: a pass runs four times a
- * second and on every publish the host makes, and a reasoning block that has not
- * grown answers the same both times.
+ * The reading is remembered for the text it read: a pass runs several times a
+ * second, and a reasoning block that has not grown answers the same both times.
  */
 
 /** How much of the reasoning's tail one scan reads, in characters. */

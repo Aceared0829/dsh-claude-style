@@ -10,11 +10,8 @@ import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelEntry, HostModelGroup } from '@dsh-claude-style/contracts/services'
 
 /**
- * Model picker rows: the row/cell builders and the two level-1 list
- * selectors.
- *
- * Split out of the model picker's install (packages/client/src/features/model/model-picker.ts); this
- * fragment is the row half of that feature. createModelRows reaches the
+ * Model picker rows: the row/cell builders and the two level-1 list selectors,
+ * the row half of the model picker feature. createModelRows reaches the
  * feature's closure only through its options: ctx (the copy lookup),
  * pickModel(provider, modelId) (commit a row), subHoverIntent (the
  * More-models dwell/grace), and isSubOpen() / closeSub() / openSub() (the
@@ -78,8 +75,8 @@ export function createModelRows(options: {
     const brand = modelBrand(model.id)
     // The brand id is the row's styling hook — it is what gives a vendor's rows
     // their own typography (see .dsh-claude-model-name in
-    // features/model/model-picker.css). The vendor's mark is no longer drawn
-    // here: it rides inside the label's lockup. The scheduler's attributeFilter
+    // features/model/model-picker.css). The vendor's mark rides inside the
+    // label's lockup. The scheduler's attributeFilter
     // does not watch data-*, so this write cannot re-trigger a pass.
     if (brand) item.setAttribute('data-brand', brand)
     const copy = built.text

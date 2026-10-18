@@ -414,9 +414,9 @@ async function hostHalf() {
   await ask('search box')
   check('a moved revision is read again by the prewarm, and only it',
     same(reads.slice().sort(), ['session-a', 'session-b', 'session-b']), JSON.stringify(reads))
-  // Each stale session is read by id, and that read no longer walks the stored
-  // corpus The panel's own revision listing is a separate, throttled
-  // pass and is not counted here.
+  // Each stale session is read by id, without walking the stored corpus. The
+  // panel's own revision listing is a separate, throttled pass and is not
+  // counted here.
   check('the catch-up folds its stale sessions without a stored-corpus listing',
     same(listings, []), JSON.stringify(listings))
   check('every log the corpus search reads releases its observation',

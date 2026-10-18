@@ -469,10 +469,6 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
  * only while the preference is on and dsh-chat-ux, which drives the same
  * moments and writes the same scroll positions, is off the page (the
  * manifest); this teardown hands the chat area back whole.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const foldBusy = () => ui.chatFold !== undefined && ui.chatFold !== null && ui.chatFold.isBusy()

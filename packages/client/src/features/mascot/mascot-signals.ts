@@ -122,7 +122,6 @@ export function mascotLevel(reading: MascotReading): MascotLevel {
  * state picks an animation, and its priority decides which of two states
  * shows.
  *
- * @param ctx - client context.
  * @param onMoment - `onMoment(moment)` with 'error' or 'attention'.
  * @param onChange - the state may have changed with no DOM change to wake a
  *     pass: the session status moved, the chat target published, or a

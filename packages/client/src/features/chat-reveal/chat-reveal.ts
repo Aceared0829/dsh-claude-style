@@ -16,10 +16,6 @@ import type manifest from './chat-reveal.manifest'
  * API) is handled inside it, and the animation choice is read here so a
  * running engine is taken down with it (D40): what comes back from the engine
  * is null, and the mark the stylesheet reads is not written either.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The running engine, or null while the animation choice holds it still or it cannot be drawn. */

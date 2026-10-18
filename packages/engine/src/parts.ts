@@ -347,7 +347,6 @@ export function markParts(root: Element) {
  *
  * @param next - the skin's own attribute vocabulary and menu anchors (D73).
  * @param onMarked - called once per batch that changed a mark.
- * @returns teardown.
  */
 export function installParts(next: PartsVocabulary, onMarked?: () => void) {
   adopted = next

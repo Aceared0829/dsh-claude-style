@@ -58,8 +58,6 @@ export interface SearchSection {
  * - Shortcuts: the shortcut catalog; picking one opens the host's shortcut
  *   reference filtered to it (commands have no public way to run).
  * - Actions: new session, settings, plugins and the shortcut reference.
- *
- * @param ctx - client context.
  * @param reveal - lands the conversation on one message's turn after a content
  *     hit is picked; the palette owns the waiting, the navigator the jump
  * @returns the source table the palette reads.

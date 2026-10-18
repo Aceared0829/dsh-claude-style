@@ -499,10 +499,6 @@ export function createCaretMotion(read: () => string) {
 
 /**
  * Install the caret motion and keep it in step with the preference.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // dsh-chat-ux draws its own caret on the same surfaces, and two drawn

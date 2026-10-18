@@ -78,17 +78,12 @@ export const HOME_HEAT_WEEKS = 26
 export const HOME_HEAT_STEPS = HOME_HEAT_RAMP.length
 /**
  * The yardstick line's books, shortest first: each title's copy key, its
- * English fallback, and its length in tokens. Lengths carry two sources:
- * the public-domain classics were measured by feeding their full
- * Project Gutenberg / Wikisource text to the o200k_base tokenizer (the
- * English original or the standard English translation; Faust is the
- * German original), while
- * titles still under copyright keep word-count estimates (English at the
- * same 1.3 tokens a word The Hobbit's 123k comes from; the Three-Body
- * volumes, To Live and Ordinary World at the 0.96 tokens a character that
- * tokenizer measures on modern simplified-Chinese prose).
+ * English fallback, and its length in tokens. A public-domain classic is
+ * measured by feeding its full Project Gutenberg / Wikisource text to the
+ * o200k_base tokenizer (the English original or the standard English
+ * translation; Faust is the German original); a title still under copyright
+ * keeps a word-count estimate instead.
  */
-/** The yardstick line's books, shortest first: the copy key of each title, and its length in tokens. */
 export const HOME_BOOKS: { key: CopyKey, tokens: number }[] = [
   { key: 'homeBookTaoTeChing', tokens: 7607 },
   { key: 'homeBookYellowWallpaper', tokens: 7778 },
@@ -224,7 +219,6 @@ export function homeModelTokens(entry: UsageModel): number {
  * The roll-up store: the route's answer, the list's answer, and the polling
  * that fills the first one in.
  *
- * @param ctx - client context.
  * @returns accessors, the loads, and a stop that ends polling and listeners.
  */
 export function createHomeUsage(ctx: HostContext) {

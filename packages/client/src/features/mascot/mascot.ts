@@ -18,10 +18,6 @@ import type manifest from './mascot.manifest'
  * is the "where it appears" preference: the home page alone, or the home
  * page and the conversation. The other character is released, so only one
  * mascot is ever on the page.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const crab = createMascotCrab(ctx, ui)

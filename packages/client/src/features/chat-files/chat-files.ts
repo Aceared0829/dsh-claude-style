@@ -58,10 +58,6 @@ const SWAP_MS = motionMs('--dsh-claude-duration-swap')
  * second registration at one priority throws, so the entry keeps this feature
  * uninstalled while that plugin is on the page and installs it when the plugin
  * goes (the manifest).
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const h = React.createElement

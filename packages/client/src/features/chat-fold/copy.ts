@@ -2,7 +2,6 @@ import COPY from './chat-fold.copy.json'
 import { featureCopy } from '../../core/i18n'
 import type { CopyParams } from '../../core/i18n'
 
-/** One key of this feature's own copy. */
 export type CopyKey = keyof typeof COPY
 
 /**

@@ -57,7 +57,6 @@ export interface MascotCharacter {
  * keeps playing until the new one is ready, so a switch never blinks. A host
  * placement slot or activity service retires the host reads here.
  *
- * @param ctx - client context.
  * @param ui - shared handle table (`ui.composer`).
  * @param character - `{ name, sheets, frameMs, gutter, extras, createSheets }`:
  *     `name` prefixes the class names, the custom properties and the anchor

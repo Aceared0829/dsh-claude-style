@@ -163,9 +163,6 @@ export const CHAT_ARRIVED_FRAMES = 8
  *   One screen only          with either end off screen the stand-in would
  *                            vanish at the edge and the message would look like
  *                            it appeared out of nothing, so it does not fly.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
  * @returns teardown: the listeners go, and a flight in progress — a hidden
  *     message included — is settled.
  */

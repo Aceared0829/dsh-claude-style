@@ -39,9 +39,9 @@ export const FOLD_BUSY_GRACE_MS = 50
  * up in between.
  *
  * Shorter than the stall itself: the first frame after a long task still
- * carries the timestamp queued before the stall and the jump lands on the one
- * after it — a measured 40 ms task leaves a 37 ms gap. 25 ms is about half a
- * frame at 60 Hz.
+ * carries the timestamp queued before the stall, so the jump lands on the one
+ * after it and the two are always further apart than the stall was long. 25 ms
+ * is about half a frame at 60 Hz.
  */
 export const FOLD_FRAME_GAP_LIMIT_MS = 25
 /** Before this screen's own frame interval has been measured, one frame at 60 Hz. */

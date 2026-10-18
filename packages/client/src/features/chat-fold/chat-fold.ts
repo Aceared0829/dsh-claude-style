@@ -35,10 +35,6 @@ export interface ChatFoldHandle extends FeatureHandle {
  * the preference is on and dsh-chat-ux is off the page (the manifest), and
  * this teardown leaves the clicks alone again. The follow guard asks whether
  * a door is rolling through `ui.chatFold`, which exists only while installed.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   document.body.setAttribute(CHAT_FOLD_ATTR, '')

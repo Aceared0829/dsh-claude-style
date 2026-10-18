@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**内置文档与注释里重复的那一份清掉了**：每个功能签名上一律重复的三行参数注释、每个 `copy.ts` 里同一句「One key of this feature's own copy」、以及散在各处的「此前是怎么做的」「实测读到多少」一律删去；`constants.ts` 叠放的两段模块注释合成一段（顺带修掉一处注释里多出的星号），`shared/activity-phrase.ts` 的长注释压到约定长度并引用 D70，`docs/SETTINGS.md` 与英文版里三段与功能一览逐字相同的说明改成指向那一条。代码行为不变。",
+  "en": "**The built-in documents and comments lose the copy that stood twice**: the three parameter lines every feature's signature repeated, the same \"One key of this feature's own copy\" line in every `copy.ts`, and the scattered notes about how the code used to work and what a measurement once read are gone; `constants.ts`'s two stacked module comments are one (and a stray asterisk in one of them is fixed), `shared/activity-phrase.ts`'s long comment is down to the length the conventions set with D70 cited, and the three paragraphs in `docs/SETTINGS.md` and its English twin that repeated the feature list word for word now point at it. No behaviour changes."
+}

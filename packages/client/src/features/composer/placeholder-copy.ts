@@ -54,7 +54,7 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
   function syncAttachmentPlaceholder(hero: boolean, active: boolean) {
     if (!active) {
       // The synthetic ones are ordinary placeholders too, so the registry in
-      // hand names exactly what this sweep used to query the document for.
+      // hand names every node this sweep has to take away.
       for (const node of placeholders.all()) {
         if (node.hasAttribute(SYNTHETIC_ATTR)) node.remove()
       }

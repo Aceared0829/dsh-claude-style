@@ -22,6 +22,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **关闭「聊天区滚动动画」后，进行中的状态行留在文档里**：此时滚动整份交回宿主，这一行不再停在输入框上方，读者往回翻看时它随内容一起滚走。
 - **窗口很窄时，思考强度按钮留在输入卡片里**：它在模型按钮旁边借的那点宽度改为从模型名的截断里出，输入卡片不再因此横向滚动，按钮也不会画到侧栏上方。
 
+### 其他变更
+
+- **内置文档与注释里重复的那一份清掉了**：每个功能签名上一律重复的三行参数注释、每个 `copy.ts` 里同一句「One key of this feature's own copy」、以及散在各处的「此前是怎么做的」「实测读到多少」一律删去；`constants.ts` 叠放的两段模块注释合成一段（顺带修掉一处注释里多出的星号），`shared/activity-phrase.ts` 的长注释压到约定长度并引用 D70，`docs/SETTINGS.md` 与英文版里三段与功能一览逐字相同的说明改成指向那一条。代码行为不变。
+
 <h3 id="en-unreleased">New Features</h3>
 
 - **Beam rows draw the vendor lockup**: an id such as `opencode-go/beam-free` now claims Reflection's lockup. The wordmark is the vendor's, which the catalog's name never spells, so it leads the label; the mark wears the vendor's own brand colour on the ivory canvas and the label's ink on the warm black one.
@@ -37,6 +41,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **A control just changed in the settings page no longer snaps back first**: while the change is crossing to the host, a re-read of the settings document no longer puts the pre-change value back on the page — the control stays where the reader left it and follows the host's answer when it arrives.
 - **With the chat-area scrolling animation off, the running status line keeps its document place**: the host owns the scroll then, so the line no longer rests above the composer and wheels away with the content as you read back.
 - **With a very narrow window the reasoning-effort trigger stays inside the composer card**: the room it borrows beside the model trigger now comes out of the model name's truncation, so the card no longer scrolls sideways and the trigger is never drawn over the sidebar.
+
+### Chores
+
+- **The built-in documents and comments lose the copy that stood twice**: the three parameter lines every feature's signature repeated, the same "One key of this feature's own copy" line in every `copy.ts`, and the scattered notes about how the code used to work and what a measurement once read are gone; `constants.ts`'s two stacked module comments are one (and a stray asterisk in one of them is fixed), `shared/activity-phrase.ts`'s long comment is down to the length the conventions set with D70 cited, and the three paragraphs in `docs/SETTINGS.md` and its English twin that repeated the feature list word for word now point at it. No behaviour changes.
 
 ## [0.16.2] - 2026-10-17
 

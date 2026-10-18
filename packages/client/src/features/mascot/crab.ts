@@ -19,7 +19,6 @@ import type manifest from './mascot.manifest'
  * (the laptop, the thought bubble, letters, notes, the hat), so every
  * sheet is ready the moment it is wanted.
  *
- * @param ctx - client context.
  * @param ui - shared handle table (`ui.composer`).
  * @returns `{ sync, release, onActivity, dispose }`.
  */

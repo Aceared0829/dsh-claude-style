@@ -3,15 +3,13 @@
  * scripts/css.mjs checks on the syntax tree, the document attributes the
  * preferences resolve onto, and the feature gates. The stylesheets spell the
  * attributes out; the build holds every one they read to a name the browser
- * half writes. The preference vocabulary itself is the shared table
- * (packages/contracts/src/prefs.ts, D73), re-exported below. The identity
- * constants and the host half's route re-exports live here too.
- */
-/**
- * The preference vocabulary and the preference shape are the shared declaration
+ * half writes. The identity constants and the host half's route re-exports live
+ * here too.
+ *
+ * The preference vocabulary is the shared declaration
  * (packages/contracts/src/prefs.ts, D73): the values a preference holds, the
- * table that declares them, `Prefs` and the defaults. What follows is this
- * skin's own — the document attributes each value resolves onto, the feature
+ * table that declares them, `Prefs` and the defaults. What this file adds is the
+ * skin's own — the document attribute each value resolves onto, the feature
  * gates, and the identity constants.
  */
 export * from '@dsh-claude-style/contracts/prefs'
@@ -63,7 +61,7 @@ export const REPOSITORY_URL = 'https://github.com/Nwflower/dsh-claude-style'
 export const BRAND_ATTR = 'data-dsh-claude-brand'
 
 /**
- * The custom brand layer over either brand (D30, * packages/client/src/features/brand/brand.ts). Each part stands only while
+ * The custom brand layer over either brand (D30, packages/client/src/features/brand/brand.ts). Each part stands only while
  * the reader has supplied it: CUSTOM_MARK_ATTR while a mark image is in place,
  * CUSTOM_WORD_ATTR as `image` while a wordmark image is and as `text` while
  * only a brand name is, CUSTOM_TINT_ATTR while the images take the text colour

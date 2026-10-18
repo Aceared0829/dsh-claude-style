@@ -89,8 +89,8 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
   const W1 = end.width
   // The row's height as it stands, not as it stood when the echo was noticed: the
   // host grows a new row into place, so the box read a frame earlier can be well
-  // short of the one the stand-in lands on — measured on this build, 74 of the
-  // row's 164. A stand-in shorter than its row fades across part of it and leaves
+  // short of the one the stand-in lands on. A stand-in shorter than its row
+  // fades across part of it and leaves
   // a stripe where the two paints meet (send-shape.ts's height floor).
   const H1 = Math.max(end.height, inPagePixels(bubble.getBoundingClientRect().height))
   const R0 = snapshot.radius
@@ -373,8 +373,8 @@ export function startMorph(snapshot: ComposerSnapshot, bubble: HTMLElement, end:
     for (const animation of sealed) animation.cancel()
   }
   // The halo hangs outside the shell so the shell's `overflow: hidden` cannot
-  // clip it — its shadow would otherwise paint past the visible right edge
-  // (measured: 24px past the column on every frame). Its scale accounts for the
+  // clip it — its shadow would otherwise paint past the visible right edge. Its
+  // scale accounts for the
   // surface plus the shadow's spread, putting the shadow's outer edge right on
   // the visible right edge.
   const shadow = chatSendShadowSpread(snapshot.shadow)

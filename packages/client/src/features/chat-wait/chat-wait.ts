@@ -54,10 +54,6 @@ interface WaitLine {
  * (chat-wait.css). Under the Claude brand the host's whale tail gives way to the
  * skin's own loading dots, which lead the line where the whale did. The words,
  * the clock's units and the session's turns are the host's.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** On the host's running row while the line stands in for its words. */
@@ -252,8 +248,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }, wording.get(key), now)
     wording.set(key, pass.row)
     setSwappingText(label, pass.word, true)
-    // The loader no longer follows that wording: its three motions rotate on
-    // their own clock (wait-loader.ts), set going once with the line itself.
+    // The loader does not follow that wording: its three motions rotate on its
+    // own clock (wait-loader.ts), set going once with the line itself.
     clock.hidden = turn === undefined || turn.start === undefined
     if (turn !== undefined && turn.start !== undefined) writeTextInPlace(clock, formatHostDuration(Math.max(1000, now - turn.start.time), t))
     let overtime = false

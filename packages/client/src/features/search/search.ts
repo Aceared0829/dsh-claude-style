@@ -41,10 +41,6 @@ import type { CopyKey } from './copy'
  * Content search runs in the host half (packages/host/src/search.ts): the
  * host's own index is off in the web composition and cannot match part of a
  * Chinese sentence. It takes this over once it can.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const sources = createSearchSources(ctx, revealHit)

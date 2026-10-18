@@ -15,7 +15,6 @@ import type manifest from './mascot.manifest'
  * ride the bundle, so each is fetched from the host half the first time its
  * animation is wanted (whale-sheets.ts).
  *
- * @param ctx - client context.
  * @param ui - shared handle table (`ui.composer`).
  * @returns `{ sync, release, onActivity, dispose }`.
  */

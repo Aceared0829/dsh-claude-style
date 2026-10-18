@@ -349,9 +349,9 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
               // The element it renders in is remembered as soon as it is
               // queued, so the synchronous paint right after does not read the
               // colour again. One colour read is one forced style resolution,
-              // and this read lands exactly on the frame the new character was
-              // inserted and the styles just went stale — measured, 190 ms of a
-              // 190 ms frame was that read. If the element really is replaced
+              // and this read would land exactly on the frame the new character
+              // was inserted and the styles just went stale. If the element really
+              // is replaced
               // (the markdown layer rebuilding nodes) the paint's comparison
               // still notices and the colour is written again.
               colorElement: element,

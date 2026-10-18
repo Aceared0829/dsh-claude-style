@@ -16,8 +16,7 @@ import type manifest from './view-tabs.manifest'
  * preset picker, the overflow menu, the panel toggle). Whether the strip can
  * rise onto the title's line therefore depends on the window: centred, it fits
  * beside a short title on a wide header and collides with the actions on a
- * narrow one. A fixed offset cannot be right in both cases — this was learned
- * the hard way, with -38px landing the strip on top of the task chip.
+ * narrow one, so a fixed offset cannot be right in both cases.
  *
  * So the skin measures the boxes and writes ONE custom property,
  * `--dsh-view-tabs-shift`, which the stylesheet turns into the translate. The
@@ -45,10 +44,6 @@ import type manifest from './view-tabs.manifest'
  * the browser re-match the whole document on every DOM change.
  *
  * The strip's active pill slides between tabs (packages/client/src/shared/sliding-pill.ts).
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const STRIP = '[data-dsh-claude-part~="view-tabs"]'

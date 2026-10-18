@@ -18,9 +18,7 @@ import { textOf } from '../../shared/format'
  * catalog does not describe resolves to an empty string on purpose: a
  * name-only row beats an invented line.
  *
- * Split out of model-picker.ts when the effort slider pushed that fragment
- * past the repository's size stop line; nothing here touches the picker's
- * closure, only the shared copy document.
+ * Nothing here touches the picker's closure, only the shared copy document.
  */
 /**
  * Family entry. The model id is tried alone first because it is the stronger

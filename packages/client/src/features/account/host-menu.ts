@@ -9,8 +9,7 @@ const MENU_LOOK_TRIES = 20
 /**
  * The host's account trigger, its settings entry, and its open account menu.
  *
- * The skin no longer drives the host's account menu to read its rows: the
- * account surface (account/surface.ts) injects our rows into the menu while
+ * The account surface (account/surface.ts) injects our rows into the menu while
  * it is open, and the host renders its own rows. This factory therefore keeps
  * only what the remaining callers need — the trigger (which is both the entry
  * on a host that has one and the "is there an account area?" probe), the

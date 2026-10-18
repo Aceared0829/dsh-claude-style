@@ -32,10 +32,9 @@ export const CHAT_REVEAL_FOLD_QUIET_MS = 400
  * The most characters one batch may hold.
  *
  * The segment count is the batch's character count and multiplies every frame
- * (one Range per segment): a measured fifteen thousand characters arriving at
- * once pushes a single frame to 700 ms, and the frame-gap compensation keeps
- * those segments alive so the page cannot catch up. Real streaming batches run
- * a median of a dozen characters, so this gate is never touched.
+ * (one Range per segment), and the frame-gap compensation keeps those segments
+ * alive so the page cannot catch up. Real streaming batches run a median of a
+ * dozen characters, so this gate is never touched.
  */
 export const CHAT_REVEAL_BURST_LIMIT = 10000
 /** How many characters a container that just appeared may hold and still count as "the start of an answer". */

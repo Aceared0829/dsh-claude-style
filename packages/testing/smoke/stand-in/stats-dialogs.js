@@ -1,8 +1,8 @@
 /**
  * The host's two statistics dialogs. They mount on the pill's own click, and the
- * host commits them on its own schedule: the delay here is longer than the
- * skin's read window used to be, so a read that gives up early loses the section
- * (the 'card drops to Token usage only' bug).
+ * host commits them on its own schedule: the delay here is long enough that a
+ * read giving up early loses the section, which is the state this stand-in
+ * exists to reproduce.
  */
 (function () {
   var STATS_DIALOG_DELAY_MS = 500

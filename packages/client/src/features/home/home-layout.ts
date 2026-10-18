@@ -42,10 +42,6 @@ import { copy } from './copy'
  * the teardown. The numbers behind it come from `features/home/data.ts`,
  * and the two tabs render from `features/home/overview.ts` and
  * `features/home/models.ts`.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The host's list slot between the hero greeting and the composer card. */

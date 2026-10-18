@@ -21,11 +21,10 @@ import type { CopyKey } from './copy'
  * The sidebar's workspace section, re-cut as a two-state view.
  *
  * 进行中 needs no filtering of its own: the host's tree already leaves
- * archived sessions out (measured on 0.1.7-alpha.1 — 10 rows, 6 archived, zero
- * overlap). 已归档 is the skin's own flat list of archived conversations, a
- * live projection of the host's two client lists — the workspace
- * controller's archive set (ids) and the session list (titles and times) —
- * with an unarchive and a delete button on every row.
+ * archived sessions out. 已归档 is the skin's own flat list of archived
+ * conversations, a live projection of the host's two client lists — the
+ * workspace controller's archive set (ids) and the session list (titles and
+ * times) — with an unarchive and a delete button on every row.
  *
  * The host ships this filter, but its state lives in a store the ui-workspace
  * plugin keeps private (`createWorkspaceViewStore`), reachable only by clicking
@@ -34,10 +33,6 @@ import type { CopyKey } from './copy'
  * back into `refreshItems`. Deleting goes through the host half's route (D75),
  * then re-pulls the session list so the stale summary leaves. A filter opened
  * as a client service retires this list.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**

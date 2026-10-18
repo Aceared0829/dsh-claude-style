@@ -24,9 +24,9 @@
  *      a single GET and the browser caches it; it runs the host's own request
  *      fence first — see refusalOf() in routes.ts.
  *   4. Serve Deepy's animation sheets. The DeepSeek brand's pixel whale plays
- *      about 0.4 MB of sprite sheets, too much to inline into the bundle, so
- *      they ship as files beside it and the browser fetches each one the
- *      first time its animation plays.
+ *      more sprite sheets than are worth inlining into the bundle, so they ship
+ *      as files beside it and the browser fetches each one the first time its
+ *      animation plays.
  *
  * The registrations are defensive. A host without a web server, or with the
  * route prefix already taken, or with the settings service absent, must still

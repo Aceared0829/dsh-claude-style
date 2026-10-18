@@ -33,10 +33,6 @@ import type manifest from './header-band.manifest'
  * no DOM change, which is why the title row's size is subscribed.
  *
  * macOS has nothing to lift. A host slot for the title row retires this pass.
- *
- * @param ctx - client context.
- * @param ui - shared handle table.
- * @returns teardown.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The body marker: which parts of the row the caption row holds, as a token list. */
