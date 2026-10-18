@@ -175,14 +175,17 @@ const SCENARIOS = {
    * model, the effort level and the context ring on one row, and at 390px the
    * row keeps them by dropping what it cannot show — the tier's arrow, the
    * ring's number and a model name longer than the room left over — rather than
-   * running past the card.
+   * running past the card. At 330px there is less room than the controls need,
+   * which is where the room the effort trigger reserves must come out of the
+   * model name instead of out of the card: nothing leaves the card and the row
+   * does not scroll sideways.
    */
   narrow: {
     script: 'greeting',
     prompt: 'hello there',
     viewport: { width: 390, height: 844 },
     async assert({ page, session }) {
-      const narrow = await page.evaluate(() => {
+      const read = () => page.evaluate(() => {
         const read = (selector) => document.querySelector(selector)
         const box = (el) => {
           if (el === null) return null
@@ -196,9 +199,13 @@ const SCENARIOS = {
         const model = read('.dsh-claude-model-btn')
         const modelLabel = read('.dsh-claude-model-btn-label')
         const meter = read('[data-dsh-claude-context-meter]')
+        const card = read('[data-composer-card]')
+        const row = read('[data-dsh-claude-part~="row"]')
         return {
           width: window.innerWidth,
-          card: box(read('[data-composer-card]')),
+          card: box(card),
+          cardOver: card === null ? 0 : card.scrollWidth - card.clientWidth,
+          rowOver: row === null ? 0 : row.scrollWidth - row.clientWidth,
           perm: box(perm),
           permMax: cap(perm),
           permEllipsis: permLabel === null ? null : getComputedStyle(permLabel).textOverflow,
@@ -213,8 +220,13 @@ const SCENARIOS = {
         }
       })
       const inside = (inner, outer) => inner === null || outer === null || (inner.left >= outer.left && inner.right <= outer.right)
-      const fits = inside(narrow.perm, narrow.card) && inside(narrow.model, narrow.card) && inside(narrow.meter, narrow.card) &&
-        (narrow.effort === null || narrow.meter.left >= narrow.effort.right)
+      const fits = (state) => inside(state.perm, state.card) && inside(state.model, state.card) && inside(state.meter, state.card) &&
+        inside(state.effort, state.card) && (state.effort === null || state.meter.left >= state.effort.right)
+      const narrow = await read()
+      await page.setViewportSize({ width: 330, height: 844 })
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const tight = await read()
+      await page.setViewportSize({ width: 390, height: 844 })
       return [
         check('页面是手机的宽度', narrow.width === 390, `innerWidth=${narrow.width}`),
         check('权限选择器收起了下三角', narrow.chevron === false, `chevron=${narrow.chevron}`),
@@ -224,8 +236,11 @@ const SCENARIOS = {
           JSON.stringify({ permMax: narrow.permMax, modelMax: narrow.modelMax, perm: narrow.permEllipsis, model: narrow.modelEllipsis })),
         check('上下文只留圆环，数字不再显示', narrow.ring === true && narrow.number === false,
           JSON.stringify({ ring: narrow.ring, number: narrow.number })),
-        check('控件都留在输入卡片里，圆环也不与旁边的控件重叠', fits,
+        check('控件都留在输入卡片里，圆环也不与旁边的控件重叠', fits(narrow),
           JSON.stringify({ card: narrow.card, perm: narrow.perm, model: narrow.model, effort: narrow.effort, meter: narrow.meter })),
+        check('再窄一些时控件仍留在卡片里，输入区也不再横向滚动',
+          fits(tight) && tight.cardOver <= 0 && tight.rowOver <= 0,
+          JSON.stringify({ width: tight.width, card: tight.card, cardOver: tight.cardOver, rowOver: tight.rowOver, model: tight.model, effort: tight.effort, meter: tight.meter })),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

@@ -20,6 +20,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **用量面板里热力格的日期提示不再把面板撑出横向滚动条**：提示胶囊按自己当时的宽度决定贴向格子的哪一边，靠近两端的格子不再把它带出面板边缘，悬停时面板本身也不再横向滚动。
 - **设置页里刚改动的开关不再先跳回原值**：改动交给宿主的这段时间里，宿主重读设置文档不会再把页面上的值盖回改动之前，控件停在读者按下的那一档，宿主给出答复时再按答复校正。
 - **关闭「聊天区滚动动画」后，进行中的状态行留在文档里**：此时滚动整份交回宿主，这一行不再停在输入框上方，读者往回翻看时它随内容一起滚走。
+- **窗口很窄时，思考强度按钮留在输入卡片里**：它在模型按钮旁边借的那点宽度改为从模型名的截断里出，输入卡片不再因此横向滚动，按钮也不会画到侧栏上方。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -35,6 +36,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **A heat cell's day tip no longer pushes the usage panel into a horizontal scrollbar**: the pill lines up with the side its own width needs, so a cell near either end keeps it inside the panel and hovering no longer scrolls the panel sideways.
 - **A control just changed in the settings page no longer snaps back first**: while the change is crossing to the host, a re-read of the settings document no longer puts the pre-change value back on the page — the control stays where the reader left it and follows the host's answer when it arrives.
 - **With the chat-area scrolling animation off, the running status line keeps its document place**: the host owns the scroll then, so the line no longer rests above the composer and wheels away with the content as you read back.
+- **With a very narrow window the reasoning-effort trigger stays inside the composer card**: the room it borrows beside the model trigger now comes out of the model name's truncation, so the card no longer scrolls sideways and the trigger is never drawn over the sidebar.
 
 ## [0.16.2] - 2026-10-17
 
