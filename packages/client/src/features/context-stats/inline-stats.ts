@@ -242,7 +242,6 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     fittedShape = -1
   }
 
-  /** Show or hide one segment. */
   function show(segment: Segment, on: boolean) {
     segment.wrap.hidden = !on
   }

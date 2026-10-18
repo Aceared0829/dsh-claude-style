@@ -169,7 +169,6 @@ const startRecording = (page, file) => page.evaluate(([suffix, factsSource, figu
   }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true })
 }, [file, HEAD_FACTS.toString(), figuresOf.toString()])
 
-/** One number out of a `+n` figure. */
 const count = (figure) => Number(String(figure ?? '').replace(/[^\d]/g, ''))
 
 function fileMergeScenario({ check }) {

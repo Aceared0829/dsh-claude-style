@@ -25,7 +25,6 @@ const COPY = {
   ...require('../client/src/features/chat-fold/chat-fold.copy.json'),
 }
 
-/** One template with its count filled in. */
 const fill = (template, count) => template.replace('{count}', String(count))
 
 /** What the reader sees of the running row: the skin's line, its parts, and the host's words. */

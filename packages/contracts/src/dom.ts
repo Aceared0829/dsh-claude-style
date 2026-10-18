@@ -98,7 +98,6 @@ export const USER_ROW_KIND = 'user'
 export const FLOW_KIND_ATTRIBUTE = 'data-chat-flow-kind'
 /** The kind of an assistant step's row: its thinking or its output. */
 export const ASSISTANT_STEP_KIND = 'assistant-step'
-/** The kind of a tool call's row. */
 export const TOOL_CALL_KIND = 'tool-call'
 /**
  * Which part of an assistant step a row holds: the host splits a step into its

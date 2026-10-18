@@ -13,12 +13,10 @@ import type { PeakCatalog, RateOverride, RateProfile, RateSchedule, RateWindow }
 /** The document version this reader understands. */
 const SCHEMA_VERSION = 1
 
-/** A JSON object, or null when the value is not one. */
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null
 }
 
-/** A non-empty string, or undefined. */
 function asText(value: unknown): string | undefined {
   return typeof value === 'string' && value !== '' ? value : undefined
 }

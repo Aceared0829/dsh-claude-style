@@ -204,9 +204,7 @@ export const HOLDS_ATTR = 'data-dsh-claude-holds'
 export const CHAT_ROLLING_ATTR = 'data-dsh-claude-rolling'
 /** On an editable surface once the caret motion has taken it over (packages/client/src/features/caret/). */
 export const CARET_ATTR = 'data-dsh-claude-caret'
-/** The drawn caret itself. */
 export const CARET_LAYER_ATTR = 'data-dsh-claude-caret-layer'
-/** The drawn caret is visible right now. */
 export const CARET_VISIBLE_ATTR = 'data-dsh-claude-caret-visible'
 /** On a parent lent the positioning context the drawn caret is placed against. */
 export const CARET_HOST_ATTR = 'data-dsh-claude-caret-host'

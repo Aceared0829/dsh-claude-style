@@ -59,7 +59,6 @@ function useDraft(stored: string, commit: (value: string) => void) {
   return { draft, change, flush, revert }
 }
 
-/** The brand name field. */
 function BrandNameInput(props: { stored: string, write: SettingsView['write'] }) {
   const { draft, change, flush, revert } = useDraft(props.stored, value => props.write({ brandName: value.trim().slice(0, BRAND_NAME_MAX) }))
   return React.createElement('input', {

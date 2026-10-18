@@ -63,7 +63,6 @@ export const CARET_MIRRORED_PROPERTIES = [
   'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
 ]
 
-/** A node's index among its parent's children; -1 when it is not one of them. */
 export function caretChildIndex(parent: Node, child: Node) {
   let index = 0
   for (let node = parent.firstChild; node !== null; node = node.nextSibling) {

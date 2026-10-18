@@ -239,7 +239,6 @@ export function closestConversationSession(node: EventTarget | null | undefined)
   return closestFrom(node, CONVERSATION_SESSION)
 }
 
-/** The session id `host` carries, or null when it carries none. */
 export function conversationSessionId(host: Element | null | undefined) {
   if (host === null || host === undefined) return null
   const id = host.getAttribute(CONVERSATION_SESSION_ATTR)

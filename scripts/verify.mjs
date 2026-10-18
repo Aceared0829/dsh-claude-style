@@ -205,7 +205,6 @@ function walksEverything(request) {
     && request.scenarios.length === 0
 }
 
-/** The gates this request runs. */
 function gatesFor(request) {
   const gates = [
     // The cloud's fast tier starts with the checks that need no build, so the

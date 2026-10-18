@@ -5,20 +5,13 @@ import { modelCopy } from './model-copy'
 import { textOf } from '../../shared/format'
 
 /**
- * Resolving a catalog model to its description line.
- *
- * The copy document (packages/client/data/model-descriptions.json) ships as data beside the
- * bundle and is fetched at runtime, so this is the only place that knows how
- * a model's id becomes a sentence. Resolution descends: family rule → tier
- * rule → the catalog's own text. Family rules are ordered and anchored, so
- * `deepseek-v4.1-flash` and a future Flash read one line while another
- * vendor's flash tier never borrows DeepSeek's copy; a rule anchored to a
- * version keeps that version's numbers to itself. The tier rules are the last
- * resort, read out of the id itself. A model this table has never seen and the
- * catalog does not describe resolves to an empty string on purpose: a
- * name-only row beats an invented line.
- *
- * Nothing here touches the picker's closure, only the shared copy document.
+ * Resolving a catalog model to its description line (D5): the copy document
+ * ships as data and is fetched at runtime, so this is the only place that knows
+ * how a model's id becomes a sentence. Resolution descends family rule → tier
+ * rule → the catalog's own text; family rules are ordered and anchored, so one
+ * product line's rule never claims another's model. A model the table has never
+ * seen resolves to an empty string on purpose: a name-only row beats an invented
+ * line.
  */
 /**
  * Family entry. The model id is tried alone first because it is the stronger

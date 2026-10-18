@@ -35,7 +35,6 @@ export function currentRow(previous: HTMLElement | null) {
   return row === previous ? null : row
 }
 
-/** The last user row in the chat flow. */
 export function lastUserRow() {
   const rows = document.querySelectorAll(CHAT_USER_ROW_SELECTOR)
   const last = rows.item(rows.length - 1)

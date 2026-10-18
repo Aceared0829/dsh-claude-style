@@ -12,7 +12,6 @@ import { MOTION } from 'virtual:dsh-claude-style/generated'
  * the feature that keeps them.
  */
 
-/** The value a motion token stands for. */
 export function motionValue(token: string): string {
   const value = MOTION[token]
   if (value === undefined) throw new Error(`shared/motion: the token table carries no ${token}`)
