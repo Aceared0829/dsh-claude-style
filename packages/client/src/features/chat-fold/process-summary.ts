@@ -266,6 +266,12 @@ export function createProcessSummary() {
     return Math.max(0, room)
   }
 
+  /** The key one sentence's measured width is kept under, for the face it is set in. */
+  function fitKey(fit: HTMLElement, sentence: string) {
+    const style = getComputedStyle(fit)
+    return `${sentence}\u0000${style.fontSize}\u0000${style.fontFamily}\u0000${style.fontWeight}\u0000${style.letterSpacing}`
+  }
+
   /**
    * The hidden span's width for this sentence.
    *
@@ -274,8 +280,7 @@ export function createProcessSummary() {
    * repeated sentence — the same counts across turns — reads nothing at all.
    */
   function fitWidthOf(fit: HTMLElement, sentence: string): number {
-    const style = getComputedStyle(fit)
-    const key = `${sentence}\u0000${style.fontSize}\u0000${style.fontFamily}\u0000${style.fontWeight}\u0000${style.letterSpacing}`
+    const key = fitKey(fit, sentence)
     const known = fitWidths.get(key)
     if (known !== undefined) return known
     if (fit.textContent !== sentence) fit.textContent = sentence
@@ -419,8 +424,10 @@ export function createProcessSummary() {
         if (named.has(header)) release(header)
         continue
       }
+      const form = forms.get(header)
+      // A group whose summary or sentence was written this frame waits for the next one (queue).
+      if (form === undefined) continue
       const summary = summaryOf(header)
-      const form = forms.get(header) ?? formOf(header, summary, summaryText(reading.full, 'full'))
       render(summary, form === 'full' ? reading.full : reading.compact, form, header.querySelector(SHIMMER_SELECTOR) !== null)
       if (header.getAttribute('aria-label') !== reading.name) header.setAttribute('aria-label', reading.name)
       const known = named.get(header)
@@ -446,15 +453,26 @@ export function createProcessSummary() {
     if (queued) return
     queued = true
     const forms = new Map<HTMLElement, SummaryForm>()
+    /** Groups whose summary or measuring text this batch has to write, with the sentence to put there. */
+    const deferred = new Map<Element, string>()
     cancelFrame = requestFrame({
       read() {
-        // The measurement the write needs, taken before this frame's writes.
+        // Measurement only: a summary this batch has to build, or a sentence the
+        // measuring span does not hold yet, is written in the write phase and
+        // measured next frame. Writing it here costs one layout per group, and a
+        // session switch brings every group at once.
         for (const candidate of pending) {
+          if (!candidate.isConnected) continue
           const header = candidate.querySelector<HTMLElement>(PROCESS_ACTIVITY_SELECTOR)
           const reading = readingOf(candidate)
           if (header === null || reading === null) continue
-          const summary = summaryOf(header)
-          forms.set(header, formOf(header, summary, summaryText(reading.full, 'full')))
+          const sentence = summaryText(reading.full, 'full')
+          const summary = header.querySelector<HTMLElement>(`:scope > .${SUMMARY_CLASS}`)
+          if (summary === null || fitOf(summary).textContent !== sentence) {
+            deferred.set(candidate, sentence)
+            continue
+          }
+          forms.set(header, formOf(header, summary, sentence))
         }
       },
       write() {
@@ -462,7 +480,19 @@ export function createProcessSummary() {
         queued = false
         const groups = [...pending]
         pending.clear()
+        // Every write first: the next frame's reads then pay one layout for the
+        // whole batch, where a write between two reads paid one per group.
+        const measureNext: Element[] = []
+        for (const [candidate, sentence] of deferred) {
+          if (!candidate.isConnected) continue
+          const header = candidate.querySelector<HTMLElement>(PROCESS_ACTIVITY_SELECTOR)
+          if (header === null) continue
+          const fit = fitOf(summaryOf(header))
+          if (fit.textContent !== sentence) fit.textContent = sentence
+          measureNext.push(candidate)
+        }
         flush(groups, forms)
+        for (const candidate of measureNext) queue(candidate)
       },
     })
   }

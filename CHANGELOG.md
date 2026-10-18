@@ -14,6 +14,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **一次改写或折叠作废的淡入片段改由一趟原地压缩收走**：此前每摘掉一段都要搬动它后面的全部片段，一批里作废的片段一多，这一趟就按片段数的平方增长；现在一趟写完。读者看到的样子不变。
 - **流式期间写回的 tokens 把工具调用算进去**：调用的参数从不出现在页面上，一个只调工具的步骤因此原先停在结算值不动，现在每出现一行调用就按一行计，纯文字的字重也降到更接近实际的比例；计数挂在页面结构上，不再为此每帧扫一遍对话。
+- **过程组较多的会话切换时，摘要一次量完**：16 个过程组的一次切换里最长强制布局从约 360 毫秒降到约 40 毫秒，切换耗时从约 0.58 秒降到约 0.33 秒。
 
 ### 问题修复
 
@@ -35,6 +36,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **The fade segments one rewrite or fold invalidates are taken out in a single in-place compaction**: taking one out used to move every segment after it, so a batch that invalidated many grew with the square of the segment count; one pass now writes them out. Nothing on screen changes.
 - **The written-back tokens count the tool calls while an answer streams**: a call's arguments never appear on the page, so a step that only called tools used to stand still at the settled number; each call row now counts once, and the per-character share of plain text is closer to what the provider bills. The count rides on the page structure rather than a per-frame sweep of the conversation.
+- **A conversation with many process groups switches with its summaries measured once**: across a 16-group switch the longest forced layout falls from about 360 ms to about 40 ms and the switch from about 0.58 s to about 0.33 s.
 
 ### Bug Fixes
 
