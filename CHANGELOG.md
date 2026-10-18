@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 体验优化
 
+- **一次改写或折叠作废的淡入片段改由一趟原地压缩收走**：此前每摘掉一段都要搬动它后面的全部片段，一批里作废的片段一多，这一趟就按片段数的平方增长；现在一趟写完。读者看到的样子不变。
 - **流式期间写回的 tokens 把工具调用算进去**：调用的参数从不出现在页面上，一个只调工具的步骤因此原先停在结算值不动，现在每出现一行调用就按一行计，纯文字的字重也降到更接近实际的比例；计数挂在页面结构上，不再为此每帧扫一遍对话。
 
 ### 问题修复
@@ -25,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Improvements
 
+- **The fade segments one rewrite or fold invalidates are taken out in a single in-place compaction**: taking one out used to move every segment after it, so a batch that invalidated many grew with the square of the segment count; one pass now writes them out. Nothing on screen changes.
 - **The written-back tokens count the tool calls while an answer streams**: a call's arguments never appear on the page, so a step that only called tools used to stand still at the settled number; each call row now counts once, and the per-character share of plain text is closer to what the provider bills. The count rides on the page structure rather than a per-frame sweep of the conversation.
 
 ### Bug Fixes
@@ -301,15 +303,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 端到端通道让每个场景声明的浏览器开关真正生效：远端设置走查改用一台带名字映射（`--host-resolver-rules`）的浏览器，不论整条通道是否共用一个浏览器都跑到底。
 - 重要性台账记下两种判定都算数的记录（`either`）：一行只在某一帧里存在，或由宿主的运行平台决定画不画，这一趟抓到与否都算数，检查不再要求把它划掉；台账同时按云端与本机两次判定重算。
 
-<<<<<<< HEAD
-<h3 id="en-0.14.2">Improvements</h3>
-=======
 ### 问题修复
 
 - 侧边栏的工作区名字过长时让位给行尾的悬停操作（名字以省略号收尾），工作区菜单与新建会话两个按钮始终留在栏内并可点击。
 
-<h3 id="en-unreleased">Improvements</h3>
->>>>>>> f25e6c0 (fix(sidebar): 工作区名字过长时不再把行尾按钮挤出栏外)
+<h3 id="en-0.14.2">Improvements</h3>
 
 - The end-to-end lane honours the browser switches a scenario declares: the remote-settings walk opens its page under the mapped name whether or not the lane shares one browser between scenarios.
 - The importance ledger records the rows the walk cannot decide either way (`either`) — a row that lives inside one animation frame, or one the host's own platform decides to draw: whether this run catches it is right both ways, so the check no longer asks for it to be struck. The list is recomputed from the cloud run and this machine's run together.

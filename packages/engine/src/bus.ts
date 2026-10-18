@@ -41,6 +41,11 @@ interface MutationSubscription {
 
 /** Every mutation subscription, in the order they were made. */
 const mutationSubscriptions: MutationSubscription[] = []
+/**
+ * The same subscriptions as a set, so a batch's "still subscribed?" test is a
+ * lookup rather than a scan of the array once per subscription per record.
+ */
+const mutationSubscriptionSet = new Set<MutationSubscription>()
 let mutationObserver: MutationObserver | null = null
 
 /**
@@ -89,7 +94,7 @@ function selects(subscription: MutationSubscription, record: MutationRecord) {
 function routeRecords(records: MutationRecord[], audience: MutationSubscription[] = mutationSubscriptions.slice()) {
   for (const subscription of audience) {
     // A subscription an earlier callback in this batch removed hears nothing more.
-    if (!mutationSubscriptions.includes(subscription)) continue
+    if (!mutationSubscriptionSet.has(subscription)) continue
     const selected = records.filter(record => selects(subscription, record))
     if (selected.length === 0) continue
     // One subscriber's error must neither stop the others nor vanish (D12).
@@ -144,11 +149,13 @@ function refreshMutationObserver(joining?: MutationSubscription) {
 export function subscribeMutations(target: Node, options: MutationOptions, callback: (records: MutationRecord[]) => void) {
   const subscription = { target, options, callback }
   mutationSubscriptions.push(subscription)
+  mutationSubscriptionSet.add(subscription)
   refreshMutationObserver(subscription)
   return () => {
     const at = mutationSubscriptions.indexOf(subscription)
     if (at === -1) return
     mutationSubscriptions.splice(at, 1)
+    mutationSubscriptionSet.delete(subscription)
     refreshMutationObserver()
   }
 }

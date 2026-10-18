@@ -127,12 +127,25 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
       // segments: a snapshot holds the message's text nodes (and the text they
       // carried when it was read), so a finished answer would otherwise stay
       // reachable through this engine for the rest of the session.
+      const live = new Set(containers)
+      const vanished = new Set<Element>()
       for (const gone of state.liveContainers) {
-        if (containers.includes(gone)) continue
+        if (live.has(gone)) continue
         state.textSnapshots.delete(gone)
-        for (let index = state.liveRuns.length - 1; index >= 0; index -= 1) {
-          if (state.liveRuns[index]?.container === gone) state.liveRuns.splice(index, 1)
+        vanished.add(gone)
+      }
+      if (vanished.size > 0) {
+        // Compacted in place, not spliced one removal at a time: a segment
+        // count runs into the thousands, and a splice moves every later
+        // element (reveal-paint.ts says the same of its own pass).
+        let kept = 0
+        for (let index = 0; index < state.liveRuns.length; index += 1) {
+          const run = state.liveRuns[index]
+          if (run === undefined || vanished.has(run.container)) continue
+          state.liveRuns[kept] = run
+          kept += 1
         }
+        state.liveRuns.length = kept
       }
       state.liveContainers = containers
     } else {
@@ -191,19 +204,25 @@ export function createRevealScanner(state: RevealState, hooks: RevealScanHooks) 
       const suffix = commonSuffix(previous, entries, prefix)
       const stableFrom = beforeLength - suffix
       const shift = length - beforeLength
-      for (let index = state.liveRuns.length - 1; index >= 0; index -= 1) {
+      let kept = 0
+      for (let index = 0; index < state.liveRuns.length; index += 1) {
         const run = state.liveRuns[index]
         if (run === undefined) continue
-        if (run.container !== container) continue
-        if (run.start + run.length <= prefix) continue
+        if (run.container !== container || run.start + run.length <= prefix) {
+          state.liveRuns[kept] = run
+          kept += 1
+          continue
+        }
         if (run.start >= stableFrom) {
           // The same characters, moved as a whole: they follow, keeping their
           // age and their stagger.
-          state.liveRuns[index] = { ...run, start: run.start + shift }
+          state.liveRuns[kept] = { ...run, start: run.start + shift }
+          kept += 1
           continue
         }
-        state.liveRuns.splice(index, 1)
+        // Stale: this batch rewrote the characters it stood for.
       }
+      state.liveRuns.length = kept
 
       if (yielding) continue
 
