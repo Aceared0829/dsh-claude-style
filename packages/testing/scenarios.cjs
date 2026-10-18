@@ -245,6 +245,59 @@ const SCENARIOS = {
       ]
     },
   },
+  /**
+   * The right panel's own collapse control: the skin's button stands in the
+   * header's row while that panel is open — its own copy hangs from a
+   * transformed, clipped subtree and cannot be placed there — and pressing the
+   * skin's button closes the panel, the host's own open button taking its place
+   * again.
+   */
+  rightbar: {
+    script: 'greeting',
+    prompt: 'hello there',
+    async assert({ page, session }) {
+      const read = () => page.evaluate(() => {
+        const mine = [...document.querySelectorAll('.dsh-claude-rightbar-close')]
+        const shown = mine.filter((el) => getComputedStyle(el).display !== 'none')
+        const host = document.querySelector('[data-sidebar-right-open] [data-sidebar-right-toggle]')
+        const expand = document.querySelector('[data-sidebar-right-expand]')
+        const box = shown.length === 0 ? null : (() => {
+          const rect = shown[0].getBoundingClientRect()
+          return { left: Math.round(rect.left), right: Math.round(rect.right), top: Math.round(rect.top) }
+        })()
+        return {
+          buttons: mine.length,
+          shown: shown.length,
+          box,
+          host: host !== null,
+          hostHidden: host !== null && getComputedStyle(host).display === 'none',
+          expand: expand !== null,
+          panel: document.querySelector('[data-sidebar-right-open]') !== null,
+        }
+      })
+      const before = await read()
+      await page.locator('[data-sidebar-right-expand]').first().click()
+      await page.waitForFunction(() => document.querySelector('[data-sidebar-right-open]') !== null, undefined, { timeout: 15000 })
+      await page.waitForTimeout(500)
+      const open = await read()
+      await page.locator('.dsh-claude-rightbar-close').first().click()
+      await page.waitForFunction(() => document.querySelector('[data-sidebar-right-open]') === null, undefined, { timeout: 15000 })
+      await page.waitForTimeout(500)
+      const closed = await read()
+      return [
+        check('收起时那枚按钮不占位置，宿主自己的打开按钮在',
+          before.buttons === 1 && before.shown === 0 && before.expand === true && before.panel === false,
+          JSON.stringify(before)),
+        check('面板打开后它出现在头部那一行，面板里宿主自己那枚让位',
+          open.shown === 1 && open.box !== null && open.host === true && open.hostHidden === true,
+          JSON.stringify(open)),
+        check('按下它面板收起，宿主的打开按钮回到原处',
+          closed.panel === false && closed.expand === true && closed.shown === 0 && closed.host === false,
+          JSON.stringify(closed)),
+        check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
+      ]
+    },
+  },
   /** A scripted tool call: its row, its call id, and the answer that follows. */
   tool: {
     script: 'inspect',

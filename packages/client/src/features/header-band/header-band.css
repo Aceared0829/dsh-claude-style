@@ -6,6 +6,33 @@
    the shell's own drag region, so every piece placed in it declares itself
    no-drag: a control that cannot be pressed is not a control. */
 
+/* The skin's own control for the right panel, drawn in the header's own row: the
+   host's copy cannot leave the panel, whose chrome strip hangs from a
+   transformed, clipped subtree, so this button stands in the header instead and
+   presses that one (header-band.ts). Its `display` is the whole of its
+   visibility and is written on the node by the pass — hidden here, shown while
+   the panel is open. */
+body[data-dsh-claude-style] .dsh-claude-rightbar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary, #6e6a60);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+body[data-dsh-claude-style] .dsh-claude-rightbar-close:hover,
+body[data-dsh-claude-style] .dsh-claude-rightbar-close:focus-visible {
+  color: var(--dsw-alias-label-primary, #141413);
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
+}
+
 body[data-dsh-claude-style] [data-dsh-header-band~="title"] [data-dsh-header-title] {
   position: fixed !important;
   /* The pass centres the box on the row's middle plus its own optical nudge. */

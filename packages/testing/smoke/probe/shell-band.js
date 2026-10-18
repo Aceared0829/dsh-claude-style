@@ -58,10 +58,23 @@
         '<div class="_titleCluster_b_1" style="display:flex;align-items:center;flex:1 1 0%;gap:10px">' +
         '<nav class="_crumbs_b_1" style="display:flex;height:' + TITLE_HEIGHT + 'px;width:180px">Session title</nav>' +
         '<div class="_headerActions_b_1" style="width:60px;height:' + TITLE_HEIGHT + 'px">Preset</div></div>' +
-        '<div class="_headerUtilities_b_1" style="display:flex;width:114px;height:28px"></div>' +
+        // The host's utilities seat, with the skin's own right-panel control in it,
+        // the way the host's slot renders it: the pass shows or hides that node.
+        '<div class="_headerUtilities_b_1" style="display:flex;width:114px;height:28px">' +
+        '<button type="button" class="dsh-claude-rightbar-close" style="width:28px;height:28px">close</button></div>' +
         '<div class="_headerCorner_b_1" style="width:28px;height:28px"></div></div>' +
         '<div class="_tabs_b_1" role="tablist" style="width:152px;height:26px"></div>'
       document.body.insertBefore(header, document.body.firstChild)
+      // The right panel's own collapse control, inside the panel it belongs to: the
+      // pass stands it down while the skin's control shows in the header's row.
+      var panel = document.createElement('div')
+      panel.setAttribute('data-sidebar-right-panel', 'push')
+      panel.setAttribute('data-sidebar-right-open', '')
+      panel.innerHTML = '<div data-dockkit-strip-chrome style="display:flex">' +
+        '<button type="button" data-sidebar-right-toggle style="width:28px;height:28px">collapse</button></div>'
+      document.body.insertBefore(panel, document.body.firstChild)
+      var hostToggle = panel.querySelector('[data-sidebar-right-toggle]')
+      var closeButton = header.querySelector('.dsh-claude-rightbar-close')
       // The parts land on the pass after the subtree arrives (D3).
       var row = null
       for (var look = 0; look < 40 && row === null; look++) {
@@ -132,6 +145,9 @@
         titleRegion: getComputedStyle(title).webkitAppRegion,
         utilitiesRegion: getComputedStyle(utilities).webkitAppRegion,
         cornerRegion: getComputedStyle(corner).webkitAppRegion,
+        closeInline: closeButton.style.display,
+        closeShown: getComputedStyle(closeButton).display,
+        hostToggleDisplay: getComputedStyle(hostToggle).display,
       }
       // The corner seat is empty while the right sidebar is open, and the
       // cluster that is there still lifts — into the corner's own place. The
@@ -159,6 +175,11 @@
       window.__pushForm({ headerBand: true })
       await sleep(250)
       r.band.back = { marks: marks(), title: box(title), utilities: box(utilities) }
+      // The panel closes: its own collapse control leaves the page with it, and
+      // the skin's control goes back to hidden.
+      panel.remove()
+      await sleep(250)
+      r.band.panelClosed = { close: getComputedStyle(closeButton).display }
       // The teardown of the stand-in: the row goes away, and neither the band
       // marker nor the element stamps may stay behind.
       header.remove()

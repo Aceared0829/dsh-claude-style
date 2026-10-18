@@ -122,6 +122,11 @@ module.exports = {
         laid.row.y === laid.rowLift.replace('px', '') * 1 + laid.header.y + parseFloat(laid.headerPaddingTop) &&
         laid.preset.x === laid.row.x,
       JSON.stringify({ left: laid.titleLeft, max: laid.titleMax, lift: laid.rowLift, offset: laid.rowOffset, row: laid.row, header: laid.header, preset: laid.preset, utilities: laid.utilities, strip: laid.strip }))
+    const panelClosed = b.panelClosed || {}
+    check('the right panel\'s collapse control is the skin\'s own, drawn in the header\'s row: it shows while the panel is open, the panel\'s copy stands down, and it hides with the panel',
+      laid.closeInline === 'inline-flex' && laid.closeShown !== 'none' &&
+        laid.hostToggleDisplay === 'none' && panelClosed.close === 'none',
+      JSON.stringify({ laid: { close: laid.closeInline, shown: laid.closeShown, host: laid.hostToggleDisplay }, closed: panelClosed }))
     const solo = b.solo || {}
     check('with the corner seat empty — the right sidebar is open — the cluster that is there still lifts, into the corner\'s own place',
       solo.marks.band === 'title actions' && solo.marks.corner === false && solo.utilities.right === right,

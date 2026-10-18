@@ -265,6 +265,14 @@ export const CONVERSATION_HEADER_SLOT_SELECTOR = '[data-slot="conversation.heade
 export const ROOT_SLOT_SELECTOR = '[data-slot="root"]'
 /** The right sidebar's own column: the host marks it, and its docked panels are the skin's cards. */
 export const RIGHTBAR_COLUMN_SELECTOR = '[data-rightbar-col]'
+/**
+ * The right panel's own collapse control, inside the chrome strip that panel
+ * draws at its top-right. It exists only while that panel is open, and it hangs
+ * from a transformed, clipped subtree, where a fixed box would be measured from
+ * the panel and cut at its edge: the skin draws its own control in the header's
+ * row and presses this one instead.
+ */
+export const RIGHTBAR_TOGGLE_SELECTOR = '[data-sidebar-right-open] [data-sidebar-right-toggle]'
 
 /* ---------- the conversation header's own row ---------- */
 

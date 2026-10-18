@@ -1,3 +1,5 @@
+import * as React from 'react'
+import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   CONVERSATION_HEADER_SELECTOR,
   HEADER_CORNER_SELECTOR,
@@ -8,12 +10,13 @@ import {
 } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
 import { desktopBand } from '@dsh-claude-style/engine/desktop-band'
-import { findWindowsMenu } from '@dsh-claude-style/engine/host'
+import { findRightbarToggle, findWindowsMenu, hostSlots } from '@dsh-claude-style/engine/host'
 import { createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import type { FeatureUi } from '../../core/feature'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type manifest from './header-band.manifest'
+import { copy } from './copy'
 
 /**
  * The conversation header's title row, lifted into the desktop caption row.
@@ -33,6 +36,11 @@ import type manifest from './header-band.manifest'
  * no DOM change, which is why the title row's size is subscribed.
  *
  * macOS has nothing to lift. A host slot for the title row retires this pass.
+ *
+ * The right panel's own collapse control is placed from here too, on every page
+ * rather than the desktop alone: that panel keeps its copy inside a transformed,
+ * clipped subtree, so the skin draws the control in the header's utilities seat
+ * and presses the host's own (syncRightbarClose).
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The body marker: which parts of the row the caption row holds, as a token list. */
@@ -78,10 +86,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * about 10px of air between the two lines of text.
    */
   const ROW_TUCK = 2
-  /** What the row keeps clear when the shell mounts no menu seat: the sidebar's own control. */
+  /** What the row keeps clear at its left end when the shell mounts no menu seat: the sidebar's control. */
   const FURNITURE = 48
   /** Below this a lifted title would be a stub: it stays in the row instead. */
   const MIN_TITLE = 120
+  /** The host's seat in the header's own row that the header utilities land in. */
+  const UTILITIES_SLOT = 'conversation.session.header.utilities'
+  /** The skin's own control there, which the stylesheet paints and the pass shows. */
+  const CLOSE_CLASS = 'dsh-claude-rightbar-close'
 
   const rowStamp = createStamp<HTMLElement>(ROW_ATTR)
   const titleStamp = createStamp<HTMLElement>(TITLE_ATTR)
@@ -97,6 +109,68 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let keptRow: HTMLElement | null = null
   /** The header carrying BAND_ATTR right now, or null. */
   let bandHost: Element | null = null
+  /** Every control the skin registered for the right panel, kept current by the bus (D40). */
+  const closeButtons = observeMatches<HTMLElement>(`.${CLOSE_CLASS}`)
+  /** The host's own collapse control this pass stood down, or null. */
+  let hiddenToggle: HTMLElement | null = null
+
+  /**
+   * The skin's own control for the right panel, in the header's utilities seat.
+   *
+   * The host keeps its collapse control inside the panel's chrome strip, which
+   * hangs from a transformed subtree and is clipped at the panel's own edge: a
+   * fixed box placed there is measured from the panel and cut at its edge, so
+   * that control cannot be lifted into the header's row. This button stands
+   * there instead and presses it, and the pass shows one of the two.
+   */
+  function RightbarClose() {
+    const label = copy('rightbarClose')
+    return React.createElement(primitives.Tooltip, {
+      label,
+      side: 'bottom',
+      delayMs: 500,
+      children: React.createElement('button', {
+        type: 'button',
+        className: CLOSE_CLASS,
+        'aria-label': label,
+        onClick: () => { findRightbarToggle()?.click() },
+      }, React.createElement(primitives.IconPanelLeftOutlineRegular, { size: 16 })),
+    })
+  }
+
+  /**
+   * Show the skin's control wherever the panel is open, and stand the host's own
+   * copy down. The swap is a `display` on the two nodes rather than a rule:
+   * the host's control exists only while the panel does, and a rule keyed on
+   * either state would be a marker no page outside the desktop carries.
+   */
+  function syncRightbarClose() {
+    const host = findRightbarToggle()
+    for (const button of closeButtons.all()) {
+      const wanted = host === null ? 'none' : 'inline-flex'
+      if (button.style.display !== wanted) button.style.display = wanted
+    }
+    if (hiddenToggle !== null && hiddenToggle !== host) {
+      hiddenToggle.style.removeProperty('display')
+      hiddenToggle = null
+    }
+    if (host === null) return
+    hiddenToggle = host
+    if (host.style.display !== 'none') host.style.display = 'none'
+  }
+
+  /** Register that control in the header's utilities seat, which renders it wherever it stands. */
+  function registerRightbarClose() {
+    if (typeof ctx.inject !== 'function') return
+    ctx.inject(['slots'], scope => {
+      const slots = hostSlots(scope)
+      if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
+      scope.effect(() => slots.inject(UTILITIES_SLOT, () => slots.register(
+        { name: UTILITIES_SLOT, id: 'claude-style-rightbar-close', order: 90 },
+        RightbarClose,
+      )), 'dsh-claude-style: right panel control')
+    })
+  }
 
   /**
    * The header's title row: the one carrying a title or the utilities. The
@@ -246,6 +320,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function sync() {
     if (!measured) measure()
     measured = false
+    // The right panel's control is placed on every page, not only where the
+    // caption row exists: which of the two stands is the panel's own state.
+    syncRightbarClose()
     const current = reading
     if (current === null) {
       watch(null)
@@ -360,6 +437,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // a streaming batch touches, so such a batch skips this pass (D40). The boxes
   // are read in the pass's read phase and written in its write phase.
   ui.headerBand = { measure, sync, skipOnContentOnly: true }
+  registerRightbarClose()
 
   return () => {
     const row = rowStamp.current()
@@ -376,9 +454,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (utilities !== null) utilities.style.removeProperty(ACTIONS_RIGHT)
     if (corner !== null) corner.style.removeProperty(ACTIONS_RIGHT)
     if (strip !== null) strip.style.removeProperty(TABS_LEFT)
+    if (hiddenToggle !== null) hiddenToggle.style.removeProperty('display')
+    hiddenToggle = null
     clear()
     watch(null)
     titleRows.release()
+    closeButtons.release()
     keptRow = null
     delete ui.headerBand
   }

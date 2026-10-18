@@ -16,7 +16,7 @@
  */
 
 /** The end-to-end lane's scenarios; the lane checks its own names against these. */
-export const E2E_SCENARIOS = ['conversation', 'narrow', 'tool', 'fileMerge', 'send', 'sendFull', 'scroll', 'readerScroll', 'doorPin', 'motion', 'processSummary', 'reasoningStream', 'waitLine', 'washLine', 'longSession', 'statsPosition', 'statsOverlay', 'sidebarRail', 'contract', 'importance', 'remoteSettings', 'customBrand', 'dsBot', 'shots'] as const
+export const E2E_SCENARIOS = ['conversation', 'narrow', 'tool', 'fileMerge', 'send', 'sendFull', 'scroll', 'readerScroll', 'doorPin', 'motion', 'processSummary', 'reasoningStream', 'waitLine', 'washLine', 'longSession', 'statsPosition', 'statsOverlay', 'sidebarRail', 'rightbar', 'contract', 'importance', 'remoteSettings', 'customBrand', 'dsBot', 'shots'] as const
 
 /** One timing assumption, and how it is held. */
 interface HostTimingEntry {
@@ -66,5 +66,11 @@ export const HOST_TIMING: HostTimingEntry[] = [
     assumption: 'The turn rail renders only the marks near its scroll position, and its scroller\u2019s content is `count \u00d7 pitch + 2 \u00d7 (inset \u2212 pitch / 2)` pixels tall.',
     use: 'The skin\u2019s navigator replaces the rail in place and matches its pitch; the geometry is the one number the DOM contract borrows from the host.',
     checks: ['scenario:contract'],
+  },
+  {
+    id: 'host.rightbar-toggle',
+    assumption: 'The host mounts the right panel’s own collapse control only while that panel is expanded, inside a chrome strip under a transformed, clipped subtree.',
+    use: 'The skin’s control stands in the header’s row and presses the host’s one, which cannot be placed there: a fixed box inside that subtree is measured from the panel and cut at its edge (features/header-band).',
+    checks: ['scenario:rightbar'],
   },
 ]

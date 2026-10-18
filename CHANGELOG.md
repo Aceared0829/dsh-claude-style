@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- **右侧栏的收起键站到顶栏右端**：面板打开时，头部那一行的右端出现一枚收起按钮，面板里原来那一枚让位；按下它面板收起，宿主的打开按钮回到原处。宿主那枚搬不出来——它挂在带 transform 且被裁剪的子树里，fixed 定位会被量到面板的坐标、再被面板的边裁掉。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- **The right panel's collapse control stands at the top bar's right end**: while the panel is open, a collapse button appears at the right end of the header's row and the panel's own copy steps aside; pressing it closes the panel and the host's open button returns. The host's own control cannot be moved there — it hangs from a transformed, clipped subtree, where a fixed box is measured from the panel and cut at its edge.
+
 ## [0.16.3] - 2026-10-18
 
 [中文](#cn-0.16.3) | [English](#en-0.16.3)
