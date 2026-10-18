@@ -107,9 +107,9 @@ jobs:
       # shrinks grown (D66, D9).
       - run: node scripts/ci-scope.mjs --appearance --ledgers --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
 
-  # The gates that need no build: the lint rules, the feature list, the decisions
-  # index against the files it lists, the changelog, AGENTS.md's command table
-  # and the numbers the checks decide on.
+  # The gates that need no build: the lint rules, the decisions index against
+  # the files it lists, the changelog, AGENTS.md's command table and the numbers
+  # the checks decide on.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -123,7 +123,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm run features:check
       - run: npm run docs:check
       - run: npm run changelog:check
       - run: npm run agents:check

@@ -146,12 +146,6 @@ function checkManifests(manifests) {
         }
       }
     }
-    for (const lang of ['zh', 'en']) {
-      const copy = manifest.description?.[lang]
-      if (typeof copy?.title !== 'string' || copy.title === '' || typeof copy.text !== 'string' || copy.text === '') {
-        fail(manifest, `needs a non-empty description.${lang}.title and .text`)
-      }
-    }
   }
 }
 

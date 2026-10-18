@@ -210,7 +210,6 @@ function gatesFor(request) {
     // The cloud's fast tier starts with the checks that need no build, so the
     // same set answers here and a document mistake fails in seconds.
     { id: 'lint', script: 'scripts/lint.mjs', args: [] },
-    { id: 'features', script: 'scripts/features.mjs', args: ['--check'] },
     { id: 'docs', script: 'scripts/decisions-index.mjs', args: ['--check'] },
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },

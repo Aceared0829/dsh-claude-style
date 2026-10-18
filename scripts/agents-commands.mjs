@@ -28,7 +28,6 @@ const END = '<!-- commands:end -->'
  */
 const OVERRIDES = {
   test: 'the unit lane on its own, as the cloud job runs it: Vitest in browser mode on the local Chrome or Edge',
-  'features:check': 'fail when the committed feature list differs from the manifests; the cloud job runs this',
   'changelog:check': 'fail when the committed `[Unreleased]` section differs from `docs/changes/`; the cloud job runs this',
   'docs:check': 'fail when the committed ADR index differs from the ADR files; the cloud job runs this',
   agents: 'write this table into AGENTS.md from `package.json` and each script\'s own header',

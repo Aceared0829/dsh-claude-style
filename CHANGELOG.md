@@ -10,9 +10,25 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **右侧栏的收起键站到顶栏右端**：面板打开时，头部那一行的右端出现一枚收起按钮，面板里原来那一枚让位；按下它面板收起，宿主的打开按钮回到原处。宿主那枚搬不出来——它挂在带 transform 且被裁剪的子树里，fixed 定位会被量到面板的坐标、再被面板的边裁掉。
 
+### 移除
+
+- **功能一览与设置说明两份文档移除了**：插件做什么由 README 的展示图与设置页本身说明，逐功能的清单与六个分页的设置表不再维护；清单里为中英文描述留的那一格也随之取消，加一个功能只写它的代码与开关行。
+
+### 其他变更
+
+- **README 收成展示文案**：中英两份都以截图与动画帧为主，预览各配一行说明，安装收成两个命令块，鸣谢由四段正文改成四条；读者要的细节留在文档表指向的几份文件里。
+
 <h3 id="en-unreleased">Improvements</h3>
 
 - **The right panel's collapse control stands at the top bar's right end**: while the panel is open, a collapse button appears at the right end of the header's row and the panel's own copy steps aside; pressing it closes the panel and the host's open button returns. The host's own control cannot be moved there — it hangs from a transformed, clipped subtree, where a fixed box is measured from the panel and cut at its edge.
+
+### Removals
+
+- **The feature list and the settings documents are removed**: what the plugin does is told by the README's screenshots and the settings page itself, so the per-feature list and the six-tab settings table are no longer maintained; the manifest's field for a two-language description goes with them, and a new feature is its code and its settings rows alone.
+
+### Chores
+
+- **The READMEs are presentation copy**: both languages lead with the screenshots and the animation frames, one line explains each preview, installation is two command blocks, and the acknowledgements are four bullets instead of four paragraphs; the detail a reader needs stays in the files the documentation table points at.
 
 ## [0.16.3] - 2026-10-18
 

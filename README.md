@@ -18,7 +18,7 @@
 
 ## 预览
 
-本插件提供了两种主题。通过插件设置，可以在 Claude 与 DeepSeek 两套配色之间切换，亮暗跟随系统颜色模式。
+两套主题在插件设置里切换，亮暗跟随系统。
 
 ### Claude
 
@@ -33,7 +33,7 @@
   </tr>
 </table>
 
-> Claude品牌主题，原汁原味。工作台首页（上），对话界面（下），浅色（左），深色（右）
+> 工作台首页（上），对话界面（下）；浅色在左，深色在右。
 
 ### DeepSeek
 
@@ -48,45 +48,41 @@
   </tr>
 </table>
 
-> DeepSeek品牌主题，拥有特色宠物小鲸鱼Deepy。工作台首页（上），对话界面（下），浅色（左），深色（右）
->
-> <table>
->   <tr>
->     <td align="center" width="25%"><img src="./docs/gifs/idle.gif" width="120" alt="空闲" /><br />空闲</td>
->     <td align="center" width="25%"><img src="./docs/gifs/thinking.gif" width="120" alt="思考" /><br />思考</td>
->     <td align="center" width="25%"><img src="./docs/gifs/typing.gif" width="120" alt="写回答、调用工具" /><br />写回答、调用工具</td>
->     <td align="center" width="25%"><img src="./docs/gifs/conducting.gif" width="120" alt="指挥子代理" /><br />指挥子代理</td>
->   </tr>
->   <tr>
->     <td align="center" width="25%"><img src="./docs/gifs/notification.gif" width="120" alt="等你操作" /><br />等你操作</td>
->     <td align="center" width="25%"><img src="./docs/gifs/error.gif" width="120" alt="失败" /><br />失败</td>
->     <td align="center" width="25%"><img src="./docs/gifs/happy.gif" width="120" alt="完成" /><br />完成</td>
->     <td align="center" width="25%"><img src="./docs/gifs/sleeping.gif" width="120" alt="睡着" /><br />睡着</td>
->   </tr>
-> </table>
+> 输入框上沿站着宠物小鲸鱼 Deepy，八个状态：
+
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="./docs/gifs/idle.gif" width="120" alt="空闲" /><br />空闲</td>
+    <td align="center" width="25%"><img src="./docs/gifs/thinking.gif" width="120" alt="思考" /><br />思考</td>
+    <td align="center" width="25%"><img src="./docs/gifs/typing.gif" width="120" alt="写回答、调用工具" /><br />写回答、调用工具</td>
+    <td align="center" width="25%"><img src="./docs/gifs/conducting.gif" width="120" alt="指挥子代理" /><br />指挥子代理</td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><img src="./docs/gifs/notification.gif" width="120" alt="等你操作" /><br />等你操作</td>
+    <td align="center" width="25%"><img src="./docs/gifs/error.gif" width="120" alt="失败" /><br />失败</td>
+    <td align="center" width="25%"><img src="./docs/gifs/happy.gif" width="120" alt="完成" /><br />完成</td>
+    <td align="center" width="25%"><img src="./docs/gifs/sleeping.gif" width="120" alt="睡着" /><br />睡着</td>
+  </tr>
+</table>
 
 ## 安装
 
-1. 官方插件页，添加以下插件即可快速安装
+官方插件页添加这个包名，或从终端安装：
 
 ```
 dsh-claude-style
 ```
 
-2. 通过终端安装
-
 ```bash
-dsh plugin --profile web add dsh-claude-style                  # npm 包（推荐）
+dsh plugin --profile web add dsh-claude-style                    # npm 包（推荐）
+dsh plugin --profile web add Nwflower/dsh-claude-style           # GitHub 源码
 ```
 
-3. 通过[插件市场](https://github.com/dsh-market/dsh-market)安装
-4. 通过dsh-web-all插件的皮肤中心安装
-
-同一时刻建议只启用一个主题。安装后推荐重启 `DeepSeek Harness`以获得完整能力。
+也可从[插件市场](https://github.com/dsh-market/dsh-market)或 dsh-web-all 的皮肤中心安装。同一时刻只启用一个主题，装好后重启 DeepSeek Harness。
 
 ## 字体
 
-> **重要：Anthropic 没有对其字体进行公开发行，[`点击此处可以查看`](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic)，请自行下载，仅供学习或研究用途**。
+> Anthropic 没有公开发行这三款字体；[仓库里的那一份](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic)只供下载与研究。
 
 | 字体 | 用途 | 文件 |
 |---|---|---|
@@ -94,32 +90,23 @@ dsh plugin --profile web add dsh-claude-style                  # npm 包（推�
 | Anthropic Serif Web Text | 对话正文 / Markdown | [`packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf) |
 | Anthropic Mono Web | 代码 / 行内代码 | [`packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf) |
 
-Anthropic 字体启用（二选一）：
-
-① 安装到系统——Windows 双击 `.ttf` → 「安装」，macOS 用「字体册」导入；
-
-② 免安装——把 `.ttf` 复制到 `$DSH_HOME/dsh-claude-style/fonts/`。
+启用时二选一：装进系统（Windows 双击 `.ttf` 选「安装」，macOS 用「字体册」导入），或把 `.ttf` 复制到 `$DSH_HOME/dsh-claude-style/fonts/`。
 
 ## 文档
 
 | 文档 | 说明 |
 | --- | --- |
-| [设计令牌](docs/STYLE.md) | 配色、字体、形状、动效与层级的规则，以及由令牌表生成的三张对照表（英文） |
-| [架构决策](docs/adr/README.md) | 每条方向一页：它回答的背景、决定、由此而来的后果与重审条件 |
+| [设计令牌](docs/STYLE.md) | 配色、字体、形状、动效与层级（英文） |
+| [架构决策](docs/adr/README.md) | 每条方向一页：背景、决定、后果与重审条件 |
 | [更新日志](CHANGELOG.md) | 版本历史 |
-| [贡献指南](CONTRIBUTING.md) | 如何从 `packages/client/src/` 构建、提交规范与截图/回归工具（英文） |
-| [功能一览](docs/FEATURES.md) | 每一项功能做什么、在设置页哪里开关 |
-| [设置说明](docs/SETTINGS.md) | 六个分页（通用、外观、输入区、侧栏、对话、动效）的设置项与各档效果 |
+| [贡献指南](CONTRIBUTING.md) | 构建、提交规范与回归工具（英文） |
 
 ## 鸣谢
 
-对话导航的展开列表、快捷键跳转与落点横线参考了 SherUnlocked-4869 的 [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav)（MIT）。
-
-像素小鲸鱼 Deepy 的动画帧图来自 calmly-eating-bugs（[@wp3171216237](https://github.com/wp3171216237)）绘制的 Deepy 小鲸鱼主题包。
-
-聊天区域内的增强动效修改自 [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux)（MIT）。
-
-像素螃蟹（Clawd）是 Anthropic 的角色形象，相关权利归 Anthropic 所有。螃蟹掏出电脑敲代码的动画取自 Claude Code，其余各个状态的动画由本项目按这一形象绘制。螃蟹的帧图不适用 MIT 许可（见 [LICENSE](LICENSE)）。本插件是非官方的爱好者作品，与 Anthropic 没有关联，也未获其认可。
+- 对话导航的展开列表、快捷键跳转与落点横线参考 SherUnlocked-4869 的 [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav)（MIT）。
+- Deepy 的动画帧图来自 calmly-eating-bugs（[@wp3171216237](https://github.com/wp3171216237)）绘制的 Deepy 小鲸鱼主题包。
+- 聊天区的增强动效改自 [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux)（MIT）。
+- 像素螃蟹（Clawd）是 Anthropic 的角色形象：掏出电脑敲代码的动画取自 Claude Code，其余状态由本项目按这一形象绘制，帧图不适用 MIT 许可（见 [LICENSE](LICENSE)）。本插件是非官方爱好者作品，与 Anthropic 没有关联。
 
 ## 友链
 

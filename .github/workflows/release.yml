@@ -89,7 +89,6 @@ jobs:
         if: steps.state.outputs.published != 'true' && steps.state.outputs.dev == ''
         run: npm publish "${{ steps.pack.outputs.dev }}" --access public --provenance --tag dev
       - run: npm run lint
-      - run: npm run features:check
       - run: npm run docs:check
       - run: npm run changelog:check
       - run: npm run agents:check

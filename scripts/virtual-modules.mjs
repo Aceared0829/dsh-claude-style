@@ -16,8 +16,7 @@ const RUNTIME_FIELDS = ['id', 'handle', 'order', 'pref', 'prefValues', 'ungated'
  * The feature registry, `virtual:dsh-claude-style/features`: each manifest's
  * runtime fields beside its main module's `install`, or beside its chunk's
  * address for a deferred feature (D72), in install order. The manifests
- * themselves stay out of the bundle — their descriptions and test coverage are
- * of no use to the page.
+ * themselves stay out of the bundle: the page reads none of their test coverage.
  *
  * A feature that declares settings rows also carries its own copy here: the
  * settings page labels those rows whether the feature is installed or not, so

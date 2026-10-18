@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**README 收成展示文案**：中英两份都以截图与动画帧为主，预览各配一行说明，安装收成两个命令块，鸣谢由四段正文改成四条；读者要的细节留在文档表指向的几份文件里。",
+  "en": "**The READMEs are presentation copy**: both languages lead with the screenshots and the animation frames, one line explains each preview, installation is two command blocks, and the acknowledgements are four bullets instead of four paragraphs; the detail a reader needs stays in the files the documentation table points at."
+}

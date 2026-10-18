@@ -74,8 +74,6 @@ export interface FeatureFields {
    * changes this", and the build refuses an entry no manifest claims.
    */
   contracts: string[]
-  /** What the feature does, for a reader: the README's feature paragraphs (D48). */
-  description: { zh: FeatureCopy, en: FeatureCopy }
 }
 
 /** The other plugins a feature can yield to. */
@@ -202,11 +200,6 @@ export type RowControlNames<M> = M extends { settingsRows: readonly (infer R)[] 
  * the record leaves out, fails the type check (D72).
  */
 export type SettingsControlsOf<M> = Record<RowControlNames<M>, React.ComponentType<SettingsRowView>>
-
-export interface FeatureCopy {
-  title: string
-  text: string
-}
 
 /** The manifest fields the browser half reads. */
 export type FeatureRuntime = FeatureIdentity & Pick<FeatureFields, 'order' | 'yieldsTo' | 'settingsRows'> & {
