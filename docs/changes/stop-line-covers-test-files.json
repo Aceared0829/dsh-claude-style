@@ -1,0 +1,8 @@
+{
+  "group": "chores",
+  "order": 1,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**两道检查各补上一处**：750 行停线开始管单元测试文件（一个测试文件长过停线，就是一份文件装了几个题目）；整份文档查找的登记规则写明单元测试不在其内，测试里的文档跑在测试浏览器上，不花读者一分钱。`packages/contracts/src/timing.ts` 的 `host.column-observer` 添上持有它的那份单元测试，构建里「一条时刻假设要么点名场景、要么点名单元测试」的后半句从此有实例。",
+  "en": "**Two checks each gain one thing**: the 750-line stop line now covers unit test files (a test file past the line is one file holding several subjects), and the whole-document lookup register says plainly that a unit test stands outside it, since a test's document runs in the test browser and costs no reader anything. `packages/contracts/src/timing.ts`'s `host.column-observer` names the unit test that holds it, so the second half of \"an assumption names a scenario or a unit test\" has an instance."
+}

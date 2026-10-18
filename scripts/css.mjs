@@ -37,7 +37,7 @@ import selectorParser from 'postcss-selector-parser'
 import { featureSheet } from './feature-sheets.mjs'
 import { minifyCss } from './shared/minify-css.cjs'
 import { loadModule } from './shared/ts-module.cjs'
-import { ruleKey } from '../packages/testing/importance-audit.cjs'
+import { ruleKey } from './shared/rule-key.cjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'

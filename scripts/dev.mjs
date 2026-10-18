@@ -21,11 +21,12 @@ const BUILD = path.join(ROOT, 'scripts', 'build.mjs')
 
 /**
  * What the build reads, as paths relative to the repository. A directory covers
- * everything under it; packages/testing/ is not a build input, and the build
+ * everything under it; packages/testing/ is not a build input as a directory, so
+ * the records under it the build does read are named one by one. The build
  * writes nothing under any of these.
  */
 const WATCHED_DIRS = ['packages/client', 'packages/assets', 'packages/host', 'packages/engine', 'packages/contracts', 'scripts']
-const WATCHED_FILES = ['package.json', 'tsconfig.json']
+const WATCHED_FILES = ['package.json', 'tsconfig.json', 'packages/testing/importance-ledger.json']
 
 /** Changes this close together are one edit: a save that touches several files builds once. */
 const SETTLE_MS = 120

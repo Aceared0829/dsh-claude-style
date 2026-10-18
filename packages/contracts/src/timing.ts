@@ -35,7 +35,7 @@ export const HOST_TIMING: HostTimingEntry[] = [
     id: 'host.column-observer',
     assumption: 'The host creates its own ResizeObserver when it mounts a message column and writes the scroll position to the bottom inside that callback.',
     use: 'The skin\u2019s afterHost subscription is made later, so it runs after the host\u2019s in the same frame and can take the pin back before the frame paints (D74, D40).',
-    checks: ['scenario:scroll'],
+    checks: ['scenario:scroll', 'test:packages/engine/src/bus.test.ts'],
   },
   {
     id: 'host.follow-mark',

@@ -68,11 +68,13 @@ function decisionNumbers() {
   return { live, retired }
 }
 
-// 1. The stop line.
+// 1. The stop line. A unit test file counts like any other: a test that grew
+// past the line is one file holding several subjects, which is the shape the
+// line exists to catch (D66). Declaration files are generated and stand aside.
 const sources = [
   ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js'], SKIPPED_DIRS),
   ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js'], SKIPPED_DIRS),
-].filter((file) => !/\.test\.ts$/.test(file) && !/\.d\.ts$/.test(file))
+].filter((file) => !/\.d\.ts$/.test(file))
 for (const file of sources) {
   const lines = fs.readFileSync(file, 'utf8').split('\n').length
   const exception = OVERSIZE[relative(file)]
@@ -210,7 +212,8 @@ if (copies.status !== 0) {
 // packages/testing/document-lookups.json with the reason it is still there: a
 // file's count has to match its entry, and an entry whose count reaches zero
 // comes out of the file. That the record's total never rises is held against
-// the base by scripts/ci-scope.mjs --ledgers.
+// the base by scripts/ci-scope.mjs --ledgers. A unit test stands outside the
+// rule: its document runs in the test browser and costs no reader anything.
 const LOOKUP = /document\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|document\.body\.(?:querySelectorAll|querySelector)(?:<[^>]*>)?\s*\(|removeStrayNodes\(\s*document\b/g
 const LOOKUP_OWNERS = new Set([
   'packages/engine/src/host.ts',
@@ -221,7 +224,7 @@ const LOOKUP_OWNERS = new Set([
 const recordedLookups = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'document-lookups.json'), 'utf8')).files
 let lookups = 0
 for (const file of sources) {
-  if (!file.endsWith('.ts') || relative(file).includes('packages/testing/')) continue
+  if (!file.endsWith('.ts') || /\.test\.ts$/.test(file) || relative(file).includes('packages/testing/')) continue
   if (LOOKUP_OWNERS.has(relative(file))) continue
   const count = (fs.readFileSync(file, 'utf8').match(LOOKUP) ?? []).length
   lookups += count

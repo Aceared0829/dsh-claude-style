@@ -50,6 +50,7 @@ const path = require('node:path')
 const postcss = require('postcss')
 const selectorParser = require('postcss-selector-parser')
 const { minifyCss } = require('../../scripts/shared/minify-css.cjs')
+const { ruleKey } = require('../../scripts/shared/rule-key.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 /** The marker declaration carrying each rule's index into the page's CSSOM. */
@@ -136,11 +137,6 @@ function ruleKeys(file) {
   const keys = new Set()
   postcss.parse(minifyCss(fs.readFileSync(file, 'utf8'))).walkRules((rule) => { keys.add(ruleKey(rule)) })
   return keys
-}
-
-/** One rule as text that survives the build: its selector and its declarations. */
-function ruleKey(rule) {
-  return `${rule.selector.replace(/\s+/g, ' ')}{${rule.nodes.filter((node) => node.type === 'decl').map((node) => `${node.prop}:${node.value}${node.important ? '!' : ''}`).join(';')}}`
 }
 
 /**

@@ -25,6 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - **内置文档与注释里重复的那一份清掉了**：每个功能签名上一律重复的三行参数注释、每个 `copy.ts` 里同一句「One key of this feature's own copy」、以及散在各处的「此前是怎么做的」「实测读到多少」一律删去；`constants.ts` 叠放的两段模块注释合成一段（顺带修掉一处注释里多出的星号），`shared/activity-phrase.ts` 的长注释压到约定长度并引用 D70，`docs/SETTINGS.md` 与英文版里三段与功能一览逐字相同的说明改成指向那一条。代码行为不变。
+- **两道检查各补上一处**：750 行停线开始管单元测试文件（一个测试文件长过停线，就是一份文件装了几个题目）；整份文档查找的登记规则写明单元测试不在其内，测试里的文档跑在测试浏览器上，不花读者一分钱。`packages/contracts/src/timing.ts` 的 `host.column-observer` 添上持有它的那份单元测试，构建里「一条时刻假设要么点名场景、要么点名单元测试」的后半句从此有实例。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -45,6 +46,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - **The built-in documents and comments lose the copy that stood twice**: the three parameter lines every feature's signature repeated, the same "One key of this feature's own copy" line in every `copy.ts`, and the scattered notes about how the code used to work and what a measurement once read are gone; `constants.ts`'s two stacked module comments are one (and a stray asterisk in one of them is fixed), `shared/activity-phrase.ts`'s long comment is down to the length the conventions set with D70 cited, and the three paragraphs in `docs/SETTINGS.md` and its English twin that repeated the feature list word for word now point at it. No behaviour changes.
+- **Two checks each gain one thing**: the 750-line stop line now covers unit test files (a test file past the line is one file holding several subjects), and the whole-document lookup register says plainly that a unit test stands outside it, since a test's document runs in the test browser and costs no reader anything. `packages/contracts/src/timing.ts`'s `host.column-observer` names the unit test that holds it, so the second half of "an assumption names a scenario or a unit test" has an instance.
 
 ## [0.16.2] - 2026-10-17
 
