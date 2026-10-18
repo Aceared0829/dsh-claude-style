@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**等待行加载点沿直线往返时走的是简谐运动**：三颗点在两端停顿、穿过中点最快，经过中点时缩到最小；此前它们匀速往返。",
+  "en": "**The waiting line's loader dots walk their lines in simple harmonic motion**: each one rests at either end and is fastest through the middle, where it is smallest; they used to walk at a constant speed."
+}

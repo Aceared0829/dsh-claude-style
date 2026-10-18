@@ -365,9 +365,10 @@ module.exports = {
         bounceFrames[0].duration === '0.5s' && (bounceFrames[0].delays || []).join(',') === '-0.5s,-0.3s,-0.2s' &&
         Math.min(...bounceY) <= -7.5 && Math.max(...bounceY) >= -0.5,
       JSON.stringify({ readings: bounceFrames.length, low: Math.min(...bounceY), high: Math.max(...bounceY), head: bounceFrames[0] }))
-    // 走路那条：四条腿各占四分之一周期，所以过半个周期球落在中点另一侧、离中点的距离与
+    // 走路那条：一端走到另一端各占半个周期，所以过半个周期球落在中点另一侧、离中点的距离与
     // 大小都一样；三颗各错开三分之一个周期（相差半个周期就是把同一个动作镜像过去），
-    // 而且两端最多就是球本来的大小。
+    // 而且两端最多就是球本来的大小。简谐运动在两端慢、中间快：离中点超过四分之三幅度的
+    // 时间约占一周的 46%，匀速往返只占 25%，读的就是这一项。
     const lineFrames = (wait.lineLane || { frames: [] }).frames || []
     const lineY = lineFrames.map((frame) => numbers(frame.translate[0])[1])
     const lineScale = lineFrames.map((frame) => Number(String(frame.scale[0]).split(' ')[0]))
@@ -381,6 +382,8 @@ module.exports = {
     const size = sizes.slice(0, half).map((one, at) => Math.abs(one - sizes[at + half]))
     const drift = place.length === 0 ? Infinity : Math.max(...place)
     const sizeDrift = size.length === 0 ? Infinity : Math.max(...size)
+    const reach = (highest - lowest) / 2
+    const dwell = trace.length === 0 ? 0 : trace.filter((one) => Math.abs(one - middle) > reach * 0.75).length / trace.length
     const phaseOf = (delay) => {
       const seconds = Number(String(delay).replace('s', ''))
       return ((-seconds % 1.25) + 1.25) % 1.25 / 1.25
@@ -388,16 +391,17 @@ module.exports = {
     const phases = (lineFrames[0] === undefined ? [] : lineFrames[0].delays || []).map(phaseOf)
     const clash = phases.some((one, at) => phases.some((two, other) => other > at &&
       (Math.abs(one - two) < 0.02 || Math.abs(Math.abs(one - two) - 0.5) < 0.02)))
-    check('走路那条：三颗各沿自己的线走阻尼简谐、相位各错三分之一，去程与回程是同一条曲线，最长的一帧也不比跳球大',
+    check('走路那条：三颗各沿自己的线走简谐、两端停得比中间久、相位各错三分之一，去程与回程是同一条曲线，最长的一帧也不比跳球大',
       lineFrames.length >= 45 && lineFrames[0].animation === 'dsh-claude-wait-dot-line' &&
         lineFrames[0].duration === '1.25s' && phases.length === 3 && !clash &&
-        highest - lowest >= 7 && Math.max(...sizes) <= 1.001 && drift <= 0.5 && sizeDrift <= 0.05,
+        highest - lowest >= 7 && Math.max(...sizes) <= 1.001 && drift <= 0.5 && sizeDrift <= 0.05 && dwell >= 0.38,
       JSON.stringify({
         readings: lineFrames.length,
         phases,
         travel: Number((highest - lowest).toFixed(2)),
         drift: Number(drift.toFixed(2)),
         sizeDrift: Number(sizeDrift.toFixed(3)),
+        dwell: Number(dwell.toFixed(2)),
       }))
     // 交换四角那条：四颗球站成 45 : 55 的矩形；一圈四个四分之一圈——A 段一对对角换位、
     // B 段另一对，再各换回来，所以整圈走完每颗球回到原处。每颗球走的是一段椭圆弧：
@@ -432,8 +436,9 @@ module.exports = {
         near(spot(orbitFrames[25], 0), spot(orbitFrames[10], 0), 0.05) && dwells && closes && bow >= 1,
       JSON.stringify({ readings: orbitFrames.length, shape, bow: Number(bow.toFixed(2)), closes, dwells }))
     // 轮换：一个动作站满 10 秒才换，换的是另一条轨道（不会换到自己）；换的那一下是交接，
-    // 旧的那条各自淡出到 0、新的那条各自淡入到 1。
-    const rotation = (wait.rotation || []).filter((frame) => frame !== null && frame.loader !== null)
+    // 旧的那条各自淡出到 0、等最后一颗走完新的那条才进场、各自淡入到 1；
+    // 旧的淡出期间没有哪条在场，这几帧不算换。
+    const rotation = (wait.rotation || []).filter((frame) => frame !== null && frame.loader !== null && frame.loader.motion !== null)
     const seen = rotation.map((frame) => ({ at: frame.at, motion: String(frame.loader.motion), loader: frame.loader }))
     const starts = seen.length === 0 ? [] : [0]
     for (let at = 1; at < seen.length; at += 1) if (seen[at].motion !== seen[at - 1].motion) starts.push(at)
@@ -443,7 +448,9 @@ module.exports = {
     const gaps = changes.slice(1).map((at, index) => seen[at].at - seen[changes[index]].at)
     const rotated = changes.map((at, index) => motionOf(at) !== motionOf(starts[index]))
     check('加载点每 10 秒换一条轨道，换的不会是正站着的那一条',
-      changes.length >= 2 && gaps.every((one) => one >= 9500 && one <= 11500) && rotated.every((one) => one === true),
+      changes.length >= 2 &&
+        gaps.every((one) => one >= bound('loaderRotateGapMinMs') && one <= bound('loaderRotateGapMaxMs')) &&
+        rotated.every((one) => one === true),
       JSON.stringify({ changes: changes.length, gaps: gaps.map((one) => Math.round(one)), motions: starts.map((at) => motionOf(at)) }))
     const laneTail = (frame, name) => ((laneOf(frame.loader, name).opacity || [])[0])
     // The hand-over is read on the frames between the first change and the next:
@@ -453,9 +460,12 @@ module.exports = {
     const goneLane = before === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneTail(before, name) > 0.9) ?? null
     const settled = changes.length < 2 || goneLane === null || comeLane === null ? null
       : seen.slice(changes[0], changes[1]).find((frame) => laneTail(frame, goneLane) < 0.1 && laneTail(frame, comeLane) > 0.9) ?? null
-    check('换轨道是一次交接：旧的那条各自淡出、新的那条各自淡入，没有一颗球是被搬过去的',
-      goneLane !== null && comeLane !== null && goneLane !== comeLane && settled !== null && String(settled.motion).includes(comeLane),
-      JSON.stringify({ gone: goneLane, come: comeLane, settled: settled === null ? null : settled.motion }))
+    const crowded = (wait.rotation || []).filter((frame) => frame !== null && frame.loader !== null)
+      .filter((frame) => (frame.loader.lanes || []).filter((lane) => (lane.opacity || []).some((one) => one > 0.05)).length > 1)
+    check('换轨道是一次交接：旧的那条各自淡出、新的那条各自淡入，没有一颗球是被搬过去的，框里也从不同时画两条',
+      goneLane !== null && comeLane !== null && goneLane !== comeLane && settled !== null && String(settled.motion).includes(comeLane) &&
+        crowded.length === 0,
+      JSON.stringify({ gone: goneLane, come: comeLane, settled: settled === null ? null : settled.motion, crowded: crowded.length }))
     check('the DeepSeek brand keeps the host\'s whale tail, stands the skin\'s dots down and waits on the host\'s own word',
       wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true && wait.deepseek?.word === 'Deep diving',
       JSON.stringify(wait.deepseek))

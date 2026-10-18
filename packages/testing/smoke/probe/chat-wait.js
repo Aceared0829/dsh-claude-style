@@ -257,17 +257,20 @@
       // product's own (D66: a duration that is the behaviour), so every frame is
       // recorded with its moment until two changes have landed: the stretch one
       // motion stood and the hand-over between two of them are both read off it.
+      // While the lane leaving fades out no lane is in play yet, so a change is
+      // counted when the next lane comes into play.
       var watchRotation = function () {
         return probe.until(function () {
           var reading = lineOf()
           return { at: performance.now(), loader: reading === null ? null : reading.loader }
         }, function (frames) {
           var changes = 0
-          for (var at = 1; at < frames.length; at += 1) {
-            var was = frames[at - 1].loader
-            var now = frames[at].loader
-            if (was !== null && now !== null && String(was.motion) !== String(now.motion)) changes += 1
-          }
+          var standing = null
+          frames.forEach(function (frame) {
+            if (frame.loader === null || frame.loader.motion === null) return
+            if (standing !== null && standing !== frame.loader.motion) changes += 1
+            standing = frame.loader.motion
+          })
           return changes >= 2
         }, 'two changes of the loader rotation', 25000)
       }

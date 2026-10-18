@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 1,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**等待行加载点换动作时先出后进**：离场的那组点各自在折返处淡出，最后一颗走完新的那组才从头开始、各自淡入，18×14 的小框里不再有 400–650 ms 同时挤着两组共六七颗点。",
+  "en": "**The waiting line's loader changes motion one set at a time**: the set leaving fades each dot out where it turns, and only once the last one has gone does the next set start from the top and fade its dots in, so the 18×14 box no longer crowds six or seven dots from two motions together for 400–650 ms."
+}

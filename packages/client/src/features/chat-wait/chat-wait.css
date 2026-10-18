@@ -100,12 +100,13 @@ body[data-dsh-claude-style][data-dsh-claude-brand="claude"] .dsh-claude-chat-wai
   margin-right: 6px;
 }
 
-/* The loader carries both motions at once, one lane each, so a change between
+/* The loader carries every motion at once, one lane each, so a change between
    them is a hand-over rather than a redraw: the lane the turn is leaving fades
-   its dots out where its own motion has them, the lane it is going to fades its
-   dots in where that motion carries them, and the two cross
-   (features/chat-wait/wait-loader.ts). A lane out of play is taken out of the
-   page, which is what lets the lane coming back start its motion from the top. */
+   its dots out where its own motion has them, and once the last of them has gone
+   the lane it is going to fades its dots in where that motion carries them, so
+   the box never draws two motions at once (features/chat-wait/wait-loader.ts).
+   A lane out of play is taken out of the page, which is what lets the lane
+   coming back start its motion from the top. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane {
   position: absolute;
   inset: 0;
@@ -318,27 +319,30 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-bounce .dsh-claude-cha
   animation-delay: calc(-2 * var(--dsh-claude-period-dot-bounce) / 5);
 }
 
-/* The walking lane: each dot walks its own line through one point, a damped
-   simple harmonic — it slows into either end and gathers speed back through the
-   middle (--dsh-claude-ease-damped-out, -damped-in) — and it is the dot's own
-   size at either end, so the walking dot never draws larger than the bouncing
-   one. Its four legs are a quarter of the period each, so a dot takes as long
-   going out to an end as coming back, and the second half of the walk is the
-   first half mirrored. The three dots stand a third of the period apart, and
-   every delay is negative: each is already at its own place on its line instead
-   of waiting at the middle for its turn. A third apart is what keeps the two
-   lines that are mirrors of each other from drawing the same motion twice — a
-   half period would, and so would no offset at all. */
+/* The walking lane: each dot walks its own line through one point, a simple
+   harmonic — at rest at either end and fastest through the middle — and it is
+   the dot's own size at either end, smallest as it crosses the middle, so the
+   walking dot never draws larger than the bouncing one. The walk's keyframes
+   stand at the two ends only and its size's at the ends and the middle, so every
+   stretch between two of them runs end to end on the animation's own curve,
+   --dsh-claude-ease-harmonic; a curve written into a keyframe would be dropped
+   for linear. The three dots stand a third of the period apart, the first a
+   quarter in, crossing the middle, and every delay is negative: each is already
+   at its own place on its line instead of waiting at an end for its turn. A
+   third apart is what keeps the two lines that are mirrors of each other from
+   drawing the same motion twice — a half period would, and so would no offset
+   at all. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-wait-dot {
-  animation: dsh-claude-wait-dot-line var(--dsh-claude-period-dot-line) linear infinite;
+  animation: dsh-claude-wait-dot-line var(--dsh-claude-period-dot-line) var(--dsh-claude-ease-harmonic) infinite;
+  animation-delay: calc(-1 * var(--dsh-claude-period-dot-line) / 4);
 }
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-wait-dot:nth-child(2) {
-  animation-delay: calc(-1 * var(--dsh-claude-period-dot-line) / 3);
+  animation-delay: calc(-7 * var(--dsh-claude-period-dot-line) / 12);
 }
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-wait-dot:nth-child(3) {
-  animation-delay: calc(-2 * var(--dsh-claude-period-dot-line) / 3);
+  animation-delay: calc(-11 * var(--dsh-claude-period-dot-line) / 12);
 }
 
 /* What a hand-over needs to know about a lane's own motion, read by
@@ -346,8 +350,8 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-
    of it arrives and leaves, and how long one of its fades takes as a share of
    the motion's own turn. The bounce's dot arrives at the top of its hop and
    leaves off the floor the instant it rebounds; the walk's arrives at the middle
-   of its line, and leaves at the far end it turns at — a share each, since it
-   crosses the middle and turns at either end twice a turn. Which curve each fade
+   of its line, and leaves at the end it turns at — a share each, since it
+   crosses the middle and turns at an end twice a turn. Which curve each fade
    runs on is the browser half's, read from the token sheet (D9). */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-bounce {
   --dsh-claude-dot-arrives: 1;
@@ -356,8 +360,8 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-bounce {
 }
 
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line {
-  --dsh-claude-dot-arrives: 0 0.5;
-  --dsh-claude-dot-leaves: 0.25 0.75;
+  --dsh-claude-dot-arrives: 0.25 0.75;
+  --dsh-claude-dot-leaves: 0 0.5;
   --dsh-claude-dot-fade: 0.25;
 }
 
@@ -386,9 +390,9 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-w
    The stops at two and three fifths are added for the hand-over: they are the
    places the wave's second and third dots stand when the bounce takes over, and
    the arriving table above writes the same two values. The rise runs straight
-   between them and eases into the top, the way a ball leaves the floor quickly
-   and slows at the height of its hop. The snippet's own radius stops are left
-   out: on a 4px box every one of them
+   between them and eases into the top on the animation's own curve, the way a
+   ball leaves the floor quickly and slows at the height of its hop. The
+   snippet's own radius stops are left out: on a 4px box every one of them
    clamps to the same curve the dot already carries, so a radius among the
    keyframes would be no part of the motion and would keep the whole animation
    off the compositor, repainting the dot every frame. */
@@ -407,7 +411,6 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-w
 
   60% {
     translate: 0 calc(-3 * var(--dsh-claude-distance-travel) / 5);
-    animation-timing-function: var(--dsh-claude-ease-standard);
   }
 
   100% {
@@ -416,23 +419,19 @@ body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-w
 }
 
 @keyframes dsh-claude-wait-dot-line {
-  0%, 50%, 100% {
-    translate: var(--dsh-claude-dot-centre) calc(-1 * var(--dsh-claude-distance-travel));
-    scale: var(--dsh-claude-scale-dot-mid);
-    animation-timing-function: var(--dsh-claude-ease-damped-out);
-  }
-
-  25% {
-    translate: var(--dsh-claude-dot-end-x) var(--dsh-claude-dot-end-y);
-    scale: 1;
-    animation-timing-function: var(--dsh-claude-ease-damped-in);
-  }
-
-  75% {
+  0%, 100% {
     translate: calc(2 * var(--dsh-claude-dot-centre) - var(--dsh-claude-dot-end-x))
       calc(-2 * var(--dsh-claude-distance-travel) - var(--dsh-claude-dot-end-y));
     scale: 1;
-    animation-timing-function: var(--dsh-claude-ease-damped-in);
+  }
+
+  25%, 75% {
+    scale: var(--dsh-claude-scale-dot-mid);
+  }
+
+  50% {
+    translate: var(--dsh-claude-dot-end-x) var(--dsh-claude-dot-end-y);
+    scale: 1;
   }
 }
 

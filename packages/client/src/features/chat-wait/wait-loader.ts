@@ -14,12 +14,13 @@ import { motionEase, motionMs } from '../../shared/motion'
  *
  * A change is a hand-over and never a cut: the lane leaving fades each of its
  * dots out over one of its own legs, starting where that motion next turns back
- * — off the floor for a bounce, off a far end for a walk, wherever it stands for
+ * — off the floor for a bounce, off an end for a walk, wherever it stands for
  * the swap, whose own cycle is the only thing that carries it out to a corner —
- * and the lane arriving fades each of its dots in over one of its own legs,
- * starting where that motion next carries it. No dot is ever moved to a pose its
- * motion does not carry, and no dot leaves or arrives at a moment its own motion
- * did not choose.
+ * and once its last dot has gone, the lane arriving comes into the page and
+ * fades each of its dots in over one of its own legs, starting where that motion
+ * next carries it, so the box never draws two motions at once. No dot is ever
+ * moved to a pose its motion does not carry, and no dot leaves or arrives at a
+ * moment its own motion did not choose.
  *
  * Under the Reduced animation choice (D40) a change lands at once, with no fade:
  * each lane holds the frame its own motion stands on.
@@ -61,22 +62,22 @@ type LaneTiming = {
 }
 
 type LoaderState = {
-  /** The motion in play, once the opening one has been laid down. */
+  /** The motion in play, or on its way in while the one before it leaves. */
   motion: WaitLoaderMotion
   /** The rotation running out, so the next motion is laid down. */
   timer: number | null
+  /** How many hand-overs have begun, so one that has been overtaken stops. */
+  handOvers: number
 }
 
 const loaders = new WeakMap<HTMLElement, LoaderState>()
 
-/** The one entry of LANES a motion is built from. */
 function laneEntry(motion: WaitLoaderMotion) {
   const entry = LANES.find((one) => one.motion === motion)
   if (entry === undefined) throw new Error(`chat-wait: no lane is built for ${motion} (chat-wait.css)`)
   return entry
 }
 
-/** One lane of one loader. */
 function laneOf(loader: HTMLElement, motion: WaitLoaderMotion): Element {
   const lane = loader.querySelector(`.${laneEntry(motion).lane}`)
   if (lane === null) throw new Error('chat-wait: the loader is missing a lane (chat-wait.css)')
@@ -90,15 +91,15 @@ function dotsOf(loader: HTMLElement, motion: WaitLoaderMotion): Element[] {
 
 /**
  * Put every lane in its place in one pass, so no lane ever holds two of these at
- * once: the one arriving is the one in play, the one leaving keeps drawing until
- * its fades are done, and the rest are out of the page.
+ * once: the one in play draws, the one leaving keeps drawing until its fades are
+ * done, and the rest are out of the page.
  */
-function place(loader: HTMLElement, to: WaitLoaderMotion, from: WaitLoaderMotion | null) {
-  for (const { motion, lane: name } of LANES) {
+function place(loader: HTMLElement, active: WaitLoaderMotion | null, leaving: WaitLoaderMotion | null) {
+  for (const { motion } of LANES) {
     const lane = laneOf(loader, motion)
-    lane.classList.toggle(ACTIVE, motion === to)
-    lane.classList.toggle(LEAVING, motion === from)
-    lane.classList.toggle(RESTING, motion !== to && motion !== from)
+    lane.classList.toggle(ACTIVE, motion === active)
+    lane.classList.toggle(LEAVING, motion === leaving)
+    lane.classList.toggle(RESTING, motion !== active && motion !== leaving)
   }
 }
 
@@ -197,37 +198,42 @@ function easesOf(motion: WaitLoaderMotion, leaving: boolean): '--dsh-claude-ease
 }
 
 /**
+ * Bring a lane into play: it comes back into the page before anything is timed
+ * against it, which is also what starts its motion from the top — and so every
+ * dot's own moment is a known way off.
+ */
+function arrive(loader: HTMLElement, to: WaitLoaderMotion) {
+  place(loader, to, null)
+  const timing = timingOf(laneOf(loader, to))
+  for (const dot of dotsOf(loader, to)) fadeDot(dot, easesOf(to, false), timing, false)
+}
+
+/**
  * Hand the loader over: the lane leaving fades its dots out where its own motion
- * turns back, the lane arriving fades its dots in where its own motion carries
- * them, and the two cross.
+ * turns back, and once the last of them has gone the lane arriving fades its
+ * dots in where its own motion carries them.
  *
  * @param from - the lane in play, or null for the opening motion, which has no
  *     lane to leave.
  */
 function handOver(loader: HTMLElement, state: LoaderState, from: WaitLoaderMotion | null, to: WaitLoaderMotion) {
-  const arriving = laneOf(loader, to)
   dropFades(loader)
-  // The lane arriving comes back into the page before anything is timed against
-  // it, which is also what starts its motion from the top — and so every dot's
-  // own moment below is a known way off.
-  place(loader, to, from)
-  const arrivingTiming = timingOf(arriving)
-  for (const dot of dotsOf(loader, to)) fadeDot(dot, easesOf(to, false), arrivingTiming, false)
-  if (from !== null) {
-    const leaving = laneOf(loader, from)
-    const leavingTiming = timingOf(leaving)
-    const fades = dotsOf(loader, from).map((dot) => fadeDot(dot, easesOf(from, true), leavingTiming, true))
-    // The lane leaving stays in the page until its last dot has gone, then steps
-    // out of it, which is what stops a motion nothing draws. A hand-over that has
-    // since taken this lane back owns it, so the step out is skipped then.
-    void Promise.allSettled(fades.map((one) => one.finished)).then(() => {
-      if (!loader.isConnected || state.motion !== from) return
-      const lane = laneOf(loader, from)
-      lane.classList.remove(LEAVING)
-      lane.classList.add(RESTING)
-    })
-  }
   state.motion = to
+  const handOvers = ++state.handOvers
+  if (from === null) {
+    arrive(loader, to)
+    return
+  }
+  place(loader, null, from)
+  const timing = timingOf(laneOf(loader, from))
+  const fades = dotsOf(loader, from).map((dot) => fadeDot(dot, easesOf(from, true), timing, true))
+  // The lane leaving stays in the page until its last dot has gone, then steps
+  // out of it, which is what stops a motion nothing draws. A later hand-over, or
+  // a loader let go of, owns the lanes by then, so this one stops.
+  void Promise.allSettled(fades.map((one) => one.finished)).then(() => {
+    if (!loader.isConnected || loaders.get(loader) !== state || state.handOvers !== handOvers) return
+    arrive(loader, to)
+  })
 }
 
 /** Pick the motion that follows the one in play: any of the others, at random. */
@@ -257,7 +263,7 @@ function rotate(loader: HTMLElement, state: LoaderState) {
 export function startWaitLoader(loader: HTMLElement) {
   if (loaders.has(loader)) return
   const opening = LANES[Math.floor(Math.random() * LANES.length)].motion
-  const state: LoaderState = { motion: opening, timer: null }
+  const state: LoaderState = { motion: opening, timer: null, handOvers: 0 }
   loaders.set(loader, state)
   handOver(loader, state, null, opening)
   // Under the Reduced choice the loader holds one frame and never takes another

@@ -97,6 +97,16 @@
       "reason": "How far the tail has to sit from the end for the pin to have something to hold against."
     },
     {
+      "name": "loaderRotateGapMinMs",
+      "value": 9300,
+      "reason": "The least stretch between two changes of the waiting line's loader motion. The rotation is a fixed 10s, but a change is read when the arriving lane comes into play, which is after the lane leaving has faded out; that fade starts at the leaving motion's next turning point, so it is as long as 0.625s (the walking lane's own leg) on one change and near nothing on the next. 10s less that leg, less a frame of sampling, is the floor."
+    },
+    {
+      "name": "loaderRotateGapMaxMs",
+      "value": 11500,
+      "reason": "The most the same stretch may come to: the fixed 10s plus the same 0.625s leg the arriving lane's fade can add on one change and not the next, and room for a change landing between two frames of the probe's own reading."
+    },
+    {
       "name": "remoteSettingsFollowTimeoutMs",
       "value": 15000,
       "reason": "How long a setting written on one page may take to reach the other page."

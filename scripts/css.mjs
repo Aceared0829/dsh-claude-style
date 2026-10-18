@@ -238,12 +238,17 @@ function checkLayerLiterals(sheet, label, rule) {
 /**
  * Record one sheet's keyframes, refusing a second body that says the same thing
  * as an earlier one: the same effect twice is what the shared presets are for
- * (D9).
+ * (D9). A keyframe's own curve cannot read a token — Chromium drops a `var()`
+ * there and runs the stretch linear — so the curve goes on the animation and
+ * the keyframes take it from there.
  *
  * @param seen - signature → `name (file:line)`, across the sheets in cascade order.
  */
 function collectKeyframes(label, root, seen) {
   root.walkAtRules(/keyframes$/i, (at) => {
+    at.walkDecls('animation-timing-function', (node) => {
+      if (node.value.includes('var(')) throw new Error(`build: ${label}:${node.source.start.line} reads a token in a keyframe's animation-timing-function, which runs linear; give the animation that curve (D9)`)
+    })
     const body = at.nodes.map((rule) => `${rule.selector}{${rule.nodes.filter((node) => node.type === 'decl').map((node) => `${node.prop}:${node.value.replace(/\s+/g, ' ')}`).join(';')}}`).join(' ')
     const where = `${at.params} (${label}:${at.source.start.line})`
     const first = seen.get(body)
