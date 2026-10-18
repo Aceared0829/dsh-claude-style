@@ -15,6 +15,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **一次改写或折叠作废的淡入片段改由一趟原地压缩收走**：此前每摘掉一段都要搬动它后面的全部片段，一批里作废的片段一多，这一趟就按片段数的平方增长；现在一趟写完。读者看到的样子不变。
 - **流式期间写回的 tokens 把工具调用算进去**：调用的参数从不出现在页面上，一个只调工具的步骤因此原先停在结算值不动，现在每出现一行调用就按一行计，纯文字的字重也降到更接近实际的比例；计数挂在页面结构上，不再为此每帧扫一遍对话。
 - **等待行换词不再强制页面同步重算样式与布局**：换词需要的宽度改由渲染本身的布局经尺寸观察得到，旧词离场、新词进场与宽度过渡都在随后一帧起步，看到的动作不变；本机桌面端跑 `/perf-stream 150 tps=1000`（主会话加两个子智能体）、对话涨到约 435 个节点的 215 次换词里，标签上的布局读取为 0 次，改动前每次换词要强制重算两次，每次 13.5–44 ms。
+- **过程组较多的会话切换时，摘要一次量完**：16 个过程组的一次切换里最长强制布局从约 360 毫秒降到约 40 毫秒，切换耗时从约 0.58 秒降到约 0.33 秒。
 - **等待行加载点换动作时先出后进**：离场的那组点各自在折返处淡出，最后一颗走完新的那组才从头开始、各自淡入，18×14 的小框里不再有 400–650 ms 同时挤着两组共六七颗点。
 
 ### 问题修复
@@ -39,6 +40,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **The fade segments one rewrite or fold invalidates are taken out in a single in-place compaction**: taking one out used to move every segment after it, so a batch that invalidated many grew with the square of the segment count; one pass now writes them out. Nothing on screen changes.
 - **The written-back tokens count the tool calls while an answer streams**: a call's arguments never appear on the page, so a step that only called tools used to stand still at the settled number; each call row now counts once, and the per-character share of plain text is closer to what the provider bills. The count rides on the page structure rather than a per-frame sweep of the conversation.
 - **The waiting line swaps its words without forcing a synchronous style and layout pass**: the width a swap needs is heard from the render's own layout through a size observer, and the old words leaving, the new ones arriving and the width travel all start on the frame after, looking the same as before; on this machine's desktop app a `/perf-stream 150 tps=1000` run (one main session and two subagents) made 215 swaps up to about 435 conversation nodes with no layout read on the label, where each swap used to force two passes of 13.5–44 ms.
+- **A conversation with many process groups switches with its summaries measured once**: across a 16-group switch the longest forced layout falls from about 360 ms to about 40 ms and the switch from about 0.58 s to about 0.33 s.
 - **The waiting line's loader changes motion one set at a time**: the set leaving fades each dot out where it turns, and only once the last one has gone does the next set start from the top and fade its dots in, so the 18×14 box no longer crowds six or seven dots from two motions together for 400–650 ms.
 
 ### Bug Fixes

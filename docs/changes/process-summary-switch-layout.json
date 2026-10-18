@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 1,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "**过程组较多的会话切换时，摘要一次量完**：16 个过程组的一次切换里最长强制布局从约 360 毫秒降到约 40 毫秒，切换耗时从约 0.58 秒降到约 0.33 秒。",
+  "en": "**A conversation with many process groups switches with its summaries measured once**: across a 16-group switch the longest forced layout falls from about 360 ms to about 40 ms and the switch from about 0.58 s to about 0.33 s."
+}
