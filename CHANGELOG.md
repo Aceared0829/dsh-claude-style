@@ -10,6 +10,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - **Beam 的模型行画出厂商组合标**：目录里 `opencode-go/beam-free` 这类标识现在认领 Reflection 的组合标。字标是厂名的，模型名里从不写它，字标因此站在名字前面；标记在浅色画布上用厂商自己的品牌色，深色画布上随标签文字。
 
+### 体验优化
+
+- **流式期间写回的 tokens 把工具调用算进去**：调用的参数从不出现在页面上，一个只调工具的步骤因此原先停在结算值不动，现在每出现一行调用就按一行计，纯文字的字重也降到更接近实际的比例；计数挂在页面结构上，不再为此每帧扫一遍对话。
+
 ### 问题修复
 
 - **设置页里刚改动的开关不再先跳回原值**：改动交给宿主的这段时间里，宿主重读设置文档不会再把页面上的值盖回改动之前，控件停在读者按下的那一档，宿主给出答复时再按答复校正。
@@ -18,6 +22,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">New Features</h3>
 
 - **Beam rows draw the vendor lockup**: an id such as `opencode-go/beam-free` now claims Reflection's lockup. The wordmark is the vendor's, which the catalog's name never spells, so it leads the label; the mark wears the vendor's own brand colour on the ivory canvas and the label's ink on the warm black one.
+
+### Improvements
+
+- **The written-back tokens count the tool calls while an answer streams**: a call's arguments never appear on the page, so a step that only called tools used to stand still at the settled number; each call row now counts once, and the per-character share of plain text is closer to what the provider bills. The count rides on the page structure rather than a per-frame sweep of the conversation.
 
 ### Bug Fixes
 

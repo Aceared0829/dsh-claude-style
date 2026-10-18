@@ -86,6 +86,7 @@ export function createSessionStats(ctx: HostContext) {
 
   /** The estimate of the text streaming now, riding on the settled written-back total. */
   const estimate = createStreamEstimate()
+  estimate.watch()
 
   /**
    * One usage reading with the stream's estimate added: the host's settled
@@ -252,6 +253,8 @@ export function createSessionStats(ctx: HostContext) {
     /** Drop the appends, the line, the projection subscriptions and the host-node bindings. */
     teardown() {
       releaseWatch()
+      // The structure bus behind the estimate's call rows goes with the rest.
+      estimate.stop()
       releaseDialogWatch()
       // Everything this generation bound on the host's own meter, line and
       // panel comes off with it (stats-binding.ts's release).
