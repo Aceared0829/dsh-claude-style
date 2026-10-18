@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "**等待行换词不再强制页面同步重算样式与布局**：换词需要的宽度改由渲染本身的布局经尺寸观察得到，旧词离场、新词进场与宽度过渡都在随后一帧起步，看到的动作不变；本机桌面端跑 `/perf-stream 150 tps=1000`（主会话加两个子智能体）、对话涨到约 435 个节点的 215 次换词里，标签上的布局读取为 0 次，改动前每次换词要强制重算两次，每次 13.5–44 ms。",
-  "en": "**The waiting line swaps its words without forcing a synchronous style and layout pass**: the width a swap needs is heard from the render's own layout through a size observer, and the old words leaving, the new ones arriving and the width travel all start on the frame after, looking the same as before; on this machine's desktop app a `/perf-stream 150 tps=1000` run (one main session and two subagents) made 215 swaps up to about 435 conversation nodes with no layout read on the label, where each swap used to force two passes of 13.5–44 ms."
-}

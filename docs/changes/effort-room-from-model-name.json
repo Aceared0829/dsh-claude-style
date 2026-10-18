@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "**窗口很窄时，思考强度按钮留在输入卡片里**：它在模型按钮旁边借的那点宽度改为从模型名的截断里出，输入卡片不再因此横向滚动，按钮也不会画到侧栏上方。",
-  "en": "**With a very narrow window the reasoning-effort trigger stays inside the composer card**: the room it borrows beside the model trigger now comes out of the model name's truncation, so the card no longer scrolls sideways and the trigger is never drawn over the sidebar."
-}

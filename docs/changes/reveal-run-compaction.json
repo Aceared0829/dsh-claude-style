@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "**一次改写或折叠作废的淡入片段改由一趟原地压缩收走**：此前每摘掉一段都要搬动它后面的全部片段，一批里作废的片段一多，这一趟就按片段数的平方增长；现在一趟写完。读者看到的样子不变。",
-  "en": "**The fade segments one rewrite or fold invalidates are taken out in a single in-place compaction**: taking one out used to move every segment after it, so a batch that invalidated many grew with the square of the segment count; one pass now writes them out. Nothing on screen changes."
-}

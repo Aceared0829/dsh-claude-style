@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.16.3] - 2026-10-18
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.16.3) | [English](#en-0.16.3)
+
+<h3 id="cn-0.16.3">新增功能</h3>
 
 - **Beam 的模型行画出厂商组合标**：目录里 `opencode-go/beam-free` 这类标识现在认领 Reflection 的组合标。字标是厂名的，模型名里从不写它，字标因此站在名字前面；标记在浅色画布上用厂商自己的品牌色，深色画布上随标签文字。
 
@@ -31,7 +33,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - **内置文档与注释里重复的那一份清掉了**：每个功能签名上一律重复的三行参数注释、每个 `copy.ts` 里同一句「One key of this feature's own copy」、以及散在各处的「此前是怎么做的」「实测读到多少」一律删去；`constants.ts` 叠放的两段模块注释合成一段（顺带修掉一处注释里多出的星号），`shared/activity-phrase.ts` 的长注释压到约定长度并引用 D70，`docs/SETTINGS.md` 与英文版里三段与功能一览逐字相同的说明改成指向那一条。代码行为不变。
 - **两道检查各补上一处**：750 行停线开始管单元测试文件（一个测试文件长过停线，就是一份文件装了几个题目）；整份文档查找的登记规则写明单元测试不在其内，测试里的文档跑在测试浏览器上，不花读者一分钱。`packages/contracts/src/timing.ts` 的 `host.column-observer` 添上持有它的那份单元测试，构建里「一条时刻假设要么点名场景、要么点名单元测试」的后半句从此有实例。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.16.3">New Features</h3>
 
 - **Beam rows draw the vendor lockup**: an id such as `opencode-go/beam-free` now claims Reflection's lockup. The wordmark is the vendor's, which the catalog's name never spells, so it leads the label; the mark wears the vendor's own brand colour on the ivory canvas and the label's ink on the warm black one.
 

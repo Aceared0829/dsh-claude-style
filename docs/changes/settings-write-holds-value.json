@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-17",
-  "external": false,
-  "zh": "**设置页里刚改动的开关不再先跳回原值**：改动交给宿主的这段时间里，宿主重读设置文档不会再把页面上的值盖回改动之前，控件停在读者按下的那一档，宿主给出答复时再按答复校正。",
-  "en": "**A control just changed in the settings page no longer snaps back first**: while the change is crossing to the host, a re-read of the settings document no longer puts the pre-change value back on the page — the control stays where the reader left it and follows the host's answer when it arrives."
-}
