@@ -1,15 +1,4 @@
 {
   "about": "Behaviour tests that fail over a product defect someone has taken up (D77). A test here still runs on every walk and its failure is still printed; it stops blocking the run, and the run fails once it passes, so the entry leaves with the fix. An entry is written by hand, names the defect in the reader's terms, and this record only shrinks (scripts/ci-scope.mjs --ledgers).",
-  "tests": [
-    {
-      "id": "behaviour/effort-picker/under reduced motion the strongest rung stands still",
-      "defect": "The effort matrix is built when the slider first reaches its top rung and writes each dot's cycle inline with !important; a reduced-motion choice that arrives later never rebuilds it, so the dots keep pulsing at 1.4–1.5 s cycles.",
-      "since": "2026-10-19"
-    },
-    {
-      "id": "behaviour/effort-picker/asking for reduced motion while the strongest rung shows stills it at once",
-      "defect": "The same inline cycles: switching to reduced motion while the card shows the top rung leaves every dot animating.",
-      "since": "2026-10-19"
-    }
-  ]
+  "tests": []
 }

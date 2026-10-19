@@ -307,6 +307,7 @@ edit the JSON, not the table.
 | `--dsh-claude-period-wash-drift` | `5000ms` | one orbit of the colour washes around the waiting line's glyph box |
 | `--dsh-claude-period-pulse` | `1600ms` | a placeholder breathing while its numbers are computed |
 | `--dsh-claude-period-flash` | `1450ms` | one flash of the reasoning slider's top-rung matrix |
+| `--dsh-claude-period-flow` | `4000ms` | one pass of the reasoning slider's top-rung particle flow |
 | `--dsh-claude-period-blink` | `1000ms` | one blink of the composer caret |
 | `--dsh-claude-period-breathe` | `2400ms` | one breath of the sidebar's ongoing-conversation light |
 | `--dsh-claude-period-spin` | `850ms` | one turn of the sidebar's ongoing-conversation ring |

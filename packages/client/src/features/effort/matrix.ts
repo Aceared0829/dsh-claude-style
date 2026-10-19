@@ -1,20 +1,30 @@
-import { motionReduced } from '../../core/prefs'
+import { motionReduced, subscribePrefs } from '../../core/prefs'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { motionMs } from '../../shared/motion'
 
 /** One flash of a particle, in seconds: the period token the stylesheet's own shorthand runs (D9). */
 const FLASH_S = motionMs('--dsh-claude-period-flash') / 1000
+/** One pass of the particle flow, in seconds: the period token the flow animation runs (D9). */
+const FLOW_S = motionMs('--dsh-claude-period-flow') / 1000
+/** The flow's clusters across the track, and how far a row or a block may fall out of step (shares of FLOW_S). */
+const FLOW_CLUSTERS = 9
+const FLOW_ROW_SHIFT = 0.03
+const FLOW_JITTER = 0.05
 
 /**
  * The dot matrix the reasoning-effort slider (effort/control.ts) shows on
  * its top rung.
  *
- * The grid is solved in whole device pixels, every particle's phase, cycle
- * length and tone is scattered by hash, and the entrance sweeps in from the
- * right. The control decides when the top rung is reached; this factory
- * builds the grid inside `matrix` for the width of `track`, and returns
- * `{ ensure }` — `ensure()` (re)builds it for the track's current
- * device-pixel size and answers false while the track has no layout yet.
+ * The grid is solved in whole device pixels, and three layers ride each block:
+ * its own hash-scattered flash, a stream of light travelling right to left
+ * through hash-scattered clusters, and a one-pass glow as the entrance sweep
+ * passes. The flash is independent of the stream — its phase, cycle length and
+ * peak are the field's own randomness — while the stream is the one layer that
+ * carries a direction, and it is the brightest of the three. The control decides
+ * when the top rung is reached; this factory builds the grid inside `matrix` for
+ * the width of `track`, and returns `{ ensure, dispose }` — `ensure()`
+ * (re)builds it for the track's current device-pixel size and answers false
+ * while the track has no layout yet; `dispose()` drops the preference listener.
  */
 export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
   /**
@@ -24,6 +34,8 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
    * changes the signature and forces one rebuild on the next apex entry.
    */
   let matrixSig = ''
+  /** Whether the grid standing in the document was built under the reduced answer. */
+  let builtReduced = motionReduced()
 
   /**
    * Scatter one cell's phase. A linear rule such as `(7r + 13c) % 29` maps
@@ -37,6 +49,27 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
     h = Math.imul(h ^ (h >>> 15), 0x2545f491)
     h ^= h >>> 13
     return (h >>> 0) / 4294967296
+  }
+
+  /** A value eased between two edges, the way the stylesheets' own curves read. */
+  function smoothstep(edge0: number, edge1: number, value: number) {
+    const t = Math.min(1, Math.max(0, (value - edge0) / (edge1 - edge0)))
+    return t * t * (3 - 2 * t)
+  }
+
+  /**
+   * The share of the flow band one block carries. The band alone lights every
+   * block in a column, which reads as one sweeping stripe; a coarse hash groups
+   * neighbours into clusters and a sparse threshold lets only some of them carry
+   * the band, so it travels as a stream of scattered particles. The floor keeps
+   * the rest of the field from going black where the band crosses it.
+   */
+  function flowStrength(r: number, c: number, fx: number) {
+    const cluster = Math.min(FLOW_CLUSTERS - 1, Math.floor(fx * FLOW_CLUSTERS))
+    const coarse = cellUnit(cluster, r, 6)
+    const fine = cellUnit(r, c, 7)
+    const gate = coarse * 0.4 + fine * 0.6
+    return 0.04 + smoothstep(0.46, 0.58, gate) * 0.92
   }
 
   /**
@@ -84,14 +117,18 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
   }
   /**
    * Give one particle its twinkle: a hash-scattered phase, a hash-scattered
-   * CYCLE LENGTH and a hash-scattered tone. Nothing here is ordered — the
-   * phases spread across the cycle so no two neighbours fire together, and
-   * the per-block durations drift the phases apart so the pattern never
-   * repeats exactly. (An ordered wave was tried and rejected: it read as one
-   * sweeping bar rather than as a field of particles.)
+   * CYCLE LENGTH and a hash-scattered peak. Nothing here is ordered — the
+   * phases spread across the cycle so no two neighbours fire together, and the
+   * per-block durations drift the phases apart so the pattern never repeats
+   * exactly. The stream is the field's only ordered layer, and it is brighter
+   * than any block's flash, so the direction the eye reads is the stream's.
    */
   function paintParticle(sq: HTMLElement, r: number, c: number) {
-    sq.setAttribute('data-tone', String(Math.floor(cellUnit(r, c, 1) * 8) % 8))
+    /* The flash peak as a continuous share of the apex colour, held below the
+       flow's own tone: the band must stay the brightest thing on the block, or
+       the eye follows the flash instead and reads no direction. The eight
+       buckets this replaced showed as bands across a wide track. */
+    sq.style.setProperty('--dsh-flash-mix', `${(62 - cellUnit(r, c, 1) * 22).toFixed(1)}%`)
     // Standing still, the cycle and the phase are not written at all: an inline
     // `!important` duration outranks the reduced-motion rule, and a plume that
     // flashes once per block after a scattered delay is motion like any other
@@ -128,25 +165,50 @@ export function createEffortMatrix(track: HTMLElement, matrix: HTMLElement) {
       for (let c = 0; c < lay.cols; c++) {
         const fx = lay.cols > 1 ? c / (lay.cols - 1) : 1
         const cell = buildElement('div', 'dsh-claude-effort-matrix-cell')
-        /* The entrance sweeps in from the right — the end the knob reached
-           for — with a whisper of scatter so it does not read as a wipe.
-           !important inline: the stylesheet's animation shorthand is
-           !important (it resets delay/duration), so a plain assignment
-           would silently lose. Standing still it is left off, for the same
-           reason paintParticle leaves the cycle off (D40). */
-        if (!motionReduced()) cell.style.setProperty('animation-delay', `${((1 - fx) * FLASH_S * 0.31 + cellUnit(r, c, 4) * FLASH_S * 0.055).toFixed(3)}s`, 'important')
         const sq = buildElement('div', 'dsh-claude-effort-matrix-sq')
-        /* The plume shape is a STATIC per-block opacity: the flash animates
-           the colour through it, so the two never fight. */
+        /* The plume shape is a STATIC per-block opacity: every layer on the
+           block rides through it, so the layers never fight. */
         sq.style.opacity = cellFade(fx).toFixed(3)
+        if (!motionReduced()) {
+          /* The entrance sweeps in from the right — the end the knob reached
+             for — with a whisper of scatter so it does not read as a wipe.
+             The frontier glow rides the same delay. !important inline: the
+             stylesheet's animation shorthand is !important (it resets
+             delay/duration), so a plain assignment would silently lose.
+             Standing still both are left off, for the same reason
+             paintParticle leaves the cycle off (D40). */
+          const entrance = (1 - fx) * FLASH_S * 0.31 + cellUnit(r, c, 4) * FLASH_S * 0.055
+          cell.style.setProperty('animation-delay', `${entrance.toFixed(3)}s`, 'important')
+          sq.style.setProperty('--dsh-front-delay', `${entrance.toFixed(3)}s`)
+          /* The flow starts at the right end and travels left: a negative delay
+             that grows with the block's place along the track. The row shift and
+             the hash jitter keep the stream from reading as a straight edge. */
+          const flow = fx * FLOW_S + r * FLOW_S * FLOW_ROW_SHIFT + cellUnit(r, c, 5) * FLOW_S * FLOW_JITTER
+          sq.style.setProperty('--dsh-flow-delay', `-${flow.toFixed(3)}s`)
+          sq.style.setProperty('--dsh-flow-strength', flowStrength(r, c, fx).toFixed(3))
+        }
         paintParticle(sq, r, c)
         cell.appendChild(sq)
         matrix.appendChild(cell)
       }
     }
     matrixSig = sig
+    builtReduced = motionReduced()
     return true
   }
 
-  return { ensure: ensureMatrix }
+  /**
+   * A change of the animation choice rebuilds the grid: the per-block cycles are
+   * inline with `!important`, so a grid built while motion played would keep
+   * pulsing after the reader asks for reduced motion. The rebuild writes no
+   * cycles under the reduced answer, and the stylesheet's own rules hold the
+   * layers still.
+   */
+  const stopPrefs = subscribePrefs(() => {
+    if (motionReduced() === builtReduced) return
+    matrixSig = ''
+    ensureMatrix()
+  })
+
+  return { ensure: ensureMatrix, dispose: stopPrefs }
 }

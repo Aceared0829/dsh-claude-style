@@ -164,12 +164,12 @@ body[data-dsh-claude-style] .dsh-claude-effort-tick {
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 26%, transparent);
 }
 /* The top rung's dot matrix: a grid of violet blocks floating on the bare track
-   (the 1px gaps ARE the grid lines). Every block twinkles on its OWN hash-
-   scattered phase, cycle length and tone — nothing is ordered, which is what
-   makes it read as a field of particles. The plume shape (solid at the nozzle,
-   dissolving into the track by the far left) is a static per-block opacity the
-   colour flash rides through. The grid lives only while the apex is shown, so
-   the cost stays bounded to that state. */
+   (the 1px gaps ARE the grid lines). Three layers ride every block: its own
+   hash-scattered flash, a band of light travelling right to left through
+   hash-scattered clusters, and a one-pass glow as the entrance sweep passes it.
+   The plume shape (solid at the nozzle, dissolving into the track by the far
+   left) is a static per-block opacity all three ride through. The grid lives
+   only while the apex is shown, so the cost stays bounded to that state. */
 body[data-dsh-claude-style] .dsh-claude-effort-matrix {
   position: absolute;
   left: 0;
@@ -204,46 +204,74 @@ body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
      outrank an !important declaration — the same cascade trap the cell's
      opacity fell into. Nothing in the host targets these private classes. */
   background-color: var(--dsh-claude-apex, #8b7ad0);
-  /* The block's flash peak lives HERE, never inline: the override only picks a
-     tone bucket (data-tone), so a stylesheet swap always re-colours every
-     block. Inline rgb peaks did not — after the violet landed, blocks built by
-     the previous clay bundle kept flashing orange from their stale inline
-     values. Eight buckets ramp from 6% to 62% of the apex colour, so the
-     plume's tail cools in small steps instead of four visible bands. */
   --dsh-flash-light: var(--dsh-claude-apex-flash, #d9d2f5);
-  /* One flash cycle: hold violet 250ms, jump to the block's lighter peak 480ms,
-     ease back over 720ms. var() in keyframes resolves against the animated
-     block, so one keyframes rule serves every block's own peak colour. */
+  /* One flash cycle: the block holds violet, jumps to its lighter peak for a
+     short window, and eases back over the rest of the period. var() in keyframes
+     resolves against the animated block, so one keyframes rule serves every
+     block's own peak colour. */
   animation: dshClaudeEffortFlash var(--dsh-claude-period-flash) infinite var(--dsh-claude-ease-in-out) !important;
 }
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="0"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 62%, var(--dsh-claude-apex-flash, #d9d2f5));
+/* The block's flash peak lives HERE, never inline: the override only picks the
+   share of apex the peak mixes (--dsh-flash-mix), so a stylesheet swap always
+   re-colours every block. Inline rgb peaks did not — after the violet landed,
+   blocks built by the previous clay bundle kept flashing orange from their
+   stale inline values. A continuous share, not eight buckets: the buckets
+   showed as bands across a wide track. The rule is its own so the declarations
+   above keep the shape the importance walk recorded. */
+body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
+  position: relative;
+  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) var(--dsh-flash-mix, 62%), var(--dsh-claude-apex-flash, #d9d2f5));
 }
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="1"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 54%, var(--dsh-claude-apex-flash, #d9d2f5));
+/* The frontier glow: the block lights past its own peak as the entrance sweep
+   passes it, which is what makes the arrival read as an edge rather than a
+   fade. One pass per block, on the block's own entrance delay. */
+body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--dsh-claude-apex-flash, #d9d2f5);
+  opacity: 0;
+  animation: dshClaudeEffortFront var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard) var(--dsh-front-delay, 0s) both;
 }
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="2"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 46%, var(--dsh-claude-apex-flash, #d9d2f5));
+/* The flow: a stream of light travelling right to left, each block lighting only
+   while the stream is on it (--dsh-flow-delay) and only as far as its sparse
+   cluster gate allows (--dsh-flow-strength), so the stream passes as scattered
+   particles rather than a stripe. It wears the brightest tone of the three
+   layers and the flash peak is held below it, so the one direction on the field
+   is the stream's; the base flash alone is a field of independent blinks. */
+body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--dsh-claude-apex-flash, #d9d2f5);
+  opacity: 0;
+  animation: dshClaudeEffortFlow var(--dsh-claude-period-flow) linear var(--dsh-flow-delay, 0s) infinite;
 }
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="3"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 38%, var(--dsh-claude-apex-flash, #d9d2f5));
-}
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="4"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 30%, var(--dsh-claude-apex-flash, #d9d2f5));
-}
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="5"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 22%, var(--dsh-claude-apex-flash, #d9d2f5));
-}
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="6"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 14%, var(--dsh-claude-apex-flash, #d9d2f5));
-}
-body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq[data-tone="7"] {
-  --dsh-flash-light: color-mix(in srgb, var(--dsh-claude-apex, #8b7ad0) 6%, var(--dsh-claude-apex-flash, #d9d2f5));
+/* The reduced answer stops the two added layers at once: their animations are
+   not `!important`, so the choice in the selector outranks them (theme/chrome.css
+   holds the base flash, which is). */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-effort-matrix-sq::before,
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-effort-matrix-sq::after {
+  animation: none;
+  opacity: 0;
 }
 @keyframes dshClaudeEffortFlash {
-  0%, 17.24% { background-color: var(--dsh-claude-apex, #8b7ad0); }
-  17.25%, 50.34% { background-color: var(--dsh-flash-light, #d9d2f5); }
+  0%, 14% { background-color: var(--dsh-claude-apex, #8b7ad0); }
+  20%, 34% { background-color: var(--dsh-flash-light, #d9d2f5); }
   100% { background-color: var(--dsh-claude-apex, #8b7ad0); }
+}
+@keyframes dshClaudeEffortFront {
+  0% { opacity: 0; }
+  30% { opacity: .9; }
+  100% { opacity: 0; }
+}
+@keyframes dshClaudeEffortFlow {
+  0% { opacity: 0; }
+  3% { opacity: calc(var(--dsh-flow-strength, 1) * .95); }
+  6% { opacity: 0; }
+  100% { opacity: 0; }
 }
 /* Reaching the top rung: the plain fill and the ticks hand the groove over to
    the matrix, the knob takes a violet tint and a soft glow, and the level's

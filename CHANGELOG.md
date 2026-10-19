@@ -9,6 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 窗口变窄时底部工具栏先压缩模型外显名，档位选择器与上下文显示器保持原位，三者不再互相覆盖。
+- 改善推理强度滑杆最高档的点阵动效：一条光带从右端扫过，方块按簇亮起，亮度峰值连续变化，入场时前沿带一道亮光。
 - 面板打开时，右侧栏的收起按钮出现在顶栏右端，按下即收起面板，宿主的打开按钮回到原处。
 - 设置页的说明收成一句话，只说这一项给读者什么。
 
@@ -32,6 +33,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - On a narrow window the composer's bottom row compresses the model name first, so the effort trigger and the context meter keep their places instead of overlapping it.
+- Improve the strongest rung's dot matrix on the reasoning slider: a band of light sweeps in from the right, the blocks light in clusters, their peaks vary continuously, and the arrival carries a bright leading edge.
 - While the panel is open, the right panel's collapse button appears at the top bar's right end; pressing it closes the panel and the host's open button returns.
 - A setting's line says one clause: what the setting gives the reader.
 

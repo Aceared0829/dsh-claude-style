@@ -654,6 +654,7 @@ export function createEffortControl(opts: {
      * slider rather than letting the removal of the node drop them.
      */
     dispose() {
+      dotMatrix.dispose()
       if (held) {
         held = false
         document.removeEventListener('pointerup', onHeldRelease, true)
