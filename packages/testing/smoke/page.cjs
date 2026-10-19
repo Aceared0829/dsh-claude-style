@@ -61,7 +61,10 @@ const PROBE_PARTS = [
   'shell-palette.js',
   'brand.js',
   'mascot.js',
-  'chat-motion.js',
+  'chat-follow.js',
+  'chat-caret.js',
+  'chat-fold.js',
+  'chat-reveal.js',
   'chat-files.js',
   'chat-send.js',
   'chat-wait.js',
@@ -338,6 +341,12 @@ function page(name, tier, cases) {
       '})();' +
       '</script>'
     : ''
+  // The composer as the host wires it: Enter in the editor submits, which the
+  // skin's send feature watches for its own origin, and the host answers the
+  // submission with its echo. The chat area's own case drives this.
+  var chatSubmit = name === 'chat-follow'
+    ? '<div data-echo-holder id="debugEchoHolder"></div>'
+    : ''
   // The other chat-behaviour plugin, installed: the host's own startup picture
   // names every client entry before any of them runs, which is the signal
   // packages/client/src/shared/peer-plugin.ts reads first (the style element is the other one).
@@ -415,6 +424,7 @@ ${dock}
 ${heroLayout}
 ${hostControls}
 ${caretArea}
+${chatSubmit}
 ${dockArea}
 ${foldArea}
 </div>

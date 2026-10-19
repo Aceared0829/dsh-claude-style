@@ -17,6 +17,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复用量面板里热力格的日期提示在上排格子被抬到网格之外的问题：格子下方的余量更多时，提示改挂在格子下方，网格顶部那几行的提示不再越过网格上沿盖住统计格。
 - 修复归档会话的删除按钮拒绝插件生成的会话 id 的问题：含冒号与 @ 的 id（im-connect 的 `im:<channel>:dm:<user>:<token>@<domain>`）现在按宿主自己的目录命名规则定位到存储它的那个目录再删除，路径形状与带转义符的 id 仍然拒绝。
 - 修复设置页导航里的 Claude Style 一格不显示 Claude 星芒的问题，这枚单色标记重新替下宿主的齿轮图标，浅色画布上取标签文字的颜色。
+- 修复流式输出很快时聊天区的跟随滑动跟不上内容的问题：滑动重新起步时改从动画自己画到的位置算起，一个回合开头读者自己那条消息在场期间让位结束后立刻恢复，一帧长高超过滑动一段距离的内容也照常滑完能滑的那一段，输入卡片的位置在整个回合里不再移动。
 - 修复窄窗口下对话区底部残留一条横向滚动条的问题：面板自身的横向溢出不再产生滚动条，面板内需要横向滚动的代码块与表格仍各自滚动。
 
 ### 移除
@@ -38,6 +39,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix a heat cell's day tip rising out of the grid on its upper rows: where the cell holds more room below it, the tip now hangs under the cell, so the top rows' tips no longer reach over the grid's top edge across the stat cells.
 - Fix the archived rows' delete button refusing plugin-generated session ids: an id carrying a colon or an at sign (im-connect's `im:<channel>:dm:<user>:<token>@<domain>`) now resolves to the directory the harness stored it under before deletion, while a path-shaped id and one carrying the escape itself stay refused.
 - Fix the Claude Style row in the settings navigation not drawing the Claude starburst, which replaces the host's gear again and takes the label's ink on the light canvas.
+- Fix the chat area's follow falling behind a fast answer: a restart of the stream slide is measured from where the animation itself has painted, the stand-down over the reader's own message ends with that message's entrance instead of a fixed window, and a frame growing by more than one slide carries is slid as far as a slide does; the composer's own box no longer moves through the turn.
 - Fix the horizontal scrollbar that appeared under the composer on a narrow window: the transcript pane's own horizontal overflow is clipped, while code blocks and tables inside it keep their own scrolling.
 
 ### Removals

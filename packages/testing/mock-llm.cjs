@@ -145,6 +145,25 @@ const SCRIPTS = {
     auxiliary: { text: ['Scripted long answer'] },
   },
   /**
+   * One burst: the whole answer in a single flush, longer than the stretch a
+   * stream slide carries. A provider that batches its output sends a response
+   * this way, and the column grows by every line between two frames.
+   *
+   * The lines are short on purpose: an answer whose lines wrap to two or three
+   * lines of their own grows taller in the frame that lays them out than
+   * between two frames once they are, so it is never paced.
+   */
+  burst: {
+    conversation: [
+      {
+        thinking: ['The whole answer in one flush.'],
+        text: [`# Burst answer\n\n- held: the burst scripted for the lane's own pace\n${Array.from({ length: 90 }, (_, index) => `- ${index + 1}: held\n`).join('')}`],
+        pieceDelayMs: 0,
+      },
+    ],
+    auxiliary: { text: ['Scripted burst answer'] },
+  },
+  /**
    * A screenful of answer, then a process group that reasons at the tail: the
    * first reply fills the column past the viewport and calls a tool, and the
    * second reasons in pieces long enough to add a line or two each, for a few
@@ -271,6 +290,13 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const tokensOf = (text) => Math.max(1, Math.round(text.length / 4))
 
 /**
+ * The pause a reply's piece gets: the lane's own delay, or the reply's
+ * `pieceDelayMs` where it carries one. A reply that arrives as one burst asks
+ * for 0, which puts every piece of it into a single flush.
+ */
+const pauseFor = (reply, delayMs) => pause(reply.pieceDelayMs ?? delayMs)
+
+/**
  * Stream one reply as Messages events.
  *
  * @param res - the response.
@@ -307,7 +333,7 @@ async function streamReply(res, reply, delayMs, vars) {
     for (const piece of reply.thinking) {
       send(res, { type: 'content_block_delta', index, delta: { type: 'thinking_delta', thinking: piece } })
       outputTokens += tokensOf(piece)
-      await pause(delayMs)
+      await pauseFor(reply, delayMs)
     }
     // The route keeps a thinking signature for replay; a scripted one keeps that path exercised.
     send(res, { type: 'content_block_delta', index, delta: { type: 'signature_delta', signature: 'mock-signature' } })
@@ -319,7 +345,7 @@ async function streamReply(res, reply, delayMs, vars) {
     for (const piece of reply.text) {
       send(res, { type: 'content_block_delta', index, delta: { type: 'text_delta', text: piece } })
       outputTokens += tokensOf(piece)
-      await pause(delayMs)
+      await pauseFor(reply, delayMs)
     }
     send(res, { type: 'content_block_stop', index })
     index += 1
@@ -327,7 +353,7 @@ async function streamReply(res, reply, delayMs, vars) {
   if (reply.tool !== undefined) {
     const id = `toolu_mock_${index}`
     send(res, { type: 'content_block_start', index, content_block: { type: 'tool_use', id, name: reply.tool.name, input: {} } })
-    await pause(delayMs)
+    await pauseFor(reply, delayMs)
     // The real API opens a call with empty input and streams the arguments as JSON text.
     const json = JSON.stringify(fillVars(reply.tool.input, vars))
     send(res, { type: 'content_block_delta', index, delta: { type: 'input_json_delta', partial_json: json } })

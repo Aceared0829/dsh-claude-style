@@ -12,6 +12,7 @@ import { CHAT_USER_ROW_SELECTOR, userBubble } from '@dsh-claude-style/engine/cha
 import { motionEase } from '../../shared/motion'
 import { inPageBox, pageViewport } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
+import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './send-flight.manifest'
 import type { ComposerSnapshot } from './send-snapshot'
@@ -109,6 +110,12 @@ export const CHAT_ARRIVED_CEILING_MS = 500
 export const CHAT_ARRIVED_FRAMES = 8
 
 /** A settled user row. It and the echo row are two faces of one component, a level apart (send-rows.ts). */
+
+/** What the rest of the skin reads off the entrance (ui.chatSend). */
+export interface ChatSendHandle extends FeatureHandle {
+  /** Whether the reader's message is still taking its place: a flight in the air, or its row growing where it landed. */
+  isEntering(): boolean
+}
 
 /**
  * The send bubble's take-off, ported from dsh-chat-ux.
@@ -508,12 +515,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // The other answer to the same question (constants.ts MESSAGE_ENTER_MODES):
   // the message grows where it lands instead of flying, and that path needs no
   // origin snapshot at all. Both run; whichever the reader picked does the work.
-  const stopGrow = watchGrowEnter()
+  const grow = watchGrowEnter()
+
+  /**
+   * Whether the reader's message is still taking its place: a flight is in the
+   * air (through its landing fade) or the row is growing where it landed. The
+   * follow reads this where it used to wait out a window timed from the row's
+   * arrival (features/chat-follow): the slide stands down exactly while this
+   * entrance reads the row's own box, and not a moment longer.
+   */
+  ui.chatSend = {
+    isEntering: () => flight !== null || grow.entering(),
+  }
 
   return () => {
+    delete ui.chatSend
     document.removeEventListener('keydown', onKeyDown, true)
     document.removeEventListener('click', onClick, true)
-    stopGrow()
+    grow.stop()
     unwatchEcho()
     unwatchRows()
     origin = null

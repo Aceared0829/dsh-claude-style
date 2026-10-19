@@ -56,9 +56,8 @@ const SCROLL_EASE_MAX_SPEED_PX_S = 2400
 const SCROLL_EASE_MAX_ACCEL_PX_S2 = 24000
 /**
  * The longest stretch that is glided. A gap past it is first closed to it
- * (see above); it is also the line the stream slide
- * (features/chat-follow/chat-follow.ts) draws between a burst of content and a
- * replaced column.
+ * (see above), and the stream slide (features/chat-follow/chat-follow.ts)
+ * carries no more than it from a burst.
  */
 export const SCROLL_EASE_LEAD_PX = 1200
 /** Within this of the destination, and slower than SCROLL_EASE_REST_PX_S, the position has arrived. */

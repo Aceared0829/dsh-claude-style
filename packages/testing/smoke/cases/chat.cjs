@@ -73,9 +73,35 @@ module.exports = {
       slideFrames.length > 0 && slideFrames.every((frame) => frame.gap <= AT_END_PX) &&
         Math.max(...rowTops) - Math.min(...rowTops) <= bound('followSlideRowDriftPx'),
       JSON.stringify(slideFrames))
+    const submitted = r.chatFollowSubmit || {}
     check('a message the reader just sent does not slide: the host\'s jump to it stands',
-      (follow.submitSlides || []).length > 0 && follow.submitSlides.every((count) => count === 0),
-      JSON.stringify(follow.submitSlides))
+      Array.isArray(submitted.echo) && Array.isArray(submitted.row) &&
+        submitted.echo.concat(submitted.row).filter((count) => count !== 0).length === 0,
+      JSON.stringify({ echo: submitted.echo, row: submitted.row }))
+    check('the same message growing into its row does not slide either: both entrances stand the slide down',
+      Array.isArray(submitted.growWaiting) && Array.isArray(submitted.growPlaying) &&
+        submitted.growWaiting.concat(submitted.growPlaying).filter((count) => count !== 0).length === 0,
+      JSON.stringify({ waiting: submitted.growWaiting, playing: submitted.growPlaying }))
+    // A growth wider than a slide carries is a burst, not a replaced column:
+    // it is slid from the stretch a slide carries rather than jumped whole
+    // (chat-follow.ts's startSlide).
+    const burst = follow.burst || []
+    const burstSteps = walkedSteps(burst, AT_END_PX)
+    check('a burst is slid from the stretch a slide carries instead of jumping whole',
+      burst.length >= bound('followSlideMinFrames') && burst[0] > bound('followSlideStartPx') &&
+        burst.every((offset, at) => at === 0 || offset <= burst[at - 1]) && burst[burst.length - 1] <= AT_END_PX &&
+        burstSteps.length >= bound('followWalkDistinctValues'),
+      JSON.stringify({ readings: burst.length, start: burst[0], end: burst[burst.length - 1], steps: burstSteps.map((step) => step.gap) }))
+    // The slide restarts from where the frame before it stood: a run of small
+    // growths, each arriving before the slide has landed, may not leave the
+    // offset standing further from the pin than the growth it just took, and the
+    // run is never left standing once it stops (chat-follow.ts's slideCarried).
+    const pace = follow.pace || {}
+    const paceFrames = pace.frames || []
+    check('a run of small growths leaves the sliding column no further off the pin than the growth just taken',
+      paceFrames.length > 4 && paceFrames.every((gap) => Number.isFinite(gap) && gap <= pace.growth + bound('followSlideRowDriftPx')) &&
+        (pace.settled ?? 1) <= AT_END_PX,
+      JSON.stringify(pace))
   },
   caret(r) {
     basicChecks(r)

@@ -21,6 +21,7 @@ const { sendPrompt, waitForTurn } = require('./prompt.cjs')
 const { importanceScenario } = require('./importance.cjs')
 const { readerScrollScenario } = require('./reader-scroll.cjs')
 const { doorPinScenario } = require('./door-pin.cjs')
+const { streamPaceScenario } = require('./stream-pace.cjs')
 const { motionScenario } = require('./motion.cjs')
 const { processSummaryScenario } = require('./process-summary.cjs')
 const { fileMergeScenario } = require('./file-merge.cjs')
@@ -367,6 +368,8 @@ const SCENARIOS = {
   readerScroll: readerScrollScenario({ check }),
   /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.cjs, D40). */
   doorPin: doorPinScenario({ check }),
+  /** An answer arriving faster than a slide carries it: the composer stands still and the column stays on the pin (stream-pace.cjs, D71). */
+  streamPace: streamPaceScenario({ check }),
   /** The transitions.dev surfaces where they move: greeting, panel, switch, tab, badge, menu (motion.cjs, D9). */
   motion: motionScenario({ check }),
   /** The send flight: the stand-in takes off, the row lands, the words stay put. */

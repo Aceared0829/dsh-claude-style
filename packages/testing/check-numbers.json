@@ -264,7 +264,7 @@
       "再窄一些时控件仍留在卡片里，输入区也不再横向滚动": [
         0
       ],
-      "控制台没有异常 (line 244)": [
+      "控制台没有异常 (line 245)": [
         0
       ],
       "收起时那枚按钮不占位置，宿主自己的打开按钮在": [
@@ -277,7 +277,7 @@
       "按下它面板收起，宿主的打开按钮回到原处": [
         0
       ],
-      "控制台没有异常 (line 297)": [
+      "控制台没有异常 (line 298)": [
         0
       ],
       "工具调用单独成行": [
@@ -289,7 +289,7 @@
       "过程组收住了整轮": [
         1
       ],
-      "控制台没有异常 (line 312)": [
+      "控制台没有异常 (line 313)": [
         0
       ],
       "逐帧采样真的在跑": [
@@ -317,7 +317,7 @@
         0,
         10
       ],
-      "控制台没有异常 (line 359)": [
+      "控制台没有异常 (line 360)": [
         0
       ],
       "替身起飞后离开页面": [
@@ -338,32 +338,32 @@
       "Windows 标题栏标记下，替身里的祖先链不画伪元素": [
         0
       ],
-      "控制台没有异常 (line 429)": [
+      "控制台没有异常 (line 432)": [
         0
       ],
       "满屏的对话里也读到了飞行": [
         1,
         5
       ],
-      "替身落地时不低于它替换的那一行 (line 463)": [
+      "替身落地时不低于它替换的那一行 (line 466)": [
         0
       ],
       "落定后那一行带着字": [
         0
       ],
-      "控制台没有异常 (line 465)": [
+      "控制台没有异常 (line 468)": [
         0
       ],
       "没有页面形态的条目已逐条列出": [
         0
       ],
-      "控制台没有异常 (line 520)": [
+      "控制台没有异常 (line 523)": [
         0
       ],
       "脚本回答已渲染": [
         0
       ],
-      "控制台没有异常 (line 561)": [
+      "控制台没有异常 (line 564)": [
         0
       ]
     },
@@ -539,6 +539,17 @@
       ],
       "a message the reader just sent does not slide: the host's jump to it stands": [
         0
+      ],
+      "the same message growing into its row does not slide either: both entrances stand the slide down": [
+        0
+      ],
+      "a burst is slid from the stretch a slide carries instead of jumping whole": [
+        0,
+        1
+      ],
+      "a run of small growths leaves the sliding column no further off the pin than the growth just taken": [
+        1,
+        4
       ],
       "the drawn caret is placed with a transform": [
         0
@@ -1054,6 +1065,22 @@
       ],
       "the line opens the host's panel, which carries the same session's rows, and closes it again": [
         0
+      ],
+      "控制台没有异常": [
+        0
+      ]
+    },
+    "packages/testing/stream-pace.cjs": {
+      "逐帧采样真的在跑": [
+        1,
+        30
+      ],
+      "输入卡片的盒子在整个回合里不动": [
+        0
+      ],
+      "消息列没有一帧被留在输入区上方超过滑动能带走的一段": [
+        0,
+        10
       ],
       "控制台没有异常": [
         0

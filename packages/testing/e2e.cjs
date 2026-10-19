@@ -230,6 +230,21 @@ async function startTrace(page) {
       // shake a reader sees once the page is scaled, and rounding would hide it.
       const running = document.querySelector(host.running)
       frame.running = running === null ? null : Math.round(running.getBoundingClientRect().top * 100) / 100
+      // The composer's own box and the message column's foot in the viewport:
+      // the composer is the scroller's sibling and may not move while the answer
+      // grows, and the column's foot against the scroller's own bottom is the
+      // stream slide's offset as drawn (stream-pace.cjs). The column keeps a
+      // foot of its own below its last block — the host's clearance for the
+      // composer — so its foot is read from that block, the flow's last row.
+      const card = document.querySelector(host.composerCard)
+      const column = scroller === null ? null : scroller.querySelector(host.flow)
+      const lastRow = column === null ? null : column.lastElementChild
+      const cardRect = card === null ? null : card.getBoundingClientRect()
+      const scrollerRect = scroller === null ? null : scroller.getBoundingClientRect()
+      const rowRect = lastRow === null ? null : lastRow.getBoundingClientRect()
+      frame.card = cardRect === null ? null : Math.round(cardRect.top * 10) / 10
+      frame.cardBottom = cardRect === null ? null : Math.round(cardRect.bottom * 10) / 10
+      frame.lag = rowRect === null || scrollerRect === null ? null : Math.round((rowRect.bottom - scrollerRect.bottom) * 10) / 10
       if (ghost !== null && takeOff === null) {
         // The stand-in is a clone of the composer card appended to the page, so
         // the real card is the first one the stand-in does not contain.

@@ -16,7 +16,7 @@
  */
 
 /** The end-to-end lane's scenarios; the lane checks its own names against these. */
-export const E2E_SCENARIOS = ['conversation', 'narrow', 'tool', 'fileMerge', 'send', 'sendFull', 'scroll', 'readerScroll', 'doorPin', 'motion', 'processSummary', 'reasoningStream', 'waitLine', 'washLine', 'longSession', 'statsPosition', 'statsOverlay', 'sidebarRail', 'rightbar', 'contract', 'importance', 'remoteSettings', 'customBrand', 'dsBot', 'shots'] as const
+export const E2E_SCENARIOS = ['conversation', 'narrow', 'tool', 'fileMerge', 'send', 'sendFull', 'scroll', 'readerScroll', 'doorPin', 'streamPace', 'motion', 'processSummary', 'reasoningStream', 'waitLine', 'washLine', 'longSession', 'statsPosition', 'statsOverlay', 'sidebarRail', 'rightbar', 'contract', 'importance', 'remoteSettings', 'customBrand', 'dsBot', 'shots'] as const
 
 /** One timing assumption, and how it is held. */
 interface HostTimingEntry {
@@ -72,5 +72,11 @@ export const HOST_TIMING: HostTimingEntry[] = [
     assumption: 'The host mounts the right panel’s own collapse control only while that panel is expanded, inside a chrome strip under a transformed, clipped subtree.',
     use: 'The skin’s control stands in the header’s row and presses the host’s one, which cannot be placed there: a fixed box inside that subtree is measured from the panel and cut at its edge (features/header-band).',
     checks: ['scenario:rightbar'],
+  },
+  {
+    id: 'host.composer-place',
+    assumption: 'The composer seat is the conversation scroller\u2019s own sibling rather than a row inside the message column, so growing the column moves the transcript under the composer and never the composer itself.',
+    use: 'The stream slide puts the column back down with a transform on the column alone (D71); the lane holds the composer\u2019s box still through a fast answer on the strength of that shape.',
+    checks: ['scenario:streamPace'],
   },
 ]

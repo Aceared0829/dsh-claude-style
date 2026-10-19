@@ -3,7 +3,9 @@ import type { FeatureManifest } from '../../core/feature'
 export default {
   id: 'chatFollow',
   order: 190,
-  reads: ['chatFold'],
+  // The send feature's entrance state stands the stream slide down while the
+  // reader's own message takes its place (chat-follow.ts's submissionHeld).
+  reads: ['chatFold', 'chatSend'],
   contracts: ['chat.call', 'chat.flow', 'chat.flow-block', 'chat.following-tail', 'chat.following-tail-attribute', 'chat.phase', 'chat.running', 'chat.scroller', 'chat.shimmer', 'chat.streaming', 'chat.think-row', 'chat.think-running', 'process.body', 'process.content', 'process.expanded-mode'],
   pref: 'chatAnimations',
   yieldsTo: 'dsh-chat-ux',

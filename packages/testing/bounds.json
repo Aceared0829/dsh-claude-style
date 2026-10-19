@@ -130,6 +130,26 @@
       "name": "waitLineMinGapMs",
       "value": 850,
       "reason": "The state line changes at most once a second, and the record is stamped by the page when it writes the wording; the slack under that second covers only a change landing between two frames of that write."
+    },
+    {
+      "name": "streamComposerDriftPx",
+      "value": 1,
+      "reason": "How far the composer card's own box may move while a fast answer streams. The card is the conversation scroller's sibling in the host's layout, so nothing the answer grows can move it; the one movement measured on any speed was half a pixel, on the frame a scrollbar appeared. One pixel holds that and nothing a reader could see."
+    },
+    {
+      "name": "streamPinSlipRatio",
+      "value": 1.5,
+      "reason": "How far, in the column's own one-frame growth, a frame may leave the sliding column's foot above the scroller's end. The host's pin writes the end in the frame the growth lands; the skin's slide puts the column back down by that growth and carries it up to a slide's full stretch, so an ordinary frame leaves the foot one growth above the end. The half on top is the frame the slide's restart is read on."
+    },
+    {
+      "name": "streamPinSlipPx",
+      "value": 1200,
+      "reason": "The most a frame may leave the sliding column above the scroller's end, in pixels: the longest stretch one slide carries (SCROLL_EASE_LEAD_PX), which a burst wider than a slide is put back down by. A burst that was never slid leaves the whole of it standing, thousands of pixels at this scenario's answer length."
+    },
+    {
+      "name": "streamColumnFootPx",
+      "value": 16,
+      "reason": "The foot the message column keeps under its last row, counting the wrapper the host puts around it: room for the composer that a scroller overflows into. The scenario's lag is read from that last row, so this foot comes off the longest stretch a slide carries before it is compared."
     }
   ]
 }

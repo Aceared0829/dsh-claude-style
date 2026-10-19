@@ -6,7 +6,7 @@ import { createChatProcessFollow } from './process-follow'
 import { CHAT_CALL_SELECTOR, CHAT_RUNNING_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_BLOCK_SELECTOR, FOLLOWING_TAIL_ATTRIBUTE, FOLLOWING_TAIL_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, SHIMMER_SELECTOR, STREAMING_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { conversationColumn, conversationScroller, findFollowTailButton } from '@dsh-claude-style/engine/chat-dom'
 import { createStamp } from '@dsh-claude-style/engine/dom'
-import { motionEase, motionMs } from '../../shared/motion'
+import { motionEase, motionEaseAt, motionMs } from '../../shared/motion'
 import { inPageBox, pageViewport } from '../../shared/page-zoom'
 import { observeComposerCards } from '@dsh-claude-style/engine/host'
 import { SCROLL_EASE_LEAD_PX, handBackFollow, joinScrollOwner, readerHolds, submissionHolds } from '@dsh-claude-style/engine/scroll-owner'
@@ -48,6 +48,8 @@ export const FOLLOW_TAIL_AIR_PX = 12
 /** The button's fixed placement, written as numbers because the column moves under it. */
 const FOLLOW_TAIL_LEFT = '--dsh-claude-follow-tail-left'
 const FOLLOW_TAIL_BOTTOM = '--dsh-claude-follow-tail-bottom'
+/** The curve the stream's slide travels on; its own reading of it has to match (shared/motion.ts). */
+const GLIDE_TOKEN = '--dsh-claude-ease-glide'
 
 /**
  * The conversation's own composer card: the lowest of the cards on the page,
@@ -106,10 +108,13 @@ function placeFollowTail(stamp: ReturnType<typeof createStamp<HTMLElement>>, car
  * host's pin pushed up instead of letting it jump in one frame (D71). Every
  * position write goes through the scroll owner (D40).
  *
- * @param foldBusy - whether a fold glide is animating a height right now.
+ * @param options.foldBusy - whether a fold glide is animating a height right now.
+ * @param options.submissionHeld - whether the reader's own message is still
+ *     taking its place (see the composer's slide stand-down).
  * @returns teardown: the subscriptions go away.
  */
-export function createChatFollowGuard(foldBusy: () => boolean) {
+export function createChatFollowGuard(options: { foldBusy: () => boolean, submissionHeld: () => boolean }) {
+  const { foldBusy, submissionHeld } = options
   const leaveOwner = joinScrollOwner()
   /** When the last hand-back really landed, for the throttle. */
   let lastEnsureAt = 0
@@ -156,8 +161,8 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   let slideHeight = 0
   /** The scroller's own height as its size subscription last reported it. */
   let scrollerHeight = 0
-  /** The slide running now: the column's, the pinned row's counter-slide, and the distance both started from. */
-  let slide: { column: Animation, row: Animation | null, from: number } | null = null
+  /** The slide running now: the column's, the pinned row's counter-slide, the distance both started from, and the glide they run on. */
+  let slide: { column: Animation, row: Animation | null, from: number, duration: number } | null = null
   /** The column the hold mark (FOLLOW_HOLD_ATTR) is on, or null while no door holds it. */
   let heldColumn: HTMLElement | null = null
 
@@ -180,9 +185,10 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   const slideWanted = (column: HTMLElement) => {
     // The reader's animation choice means "no animation": nothing to slide.
     if (motionReduced()) return false
-    // The reader's own message has just arrived: the host's jump to it stands,
-    // and the sent message's flight is landing on a row that must not move.
-    if (submissionHolds()) return false
+    // The reader's own message is taking its place: the host's jump to it
+    // stands, and an entrance measured against the row's own box — the flight's
+    // landing — would be moved by a slide's offset.
+    if (submissionHeld()) return false
     if (!streaming()) return false
     if (readerAway()) return false
     if (foldBusy()) return false
@@ -200,11 +206,21 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
     slide = null
   }
 
-  /** The distance the running slide still carries, off its own eased progress: no style is read. */
+  /** The distance the running slide still carries, off its own clock and curve: no style is read. */
   const slideCarried = () => {
-    if (slide === null || slide.column.playState !== 'running') return 0
-    const progress = slide.column.effect === null ? null : slide.column.effect.getComputedTiming().progress
-    return typeof progress === 'number' ? slide.from * (1 - progress) : 0
+    if (slide === null) return 0
+    const startedAt = slide.column.startTime
+    // An animation that has not begun — the frame it was made in has not
+    // painted — still carries the whole distance; reading it as nothing would
+    // drop that distance on the next restart.
+    if (startedAt === null) return slide.from
+    const linear = (Number(document.timeline.currentTime) - Number(startedAt)) / slide.duration
+    if (!(linear > 0)) return slide.from
+    if (linear >= 1) return 0
+    // The curve the animation paints with, not the linear share of its
+    // duration: with the two mixed up, every restart re-inflates the distance
+    // the frame before it had already travelled (D71).
+    return slide.from * (1 - motionEaseAt(GLIDE_TOKEN, linear))
   }
 
   /**
@@ -212,20 +228,23 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
    *
    * One replace-mode animation at a time: an additive one stays off the
    * compositor (D71), so a new growth restarts from the distance still
-   * carried. The live turn's row is pinned to the scroller's bottom
-   * (chat-wait.css) and would ride the column's offset, so it gets the same
-   * slide reversed, started in the same frame: the two cancel and it stands.
+   * carried — up to the longest stretch a slide carries, so a burst is glided
+   * as far as that and no farther. The live turn's row is pinned to the
+   * scroller's bottom (chat-wait.css) and would ride the column's offset, so it
+   * gets the same slide reversed, started in the same frame: the two cancel and
+   * it stands.
    */
   const startSlide = (column: HTMLElement, grew: number) => {
     const from = Math.min(SCROLL_EASE_LEAD_PX, slideCarried() + grew)
     stopSlide()
-    const timing = { duration: motionMs('--dsh-claude-duration-slide'), easing: motionEase('--dsh-claude-ease-glide') }
+    const duration = motionMs('--dsh-claude-duration-slide')
+    const timing = { duration, easing: motionEase(GLIDE_TOKEN) }
     const columnSlide = column.animate([{ transform: `translateY(${from}px)` }, { transform: 'translateY(0px)' }], timing)
     // The host draws the live turn's row as the flow's last row.
     const last = column.lastElementChild
     const pinned = last === null ? null : last.matches(CHAT_RUNNING_SELECTOR) ? last : last.querySelector(CHAT_RUNNING_SELECTOR)
     const rowSlide = pinned === null ? null : pinned.animate([{ transform: `translateY(${-from}px)` }, { transform: 'translateY(0px)' }], timing)
-    const running = { column: columnSlide, row: rowSlide, from }
+    const running = { column: columnSlide, row: rowSlide, from, duration }
     columnSlide.onfinish = () => {
       if (slide === running) slide = null
     }
@@ -321,9 +340,10 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
       before = slideHeight
       const delta = box - slideHeight
       slideHeight = box
-      // A growth wider than the longest stretch a slide carries is a replaced
-      // column, not a burst.
-      if (delta > 0 && delta <= SCROLL_EASE_LEAD_PX) grew = delta
+      // Any growth is slid, a burst included: startSlide's clamp bounds what a
+      // glide carries, and a column the host replaced is no longer the one
+      // watched here (slideSync re-subscribes when it changes).
+      if (delta > 0) grew = delta
     }
     holdCheck()
     // Only a column that already overflowed had its end pinned by the whole
@@ -471,8 +491,18 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
  * manifest); this teardown hands the chat area back whole.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
-  const foldBusy = () => ui.chatFold !== undefined && ui.chatFold !== null && ui.chatFold.isBusy()
-  const stopGuard = createChatFollowGuard(foldBusy)
+  const stopGuard = createChatFollowGuard({
+    foldBusy: () => ui.chatFold !== undefined && ui.chatFold !== null && ui.chatFold.isBusy(),
+    /**
+     * Whether the reader's own message is still taking its place. The send
+     * feature owns that moment — its flight and the row growing where it lands
+     * both read the row's own box, which a slide's offset would move — and the
+     * engine's window is the answer for a page where it is not installed: its
+     * chunk has not arrived, its switch is off, or another plugin owns the
+     * entrance.
+     */
+    submissionHeld: () => (ui.chatSend === undefined ? submissionHolds() : ui.chatSend.isEntering()),
+  })
   const stopProcess = createChatProcessFollow()
   const tailStamp = createStamp<HTMLElement>(FOLLOW_TAIL_ATTR)
   const cards = observeComposerCards()

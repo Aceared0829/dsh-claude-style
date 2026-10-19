@@ -34,3 +34,55 @@ export function motionEase(token: string): string {
   }
   return value
 }
+
+/** The curves already parsed, by token: a curve is read at most once per token. */
+const CURVES = new Map<string, readonly [number, number, number, number]>()
+
+/** A cubic-bezier token's four control points, in the form the CSS function takes them. */
+function curveOf(token: string): readonly [number, number, number, number] {
+  const held = CURVES.get(token)
+  if (held !== undefined) return held
+  const value = motionEase(token)
+  const match = /^cubic-bezier\(([^)]+)\)$/.exec(value)
+  const parts = match === null ? [] : match[1].split(',').map(part => Number(part.trim()))
+  const [x1, y1, x2, y2] = parts
+  if (parts.length !== 4 || x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined
+    || ![x1, y1, x2, y2].every(Number.isFinite)) {
+    throw new Error(`shared/motion: ${token} is "${value}", which has no control points to evaluate`)
+  }
+  const points = [x1, y1, x2, y2] as const
+  CURVES.set(token, points)
+  return points
+}
+
+/** One coordinate of a cubic bezier whose ends are 0 and 1. */
+function bezierAt(t: number, first: number, second: number) {
+  const rest = 1 - t
+  return 3 * rest * rest * t * first + 3 * rest * t * t * second + t * t * t
+}
+
+/**
+ * How far along a cubic-bezier token's own curve a linear progress stands: the
+ * value the browser paints for an animation whose easing is that token.
+ *
+ * `x(t) = progress` is solved on the curve and the answer is `y(t)`. Bisection
+ * assumes x rises with t, which is what the curves this table carries do; the
+ * two sides have to agree, or a slide restarted from this reading would start
+ * where the frame before it did not stand.
+ *
+ * @param token - the curve's token name.
+ * @param progress - the linear share of the animation's duration, 0 to 1.
+ */
+export function motionEaseAt(token: string, progress: number): number {
+  const [x1, y1, x2, y2] = curveOf(token)
+  let low = 0
+  let high = 1
+  // 24 halvings put the answer within a ten-millionth, past what a pixel of
+  // any of these travels can show, at a fixed cost.
+  for (let step = 0; step < 24; step += 1) {
+    const middle = (low + high) / 2
+    if (bezierAt(middle, x1, x2) < progress) low = middle
+    else high = middle
+  }
+  return bezierAt((low + high) / 2, y1, y2)
+}
