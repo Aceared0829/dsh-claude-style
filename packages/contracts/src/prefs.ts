@@ -300,9 +300,20 @@ export const PREF_DEFAULTS = Object.freeze(Object.fromEntries(
 /** A `#rrggbb` colour, which is all the custom accent accepts. */
 const COLOR_RE = /^#[0-9a-f]{6}$/i
 
+/**
+ * The shape an earlier build wrote for this value, or undefined. Only a string or
+ * a boolean was ever written, and only the table's own keys name one: an object
+ * holding a field called `toString`, or the string `toString` itself, is no
+ * earlier shape.
+ */
+function legacyValue(spec: PrefSpec, raw: unknown): unknown {
+  if (spec.legacy === undefined || (typeof raw !== 'string' && typeof raw !== 'boolean')) return undefined
+  return Object.hasOwn(spec.legacy, String(raw)) ? spec.legacy[String(raw)] : undefined
+}
+
 /** One preference's value, clamped to its declaration; anything unreadable reads as the default. */
 function clampPref(spec: PrefSpec, raw: unknown): unknown {
-  const legacy = spec.legacy === undefined ? undefined : spec.legacy[String(raw)]
+  const legacy = legacyValue(spec, raw)
   if (legacy !== undefined) return legacy
   switch (spec.type) {
     case 'boolean': return typeof raw === 'boolean' ? raw : spec.default
