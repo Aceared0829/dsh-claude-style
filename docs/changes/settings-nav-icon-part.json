@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "修复设置页导航里的 Claude Style 一格不显示 Claude 星芒的问题，这枚单色标记重新替下宿主的齿轮图标，浅色画布上取标签文字的颜色。",
+  "en": "Fix the Claude Style row in the settings navigation not drawing the Claude starburst, which replaces the host's gear again and takes the label's ink on the light canvas."
+}

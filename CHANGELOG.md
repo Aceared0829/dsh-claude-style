@@ -11,6 +11,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 面板打开时，右侧栏的收起按钮出现在顶栏右端，按下即收起面板，宿主的打开按钮回到原处。
 - 设置页的说明收成一句话，只说这一项给读者什么。
 
+### 问题修复
+
+- 修复设置页导航里的 Claude Style 一格不显示 Claude 星芒的问题，这枚单色标记重新替下宿主的齿轮图标，浅色画布上取标签文字的颜色。
+
 ### 移除
 
 - 移除功能一览与设置说明两份文档，功能清单不再写中英文描述。
@@ -23,6 +27,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - While the panel is open, the right panel's collapse button appears at the top bar's right end; pressing it closes the panel and the host's open button returns.
 - A setting's line says one clause: what the setting gives the reader.
+
+### Bug Fixes
+
+- Fix the Claude Style row in the settings navigation not drawing the Claude starburst, which replaces the host's gear again and takes the label's ink on the light canvas.
 
 ### Removals
 

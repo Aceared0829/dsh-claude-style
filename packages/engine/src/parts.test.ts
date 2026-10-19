@@ -108,6 +108,13 @@ test('the foot area marks its boxes around the host row, and nothing above the s
   expect(holds(document.querySelector('[data-test-part~="settings-trigger"]'))).toBeNull()
 })
 
+test('the settings dialog marks its section rail outside the conversation box', async () => {
+  document.body.innerHTML =
+    '<div class="_overlay_ab"><div role="dialog"><div class="_navList_ab"><button class="_navCell_ab"></button></div></div></div>'
+  cleanups.push(installParts(TEST_VOCABULARY))
+  expect(partOf('[class~="_navList_ab"]')).toBe('nav-list')
+})
+
 test('the teardown takes every hold mark off with the parts', async () => {
   document.body.innerHTML =
     '<div data-slot="conversation.header"><div class="_header_ab"><div class="_tabs_ab"></div></div></div>'
