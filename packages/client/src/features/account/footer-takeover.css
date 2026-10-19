@@ -110,8 +110,13 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-clau
 }
 /* The host's own account menu in the rail: the card's width follows the account
    row, which is a 36px icon there, so the measured width would leave a 36px
-   card. The drawer's rail width above is the floor for both. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] [data-dsh-claude-account-menu] {
+   card. The drawer's rail width above is the floor for both.
+   The host mounts this menu on <body>, outside the sidebar, so no rule that
+   names a sidebar ancestor can reach it — that is why the collapsed rail kept a
+   36px card. The collapse attribute on the layout frame is the same fact read
+   from the outside: packages/engine/src/parts-table.ts marks the body with it
+   (data-dsh-claude-holds="sidebar-rail") and this rule reads that mark. */
+body[data-dsh-claude-style][data-dsh-claude-holds~="sidebar-rail"] [data-dsh-claude-account-menu] {
   width: 220px;
   max-width: min(220px, calc(100vw - 16px));
 }

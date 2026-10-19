@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-19",
+  "external": false,
+  "zh": "修复侧栏收起后账号卡片被压成图标宽度、用户名与菜单项被裁的问题：从图标栏打开的账号卡片现在按卡片自己的宽度展开在账号按钮旁。",
+  "en": "Fix the account card being squeezed to the width of the rail's icon and cutting its name and rows off: a card opened from the icon rail now expands at the card's own width beside the account button."
+}

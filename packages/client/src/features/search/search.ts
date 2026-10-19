@@ -4,7 +4,7 @@ import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as reactDom from 'react-dom/client'
 import { SIDEBAR_SEARCH_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { SEARCH_STYLE_ICON, SEARCH_STYLE_STANDALONE } from '../../constants'
-import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, hostShortcuts, sessionOutline, turnForSeq } from '@dsh-claude-style/engine/host'
+import { cacheFirstMatch, conversationSessionId, findConversationSession, findSidebarBrand, findSidebarLogoRow, hostShortcuts, sessionOutline, turnForSeq } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
 import { createSearchSources } from './sources'
 import type { ContentHit, SearchFilter, SearchRow } from './sources'
@@ -179,15 +179,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * Place the box for the style in force. The `icon` style places nothing of
    * the skin's; `overlay` and `standalone` share the box and differ in what
-   * holds it — the host's logo row, or the skin's own row under it.
+   * holds it — the host's logo row, or the skin's own row under it. In the
+   * collapsed rail the host keeps no wide brand at all, and the box moves to the
+   * seat the rail has for it.
    */
   function syncTrigger() {
     const brand = findSidebarBrand()
     const row = brand === null ? null : brand.parentElement
     const style = readPrefs().searchStyle
-    // The brand is absent in the collapsed rail: no wide brand, no box.
-    if (brand === null || row === null || style === SEARCH_STYLE_ICON) {
+    if (style === SEARCH_STYLE_ICON) {
       dropTrigger()
+      return
+    }
+    if (brand === null || row === null) {
+      seatRailTrigger()
       return
     }
     if (trigger === null) trigger = buildTrigger()
@@ -203,6 +208,34 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (trigger.parentElement !== row) row.insertBefore(trigger, brand.nextSibling)
       rowStamp.mark(row)
     }
+    syncTriggerText()
+  }
+
+  /**
+   * The collapsed rail's seat: the rail keeps its top row for the mark and
+   * drops the wide brand, and the column is as wide as one icon. The box takes
+   * a row of its own under the mark — the wide order of brand row, box, New
+   * session kept — and stands there as the rail's icon button (search.css).
+   * No row of the skin's: the rail's own rhythm is what steps between them.
+   */
+  function seatRailTrigger() {
+    const seat = findSidebarLogoRow()
+    if (seat === null) {
+      dropTrigger()
+      return
+    }
+    if (trigger === null) trigger = buildTrigger()
+    if (bar !== null && bar.parentElement !== null) bar.parentElement.removeChild(bar)
+    // The host re-renders around the box as the rail settles; the pass re-seats
+    // it against the mark's row rather than trusting last pass's parent.
+    if (trigger.parentElement !== seat.parentElement || trigger.previousElementSibling !== seat) seat.after(trigger)
+    rowStamp.release()
+    syncTriggerText()
+  }
+
+  /** The box's word, its accessible name and its shortcut, in every seat it takes. */
+  function syncTriggerText() {
+    if (trigger === null) return
     const label = copy('searchPlaceholder')
     const text = trigger.children[1]
     if (text.textContent !== label) text.textContent = label

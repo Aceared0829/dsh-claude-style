@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-19",
+  "external": false,
+  "zh": "修复侧栏收起成图标栏后皮肤的搜索框整件消失、只剩宿主自己的放大镜的问题：收起栏现在在标记下方给出皮肤自己的搜索图标，与新建会话同一步进，随其余图标一起从右侧滑入，「独立」与「覆盖品牌」两种样式在收起态一致呈现。",
+  "en": "Fix the skin's search box disappearing when the sidebar collapses to the icon rail and leaving only the host's own magnifier: the rail now keeps the skin's search icon under the mark on the host's step, it slides in from the right with the other icons, and the independent and overlay styles stand the same way there."
+}

@@ -171,6 +171,59 @@ body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-slo
   transform: none !important;
   pointer-events: auto !important;
 }
+/* The collapsed rail: the wide brand is gone, so there is no row for the box to
+   stand on, and the column is a 36px icon column. The box takes a row of its own
+   under the rail's mark — the wide order of mark, box, New session kept — and
+   turns into the rail's icon button: one 36px row on the host's 12px step, no
+   fill, no border, the icon alone. Both `overlay` and `standalone` land here:
+   neither has a brand row in the rail.
+   The host's workspace rail keeps a search icon of its own further down the
+   column; with the skin's box standing in for it, that control leaves the
+   column, so one search icon stands under the mark where the reader expects it.
+   It leaves the column's *layout* and not the page, the way the host's wide
+   search does above: the host's own shortcut still expands that control and
+   focuses its field, and that focus is what opens the palette. The `icon`
+   style is the exception — there the host's own button is the reader's way in,
+   and it keeps its place. */
+body[data-dsh-claude-style]:not([data-dsh-claude-search-style="icon"]) [data-sidebar-collapsed] [data-dsh-claude-holds~="rail-search"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+  pointer-events: none;
+}
+body[data-dsh-claude-style] [data-sidebar-collapsed] [data-dsh-claude-part~="logo-row"] + .dsh-claude-search-trigger {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  /* The host slides every row of the rail in from the right as the column
+     settles (its own 150 ms step over 49 px); the box is the skin's own
+     element standing in that column, so it enters the same way instead of
+     standing still while its neighbours travel. */
+  animation: dsh-claude-rail-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-in-out) backwards;
+}
+@keyframes dsh-claude-rail-in {
+  from {
+    opacity: 0;
+    transform: translate(49px);
+  }
+}
+body[data-dsh-claude-style] [data-sidebar-collapsed] [data-dsh-claude-part~="logo-row"] + .dsh-claude-search-trigger > :is(.dsh-claude-search-trigger-label, .dsh-claude-search-keys) {
+  display: none;
+}
 /* A button, like the New session and Plugins rows under it: the same hover
    plate, laid over the box's own opaque fill so the brand behind it never
    shows through. */
