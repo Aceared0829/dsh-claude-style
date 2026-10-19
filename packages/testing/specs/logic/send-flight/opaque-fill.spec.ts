@@ -40,7 +40,15 @@ function painted(fill: string, behind: string) {
   return [r, g, b]
 }
 
-test('the colour written is the one the browser paints, to a channel step', () => {
+/**
+ * How far one channel of the painted pixel may stand from the written colour.
+ * The browser keeps a fill's alpha in eight bits and blends in whole channel
+ * steps, rounding the premultiplied fill and the result: up to half a step from
+ * the alpha, and half a step from each rounding, against the exact mix written.
+ */
+const PAINT_STEPS = 2
+
+test('the colour written is the one the browser paints, to the steps its eight-bit blending rounds by', () => {
   const channel = fc.integer({ min: 0, max: 255 })
   fc.assert(fc.property(channel, channel, channel, fc.double({ min: 0.02, max: 0.98, noNaN: true }), channel, channel, channel, (r, g, b, alpha, br, bg, bb) => {
     const fill = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(2)})`
@@ -48,6 +56,6 @@ test('the colour written is the one the browser paints, to a channel step', () =
     const written = chatSendOpaque(fill, behind).match(/^rgb\((\d+), (\d+), (\d+)\)$/)
     expect(written).not.toBeNull()
     const screen = painted(fill, behind)
-    written!.slice(1).map(Number).forEach((value, at) => expect(Math.abs(value - screen[at]!)).toBeLessThanOrEqual(1))
+    written!.slice(1).map(Number).forEach((value, at) => expect(Math.abs(value - screen[at]!)).toBeLessThanOrEqual(PAINT_STEPS))
   }))
 })
