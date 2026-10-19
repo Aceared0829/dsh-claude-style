@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 /**
- * verify.mjs — the one entry a test run goes through (D66).
+ * verify.mjs — the one entry a test run goes through (D77).
  *
  * Parallel sessions share this working tree, and each of them reaching for a
  * runner of its own is what made the machine run the same build and the same
  * browser several times over. This file is the only place the gates are
  * started; a session asks it and reads its answer.
  *
- *   one entry  the checks, the build, the unit tests, the smoke and the
- *              end-to-end lane, from one command.
+ *   one entry  the checks, the build, the logic and mechanism specs, the
+ *              smoke, the behaviour specs and the end-to-end lane, from one
+ *              command.
  *   staged     a gate starts as soon as what it reads exists: the checks, the
- *              build and the unit lane answer about the sources and run
- *              together, and the two browser lanes read the build's output and
+ *              build and the spec lane answer about the sources and run
+ *              together, and the browser lanes read the build's output and
  *              run together once it is written. What the run costs is the
  *              slowest gate of each stage rather than their sum.
  *   serial     `.debug/verify.lock/` holds one run at a time. A request that
@@ -35,9 +36,11 @@
  *        A bare run is the iteration tier: the checks, the build and the tests
  *        the working tree's change reaches, at once, and nothing that starts a
  *        browser. --quick adds the smoke's quick tier (its motion cases left
- *        out), --case and --feature name the smoke's cases as they do on its own
- *        command line (naming them runs the motion cases too), --full walks the
- *        whole smoke, and --e2e and --scenario add the end-to-end lane.
+ *        out) and every behaviour spec, --case and --feature name the smoke's
+ *        cases as they do on its own command line (naming them runs the motion
+ *        cases too) and --feature the behaviour specs of those directories,
+ *        --full walks the whole smoke and every behaviour spec, and --e2e and
+ *        --scenario add the end-to-end lane.
  *        --no-e2e leaves the lane out of either. A request for the whole smoke
  *        and the lane's default table together prints `请确认你正处于发布流程。`
  *        before its gates start: that pair is the cloud's release gate.
@@ -81,12 +84,12 @@ function bad(message) {
   process.exit(2)
 }
 
-/** The directories the unit lane reads: what a change under them can reach a test through. */
-const UNIT_SOURCES = ['packages/client/src', 'packages/contracts/src']
+/** The directories the spec lane reads: what a change under them can reach a spec through. */
+const UNIT_SOURCES = ['packages/client/src', 'packages/contracts/src', 'packages/engine/src', 'packages/testing/specs']
 
 /**
- * The unit gate of a request: the whole lane, or — for the iteration tier — the
- * tests the working tree's change reaches, which is what makes that tier answer
+ * The spec gate of a request (the logic and mechanism layers, D77): the whole
+ * lane, or — for the iteration tier — the specs the working tree's change reaches, which is what makes that tier answer
  * in seconds while a session is editing. A tree with no change under the
  * sources runs the lane whole: a bare request on a still tree still answers for
  * every test.
@@ -215,12 +218,17 @@ function gatesFor(request) {
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
     { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
     // The rule that the appearance snapshot only moves with what draws or reads
-    // the pages (D66), and the records that only shrink, against HEAD.
+    // the pages (D77), and the records that only shrink, against HEAD.
     { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--ledgers', '--tree'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]
   if (request.smoke !== null) gates.push({ id: 'smoke', script: 'packages/testing/smoke.cjs', args: request.smoke })
+  // The behaviour specs ride with the smoke: they read the same build and the
+  // same stand-in host. A request naming smoke cases alone names no spec.
+  if (request.smoke !== null && !(request.cases.length > 0 && request.features.length === 0)) {
+    gates.push({ id: 'behaviour', script: 'packages/testing/behaviour.cjs', args: request.features.length > 0 ? ['--feature', request.features.join(',')] : [] })
+  }
   if (request.e2e) {
     gates.push({
       id: 'e2e',
@@ -234,17 +242,19 @@ function gatesFor(request) {
 /**
  * Those gates grouped by what waits for what. The checks and the build stand
  * first: the build writes what the browser lanes read, and the checks answer in
- * moments. The unit lane answers about the sources and waits for nothing, so it
- * runs beside the browser lanes rather than in front of them — the slow stage
- * starts a couple of seconds earlier for it. Each stage costs its slowest gate
- * instead of the sum of its gates.
+ * moments. The spec lane answers about the sources and waits for nothing, so it
+ * runs beside the behaviour specs; the smoke and the end-to-end lane come last,
+ * on their own, because their checks that watch frames and passes are what a
+ * loaded machine disturbs, and the behaviour specs' pages beside them load it.
+ * Each stage costs its slowest gate instead of the sum of its gates.
  */
 function stagesFor(request) {
   const gates = gatesFor(request)
-  const browser = gates.filter((gate) => gate.id === 'smoke' || gate.id === 'e2e')
-  if (browser.length === 0) return [gates]
-  const beside = [...gates.filter((gate) => gate.id === 'unit'), ...browser]
-  return [gates.filter((gate) => beside.indexOf(gate) === -1), beside]
+  const framed = gates.filter((gate) => gate.id === 'smoke' || gate.id === 'e2e')
+  const before = gates.filter((gate) => gate.id === 'unit' || gate.id === 'behaviour')
+  if (framed.length === 0 && !before.some((gate) => gate.id === 'behaviour')) return [gates]
+  const first = gates.filter((gate) => framed.indexOf(gate) === -1 && before.indexOf(gate) === -1)
+  return [first, before, framed].filter((stage) => stage.length > 0)
 }
 
 /** The key a verdict is filed under: this tree, these gates. */

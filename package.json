@@ -21,6 +21,9 @@
     "lint": "node scripts/lint.mjs",
     "probe": "node packages/testing/probe.cjs",
     "smoke": "node packages/testing/smoke.cjs",
+    "behaviour": "node packages/testing/behaviour.cjs",
+    "faults": "node packages/testing/faults.cjs",
+    "coverage": "node packages/testing/coverage.cjs",
     "test": "vitest run",
     "verify": "node scripts/verify.mjs",
     "prepublishOnly": "npm run build"

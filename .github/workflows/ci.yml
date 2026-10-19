@@ -27,12 +27,13 @@ name: CI
 # The jobs are split by what they need. `checks` reads no built page, so it runs
 # on every event and starts while the scope job is still reading the diff; the
 # lanes that read a page wait on the checks and on the scope. `build-unit-smoke`
-# carries the build, the unit lane in a real browser and the smoke over the built
-# plugin; `smoke-windows` carries the same over the readers' own system;
+# carries the build, the spec lane in a real browser, the smoke and the behaviour
+# specs over the built plugin; `smoke-windows` carries the same over the readers'
+# own system; `behaviour-macos` walks the behaviour specs on the third platform;
 # `e2e` drives a scratch `dsh web` on the newest host version published, under
 # whichever dist-tag (`packages/testing/host-version.cjs` reads the registry; the
 # lane gives no verdict on a machine whose host differs) with the scripted
-# model service (D66), so a selector or entry the host stopped honouring shows
+# model service (D77), so a selector or entry the host stopped honouring shows
 # up in the run that meets the new host. Every job carries a deadline, and
 # every step that waits on the network carries its own: the job's is the
 # backstop, the step's ends a stuck wait in minutes.
@@ -104,7 +105,7 @@ jobs:
         run: node scripts/ci-scope.mjs --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
       # The pushes the scope refuses against the same base: an appearance
       # snapshot moved without the sheets that draw it, and a record that only
-      # shrinks grown (D66, D9).
+      # shrinks grown (D77, D9).
       - run: node scripts/ci-scope.mjs --appearance --ledgers --base "${{ github.event.pull_request.base.sha || github.event.before || 'origin/master' }}"
 
   # The gates that need no build: the lint rules, the decisions index against
@@ -156,6 +157,16 @@ jobs:
       # flag, and npm would read a flag of its own rather than pass it on.
       - run: node packages/testing/smoke.cjs ${{ needs.changed.outputs.smoke }}
         timeout-minutes: 30
+      # The behaviour specs read the same build on the same stand-in host (D77);
+      # a failure leaves its trace, screenshot and evidence for the artifact.
+      - run: npm run behaviour
+        timeout-minutes: 15
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: behaviour-evidence-linux
+          path: .debug/behaviour
+          if-no-files-found: ignore
 
   # The readers' desktop runs on Windows, and the host half reads session
   # directories, drive-letter paths and file times there.
@@ -183,9 +194,49 @@ jobs:
         timeout-minutes: 15
       - run: npm run smoke
         timeout-minutes: 30
+      - run: npm run behaviour
+        timeout-minutes: 15
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: behaviour-evidence-windows
+          path: .debug/behaviour
+          if-no-files-found: ignore
+
+  # The third platform of the release matrix (packages/testing/matrix.json,
+  # D77): the behaviour specs over macOS's own fonts and Chrome, where a layout
+  # that fits on the other two can still overflow.
+  behaviour-macos:
+    needs: [changed, checks]
+    if: needs.changed.outputs.code == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v6
+        with:
+          path: .debug/build-cache
+          key: build-cache-${{ runner.os }}-${{ needs.changed.outputs.tree }}
+      - run: npm run build
+        timeout-minutes: 15
+      - run: npm run behaviour
+        timeout-minutes: 15
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: behaviour-evidence-macos
+          path: .debug/behaviour
+          if-no-files-found: ignore
 
   # The assembled host: a scratch `dsh web` with this checkout's plugin and the
-  # scripted model service, driven through a real conversation (D66).
+  # scripted model service, driven through a real conversation (D77).
   e2e:
     needs: [changed, checks]
     if: needs.changed.outputs.code == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/master')
@@ -228,7 +279,7 @@ jobs:
 
   required:
     if: always()
-    needs: [changed, checks, build-unit-smoke, smoke-windows, e2e]
+    needs: [changed, checks, build-unit-smoke, smoke-windows, behaviour-macos, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
