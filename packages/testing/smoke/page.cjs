@@ -84,9 +84,18 @@ const readParts = (dir, parts) =>
   parts.map((part) => fs.readFileSync(path.join(__dirname, dir, part), 'utf8')).join(';\n')
 const STAND_IN = readParts('stand-in', STAND_IN_PARTS)
 const PROBE = readParts('probe', PROBE_PARTS)
+/**
+ * The probe's own prelude alone: the skin applied and the readers a step uses,
+ * with no step of the smoke's. The behaviour layer drives such a page from
+ * outside, through Playwright (packages/testing/behaviour.cjs, D77).
+ */
+const PRELUDE = readParts('probe', ['prelude.js'])
 
-/** The stand-in page for one load: host footer, host composer, then the bundle. */
-function page(name, tier, cases) {
+/**
+ * The stand-in page for one load: host footer, host composer, then the bundle,
+ * then `probe` — the smoke's steps unless the caller drives the page itself.
+ */
+function page(name, tier, cases, probe = PROBE) {
   // The desktop footer mirrors 0.1.7's: the account menu lives in the
   // `settings.launcher` slot inside the host's `triggerRow`, and the settings
   // button the web-style footer has is gone. Every other case keeps the
@@ -384,6 +393,12 @@ function page(name, tier, cases) {
         '};' +
       '})();</script>'
     : ''
+  // The host's model seat inside the composer row, the way ui-conversation
+  // renders it, for the pages that read the controls standing beside it: a long
+  // model name, so the row has to share its width between the name and them.
+  var modelSeat = name === 'effort'
+    ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">DeepSeek V4 Reasoner Extended Context</button></div></div>'
+    : ''
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>dsh-claude-style smoke: ${name}</title></head>
 <body>
@@ -415,7 +430,7 @@ ${heroRow}
       <button class="_add_x_1" aria-label="Add files or run commands" aria-haspopup="listbox" id="commands"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12"/></svg></button>
       <div class="_modes_x_1"><div data-slot="conversation.input.permission" style="display:contents"><button aria-label="Access mode, current: Edit">Edit</button></div></div>
     </div>
-    <div class="_trailing_x_1"><button class="_primary_x_1" aria-label="Send message" id="send"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M8 1v14"/></svg></button></div>
+    <div class="_trailing_x_1">${modelSeat}<button class="_primary_x_1" aria-label="Send message" id="send"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M8 1v14"/></svg></button></div>
   </div>
 </div>
 ${dock}
@@ -431,8 +446,8 @@ ${foldArea}
 <script>window.SMOKE_CASE = ${JSON.stringify(name)}; window.SMOKE_GROUPS = ${JSON.stringify(cases)}; window.SMOKE_TIER = ${JSON.stringify(tier)}; window.SMOKE_MARKUP = ${JSON.stringify(MARKUP)}; window.SMOKE_PNG = ${JSON.stringify(PNG_1PX)}</script>
 <script>${STAND_IN}</script>
 <script src="/client.js"></script>
-<script>${PROBE}</script>
+<script>${probe}</script>
 </body></html>`
 }
 
-module.exports = { page }
+module.exports = { page, PRELUDE }

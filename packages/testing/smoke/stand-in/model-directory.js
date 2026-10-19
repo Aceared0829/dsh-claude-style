@@ -6,12 +6,27 @@
  * The ids are the ones the rate catalog's alias table knows, so one row of each
  * kind is on the page: a model a profile claims, a model no profile claims, and
  * the seat's own row.
+ *
+ * The effort page (packages/testing/specs/behaviour/effort-picker/) reads the
+ * same directory with a model that carries a reasoning ladder, its strongest
+ * level in force: the trigger stands beside the model name and the card opens
+ * on the top rung.
  */
 (function () {
   var host = window.__dshSmokeHost
-  if (host.CASE !== 'model-meter') return
+  if (host.CASE !== 'model-meter' && host.CASE !== 'effort') return
 
-  var snapshot = {
+  var reasoning = {
+    defaultEffort: 'high',
+    efforts: [{ id: 'low', name: 'Low' }, { id: 'medium', name: 'Medium' }, { id: 'high', name: 'High' }, { id: 'max', name: 'Max' }],
+  }
+  var snapshot = host.CASE === 'effort' ? {
+    status: 'ready',
+    current: { provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'max' },
+    groups: [
+      { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-reasoner', name: 'DeepSeek V4 Reasoner Extended Context', description: 'The thinking one.', reasoning: reasoning }] },
+    ],
+  } : {
     status: 'ready',
     current: { provider: 'zai', model: 'glm-5.3' },
     groups: [

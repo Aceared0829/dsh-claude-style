@@ -1,13 +1,13 @@
 /**
- * changed-paths.mjs — the working tree's changed paths, read once (D66).
+ * changed-paths.mjs — the working tree's changed paths, read once (D77).
  *
  * Two callers ask this question and both need the same answer: the run that
  * picks the unit tests a session's edits reach (`scripts/verify.mjs`) and the
  * rule that refuses an appearance snapshot recorded without the sources that
  * draw the pages (`scripts/ci-scope.mjs`). `git status --porcelain -z` is the
  * one reading — the working tree, because a session edits and runs the gates
- * long before it commits, with untracked files counted so a test written beside
- * its module is reached.
+ * long before it commits, with every untracked file counted one by one so a
+ * spec written in a new directory is reached.
  */
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -23,7 +23,7 @@ const ROOT = path.resolve(import.meta.dirname, '..', '..')
  *     for a caller to read, and whatever still imports it reaches its tests.
  */
 export function changedPaths(...scope) {
-  const out = execFileSync('git', ['status', '--porcelain', '-z', '--', ...scope], { cwd: ROOT, encoding: 'utf8' })
+  const out = execFileSync('git', ['status', '--porcelain', '-z', '--untracked-files=all', '--', ...scope], { cwd: ROOT, encoding: 'utf8' })
   const parts = out.split('\0')
   const paths = []
   for (let at = 0; at < parts.length; at += 1) {

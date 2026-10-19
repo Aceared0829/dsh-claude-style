@@ -18,16 +18,18 @@
  *
  * It also holds the one push this cannot accept: a change to the appearance
  * snapshot (`packages/testing/appearance.json`) with no change under
- * `packages/client/src` and none to the files that read it (D66). The
+ * `packages/client/src` and none to the files that read it (D77). The
  * snapshot is what the pages look like, so it only moves when what draws them
  * or what reads them moved; a push that carries it alone is a snapshot
  * recorded by hand, and `--appearance` fails it. A snapshot the base
  * does not hold at all is the layer's own arrival, which is no page's change.
  *
- * `--ledgers` holds the two records that only shrink to that promise: the
+ * `--ledgers` holds the four records that only shrink to that promise: the
  * selectors the importance walk cannot reach (`importance-unreachable.json`,
- * D9) and the whole-document lookups left outside the host access module
- * (`document-lookups.json`). Each is compared with itself at the base and its
+ * D9), the whole-document lookups left outside the host access module
+ * (`document-lookups.json`), the behaviour tests held over a known defect
+ * (`quarantine.json`, D77) and the skin marks the older test code spells out
+ * (`skin-literals.json`, D77). Each is compared with itself at the base and its
  * total may not rise however the reasons read; the total is what is compared,
  * so a selector rewritten or a module moved carries its entry along. Lint only
  * holds each record to the tree.
@@ -201,6 +203,16 @@ const LEDGERS = [
     entries: (record) => new Map(Object.entries(record.files).map(([file, entry]) => [file, entry.count])),
     what: 'whole-document lookup count',
   },
+  {
+    file: 'packages/testing/quarantine.json',
+    entries: (record) => new Map(record.tests.map((entry) => [entry.id, 1])),
+    what: 'quarantined test',
+  },
+  {
+    file: 'packages/testing/skin-literals.json',
+    entries: (record) => new Map(Object.entries(record.files)),
+    what: 'spelled skin mark',
+  },
 ]
 
 /**
@@ -231,7 +243,7 @@ function refuseLedgerGrowth() {
   }
   if (problems.length === 0) return
   for (const problem of problems) console.error(`ci-scope: ${problem}`)
-  console.error('ci-scope: these records only shrink — reach the selector from the walk, or read the seat through the engine host.ts and bus.ts, rather than recording it')
+  console.error('ci-scope: these records only shrink — reach the selector from the walk, read the seat through the engine host.ts and bus.ts, fix the defect a quarantined test fails over, or read a skin mark from packages/testing/surface.json, rather than recording it')
   process.exit(1)
 }
 

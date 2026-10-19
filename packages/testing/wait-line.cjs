@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * wait-line.cjs — the waiting line's own words, end to end (D66).
+ * wait-line.cjs — the waiting line's own words, end to end (D77).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

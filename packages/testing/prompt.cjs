@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * prompt.cjs — sending a prompt on the scratch page, for the lane's scenarios
- * (D66).
+ * (D77).
  *
  * The runner (packages/testing/e2e.cjs) and every scenario module send and wait
  * the same way, so both import them from here.

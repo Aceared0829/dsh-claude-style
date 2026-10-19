@@ -57,3 +57,9 @@ interface KeyboardEvent {
   /** Set on the Escape the skin dispatches to the host's own menu; the skin's key route skips it. */
   __dshHostMenuEscape?: boolean
 }
+
+/** A stylesheet's text, as the declared logic surface hands it to a spec (pure.ts, through Vite's `?raw`). */
+declare module '*.css?raw' {
+  const text: string
+  export default text
+}

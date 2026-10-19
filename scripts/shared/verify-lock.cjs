@@ -1,5 +1,5 @@
 /**
- * verify-lock.cjs — the one run at a time a shared working tree allows (D66).
+ * verify-lock.cjs — the one run at a time a shared working tree allows (D77).
  *
  * Two sessions on one tree otherwise build and drive browsers on top of each
  * other's output: a build rewrites `lib/`, and a lane reading `lib/` sees the

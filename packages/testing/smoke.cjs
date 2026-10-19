@@ -64,27 +64,15 @@
  * Exit:  0 every check passed · 1 a check failed · 2 the browser half could not run
  */
 'use strict'
-const fs = require('fs')
-const http = require('http')
 const { availableParallelism } = require('os')
-const path = require('path')
 const { findChrome, openBrowser } = require('./browser.cjs')
-const { ROOT, CLIENT, PNG_1PX, SKIN_FIXTURE, SKIN_CASES, check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
+const { check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } = require('./smoke/shared.cjs')
 const { hostHalf } = require('./smoke/host-half.cjs')
 const { page } = require('./smoke/page.cjs')
+const { serveStandIn } = require('./smoke/server.cjs')
 const { CASES } = require('./smoke/cases.cjs')
 const { withLock } = require('../../scripts/shared/verify-lock.cjs')
-
-/**
- * The build's asset manifest: which names the page may ask for, their type and
- * their storage The page's own server answers from it exactly as the
- * host half does.
- */
-const ASSETS = (() => {
-  const manifest = path.join(ROOT, 'lib', 'assets', 'manifest.json')
-  if (!fs.existsSync(manifest)) throw new Error('smoke: lib/assets/manifest.json is missing; run npm run build')
-  return JSON.parse(fs.readFileSync(manifest, 'utf8')).assets
-})()
+const { mapAtOnce } = require('./at-once.cjs')
 
 /** End the run over a command line or a table that cannot be honoured. */
 function bad(message) {
@@ -108,25 +96,6 @@ const DEFAULT_JOBS = Math.max(2, Math.min(10, Math.floor(availableParallelism() 
  * machine still leave the renderer its frames and halve the tier's longest wait.
  */
 const MOTION_JOBS = 2
-
-/**
- * Run `each` over every item, at most `jobs` of them at once, and answer the
- * results in the items' own order.
- */
-async function mapAtOnce(items, jobs, each) {
-  const results = new Array(items.length)
-  let next = 0
-  const worker = async () => {
-    while (next < items.length) {
-      const at = next
-      next += 1
-      results[at] = await each(items[at])
-    }
-  }
-  const workers = Math.max(1, Math.min(jobs, items.length))
-  await Promise.all(Array.from({ length: workers }, () => worker()))
-  return results
-}
 
 /**
  * What the command line asked for: `--case a,b` names cases, `--feature dir`
@@ -234,97 +203,12 @@ async function browserHalf(planned, jobs) {
   if (!browser) {
     console.log('\nbrowser half — skipped: no Chrome/Edge found (set CHROME_PATH)')
     return { ran: false, scope: '' }
-  }  /** The page whose HTML was served last; the pages run at once, so a request is answered for the page named in its referer. */
-  let current = null
-  /**
-   * Which page a request belongs to. Every request a page makes — the bundle,
-   * the routed assets, the launcher's pictures — carries that page's own URL as
-   * its referer, which is what keeps the pages apart while several of them are
-   * being driven. A request with none is answered for the last page served.
-   */
-  const fromPage = (req) => {
-    const referer = req.headers.referer
-    if (referer === undefined) return current
-    try {
-      return new URL(referer).pathname.slice(1)
-    } catch {
-      return current
-    }
   }
-  const server = http.createServer((req, res) => {
-    const name = new URL(req.url, 'http://x').pathname.slice(1)
-    if (name === 'client.js') {
-      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' })
-      res.end(fs.readFileSync(CLIENT))
-    } else if (name === 'dsh-claude-style/hdsl-skin.png') {
-      // The launcher's atlas, which the skin loads outside `fetch`, so the
-      // page-side stand-in cannot answer it. `hdsl-broken` models a file the
-      // player removed after the launcher wrote the contract.
-      if (SKIN_CASES.indexOf(fromPage(req)) === -1) {
-        res.writeHead(404, { 'cache-control': 'no-store' })
-        res.end()
-        return
-      }
-      res.writeHead(200, { 'content-type': 'image/png' })
-      res.end(fs.readFileSync(SKIN_FIXTURE))
-    } else if (name === 'dsh-claude-style/brand/mark' || name === 'dsh-claude-style/brand/wordmark') {
-      // The custom-brand case's images, loaded outside `fetch` like the
-      // launcher's atlas: a one-pixel mark, and a wordmark whose only size is
-      // a 4:1 viewBox, so the measured proportions are observable.
-      if (fromPage(req) !== 'custom-brand') {
-        res.writeHead(404, { 'cache-control': 'no-store' })
-        res.end()
-        return
-      }
-      if (name.endsWith('/mark')) {
-        res.writeHead(200, { 'content-type': 'image/png' })
-        res.end(Buffer.from(PNG_1PX, 'base64'))
-        return
-      }
-      res.writeHead(200, { 'content-type': 'image/svg+xml' })
-      res.end('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"><rect width="400" height="100"/></svg>')
-    } else if (name.startsWith('dsh-claude-style/assets/')) {
-      // The routed assets, from the build output the host half serves them from
-      // The manifest is the same gate here: a name the build did not
-      // produce answers 404.
-      const file = name.slice('dsh-claude-style/assets/'.length)
-      const asset = ASSETS[file]
-      // The chunk-fault case's route carries none of the feature chunks, the
-      // way a host still serving the bundle it read before an update answers (D72).
-      const chunkRefused = fromPage(req) === 'chunk-fault' && file.endsWith('.js')
-      if (asset === undefined || chunkRefused) {
-        res.writeHead(404)
-        res.end()
-        return
-      }
-      const stored = path.join(ROOT, 'lib', 'assets', asset.encoding === 'br' ? `${file}.br` : file)
-      if (!fs.existsSync(stored)) {
-        res.writeHead(404)
-        res.end()
-        return
-      }
-      res.writeHead(200, {
-        'content-type': asset.type,
-        'cache-control': 'public, max-age=31536000, immutable',
-        // The page is a browser: it takes the stored payload as it lies.
-        ...(asset.encoding === 'br' ? { 'content-encoding': 'br' } : {}),
-      })
-      res.end(fs.readFileSync(stored))
-    } else {
-      const entry = pages.find((one) => one.page === name)
-      if (entry === undefined) {
-        res.writeHead(404)
-        res.end()
-        return
-      }
-      current = name
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
-      res.end(page(name, tierName(), entry.cases))
-    }
+  const server = await serveStandIn((name) => {
+    const entry = pages.find((one) => one.page === name)
+    return entry === undefined ? undefined : page(name, tierName(), entry.cases)
   })
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
-
-  const base = `http://127.0.0.1:${server.address().port}`
+  const base = server.base
   // The machine's own motion setting must not decide a check: every case runs
   // with no reduced-motion request, and a probe that needs one asks for it itself.
   const instance = await openBrowser({ width: 1280, height: 800, reducedMotion: 'no-preference' })
@@ -360,7 +244,7 @@ async function browserHalf(planned, jobs) {
     }
     return { ran: true, scope: `${cases.length} of ${total} browser cases in ${pages.length} page loads, tier ${tierName()}` }
   } finally {
-    server.close()
+    await server.close()
     await instance.close()
   }
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * mock-llm.cjs — the scripted model service the end-to-end lane runs against (D66).
+ * mock-llm.cjs — the scripted model service the end-to-end lane runs against (D77).
  *
  * The lane needs a conversation of a known shape — a thought, an answer that
  * arrives in pieces, a tool call and its result — and it needs the same one every
@@ -12,7 +12,7 @@
  *
  * Only the model is scripted; everything downstream — the agent loop, the
  * session, the client's stores and every component that renders them — is the
- * shipping host (D66). Point the route at this server with a `--patch` overlay:
+ * shipping host (D77). Point the route at this server with a `--patch` overlay:
  *
  *   - id: llm-deepseek
  *     config:

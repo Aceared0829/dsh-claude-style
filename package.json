@@ -21,6 +21,9 @@
     "lint": "node scripts/lint.mjs",
     "probe": "node packages/testing/probe.cjs",
     "smoke": "node packages/testing/smoke.cjs",
+    "behaviour": "node packages/testing/behaviour.cjs",
+    "faults": "node packages/testing/faults.cjs",
+    "coverage": "node packages/testing/coverage.cjs",
     "test": "vitest run",
     "verify": "node scripts/verify.mjs",
     "prepublishOnly": "npm run build"
@@ -96,6 +99,7 @@
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
     "jscpd": "5.3.3",
     "playwright": "1.63.0",
     "pngjs": "^7.0.0",

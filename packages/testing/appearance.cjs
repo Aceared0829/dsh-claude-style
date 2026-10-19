@@ -1,6 +1,6 @@
 /**
  * appearance.cjs — the appearance layer: what each page state's parts compute
- * to on the real host, against the committed snapshot (D66).
+ * to on the real host, against the committed snapshot (D77).
  *
  * A behaviour check asks whether a thing works; this asks what it looks like.
  * The importance walk (importance.cjs) is the lane's tour of every page state on
@@ -119,7 +119,7 @@ function writeAppearance(readings) {
   const states = {}
   for (const name of Object.keys(readings).sort()) states[name] = readings[name]
   fs.writeFileSync(SNAPSHOT, `${JSON.stringify({
-    note: 'The appearance layer\'s snapshot: what each page state\'s parts compute to on the real host, read by the importance walk through packages/testing/appearance.cjs (D66). Regenerate with DSH_APPEARANCE=write node packages/testing/e2e.cjs --scenario importance; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.',
+    note: 'The appearance layer\'s snapshot: what each page state\'s parts compute to on the real host, read by the importance walk through packages/testing/appearance.cjs (D77). Regenerate with DSH_APPEARANCE=write node packages/testing/e2e.cjs --scenario importance; a change here without a change under packages/client/src fails scripts/ci-scope.mjs.',
     states,
   }, null, 2)}\n`)
 }

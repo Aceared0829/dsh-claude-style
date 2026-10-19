@@ -7,7 +7,8 @@
  * Markdown resolves, every decision a comment or a document cites exists
  * (numbers are stable and a retired one stays citable), every repository path
  * prose names exists, no feature module reaches past the handles its manifest
- * declares (D72), and no pair of files holds a copied stretch (jscpd).
+ * declares (D72), no pair of files holds a copied stretch (jscpd), and every
+ * spec keeps to the channels and the header D77 sets.
  * Everything else a tool could enforce is already a build check, the type check
  * or a smoke case.
  *
@@ -15,6 +16,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
 
@@ -70,7 +72,7 @@ function decisionNumbers() {
 
 // 1. The stop line. A unit test file counts like any other: a test that grew
 // past the line is one file holding several subjects, which is the shape the
-// line exists to catch (D66). Declaration files are generated and stand aside.
+// line exists to catch (D77). Declaration files are generated and stand aside.
 const sources = [
   ...filesUnder(path.join(ROOT, 'packages'), ['.ts', '.css', '.cjs', '.js'], SKIPPED_DIRS),
   ...filesUnder(path.join(ROOT, 'scripts'), ['.mjs', '.cjs', '.js'], SKIPPED_DIRS),
@@ -249,7 +251,7 @@ for (const file of Object.keys(recordedLookups)) {
 // 8. The bounds a check compares against, and every name a check asks for.
 // packages/testing/bounds.json is where a limit on a reading lives, each with
 // the reason it holds its value, so loosening one is a line in a diff rather
-// than a number buried in an assertion (D66). A name nothing reads
+// than a number buried in an assertion (D77). A name nothing reads
 // means the rule it guards is gone; a name something reads and the table does
 // not hold fails where it is read, which is why the pass over the sources is
 // part of the rule rather than a comment on the table.
@@ -296,8 +298,132 @@ for (const name of boundNames) {
 }
 if (boundReads === 0) problems.push('lint: no bound was read — the bounds pattern matches nothing')
 
+// 9. The specs (D77). A spec reaches the product through three channels only —
+// the declared logic surface, the contract and engine packages, and what the
+// reader sees on the built page — and it names the skin's and the host's own
+// marks through the surface table and the host contract, never by spelling
+// them. Each opens with the header the runners, the fault corpus and the
+// coverage read (scripts/shared/spec-header.cjs).
+const require = createRequire(import.meta.url)
+const { AREAS, specFiles, readHeader } = require('./shared/spec-header.cjs')
+const featureDirs = new Set(fs.readdirSync(path.join(ROOT, 'packages', 'client', 'src', 'features'), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name))
+/** What a spec may import or require by name; a relative path must stay inside packages/testing/specs/. */
+const SPEC_IMPORTS = [/^vitest$/, /^vitest\/browser$/, /^fast-check$/, /^@dsh-claude-style\/client\/pure$/, /^@dsh-claude-style\/contracts\/[\w-]+$/, /^@dsh-claude-style\/engine\/[\w-]+$/]
+/** Calls that put a stand-in where the product's own code runs, or freeze an output instead of judging it. */
+const SPEC_REFUSED = [/\bvi\.(?:mock|doMock|importMock|importActual|hoisted)\s*\(/, /\.toMatch(?:Inline|File)?Snapshot\s*\(/]
+/** Watching the browser's own methods is allowed only for a cost the decisions name, said beside it. */
+const SPEC_WATCHES = /\bvi\.spyOn\s*\(|\.prototype\.\w+\s*=(?!=)/
+/** A skin mark or a host mark spelled out: a skin class or attribute, a host attribute, a host's hashed class name. */
+const SPEC_SPELLED = [
+  { pattern: /(?<![@\w])(?:data-)?dsh-claude-(?!style\/)[a-z][\w-]*/, what: 'a skin mark; read it from packages/testing/surface.json' },
+  { pattern: /['"`[]data-(?!test-)[a-z][\w-]*/, what: 'a host attribute; read it from packages/contracts (by constant or by table id)' },
+  { pattern: /['"`]\.?_[A-Za-z]+_[A-Za-z0-9]+(?:_\d+)?['"`]/, what: 'a host class name; read it from the engine\'s part tables' },
+]
+const specs = specFiles()
+const spellingSpec = (file) => /\.spec\.(ts|cjs)$/.test(file)
+for (const file of specs) {
+  const header = readHeader(file)
+  if (!header.hasHeader) { problems.push(`${file}: opens with no header comment carrying @capability, @features and @risk (D77)`); continue }
+  if (header.capability !== header.directory) problems.push(`${file}: @capability "${header.capability}" is not the directory it sits in (${header.directory})`)
+  if (header.features.length === 0) problems.push(`${file}: @features names nothing`)
+  for (const feature of header.features) {
+    if (!featureDirs.has(feature) && !AREAS.includes(feature)) problems.push(`${file}: @features names "${feature}", which is neither a feature directory nor one of ${AREAS.join(', ')}`)
+  }
+  if (typeof header.risk !== 'string' || header.risk.trim().length < 40) problems.push(`${file}: @risk does not say, in the reader's terms, what goes wrong when it fails`)
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8')
+  const lines = text.split('\n')
+  const specifiers = [...text.matchAll(/\bfrom\s+'([^']+)'|\brequire\('([^']+)'\)/g)].map((match) => match[1] ?? match[2])
+  for (const specifier of specifiers) {
+    if (specifier.startsWith('.')) {
+      const resolved = path.resolve(path.dirname(path.join(ROOT, file)), specifier)
+      if (!relative(resolved).startsWith('packages/testing/specs/')) problems.push(`${file}: reaches ${specifier} outside packages/testing/specs/; reach the product through its declared surface (D77)`)
+      continue
+    }
+    if (file.endsWith('.cjs') && specifier.startsWith('node:')) continue
+    if (!SPEC_IMPORTS.some((allowed) => allowed.test(specifier))) problems.push(`${file}: imports ${specifier}; a spec reaches the product through @dsh-claude-style/client/pure, the contracts and the engine's public modules (D77)`)
+  }
+  lines.forEach((line, at) => {
+    if (/^\s*(\*|\/\/|\/\*)/.test(line)) return
+    for (const refused of SPEC_REFUSED) if (refused.test(line)) problems.push(`${file}:${at + 1}: puts a stand-in where the product runs, or freezes an output instead of judging it (D77)`)
+    if (SPEC_WATCHES.test(line) && !lines.slice(Math.max(0, at - 2), at + 1).some((near) => /\/\/\s*cost: D\d+/.test(near))) {
+      problems.push(`${file}:${at + 1}: watches a method; say the cost a decision names beside it (// cost: D<n> — …)`)
+    }
+    if (!spellingSpec(file)) return
+    for (const { pattern, what } of SPEC_SPELLED) if (pattern.test(line)) problems.push(`${file}:${at + 1}: spells ${what} (D77)`)
+  })
+}
+
+// The surface table (packages/testing/surface.json): each entry names a mark
+// the browser half writes, under one id, and a spec reads every entry.
+const surfaceTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'surface.json'), 'utf8')).surface
+const clientText = filesUnder(path.join(ROOT, 'packages', 'client', 'src'), ['.ts', '.css'], SKIPPED_DIRS).map((file) => fs.readFileSync(file, 'utf8')).join('\n')
+const specText = specs.map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n')
+const surfaceIds = new Set()
+for (const entry of surfaceTable) {
+  if (surfaceIds.has(entry.id)) problems.push(`packages/testing/surface.json: "${entry.id}" stands twice`)
+  surfaceIds.add(entry.id)
+  if ((entry.selector === undefined) === (entry.attribute === undefined)) problems.push(`packages/testing/surface.json: "${entry.id}" names neither or both of a selector and an attribute`)
+  if (!featureDirs.has(entry.feature) && !AREAS.includes(entry.feature)) problems.push(`packages/testing/surface.json: "${entry.id}" belongs to "${entry.feature}", which is no feature directory`)
+  if (typeof entry.sees !== 'string' || entry.sees.length < 20) problems.push(`packages/testing/surface.json: "${entry.id}" does not say what the reader sees there`)
+  const names = entry.attribute !== undefined ? [entry.attribute] : [...String(entry.selector).matchAll(/\.([\w-]+)|\[([\w-]+)/g)].map((match) => match[1] ?? match[2])
+  for (const name of names) {
+    if (!clientText.includes(name)) problems.push(`packages/testing/surface.json: "${entry.id}" names ${name}, which the browser half never writes`)
+  }
+  if (!specText.includes(`'${entry.id}'`)) problems.push(`packages/testing/surface.json: "${entry.id}" is read by no spec — take the entry out`)
+}
+for (const match of specText.matchAll(/surface(?:Attribute|Class|Selector|\.attribute)?\('([\w.-]+)'\)/g)) {
+  if (!surfaceIds.has(match[1])) problems.push(`a spec reads the surface entry "${match[1]}", which packages/testing/surface.json does not hold`)
+}
+
+// The quarantine (packages/testing/quarantine.json): each entry is a behaviour
+// test that exists, with the defect it fails over said in the reader's terms.
+for (const entry of JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'quarantine.json'), 'utf8')).tests) {
+  const [layer, capability, ...rest] = entry.id.replace(/@[\w.]+$/g, '').split('/')
+  const name = rest.join('/')
+  const owner = specs.filter((file) => file.startsWith(`packages/testing/specs/${layer}/${capability}/`))
+    .find((file) => fs.readFileSync(path.join(ROOT, file), 'utf8').includes(`test('${name.replace(/'/g, "\\'")}'`))
+  if (layer !== 'behaviour' || owner === undefined) problems.push(`packages/testing/quarantine.json: "${entry.id}" is no behaviour test`)
+  if (typeof entry.defect !== 'string' || entry.defect.length < 40) problems.push(`packages/testing/quarantine.json: "${entry.id}" does not name the defect it fails over`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(entry.since))) problems.push(`packages/testing/quarantine.json: "${entry.id}" carries no date it entered`)
+}
+
+// The release matrix's viewport bands (packages/testing/matrix.json) stand on
+// both sides of every viewport breakpoint the stylesheets declare, so no layout
+// the skin draws goes unwalked.
+const bands = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'matrix.json'), 'utf8')).bands
+let breakpoints = 0
+for (const match of clientText.matchAll(/@media[^{]*\((?:max|min)-width:\s*(\d+)px\)/g)) {
+  breakpoints += 1
+  const edge = Number(match[1])
+  if (!bands.some((band) => band.width <= edge) || !bands.some((band) => band.width > edge)) {
+    problems.push(`packages/testing/matrix.json: no band stands on each side of the ${edge}px breakpoint the stylesheets declare`)
+  }
+}
+
+// The skin's marks spelled out in the smoke's and the lane's own code, which
+// predate the surface table: a count per file that only shrinks
+// (packages/testing/skin-literals.json, held against the base by
+// scripts/ci-scope.mjs --ledgers). New code reads the table.
+const SKIN_MARK = /(?<![@\w/.])(?:data-)?dsh-claude-(?!style\b)[a-z][\w-]*/g
+const recordedMarks = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'skin-literals.json'), 'utf8')).files
+let spelledMarks = 0
+for (const file of sources) {
+  const rel = relative(file)
+  if (!rel.startsWith('packages/testing/') || rel.startsWith('packages/testing/specs/')) continue
+  const count = (fs.readFileSync(file, 'utf8').match(SKIN_MARK) ?? []).length
+  spelledMarks += count
+  const recorded = recordedMarks[rel] ?? 0
+  if (count > recorded) problems.push(`${rel}: spells ${count} skin marks, past the ${recorded} packages/testing/skin-literals.json records — read new ones from packages/testing/surface.json`)
+  if (count < recorded) problems.push(`packages/testing/skin-literals.json: ${rel} records ${recorded} skin marks and the file has ${count} — write the smaller count down`)
+}
+for (const file of Object.keys(recordedMarks)) {
+  if (!fs.existsSync(path.join(ROOT, file))) problems.push(`packages/testing/skin-literals.json: ${file} is gone from the tree — take its entry out`)
+}
+
 // A rule whose pattern stopped matching anything would pass forever: each of the
 // rules has to have looked at something.
+if (specs.length === 0) problems.push('lint: no spec was examined — the spec rule matches nothing')
+if (breakpoints === 0) problems.push('lint: no viewport breakpoint was read — the matrix rule matches nothing')
 if (featureUiChecked === 0) problems.push('lint: no feature module types ui as FeatureUi — the feature rule matches nothing')
 if (links === 0) problems.push('lint: no Markdown link was examined — the link pattern matches nothing')
 if (citations === 0) problems.push('lint: no decision number was examined — the citation pattern matches nothing')
@@ -309,5 +435,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${lookups} recorded whole-document lookups and ${featureUiChecked} feature modules' ui clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${lookups} recorded whole-document lookups, ${featureUiChecked} feature modules' ui, ${specs.length} specs and ${spelledMarks} recorded skin marks in the older test code clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }
