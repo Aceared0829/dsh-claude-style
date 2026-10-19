@@ -1,5 +1,5 @@
 /**
- * scenarios.cjs — the end-to-end lane's scenario table (D66). The runner
+ * scenarios.cjs — the end-to-end lane's scenario table (D77). The runner
  * (packages/testing/e2e.cjs) boots an instance per scenario, sends its prompt
  * and calls its hooks; a scenario carrying its own reader is a module beside
  * this one (a `*Scenario` export), registered in the table below.

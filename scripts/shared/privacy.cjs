@@ -1,6 +1,6 @@
 /**
  * privacy.cjs — the replacements and the sweep every screenshot path runs before
- * anything reaches disk (D66).
+ * anything reaches disk (D77).
  *
  * A screenshot is taken from a page that carries the machine's own data: sidebar
  * workspace and session titles, the account row's inferred username, absolute

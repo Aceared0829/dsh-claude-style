@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * file-merge.cjs — the calls on one file read as one row (D66).
+ * file-merge.cjs — the calls on one file read as one row (D77).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *
@@ -148,7 +148,7 @@ const HEAD_FACTS = ([suffix, figuresSource]) => {
 }
 
 /**
- * Record every sample the page itself writes (D66): a runner loaded by the
+ * Record every sample the page itself writes (D77): a runner loaded by the
  * other scenarios is starved for as long as they hold the machine, and a change
  * that lands inside that stall is a change no reading from here ever saw — the
  * tail's number, the roll it turns with and the label swapping in are each

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * e2e.cjs — the end-to-end lane: a real `dsh web` with this checkout's plugin,
- * a scripted model service, and a browser on the page (D66).
+ * a scripted model service, and a browser on the page (D77).
  *
  * The smoke's stand-in page reproduces the structure its author knows; this lane
  * runs the assembled client and asserts what only it shows — that a scripted
@@ -26,7 +26,7 @@
  *        --scenario names what to run; without it the walk is every scenario in
  *        the table (packages/testing/scenarios.cjs) but the parked pair below.
  *        --shard takes one slice of that walk, so several runs hold the whole
- *        of it between them (D66); a slice runs one scenario at a time, since
+ *        of it between them (D77); a slice runs one scenario at a time, since
  *        the cloud's own parallelism is the shards.
  */
 'use strict'
@@ -361,7 +361,7 @@ async function runScenario(name, options) {
       }
       step('asserting')
       const checks = await scenario.assert(context)
-      // An observation that differs is printed as a difference and fails nothing (D66).
+      // An observation that differs is printed as a difference and fails nothing (D77).
       for (const item of checks) say(`  ${item.ok ? '✓' : item.observation === true ? '△' : '✗'} ${item.name}${item.detail === '' ? '' : `  — ${item.detail}`}\n`)
       const failed = checks.filter((item) => !item.ok && item.observation !== true).length
       const observed = checks.filter((item) => !item.ok && item.observation === true)
@@ -396,7 +396,7 @@ async function runScenario(name, options) {
 /**
  * One slice of a walk: every `<total>`th name from `<index>`. The scenarios of a
  * walk are independent of one another, so slices taken this way cover the walk
- * exactly once between them however many runners hold it (D66).
+ * exactly once between them however many runners hold it (D77).
  */
 function shardOf(names, spec) {
   const at = spec.indexOf(':')
@@ -414,7 +414,7 @@ async function main() {
     const at = args.indexOf(`--${flag}`)
     return at === -1 ? undefined : args[at + 1]
   }
-  // The lane reads what the host draws; a host other than the pinned one gets no verdict (D66).
+  // The lane reads what the host draws; a host other than the pinned one gets no verdict (D77).
   requireNewestHost()
   // The timing table names the scenarios that hold it (D3), so the two lists are
   // checked against each other rather than kept in step by hand.

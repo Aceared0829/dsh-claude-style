@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * sidebar-rail.cjs — the collapsed sidebar rail as one icon column (D66).
+ * sidebar-rail.cjs — the collapsed sidebar rail as one icon column (D77).
  *
  * Registered in the lane's scenario table (packages/testing/scenarios.cjs).
  *

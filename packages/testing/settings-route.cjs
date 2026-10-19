@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * settings-route.cjs — entering the skin's settings page from the host's shell
- * (D66).
+ * (D77).
  *
  * The way in is the host's own shortcut, and which shell answers it decides the
  * route: the older web shell opens the settings dialog itself, while the newer

@@ -8,7 +8,7 @@ name: Release
 # `<version>` as `latest` from the same tarball, writes the same files npm gets
 # to the `dist` branch so a git install needs no build (D47), and opens the
 # GitHub Release with the version's CHANGELOG section. The promotion is the last
-# step: the gates above it are the ones CI's own jobs run (D66).
+# step: the gates above it are the ones CI's own jobs run (D77).
 
 on:
   push:
@@ -98,7 +98,7 @@ jobs:
       - run: npm run smoke
       # The assembled host on the newest published version, walked over the scenario
       # table's own default walk: what a pull request runs is what the promotion
-      # waits on (D66).
+      # waits on (D77).
       - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.cjs)
       - run: node packages/testing/e2e.cjs
       - uses: actions/upload-artifact@v7

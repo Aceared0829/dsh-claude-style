@@ -254,7 +254,7 @@
       }
       // The rotation: the loader opens on one motion and takes up another every
       // ten seconds, never the one already standing. Its length is the
-      // product's own (D66: a duration that is the behaviour), so every frame is
+      // product's own (D77: a duration that is the behaviour), so every frame is
       // recorded with its moment until two changes have landed: the stretch one
       // motion stood and the hand-over between two of them are both read off it.
       // While the lane leaving fades out no lane is in play yet, so a change is
