@@ -13,6 +13,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复归档会话的删除按钮拒绝插件生成的会话 id 的问题：含冒号与 @ 的 id（im-connect 的 `im:<channel>:dm:<user>:<token>@<domain>`）现在按宿主自己的目录命名规则定位到存储它的那个目录再删除，路径形状与带转义符的 id 仍然拒绝。
 - 修复设置页导航里的 Claude Style 一格不显示 Claude 星芒的问题，这枚单色标记重新替下宿主的齿轮图标，浅色画布上取标签文字的颜色。
 
 ### 移除
@@ -30,6 +31,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the archived rows' delete button refusing plugin-generated session ids: an id carrying a colon or an at sign (im-connect's `im:<channel>:dm:<user>:<token>@<domain>`) now resolves to the directory the harness stored it under before deletion, while a path-shaped id and one carrying the escape itself stay refused.
 - Fix the Claude Style row in the settings navigation not drawing the Claude starburst, which replaces the host's gear again and takes the label's ink on the light canvas.
 
 ### Removals

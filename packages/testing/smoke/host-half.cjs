@@ -308,6 +308,27 @@ async function hostHalf() {
     check('session delete answers 405 to a read', read.status === 405, `HTTP ${read.status}`)
     const traversal = await request(host, DELETE, 'POST', JSON.stringify({ sessionId: '../escape' }), browser)
     check('a path-shaped id is refused', traversal.status === 400, `HTTP ${traversal.status}`)
+    // A plugin-generated id carries `:` and `@`, which the harness escapes into
+    // the directory name it stores the session under; the delete has to reach
+    // that name (issue #85).
+    const namespacedId = 'im:feishu:dm:ou_9f2:token-7@open.feishu.cn'
+    const namespacedDir = path.join(scratchCwd, 'im~003Afeishu~003Adm~003Aou_9f2~003Atoken-7~0040open.feishu.cn')
+    fs.mkdirSync(namespacedDir, { recursive: true })
+    fs.writeFileSync(path.join(namespacedDir, 'session.v4.jsonl.zstd'), 'x')
+    const namespaced = await request(host, DELETE, 'POST', JSON.stringify({ sessionId: namespacedId }), browser)
+    check('a namespaced id is deleted under the name the harness stored it under',
+      namespaced.status === 200 && JSON.parse(namespaced.body).ghost === false && fs.existsSync(namespacedDir) === false,
+      `HTTP ${namespaced.status} ${namespaced.body}`)
+    // An id carrying the escape itself names no session: the storage writes `~`
+    // as `~007E`, so resolving this one through its own spelling would delete
+    // whichever session owns the name it spells out.
+    const escapedId = 'im:feishu~002Edm'
+    const escapedDir = path.join(scratchCwd, 'im~003Afeishu~002E~002Edm')
+    fs.mkdirSync(escapedDir, { recursive: true })
+    const escaped = await request(host, DELETE, 'POST', JSON.stringify({ sessionId: escapedId }), browser)
+    check('an id carrying the escape is refused',
+      escaped.status === 400 && fs.existsSync(escapedDir) === true, `HTTP ${escaped.status}`)
+    fs.rmSync(escapedDir, { recursive: true, force: true })
     const absent = await request(host, DELETE, 'POST', JSON.stringify({ sessionId: 'session-smoke-absent' }), browser)
     check('a stored-directory miss answers as a deleted ghost',
       absent.status === 200 && JSON.parse(absent.body).ok === true && JSON.parse(absent.body).ghost === true, `HTTP ${absent.status}`)

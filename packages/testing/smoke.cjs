@@ -6,9 +6,11 @@
  * Host half, in Node: `lib/host/index.js` is applied to a fake cordis context and the
  * username and session-delete routes get the request shapes that matter
  * (D75) — a cross-site page, a LAN peer and the browser's
- * own same-origin fetch, plus the deletion route's own guards (POST only, the id
- * shape, an open session, a path-shaped id) and a real deletion against a
- * scratch harness home under .debug/ — once through a host that offers
+ * own same-origin fetch, plus the deletion route's own guards (POST only, a
+ * path-shaped id, an id carrying the escape itself, an open session) and a real
+ * deletion against a scratch harness home under .debug/, including a
+ * plugin-generated id stored under the harness's escaped name — once through a
+ * host that offers
  * `connection.requestRejection()` and once through the local stand-in. The
  * public prefix route serves the assets the build routed from lib/assets/,
  * under the build's own manifest, and nothing else.

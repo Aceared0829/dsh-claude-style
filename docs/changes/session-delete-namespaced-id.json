@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "修复归档会话的删除按钮拒绝插件生成的会话 id 的问题：含冒号与 @ 的 id（im-connect 的 `im:<channel>:dm:<user>:<token>@<domain>`）现在按宿主自己的目录命名规则定位到存储它的那个目录再删除，路径形状与带转义符的 id 仍然拒绝。",
+  "en": "Fix the archived rows' delete button refusing plugin-generated session ids: an id carrying a colon or an at sign (im-connect's `im:<channel>:dm:<user>:<token>@<domain>`) now resolves to the directory the harness stored it under before deletion, while a path-shaped id and one carrying the escape itself stay refused."
+}
