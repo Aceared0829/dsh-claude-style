@@ -9,6 +9,7 @@
 const fs = require('fs')
 const path = require('path')
 const { MARKUP, PNG_1PX } = require('./shared.cjs')
+const { MODEL_SEAT_NAME } = require('../specs/fixtures/model-seat.cjs')
 /**
  * The stand-in host's parts, in the order they run: the counters, then the host
  * faces the bundle reads.
@@ -397,7 +398,7 @@ function page(name, tier, cases, probe = PROBE) {
   // renders it, for the pages that read the controls standing beside it: a long
   // model name, so the row has to share its width between the name and them.
   var modelSeat = name === 'effort'
-    ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">DeepSeek V4 Reasoner Extended Context</button></div></div>'
+    ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">' + MODEL_SEAT_NAME + '</button></div></div>'
     : ''
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>dsh-claude-style smoke: ${name}</title></head>
@@ -418,7 +419,8 @@ ${footer}
   </div>
 </div>
 ${chatArea}
-<div data-conversation-scroll>
+<!-- The host keeps the composer inside its conversation scroller (the conversation's parts are marked within it, packages/engine/src/parts-table.ts), and the scroller's box reaches above the card: the transcript stands there. The stand-in has no transcript, so the padding stands for the room it takes. Without it the scroller's overflow clips the crab perched on the card's top edge, and a real press cannot reach it. -->
+<div data-conversation-scroll style="padding-top: 80px">
 <div class="_composerStack_h_1">
 <div data-composer-card${name === 'automode-hero' ? ' data-phase="hero"' : ''}>
 ${heroRow}
