@@ -503,11 +503,18 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-c
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
   color: var(--dsw-alias-label-primary);
 }
+/* The cluster gives up width when the row is short, and the model name is what
+   that width comes out of: the label carries its own ellipsis
+   (inline-bar.css), and the flex shrink reaching it is what truncates a name
+   too long for the room. `min-width: 0` is what lets the shrink pass a flex
+   item's content-sized floor. The controls the reader presses — the send
+   button, the activity slot — stay at their own width inside it. */
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-dsh-claude-part~="trailing"],
 body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="trailing"] {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }

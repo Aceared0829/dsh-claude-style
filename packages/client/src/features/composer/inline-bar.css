@@ -441,25 +441,19 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
 }
 
 /* ---------- a phone-width composer ---------- */
-/* The trailing cluster's controls share what the row has left, and the row
-   itself is narrower than the sums the desktop reserves for it. The cluster
-   shrinks rather than pushing the row past the card, and that shrink is what
-   truncates a model name too long for the room: the name takes the width its own
-   seat gives it, so one that fits on the row is shown whole. The context meter
-   keeps the ring that carries the reading, the number beside it being what does
-   not fit — the numbers stand on their own line under the card, so the ring
-   repeats none of them in either position. The dock gives up the padding the
-   overlay reserved the two clusters' room with — on a phone the card is narrower
-   than that reserve, and the padding carried the dock's right edge past the
-   card, taking the ring pinned to it out of the card with it. That last rule
-   stands only in the overlay's own position, and its selector repeats the
-   position attribute the overlay carries, or the rule it has to beat would
-   outrank it and the reserve would stand at this width after all. */
+/* The card is narrower than the sums the desktop reserves for it. The context
+   meter keeps the ring that carries the reading, the number beside it being
+   what does not fit — the numbers stand on their own line under the card, so
+   the ring repeats none of them in either position. The dock gives up the
+   padding the overlay reserved the two clusters' room with — on a phone the
+   card is narrower than that reserve, and the padding carried the dock's right
+   edge past the card, taking the ring pinned to it out of the card with it.
+   That last rule stands only in the overlay's own position, and its selector
+   repeats the position attribute the overlay carries, or the rule it has to
+   beat would outrank it and the reserve would stand at this width after all.
+   The trailing cluster's own shrink is not a phone rule: it carries the model
+   name's compression at every width (inline.css). */
 @media (max-width: 480px) {
-  body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
   body[data-dsh-claude-style] [data-dsh-claude-context-meter] button > span {
     display: none;
   }

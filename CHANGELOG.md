@@ -8,6 +8,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
+- 窗口变窄时底部工具栏先压缩模型外显名，档位选择器与上下文显示器保持原位，三者不再互相覆盖。
 - 面板打开时，右侧栏的收起按钮出现在顶栏右端，按下即收起面板，宿主的打开按钮回到原处。
 - 设置页的说明收成一句话，只说这一项给读者什么。
 
@@ -27,6 +28,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="en-unreleased">Improvements</h3>
 
+- On a narrow window the composer's bottom row compresses the model name first, so the effort trigger and the context meter keep their places instead of overlapping it.
 - While the panel is open, the right panel's collapse button appears at the top bar's right end; pressing it closes the panel and the host's open button returns.
 - A setting's line says one clause: what the setting gives the reader.
 
