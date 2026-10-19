@@ -1,0 +1,16 @@
+{
+  "about": "The skin's own page surface as the specs reach it (D77): every name a spec reads off an element the skin draws — a class, an attribute — stands here once, under a stable id, with what the reader sees there. A rename in the skin is one line of this file; lint holds every name to a literal the browser half writes and every entry to a spec that reads it.",
+  "surface": [
+    { "id": "skin.root", "attribute": "data-dsh-claude-style", "feature": "core", "sees": "the page the skin is applied to: every stylesheet the skin ships is scoped under this mark on <body>" },
+    { "id": "skin.motion", "attribute": "data-dsh-claude-motion", "feature": "core", "sees": "the motion the reader asked for, resolved: the stylesheets still every animation under its reduced value" },
+    { "id": "popover.open", "attribute": "data-open", "feature": "shared", "sees": "a skin menu card standing open: the stylesheet shows the card while it reads true" },
+    { "id": "home.heat-grid", "selector": ".dsh-claude-home-heat", "feature": "home", "sees": "the usage panel's heat grid, one square per day" },
+    { "id": "home.heat-cell", "selector": ".dsh-claude-home-heat-cell", "feature": "home", "sees": "one day's square; hovering it shows that day's tip pill" },
+    { "id": "home.heat-tip", "attribute": "data-tip", "feature": "home", "sees": "the words of a day's tip pill" },
+    { "id": "effort.trigger", "selector": ".dsh-claude-effort-btn", "feature": "effort", "sees": "the thinking-effort button beside the model name in the composer" },
+    { "id": "effort.card", "selector": ".dsh-claude-effort", "feature": "effort", "sees": "the effort picker's card, with its slider of strengths" },
+    { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
+    { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },
+    { "id": "stats.inline-line", "selector": "[data-dsh-claude-inline-stats]", "feature": "context-stats", "sees": "the line of statistics under the composer card: turns, speed, tokens and the cache share" }
+  ]
+}

@@ -19,7 +19,7 @@ const SRC = path.join(ROOT, 'packages', 'client', 'src')
  */
 const { PREFS } = await loadModuleEsm('packages/contracts/src/prefs.ts')
 
-/** The page states and check kinds packages/contracts/src/table.ts records (D3, D66). */
+/** The page states and check kinds packages/contracts/src/table.ts records (D3, D77). */
 const PROBE_STATES = new Set(['any', 'hero', 'sending', 'streaming', 'conversation', 'menu', 'dark'])
 const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'global', 'value', 'rail-geometry', 'none'])
 
@@ -27,8 +27,8 @@ const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'global', 'val
  * Refuse a source file that does not ship: a stylesheet no manifest and no
  * theme entry names, or a module nothing imports, would otherwise sit in packages/client/src/
  * with no way to reach the page. Manifests are data the build reads, the
- * contract table is read by the build and the tests (D3), and unit tests run
- * under Vitest; none of them is a module the bundle carries.
+ * contract table is read by the build and the tests (D3), and pure.ts is the
+ * logic surface the specs call (D77); none of them is a module the bundle carries.
  *
  * @param bundled - the modules in the bundle (esbuild's metafile), relative to packages/client/src.
  * @param sheets - every stylesheet the bundle carries (styleFiles).
@@ -42,7 +42,7 @@ export function checkListed(bundled, sheets) {
   })
   for (const file of walk('')) {
     if (file.endsWith('.css') && !listed.has(file)) throw new Error(`build: packages/client/src/${file} is in no list; add it to its feature's manifest or to THEME_SHEETS`)
-    if (file.endsWith('.manifest.ts') || file.endsWith('.test.ts') || file.endsWith('.d.ts')) continue
+    if (file.endsWith('.manifest.ts') || file === 'pure.ts' || file.endsWith('.d.ts')) continue
     if (file.endsWith('.ts') && !bundled.has(file)) throw new Error(`build: packages/client/src/${file} is imported by no module the bundle reaches`)
   }
 }
@@ -87,9 +87,9 @@ export function checkManifests(manifests) {
 }
 
 /**
- * Type-check packages/client/src/ (tsconfig.json, strict). esbuild only strips types, so this
- * is what turns a missing import, a misspelt name or a wrong argument into a
- * build failure.
+ * Type-check the browser half, the contract and engine packages and the specs
+ * (tsconfig.json, strict). esbuild only strips types, so this is what turns a
+ * missing import, a misspelt name or a wrong argument into a build failure.
  */
 export function checkTypes() {
   const tsc = path.join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc')
@@ -97,7 +97,7 @@ export function checkTypes() {
     execFileSync(process.execPath, [tsc, '-p', ROOT, '--pretty'], { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' })
   } catch (error) {
     process.stderr.write(error.stdout + error.stderr)
-    throw new Error('build: tsc reports type errors in packages/client/src/ (listed above)')
+    throw new Error('build: tsc reports type errors (listed above)')
   }
 }
 
@@ -181,10 +181,24 @@ export function checkContracts(manifests) {
 }
 
 /**
+ * Whether a spec answers to a stable id `<layer>/<capability>/<test name>`: a
+ * spec file of that capability declares a test of that name (D77).
+ */
+function specIdExists(id) {
+  const [layer, capability, ...rest] = id.split('/')
+  const name = rest.join('/')
+  const dir = path.join(ROOT, 'packages', 'testing', 'specs', layer ?? '', capability ?? '')
+  if (name === '' || !fs.existsSync(dir)) return false
+  const quoted = [`'${name.replace(/'/g, "\\'")}'`, `"${name}"`]
+  return fs.readdirSync(dir).filter((file) => /\.spec\.(ts|cjs)$/.test(file))
+    .some((file) => quoted.some((literal) => fs.readFileSync(path.join(dir, file), 'utf8').includes(`test(${literal}`)))
+}
+
+/**
  * Hold the timing table to its checks (D3).
  *
  * The timing assumptions live in packages/contracts/src/timing.ts, each naming what holds
- * it: a scenario of the end-to-end lane or a unit test beside its module. Both
+ * it: a scenario of the end-to-end lane or a spec by its stable id (D77). Both
  * names have to exist, so an assumption cannot enter the table with nothing that
  * would notice it changing.
  */
@@ -206,11 +220,11 @@ function checkTiming() {
         if (!scenarios.has(name)) throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" names the lane scenario "${name}", which packages/testing/e2e.cjs does not run`)
         continue
       }
-      if (kind === 'test') {
-        if (!fs.existsSync(path.join(ROOT, name))) throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" names the test "${name}", which does not exist`)
+      if (kind === 'spec') {
+        if (!specIdExists(check.slice('spec:'.length))) throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" names the spec "${check.slice('spec:'.length)}", which no spec holds`)
         continue
       }
-      throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" has the check "${check}", which is neither scenario:<name> nor test:<path>`)
+      throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" has the check "${check}", which is neither scenario:<name> nor spec:<id>`)
     }
   }
 }

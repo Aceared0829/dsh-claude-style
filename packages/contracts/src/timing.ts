@@ -26,7 +26,7 @@ interface HostTimingEntry {
   assumption: string
   /** What the skin does with that order, and what breaks without it. */
   use: string
-  /** Where it is held: `scenario:<name>` of the lane, or a `*.test.ts` path. */
+  /** Where it is held: `scenario:<name>` of the lane, or `spec:<id>` of a spec (D77). */
   checks: string[]
 }
 
@@ -35,7 +35,7 @@ export const HOST_TIMING: HostTimingEntry[] = [
     id: 'host.column-observer',
     assumption: 'The host creates its own ResizeObserver when it mounts a message column and writes the scroll position to the bottom inside that callback.',
     use: 'The skin\u2019s afterHost subscription is made later, so it runs after the host\u2019s in the same frame and can take the pin back before the frame paints (D74, D40).',
-    checks: ['scenario:scroll', 'test:packages/engine/src/bus.test.ts'],
+    checks: ['scenario:scroll', 'spec:mechanism/page-observation/an afterHost subscription runs after a resize observer made before it'],
   },
   {
     id: 'host.follow-mark',
