@@ -113,6 +113,14 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge="end"
   transform: none;
 }
 
+/* A cell in the grid's upper rows holds more room below it than above, so its
+   pill hangs under the cell instead of reaching over the grid's top edge and
+   across the stat cells above (heat-tip.ts). */
+body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-side="below"]:hover::after {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
 /* The one-liner under the grid: a plain caption, no emphasis of its own. */
 body[data-dsh-claude-style] .dsh-claude-home-fun {
   color: var(--dsw-alias-label-tertiary, #8f8a7e);

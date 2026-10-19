@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-18",
+  "external": false,
+  "zh": "修复用量面板里热力格的日期提示在上排格子被抬到网格之外的问题：格子下方的余量更多时，提示改挂在格子下方，网格顶部那几行的提示不再越过网格上沿盖住统计格。",
+  "en": "Fix a heat cell's day tip rising out of the grid on its upper rows: where the cell holds more room below it, the tip now hangs under the cell, so the top rows' tips no longer reach over the grid's top edge across the stat cells."
+}
