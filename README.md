@@ -4,7 +4,7 @@
 
 **为 DeepSeek Harness 复刻 Claude Code Desktop 风格与交互体验的主题插件。**
 
-> **在 DSH 里，就是 Claude Code Desktop 的样子。**
+> **你的下一个 Claude Code Desktop ，何必是Claude Code。**
 
 [![简体中文](https://img.shields.io/badge/lang-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red.svg)](README.md) [![English](https://img.shields.io/badge/lang-English-blue.svg)](README.en.md)
 
@@ -82,31 +82,26 @@ dsh plugin --profile web add Nwflower/dsh-claude-style           # GitHub 源码
 
 ## 字体
 
-> Anthropic 没有公开发行这三款字体；[仓库里的那一份](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic)只供下载与研究。
+> Anthropic 没有公开发行这三款字体；本仓库只提供下载与研究的[副本](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic)。
 
-| 字体 | 用途 | 文件 |
-|---|---|---|
-| Anthropic Sans Web Text | 界面 | [`packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf) |
-| Anthropic Serif Web Text | 对话正文 / Markdown | [`packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf) |
-| Anthropic Mono Web | 代码 / 行内代码 | [`packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf) |
 
-启用时二选一：装进系统（Windows 双击 `.ttf` 选「安装」，macOS 用「字体册」导入），或把 `.ttf` 复制到 `$DSH_HOME/dsh-claude-style/fonts/`。
+启用时二选一：装进系统，或把 `.ttf` 复制到 `$DSH_HOME/dsh-claude-style/fonts/`。
 
 ## 文档
 
 | 文档 | 说明 |
 | --- | --- |
-| [设计令牌](docs/STYLE.md) | 配色、字体、形状、动效与层级（英文） |
+| [设计令牌](docs/STYLE.md) | 配色、字体、形状、动效与层级 |
 | [架构决策](docs/adr/README.md) | 每条方向一页：背景、决定、后果与重审条件 |
 | [更新日志](CHANGELOG.md) | 版本历史 |
-| [贡献指南](CONTRIBUTING.md) | 构建、提交规范与回归工具（英文） |
+| [贡献指南](CONTRIBUTING.md) | 构建、提交规范与回归工具 |
 
 ## 鸣谢
 
-- 对话导航的展开列表、快捷键跳转与落点横线参考 SherUnlocked-4869 的 [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav)（MIT）。
+- 对话导航参考 SherUnlocked-4869 的 [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav)（MIT）。
 - Deepy 的动画帧图来自 calmly-eating-bugs（[@wp3171216237](https://github.com/wp3171216237)）绘制的 Deepy 小鲸鱼主题包。
 - 聊天区的增强动效改自 [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux)（MIT）。
-- 像素螃蟹（Clawd）是 Anthropic 的角色形象：掏出电脑敲代码的动画取自 Claude Code，其余状态由本项目按这一形象绘制，帧图不适用 MIT 许可（见 [LICENSE](LICENSE)）。本插件是非官方爱好者作品，与 Anthropic 没有关联。
+- Clawd是 Anthropic 的角色形象。帧图不适用 MIT 许可（见 [LICENSE](LICENSE)）。本插件是非官方爱好者作品，与 Anthropic 没有关联。
 
 ## 友链
 
