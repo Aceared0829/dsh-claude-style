@@ -11,12 +11,29 @@
   var menuViewport = null
   var menuSizer = null
   var hostRowsHtml = ''
-  /** The host's own placement: the card sits above its trigger, by its height. */
+  /**
+   * The host's own placement: the card sits above its trigger, by its height.
+   * The host's rows are its own sizing, so the height it adds up for them is
+   * the card's in the page's own pixels; the trigger's box comes back in the
+   * window's, where a page drawn at a zoom factor scales it while the card's
+   * own pixels do not move (packages/client/src/theme/chrome.css). Against
+   * those two the card lands a factor of its height too low — the placement the
+   * skin answers for (packages/client/src/features/account/menu-placement.ts).
+   */
   function placeHostMenu() {
     if (!menu || !menu.parentElement || !accountTrigger) return
     var row = accountTrigger.getBoundingClientRect()
-    menu.style.top = Math.round(row.top - menu.offsetHeight - 6) + 'px'
+    var height = ownHeight()
+    menu.style.top = Math.round(row.top - height * hostScale() - 6) + 'px'
     window.__hostMenuTops.push({ at: Math.round(performance.now()), top: menu.style.top })
+  }
+  /** How much larger than its own pixels the page draws a box: the reader's page zoom. */
+  function hostScale() {
+    return accountTrigger.getBoundingClientRect().height / accountTrigger.offsetHeight
+  }
+  /** The height the host adds up for its own rows, in the card's layout pixels. */
+  function ownHeight() {
+    return menu.offsetHeight / hostScale()
   }
   function closeHostMenu() {
     if (menuSizer) { menuSizer.disconnect(); menuSizer = null }
@@ -72,6 +89,8 @@
     // The host's shared menu card carries this material marker (ui-primitives'
     // Menu), which is what the skin's card rules are keyed on.
     menu.setAttribute('data-menu-material', '')
+    // The host's portal: fixed to the window, placed from the trigger's box.
+    menu.style.position = 'fixed'
     menuViewport = document.createElement('div')
     menuViewport.className = '_viewport_smoke_1'
     menuViewport.setAttribute('role', 'presentation')

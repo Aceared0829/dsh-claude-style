@@ -15,6 +15,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复页面缩放不为 100% 时账号菜单跑到用户名下方并越出窗口的问题：宿主按自身几何摆放的那张卡片由皮肤按同一套几何重新摆放，卡片的高度与位置在同一个坐标空间里算出，缩放后仍贴在账号行上方。
 - 修复用量面板里热力格的日期提示在上排格子被抬到网格之外的问题：格子下方的余量更多时，提示改挂在格子下方，网格顶部那几行的提示不再越过网格上沿盖住统计格。
 - 修复设置里某一项偏好存成带 `toString` 字段的对象、或存成 `toString` 这类内置名字时整套偏好读取出错的问题：这样的值现在读作该项的默认值。
 - 修复归档会话的删除按钮拒绝插件生成的会话 id 的问题：含冒号与 @ 的 id（im-connect 的 `im:<channel>:dm:<user>:<token>@<domain>`）现在按宿主自己的目录命名规则定位到存储它的那个目录再删除，路径形状与带转义符的 id 仍然拒绝。
@@ -41,6 +42,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the account menu opening below the account row and past the window's edge at any page zoom other than 100%: the card the host places from its own geometry is placed by the skin from the same geometry, with the card's height and position computed in one space, so it still hangs over the row once the page is drawn at a factor.
 - Fix a heat cell's day tip rising out of the grid on its upper rows: where the cell holds more room below it, the tip now hangs under the cell, so the top rows' tips no longer reach over the grid's top edge across the stat cells.
 - Fix reading the preferences failing when one of them is stored as an object holding a `toString` field or as a built-in name such as `toString`: such a value now reads as that preference's default.
 - Fix the archived rows' delete button refusing plugin-generated session ids: an id carrying a colon or an at sign (im-connect's `im:<channel>:dm:<user>:<token>@<domain>`) now resolves to the directory the harness stored it under before deletion, while a path-shaped id and one carrying the escape itself stay refused.

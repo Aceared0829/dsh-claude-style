@@ -4,6 +4,7 @@ import { getUsername } from '../../shared/identity'
 import { readPrefs } from '../../core/prefs'
 import { createFooterMirror } from './footer-mirror'
 import { createHostAccountMenu } from './host-menu'
+import { createHostMenuPlacement } from './menu-placement'
 import { createAccountProfile } from './profile'
 import { createAccountRows } from './rows'
 import { createAccountSurface } from './surface'
@@ -139,7 +140,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function positionAccountPopover() {
     if (!accountPopover || !accountBtn) return
-    if (accountBtn.closest('[data-dsh-claude-part~="sidebar-collapsed"]') === null) {
+    if (!inRail(accountBtn)) {
       accountPopover.style.removeProperty('left')
       accountPopover.style.removeProperty('top')
       return
@@ -147,7 +148,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     positionAnchoredPopover(accountBtn, accountPopover, { side: 'right', important: true })
   }
 
+  /** The sidebar collapsed into its rail, where a card opens beside the row. */
+  function inRail(element: Element) {
+    return element.closest('[data-dsh-claude-part~="sidebar-collapsed"]') !== null
+  }
+
   const hostMenu = createHostAccountMenu({ close: closePopover })
+  // The host's own card, placed where the host meant it (features/account/
+  // menu-placement.ts): its placement is the same at every page scale, and the
+  // host writes its own over the skin's on later frames.
+  const menuPlacement = createHostMenuPlacement({ trigger: hostMenu.trigger })
   const rows = createAccountRows({
     hostMenu,
     // Drawing the launcher's head is asynchronous and changes no DOM the
@@ -476,6 +486,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (menu === null) {
       disarmAccountMenu()
       unbindHostMenu()
+      menuPlacement.unwatch()
       return
     }
     if (hostMenuBinding !== null && hostMenuBinding.menu === menu) return
@@ -491,6 +502,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     menu.addEventListener('mouseenter', enter)
     menu.addEventListener('mouseleave', leave)
     hostMenuBinding = { menu, enter, leave }
+    // The skin's answer goes in before the watch is attached, and the watch
+    // then follows the host as it re-places the card from its own geometry on
+    // the frames after it grows.
+    menuPlacement.place(menu)
+    menuPlacement.watch(menu)
   }
 
   function onSurfaceMode(mode: AccountSurfaceMode) {
@@ -540,6 +556,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     hostRowBindings.clear()
     unbindHostMenu()
+    menuPlacement.unwatch()
     if (footArea) mirror.clear(footArea)
   }
 
@@ -671,6 +688,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     /** Re-anchor an open drawer after a viewport change; a closed one has
      * nothing to place. */
     reposition() {
+      if (surface.mode() === 'host') {
+        const menu = hostMenu.findMenu()
+        if (menu !== null) menuPlacement.place(menu)
+        return
+      }
       if (!isPopoverOpen()) return
       positionAccountPopover()
     }

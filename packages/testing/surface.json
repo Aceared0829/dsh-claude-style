@@ -12,6 +12,7 @@
     { "id": "effort.card", "selector": ".dsh-claude-effort", "feature": "effort", "sees": "the effort picker's card, with its slider of strengths" },
     { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
     { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },
-    { "id": "stats.inline-line", "selector": "[data-dsh-claude-inline-stats]", "feature": "context-stats", "sees": "the line of statistics under the composer card: turns, speed, tokens and the cache share" }
+    { "id": "stats.inline-line", "selector": "[data-dsh-claude-inline-stats]", "feature": "context-stats", "sees": "the line of statistics under the composer card: turns, speed, tokens and the cache share" },
+    { "id": "account.menu", "selector": "[data-dsh-claude-account-menu]", "feature": "account", "sees": "the host's account menu while it stands open, drawn as the skin's own menu card: the account header, the settings row and the plugin rows" }
   ]
 }

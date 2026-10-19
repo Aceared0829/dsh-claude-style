@@ -108,6 +108,11 @@ function page(name, tier, cases, probe = PROBE) {
   // plugin mounts a card of its own straight into the foot area above the
   // settings area (the usage plugin's `data-dsh-usage-foot-card`), outside the
   // slot: the takeover collects whatever the footer holds.
+  //
+  // The sidebar is the column the host builds: the session tree scrolls in the
+  // room above and the footer stands at the column's bottom end. Its two sizes
+  // are pinned here, because a host's footer sits at the window's bottom and the
+  // account menu cases read where the host's portal lands against it.
   var footerActions = '<div class="_footerActions_x_1"><div data-slot="sidebar.footer.action"><button id="plugin-action" aria-label="Cost meter" data-cordis-badge="3" style="box-sizing:border-box;display:flex;align-items:center;width:100%;height:42px;padding:0 10px;background:transparent;border:none"><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"></circle></svg></button><div class="_balance_p_1" role="group"><span>Balance 10.07</span><div role="progressbar" aria-valuenow="40"></div></div></div></div>'
   var footCard = '<div data-dsh-usage-foot-card=""><div class="_usageCard_u_1"><button type="button" aria-label="Open usage settings"><svg viewBox="0 0 16 16"><path d="M2.5 12.5h11"></path></svg><span>Today 3.49M tokens</span></button></div></div>'
   var footer = name === 'desktop'
@@ -400,21 +405,41 @@ function page(name, tier, cases, probe = PROBE) {
   var modelSeat = name === 'effort'
     ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">' + MODEL_SEAT_NAME + '</button></div></div>'
     : ''
+  // The sidebar column as the host builds it: the session tree scrolls in the
+  // column's room and the footer stands below it, at the column's bottom end.
+  // The column's width and height are pinned so the account menu cases read
+  // where the host's portal lands against a footer that stands at the window's
+  // bottom, in the column a reader's sidebar has.
+  var sidebarStyle = name === 'desktop'
+    ? '<style>' +
+        '[data-slot="sidebar"] { width: 280px; height: 800px; display: flex; flex-direction: column; }' +
+        '._root_x_1 { flex: 1; min-height: 0; display: flex; flex-direction: column; }' +
+        '._regionArea_x_1 { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; }' +
+        '._treeBody_x_1 { flex: 1 1 auto; min-height: 0; overflow-y: auto; }' +
+      '</style>'
+    : ''
+  var tree = name === 'desktop'
+    ? '<div class="_treeBody_x_1" role="tree">' +
+        '<div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><div data-slot="sidebar.session.row.leading" style="display:contents"></div></span><span class="_title_x_1">idle session</span></div>' +
+        '<div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><svg data-state="ongoing" viewBox="0 0 16 16" width="10" height="10"></svg></span><span class="_title_x_1">running session</span></div>' +
+      '</div>'
+    : '<div class="_treeBody_x_1" role="tree">' +
+        '<div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><div data-slot="sidebar.session.row.leading" style="display:contents"></div></span><span class="_title_x_1">idle session</span></div>' +
+        '<div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><svg data-state="ongoing" viewBox="0 0 16 16" width="10" height="10"></svg></span><span class="_title_x_1">running session</span></div>' +
+      '</div>'
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>dsh-claude-style smoke: ${name}</title></head>
 <body>
 ${boot}
 ${skinOwner}
 ${motionStub}
+${sidebarStyle}
 <div data-slot="root">
 <div data-slot="sidebar">
   <div class="_root_x_1">
     <div class="_regionArea_x_1">
+${tree}
 ${footer}
-<div class="_treeBody_x_1" role="tree">
-  <div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><div data-slot="sidebar.session.row.leading" style="display:contents"></div></span><span class="_title_x_1">idle session</span></div>
-  <div class="_sessionRow_x_1" role="treeitem"><span class="_slot_x_1"><svg data-state="ongoing" viewBox="0 0 16 16" width="10" height="10"></svg></span><span class="_title_x_1">running session</span></div>
-</div>
     </div>
   </div>
 </div>
