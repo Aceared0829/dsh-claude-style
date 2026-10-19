@@ -366,5 +366,27 @@ export function holdRelations(vocabulary: PartsTableVocabulary): HoldRelation[] 
     scope: part('foot-area'),
     attributes: ['data-dsh-claude-account-host-row'],
   },
+  // features/account/footer-takeover.css: the host mounts its own account menu on
+  // <body>, outside the sidebar, so the collapsed rail's card width cannot be
+  // read from a sidebar ancestor. The body takes the mark, and the frame's own
+  // collapse attribute is the fact it is read from.
+  {
+    name: 'sidebar-rail',
+    holder: 'body',
+    held: '[data-sidebar-collapsed]',
+    attributes: ['data-sidebar-collapsed'],
+  },
+  // features/search/search.css: the wrapper the host's rail puts around its own
+  // search button carries no part of its own, and the skin's box takes that seat
+  // in the collapsed rail — so the wrapper is the node that stands down, and the
+  // button it holds is the node the pass knows.
+  {
+    name: 'rail-search',
+    holder: '*',
+    held: part('search-button'),
+    scope: part('region-area'),
+    direct: true,
+    attributes: [],
+  },
   ]
 }

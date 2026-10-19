@@ -18,6 +18,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复设置里某一项偏好存成带 `toString` 字段的对象、或存成 `toString` 这类内置名字时整套偏好读取出错的问题：这样的值现在读作该项的默认值。
 - 修复归档会话的删除按钮拒绝插件生成的会话 id 的问题：含冒号与 @ 的 id（im-connect 的 `im:<channel>:dm:<user>:<token>@<domain>`）现在按宿主自己的目录命名规则定位到存储它的那个目录再删除，路径形状与带转义符的 id 仍然拒绝。
 - 修复设置页导航里的 Claude Style 一格不显示 Claude 星芒的问题，这枚单色标记重新替下宿主的齿轮图标，浅色画布上取标签文字的颜色。
+- 修复侧栏收起后账号卡片被压成图标宽度、用户名与菜单项被裁的问题：从图标栏打开的账号卡片现在按卡片自己的宽度展开在账号按钮旁。
+- 修复侧栏收起成图标栏后皮肤的搜索框整件消失、只剩宿主自己的放大镜的问题：收起栏现在在标记下方给出皮肤自己的搜索图标，与新建会话同一步进，随其余图标一起从右侧滑入，「独立」与「覆盖品牌」两种样式在收起态一致呈现。
 - 修复流式输出很快时聊天区的跟随滑动跟不上内容的问题：滑动重新起步时改从动画自己画到的位置算起，一个回合开头读者自己那条消息在场期间让位结束后立刻恢复，一帧长高超过滑动一段距离的内容也照常滑完能滑的那一段，输入卡片的位置在整个回合里不再移动。
 - 修复窄窗口下对话区底部残留一条横向滚动条的问题：面板自身的横向溢出不再产生滚动条，面板内需要横向滚动的代码块与表格仍各自滚动。
 
@@ -41,6 +43,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix reading the preferences failing when one of them is stored as an object holding a `toString` field or as a built-in name such as `toString`: such a value now reads as that preference's default.
 - Fix the archived rows' delete button refusing plugin-generated session ids: an id carrying a colon or an at sign (im-connect's `im:<channel>:dm:<user>:<token>@<domain>`) now resolves to the directory the harness stored it under before deletion, while a path-shaped id and one carrying the escape itself stay refused.
 - Fix the Claude Style row in the settings navigation not drawing the Claude starburst, which replaces the host's gear again and takes the label's ink on the light canvas.
+- Fix the account card being squeezed to the width of the rail's icon and cutting its name and rows off: a card opened from the icon rail now expands at the card's own width beside the account button.
+- Fix the skin's search box disappearing when the sidebar collapses to the icon rail and leaving only the host's own magnifier: the rail now keeps the skin's search icon under the mark on the host's step, it slides in from the right with the other icons, and the independent and overlay styles stand the same way there.
 - Fix the chat area's follow falling behind a fast answer: a restart of the stream slide is measured from where the animation itself has painted, the stand-down over the reader's own message ends with that message's entrance instead of a fixed window, and a frame growing by more than one slide carries is slid as far as a slide does; the composer's own box no longer moves through the turn.
 - Fix the horizontal scrollbar that appeared under the composer on a narrow window: the transcript pane's own horizontal overflow is clipped, while code blocks and tables inside it keep their own scrolling.
 

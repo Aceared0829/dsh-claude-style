@@ -4,7 +4,7 @@ export default {
   id: 'search',
   order: 160,
   load: 'deferred',
-  contracts: ['shell.sidebar-search', 'shell.sidebar-brand'],
+  contracts: ['shell.sidebar-search', 'shell.sidebar-brand', 'shell.sidebar-logo-row'],
   pref: 'sidebarSearch',
   stylesheets: [{ file: 'search.css', rank: 130 }],
   settingsRows: [{
