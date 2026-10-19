@@ -4,7 +4,7 @@
 
 **A theme plugin that brings the look and feel of Claude Code Desktop to the DeepSeek Harness Web GUI.**
 
-> **Claude Code Desktop, right inside DSH.**
+> **Why settle for another Claude Code when your next Claude Code Desktop is here.**
 
 [![English](https://img.shields.io/badge/lang-English-blue.svg)](README.en.md) [![简体中文](https://img.shields.io/badge/lang-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-red.svg)](README.md)
 
@@ -84,31 +84,25 @@ Also from the [plugin market](https://github.com/dsh-market/dsh-market) or the S
 
 ## Fonts
 
-> **The Anthropic fonts do not ship with the npm package; the copies in this repository are for download and study only.**
+> The Anthropic fonts have no public release; this repository only offers [copies](https://github.com/Nwflower/dsh-claude-style/tree/master/packages/assets/src/fonts/anthropic) for download and study.
 
-| Font | Used for | File |
-|---|---|---|
-| Anthropic Sans Web Text | Interface / UI | [`packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf) |
-| Anthropic Serif Web Text | Conversation body / Markdown | [`packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicSerifWebText.ttf) |
-| Anthropic Mono Web | Code / inline code | [`packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf`](https://github.com/Nwflower/dsh-claude-style/raw/master/packages/assets/src/fonts/anthropic/AnthropicMonoWeb.ttf) |
-
-To enable them, install the `.ttf` files on your system (double-click and choose "Install" on Windows, import with Font Book on macOS), or copy them into `$DSH_HOME/dsh-claude-style/fonts/`.
+To enable them, install the `.ttf` files on your system, or copy them into `$DSH_HOME/dsh-claude-style/fonts/`.
 
 ## Documentation
 
 | Document | Contents |
 | --- | --- |
-| [Design tokens](docs/STYLE.md) | The palette, typography, shape, motion and layer rules (in English) |
-| [Architecture decisions](docs/adr/README.md) | One page per direction: background, decision, consequences, revisiting conditions (in Chinese) |
+| [Design tokens](docs/STYLE.md) | The palette, typography, shape, motion and layer rules |
+| [Architecture decisions](docs/adr/README.md) | One page per direction: background, decision, consequences, revisiting conditions |
 | [Changelog](CHANGELOG.md) | Version history |
 | [Contributing](CONTRIBUTING.md) | Building from `packages/client/src/`, commit conventions, and the screenshot and regression tooling |
 
 ## Acknowledgements
 
-- The conversation navigator's opening list, keyboard jumps and landing line follow SherUnlocked-4869's [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav) (MIT).
+- The conversation navigator follows SherUnlocked-4869's [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav) (MIT).
 - The animation frames of Deepy the pixel whale come from the Deepy whale theme pack drawn by calmly-eating-bugs ([@wp3171216237](https://github.com/wp3171216237)), and ship with the plugin by the author's permission; GIFs of all 20 animations are in [docs/gifs/](docs/gifs/).
 - The enhanced animations in the chat area are modified from [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux) (MIT).
-- The pixel crab (Clawd) is a character of Anthropic: its laptop animation is taken from Claude Code, the animations of its other states are drawn by this project after that character, and its frames are not covered by the MIT license (see [LICENSE](LICENSE)). This plugin is an unofficial fan work, not affiliated with or endorsed by Anthropic.
+- Clawd is a character of Anthropic. Its frames are not covered by the MIT license (see [LICENSE](LICENSE)). This plugin is an unofficial fan work, not affiliated with or endorsed by Anthropic.
 
 ## Related projects
 
