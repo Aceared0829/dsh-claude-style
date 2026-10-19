@@ -10,17 +10,25 @@
  * touched, and the copy borrows `node_modules` through a directory link — and
  * the layers it can reach are run there: the logic and mechanism specs always,
  * the build and the behaviour specs of the feature directories the patch
- * touches. A fault is caught when any of them goes red; the ids that went red
- * are what the report keeps, so a spec no fault ever turns red is visible.
+ * touches. A fault is caught when an assertion of one of them goes red: a spec
+ * that only stops loading, or a build check that refuses the source, proves
+ * nothing about the reader's page and is reported apart. The ids that went red
+ * are what the report keeps, so a spec no fault ever turns red is visible, and a
+ * fault whose patch no longer applies fails the run rather than leaving the
+ * corpus quietly.
  *
  * `--suite old` runs the same corpus against the unit lane the tree had at
- * `--base` (default origin/master), copied from git: the comparison the
- * migration is accepted on. The smoke and the end-to-end lane are the same in
- * both suites and are not run here.
+ * `--base` (a revision of the caller's choosing: the lane stopped existing when
+ * the specs replaced it), copied from git: the comparison the migration was
+ * accepted on. The smoke and the end-to-end lane are the same in both suites and
+ * are not run here.
  *
- * Usage: node packages/testing/faults.cjs [--fault <id>[,<id>…]] [--suite new|old] [--base <ref>] [--keep]
+ * Usage: node packages/testing/faults.cjs [--fault <id>[,<id>…]] [--suite new|old --base <ref>] [--keep]
  *        --keep leaves the scratch copies in place for reading.
- * Exit:  0 every fault was caught · 1 a fault went uncaught · 2 the run could not start
+ * Exit:  0 the corpus caught at least the number packages/testing/faults/expected.json
+ *        records, every fault applied, and the chosen faults were each caught ·
+ *        1 the rate fell below the record, a fault no longer applies, or a named
+ *        fault no assertion catches · 2 the run could not start
  */
 'use strict'
 const { execFileSync, spawnSync } = require('node:child_process')
@@ -29,6 +37,8 @@ const path = require('node:path')
 const { ROOT } = require('../../scripts/shared/spec-header.cjs')
 
 const CORPUS = path.join(__dirname, 'faults', 'corpus.json')
+/** The number of faults each suite catches by an assertion: the record a run may not fall below. */
+const RECORD = path.join(__dirname, 'faults', 'expected.json')
 const OUT = path.join(ROOT, '.debug', 'faults')
 const VITEST = path.join('node_modules', 'vitest', 'vitest.mjs')
 
@@ -39,7 +49,7 @@ function bad(message) {
 
 function request() {
   const args = process.argv.slice(2)
-  const asked = { fault: [], suite: 'new', base: 'origin/master', keep: false }
+  const asked = { fault: [], suite: 'new', base: null, keep: false }
   for (let at = 0; at < args.length; at += 1) {
     const arg = args[at]
     if (arg === '--keep') { asked.keep = true; continue }
@@ -51,6 +61,9 @@ function request() {
     else if (flag === 'base') asked.base = value
     else bad(`unknown argument "${arg}"`)
   }
+  // The old suite is a revision of its own: the lane it compares against stopped
+  // existing when the specs replaced it, so the revision cannot be guessed.
+  if (asked.suite === 'old' && asked.base === null) bad('--suite old needs --base <ref>: the revision holding the unit lane to compare against')
   return asked
 }
 
@@ -129,7 +142,7 @@ function vitestRed(dir, file) {
 }
 
 /** Apply one fault in the copy and run the layers it reaches. */
-function judge(dir, fault, suite) {
+function judge(dir, fault, suite, cleanBehaviour) {
   const patchFile = path.join(__dirname, 'faults', fault.patch)
   const patch = fs.readFileSync(patchFile, 'utf8')
   const touched = [...new Set([...patch.matchAll(/^\+\+\+ b\/(\S+)/gm)].map((match) => match[1]))]
@@ -162,7 +175,12 @@ function judge(dir, fault, suite) {
     } else {
       run(dir, 'packages/testing/behaviour.cjs', selection)
       const report = path.join(dir, '.debug', 'behaviour', 'report.json')
-      if (fs.existsSync(report)) red.push(...JSON.parse(fs.readFileSync(report, 'utf8')).results.filter((result) => !result.ok && !result.quarantined).map((result) => result.id))
+      // A behaviour test that already fails on the untouched copy is red for
+      // its own reason, and saying the fault was caught by it would credit the
+      // corpus with a judgement nothing made.
+      if (fs.existsSync(report)) red.push(...JSON.parse(fs.readFileSync(report, 'utf8')).results
+        .filter((result) => !result.ok && !result.quarantined && !cleanBehaviour.has(result.id))
+        .map((result) => result.id))
     }
   }
   // A spec file that no longer loads — or a build whose type check fails over the
@@ -174,7 +192,10 @@ function judge(dir, fault, suite) {
   const asserted = red.filter((entry) => !surfaceBroke(entry) && !entry.startsWith('build ('))
   const built = red.filter((entry) => entry.startsWith('build (') && !surfaceBroke(entry))
   const how = asserted.length > 0 ? 'assertion' : built.length > 0 ? 'build' : red.length > 0 ? 'load' : 'none'
-  return { id: fault.id, applied: true, caught: red.length > 0, how, red }
+  // Only an assertion counts as caught: a fault that merely stops a spec loading,
+  // or trips a build check, exercised no judgement about the reader's page, and
+  // counting it would let the corpus look effective while nothing is asserted.
+  return { id: fault.id, applied: true, caught: asserted.length > 0, how, red }
 }
 
 function main() {
@@ -191,10 +212,25 @@ function main() {
   const clean = run(dir, VITEST, ['run', '--reporter=json', `--outputFile=${path.join(dir, '.debug', 'faults-vitest.json')}`])
   const cleanRed = vitestRed(dir, path.join(dir, '.debug', 'faults-vitest.json'))
   if (clean.code !== 0 || cleanRed.length > 0) bad(`the ${asked.suite} suite is red before any fault: ${cleanRed.slice(0, 5).join(' | ')}`)
+  // The behaviour lane gets the same clean reading where a fault reaches it: a
+  // test red on the untouched copy is red for its own reason.
+  const cleanBehaviour = new Set()
+  if (asked.suite === 'new' && chosen.some((fault) => reach(fs.readFileSync(path.join(__dirname, 'faults', fault.patch), 'utf8')).browserHalf)) {
+    const build = run(dir, 'scripts/build.mjs', [])
+    if (build.code !== 0) bad('the build is red before any fault; the behaviour lane cannot be read')
+    run(dir, 'packages/testing/behaviour.cjs', [])
+    const report = path.join(dir, '.debug', 'behaviour', 'report.json')
+    if (fs.existsSync(report)) {
+      for (const result of JSON.parse(fs.readFileSync(report, 'utf8')).results) {
+        if (!result.ok && !result.quarantined) cleanBehaviour.add(result.id)
+      }
+    }
+    if (cleanBehaviour.size > 0) console.log(`  clean behaviour failures, not credited to any fault: ${[...cleanBehaviour].join(' | ')}`)
+  }
   const results = []
   for (const fault of chosen) {
     scratchCopy(dir, archive)
-    const result = judge(dir, fault, asked.suite)
+    const result = judge(dir, fault, asked.suite, cleanBehaviour)
     results.push({ ...result, from: fault.from, defect: fault.defect })
     const kind = { load: ', only by specs that no longer load', build: ', by a build check' }[result.how] ?? ''
     console.log(`  ${!result.applied ? 'skip' : result.caught ? 'red ' : 'MISS'} ${fault.id}${result.applied ? ` — ${result.red.length} red${kind}` : ` — ${result.note}`}`)
@@ -202,6 +238,7 @@ function main() {
   }
   if (!asked.keep) removeCopy(dir)
   if (archive !== null) fs.rmSync(archive, { force: true })
+  const notApplied = results.filter((result) => !result.applied)
   const appliedResults = results.filter((result) => result.applied)
   const caught = appliedResults.filter((result) => result.caught).length
   const byLoad = appliedResults.filter((result) => result.how === 'load').length
@@ -209,8 +246,32 @@ function main() {
   // A run over part of the corpus files its own report, beside the whole one.
   const file = path.join(OUT, `report-${asked.suite}${asked.fault.length > 0 ? '-part' : ''}.json`)
   fs.writeFileSync(file, `${JSON.stringify({ at: new Date().toISOString(), suite: asked.suite, base: asked.suite === 'old' ? asked.base : null, results }, null, 2)}\n`)
-  console.log(`\nfaults: the ${asked.suite} suite caught ${caught} of ${appliedResults.length} faults — ${caught - byLoad - byBuild} by an assertion, ${byBuild} by a build check, ${byLoad} only by specs that no longer load (${results.length - appliedResults.length} did not apply); report in ${path.relative(ROOT, file).replace(/\\/g, '/')}`)
-  return caught === appliedResults.length ? 0 : 1
+  console.log(`\nfaults: the ${asked.suite} suite caught ${caught} of ${appliedResults.length} faults by an assertion — ${byBuild} only by a build check, ${byLoad} only by specs that no longer load (${notApplied.length} did not apply); report in ${path.relative(ROOT, file).replace(/\\/g, '/')}`)
+  // A fault that no longer applies has left the corpus: that is reported and
+  // fails the run, so the corpus cannot quietly shrink to nothing.
+  if (notApplied.length > 0) {
+    console.error(`faults: ${notApplied.length} fault(s) did not apply: ${notApplied.map((result) => result.id).join(', ')} — take them out of packages/testing/faults/corpus.json or bring the patch up to the tree`)
+    return 1
+  }
+  // A run over part of the corpus answers per fault: each has to be caught by an
+  // assertion. A whole run answers against the record, which only rises.
+  if (asked.fault.length > 0) return caught === appliedResults.length ? 0 : 1
+  const record = JSON.parse(fs.readFileSync(RECORD, 'utf8'))
+  const floor = record[asked.suite]
+  if (typeof floor !== 'number') {
+    console.log(`faults: no record stands for the ${asked.suite} suite — this run measures it (${caught} of ${appliedResults.length}); a comparison run reads the rate and fails nothing`)
+    return 0
+  }
+  if (caught < floor) {
+    console.error(`faults: the ${asked.suite} suite caught ${caught} faults by an assertion, below the ${floor} packages/testing/faults/expected.json records — a spec that used to turn red on a fault no longer does`)
+    return 1
+  }
+  if (caught > floor) console.log(`faults: ${caught} faults caught by an assertion, past the ${floor} on record — write "caught": ${caught} into packages/testing/faults/expected.json`)
+  const uncaught = appliedResults.filter((result) => !result.caught)
+  if (uncaught.length > 0) {
+    console.log(`faults: ${uncaught.length} fault(s) no assertion catches yet: ${uncaught.map((result) => result.id).join(', ')} — each is a spec the corpus still has to prove`)
+  }
+  return 0
 }
 
 process.exit(main())
