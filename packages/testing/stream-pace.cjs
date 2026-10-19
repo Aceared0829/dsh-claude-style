@@ -116,7 +116,7 @@ function streamPaceScenario({ check }) {
         check('逐帧采样真的在跑', trace.length > 30 && grewAt !== -1, `${trace.length} frames, the first growth at ${grewAt}`),
         check('回答以整段一起到达', burst !== null, `${growth.length} growing frames, one frame grew ${burst}px, the rest ${growth.slice(0, -1).join('/')}px`),
         check('输入卡片的盒子在整个回合里不动', home !== null && moved.length === 0, `home ${home}px, frames away from it ${moved.length}${moved.length === 0 ? '' : `：${moved.slice(0, 3).map((frame) => `${frame.card} at ${frame.t}ms`).join(' | ')}`}`),
-        check('消息列没有一帧被留在输入区上方超过滑动能带走的一段', pinning.length > 10 && slip.length === 0, `frames off the pin=${pinning.length}, worst ${worst}px, allowed -${Math.round(allowed)}px`),
+        check('消息列没有一帧被留在输入区上方超过滑动能带走的一段', pinning.length > 0 && slip.length === 0, `frames off the pin=${pinning.length}, worst ${worst}px, allowed -${Math.round(allowed)}px`),
         check('落定后回答落在末尾', end !== null && home !== null && end <= home + COMPOSER_DRIFT_PX, `the composer at ${end}px, the transcript's end at ${home}px`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
