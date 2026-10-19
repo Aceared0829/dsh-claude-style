@@ -227,6 +227,12 @@ export const FOOT_AREA_SELECTOR = '[data-dsh-claude-part~="foot-area"]'
 export const SIDEBAR_SEARCH_SLOT_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="search-slot"]'
 /** The sidebar's own column box, whose width follows the collapse and the reader's drag. */
 export const SIDEBAR_ROOT_SELECTOR = '[data-slot="sidebar"] > [data-dsh-claude-part~="sidebar-root"]'
+/**
+ * The sidebar's top row: the wide brand and the collapse toggle, and the row
+ * the collapsed rail keeps as its own mark's seat. The search feature reads it
+ * to give the rail a row of its own under the mark.
+ */
+export const SIDEBAR_LOGO_ROW_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="logo-row"]'
 /** The wide brand in the sidebar's top row; the collapsed rail has none. */
 export const SIDEBAR_BRAND_SELECTOR = '[data-slot="sidebar"] [data-dsh-claude-part~="logo-row"] > [data-dsh-claude-part~="brand-button"]'
 /**
