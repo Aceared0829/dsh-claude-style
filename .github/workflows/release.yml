@@ -96,6 +96,9 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run smoke
+      # The behaviour specs read the same build on the same stand-in host; a
+      # release is judged by the layers CI runs, this one included (D77).
+      - run: npm run behaviour
       # The assembled host on the newest published version, walked over the scenario
       # table's own default walk: what a pull request runs is what the promotion
       # waits on (D77).
