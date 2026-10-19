@@ -77,12 +77,18 @@ function request() {
 /** Every test of every behaviour spec, fanned out over the bands its spec declares. */
 function plan(asked) {
   const bands = new Map(MATRIX.bands.map((band) => [band.name, band]))
+  const densities = new Set(MATRIX.densities)
   const items = []
   for (const file of specFiles().filter((one) => one.startsWith('packages/testing/specs/behaviour/'))) {
     const header = readHeader(file)
     const declared = require(path.join(ROOT, file))
     for (const band of declared.bands) {
       if (!bands.has(band)) bad(`${file} names the band "${band}", which packages/testing/matrix.json does not hold`)
+    }
+    for (const density of declared.densities) {
+      if (!densities.has(density)) bad(`${file} names the density "${density}x", which packages/testing/matrix.json does not hold`)
+    }
+    for (const band of declared.bands) {
       for (const density of declared.densities) {
         for (const one of declared.tests) {
           const suffix = (declared.bands.length > 1 ? `@${band}` : '') + (declared.densities.length > 1 ? `@${density}x` : '')
@@ -95,6 +101,12 @@ function plan(asked) {
   for (const item of items) {
     if (ids.has(item.id)) bad(`two tests answer to the id "${item.id}"`)
     ids.add(item.id)
+  }
+  // A quarantined id that no test answers to would hold nothing: the defect it
+  // names is either fixed or the test moved (a new band adds a suffix), and
+  // either way the entry has to leave the record by hand.
+  for (const id of QUARANTINED.keys()) {
+    if (!ids.has(id)) bad(`packages/testing/quarantine.json holds "${id}", which no test answers to`)
   }
   return items.filter((item) => (asked.feature.length === 0 || item.header.features.some((feature) => asked.feature.includes(feature)))
     && (asked.spec.length === 0 || asked.spec.some((prefix) => item.id.startsWith(prefix)))

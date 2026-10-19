@@ -9,6 +9,7 @@
  */
 'use strict'
 const { spec } = require('../../fixtures/behaviour.cjs')
+const { boxOf } = require('../../fixtures/boxes.cjs')
 
 /**
  * The box the control's highlight paints, read off its computed style: the
@@ -30,8 +31,7 @@ function highlightBox(group) {
 
 /** The checked segment's own box. */
 async function checkedBox(page) {
-  const box = await page.getByRole('radio', { checked: true }).boundingBox()
-  return box === null ? null : { left: box.x, top: box.y, right: box.x + box.width, bottom: box.y + box.height, width: box.width, height: box.height }
+  return boxOf(page.getByRole('radio', { checked: true }))
 }
 
 /** Two boxes the same to a pixel on every edge. */
@@ -49,9 +49,14 @@ module.exports = spec({ page: 'automode-hero' }, ({ test }) => {
 
   test('under page zoom the highlight still sits under the checked choice', async (t) => {
     await t.prefs({ pageZoom: '1.5' })
+    // The zoom is what the two readings below are about, so it is judged too:
+    // a preference that never reached the page would leave both readings at
+    // 100% and the comparison would pass over a capability nothing exercised.
+    t.expectThat.equal(await t.read.attribute('body', t.surface.attribute('skin.page-zoom')), '1.5', 'the page is drawn at 150%')
     const group = t.page.getByRole('radiogroup')
     sameBox(t, await highlightBox(group), await checkedBox(t.page), 'the highlight covers the checked segment at 150%')
     await t.prefs({ pageZoom: '0.8' })
+    t.expectThat.equal(await t.read.attribute('body', t.surface.attribute('skin.page-zoom')), '0.8', 'the page is drawn at 80%')
     sameBox(t, await highlightBox(group), await checkedBox(t.page), 'the highlight covers the checked segment at 80%')
   })
 })

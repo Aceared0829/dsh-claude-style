@@ -37,6 +37,14 @@ async function moveFocus(t, focused) {
   await t.settle()
 }
 
+/** How much colour a paint carries: the widest gap between its channels. */
+function chroma(colour) {
+  const parts = /rgba?\((\d+), (\d+), (\d+)/.exec(colour ?? '')
+  if (parts === null) throw new Error(`the selection paint is not a plain colour: ${colour}`)
+  const [r, g, b] = parts.slice(1).map(Number)
+  return Math.max(r, g, b) - Math.min(r, g, b)
+}
+
 module.exports = spec({ page: 'chat-fold' }, ({ test }) => {
   test('a selection paints in the inactive colour while another window has focus, and in the active one again once it comes back', async (t) => {
     await moveFocus(t, true)
@@ -44,6 +52,10 @@ module.exports = spec({ page: 'chat-fold' }, ({ test }) => {
     await moveFocus(t, false)
     const blurred = await selectionColour(t)
     t.expectThat.equal(blurred !== focused, true, 'the selection colour changes when the window loses focus')
+    // Which paint is which is what the reader sees: the active selection is the
+    // blue wash and the inactive one the grey, so a swap of the two rules fails
+    // here rather than passing on the difference alone.
+    t.expectThat.equal(chroma(focused) - chroma(blurred) > 40, true, `the focused selection is the coloured wash (${focused}) and the blurred one the grey (${blurred})`)
     await moveFocus(t, true)
     t.expectThat.equal(await selectionColour(t), focused, 'the selection colour comes back with the focus')
   })

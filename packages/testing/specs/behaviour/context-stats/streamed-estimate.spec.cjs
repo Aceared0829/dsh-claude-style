@@ -43,6 +43,12 @@ async function stream(t, text, { inside = true, id = 'stream' } = {}) {
       container.setAttribute(streaming, '')
       parent.append(container)
     }
+    // The estimate takes a container's first reading as its baseline and counts
+    // from the second, one reading interval (100ms, features/context-stats/stream-estimate.ts)
+    // apart. The container stands empty past that interval before any text
+    // arrives: on a machine loaded enough to miss the first reading, a baseline
+    // taken over the whole text would leave no growth to read.
+    await new Promise((resolve) => setTimeout(resolve, 250))
     for (const piece of words.match(/[\s\S]{1,4}/g) ?? []) {
       container.append(piece)
       await new Promise((resolve) => setTimeout(resolve, 40))

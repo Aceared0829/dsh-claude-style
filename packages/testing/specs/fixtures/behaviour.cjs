@@ -86,12 +86,17 @@ function readers(page) {
     }, selector),
     /** How many elements match. */
     count: (selector) => page.evaluate((s) => document.querySelectorAll(s).length, selector),
-    /** Every animation running on a matching element: whether it plays, how long one cycle is, how many cycles. */
+    /**
+     * Every animation running on a matching element: whether it plays and how
+     * long one cycle is. The iteration count is left out on purpose: an
+     * infinite one crosses the page boundary as null, so a judgement reading it
+     * would answer about the transport rather than the page.
+     */
     animations: (selector) => page.evaluate((s) => document.getAnimations()
       .filter((animation) => animation.effect !== null && animation.effect.target instanceof Element && animation.effect.target.matches(s))
       .map((animation) => {
         const timing = animation.effect.getComputedTiming()
-        return { playState: animation.playState, duration: Number(timing.duration), iterations: timing.iterations }
+        return { playState: animation.playState, duration: Number(timing.duration) }
       }), selector),
     /** The first match's content against its box, both ways. */
     overflow: (selector) => page.evaluate((s) => {
@@ -134,13 +139,24 @@ const expectThat = {
     const apart = a !== null && b !== null && (a.right <= b.left + slack || b.right <= a.left + slack || a.bottom <= b.top + slack || b.bottom <= a.top + slack)
     if (!apart) throw new PredicateError('boxesApart', label, 'two boxes that do not overlap', { a, b })
   },
-  /** The content fits its box across: no horizontal scrollbar can appear. */
+  /**
+   * The content fits its box across: no horizontal scrollbar can appear. A
+   * clipped sub-pixel child reports one pixel past its box (a 100.9px child in
+   * a 100px box reads 101) without any bar being possible, so one step is the
+   * tolerance the reading needs.
+   */
   noHorizontalOverflow(overflow, label) {
-    if (overflow === null || overflow.scrollWidth > overflow.clientWidth) throw new PredicateError('noHorizontalOverflow', label, 'scrollWidth <= clientWidth', overflow)
+    if (overflow === null || overflow.scrollWidth - overflow.clientWidth > 1) throw new PredicateError('noHorizontalOverflow', label, 'scrollWidth <= clientWidth', overflow)
   },
-  /** Nothing moves: no animation that plays more than one cycle, and none still running. */
+  /**
+   * Nothing moves: no animation with a cycle a reader can see. The reduced
+   * motion net the skin writes forces every animation to a 0.01ms cycle and
+   * leaves its iteration count alone, so an infinite animation keeps reporting
+   * `running` while painting one still frame; the floor is the same one
+   * `moving` reads, so the two answer about the same visible cycle.
+   */
   still(animations, label) {
-    const moving = animations.filter((animation) => animation.playState === 'running' && (animation.iterations > 1 || animation.duration > 0))
+    const moving = animations.filter((animation) => animation.playState === 'running' && animation.duration >= 100)
     if (moving.length > 0) throw new PredicateError('still', label, 'no running animation', moving.slice(0, 3))
   },
   /** Something moves: at least one animation running with a visible cycle. */

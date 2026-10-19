@@ -10,17 +10,15 @@
  */
 'use strict'
 const { spec } = require('../../fixtures/behaviour.cjs')
+const { boxOf } = require('../../fixtures/boxes.cjs')
+const { MODEL_SEAT_NAME } = require('../../fixtures/model-seat.cjs')
 
 /** The host's model button: the reader finds it by its name, the model's. */
-const modelButton = (page) => page.getByRole('button', { name: 'DeepSeek V4 Reasoner Extended Context' })
+const modelButton = (page) => page.getByRole('button', { name: MODEL_SEAT_NAME })
 
-/** A Playwright box in the readers' shape. */
-async function boxOf(locator) {
-  const box = await locator.boundingBox()
-  return box === null ? null : { left: box.x, top: box.y, right: box.x + box.width, bottom: box.y + box.height, width: box.width, height: box.height }
-}
-
-module.exports = spec({ page: 'effort', bands: ['phone', 'compact', 'wide'] }, ({ test }) => {
+// The geometry is judged at both pixel densities: a device pixel is what the
+// row's slack is spent in, and a fractional edge rounds differently at 2x.
+module.exports = spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], densities: [1, 2] }, ({ test }) => {
   test('the effort button stands beside the model name, inside the card, with no horizontal scrollbar', async (t) => {
     const trigger = await t.read.box(t.surface('effort.trigger'))
     const model = await boxOf(modelButton(t.page))
@@ -36,7 +34,12 @@ module.exports = spec({ page: 'effort', bands: ['phone', 'compact', 'wide'] }, (
   test('switching the picker off takes the button away and gives the model name its room back', async (t) => {
     await t.prefs({ modelPicker: false })
     t.expectThat.absent(await t.read.box(t.surface('effort.trigger')), 'the effort button')
-    t.expectThat.equal(await modelButton(t.page).evaluate((element) => getComputedStyle(element).marginRight), '0px', 'the model name keeps no reserved room')
+    // The room the button reserved comes off the model name's cap (features/effort/room.ts),
+    // so the name the row had shortened stands whole again. Read off the
+    // trigger's own text against its box: a shortened one reports more text
+    // than it draws, which is the ellipsis the reader sees.
+    const name = await modelButton(t.page).evaluate((element) => ({ scroll: element.scrollWidth, client: element.clientWidth }))
+    t.expectThat.equal(name.scroll - name.client <= 1, true, `the model name stands whole (${name.scroll}px of text in a ${name.client}px box)`)
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
 })
