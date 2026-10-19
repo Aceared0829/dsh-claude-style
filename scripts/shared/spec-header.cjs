@@ -24,19 +24,22 @@ const LAYERS = ['logic', 'mechanism', 'behaviour']
 /** The areas a spec may name beside the feature directories. */
 const AREAS = ['engine', 'shared', 'core', 'contracts']
 
-/** Every spec file, relative to the repository root with forward slashes. */
+/**
+ * Every spec file, relative to the repository root with forward slashes. The
+ * walk takes any depth under packages/testing/specs/, so a spec that sits
+ * somewhere other than `<layer>/<capability>/` is found by lint and refused
+ * rather than run by Vitest alone, out of sight of the header rules.
+ */
 function specFiles() {
   const found = []
-  for (const layer of LAYERS) {
-    const dir = path.join(SPECS, layer)
-    if (!fs.existsSync(dir)) continue
-    for (const capability of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (!capability.isDirectory()) continue
-      for (const file of fs.readdirSync(path.join(dir, capability.name))) {
-        if (/\.spec\.(ts|cjs)$/.test(file)) found.push(`packages/testing/specs/${layer}/${capability.name}/${file}`)
-      }
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else if (/\.spec\.(ts|cjs)$/.test(entry.name)) found.push(path.relative(ROOT, full).replace(/\\/g, '/'))
     }
   }
+  if (fs.existsSync(SPECS)) walk(SPECS)
   return found.sort()
 }
 

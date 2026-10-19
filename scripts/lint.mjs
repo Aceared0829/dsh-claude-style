@@ -309,10 +309,20 @@ const { AREAS, specFiles, readHeader } = require('./shared/spec-header.cjs')
 const featureDirs = new Set(fs.readdirSync(path.join(ROOT, 'packages', 'client', 'src', 'features'), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name))
 /** What a spec may import or require by name; a relative path must stay inside packages/testing/specs/. */
 const SPEC_IMPORTS = [/^vitest$/, /^vitest\/browser$/, /^fast-check$/, /^@dsh-claude-style\/client\/pure$/, /^@dsh-claude-style\/contracts\/[\w-]+$/, /^@dsh-claude-style\/engine\/[\w-]+$/]
-/** Calls that put a stand-in where the product's own code runs, or freeze an output instead of judging it. */
-const SPEC_REFUSED = [/\bvi\.(?:mock|doMock|importMock|importActual|hoisted)\s*\(/, /\.toMatch(?:Inline|File)?Snapshot\s*\(/]
+/**
+ * Calls that put a stand-in where the product's own code runs, or freeze an
+ * output instead of judging it. The bracket form is the same call to the
+ * engine, so it is refused by name too; the stub calls install a stand-in
+ * globally and are refused for the same reason.
+ */
+const REFUSED_NAMES = 'mock|doMock|importMock|importActual|hoisted|stubGlobal|stubEnv'
+const SPEC_REFUSED = [
+  new RegExp(`\\bvi\\.(?:${REFUSED_NAMES})\\s*\\(`),
+  new RegExp(`\\bvi\\[\\s*['"](?:${REFUSED_NAMES})['"]\\s*\\]\\s*\\(`),
+  /\.toMatch(?:Inline|File)?Snapshot\s*\(/,
+]
 /** Watching the browser's own methods is allowed only for a cost the decisions name, said beside it. */
-const SPEC_WATCHES = /\bvi\.spyOn\s*\(|\.prototype\.\w+\s*=(?!=)/
+const SPEC_WATCHES = new RegExp(`\\bvi\\.spyOn\\s*\\(|\\bvi\\[\\s*['"]spyOn['"]\\s*\\]\\s*\\(|\\.prototype\\.\\w+\\s*=(?!=)`)
 /** A skin mark or a host mark spelled out: a skin class or attribute, a host attribute, a host's hashed class name. */
 const SPEC_SPELLED = [
   { pattern: /(?<![@\w])(?:data-)?dsh-claude-(?!style\/)[a-z][\w-]*/, what: 'a skin mark; read it from packages/testing/surface.json' },
@@ -321,7 +331,10 @@ const SPEC_SPELLED = [
 ]
 const specs = specFiles()
 const spellingSpec = (file) => /\.spec\.(ts|cjs)$/.test(file)
+/** Where a spec stands: `<layer>/<capability>/<name>.spec.(ts|cjs)`, and nowhere else. */
+const SPEC_PLACE = /^packages\/testing\/specs\/(logic|mechanism|behaviour)\/[^/]+\/[^/]+\.spec\.(ts|cjs)$/
 for (const file of specs) {
+  if (!SPEC_PLACE.test(file)) problems.push(`${file}: a spec stands at packages/testing/specs/<layer>/<capability>/<name>.spec.(ts|cjs) (D77)`)
   const header = readHeader(file)
   if (!header.hasHeader) { problems.push(`${file}: opens with no header comment carrying @capability, @features and @risk (D77)`); continue }
   if (header.capability !== header.directory) problems.push(`${file}: @capability "${header.capability}" is not the directory it sits in (${header.directory})`)
@@ -332,7 +345,11 @@ for (const file of specs) {
   if (typeof header.risk !== 'string' || header.risk.trim().length < 40) problems.push(`${file}: @risk does not say, in the reader's terms, what goes wrong when it fails`)
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8')
   const lines = text.split('\n')
-  const specifiers = [...text.matchAll(/\bfrom\s+'([^']+)'|\brequire\('([^']+)'\)/g)].map((match) => match[1] ?? match[2])
+  // Every way a module reaches the file by name: a static import (side-effect
+  // ones carry no binding), an export-from, a require and a dynamic import,
+  // each quoted with either mark.
+  const specifiers = [...text.matchAll(/\bfrom\s*['"]([^'"]+)['"]|\brequire\s*\(\s*['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]|\bimport\s+['"]([^'"]+)['"]/g)]
+    .map((match) => match[1] ?? match[2] ?? match[3] ?? match[4])
   for (const specifier of specifiers) {
     if (specifier.startsWith('.')) {
       const resolved = path.resolve(path.dirname(path.join(ROOT, file)), specifier)
