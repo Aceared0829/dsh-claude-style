@@ -1,9 +1,9 @@
 /**
- * The right sidebar's docked panels: with "Float docked panels" on, each pane
- * is the skin's own card; with it off, no card rule matches, so the pane stands
- * in the host's own fill flush with the column and the split keeps the dock's
- * own resting line. Read off computed styles, through the same preference
- * write the settings page makes.
+ * The right sidebar's docked panels: with "Right sidebar card layout" on, each
+ * pane is the skin's own card; with it off, no card rule matches, so the pane
+ * stands in the host's own fill flush with the column and the split keeps the
+ * dock's own resting line. Read off computed styles, through the same
+ * preference write the settings page makes.
  */
 (function () {
   var probe = window.__dshSmokeProbe

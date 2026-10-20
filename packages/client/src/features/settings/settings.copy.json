@@ -69,7 +69,7 @@
   "typefaceDesc": { "zh": "开启后用 Anthropic 的字体。", "en": "The Anthropic faces while on." },
   "typefaceClaude": { "zh": "开启", "en": "Claude" },
   "typefaceHost": { "zh": "关闭", "en": "Follow the host" },
-  "dockCardsTitle": { "zh": "面板悬浮卡片", "en": "Float docked panels" },
+  "dockCardsTitle": { "zh": "右侧栏卡片布局", "en": "Right sidebar card layout" },
   "sidebarLayoutTitle": { "zh": "左侧栏布局", "en": "Sidebar layout" },
   "sidebarLayoutRelaxed": { "zh": "宽松", "en": "Relaxed" },
   "sidebarLayoutCompact": { "zh": "紧凑", "en": "Compact" },
