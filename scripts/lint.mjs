@@ -5,8 +5,10 @@
  * The promises the repository makes in prose and a tool can check without
  * guessing: no source file crosses the stop line, every link in the committed
  * Markdown resolves, every decision a comment or a document cites exists
- * (numbers are stable and a retired one stays citable), every repository path
- * prose names exists, no feature module reaches past the handles its manifest
+ * (numbers are stable and a retired one stays citable, while a decision's own
+ * prose names the decision in force), every decision file carries its four
+ * sections in order, every repository path prose names exists, no feature
+ * module reaches past the handles its manifest
  * declares (D72), no pair of files holds a copied stretch (jscpd), and every
  * spec keeps to the channels and the header D77 sets.
  * Everything else a tool could enforce is already a build check, the type check
@@ -123,7 +125,11 @@ for (const file of markdown) {
   }
 }
 
-// 3. Decision numbers cited by code and documents.
+// 3. Decision numbers cited by code and documents. A retired number stays
+// citable (D48): a comment or an older record points at it and the index leads
+// on to the decision that replaced it. A decision file is where the reader
+// stops, so its own prose names the decision in force — only its 取代 line, and
+// the index generated from those lines, name retired numbers.
 const { live, retired } = decisionNumbers()
 const citing = [
   ...sources,
@@ -132,21 +138,50 @@ const citing = [
   // The licence file is prose as well, and names repository paths the same way.
   path.join(ROOT, 'LICENSE'),
 ].filter((file, at, all) => all.indexOf(file) === at && fs.existsSync(file))
+const DECISION_FILE = /^docs\/adr\/D\d+-.*\.md$/
+const REPLACES_LINE = /^\s*[-*]\s*\*\*取代\*\*：/
 let citations = 0
+let decisionProse = 0
 for (const file of citing) {
   const text = fs.readFileSync(file, 'utf8')
   const lines = text.split('\n')
+  const isDecision = DECISION_FILE.test(relative(file))
   lines.forEach((line, at) => {
     for (const match of line.matchAll(/(?<![\w#-])D(\d{1,3})(?![\w-])/g)) {
       const number = Number(match[1])
       citations += 1
-      if (live.has(number) || retired.has(number)) continue
+      if (live.has(number)) {
+        if (isDecision) decisionProse += 1
+        continue
+      }
+      if (retired.has(number)) {
+        if (isDecision && !REPLACES_LINE.test(line)) problems.push(`${relative(file)}:${at + 1}: cites D${number}, which a later decision replaced; name the decision in force`)
+        continue
+      }
       problems.push(`${relative(file)}:${at + 1}: cites D${number}, which is not a decision`)
     }
   })
 }
 
-// 4. A backticked repository path in prose has to exist. Directory mentions and
+// 4. The shape of a decision file (D48): 背景、决定、后果 and 重审条件 in that
+// order, the last one saying when the direction is worth revisiting.
+const SECTIONS = ['## 背景', '## 决定', '## 后果', '## 重审条件']
+let decisionFiles = 0
+for (const name of fs.readdirSync(DECISIONS)) {
+  if (!/^D\d+-.*\.md$/.test(name)) continue
+  decisionFiles += 1
+  const lines = fs.readFileSync(path.join(DECISIONS, name), 'utf8').split('\n')
+  const headings = lines.filter((line) => line.startsWith('## '))
+  if (headings.join(' / ') !== SECTIONS.join(' / ')) {
+    problems.push(`docs/adr/${name}: its sections are ${headings.join(' ')}; a decision carries ${SECTIONS.join('、')} in that order (D48)`)
+    continue
+  }
+  if (lines.slice(lines.indexOf('## 重审条件') + 1).every((line) => line.trim() === '')) {
+    problems.push(`docs/adr/${name}: 重审条件 says nothing; write the condition, or 「无。」 (D48)`)
+  }
+}
+
+// 5. A backticked repository path in prose has to exist. Directory mentions and
 // placeholder segments are out of reach; the CHANGELOG is a historical record.
 // A path that starts at a feature layer names a file under packages/client/src.
 const prose = citing.filter((file) => !relative(file).startsWith('CHANGELOG'))
@@ -170,7 +205,7 @@ for (const file of prose) {
   })
 }
 
-// 5. A feature sees `ui` as FeatureUi of its own manifest: its handle and the
+// 6. A feature sees `ui` as FeatureUi of its own manifest: its handle and the
 // handles the manifest `reads` (D72). The whole registry type is the entry's
 // and the scheduler's; a feature module importing it would read any handle
 // with nothing declared.
@@ -188,7 +223,7 @@ for (const file of featureModules) {
   })
 }
 
-// 6. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy
+// 7. Copied code (jscpd, scanned as .jscpd.json says): a pattern's second copy
 // is where it moves into the shared layer, so any copy at all fails, and so
 // does a scan that read nothing. `npx jscpd` lists every copy.
 const copies = spawnSync(process.execPath, [
@@ -203,7 +238,7 @@ if (copies.status !== 0) {
   problems.push(`copied code; move the shared part into the shared layer (npx jscpd lists every copy):\n${copies.stdout}${copies.stderr}`)
 }
 
-// 7. The whole-document lookups the browser half makes outside the modules that
+// 8. The whole-document lookups the browser half makes outside the modules that
 // own them (D9): a lookup inside a refresh pass or a frame callback costs the
 // page's own size on every frame of a long conversation, and each of the
 // regressions behind that cost was one such call. A query by an element's id is
@@ -248,7 +283,7 @@ for (const file of Object.keys(recordedLookups)) {
   problems.push(`packages/testing/document-lookups.json: ${file} is gone from the tree — take its entry out`)
 }
 
-// 8. The bounds a check compares against, and every name a check asks for.
+// 9. The bounds a check compares against, and every name a check asks for.
 // packages/testing/bounds.json is where a limit on a reading lives, each with
 // the reason it holds its value, so loosening one is a line in a diff rather
 // than a number buried in an assertion (D77). A name nothing reads
@@ -298,7 +333,7 @@ for (const name of boundNames) {
 }
 if (boundReads === 0) problems.push('lint: no bound was read — the bounds pattern matches nothing')
 
-// 9. The specs (D77). A spec reaches the product through three channels only —
+// 10. The specs (D77). A spec reaches the product through three channels only —
 // the declared logic surface, the contract and engine packages, and what the
 // reader sees on the built page — and it names the skin's and the host's own
 // marks through the surface table and the host contract, never by spelling
@@ -444,6 +479,8 @@ if (breakpoints === 0) problems.push('lint: no viewport breakpoint was read — 
 if (featureUiChecked === 0) problems.push('lint: no feature module types ui as FeatureUi — the feature rule matches nothing')
 if (links === 0) problems.push('lint: no Markdown link was examined — the link pattern matches nothing')
 if (citations === 0) problems.push('lint: no decision number was examined — the citation pattern matches nothing')
+if (decisionProse === 0) problems.push('lint: no decision file named a decision in force — the decision-citation rule matches nothing')
+if (decisionFiles === 0) problems.push('lint: no decision file was read — the decision-shape rule matches nothing')
 if (prosePaths === 0) problems.push('lint: no repository path in prose was examined — the path pattern matches nothing')
 if (lookups === 0) problems.push('lint: no whole-document lookup was counted — the lookup rule matches nothing')
 
@@ -452,5 +489,5 @@ if (problems.length > 0) {
   console.error(`lint: ${problems.length} problems in ${sources.length} sources and ${markdown.length} documents`)
   process.exitCode = 1
 } else {
-  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations, ${prosePaths} prose paths, ${lookups} recorded whole-document lookups, ${featureUiChecked} feature modules' ui, ${specs.length} specs and ${spelledMarks} recorded skin marks in the older test code clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
+  console.log(`lint: ${sources.length} sources, ${markdown.length} documents, ${links} links, ${citations} decision citations in ${decisionFiles} decision files, ${prosePaths} prose paths, ${lookups} recorded whole-document lookups, ${featureUiChecked} feature modules' ui, ${specs.length} specs and ${spelledMarks} recorded skin marks in the older test code clean (stop line ${MAX_LINES} lines; no copied code anywhere)`)
 }
