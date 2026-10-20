@@ -6,12 +6,19 @@
  * each other's writes. A `write` may still read; it then sees the writes made
  * before it in this frame.
  *
+ * Between the two phases every task's `scroll` runs, for the scroll owner's
+ * own writes: Chromium lays the page out on a `scrollTop` write, so a position
+ * written after another task's write pays for that write's layout, and one
+ * written while the reads have left the layout settled costs nothing. A
+ * position write invalidates no layout, so a `scroll` may read as well.
+ *
  * A task asked for while a frame runs belongs to the next frame. A task
  * cancelled while its frame runs is not called again in that frame. A task
  * that throws is reported and the rest of the frame runs (D12).
  */
 export interface FrameTask {
   read?(now: number): void
+  scroll?(now: number): void
   write?(now: number): void
 }
 
@@ -28,6 +35,10 @@ function runFrame(now: number) {
   for (const task of tasks) {
     if (task.read === undefined || !live.has(task)) continue
     try { task.read(now) } catch (error) { reportError(error) }
+  }
+  for (const task of tasks) {
+    if (task.scroll === undefined || !live.has(task)) continue
+    try { task.scroll(now) } catch (error) { reportError(error) }
   }
   for (const task of tasks) {
     if (!live.has(task)) continue

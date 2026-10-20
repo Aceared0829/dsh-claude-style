@@ -1,6 +1,7 @@
 /**
  * The frame pipeline every per-frame write goes through (D40): all reads of a
- * frame before all writes, each phase in request order, a task requested
+ * frame before all writes with the scroll owner's position writes between
+ * them, each phase in request order, a task requested
  * during a frame belongs to the next one, a cancelled task never runs, and one
  * task throwing does not cost the rest of the frame.
  *
@@ -21,6 +22,16 @@ test('every read of a frame runs before every write, each phase in request order
   await nextFrame()
   await nextFrame()
   expect(calls).toEqual(['read a', 'read c', 'write a', 'write b', 'write c'])
+})
+
+test('every scroll of a frame runs after every read and before every write', async () => {
+  const calls: string[] = []
+  requestFrame({ write: () => calls.push('write a') })
+  requestFrame({ read: () => calls.push('read b'), scroll: () => calls.push('scroll b') })
+  requestFrame({ scroll: () => calls.push('scroll c'), write: () => calls.push('write c') })
+  await nextFrame()
+  await nextFrame()
+  expect(calls).toEqual(['read b', 'scroll b', 'scroll c', 'write a', 'write c'])
 })
 
 test('a task requested while a frame runs belongs to the next frame', async () => {

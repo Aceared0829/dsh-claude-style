@@ -397,9 +397,10 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
   const queue = () => {
     if (scanQueued || stopped) return
     scanQueued = true
-    // The hand-back reads the position and writes it in one go: write phase (D40).
+    // The hand-back reads the position and writes it in one go, in the scroll
+    // phase, while the frame's reads have left the layout settled (D40).
     cancelScan = requestFrame({
-      write() {
+      scroll() {
         cancelScan = null
         scanQueued = false
         settle()

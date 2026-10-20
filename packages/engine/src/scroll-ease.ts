@@ -148,7 +148,7 @@ export function easeScroll(element: Element, destination: (element: Element, end
   if (scrollEaseFrameQueued) return
   scrollEaseLastAt = 0
   scrollEaseFrameQueued = true
-  requestFrame({ write: stepScrollEase })
+  requestFrame({ scroll: stepScrollEase })
 }
 
 /** End this element's ease, leaving the position where it is. */
@@ -233,5 +233,5 @@ function stepScrollEase(now: number) {
   }
   if (scrollEasing.size === 0) return
   scrollEaseFrameQueued = true
-  requestFrame({ write: stepScrollEase })
+  requestFrame({ scroll: stepScrollEase })
 }
