@@ -1,6 +1,9 @@
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
+import type { FoldPressReading } from './fold-toggle'
+import { foldControlAt, foldControlAtBottom, foldExpandedBody } from './fold-glide-parts'
+import { inPagePixels } from '../../shared/page-zoom'
 import { EXPANDED_ATTRIBUTE, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -40,6 +43,45 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
   /** The rows this batch of mutations touched. */
   const touchedRows = new Set<Element>()
 
+  /** The phase a row has to be pressed for, or null when it stays as it is. */
+  const phaseToPress = (row: Element) => {
+    // A frame sits between collecting and settling, and the row may be
+    // gone by then — clicking an element outside the document does nothing.
+    if (!row.isConnected) return null
+    const phase = row.getAttribute(ROW_PHASE_ATTRIBUTE) ?? ''
+    if (phase === '') return null
+    // The reader has decided this row's state in this phase: leave it.
+    if (touchedIn.get(row) === phase) return null
+    if (row.hasAttribute(EXPANDED_ATTRIBUTE) === (phase === RUNNING_STATE)) return null
+    // A press that changed nothing will not change anything next time either.
+    if (attemptedIn.get(row) === phase) return null
+    return phase
+  }
+
+  const controlOf = (row: Element) => {
+    const control = row.querySelector('[role="button"], button')
+    return control instanceof HTMLElement ? control : null
+  }
+
+  /**
+   * What the glide reads when a press lands (fold-glide.ts), taken in the
+   * scan's read phase for the rows it is about to press (D40).
+   */
+  const readPress = (rows: Iterable<Element>): FoldPressReading | null => {
+    const heights = new Map<Element, number>()
+    let atBottom: boolean | null = null
+    for (const row of rows) {
+      if (phaseToPress(row) === null) continue
+      const pressed = controlOf(row)
+      const control = pressed === null ? null : foldControlAt(pressed)
+      if (control === null) continue
+      if (atBottom === null) atBottom = foldControlAtBottom(control)
+      const body = foldExpandedBody(control)
+      if (body !== null) heights.set(body, inPagePixels(body.getBoundingClientRect().height))
+    }
+    return atBottom === null ? null : { atBottom, heights }
+  }
+
   /**
    * Bring these rows to what their current phase asks for.
    *
@@ -51,26 +93,18 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
    *
    * @param rows - this batch of rows; some may already be unattached.
    */
-  const syncRows = (rows: Iterable<Element>) => {
+  const syncRows = (rows: Iterable<Element>, reading: FoldPressReading | null = null) => {
     for (const row of rows) {
-      // A frame sits between collecting and settling, and the row may be
-      // gone by then — clicking an element outside the document does nothing.
-      if (!row.isConnected) continue
-      const phase = row.getAttribute(ROW_PHASE_ATTRIBUTE) ?? ''
-      if (phase === '') continue
-      // The reader has decided this row's state in this phase: leave it.
-      if (touchedIn.get(row) === phase) continue
-      if (row.hasAttribute(EXPANDED_ATTRIBUTE) === (phase === RUNNING_STATE)) continue
-      // A press that changed nothing will not change anything next time either.
-      if (attemptedIn.get(row) === phase) continue
+      const phase = phaseToPress(row)
+      if (phase === null) continue
       attemptedIn.set(row, phase)
-      const control = row.querySelector('[role="button"], button')
-      if (!(control instanceof HTMLElement)) continue
+      const control = controlOf(row)
+      if (control === null) continue
       // The capture listener below sees this same click, so the press has to
       // be declared: it is not the reader asking. The token reveal's own fold
       // guard reads it in the same turn, or the automatic fold would silence
       // the text that just started streaming for 400 ms.
-      beginChatFoldToggle()
+      beginChatFoldToggle(reading)
       try {
         control.click()
       } finally {
@@ -122,14 +156,19 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
     if (touchedRows.size === known) return
     if (scanQueued) return
     scanQueued = true
-    // The scan reads each one's state and folds it open or shut: write phase (D40).
+    // The scan folds each row open or shut in the write phase, with what the
+    // glide reads on a press taken in the read phase (D40).
+    let reading: FoldPressReading | null = null
     requestFrame({
+      read() {
+        reading = readPress(touchedRows)
+      },
       write() {
         scanQueued = false
         const rows = [...touchedRows]
         touchedRows.clear()
         onRows?.(rows)
-        syncRows(rows)
+        syncRows(rows, reading)
       },
     })
   }

@@ -241,14 +241,15 @@ export function createSessionStats(ctx: HostContext) {
      * The viewport moved under the panel: the host re-places it from its
      * anchor, so the skin's own reading of where its right edge belongs
      * is taken again in the same frame. A narrower card is also a new
-     * budget for the line of figures, which measures again here.
+     * budget for the line of figures, which is measured again on the next
+     * frame (inline-stats.ts).
      */
     reposition(reason: 'viewport' | 'composer') {
       if (reason === 'viewport') {
         const panel = contextPanel()
         if (panel !== null) binding.align(panel)
       }
-      inline.fit()
+      inline.refit()
     },
     /** Drop the appends, the line, the projection subscriptions and the host-node bindings. */
     teardown() {

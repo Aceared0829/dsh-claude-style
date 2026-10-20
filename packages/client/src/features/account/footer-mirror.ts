@@ -42,6 +42,8 @@ export function createFooterMirror(options: {
    * Returns the live entry list for popover mirroring.
    */
   function syncFooterVisibility(footArea: Element) {
+    const fixed = fixedRead !== null && fixedRead.footArea === footArea ? fixedRead.fixed : null
+    fixedRead = null
     const entries = footerEntriesIn(footArea)
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i]
@@ -50,16 +52,40 @@ export function createFooterMirror(options: {
       for (let j = 0; j < all.length; j++) {
         const el = all[j]
         if (el.hasAttribute('data-dsh-claude-footer-overlay')) continue
-        const role = el.getAttribute('role') || ''
-        let overlay = role === 'dialog' || role === 'menu' || role === 'listbox'
-        if (!overlay) {
-          overlay = window.getComputedStyle(el).position === 'fixed'
-        }
+        // A sync outside a pass (the popover opening) has no read phase, and
+        // reads the panels while it writes.
+        const overlay = roleOverlay(el) || (fixed === null ? isFixedPanel(el) : fixed.has(el))
         if (overlay) el.setAttribute('data-dsh-claude-footer-overlay', '')
       }
       markFooterHiddenBranches(entry)
     }
     return entries
+  }
+
+  function roleOverlay(el: Element) {
+    const role = el.getAttribute('role') || ''
+    return role === 'dialog' || role === 'menu' || role === 'listbox'
+  }
+
+  function isFixedPanel(el: Element) {
+    return window.getComputedStyle(el).position === 'fixed'
+  }
+
+  /**
+   * The footer elements laid out as fixed panels, read in the pass's read phase
+   * and taken by the same pass's sync (D40): a computed style read while the
+   * pass writes forces the page's whole style recalc under it.
+   */
+  let fixedRead: { footArea: Element, fixed: Set<Element> } | null = null
+
+  function measure(footArea: Element) {
+    const fixed = new Set<Element>()
+    for (const entry of footerEntriesIn(footArea)) {
+      for (const el of entry.querySelectorAll('*')) {
+        if (!el.hasAttribute('data-dsh-claude-footer-overlay') && !roleOverlay(el) && isFixedPanel(el)) fixed.add(el)
+      }
+    }
+    fixedRead = { footArea, fixed }
   }
 
   /**
@@ -532,5 +558,5 @@ export function createFooterMirror(options: {
     }
   }
 
-  return { sync, clear }
+  return { measure, sync, clear }
 }

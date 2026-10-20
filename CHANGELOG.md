@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 改善推理强度滑杆最高档的点阵动效：一条光带从右端扫过，方块按簇亮起，亮度峰值连续变化，入场时前沿带一道亮光。
 - 面板打开时，右侧栏的收起按钮出现在顶栏右端，面板自己那一枚仍留在面板上，按下即收起面板，宿主的打开按钮回到原处。
 - 设置页的说明收成一句话，只说这一项给读者什么。
+- 改善长会话流式输出时的帧耗时：标题栏布局、侧栏底部入口的隐藏、输入框下统计行与上下文用量药丸的重新测量、思考强度按钮的重新定位、思考行的自动折叠，以及对话与过程分组的跟随滚动，不再在其他写入之后强制页面重算样式与布局。
 
 ### 问题修复
 
@@ -39,6 +40,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Improve the strongest rung's dot matrix on the reasoning slider: a band of light sweeps in from the right, the blocks light in clusters, their peaks vary continuously, and the arrival carries a bright leading edge.
 - While the panel is open, the right panel's collapse button appears at the top bar's right end and the panel keeps its own copy; pressing it closes the panel and the host's open button returns.
 - A setting's line says one clause: what the setting gives the reader.
+- Improve frame time while a long conversation streams: the title bar layout, hiding the sidebar footer's entries, measuring the stats line and the context meter's pill under the composer again, repositioning the effort trigger, folding thinking rows automatically and following the conversation and its process groups no longer force the page to recompute style and layout after other writes.
 
 ### Bug Fixes
 

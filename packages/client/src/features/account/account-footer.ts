@@ -572,6 +572,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     rowBoxes = null
     const footArea = findFootArea()
     if (footArea === null) return
+    if (readPrefs().collapseFooter) mirror.measure(footArea)
     const synthetic = surface.mode() === 'synthetic'
     const row = synthetic ? accountBtn : hostMenu.trigger()
     if (row === null) return

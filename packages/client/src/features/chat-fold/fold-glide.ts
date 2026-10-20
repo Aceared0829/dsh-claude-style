@@ -1,8 +1,8 @@
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { motionReduced } from '../../core/prefs'
-import { FOLD_DISCLOSURE_SELECTOR, FOLD_INTENT_TTL_MS, FOLD_POPUP_SELECTOR, FOLD_ROLL_MS, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_TOGGLE_SELECTOR, FOLD_VISIBLE_SHARE, foldBeginHeightClip, foldConfirmCollapsed, foldControlAtBottom, foldExpandedBody, foldHoldThroughStalls, foldProcessBody, foldSettleAfter, foldVisibleReach, foldWatchReader, markChatFoldBusy } from './fold-glide-parts'
+import { FOLD_INTENT_TTL_MS, FOLD_POPUP_SELECTOR, FOLD_ROLL_MS, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_VISIBLE_SHARE, foldBeginHeightClip, foldConfirmCollapsed, foldControlAt, foldControlAtBottom, foldExpandedBody, foldHoldThroughStalls, foldProcessBody, foldSettleAfter, foldVisibleReach, foldWatchReader, markChatFoldBusy } from './fold-glide-parts'
 import type { FoldWatch } from './fold-glide-parts'
-import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
+import { beginChatFoldToggle, chatFoldPressReading, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { CHAT_FLOW_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { joinScrollOwner } from '@dsh-claude-style/engine/scroll-owner'
 import { motionEase } from '../../shared/motion'
@@ -170,6 +170,9 @@ export function installChatFoldGlide() {
     return growing
   }
 
+  /** Whether the reader is at the session's end: as the scan behind this press read it, or read now. */
+  const atBottomFor = (control: Element) => chatFoldPressReading()?.atBottom ?? foldControlAtBottom(control)
+
   /**
    * Roll the door shut: the real element is pressed, nothing is cloned.
    *
@@ -189,7 +192,8 @@ export function installChatFoldGlide() {
    */
   const rollShut = (fold: { target: HTMLElement, floor: number, collapsed: () => boolean, control: HTMLElement, own: boolean, watch: FoldWatch }) => {
     markChatFoldBusy()
-    const height = inPagePixels(fold.target.getBoundingClientRect().height)
+    // A press this feature's own scan made carries the height its read phase took.
+    const height = chatFoldPressReading()?.heights.get(fold.target) ?? inPagePixels(fold.target.getBoundingClientRect().height)
     // A backstop: if onfinish never arrives for any reason, the click must not stay locked.
     const release = window.setTimeout(() => {
       glideShutting = false
@@ -278,10 +282,7 @@ export function installChatFoldGlide() {
     }
     // The previous opening direction's wait is void.
     glideIntent = null
-    // The control: a DisclosureRow, or any other button carrying aria-expanded
-    // (a process group's header among them).
-    const disclosure = target.closest<HTMLElement>(FOLD_DISCLOSURE_SELECTOR)
-    const control = disclosure !== null ? disclosure : target.closest<HTMLElement>(FOLD_TOGGLE_SELECTOR)
+    const control = foldControlAt(target)
     if (control === null) return
     // A turn's header and its trigger notice are skipped whole: what they open
     // is a whole turn's content, neither road suits it, and the host's own
@@ -302,7 +303,7 @@ export function installChatFoldGlide() {
         groupBody,
         groupRoot,
         collapsedHeight: groupRoot === null ? 0 : inPagePixels(groupRoot.getBoundingClientRect().height),
-        watch: foldWatchReader(foldControlAtBottom(control)),
+        watch: foldWatchReader(atBottomFor(control)),
         takenAt: Date.now(),
       }
       return
@@ -313,7 +314,7 @@ export function installChatFoldGlide() {
     event.stopPropagation()
     event.preventDefault()
     glideShutting = true
-    const watch = foldWatchReader(foldControlAtBottom(control))
+    const watch = foldWatchReader(atBottomFor(control))
     const collapsed = groupBody !== null
       ? () => groupBody.hasAttribute('hidden')
       : () => !body.isConnected

@@ -252,6 +252,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   interface BandReading {
     band: NonNullable<ReturnType<typeof desktopBand>>
+    /** The window's width (pageWidth), read with the boxes. */
+    width: number
     row: HTMLElement
     header: Element | null
     title: HTMLElement | null
@@ -293,6 +295,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const stripEl = header === null ? null : header.querySelector<HTMLElement>(VIEW_TABS_STRIP_SELECTOR)
     reading = {
       band: pageBand(band),
+      width: pageWidth(),
       row,
       header,
       title,
@@ -336,7 +339,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const stripBox = current.stripBox
     const inBand = stripBox !== null && stripBox.top < band.height
     const stripWidth = stripBox === null || !inBand ? 0 : stripBox.width
-    const stripRight = stripWidth === 0 ? 0 : pageWidth() / 2 + stripWidth / 2
+    const stripRight = stripWidth === 0 ? 0 : current.width / 2 + stripWidth / 2
     // The shell's own menu seat takes the row's left end, and the collapsed
     // sidebar's control sits left of it whether the seat is mounted or not.
     const menuBox = current.menuBox
@@ -353,7 +356,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The caption buttons' reserve, and the air this skin keeps off it. The
     // width is the one fixed boxes are placed in: the document's client width
     // leaves out a page scrollbar, which `innerWidth` counts.
-    const edge = pageWidth() - band.controls.size - GAP
+    const edge = current.width - band.controls.size - GAP
     const cornerRight = band.controls.size + GAP
     // The controls hang off the right edge, so whether they fit does not
     // depend on the title; the title then takes what is left of the row's
@@ -363,7 +366,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const left = Math.max(rowBox.left, furniture + GAP)
     // Where the row's right-hand content ends: the controls when they are lifted,
     // the caption buttons when they stayed in the row.
-    const rightStop = liftActions ? edge - clusterWidth : pageWidth() - band.controls.size
+    const rightStop = liftActions ? edge - clusterWidth : current.width - band.controls.size
     // The title's room runs up to that end, less the strip's own width and the
     // air on both sides of it: the strip is centred in what is left between the
     // two, so its width is reserved here rather than read off a position it is

@@ -134,10 +134,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /** The measurements behind the trigger's placement, as of the last positioning. */
-  const effortPlace = { left: -1, top: -1, need: 0, width: 0, widthLabel: '', height: 0 }
+  const effortPlace = { left: -1, top: -1, need: 0, width: 0, widthLabel: '', height: 0, rowKey: '' }
 
   /** What the read phase resolved for this frame's placement of the trigger. */
-  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, row: DOMRect | null, need: number, width: number, height: number, fresh: boolean, settle: boolean, marginChanged: boolean } | null | 'hide' | 'none' = null
+  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, row: DOMRect | null, rowKey: string, need: number, width: number, height: number, fresh: boolean, settle: boolean, marginChanged: boolean } | null | 'hide' | 'none' = null
   /** The slider's track as the same read phase found it, for the pass's update of the slider. */
   let sliderBox: EffortTrackBox | null = null
 
@@ -178,15 +178,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       effortPlace.height = effortBtn.offsetHeight
     }
     const row = modelBtn.closest(EFFORT_ROW_SELECTOR)
+    const rowBox = row === null ? null : row.getBoundingClientRect()
+    // The room is the row's width less its other controls', so the widths the
+    // row lays out are what say whether it changed.
+    const rowKey = row === null || rowBox === null ? '' : `${rowBox.width}:${Array.from(row.children, (child) => child.getBoundingClientRect().width).join(',')}`
     effortPlan = {
       modelBtn,
       box,
-      row: row === null ? null : row.getBoundingClientRect(),
+      row: rowBox,
       need: effortPlace.need,
       width: effortPlace.width,
       height: effortPlace.height,
       fresh,
-      settle,
+      rowKey,
+      // A scroll leaves the row as it was, and re-reserving the room there
+      // writes and reads the row on every frame.
+      settle: settle && (rowKey === '' || rowKey !== effortPlace.rowKey),
       marginChanged: modelBtn.style.marginRight !== `${effortPlace.need}px`,
     }
   }
@@ -214,7 +221,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hideEffortTrigger()
       return
     }
-    const { modelBtn, box, row, need, width, height, fresh, settle, marginChanged } = plan
+    const { modelBtn, box, row, rowKey, need, width, height, fresh, settle, marginChanged } = plan
     // Show it BEFORE placing: a trigger coming back from the hidden state (its
     // seat returned) would otherwise read offsetWidth 0, reserve no room for
     // that one pass and overlap the control that follows.
@@ -223,6 +230,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // A settled seat re-reads the room; every other pass keeps what it found,
     // since the room only changes with the name or the card.
     const measured = fresh || settle ? reserveEffortRoom(modelBtn, need) : null
+    if (measured !== null) effortPlace.rowKey = rowKey
     if (measured === null && marginChanged) modelBtn.style.marginRight = `${need}px`
     // An unchanged margin leaves the box at the one just read: a second
     // getBoundingClientRect after the write would force a reflow for the same
@@ -246,13 +254,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
   }
 
+  /** Whether the viewport frame's read phase already took the reading `reposition` places from. */
+  let repositionMeasured = false
+
   /**
    * The immediate path — a viewport or composer-card change, which the
-   * scheduler calls outside a pass: read and write in the same call, as
-   * `reposition` has to land in the frame of the CSS reflow.
+   * scheduler calls outside a pass, as `reposition` has to land in the frame
+   * of the CSS reflow. A viewport change was read in that frame's read phase
+   * (measureReposition); a card resize arrives from its size observer, after
+   * the layout, and reads where it stands.
    */
   function positionEffortTrigger() {
-    measureEffortTrigger(true)
+    if (!repositionMeasured) measureEffortTrigger(true)
+    repositionMeasured = false
     applyEffortTrigger()
   }
 
@@ -330,6 +344,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortPlace.width = 0
     effortPlace.left = -1
     effortPlace.top = -1
+    effortPlace.rowKey = ''
     if (effortBtn !== null) {
       if (effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
       effortBtn = null
@@ -461,6 +476,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     reposition() {
       positionEffortTrigger()
       positionEffortPopover()
+    },
+    measureReposition() {
+      measureEffortTrigger(true)
+      repositionMeasured = true
     },
     teardown,
   }

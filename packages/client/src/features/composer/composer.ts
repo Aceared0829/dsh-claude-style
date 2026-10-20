@@ -362,6 +362,27 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return Math.ceil(Math.max(wrapper.right, face.right) - Math.min(wrapper.left, face.left))
   }
 
+  /** The meter's pill width as the pass's read phase took it, with the node and reading it was read for. */
+  let meterRead: { meter: HTMLElement, reading: string, width: number } | null = null
+
+  /**
+   * The pass's read phase (D40): the meter's pill width, when its reading moved
+   * since it was last measured. The reading moves with every streamed figure,
+   * and read in the pass's sync it forced the page's layout under the writes
+   * made before it.
+   */
+  function measureComposer() {
+    meterRead = null
+    if (!active) return
+    const card = cards.all()[0]
+    if (card === undefined) return
+    const meter = meterNode !== null && meterNode.isConnected ? meterNode : findDockedContextMeter(card)
+    if (meter === null) return
+    const reading = meter.textContent || ''
+    if (reading === meterReading && meterMeasuredActive) return
+    meterRead = { meter, reading, width: meterPillWidth(meter) }
+  }
+
   /**
    * Stamp the context-occupancy meter and keep its room on the toolbar row.
    *
@@ -387,6 +408,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * declaration is the cheapest thing to ask.
    */
   function stampContextMeter(card: HTMLElement | undefined) {
+    const read = meterRead
+    meterRead = null
     if (meterNode !== null && !meterNode.isConnected) {
       meterNode = null
       meterReading = ''
@@ -402,7 +425,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Re-measure when the reading moved or the restyle scope flipped:
       // either can change what the room should be.
       if (reading !== meterReading || active !== meterMeasuredActive) {
-        const width = active ? meterPillWidth(meter) : 0
+        // A stamp outside a pass (the row's size watch) reads where it stands.
+        const width = !active ? 0 : read !== null && read.meter === meter && read.reading === reading ? read.width : meterPillWidth(meter)
         // A zero width with the restyle on is the composer having no box
         // right now, never a meter that takes no room.
         if (!active || width > 0) {
@@ -533,6 +557,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   ui.composer = {
     sync: syncComposer,
+    measure: measureComposer,
     /** Whether the page shows the hero composer, as of this pass. */
     isHero() { return hero },
     /** The hero page's composer card as of this pass, or null off the hero page. */

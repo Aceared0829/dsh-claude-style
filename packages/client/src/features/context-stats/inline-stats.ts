@@ -1,6 +1,7 @@
 import { QUIET_ATTR } from '../../constants'
 import { buildElement, writeTextInPlace } from '@dsh-claude-style/engine/dom'
 import { findComposerCard, findComposerStats } from '@dsh-claude-style/engine/host'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { formatCompactTokens } from '../../shared/format'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createStatsCount } from './stats-count'
@@ -129,7 +130,7 @@ function templateParts(chat: HostText, key: string, names: string[]) {
  * @param read - one projection's current whole value.
  * @param chatText - the host's `chat` translate seat, or null when it is absent.
  * @param meter - the host's context meter, stamped by the composer pass.
- * @returns { render, fit, reset, clear, root }.
+ * @returns { render, refit, clear, root }.
  */
 export function createInlineStats(read: StatsValueReader, chatText: () => HostText | null, meter: () => HTMLElement | null) {
   let line: Line | null = null
@@ -231,7 +232,31 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   }
 
   /** Take the line off the page, and the meter's step with it. */
+  /**
+   * Fit again after a viewport or composer change. The change arrives in a
+   * write phase, where reading the card's width forces the page's layout under
+   * every write before it, so the width is read in the next frame's read phase
+   * and only a new width measures the line again (D40).
+   */
+  let cancelRefit: (() => void) | null = null
+  function refit() {
+    if (cancelRefit !== null) return
+    let width = -1
+    cancelRefit = requestFrame({
+      read() {
+        const card = findComposerCard()
+        width = card === null ? -1 : card.clientWidth
+      },
+      write() {
+        cancelRefit = null
+        if (width >= 0) fit(false, width)
+      },
+    })
+  }
+
   function clear() {
+    cancelRefit?.()
+    cancelRefit = null
     count.reset()
     if (line !== null && line.root.parentElement !== null) line.root.parentElement.removeChild(line.root)
     const hostMeter = meter()
@@ -395,15 +420,16 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    * @param force - measure again even when the card has not changed width:
    *     the render path passes it, a scroll does not, so scrolling a card of
    *     one width stops paying for the twin probes.
+   * @param width - the card's width, when a read phase already took it.
    */
-  function fit(force = false) {
+  function fit(force = false, width?: number) {
     const shown = line
     if (shown === null || shown.root.parentElement === null) return level
     const card = findComposerCard()
     const chat = chatText()
     const goal = count.goal()
     if (card === null || chat === null || goal === null) return level
-    const available = card.clientWidth
+    const available = width ?? card.clientWidth
     if (available <= 0) return level
     if (!force && fitted && available === fittedWidth) return level
     fittedWidth = available
@@ -461,7 +487,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   return {
     render,
     /** Measure again after a viewport or composer change, without rewriting the figures. */
-    fit,
+    refit,
     clear,
     /**
      * The line's own element while it stands on the page: the panel's second

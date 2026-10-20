@@ -1,6 +1,6 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { CHAT_ROLLING_ATTR } from '../../constants'
-import { CONVERSATION_SCROLL_SELECTOR, DISCLOSURE_HEADER_SELECTOR, DISCLOSURE_ROW_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CONVERSATION_SCROLL_SELECTOR, DISCLOSURE_HEADER_SELECTOR, DISCLOSURE_ROW_SELECTOR, FOLD_TOGGLE_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { handBackFollow, readerMovedSince } from '@dsh-claude-style/engine/scroll-owner'
 import { motionMs } from '../../shared/motion'
 import { inPagePixels } from '../../shared/page-zoom'
@@ -92,6 +92,15 @@ export function foldVisibleReach(element: Element) {
     bottom = Math.min(bottom, ancestor.getBoundingClientRect().bottom)
   }
   return inPagePixels(Math.max(0, Math.min(rect.height, bottom - rect.top)))
+}
+
+/**
+ * The fold control a press on `target` works: a DisclosureRow, or any other
+ * button carrying aria-expanded (a process group's header among them).
+ */
+export function foldControlAt(target: Element) {
+  const disclosure = target.closest<HTMLElement>(DISCLOSURE_ROW_SELECTOR)
+  return disclosure !== null ? disclosure : target.closest<HTMLElement>(FOLD_TOGGLE_SELECTOR)
 }
 
 /**

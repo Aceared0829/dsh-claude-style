@@ -46,6 +46,12 @@ export interface FeatureHandle {
   onFocusIn?(target: HTMLElement): void
   /** `'viewport'` (page scroll or resize) or `'composer'` (the composer card changed size). */
   reposition?(reason: 'viewport' | 'composer'): void
+  /**
+   * The read phase of the frame a page scroll or resize repositions in, before
+   * every feature's `reposition('viewport')` (D40): a feature that pins boxes
+   * reads them here, so no feature's reposition forces a layout under another's.
+   */
+  measureReposition?(): void
   /** The locale, the preferences or the model copy changed. */
   onCopyChange?(): void
   /** Every keydown, after the Esc route; a feature that takes the key calls `event.preventDefault()` itself. */
@@ -94,7 +100,7 @@ export function reportFeatureFailure(name: string, error: unknown) {
  * The handle's hooks `dispatch` may call. The flag beside them
  * (`skipOnContentOnly`) is read by the pass itself.
  */
-type FeatureHook = 'sync' | 'measure' | 'owns' | 'onPointerDown' | 'close' | 'onInput' | 'onFocusIn' | 'reposition' | 'onCopyChange' | 'onKey' | 'onActivity' | 'teardown'
+type FeatureHook = 'sync' | 'measure' | 'owns' | 'onPointerDown' | 'close' | 'onInput' | 'onFocusIn' | 'reposition' | 'measureReposition' | 'onCopyChange' | 'onKey' | 'onActivity' | 'teardown'
 
 /**
  * @param features - every feature's `ui` handle name, in install order: a
@@ -192,6 +198,9 @@ export function installScheduler<Name extends string>(ctx: HostContext, ui: Sche
   function onFixedPopoverViewportChange() {
     if (cancelViewportFrame !== null) return
     cancelViewportFrame = requestFrame({
+      read() {
+        dispatch('measureReposition')
+      },
       write() {
         cancelViewportFrame = null
         dispatch('reposition', 'viewport')
