@@ -5,13 +5,14 @@ import { loadModelCopy } from './model-copy'
 import { readPrefs } from '../../core/prefs'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { createModelCatalog } from './catalog'
+import { createModelSubMenu } from './sub-menu'
 import { byModelId, createModelRows } from './rows'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { pageViewport } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelGroup } from '@dsh-claude-style/contracts/services'
-import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
+import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './model-picker.manifest'
 import type { CatalogProvider, ModelCatalog } from './catalog'
@@ -19,7 +20,8 @@ import { copy } from './copy'
 
 /** What the effort picker and the settings page read off the model picker (ui.model). */
 export interface ModelHandle extends FeatureHandle {
-  close(): void
+  /** The scheduler's own dismiss route; the effort picker calls it with no reason. */
+  close(reason?: CloseReason): void
   /** The host slot the seat lives in. */
   seat(): HTMLElement | null
   /** The skin's model trigger while it is in the document. */
@@ -56,7 +58,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let modelSubPop: HTMLElement | null = null
   let modelBody: HTMLElement | null = null
   let modelFooter: HTMLElement | null = null
-  let modelSubBody: HTMLElement | null = null
+  /** Level 2's content: the search field and the list it filters (features/model/sub-menu.ts). */
+  let modelSub: ReturnType<typeof createModelSubMenu> | null = null
   /** The host slot the seat lives in; the effort picker anchors there too. */
   let modelSlot: HTMLElement | null = null
   /**
@@ -72,7 +75,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The More-models cell drills in on the same dwell/grace as the trigger. */
   const modelSubHoverIntent = createHoverIntent(openModelSub, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY)
   let modelBodySig = ''
-  let modelSubSig = ''
   /**
    * The catalog half of the picker (packages/client/src/features/model/catalog.ts):
    * directory, snapshot, warm-up and the provider listeners. `schedule` is
@@ -176,6 +178,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Close on leave, but treat the gap between the two cards as still inside. */
   function closeModelIfAway() {
+    // A reader typing in the level-2 field is still using the card: the pointer
+    // leaving the box it sits in does not fold it out from under their hands.
+    // A press elsewhere and the Escape key are what close it then.
+    if (modelSub !== null && modelSub.focused()) return
     if (pointerInPicker()) {
       scheduleCloseModel()
       return
@@ -185,6 +191,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function closeModelPopovers() {
     cancelCloseModel()
+    if (modelSub !== null) modelSub.forget()
     if (modelPop) setMenuPopoverOpen(modelPop, false, modelBtn)
     if (modelSubPop) setMenuPopoverOpen(modelSubPop, false)
   }
@@ -214,14 +221,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (modelPop) setMenuPopoverOpen(modelPop, true, modelBtn)
   }
 
-  function openModelSub() {
+  function openModelSub(focusField?: boolean) {
     cancelCloseModel()
-    modelSubSig = ''
-    renderModelSub()
     // Open BEFORE placing: the placement pass reads the sub card only while
     // it is marked open, so positioning first would skip it and leave the
     // card at its previous position — every open has to place it fresh.
     if (modelSubPop) setMenuPopoverOpen(modelSubPop, true)
+    if (modelSub !== null) {
+      modelSub.reset()
+      modelSub.render()
+      // A press on the More-models cell is a reader asking to look a model up:
+      // the field takes the focus. A card the hover opened leaves the focus
+      // where the reader had it, since they asked for nothing.
+      if (focusField === true) modelSub.focus()
+    }
     positionModelPopovers()
   }
 
@@ -376,48 +389,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
   }
 
-  /** Level 2: the providers level 1 does NOT show, each headed by its name. */
-  function renderModelSub() {
-    if (!modelSubBody) return
+  /**
+   * What level 2's rows read as, in one string the card's own paint compares:
+   * the providers level 1 lists (this card carries the rest), the rows' rates
+   * and the model in force.
+   */
+  function subSignature() {
     const snap = modelCatalog.snapshot()
     const groups = (snap && snap.groups) || []
     const current = modelCatalog.current(snap)
-    // What level 2 holds depends on what level 1 lists, so the signature has
-    // to carry level 1's provider ids as well.
     const sections = modelRows.levelOneSections(groups)
-    const listed = []
-    for (let s0 = 0; s0 < sections.length; s0++) listed.push(sections[s0].id)
-    let sig2 = `more|${listed.join(',')}|${rateSignature()}`
-    sig2 += rowsSignature(groups)
-    if (current) sig2 += `#${current.group.id}/${current.model.id}`
-    if (sig2 === modelSubSig) return
-    modelSubSig = sig2
-    while (modelSubBody.firstChild) modelSubBody.removeChild(modelSubBody.firstChild)
-    const rest = modelRows.remainingGroups(groups, sections)
-    for (let g2 = 0; g2 < rest.length; g2++) {
-      const group = rest[g2]
-      if (group.models.length === 0) continue
-      const groupSection = buildElement('div', 'dsh-claude-model-group-section')
-      const groupRow = buildElement('div', 'dsh-claude-model-group-row')
-      const groupLabel = buildElement('div', 'dsh-claude-model-group')
-      // The group label is the provider's name alone: a mark there would repeat
-      // what the rows below already carry inside their lockups.
-      groupLabel.appendChild(buildElement('span', 'dsh-claude-model-group-name', group.name))
-      groupRow.appendChild(groupLabel)
-      groupSection.appendChild(groupRow)
-      // A provider's models read in id order, so the list is scannable and stays
-      // put between visits; the catalog's own order is whatever the provider
-      // happened to send. Sorted on a copy — the snapshot belongs to the store.
-      const groupModels = group.models.slice().sort(byModelId)
-      for (let m = 0; m < groupModels.length; m++) {
-        const selected = current !== null && current.group.id === group.id && current.model.id === groupModels[m].id
-        groupSection.appendChild(modelRows.buildModelOption(group, groupModels[m], selected, false))
-      }
-      modelSubBody.appendChild(groupSection)
-    }
-    if (modelSubBody.firstChild === null) {
-        modelSubBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('empty')))
-    }
+    const listed: string[] = []
+    for (let s = 0; s < sections.length; s++) listed.push(sections[s].id)
+    let sig = `more|${listed.join(',')}|${rateSignature()}`
+    sig += rowsSignature(groups)
+    if (current) sig += `#${current.group.id}/${current.model.id}`
+    return sig
   }
 
   function positionModelPopovers() {
@@ -495,13 +482,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       modelSubPop = document.createElement('div')
       modelSubPop.className = 'dsh-claude-popover-card dsh-claude-model-popover dsh-claude-model-popover-sub'
       setMenuPopoverOpen(modelSubPop, false)
-      modelSubBody = document.createElement('div')
-      modelSubBody.className = 'dsh-claude-popover-body'
-      modelSubPop.appendChild(modelSubBody)
+      // The field is pinned above the list: the reader sees what they typed
+      // while they scroll the matches under it, the way level 1 keeps its
+      // footer still. Only the body scrolls (the sheet).
+      modelSub = createModelSubMenu({
+        rows: modelRows,
+        snapshot() { return modelCatalog.snapshot() },
+        current() { return modelCatalog.current(modelCatalog.snapshot()) },
+        signature: subSignature,
+      })
+      modelSubPop.appendChild(modelSub.head)
+      modelSubPop.appendChild(modelSub.body)
+      // The card holds the reader's typing, so a press anywhere inside it must
+      // not be read as a press outside: the scheduler's own `owns` covers it.
       modelSubPop.addEventListener('mouseenter', cancelCloseModel)
       modelSubPop.addEventListener('mouseleave', scheduleCloseModel)
       document.body.appendChild(modelSubPop)
-      modelSubSig = ''
     }
   }
 
@@ -521,9 +517,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     modelSubPop = null
     modelBody = null
     modelFooter = null
-    modelSubBody = null
+    modelSub = null
     modelBodySig = ''
-    modelSubSig = ''
     unbindPointerTracking()
     cancelCloseModel()
     modelCatalog.reset()
@@ -617,7 +612,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     renderModelBody()
     if (modelSubPop && modelSubPop.getAttribute('data-open') === 'true') {
-      renderModelSub()
+      if (modelSub !== null) modelSub.render()
       positionModelPopovers()
     } else if (modelPop && modelPop.getAttribute('data-open') === 'true') {
       positionModelPopovers()
@@ -636,12 +631,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // touches, so such a batch skips this pass (D40).
     skipOnContentOnly: true,
     /**
-     * Close both levels of the picker. The scheduler calls this for every
-     * dismiss reason ('outside', 'escape', 'composer') and the picker acts
-     * on all of them, so the reason is ignored; other features (the effort
-     * picker) call it with none.
+     * Close both levels of the picker. The Escape key first takes a query in
+     * level 2's field back — the card the reader typed into stays up until a
+     * second Escape — while a press outside and a focus that left for the
+     * composer fold both levels.
      */
-    close() { closeModelPopovers() },
+    close(reason) {
+      if (reason === 'escape' && modelSub !== null && modelSub.hasQuery()) {
+        modelSub.clearQuery()
+        return
+      }
+      closeModelPopovers()
+    },
     /**
      * What the effort picker (a separate fragment that owns the level's
      * trigger and card) reads from this one: the seat slot, the model
@@ -700,7 +701,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      */
     onCopyChange() {
       modelBodySig = ''
-      modelSubSig = ''
+      if (modelSub !== null) modelSub.reset()
     },
     // Removes the skin's DOM too: a feature switched off mid-session (see
     // packages/client/src/entry.ts) keeps the stylesheet around it, so the seat has to be

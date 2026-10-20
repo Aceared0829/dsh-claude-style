@@ -9,9 +9,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 把设置页「侧栏」页的「面板悬浮卡片」改名为「右侧栏卡片布局」，开关本身与存下的设置值不变。
+- 模型选择器的二级菜单顶部新增搜索框：输入名称即可在整份模型目录里筛选，回车之外的方向键、选择与编辑照常可用；行距同时收紧。清除按钮沿用 transitions.dev 的溶解效果（文字下沉模糊、占位符从上方落入、每个词下方亮起一道光带），并跟随设置的动画档位；搜索框里的光标使用皮肤自己的光标动画。
 - 改善钠的兜底标记：它只跟随流容器自己的子节点变化，一批变化只标记这一批新增的子元素，流式输出期间不再读整页的变化记录。
 - 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
 - 把设置页「折叠侧栏设置区」「侧栏搜索」「对话导航」三行改名为「重绘账户区」「重绘搜索面板」「重绘消息导航」，三处开关与存下的设置值不变。
+- 模型选择第二层的卡片在搜索时按新列表的高度平滑改变大小，不再跳变；把动画设为「减弱」时立即落位。
+- 把模型选择器里模型行的高度从 30px 收到 27px，字号与行内文字不变，一级与二级菜单同步。
 
 ### 问题修复
 
@@ -20,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
 - 修复钠的改写写入失败后样式表恢复不回来、宿主改动规则后改写无声失效的问题：一次写入失败会把这次写入的规则全部写回，已写入的规则逐张表登记；生效条数归零时设置项写明宿主已改动这些规则，开关关闭时读不回原样的规则也会上报。
 - 修复首页「工作台」的用量面板停在打开窗口那一刻的数字：面板挂载期间按固定周期重取，回到窗口时也重取；宿主侧的汇总缓存从 5 分钟降到 30 秒，等汇总结果的轮询上限放宽，大历史不再先看到旧值。
+- 修复模型选择器搜索框的三处问题：搜索框紧贴卡片上沿、输入时光标高于文字、清空后光标不回最左边。搜索框自带一段上边距，单行输入框的光标按内容框居中后与文字齐平，清空时把插入点放回开头并重新测量光标。
 
 ### 其他变更
 
@@ -28,9 +32,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Rename the Sidebar tab's Float docked panels switch to Right sidebar card layout, with the switch and the stored value unchanged.
+- Add a search field to the top of the model picker's second level: typing a name filters the whole model catalog, while selection, editing and the arrow keys keep working as before, and the rows sit closer together. Its clear control plays transitions.dev's dissolve — the words fly down through a blur, the placeholder falls in from above, and a streak ignites under each word — answering the animation choice in force, and the field's caret is the skin's own animated one.
 - Improve Sodium's fallback mark: it follows the changes of a flow container's own children and marks only the children a batch added, so streaming output no longer reads the whole page's change records.
 - Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
 - Rename three settings rows to Redraw the account area, Redraw the search panel and Redraw the message navigator, with their switches and stored values unchanged.
+- Make the model picker's second-level card resize smoothly to the height of the list a search leaves, instead of jumping; under Reduced motion it lands at once.
+- Tighten the model picker's model rows from 30px to 27px, with the font sizes and the text inside them unchanged, on both levels of the menu.
 
 ### Bug Fixes
 
@@ -39,6 +46,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
 - Fix a Sodium rewrite that could not be undone after a failed write, and the rewrite going quiet once the host changed the rules: a failed write now writes back every rule it wrote, the rules taken are held sheet by sheet, the setting says so when the number in effect falls to zero, and a rule that cannot be read back as the rewrite left it is reported.
 - Fix the Studio home's usage panel standing on the figures of the moment the window opened: the panel reads the roll-up again on a fixed period while it stands on the page and once more when the reader comes back to the window, the host half's roll-up cache drops from five minutes to thirty seconds, and waiting for a cold fold no longer gives up before the numbers land.
+- Fix three faults of the model picker's search field: it sat flush against the card's top edge, its drawn caret stood above the text, and clearing left the caret where the old words ended. The field now carries its own inset above, a single-line field's caret is centred in its content box, and a clear puts the insertion point back at the start and measures the caret again.
 
 ### Chores
 

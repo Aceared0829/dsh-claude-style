@@ -8,7 +8,8 @@
 
 /* 0-3-1 against the host's own caret-color rule (0-1-0). */
 body[data-dsh-claude-style] [data-composer-input][data-dsh-claude-caret],
-body[data-dsh-claude-style] textarea[data-dsh-claude-caret] {
+body[data-dsh-claude-style] textarea[data-dsh-claude-caret],
+body[data-dsh-claude-style] input[data-dsh-claude-caret] {
   caret-color: transparent;
 }
 

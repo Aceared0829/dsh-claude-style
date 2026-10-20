@@ -33,7 +33,8 @@ export function createModelRows(options: {
   subHoverIntent: ReturnType<typeof createHoverIntent>
   isSubOpen: () => boolean
   closeSub: () => void
-  openSub: () => void
+  /** @param focusField - whether the press is the reader asking to look a model up. */
+  openSub: (focusField?: boolean) => void
   /** The peak rate meter's badge for one row, or null (features/peakrate). */
   rate: (provider: string, modelId: string) => HTMLElement | null
 }) {
@@ -138,7 +139,7 @@ export function createModelRows(options: {
     cell.addEventListener('click', e => {
       e.stopPropagation()
       if (isSubOpen()) closeSub()
-      else openSub()
+      else openSub(true)
     })
     return cell
   }

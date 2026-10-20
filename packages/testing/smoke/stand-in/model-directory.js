@@ -10,7 +10,9 @@
  * The effort page (packages/testing/specs/behaviour/effort-picker/) reads the
  * same directory with a model that carries a reasoning ladder, its strongest
  * level in force: the trigger stands beside the model name and the card opens
- * on the top rung.
+ * on the top rung. A second provider stands beside the official one there, so
+ * the picker's second level has rows of its own to search
+ * (packages/testing/specs/behaviour/model-picker/).
  */
 (function () {
   var host = window.__dshSmokeHost
@@ -25,6 +27,14 @@
     current: { provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'max' },
     groups: [
       { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-reasoner', name: 'DeepSeek V4 Reasoner Extended Context', description: 'The thinking one.', reasoning: reasoning }] },
+      {
+        id: 'zai',
+        name: 'Z.ai',
+        models: [
+          { id: 'glm-5.3', name: 'GLM-5.3', description: 'The flagship one.' },
+          { id: 'glm-4.7', name: 'GLM-4.7', description: 'The older one.' },
+        ],
+      },
     ],
   } : {
     status: 'ready',

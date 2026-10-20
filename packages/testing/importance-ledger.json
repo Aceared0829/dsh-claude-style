@@ -1704,7 +1704,7 @@
       "prop": "line-height",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] .dsh-claude-model-option,body[data-dsh-claude-style] .dsh-claude-model-cell{display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:2px 7px;border:none!;border-radius:6px;background:transparent;color:var(--dsw-alias-label-primary, #141413);font-size:13px;text-align:left;cursor:pointer;box-sizing:border-box}|border": {
+    "body[data-dsh-claude-style] .dsh-claude-model-option,body[data-dsh-claude-style] .dsh-claude-model-cell{display:flex;align-items:center;gap:8px;width:100%;min-height:27px;padding:1px 7px;border:none!;border-radius:6px;background:transparent;color:var(--dsw-alias-label-primary, #141413);font-size:13px;text-align:left;cursor:pointer;box-sizing:border-box}|border": {
       "selector": "body[data-dsh-claude-style] .dsh-claude-model-option,body[data-dsh-claude-style] .dsh-claude-model-cell",
       "prop": "border",
       "verdict": "needed",

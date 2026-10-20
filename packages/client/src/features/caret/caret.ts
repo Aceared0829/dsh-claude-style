@@ -1,4 +1,4 @@
-import { CARET_ATTR, CARET_HOST_ATTR, CARET_LAYER_ATTR, CARET_MOTION_OFF, CARET_VISIBLE_ATTR, QUIET_ATTR } from '../../constants'
+import { CARET_ATTR, CARET_FIELD_ATTR, CARET_HOST_ATTR, CARET_LAYER_ATTR, CARET_MOTION_OFF, CARET_VISIBLE_ATTR, QUIET_ATTR } from '../../constants'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
@@ -55,10 +55,13 @@ interface CaretLayer {
  * Whether an element is an editable surface this takes over, and which kind.
  * @param element - usually whatever holds the focus right now.
  * @returns 'rich' for the composer input, 'plain' for a textarea in the
- *     composer seat, null for anything else.
+ *     composer seat or a field of the skin's own, null for anything else.
  */
 export function caretSurfaceOf(element: Element) {
   if (element.matches(COMPOSER_INPUT_SELECTOR)) return 'rich'
+  if (element instanceof HTMLInputElement && element.hasAttribute(CARET_FIELD_ATTR)) {
+    return element.disabled || element.readOnly ? null : 'plain'
+  }
   if (element instanceof HTMLTextAreaElement && element.matches(COMPOSER_TEXTAREA_SELECTOR)) {
     return element.disabled || element.readOnly ? null : 'plain'
   }
@@ -157,7 +160,8 @@ export function createCaretMotion(read: () => string) {
    */
   const followPlainScroll = (event: Event) => {
     const target = event.target
-    if (!(target instanceof HTMLTextAreaElement) || !layers.has(target)) return
+    if (!(target instanceof HTMLTextAreaElement) && !(target instanceof HTMLInputElement)) return
+    if (!layers.has(target)) return
     queue()
   }
 
@@ -377,14 +381,15 @@ export function createCaretMotion(read: () => string) {
         range = candidate
       }
     }
-    if (kind === 'plain' && active instanceof HTMLTextAreaElement && active.selectionStart === active.selectionEnd) {
+    if (kind === 'plain' && (active instanceof HTMLTextAreaElement || active instanceof HTMLInputElement)
+      && active.selectionStart === active.selectionEnd) {
       target = active
     }
     if (target === null) {
       plan = { off: false, target: null, host: null, hostRect: null, reading: null }
       return
     }
-    const reading = target instanceof HTMLTextAreaElement
+    const reading = target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement
       ? caretMeasurePlain(target, endKeyed, probeHome)
       : range === null ? null : caretMeasureRich(target, range, probeHome)
     // The layer's host is the surface's parent, and the drawn caret is placed
@@ -457,6 +462,18 @@ export function createCaretMotion(read: () => string) {
   document.addEventListener('focusout', syncAfterFocusChange)
   // Any input resets the End leaning: it arrives before selectionchange.
   document.addEventListener('beforeinput', markTyped)
+  /**
+   * A field whose words changed: the caret is measured again.
+   *
+   * A value written by code — the model picker's clear, a script — moves the
+   * selection to the start with no selectionchange at all, so the drawn caret
+   * would stay where the old words ended. The input event is what such a write
+   * announces itself with, and the caret follows it.
+   */
+  const onFieldInput = (event: Event) => {
+    if (event.target instanceof Element && caretSurfaceOf(event.target) !== null) queue()
+  }
+  document.addEventListener('input', onFieldInput, true)
   // Which side of a soft wrap is meant: whether the last move was End.
   document.addEventListener('keydown', noteKey, true)
   document.addEventListener('pointerdown', clearEndKey, true)
@@ -483,6 +500,7 @@ export function createCaretMotion(read: () => string) {
       document.removeEventListener('focusin', syncAfterFocusChange)
       document.removeEventListener('focusout', syncAfterFocusChange)
       document.removeEventListener('beforeinput', markTyped)
+      document.removeEventListener('input', onFieldInput, true)
       document.removeEventListener('keydown', noteKey, true)
       document.removeEventListener('pointerdown', clearEndKey, true)
       document.removeEventListener('scroll', followPlainScroll, true)

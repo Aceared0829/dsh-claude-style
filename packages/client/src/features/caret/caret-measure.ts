@@ -120,6 +120,9 @@ interface CaretSpot {
   height: number
 }
 
+/** The surfaces measured through a hidden mirror: a seat textarea, or a field of the skin's own. */
+type PlainSurface = HTMLTextAreaElement | HTMLInputElement
+
 /** The key a remembered spot was taken under, and the spot itself. */
 interface RememberedSpot {
   key: string
@@ -128,7 +131,7 @@ interface RememberedSpot {
 
 /** What each surface's probe last said, dropped when its key changes. */
 const emptyLineSpots = new WeakMap<Element, RememberedSpot>()
-const plainSpots = new WeakMap<HTMLTextAreaElement, RememberedSpot>()
+const plainSpots = new WeakMap<PlainSurface, RememberedSpot>()
 
 /**
  * How many times the loaded faces have changed. A face arriving re-wraps text
@@ -239,12 +242,12 @@ export function caretMeasureRich(input: Element, range: Range, probeHome: Elemen
  * copied styles and the width it was laid out at: a measurement that repeats
  * one of those pays for the mirror no more (D9).
  *
- * @param input - the textarea holding the focus.
+ * @param input - the textarea or field holding the focus.
  * @param endKeyed - whether the last explicit move was the End key.
  * @param probeHome - the marked container the mirror is built in.
  * @returns null when it cannot be measured: the caller hands the native caret back.
  */
-export function caretMeasurePlain(input: HTMLTextAreaElement, endKeyed: boolean, probeHome: Element | null): CaretReading | null {
+export function caretMeasurePlain(input: PlainSurface, endKeyed: boolean, probeHome: Element | null): CaretReading | null {
   if (probeHome === null) return null
   const field = input.getBoundingClientRect()
   const style = getComputedStyle(input)
@@ -252,6 +255,8 @@ export function caretMeasurePlain(input: HTMLTextAreaElement, endKeyed: boolean,
   const width = Math.max(0, input.clientWidth - (Number.isFinite(paddingX) ? paddingX : 0))
   // The caller only comes here for a collapsed selection: start and end are one spot.
   const caretAt = input.selectionEnd
+  // A field type the browser keeps no selection for has no caret to place.
+  if (caretAt === null) return null
   const copied = CARET_MIRRORED_PROPERTIES.map(name => style.getPropertyValue(name))
   const key = `${faceGeneration}\u0000${endKeyed ? 'end' : 'plain'}\u0000${caretAt}\u0000${width}\u0000${input.value}\u0000${copied.join('\u0000')}`
   const remembered = plainSpots.get(input)
@@ -261,9 +266,9 @@ export function caretMeasurePlain(input: HTMLTextAreaElement, endKeyed: boolean,
     plainSpots.set(input, { key, spot })
   }
   if (spot === null) return null
-  // The mirror has no border and the textarea's padding, so the spot is the
-  // caret's place inside the textarea's padding box; the textarea's own scroll
-  // is subtracted.
+  // The mirror has no border and carries the surface's padding, so the spot is
+  // the caret's place inside the padding box; the surface's own scroll is
+  // subtracted.
   return {
     box: {
       left: field.left + input.clientLeft + spot.dx - input.scrollLeft,
@@ -279,7 +284,7 @@ export function caretMeasurePlain(input: HTMLTextAreaElement, endKeyed: boolean,
  * @returns the caret's offset inside the input's padding box and its height.
  */
 function takePlainSpot(
-  input: HTMLTextAreaElement,
+  input: PlainSurface,
   caretAt: number,
   endKeyed: boolean,
   width: number,
@@ -316,7 +321,16 @@ function takePlainSpot(
   }
   mirror.remove()
   if (spot === undefined || edge === undefined) return null
-  return { dx: edge - mirrorRect.left, dy: spot.top - mirrorRect.top, height: spot.height }
+  // A single-line field centres its one line inside the content box, while the
+  // mirror's line box starts at the padding top: without this the drawn caret
+  // stands above the text it belongs beside. A textarea lays its lines out from
+  // the top and needs no correction.
+  let dy = spot.top - mirrorRect.top
+  if (input instanceof HTMLInputElement) {
+    const contentHeight = input.clientHeight - (Number.parseFloat(getComputedStyle(input).paddingTop) || 0) - (Number.parseFloat(getComputedStyle(input).paddingBottom) || 0)
+    dy += Math.max(0, (contentHeight - spot.height) / 2)
+  }
+  return { dx: edge - mirrorRect.left, dy, height: spot.height }
 }
 
 /**

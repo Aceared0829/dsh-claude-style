@@ -13,6 +13,12 @@
     { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
     { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },
     { "id": "stats.inline-line", "selector": "[data-dsh-claude-inline-stats]", "feature": "context-stats", "sees": "the line of statistics under the composer card: turns, speed, tokens and the cache share" },
-    { "id": "account.menu", "selector": "[data-dsh-claude-account-menu]", "feature": "account", "sees": "the host's account menu while it stands open, drawn as the skin's own menu card: the account header, the settings row and the plugin rows" }
+    { "id": "account.menu", "selector": "[data-dsh-claude-account-menu]", "feature": "account", "sees": "the host's account menu while it stands open, drawn as the skin's own menu card: the account header, the settings row and the plugin rows" },
+    { "id": "model.sub-card", "selector": ".dsh-claude-model-popover-sub", "feature": "model", "sees": "the model picker's second level: the providers the first level does not list, with a search field above them" },
+    { "id": "model.search-field", "selector": ".dsh-claude-model-search-input", "feature": "model", "sees": "the search field at the top of the second level: the reader types a model's name into it and the list under it narrows" },
+    { "id": "model.search-clear", "selector": ".dsh-claude-model-search-clear", "feature": "model", "sees": "the control that clears the search field, drawn while the field holds words" },
+    { "id": "model.sub-row", "selector": ".dsh-claude-model-popover-sub .dsh-claude-model-option", "feature": "model", "sees": "one model row of the second level, under its provider's label" },
+    { "id": "caret.layer", "selector": "[data-dsh-claude-caret-layer]", "feature": "caret", "sees": "the caret the skin draws in place of the browser's own, on the surface holding the focus" },
+    { "id": "model.sub-label", "selector": ".dsh-claude-model-group", "feature": "model", "sees": "the provider's name above its models in the second level" }
   ]
 }

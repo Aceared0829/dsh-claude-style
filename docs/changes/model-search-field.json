@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "模型选择器的二级菜单顶部新增搜索框：输入名称即可在整份模型目录里筛选，回车之外的方向键、选择与编辑照常可用；行距同时收紧。清除按钮沿用 transitions.dev 的溶解效果（文字下沉模糊、占位符从上方落入、每个词下方亮起一道光带），并跟随设置的动画档位；搜索框里的光标使用皮肤自己的光标动画。",
+  "en": "Add a search field to the top of the model picker's second level: typing a name filters the whole model catalog, while selection, editing and the arrow keys keep working as before, and the rows sit closer together. Its clear control plays transitions.dev's dissolve — the words fly down through a blur, the placeholder falls in from above, and a streak ignites under each word — answering the animation choice in force, and the field's caret is the skin's own animated one."
+}

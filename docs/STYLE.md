@@ -283,6 +283,9 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-open` | `250ms` | a surface growing out of its anchor: a menu out of its trigger, a full-window dialog out of the centre, a settings page sliding in, the overtime badge sliding onto its line |
 | `--dsh-claude-duration-swap` | `150ms` | each half of a wording swap: the old words leaving, the new ones arriving |
 | `--dsh-claude-duration-swap-gap` | `50ms` | the offset the words arriving start after the words leaving, so the two halves of a wording swap travel together |
+| `--dsh-claude-duration-clear-delay` | `50ms` | how long after a field empties the streak under its cleared words starts to rise |
+| `--dsh-claude-duration-clear-text` | `400ms` | the two halves of clearing a field: the words leaving it, and the placeholder taking their place |
+| `--dsh-claude-duration-clear` | `1000ms` | one whole clear: the words leaving, the placeholder arriving, and the streak's rise, peak and fall |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
 | `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
 | `--dsh-claude-duration-count` | `220ms` | a session number counting to its new reading |
@@ -337,6 +340,8 @@ edit the JSON, not the table.
 | `--dsh-claude-scale-dropdown-exit` | `0.99` | the scale a menu shrinks to while it fades on closing |
 | `--dsh-claude-scale-dialog` | `0.96` | the scale a full-window dialog grows from and returns to |
 | `--dsh-claude-scale-dot-mid` | `0.55` | how small a loader dot is while it crosses the middle of its line; at either end it is the dot's own size, so the line motion never draws a dot larger than the bouncing one |
+| `--dsh-claude-duration-resize` | `300ms` | a surface taking a new size: the model picker's second level following the list a query leaves |
+| `--dsh-claude-timing-resize` | `var(--dsh-claude-duration-resize) var(--dsh-claude-ease-settle)` | shorthand: a size change, written after the property in a transition |
 | `--dsh-claude-timing-feedback` | `var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard)` | shorthand: a control's state change, written after the property in a transition |
 | `--dsh-claude-timing-surface` | `var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard)` | shorthand: a surface appearing, written after the property or the keyframes' name |
 <!-- /generated:motion -->

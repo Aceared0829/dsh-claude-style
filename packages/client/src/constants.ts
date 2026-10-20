@@ -209,6 +209,13 @@ export const CARET_VISIBLE_ATTR = 'data-dsh-claude-caret-visible'
 /** On a parent lent the positioning context the drawn caret is placed against. */
 export const CARET_HOST_ATTR = 'data-dsh-claude-caret-host'
 /**
+ * On a text field the skin builds for its own interface, which the caret motion
+ * takes over like a seat textarea (packages/client/src/features/caret/). The
+ * host's own fields are reached through their contracts; this one belongs to the
+ * skin, so it carries the skin's mark.
+ */
+export const CARET_FIELD_ATTR = 'data-dsh-claude-field'
+/**
  * Present while the ported automatic folding is installed
  * (packages/client/src/features/chat-fold/): the stylesheet's header-summary rules hang off it,
  * and switching the feature off hands the chat area back whole.

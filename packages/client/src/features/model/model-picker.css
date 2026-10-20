@@ -37,11 +37,186 @@ body[data-dsh-claude-style] .dsh-claude-model-footer {
   gap: 2px;
   min-width: 0;
 }
-/* The sub popover is taller than the first level and sized by its content: the
-   cap is only the viewport, so a short provider list does not leave a tall empty
-   card. Provider labels stay pinned to the top while the list scrolls. */
+/* The sub popover splits the way level 1 does: the search field is pinned at
+   the top and only the list under it scrolls, so the reader keeps what they
+   typed in front of them while they walk the matches. Provider labels stay
+   pinned inside that list. The card keeps its own 6px inset at the top, so the
+   field stands off the card's edge the way its rows do. */
 body[data-dsh-claude-style] .dsh-claude-model-popover-sub {
-  padding-top: 0;
+  overflow: hidden;
+  /* A query leaves a shorter list than the whole catalog: the card takes the
+     new height over transitions.dev's "Card resize" (MIT), so the edge follows
+     the reader's typing instead of jumping under it. */
+  transition:
+    height var(--dsh-claude-timing-resize);
+  will-change: height;
+}
+/* The reader's animation choice, resolved onto <body> (D40): reduced takes the
+   tween away and the card lands on its new height at once. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-model-popover-sub {
+  transition: none;
+}
+body[data-dsh-claude-style] .dsh-claude-model-popover-sub .dsh-claude-model-sub-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ---------- The search field at the top of level 2 ---------- */
+/* The field clears the way transitions.dev's "Input clear with dissolve" (MIT)
+   does: the words leaving fly down through a blur while a streak ignites under
+   each of them, and the placeholder falls in from above. The flight is written
+   per frame by features/model/sub-menu.ts — the streak's envelope cannot be a
+   keyframe — so this sheet owns the resting state and the values that script
+   reads. */
+body[data-dsh-claude-style] .dsh-claude-model-search {
+  flex: none;
+  min-width: 0;
+  /* The field is the card's opening control, not a row: its own inset above
+     keeps it off the card's edge, which the card's padding alone leaves it
+     flush against. The list below keeps the card's padding. */
+  padding: 6px 0 2px;
+  box-sizing: border-box;
+}
+/* The field is the positioning context the flight is measured against, and it
+   clips the streak to its own rounded box, so the hairline is drawn inset and
+   darkens with the glow rather than sitting outside it. */
+body[data-dsh-claude-style] .dsh-claude-model-search-field {
+  position: relative;
+  height: 28px;
+  border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border-radius: 8px;
+  background: var(--dsw-specific-input-major, #ffffff);
+  color: var(--dsw-alias-label-primary, #141413);
+  font-family: var(--dsw-font-family);
+  font-size: 13px;
+  line-height: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* The streak's strength: the one value the two palettes disagree on, because
+     a wash that darkens a white field does not lighten a dark one. The blend
+     below is the other half of that. */
+  --dsh-claude-clear-glow-opacity: 0.85;
+}
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) .dsh-claude-model-search-field {
+  --dsh-claude-clear-glow-opacity: 0.42;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-field:focus-within {
+  border-color: var(--dsw-alias-brand-primary, #d97757);
+}
+/* A real input, so selecting and editing a query keep working. Its right
+   padding is the clear control's room, and the mirror is padded to match so
+   the words fly from where they stood. */
+body[data-dsh-claude-style] .dsh-claude-model-search-input {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0 26px 0 8px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  box-sizing: border-box;
+}
+/* Hidden at rest and shown by the clear alone: while the field holds words it
+   draws them itself, so the mirror is only ever the words on their way out. */
+body[data-dsh-claude-style] .dsh-claude-model-search-mirror,
+body[data-dsh-claude-style] .dsh-claude-model-search-placeholder {
+  position: absolute;
+  inset: 0;
+  padding: 0 26px 0 8px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+  z-index: 2;
+  box-sizing: border-box;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-mirror {
+  opacity: 0;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field-clearing] .dsh-claude-model-search-mirror {
+  opacity: 1;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-placeholder {
+  color: var(--dsw-alias-label-tertiary, #8f8d84);
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field-filled] .dsh-claude-model-search-placeholder {
+  opacity: 0;
+}
+/* The streak overlay: empty by default, and the script writes a stack of
+   radial gradients into its background for one clear. Multiply darkens the
+   field under a light palette; screen lightens it under a dark one, where the
+   same alpha would vanish. */
+body[data-dsh-claude-style] .dsh-claude-model-search-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: screen;
+}
+body[data-dsh-claude-style]:not([data-ds-dark-theme]) .dsh-claude-model-search-glow {
+  mix-blend-mode: multiply;
+}
+/* The words leaving scroll with the field: the field scrolls its own text and
+   the mirror is not inside it, so the offset is written onto this span. */
+body[data-dsh-claude-style] .dsh-claude-model-search-travel {
+  display: block;
+  white-space: pre;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary, #8f8d84);
+  cursor: pointer;
+  /* Gone from the paint and from the tab order while the field is empty: an
+     invisible control a reader can still reach is one they can press by
+     accident. The fade keeps its leave. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard), visibility 0s linear var(--dsh-claude-duration-feedback);
+  z-index: 4;
+}
+/* It stands while the field holds words and leaves with them: the clear takes
+   the words away, so a control for them has nothing left to do. */
+body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field-filled] .dsh-claude-model-search-clear {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard), visibility 0s;
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-clear:hover {
+  color: var(--dsw-alias-label-secondary, #6f6a62);
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.06));
+}
+body[data-dsh-claude-style] .dsh-claude-model-search-clear svg {
+  display: block;
+}
+/* The drawn caret stands over the mirror and the streak: both paint above the
+   field's own text, and the caret is what the reader follows. */
+body[data-dsh-claude-style] .dsh-claude-model-search-field [data-dsh-claude-caret-layer] {
+  z-index: 5;
+}
+/* The reader's animation choice, resolved onto <body> (D40): reduced takes the
+   flight away whole, and the script asks the same question before it starts
+   one, so no half state is left behind. */
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-model-search-glow {
+  opacity: 0;
 }
 
 body[data-dsh-claude-style] .dsh-claude-model-group-section {
@@ -90,8 +265,8 @@ body[data-dsh-claude-style] .dsh-claude-model-cell {
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 32px;
-  padding: 2px 7px;
+  min-height: 27px;
+  padding: 1px 7px;
   border: none !important;
   border-radius: 6px;
   background: transparent;
