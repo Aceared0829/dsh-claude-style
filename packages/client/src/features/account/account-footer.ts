@@ -518,7 +518,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * Hand the sidebar footer back to the host.
    *
-   * The "Collapse the sidebar settings area" preference turns the whole
+   * The "Redraw the account area" preference turns the whole
    * takeover off, so the skin's own nodes and injected container go and
    * every marker it put on the host's entries is removed — with the
    * stylesheet's takeover rules gated on the same attribute, the footer then

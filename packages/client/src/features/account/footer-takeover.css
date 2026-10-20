@@ -1,8 +1,8 @@
 /* ---------- Footer takeover ----------
    Everything in this block modifies the HOST's own footer (it hides entries and
    zeroes the containers that host them) and exists only because the skin
-   replaces that footer with its account row. The "Collapse the sidebar settings
-   area" preference turns the whole takeover off, so each rule below carries
+   replaces that footer with its account row. The "Redraw the account area"
+   preference turns the whole takeover off, so each rule below carries
    data-dsh-claude-footer-takeover — the skin sets it on <body> only while the takeover is on,
    and with it absent the host footer renders exactly as shipped. */
 /* Hide the controls beside the account row while keeping containers intact for

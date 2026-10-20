@@ -2,6 +2,6 @@
   "accountNameFallback": { "zh": "用户", "en": "User" },
   "accountSettingsRow": { "zh": "设置", "en": "Settings" },
   "footerPluginRow": { "zh": "插件", "en": "Plugin" },
-  "collapseTitle": { "zh": "折叠侧栏设置区", "en": "Collapse the sidebar settings area" },
+  "collapseTitle": { "zh": "重绘账户区", "en": "Redraw the account area" },
   "collapseDesc": { "zh": "设置入口收进账户弹层。", "en": "The settings entry moves into the account popover." }
 }

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 1,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "把设置页「折叠侧栏设置区」「侧栏搜索」「对话导航」三行改名为「重绘账户区」「重绘搜索面板」「重绘消息导航」，三处开关与存下的设置值不变。",
+  "en": "Rename three settings rows to Redraw the account area, Redraw the search panel and Redraw the message navigator, with their switches and stored values unchanged."
+}
