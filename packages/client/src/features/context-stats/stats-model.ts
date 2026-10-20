@@ -1,4 +1,6 @@
 import { sessionStatsCacheHit, sessionStatsDuration, sessionStatsSpeed, sessionStatsTokens } from './stats-format'
+import { formatMoneyMicro } from '@dsh-claude-style/contracts/prices'
+import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostText } from '@dsh-claude-style/engine/host'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import { copy } from './copy'
@@ -68,11 +70,14 @@ function usageBilled(usage: HostTokenUsageProjection): number | null {
  *
  * @param stats - the session statistics reading, or null while it is absent.
  * @param usage - the token usage reading, or null while it is absent.
+ * @param cost - the session's cost in micro units, or null while no figure is known.
+ * @param currency - the price table the figure follows.
  * @param chat - the host's `chat` translate seat.
  * @param compact - whether the host rendered its compact statistics row.
  */
-export function sessionStatsSections(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, chat: HostText, compact: boolean) {
+export function sessionStatsSections(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, currency: Currency, chat: HostText, compact: boolean) {
   const sections: { title: string, rows: StatsRow[] }[] = []
+  const costRow: StatsRow | null = cost === null ? null : { label: copy('contextCost'), value: formatMoneyMicro(cost, currency) }
   if (compact) {
     const rows: StatsRow[] = []
     if (stats !== null) {
@@ -82,6 +87,7 @@ export function sessionStatsSections(stats: HostSessionStatsProjection | null, u
     if (usage !== null) {
       const billed = usageBilled(usage)
       if (billed !== null) {
+        if (costRow !== null) rows.push(costRow)
         const hit = sessionStatsCacheHit(usage.cacheReadTokens, billed)
         if (hit !== null) rows.push({ label: chat('message.turnUsage.cacheHit'), value: `${hit}%` })
       }
@@ -97,6 +103,7 @@ export function sessionStatsSections(stats: HostSessionStatsProjection | null, u
     const billed = usageBilled(usage)
     if (billed !== null) {
       const rows: StatsRow[] = []
+      if (costRow !== null) rows.push(costRow)
       const hit = sessionStatsCacheHit(usage.cacheReadTokens, billed)
       if (hit !== null) rows.push({ label: chat('message.turnUsage.cacheHit'), value: `${hit}%` })
       rows.push({ label: chat('message.turnUsage.input'), value: sessionStatsTokens(usage.uncachedInputTokens, chat) })

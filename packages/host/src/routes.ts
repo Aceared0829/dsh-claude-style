@@ -12,7 +12,7 @@
  * The paths are the shared contract (`@dsh-claude-style/contracts/routes`, * D73): the browser half addresses the same names.
  */
 import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
-import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, ROUTE_PREFIX, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
+import { HDSL_PATH, HDSL_SKIN_PATH, PEAKRATE_PATH, PRICES_PATH, ROUTE_PREFIX, SESSION_COST_PATH, SESSION_DELETE_PATH, SESSION_SEARCH_PATH, USAGE_PATH, USERNAME_PATH } from '@dsh-claude-style/contracts/routes'
 import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs'
 import { userInfo } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -26,7 +26,9 @@ import { createHdslAccount } from './hdsl.js'
 import type { HdslReading } from './hdsl.js'
 import { packageRoot } from './package-root.js'
 import { createPeakRate } from './peakrate.js'
+import { createPrices } from './prices.js'
 import { QUERY_MAX, createSessionSearch } from './search.js'
+import { createSessionCost } from './session-cost.js'
 import { createUsage } from './usage.js'
 
 /** The copy document, built from `packages/client/data/model-descriptions.json` by scripts/build.mjs. */
@@ -276,6 +278,12 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
     const hdsl = createHdslAccount(ctx)
     const sessionSearch = createSessionSearch(ctx)
     const peakrate = createPeakRate(ctx)
+    const prices = createPrices(ctx)
+    const sessionCost = createSessionCost(ctx, prices)
+    // The listener is what makes a total O(1) after the first read; the
+    // snapshot loads on the first ask, so a reader who never opens the figures
+    // never reaches the repository.
+    sessionCost.ensure()
 
     const register = (label: string, route: DshRoute) => {
       try {
@@ -480,11 +488,45 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
       },
     })
 
+    register('prices', {
+      kind: 'exact',
+      path: PRICES_PATH,
+      handler: (req: DshRequest, res: DshResponse) => {
+        // Read-only apart from the refresh ask; the table is public data, and
+        // the fence keeps the same rule as the other routes: only this page
+        // makes the host reach the repository.
+        if (methodRefused(req, res, ['GET', 'POST'])) return
+        if (fenceRefused(ctx, req, res)) return
+        prices.ensure()
+        const answer = req.method === 'POST' ? prices.refresh().then(() => prices.payload()) : Promise.resolve(prices.payload())
+        sendPayload(res, answer)
+      },
+    })
+
+    register('session cost', {
+      kind: 'exact',
+      path: SESSION_COST_PATH,
+      handler: (req: DshRequest, res: DshResponse) => {
+        // The answer is the user's own conversation priced, so it runs the same
+        // fence as the usage roll-up and never accepts a path outside one id.
+        if (methodRefused(req, res, ['GET'])) return
+        if (fenceRefused(ctx, req, res)) return
+        const sessionId = (new URL(req.url ?? '/', 'http://local').searchParams.get('id') ?? '').trim()
+        if (!SESSION_ID_RE.test(sessionId)) {
+          sendJson(res, 400, { ok: false, error: 'invalid session id' })
+          return
+        }
+        sendPayload(res, sessionCost.get(sessionId).then(value => ({ value })))
+      },
+    })
+
     for (const { label, route } of brandRoutes(ctx)) register(label, route)
 
     return () => {
       usage.dispose()
       peakrate.dispose()
+      prices.dispose()
+      sessionCost.dispose()
       sessionSearch.dispose()
       // One route's disposer failing must not keep the others registered
       // (D12); the failure is reported.

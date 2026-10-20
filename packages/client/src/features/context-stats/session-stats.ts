@@ -7,11 +7,15 @@ import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
 import { createStreamEstimate } from './stream-estimate'
+import { createSessionCost, loadPrices, priceDocument, priceGeneration } from './session-cost'
 import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
+import { priceFor, priceTierAt } from '@dsh-claude-style/contracts/prices'
+import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
-import type { HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { HostSessionStatsProjection, HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { StatsReading } from './stats-count'
 import type { PieColours } from './context-meter-pie'
 
 /**
@@ -52,8 +56,8 @@ import type { PieColours } from './context-meter-pie'
  * @returns { measure, sync, close, reposition, teardown }.
  */
 export function createSessionStats(ctx: HostContext) {
-  /** The projections the block reads, in the order its sections appear. */
-  const STATS_KEYS = ['sessionStats', 'tokenUsage']
+  /** The projections the reading follows: the figures, and the route the cost prices at. */
+  const STATS_KEYS = ['sessionStats', 'tokenUsage', 'modelSelection']
 
   /** The projection keys this page is following, and how to stop. */
   let watch: { sessionId: string, faces: Record<string, HostSnapshotSource<unknown>>, off: (() => void)[] } | null = null
@@ -88,24 +92,13 @@ export function createSessionStats(ctx: HostContext) {
   const estimate = createStreamEstimate()
   estimate.watch()
 
-  /**
-   * One usage reading with the stream's estimate added: the host's settled
-   * total plus the tokens its streaming text has grown by, and the raw total
-   * again once the step settles.
-   */
-  function streamedUsage(usage: HostTokenUsageProjection) {
-    estimate.settle(usage.outputTokens)
-    const grown = estimate.tokens()
-    return grown <= 0 ? usage : { ...usage, outputTokens: Math.round(usage.outputTokens + grown) }
-  }
+  /** The settled cost the host priced, and the table the estimate ticks by. */
+  const cost = createSessionCost()
 
-  /** One projection's current whole value, with the stream's estimate on the usage side. */
-  function statsValue<Value>(key: string): Value | undefined {
-    const face = watch === null ? undefined : watch.faces[key]
-    if (typeof face?.getSnapshot !== 'function') return undefined
-    const value = face.getSnapshot()
-    if (key !== 'tokenUsage' || value === undefined || value === null) return value as Value
-    return streamedUsage(value as HostTokenUsageProjection) as Value
+  /** The session's route from the host's model-selection projection. */
+  interface ModelSelection {
+    next?: { model?: string }
+    lastUsed?: { model?: string }
   }
 
   /** The host's `chat` namespace translate seat, or null when it is absent (core/i18n). */
@@ -113,9 +106,76 @@ export function createSessionStats(ctx: HostContext) {
     return hostChatSeat(ctx)
   }
 
-  const block = createStatsBlock(statsValue, chatText)
-  const inline = createInlineStats(statsValue, chatText, findContextMeter)
+  /** Which official price table the reader chose. */
+  function currency(): Currency {
+    return readPrefs().billingCurrency as Currency
+  }
+
+  /** One projection's current whole value, with no stream estimate added. */
+  function faceValue<Value>(key: string): Value | undefined {
+    const face = watch === null ? undefined : watch.faces[key]
+    if (typeof face?.getSnapshot !== 'function') return undefined
+    return face.getSnapshot() as Value | undefined
+  }
+
+  /**
+   * What the session has cost so far, in micro units: the host's settled total
+   * plus the tokens the streaming answer has grown by, priced at the output
+   * rate in force now. The increment stays output-only — the prompt and the
+   * cache are settled with the call — so the figure steps up when a step ends.
+   */
+  function costOfReading(usage: HostTokenUsageProjection | null, grown: number): number | null {
+    const answered = cost.value()
+    if (answered === null || usage === null) return null
+    // The host names the route the last settlement was billed at; the
+    // selection projection is the fallback for a session that has not settled
+    // yet, and it is not always served.
+    const selection = faceValue<ModelSelection>('modelSelection')
+    const model = answered.model ?? selection?.lastUsed?.model ?? selection?.next?.model
+    const document = priceDocument()
+    if (model === null || model === undefined || document === null) return null
+    const price = priceFor(document, model, currency())
+    if (price === undefined) return null
+    const tier = priceTierAt(price, Date.now(), document.schedule)
+    const settled = currency() === 'CNY' ? answered.cny : answered.usd
+    return settled + grown * tier.output
+  }
+
+  /** The whole reading, with the stream's estimate on both the usage and the cost. */
+  function readReading(): StatsReading {
+    const stats = faceValue<HostSessionStatsProjection>('sessionStats') ?? null
+    const raw = faceValue<HostTokenUsageProjection>('tokenUsage') ?? null
+    let usage: HostTokenUsageProjection | null = raw
+    let grown = 0
+    if (raw !== null) {
+      estimate.settle(raw.outputTokens)
+      grown = estimate.tokens()
+      if (grown > 0) usage = { ...raw, outputTokens: Math.round(raw.outputTokens + grown) }
+    }
+    return { stats, usage, cost: costOfReading(usage, grown) }
+  }
+
+  /** One reading per pass, so the block and the line price the same frame the same way. */
+  let readingMemo: StatsReading | null = null
+  function reading(): StatsReading {
+    readingMemo ??= readReading()
+    return readingMemo
+  }
+
+  const block = createStatsBlock(reading, chatText, currency)
+  const inline = createInlineStats(reading, chatText, findContextMeter, currency)
   const binding = createContextStatsBinding()
+
+  /**
+   * A settled total landed. The figures on screen were priced from the previous
+   * one, so the reading is taken again and both surfaces are written once more
+   * — the count they are on is the same, so the new figure travels from where
+   * the old one stands rather than jumping (stats-count.ts).
+   */
+  const offCost = cost.onChange(() => {
+    readingMemo = null
+    renderNumbers()
+  })
 
   /** The pie's colours this frame's read phase took, until the pass's sync uses them. */
   let pieColours: PieColours | null = null
@@ -129,6 +189,10 @@ export function createSessionStats(ctx: HostContext) {
     // The stream's estimate belongs to the session it was read from; the next
     // session counts its own text from a fresh baseline (stream-estimate.ts).
     estimate.reset()
+    // The settled cost and the reading belong to the session they were read
+    // from; the next one starts from its own.
+    cost.follow('')
+    readingMemo = null
     // The skeleton's wait holds the panel's place, not the session's: it goes
     // whether a session was ever bound or not (stats-block.ts). The line keeps
     // the numbers it is showing: another session's readings are counted to
@@ -143,6 +207,7 @@ export function createSessionStats(ctx: HostContext) {
    * line's figures and the panel's rows stay the same session's numbers.
    */
   function renderNumbers() {
+    readingMemo = null
     if (readPrefs().statsPosition === STATS_POSITION_INLINE) inline.render()
     else inline.clear()
     block.render()
@@ -154,6 +219,9 @@ export function createSessionStats(ctx: HostContext) {
    * so they are rewritten here rather than through a pass.
    */
   function onStatsFrame() {
+    // A settlement is what moves the settled cost. The ask is throttled like a
+    // pass's own: several projections can change on one settlement.
+    cost.ask(Date.now())
     renderNumbers()
   }
 
@@ -184,6 +252,18 @@ export function createSessionStats(ctx: HostContext) {
    */
   function syncNumbers() {
     syncWatch()
+    cost.follow(watch?.sessionId ?? '')
+    // A table that arrives after the page's first pass re-prices everything:
+    // the host clears its totals on the swap, so its settled figure is asked
+    // for again before the new rate is drawn. The pass itself never waits on
+    // the fetch — the figures of this frame are drawn from what is in hand.
+    const before = priceGeneration()
+    void loadPrices(Date.now()).then(() => {
+      if (priceGeneration() === before) return
+      cost.ask(Date.now(), true)
+      renderNumbers()
+    })
+    cost.ask(Date.now())
     const meter = findContextMeter()
     if (meter !== null) {
       binding.bindMeter(meter)
@@ -254,6 +334,7 @@ export function createSessionStats(ctx: HostContext) {
     /** Drop the appends, the line, the projection subscriptions and the host-node bindings. */
     teardown() {
       releaseWatch()
+      offCost()
       // The structure bus behind the estimate's call rows goes with the rest.
       estimate.stop()
       releaseDialogWatch()

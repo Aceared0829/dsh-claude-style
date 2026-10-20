@@ -7,10 +7,11 @@ import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createStatsCount } from './stats-count'
 import { CACHE_HIT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { sessionStatsCacheHit, sessionStatsGrouped, sessionStatsSpeed } from './stats-format'
+import { formatMoneyMicro } from '@dsh-claude-style/contracts/prices'
+import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import type { HostText } from '@dsh-claude-style/engine/host'
 import type { StatsReading } from './stats-count'
-import type { StatsValueReader } from './stats-model'
 
 /**
  * The session's numbers on a line of their own under the composer, for the
@@ -63,6 +64,7 @@ interface Line {
   speed: Segment
   input: Segment
   output: Segment
+  cost: Segment
   total: Segment
   cache: Segment
   cell: {
@@ -76,6 +78,7 @@ interface Line {
     inputTail: Text
     output: HTMLElement
     outputTail: Text
+    cost: HTMLElement
     total: HTMLElement
     cacheHead: HTMLElement
     cache: HTMLElement
@@ -127,12 +130,13 @@ function templateParts(chat: HostText, key: string, names: string[]) {
 /**
  * The line's writer.
  *
- * @param read - one projection's current whole value.
+ * @param read - the whole reading the line writes.
  * @param chatText - the host's `chat` translate seat, or null when it is absent.
  * @param meter - the host's context meter, stamped by the composer pass.
+ * @param currency - which price table the cost figure follows.
  * @returns { render, refit, clear, root }.
  */
-export function createInlineStats(read: StatsValueReader, chatText: () => HostText | null, meter: () => HTMLElement | null) {
+export function createInlineStats(read: () => StatsReading, chatText: () => HostText | null, meter: () => HTMLElement | null, currency: () => Currency) {
   let line: Line | null = null
   /** The twin a fit measures on, built on the first fit that asks. */
   let probe: Line | null = null
@@ -147,7 +151,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   /** The figures counting from what the reader sees to the newest reading. */
   const count = createStatsCount((reading: StatsReading) => {
     const chat = chatText()
-    if (line !== null && chat !== null) writeLine(line, level, chat, reading.stats, reading.usage)
+    if (line !== null && chat !== null) writeLine(line, level, chat, reading.stats, reading.usage, reading.cost, currency())
   })
 
   /** Build the line once, in the order its segments appear. */
@@ -178,12 +182,16 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     const inputFigure = figure('dsh-claude-inline-input')
     input.wrap.appendChild(inputFigure.wrap)
 
-    // The tokens written back, then — for the tightest step that still shows
-    // figures — one total in their place, and the cache share.
+    // The tokens written back, then what they have cost so far, then — for the
+    // tightest step that still shows figures — one total in their place, and
+    // the cache share.
     const output = segment()
     output.wrap.append(arrowSpan('↓'))
     const outputFigure = figure('dsh-claude-inline-output')
     output.wrap.appendChild(outputFigure.wrap)
+    const cost = segment()
+    const costFigure = buildElement('span', 'dsh-claude-inline-cost')
+    cost.wrap.appendChild(costFigure)
     const total = segment()
     const totalFigure = figure('dsh-claude-inline-total')
     total.wrap.appendChild(totalFigure.wrap)
@@ -202,6 +210,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       speed,
       input,
       output,
+      cost,
       total,
       cache,
       cell: {
@@ -215,6 +224,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
         inputTail: inputFigure.tail,
         output: outputFigure.group,
         outputTail: outputFigure.tail,
+        cost: costFigure,
         total: totalFigure.group,
         cacheHead,
         cache: cacheFigure,
@@ -272,7 +282,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
   }
 
   /** Every figure that has data, in the words the host's templates give it, on ladder step `at`. */
-  function writeLine(shown: Line, at: number, chat: HostText, stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null) {
+  function writeLine(shown: Line, at: number, chat: HostText, stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, currency: Currency) {
     const counts = stats === null ? null : templateParts(chat, 'stats.counts', ['turns', 'steps'])
     const speedParts = templateParts(chat, 'message.tokensPerSecond', ['tps'])
     const tokenParts = templateParts(chat, 'message.turnUsage.count', ['count'])
@@ -290,6 +300,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     const hasOutput = usage !== null && usage.outputTokens > 0
     const hasTokens = hasInput || hasOutput
     const hasCache = hasInput && hit !== null
+    const hasCost = cost !== null && cost > 0
     const merged = at >= 4
     if (!hasCounts && !hasSpeed && !hasTokens) return
 
@@ -299,6 +310,9 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     // speed would have taken is theirs.
     show(shown.input, hasInput && !merged)
     show(shown.output, hasOutput && !merged)
+    // The cost stands beside the written-back figure until the ladder needs
+    // its room for the total.
+    show(shown.cost, hasCost && at < 3)
     show(shown.total, hasTokens && merged)
     show(shown.cache, hasCache)
     shown.cell.cacheHead.hidden = at >= 1
@@ -321,6 +335,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       writeTextInPlace(shown.cell.output, readTokens(usage.outputTokens))
       writeText(shown.cell.outputTail, tokenParts[1] ?? '')
       writeTextInPlace(shown.cell.total, readTokens(billed + usage.outputTokens))
+      if (cost !== null && cost > 0) writeTextInPlace(shown.cell.cost, formatMoneyMicro(cost, currency))
       writeLabel(shown.cell.cacheHead, cacheParts[0] ?? '')
       if (hit !== null) writeTextInPlace(shown.cell.cache, hit)
       writeLabel(shown.cell.cacheTail, cacheParts[1] ?? '')
@@ -380,7 +395,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    */
   function lineShape(reading: StatsReading, chat: HostText) {
     const twin = ensureProbe()
-    writeLine(twin, level, chat, reading.stats, reading.usage)
+    writeLine(twin, level, chat, reading.stats, reading.usage, reading.cost, currency())
     let length = 0
     for (let i = 0; i < twin.root.children.length; i++) {
       const segment = twin.root.children[i] as HTMLElement
@@ -400,7 +415,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
    */
   function probeWidth(shown: Line, at: number, chat: HostText, reading: StatsReading) {
     const twin = ensureProbe()
-    writeLine(twin, at, chat, reading.stats, reading.usage)
+    writeLine(twin, at, chat, reading.stats, reading.usage, reading.cost, currency())
     tightenMeter(at)
     shown.root.before(twin.root)
     const needed = neededWidth(shown, inPagePixels(twin.root.getBoundingClientRect().width))
@@ -444,7 +459,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
     // The step that stands is written onto the shown line with the numbers it
     // shows, so the figures that remain are the ones the reader is watching.
     const displayed = count.current()
-    writeLine(shown, level, chat, displayed.stats, displayed.usage)
+    writeLine(shown, level, chat, displayed.stats, displayed.usage, displayed.cost, currency())
     fitted = true
     fittedShape = lineShape(goal, chat)
     return level
@@ -466,9 +481,8 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       clear()
       return
     }
-    const stats = read<HostSessionStatsProjection>('sessionStats') ?? null
-    const usage = read<HostTokenUsageProjection>('tokenUsage') ?? null
-    if (stats === null && usage === null) {
+    const reading = read()
+    if (reading.stats === null && reading.usage === null) {
       clear()
       return
     }
@@ -477,7 +491,7 @@ export function createInlineStats(read: StatsValueReader, chatText: () => HostTe
       clear()
       return
     }
-    const changed = count.to({ stats, usage })
+    const changed = count.to(reading)
     if (!changed && fitted) return
     const goal = count.goal()
     const shape = goal === null ? -1 : lineShape(goal, chat)

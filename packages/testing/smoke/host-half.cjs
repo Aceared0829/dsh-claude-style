@@ -488,6 +488,61 @@ async function hostHalf() {
   const wrongMethod = await request(rate, '/dsh-claude-style/peakrate', 'DELETE', '', browser)
   check('a method the rate route does not take is turned away', wrongMethod.status === 405, `HTTP ${wrongMethod.status}`)
 
+  // The price snapshot and the session cost, on the same terms: the snapshot is
+  // the copy the package ships, the cost is priced from the session's own log,
+  // and both routes run the fence and refuse a session id that names a path.
+  // The log is a scratch one whose single settlement names its route and its
+  // instant: 1,000 uncached input and 800 output tokens on Flash, off-peak.
+  console.log('\nhost half — the price snapshot and the session cost')
+  const costHost = fakeHost(mod, {
+    fenced: true,
+    home: scratchHome,
+    events: {
+      'session-priced': [
+        said(1, Date.parse('2026-10-17T02:00:00Z'), '一张价目表'),
+        {
+          seq: 2,
+          time: Date.parse('2026-10-17T02:00:00Z'),
+          type: 'assistant/message',
+          turn: 1,
+          step: 1,
+          data: {
+            usage: { inputTokens: 1000, outputTokens: 800, cacheReadTokens: 0, cacheWriteTokens: 0 },
+            message: { content: [{ type: 'text', text: 'Yes.' }], source: { model: 'deepseek-flash' } },
+          },
+        },
+      ],
+    },
+    stored: [{ header: { id: 'session-priced' }, revision: 'p1' }],
+  })
+  const refusedPrices = await request(costHost, '/dsh-claude-style/prices', 'GET', '', crossSite)
+  check('cross-site page: the price snapshot is refused',
+    refusedPrices.status === 401 || refusedPrices.status === 403, `HTTP ${refusedPrices.status}`)
+  const pricesAnswer = await request(costHost, '/dsh-claude-style/prices', 'GET', '', browser)
+  const pricesBody = pricesAnswer.status === 200 ? JSON.parse(pricesAnswer.body) : null
+  check('the price snapshot answers both official tables for the shipped models',
+    pricesBody !== null && pricesBody.ok === true && pricesBody.origin === 'bundled' &&
+      pricesBody.document?.models?.['deepseek-flash']?.CNY?.peak?.output === 8 &&
+      pricesBody.document?.models?.['deepseek-flash']?.USD?.offPeak?.output === 0.6 &&
+      typeof pricesBody.document?.schedule?.holidays?.length === 'number',
+    JSON.stringify({ status: pricesAnswer.status, models: Object.keys(pricesBody?.document?.models ?? {}) }))
+  const refusedCost = await request(costHost, '/dsh-claude-style/session-cost?id=session-priced', 'GET', '', crossSite)
+  check('cross-site page: the session cost is refused',
+    refusedCost.status === 401 || refusedCost.status === 403, `HTTP ${refusedCost.status}`)
+  const shapedCost = await request(costHost, '/dsh-claude-style/session-cost?id=..%2Fetc', 'GET', '', browser)
+  check('a session id that names a path is refused', shapedCost.status === 400, `HTTP ${shapedCost.status}`)
+  const costAnswer = await request(costHost, '/dsh-claude-style/session-cost?id=session-priced', 'GET', '', browser)
+  const costBody = costAnswer.status === 200 ? JSON.parse(costAnswer.body) : null
+  // Flash's off-peak table: 1,000 uncached input at ¥1/M and 800 output at ¥4/M
+  // give 1,000 + 3,200 micro-yuan; the same call in USD gives 150 + 480.
+  check('a session the host can read is priced from its own settlements, in both currencies',
+    costBody !== null && costBody.ok === true && costBody.value !== null &&
+      costBody.value.cny === 4_200 && costBody.value.usd === 630 && costBody.value.partial === false,
+    JSON.stringify(costBody?.value ?? costBody))
+  const missing = await request(costHost, '/dsh-claude-style/session-cost?id=no-such-session', 'GET', '', browser)
+  check('a session the host cannot read answers no figure rather than zero',
+    missing.status === 200 && JSON.parse(missing.body).value === null, JSON.stringify(missing))
+
   // The routed assets, on the public prefix route: the manifest the
   // build wrote decides what exists, a text asset is stored brotli-compressed,
   // and nothing else answers however the name is spelled.

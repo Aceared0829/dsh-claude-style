@@ -9,6 +9,7 @@
  * the feature that reads it (its settings row follows the same table, D72).
  */
 import { OFFICIAL_MODEL_GROUP } from './services'
+import { CURRENCIES, CURRENCY_CNY } from './prices'
 
 /* ---------- the value vocabulary ---------- */
 
@@ -236,6 +237,8 @@ export const PREFS = {
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },
   permissionsControl: { type: 'boolean', default: true },
   statsPosition: { type: 'choice', values: STATS_POSITIONS, default: STATS_POSITION_CONTEXT },
+  /** Which official price table the session's cost figure follows. */
+  billingCurrency: { type: 'choice', values: CURRENCIES, default: CURRENCY_CNY },
   workspaceView: { type: 'boolean', default: true },
   dockCards: { type: 'boolean', default: true },
   sidebarSearch: { type: 'boolean', default: true },

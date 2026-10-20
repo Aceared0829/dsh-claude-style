@@ -545,6 +545,17 @@ two surfaces read the same words; the host's small formatting rules
 `formatCacheHitPercent`) are mirrored so the figures match character for
 character.
 
+The cost is the session's own. The host half prices every settlement at its
+own instant and route and answers the settled total over `SESSION_COST_PATH`;
+the browser adds the tokens the streaming answer has grown by at the output
+rate in force, so the figure moves with the written-back tokens and settles
+with them. It writes four decimals and the symbol of the `billingCurrency`
+setting (`¥0.0015`, `$0.0002`): the official CNY and USD tables are stored
+apart, so the setting picks a table rather than converting one. On the line it
+stands between the written-back tokens and the cache share, and it is among the
+figures the ladder gives up when the line needs the room for the total; in the
+block it is the usage section's first row.
+
 Which figures appear follows the host's statistics row. Its detailed form gets
 the whole list. Its compact form carries only the output speed and the cache-hit
 share on the composer line, so the block keeps the four that row leaves out —

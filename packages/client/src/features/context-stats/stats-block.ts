@@ -4,9 +4,8 @@ import { createStatsCount } from './stats-count'
 import { sessionStatsSections } from './stats-model'
 import { CONTEXT_STATS_ATTR, contextPanel, hostStatsDetailed } from './stats-panel'
 import type { HostText } from '@dsh-claude-style/engine/host'
-import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { StatsReading } from './stats-count'
-import type { StatsValueReader } from './stats-model'
 
 /**
  * The block this feature keeps at the host panel's end:
@@ -43,11 +42,12 @@ const COMPACT_SKELETON_ITEMS = 4
 /**
  * The block's writer.
  *
- * @param read - one projection's current whole value.
+ * @param read - the whole reading the block writes.
  * @param chatText - the host's `chat` translate seat, or null when it is absent.
+ * @param currency - which price table the cost figure follows.
  * @returns { render, stopSkeleton, resetContent }.
  */
-export function createStatsBlock(read: StatsValueReader, chatText: () => HostText | null) {
+export function createStatsBlock(read: () => StatsReading, chatText: () => HostText | null, currency: () => Currency) {
   /** The block's last written rows, so an unchanged pass rebuilds nothing. */
   let blockSignature = ''
   /** The value cells of the block as built, in section order. */
@@ -83,7 +83,7 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
       cacheWriteTokens: Math.round(reading.usage.cacheWriteTokens),
       outputTokens: Math.round(reading.usage.outputTokens),
     }
-    return { stats, usage }
+    return { stats, usage, cost: reading.cost }
   }
 
   /** Write one reading onto the open panel, wherever the count stands between two. */
@@ -190,7 +190,7 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
    * nothing.
    */
   function writeBlock(panel: Element, reading: StatsReading, chat: HostText, compact: boolean) {
-    const sections = sessionStatsSections(reading.stats, reading.usage, chat, compact)
+    const sections = sessionStatsSections(reading.stats, reading.usage, reading.cost, currency(), chat, compact)
     if (sections.length === 0) {
       removeContextBlock(panel)
       return
@@ -246,14 +246,13 @@ export function createStatsBlock(read: StatsValueReader, chatText: () => HostTex
       return
     }
     const compact = !hostStatsDetailed(root)
-    const stats = read<HostSessionStatsProjection>('sessionStats')
-    const usage = read<HostTokenUsageProjection>('tokenUsage')
-    if (stats === undefined && usage === undefined) {
+    const reading = read()
+    if (reading.stats === null && reading.usage === null) {
       count.reset()
       renderContextSkeleton(panel, chat, compact)
       return
     }
-    const changed = count.to({ stats: stats ?? null, usage: usage ?? null })
+    const changed = count.to(reading)
     // A new reading is written by its own frames; a pass that found the same
     // reading still writes the block, so a label that followed the language
     // lands and the figures are left where they stood.

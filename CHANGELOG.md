@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 新增对话统计上的会话费用：宿主半按每次结算的发生时刻与模型计价，人民币与美元两张官方价表都随快照下发，设置里可选显示币种；价格快照与峰值费率目录由仓库的定时工作流抓取，安装端每天从仓库更新一次，包内副本兜底。
+
+### 体验优化
 
 - 把设置页「侧栏」页的「面板悬浮卡片」改名为「右侧栏卡片布局」，开关本身与存下的设置值不变。
 - 模型选择器的二级菜单顶部新增搜索框：输入名称即可在整份模型目录里筛选，回车之外的方向键、选择与编辑照常可用；行距同时收紧。清除按钮沿用 transitions.dev 的溶解效果（文字下沉模糊、占位符从上方落入、每个词下方亮起一道光带），并跟随设置的动画档位；搜索框里的光标使用皮肤自己的光标动画。
@@ -30,7 +34,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- Add the session's cost to the conversation statistics: the host half prices every settlement at its own instant and route, both official price tables ship in the snapshot, and the settings choose the currency; a scheduled workflow keeps the price snapshot and the peak rate catalog in the repository, every install refreshes from it once a day, and the packaged copies answer when it cannot be reached.
+
+### Improvements
 
 - Rename the Sidebar tab's Float docked panels switch to Right sidebar card layout, with the switch and the stored value unchanged.
 - Add a search field to the top of the model picker's second level: typing a name filters the whole model catalog, while selection, editing and the arrow keys keep working as before, and the rows sit closer together. Its clear control plays transitions.dev's dissolve — the words fly down through a blur, the placeholder falls in from above, and a streak ignites under each word — answering the animation choice in force, and the field's caret is the skin's own animated one.

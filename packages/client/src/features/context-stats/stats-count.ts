@@ -23,10 +23,12 @@ import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-
  * loop runs on the engine's frame pipeline (D40).
  */
 
-/** The two projections the line reads, as one reading. */
+/** The two projections the line reads, and the session's cost, as one reading. */
 export interface StatsReading {
   stats: HostSessionStatsProjection | null
   usage: HostTokenUsageProjection | null
+  /** Micro units of the chosen currency, or null while no figure is known. */
+  cost: number | null
 }
 
 /**
@@ -42,7 +44,9 @@ const MAX_FRAME_MS = 64
 
 /** Whether two readings carry the same numbers. */
 function sameReading(before: StatsReading, after: StatsReading) {
-  return sameNumbers(before.stats, after.stats, STAT_FIELDS) && sameNumbers(before.usage, after.usage, USAGE_FIELDS)
+  return before.cost === after.cost
+    && sameNumbers(before.stats, after.stats, STAT_FIELDS)
+    && sameNumbers(before.usage, after.usage, USAGE_FIELDS)
 }
 
 /** Whether two projections carry the same numbers, or are both absent. */
@@ -74,6 +78,7 @@ function mixReading(before: StatsReading, after: StatsReading, share: number): S
   return {
     stats: before.stats === null || after.stats === null ? after.stats : mixNumbers(before.stats, after.stats, STAT_FIELDS, share),
     usage: before.usage === null || after.usage === null ? after.usage : mixNumbers(before.usage, after.usage, USAGE_FIELDS, share),
+    cost: before.cost === null || after.cost === null ? after.cost : before.cost + (after.cost - before.cost) * share,
   }
 }
 
@@ -84,7 +89,10 @@ function countable(reading: StatsReading) {
 
 /** Whether the figures are close enough to the reading that every formatter rounds to it. */
 function withinHalfUnit(reading: StatsReading, goal: StatsReading) {
-  return withinHalfOf(reading.stats, goal.stats, STAT_FIELDS) && withinHalfOf(reading.usage, goal.usage, USAGE_FIELDS)
+  const costClose = reading.cost === null || goal.cost === null
+    ? reading.cost === goal.cost
+    : Math.abs(goal.cost - reading.cost) < 0.5
+  return costClose && withinHalfOf(reading.stats, goal.stats, STAT_FIELDS) && withinHalfOf(reading.usage, goal.usage, USAGE_FIELDS)
 }
 
 /** Whether every number of one projection is within half a unit of the goal's. */
@@ -102,10 +110,11 @@ function withinHalfOf<Shape extends object>(reading: Shape | null, goal: Shape |
 }
 
 /** A copy of a reading, so the host's projection objects can never move under the count. */
-function takeReading(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null): StatsReading {
+function takeReading(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null): StatsReading {
   return {
     stats: stats === null ? null : { ...stats },
     usage: usage === null ? null : { ...usage },
+    cost,
   }
 }
 
@@ -121,7 +130,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
   // three time constants; the token's stretch is that distance.
   const timeConstant = motionMs('--dsh-claude-duration-count') / 3
   /** The reading the line shows right now. */
-  let displayed: StatsReading = { stats: null, usage: null }
+  let displayed: StatsReading = { stats: null, usage: null, cost: null }
   /** The reading the count is heading for, or null before the first one. */
   let goal: StatsReading | null = null
   /** The last frame this loop ran, and the canceller of the one in flight. */
@@ -164,7 +173,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
    */
   function to(reading: StatsReading) {
     if (goal !== null && sameReading(goal, reading)) return false
-    goal = takeReading(reading.stats, reading.usage)
+    goal = takeReading(reading.stats, reading.usage, reading.cost)
     if (motionReduced() || !countable(displayed) || !countable(goal)) {
       stop()
       displayed = goal
@@ -194,7 +203,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
     reset() {
       stop()
       goal = null
-      displayed = { stats: null, usage: null }
+      displayed = { stats: null, usage: null, cost: null }
     },
     stop,
   }

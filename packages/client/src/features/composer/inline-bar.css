@@ -301,6 +301,14 @@ body[data-dsh-claude-style] .dsh-claude-inline-stats[data-dsh-claude-inline-prob
 body[data-dsh-claude-style] .dsh-claude-inline-arrow {
   color: var(--dsw-alias-label-tertiary);
 }
+/* The session's cost: the line's own figure style, the currency symbol
+   carrying the unit (features/context-stats/inline-stats.ts). */
+body[data-dsh-claude-style] .dsh-claude-inline-cost {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
 /* The ladder's third step: the meter keeps its ring and gives up the number
    beside it (features/context-stats/inline-stats.ts). That number is the
    trigger's height — the bare ring is shorter — and the trigger is the tallest

@@ -64,7 +64,13 @@ name: CI
 on:
   push:
     branches: [master]
+    # The daily data refresh writes only these files; its own workflow validates
+    # them, and a full matrix for a numbers-only commit buys nothing.
+    paths-ignore:
+      - 'packages/host/data/**'
   pull_request:
+    paths-ignore:
+      - 'packages/host/data/**'
   merge_group:
   workflow_dispatch:
 

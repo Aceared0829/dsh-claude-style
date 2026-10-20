@@ -27,6 +27,18 @@ export default {
       values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
       note: 'statsComposerRequired',
     },
+  }, {
+    tab: 'conversation',
+    rank: 36,
+    pref: 'billingCurrency',
+    title: 'billingCurrencyTitle',
+    desc: 'billingCurrencyDesc',
+    choiceLabels: { CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: 'statsComposerRequired',
+    },
   }],
   cases: ['context-stats', 'stats-compact', 'stats-inline']
 } satisfies FeatureManifest
