@@ -10,6 +10,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
 
+### 问题修复
+
+- 修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。
+
 ### 其他变更
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
@@ -17,6 +21,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
+
+### Bug Fixes
+
+- Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus.
 
 ### Chores
 

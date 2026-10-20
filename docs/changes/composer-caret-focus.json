@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。",
+  "en": "Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus."
+}

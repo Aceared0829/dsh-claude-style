@@ -2,6 +2,7 @@ import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
+import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
 import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -76,6 +77,10 @@ export function createProcessFold() {
       // reader, or the browser draws a focus ring on the header that just
       // opened, as if someone had pressed Tab.
       const previousFocus = document.activeElement
+      // The composer's selection is the reader's caret, and the restore below
+      // is a bare focus: it would take the caret back to the start of the draft.
+      // The range travels across the focus instead (shared/composer-caret.ts).
+      const composerCaret = captureComposerCaret()
       // The same focus() also scrolls the header into view, and that scroll
       // looks to the host exactly like the reader scrolling: its follow is
       // suspended for a 500 ms sampling window, in which a resize follows
@@ -105,7 +110,7 @@ export function createProcessFold() {
       }
       // With the reader already on the header this puts the focus back where
       // it was and changes nothing.
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true })
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) focusKeepingComposerCaret(previousFocus, composerCaret)
       if (document.activeElement === header) header.blur()
     }
   }

@@ -1,6 +1,7 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
-import { DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_INPUT_SELECTOR, DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '@dsh-claude-style/engine/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findDockedContextMeter, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '@dsh-claude-style/engine/host'
@@ -9,6 +10,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './composer.manifest'
 import { closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
+import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
 import { inPageBox } from '../../shared/page-zoom'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
@@ -536,10 +538,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const card = closestComposerCard(target, 'inline')
     if (!card) return
     if (closestFrom(target, 'button, [role="button"], [role="menu"], [role="radiogroup"], input, select')) return
-    const input = card.querySelector<HTMLElement>('[data-composer-input]')
-    if (input && document.activeElement !== input) {
-      input.focus()
-    }
+    const input = card.querySelector<HTMLElement>(COMPOSER_INPUT_SELECTOR)
+    if (input === null || document.activeElement === input) return
+    // The host's own press handling settles the caret after this listener,
+    // and a focus taken here would pre-empt it and re-home the selection to
+    // the start of the draft. The press settles first; this focuses only when
+    // nothing else did, carrying the selection across.
+    const caret = captureComposerCaret(input.ownerDocument)
+    requestFrame({
+      write() {
+        if (!input.isConnected || document.activeElement === input) return
+        focusKeepingComposerCaret(input, caret)
+      },
+    })
   }
 
   /**
