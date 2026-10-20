@@ -88,6 +88,59 @@ const readOverlayWithWidePill = async (page) => {
 const onTheRow = (reading) => reading !== null && reading.dock !== null && reading.row !== null &&
   reading.dock.top === reading.row.top && reading.dock.height === reading.row.height
 
+/**
+ * Open the host's `@` menu in the composer and read where the dock stands while
+ * it is up: the host renders that menu into the card's overlay seat, and a menu
+ * row's own cluster is no composer row, so the reading taken with it open is the
+ * one that shows whether the dock was measured off the menu (issue #102).
+ *
+ * The reading is taken after the card's own gap under the row moves, the way the
+ * sibling checks force one: the composer measures the row when its box or the
+ * stack's changes, so a menu opened over a settled card is read against the row
+ * the last measurement found. Moving the gap is the reader's own case — a draft
+ * that grows the card does the same — and it is what puts the open menu in front
+ * of the measurement. What the reading is judged against is therefore the dock
+ * the same gap gives with no menu up, not a row the same query answers with: a
+ * menu row that wrongly took the cluster's part would otherwise be both the row
+ * and the thing measured against it, and the two would agree.
+ */
+const readOverlayWithMenu = async (page) => {
+  const input = page.locator('[data-composer-input]')
+  await input.click()
+  await page.keyboard.type('@')
+  const menu = page.locator('[data-trigger-menu]')
+  await menu.waitFor({ state: 'attached', timeout: 10000 }).catch(() => {})
+  await page.waitForTimeout(600)
+  const open = await menu.count() > 0
+  const inCard = await page.evaluate(() => {
+    const card = document.querySelector('[data-composer-card]')
+    const found = document.querySelector('[data-trigger-menu]')
+    return found === null || card === null ? null : card.contains(found)
+  })
+  // Every mark of the skin's own namespace inside the menu, whatever it names.
+  const measured = await page.evaluate((prefix) => {
+    const menu = document.querySelector('[data-trigger-menu]')
+    if (menu === null) return null
+    const marked = [...menu.querySelectorAll('*')]
+      .flatMap((el) => [...el.attributes].filter((attribute) => attribute.name.startsWith(prefix)).map((attribute) => attribute.name))
+    return { marks: marked.slice(0, 6), marked: marked.length }
+  }, 'data-dsh-claude-')
+  const nudged = await readOverlayWithGap(page, '-4px')
+  // The press left a draft behind; it goes again, and the page settles back.
+  await page.evaluate(() => {
+    const input = document.querySelector('[data-composer-input]')
+    if (input === null) return
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(input)
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+    document.execCommand('delete')
+  })
+  await page.waitForTimeout(600)
+  return { open, inCard, measured, nudged, closed: await readOverlay(page) }
+}
+
 function statsOverlayScenario({ check }) {
   return {
     script: 'greeting',
@@ -111,6 +164,9 @@ function statsOverlayScenario({ check }) {
       const restored = await readOverlay(page)
       // The pill, reaching outside the node the host parks it in.
       const widePill = await readOverlayWithWidePill(page)
+      // The host's own `@` menu, mounted in the card's overlay seat: a menu row is
+      // no composer row, so the dock must not follow it (issue #102).
+      const withMenu = await readOverlayWithMenu(page)
       return [
         check('the dock stands on the toolbar row\'s own line, measured off the row rather than assumed',
           onTheRow(resting) && Number.parseFloat(resting.offset) >= 0 && Number.parseFloat(resting.height) > 0,
@@ -127,7 +183,18 @@ function statsOverlayScenario({ check }) {
         check('the room covers the pill itself: a trigger reaching outside the node it is parked in keeps 8px clear of the row\'s text',
           widePill !== null && widePill.pillGap !== null && widePill.pillGap >= 7,
           JSON.stringify(widePill === null ? null : { pillGap: widePill.pillGap, meter: widePill.meter, pill: widePill.pill })),
-        check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
+        check('the host\'s @ menu opens inside the composer card, and the dock keeps the line the same gap gives with no menu up',
+          withMenu.open && withMenu.inCard === true &&
+            withMenu.nudged.dock !== null && flush.dock !== null &&
+            withMenu.nudged.dock.top === flush.dock.top && withMenu.nudged.dock.height === flush.dock.height &&
+            withMenu.nudged.offset === flush.offset,
+          JSON.stringify({ withMenu, flush })),
+        check('a menu row is no composer row: the open menu carries none of the composer\'s marks',
+          withMenu.measured !== null && withMenu.measured.marked === 0,
+          JSON.stringify(withMenu.measured)),
+        check('closing the menu puts the page back where it stood',
+          onTheRow(withMenu.closed) && withMenu.closed.offset === resting.offset,
+          JSON.stringify({ closed: withMenu.closed, resting })),        check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },
   }

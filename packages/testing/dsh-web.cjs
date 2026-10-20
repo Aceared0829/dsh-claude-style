@@ -46,6 +46,10 @@ const DRIVER_MESSAGE = /^\[\.WebGL-[^\]]*\]GL Driver Message/
  * on the machine running the lane is touched, and a home that already has a
  * registry (a lane run before, a reader's own) keeps it.
  *
+ * The directory holds one file, because a workspace with no file in it gives the
+ * `@` menu no candidate to offer: the menu then never opens, and a scenario that
+ * reads the page with the composer's own menus up has nothing to read.
+ *
  * @param home - the scratch `$DSH_HOME`.
  */
 function ensureWorkspace(home) {
@@ -54,6 +58,7 @@ function ensureWorkspace(home) {
   if (fs.existsSync(file)) return
   const directory = path.join(home, 'workspace')
   fs.mkdirSync(directory, { recursive: true })
+  fs.writeFileSync(path.join(directory, 'lane-note.md'), '# Lane workspace\n\nA file the @ menu can offer.\n')
   fs.mkdirSync(storages, { recursive: true })
   const id = randomUUID()
   const now = new Date().toISOString()

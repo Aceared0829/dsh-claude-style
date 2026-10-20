@@ -81,6 +81,13 @@ export const COMPOSER_SELECTOR = '[data-composer-seat]'
 export const COMPOSER_INPUT_SELECTOR = '[data-composer-input]'
 /** The card the input sits in; the send flight lifts a copy of the whole card. */
 export const COMPOSER_CARD_SELECTOR = '[data-composer-card]'
+/**
+ * The card's overlay seat: the box the host mounts its input overlays in (the
+ * `conversation.input.overlay` slot, where the `@` and `/` menus render). It is
+ * anchored above the card and out of its layout, and the host puts it in the
+ * card's subtree, so what stands in it is not the composer's own box.
+ */
+export const COMPOSER_OVERLAY_SELECTOR = '[data-composer-overlay]'
 /** The draft's own scroll area inside that card. */
 export const COMPOSER_SCROLL_SELECTOR = '[data-input-scroll]'
 /** The echo bubble the host mounts the moment a submission goes through. */

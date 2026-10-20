@@ -33,6 +33,8 @@ interface RegionLookup {
   within: string
   parts: Map<string, string>
   rootParts: Map<string, string> | null
+  /** The subtree the region does not read inside, or null for a region that reads everywhere it stands. */
+  skip: string | null
 }
 
 /** What the skin handed over at install: its own attributes and the anchors its menus stand in (D73). */
@@ -59,6 +61,7 @@ function buildLookups(vocabulary: PartsTableVocabulary): RegionLookup[] {
     within: region.within,
     parts: new Map(Object.entries(region.parts)),
     rootParts: region.rootParts === undefined ? null : new Map(Object.entries(region.rootParts)),
+    skip: region.skip ?? null,
   }))
 }
 
@@ -67,6 +70,9 @@ let ANCHOR_SELECTOR = ''
 
 /** The regions the current generation installed, in the order the walk enters them. */
 let LOOKUPS: RegionLookup[] = []
+
+/** Every region's skipped subtree as one selector, so a walk tests an element once. */
+let SKIP_SELECTOR = ''
 
 /** The parts one element's class list carries, as one attribute value, or null when it plays none. */
 function partsOf(element: Element, lookups: readonly RegionLookup[], rootParts: Map<string, string> | null) {
@@ -276,7 +282,9 @@ function adoptHeldInside(element: Element, attribute: string): boolean {
 function contextAt(element: Element): { lookups: RegionLookup[], roots: Map<string, string> | null } {
   const lookups: RegionLookup[] = []
   for (const lookup of LOOKUPS) {
-    if (element.closest(lookup.within) !== null) lookups.push(lookup)
+    if (element.closest(lookup.within) === null) continue
+    if (insideSkipped(element, lookup)) continue
+    lookups.push(lookup)
   }
   const parent = element.parentElement
   let roots: Map<string, string> | null = null
@@ -289,11 +297,34 @@ function contextAt(element: Element): { lookups: RegionLookup[], roots: Map<stri
 }
 
 /**
+ * Whether a region's skip covers one element, which is everything standing in
+ * the skipped subtree. The node carrying the skip keeps its own parts: a region
+ * names its own box, not the separate element the host mounts in it.
+ */
+function insideSkipped(element: Element, lookup: RegionLookup) {
+  if (lookup.skip === null) return false
+  const skipped = element.closest(lookup.skip)
+  return skipped !== null && skipped !== element
+}
+
+/**
+ * The regions one element's children are read in: the ones whose skipped subtree
+ * starts here are dropped, because nothing under it is the region's own.
+ */
+function lookupsBelow(element: Element, lookups: readonly RegionLookup[]): readonly RegionLookup[] {
+  if (SKIP_SELECTOR === '' || !element.matches(SKIP_SELECTOR)) return lookups
+  return lookups.filter((lookup) => lookup.skip === null || !element.matches(lookup.skip))
+}
+
+/**
  * Walk one subtree, carrying the regions in force down from its parent.
  *
  * A region's `rootParts` are read on the anchor's own element children — where
  * the host puts the subtree's box — and nowhere deeper: a local name as common
- * as `root` belongs to rows and tooltips further in.
+ * as `root` belongs to rows and tooltips further in. A region's `skip` drops
+ * the region for everything inside that node; the node itself keeps its own
+ * parts, because what the region names is its box, not what the host mounts in
+ * it.
  */
 function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<string, string> | null): boolean {
   let lookups = inherited
@@ -306,7 +337,8 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
     }
   }
   let changed = writeParts(element, lookups, roots)
-  for (const child of element.children) if (walk(child, lookups, childRoots)) changed = true
+  const below = lookupsBelow(element, lookups)
+  for (const child of element.children) if (walk(child, below, childRoots)) changed = true
   if (applyHolds(element)) changed = true
   // The element's own mark decides whether its ancestors are a holder or a
   // scope for the nodes under it, so a mark written here re-answers them.
@@ -352,6 +384,7 @@ export function installParts(next: PartsVocabulary, onMarked?: () => void) {
   adopted = next
   LOOKUPS = buildLookups(next)
   ANCHOR_SELECTOR = partRegions(next).map((region) => region.within).join(', ')
+  SKIP_SELECTOR = partRegions(next).flatMap((region) => region.skip === undefined ? [] : [region.skip]).join(', ')
   HOLD_STATES = holdRelations(next).map((spec) => ({ spec, held: new Map() }))
   HELD_SELECTOR = holdRelations(next).map((relation) => relation.held).join(', ')
   HOLD_ATTRIBUTES = new Set(holdRelations(next).flatMap((relation) => relation.attributes))
