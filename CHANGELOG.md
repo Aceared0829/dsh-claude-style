@@ -8,11 +8,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
+- 改善钠的兜底标记：它只跟随流容器自己的子节点变化，一批变化只标记这一批新增的子元素，流式输出期间不再读整页的变化记录。
 - 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
 
 ### 问题修复
 
 - 修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。
+- 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
 
 ### 其他变更
 
@@ -20,11 +22,13 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="en-unreleased">Improvements</h3>
 
+- Improve Sodium's fallback mark: it follows the changes of a flow container's own children and marks only the children a batch added, so streaming output no longer reads the whole page's change records.
 - Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
 
 ### Bug Fixes
 
 - Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus.
+- Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
 
 ### Chores
 
