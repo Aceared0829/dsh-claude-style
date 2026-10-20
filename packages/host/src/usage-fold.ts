@@ -40,7 +40,7 @@ export interface UsageEvent {
 }
 
 /** One usage sample, in the host's own token names. */
-interface UsageSample {
+export interface UsageSample {
   inputTokens?: unknown
   outputTokens?: unknown
   cacheReadTokens?: unknown
@@ -78,7 +78,7 @@ export function dayKey(time: number): string | null {
  * `assistant/message` may carry it directly; otherwise the sample is the last
  * raw `usage` chunk of the settlement's compact stream.
  */
-function usageOf(event: UsageEvent): UsageSample | undefined {
+export function usageOf(event: UsageEvent): UsageSample | undefined {
   const data = event?.data
   if (data === null || data === undefined || typeof data !== 'object') return undefined
   if (event.type === 'assistant/message' && data.usage !== undefined) return data.usage
@@ -118,7 +118,7 @@ function bucketsEqual(left: Buckets, right: Buckets) {
  * that committed no surface message keeps its usage but has no route to attribute
  * it to, and its tokens then count toward the day alone.
  */
-function modelOf(event: UsageEvent): string | null {
+export function modelOf(event: UsageEvent): string | null {
   const model = event?.data?.message?.source?.model
   return typeof model === 'string' && model !== '' ? model : null
 }

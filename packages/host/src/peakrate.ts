@@ -27,8 +27,16 @@ import { parseCatalog } from './peakrate-catalog.js'
 /** The catalog document the build copies beside the bundle (scripts/build.mjs). */
 export const PEAKRATE_CATALOG_FILE = 'peakrate-catalog.json'
 
-/** Where the catalog is published. */
-export const PEAKRATE_CATALOG_URL = 'https://offpeakclock.com/pricing.json'
+/**
+ * Where the catalog is published: the repository's copy first, the raw file
+ * second. `.github/workflows/data.yml` refreshes that copy from the upstream
+ * source once a day, so every install downloads a validated file instead of
+ * asking the upstream for one.
+ */
+export const PEAKRATE_CATALOG_URLS = [
+  'https://cdn.jsdelivr.net/gh/Nwflower/dsh-claude-style@master/packages/host/data/peakrate-catalog.json',
+  'https://raw.githubusercontent.com/Nwflower/dsh-claude-style/master/packages/host/data/peakrate-catalog.json',
+]
 
 /** How long a fetched catalog counts as current. */
 export const PEAKRATE_REFRESH_MS = 24 * 60 * 60 * 1000
@@ -146,28 +154,35 @@ export function createPeakRate(ctx: DshContext): PeakRateStore {
     catalog = shipped
   }
 
-  /** Fetch the source once and adopt the answer. */
+  /** Fetch the repository's copy once and adopt the answer. */
   async function refresh(): Promise<boolean> {
     let raw: unknown
-    try {
-      const controller = new AbortController()
-      inFlight = controller
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+    for (const url of PEAKRATE_CATALOG_URLS) {
       try {
-        const response = await fetch(PEAKRATE_CATALOG_URL, { signal: controller.signal })
-        if (!response.ok) {
-          warn(`${PACKAGE_NAME}: peak rate source answered ${response.status}; keeping the current catalog`)
-          return false
+        const controller = new AbortController()
+        inFlight = controller
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+        try {
+          const response = await fetch(url, { signal: controller.signal })
+          if (!response.ok) {
+            warn(`${PACKAGE_NAME}: peak rate source ${url} answered ${response.status}`)
+            raw = undefined
+            continue
+          }
+          raw = await response.json()
+        } finally {
+          clearTimeout(timeout)
+          if (inFlight === controller) inFlight = null
         }
-        raw = await response.json()
-      } finally {
-        clearTimeout(timeout)
-        if (inFlight === controller) inFlight = null
+        if (raw !== undefined) break
+      } catch (error) {
+        // A source that cannot be reached is not a fault here: the meter keeps
+        // judging by the catalog already held, and the next URL gets its turn.
+        warn(`${PACKAGE_NAME}: peak rate source ${url} unreachable: ${(error as { message?: string }).message}`)
       }
-    } catch (error) {
-      // A source that cannot be reached is not a fault here: the meter keeps
-      // judging by the catalog already held
-      warn(`${PACKAGE_NAME}: peak rate source unreachable, keeping the current catalog: ${(error as { message?: string }).message}`)
+    }
+    if (raw === undefined) {
+      warn(`${PACKAGE_NAME}: no peak rate source answered; keeping the current catalog`)
       return false
     }
     const parsed = parseCatalog(raw)

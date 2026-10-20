@@ -9,13 +9,10 @@
  */
 import { isClockValue, isIsoDate, isIsoInstant } from '@dsh-claude-style/contracts/peakrate'
 import type { PeakCatalog, RateOverride, RateProfile, RateSchedule, RateWindow } from '@dsh-claude-style/contracts/peakrate'
+import { asRecord } from './json-document.js'
 
 /** The document version this reader understands. */
 const SCHEMA_VERSION = 1
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null
-}
 
 function asText(value: unknown): string | undefined {
   return typeof value === 'string' && value !== '' ? value : undefined

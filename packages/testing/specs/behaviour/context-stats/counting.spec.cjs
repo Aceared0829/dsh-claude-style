@@ -46,4 +46,27 @@ module.exports = spec({ page: 'stats-inline' }, ({ test }) => {
     t.expectThat.equal(turns.filter((value) => value > 2 && value < 22), [], 'no figure between the two readings is ever shown')
     t.expectThat.equal(turns.at(-1), 22, 'the line shows the new reading')
   })
+
+  /**
+   * The session's cost is a segment of the line in its own place: between the
+   * written-back tokens and the cache share. A segment with no price behind it
+   * draws nothing rather than a zero, so this page — which answers no price
+   * snapshot — still shows the segment empty.
+   */
+  test('the session cost is a segment of the line, ahead of the cache share', async (t) => {
+    await t.prefs({ motion: 'reduced' })
+    await seatSession(t)
+    const order = await t.page.evaluate(([line, cost]) => {
+      const root = document.querySelector(line)
+      const figure = root === null ? null : root.querySelector(cost)
+      if (root === null || figure === null || figure.parentElement === null) return null
+      const segments = [...root.children]
+      const index = segments.indexOf(figure.parentElement)
+      return { index, last: segments.length - 1, hidden: figure.parentElement.hidden, text: figure.textContent }
+    }, [t.surface('stats.inline-line'), t.surface('stats.inline-cost')])
+    t.expectThat.equal(order !== null && order.index > 0 && order.index < order.last, true,
+      `the cost stands between the tokens and the cache share (${JSON.stringify(order)})`)
+    t.expectThat.equal(order === null ? null : order.hidden, true, 'no price snapshot answered, so the segment draws nothing')
+    t.expectThat.equal(order === null ? null : order.text, '', 'the segment carries no figure of its own')
+  })
 })

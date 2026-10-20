@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 新增对话统计上的会话费用：宿主半按每次结算的发生时刻与模型计价，人民币与美元两张官方价表都随快照下发，设置里可选显示币种；价格快照与峰值费率目录由仓库的定时工作流抓取，安装端每天从仓库更新一次，包内副本兜底。
+
+### 体验优化
 
 - 把设置页「侧栏」页的「面板悬浮卡片」改名为「右侧栏卡片布局」，开关本身与存下的设置值不变。
 - 改善钠的兜底标记：它只跟随流容器自己的子节点变化，一批变化只标记这一批新增的子元素，流式输出期间不再读整页的变化记录。
@@ -25,7 +29,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- Add the session's cost to the conversation statistics: the host half prices every settlement at its own instant and route, both official price tables ship in the snapshot, and the settings choose the currency; a scheduled workflow keeps the price snapshot and the peak rate catalog in the repository, every install refreshes from it once a day, and the packaged copies answer when it cannot be reached.
+
+### Improvements
 
 - Rename the Sidebar tab's Float docked panels switch to Right sidebar card layout, with the switch and the stored value unchanged.
 - Improve Sodium's fallback mark: it follows the changes of a flow container's own children and marks only the children a batch added, so streaming output no longer reads the whole page's change records.

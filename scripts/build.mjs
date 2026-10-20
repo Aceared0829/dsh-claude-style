@@ -61,6 +61,7 @@ import { motionValues } from './shared/motion-tokens.mjs'
 import { readSourceTree } from './source-tree.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
+import { PRICES_FILE, validatePrices } from './prices.mjs'
 import manifestReader from './shared/read-manifests.cjs'
 import { withLock } from './shared/verify-lock.cjs'
 import { loadModule } from './shared/ts-module.cjs'
@@ -509,6 +510,11 @@ async function main() {
   const catalogPath = path.join(HOST_DATA, PEAKRATE_CATALOG)
   const catalogText = fs.readFileSync(catalogPath, 'utf8')
   const catalogProfiles = validatePeakCatalog(JSON.parse(catalogText), catalogPath)
+  // The price snapshot is the repository's validated scrape, shipped as the
+  // copy a machine with no reach prices by.
+  const pricesPath = path.join(HOST_DATA, PRICES_FILE)
+  const pricesText = fs.readFileSync(pricesPath, 'utf8')
+  const pricedModels = validatePrices(JSON.parse(pricesText), pricesPath)
   const iconSource = path.join(BRAND_ASSETS, ICON_SOURCE)
   const iconTarget = path.join(LIB, ICON_FILE)
   if (!fs.existsSync(iconSource)) throw new Error(`build: packages/assets/src/brand/${ICON_SOURCE} is missing`)
@@ -520,6 +526,9 @@ async function main() {
 
   fs.writeFileSync(path.join(LIB, PEAKRATE_CATALOG), catalogText)
   console.log(`built lib/${PEAKRATE_CATALOG} (${catalogProfiles} profiles) from packages/host/data/${PEAKRATE_CATALOG}`)
+
+  fs.writeFileSync(path.join(LIB, PRICES_FILE), pricesText)
+  console.log(`built lib/${PRICES_FILE} (${pricedModels} models) from packages/host/data/${PRICES_FILE}`)
 
   fs.copyFileSync(iconSource, iconTarget)
   console.log(`built lib/${ICON_FILE} (${fs.statSync(iconTarget).size} bytes) from packages/assets/src/brand/${ICON_SOURCE}`)

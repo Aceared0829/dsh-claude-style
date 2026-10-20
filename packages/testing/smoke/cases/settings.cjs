@@ -20,7 +20,7 @@ module.exports = {
       appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'statsPosition', 'viewTabs', 'headerBand'],
+      conversation: ['turnNav', 'statsPosition', 'billingCurrency', 'viewTabs', 'headerBand'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
     }
     // Greyed by the page itself rather than by a preference: the title-bar
@@ -51,14 +51,14 @@ module.exports = {
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
       !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","modelDescriptions","quickProviders","peakrate","permissionsControl"]' &&
         JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
-        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","headerBand"]' &&
-        JSON.stringify(unmet.conversation.notes) === '["statsPosition","headerBand"]' &&
+        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","billingCurrency","headerBand"]' &&
+        JSON.stringify(unmet.conversation.notes) === '["statsPosition","billingCurrency","headerBand"]' &&
         !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
       JSON.stringify(unmet))
     const hero = settings.heroOnly || {}
     check('with the restyle on the home page alone, the picker and the permission control take input and the statistics\' position still waits for a conversation',
       !!hero.composer && JSON.stringify(hero.composer.disabled) === '[]' &&
-        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition","headerBand"]',
+        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition","billingCurrency","headerBand"]',
       JSON.stringify(hero))
     const pageZoom = settings.pageZoom || {}
     const zoomed = pageZoom.zoomed || {}

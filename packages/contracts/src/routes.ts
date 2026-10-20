@@ -60,3 +60,17 @@ export const BRAND_WORDMARK_PATH = `${ROUTE_PREFIX}/brand/wordmark`
  * half can ask for a fresh copy without knowing the source's address.
  */
 export const PEAKRATE_PATH = `${ROUTE_PREFIX}/peakrate`
+
+/**
+ * The price snapshot the host half holds. `GET` answers the document; `POST`
+ * makes the host fetch the repository's copy first, so the browser can ask for
+ * a fresh table without knowing where it lives.
+ */
+export const PRICES_PATH = `${ROUTE_PREFIX}/prices`
+
+/**
+ * One session's cost in both currencies: `?id=` names the session. The host
+ * prices the session's settlements itself, so the answer does not depend on
+ * another plugin being installed.
+ */
+export const SESSION_COST_PATH = `${ROUTE_PREFIX}/session-cost`
