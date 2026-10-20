@@ -1,0 +1,5 @@
+{
+  "sodiumTitle": { "zh": "钠(Sodium)渲染引擎", "en": "Sodium rendering engine" },
+  "sodiumRules": { "zh": "{count} 条规则生效中", "en": "{count} rules in effect" },
+  "sodiumMember": { "zh": "{member} {since} 及以后", "en": "{member} {since} and later" }
+}

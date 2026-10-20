@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 新增通用设置里的实验性开关「钠(Sodium)渲染引擎」：打开后把宿主对话流的间距、空条目折叠与运行行分隔线规则就地改写为读取插件维护的属性，长会话流式输出时每次插入的样式重算更省；首次检测到适配的宿主版本时自动打开，小字显示生效中的规则条数，悬停列出每一条。
+
+### 体验优化
 
 - 窗口变窄时底部工具栏先压缩模型外显名，档位选择器与上下文显示器保持原位，三者不再互相覆盖。
 - 改善推理强度滑杆最高档的点阵动效：一条光带从右端扫过，方块按簇亮起，亮度峰值连续变化，入场时前沿带一道亮光。
@@ -34,7 +38,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - README 改成展示文案：截图与动画帧在前，预览各一行说明，安装两个命令块，鸣谢四条。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- Add the experimental Sodium rendering engine switch to the General settings: it rewrites the host conversation flow's spacing, empty-item collapse and running-line divider rules in place to read attributes the plugin keeps, so each insertion costs less style recalculation while a long conversation streams; it turns itself on the first time it detects a host release it covers, and its line shows how many rules are in effect and lists each one on hover.
+
+### Improvements
 
 - On a narrow window the composer's bottom row compresses the model name first, so the effort trigger and the context meter keep their places instead of overlapping it.
 - Improve the strongest rung's dot matrix on the reasoning slider: a band of light sweeps in from the right, the blocks light in clusters, their peaks vary continuously, and the arrival carries a bright leading edge.

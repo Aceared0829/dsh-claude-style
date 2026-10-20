@@ -46,6 +46,7 @@ export interface Handles {
   viewTabs: FeatureHandle
   headerBand: FeatureHandle
   settingsNav: FeatureHandle
+  sodium: FeatureHandle
   surface: FeatureHandle
 }
 

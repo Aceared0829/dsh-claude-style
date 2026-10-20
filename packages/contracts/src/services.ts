@@ -128,6 +128,8 @@ export interface HostPluginBundle {
   description?: string
   /** The bundle's own manifest text, which the host resolves through the locale service. */
   meta?: { title?: unknown, description?: unknown, icon?: string }
+  /** The installed package's version, when its manifest declares one. */
+  version?: string
 }
 
 /** The plugin manager's answer to `listBundles()`. */

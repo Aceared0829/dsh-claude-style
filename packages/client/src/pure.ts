@@ -46,6 +46,8 @@ export type { MascotStage, StageSurroundings } from './features/mascot/mascot-st
 export { buildRateBadge, rateDetail, rateName } from './features/peakrate/badge'
 export { matchProfile } from './features/peakrate/match'
 export { currentRate, forgetRates, formatCountdown } from './features/peakrate/schedule'
+export { SODIUM_MEMBERS } from './features/sodium/members'
+export { versionAtLeast } from './features/sodium/version'
 export { PHRASE_TAIL_CHARS, activityPhrase } from './shared/activity-phrase'
 export { callDescription } from './shared/call-description'
 export { fileName, fileToolCall, fileToolOperation } from './shared/file-tool'

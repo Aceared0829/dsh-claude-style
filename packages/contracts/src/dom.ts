@@ -19,6 +19,18 @@ export const FLOW_BLOCK_SELECTOR = '[data-chat-flow-key]'
 /** The chat column. */
 export const CHAT_FLOW_SELECTOR = '[data-chat-flow]'
 /**
+ * The node a flow item renders its one message into. The host's flow rules
+ * collapse an item whose node is empty, and the sodium rewrite keeps that
+ * verdict as an attribute (D78).
+ */
+export const CHAT_NODE_SELECTOR = '[data-slot="conversation.chat.node"]'
+/** The slot the chat column renders its flow into; its children and the column's are what the host's flow rules space (D78). */
+export const CHAT_FLOW_SLOT_SELECTOR = '[data-slot="conversation.chat.flow"]'
+/** A flow item standing for a whole group of steps; the running line's divider counts it as an answer (D78). */
+export const CHAT_GROUP_KEY_ATTRIBUTE = 'data-chat-group-key'
+/** The answer a turn's process group closes on. */
+export const TURN_PROCESS_ANSWER_ATTRIBUTE = 'data-turn-process-answer'
+/**
  * One tool call's row. It lives inside the assistant block, so it does not
  * have to arrive as a new flow block of its own.
  */
@@ -99,6 +111,10 @@ export const FLOW_KIND_ATTRIBUTE = 'data-chat-flow-kind'
 /** The kind of an assistant step's row: its thinking or its output. */
 export const ASSISTANT_STEP_KIND = 'assistant-step'
 export const TOOL_CALL_KIND = 'tool-call'
+/** The kinds the host's flow rules single out (D78): a turn's process group, a steering message, and the row a turn starts from. */
+export const TURN_PROCESS_ROW_KIND = 'turn-process'
+export const STEERING_ROW_KIND = 'steering'
+export const TURN_TRIGGER_ROW_KIND = 'turn-trigger'
 /**
  * Which part of an assistant step a row holds: the host splits a step into its
  * thinking and its output and writes the part on the row.
@@ -106,6 +122,8 @@ export const TOOL_CALL_KIND = 'tool-call'
 export const CHAT_GROUP_PART_ATTRIBUTE = 'data-chat-group-part'
 /** The part value of a step's thinking row. */
 export const CHAT_GROUP_PART_REASONING = 'reasoning'
+/** The part value of a step's output row. */
+export const CHAT_GROUP_PART_RESPONSE = 'response'
 /**
  * The words of a process group's header: the one child of the control the host
  * does not mark decorative (its icon and chevron sit in an aria-hidden span).
@@ -330,6 +348,14 @@ export const DARK_THEME_ATTRIBUTE = 'data-ds-dark-theme'
 export const PEER_SHEET_SELECTOR = 'style[data-plugin-css="dsh-plugin-msg-nav/style.css"]'
 /** Every untagged stylesheet in `<head>`: the host's claim sweep would otherwise take a sibling's. */
 export const UNTAGGED_SHEET_SELECTOR = 'style:not([data-plugin])'
+/**
+ * Every stylesheet a plugin's module injected into `<head>`, tagged by the
+ * loader with the package that owns it and the sheet's own path in that
+ * package: the sodium rewrite finds the sheets its table lists by these (D78).
+ */
+export const PLUGIN_SHEET_SELECTOR = 'style[data-plugin]'
+export const PLUGIN_SHEET_OWNER_ATTRIBUTE = 'data-plugin'
+export const PLUGIN_SHEET_PATH_ATTRIBUTE = 'data-plugin-css'
 
 /* ---------- ds-bot (Fei2411/DeepSeek-Bot) ---------- */
 

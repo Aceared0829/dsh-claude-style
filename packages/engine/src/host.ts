@@ -1,5 +1,5 @@
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostLocaleService, HostModelDirectoriesService, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
 
@@ -478,6 +478,28 @@ export function hostRemotePluginInventory(lookup: HostServiceLookup | null | und
 /** The plugin manager behind the remote. */
 export function hostRemotePluginManager(lookup: HostServiceLookup | null | undefined): HostValue {
   return lookup?.get('remote.pluginManager')
+}
+
+/**
+ * The bundles the profile carries, those that loaded: the inventory is read
+ * first because the manager Remote is mounted whether or not the host manages
+ * a profile, and only the inventory says whether it does.
+ * @returns null where the host carries neither service; otherwise a promise for
+ *          the list, empty when the host manages no profile, rejected when
+ *          either service answers with an error.
+ */
+export function profileBundles(lookup: HostServiceLookup | null | undefined): Promise<HostPluginBundle[]> | null {
+  const inventory = hostRemotePluginInventory(lookup)
+  const manager = hostRemotePluginManager(lookup)
+  if (!inventory || !manager) return null
+  return inventory.list().then((answer: HostInventoryAnswer) => {
+    if (!answer.ok) throw new Error(answer.error?.message ?? 'the plugin inventory answered without a reason')
+    if (answer.value.managementAvailable !== true) return []
+    return manager.listBundles().then((bundles: HostBundleListAnswer) => {
+      if (!bundles.ok) throw new Error(bundles.error?.message ?? 'the plugin manager answered without a reason')
+      return bundles.value.filter((bundle) => bundle.error === undefined)
+    })
+  })
 }
 
 /** The skill catalog behind the remote. */

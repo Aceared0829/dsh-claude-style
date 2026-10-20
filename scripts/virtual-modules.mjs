@@ -81,13 +81,13 @@ export function chunkModulesModule(ids) {
 /**
  * The table the settings page resolves its own row controls from,
  * `virtual:dsh-claude-style/settings-controls` (D72): each feature that draws a
- * control itself exports them from `<功能>.settings.ts` beside its main module,
+ * control or a status line itself exports them from `<功能>.settings.ts` beside its main module,
  * and the settings page — the only importer — carries them with its own chunk.
  *
  * @param manifests - the feature manifests in install order.
  */
 export function settingsControlsModule(manifests) {
-  const owners = manifests.filter((manifest) => (manifest.settingsRows ?? []).some((row) => row.control !== undefined))
+  const owners = manifests.filter((manifest) => (manifest.settingsRows ?? []).some((row) => row.control !== undefined || row.status !== undefined))
   const imports = owners.map((manifest) => `import { controls as ROWS_${manifest.id} } from ${JSON.stringify(`./features/${manifest.dir}/${manifest.dir}.settings`)}`)
   const entries = owners.map((manifest) => `  ${JSON.stringify(manifest.id)}: ROWS_${manifest.id},`)
   const contents = `${imports.join('\n')}\nexport const ROW_CONTROLS = {\n${entries.join('\n')}\n}\n`

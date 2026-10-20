@@ -23,6 +23,7 @@
 | [D75](D75-private-routes.md) | 私有通道与安全边界 | D11 |
 | [D76](D76-manifest-holds-facts.md) | 清单登记界面与构建要用的事实 | D42、D13、D29、D39、D72 |
 | [D77](D77-testing-layers-and-touchpoints.md) | 测试分层与触点 | D66 |
+| [D78](D78-sodium-rule-rewrite.md) | 改写宿主与插件的昂贵样式规则 |  |
 
 ## 作废的编号
 

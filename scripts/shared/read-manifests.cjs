@@ -117,10 +117,18 @@ function checkManifests(manifests) {
         if (typeof row.pref !== 'string' || !(row.pref in PREFS)) fail(manifest, `has a settings row for "${row.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
         if (owners.has(row.pref)) fail(manifest, `owns the settings row of "${row.pref}", which packages/client/src/${owners.get(row.pref)} owns already`)
         owners.set(row.pref, manifest.file)
-        if (row.control !== undefined) {
-          if (typeof row.control !== 'string' || row.control === '') fail(manifest, 'has a settings row with an empty "control" name')
+        for (const [field, name] of [['control', row.control], ['status', row.status]]) {
+          if (name === undefined) continue
+          if (typeof name !== 'string' || name === '') fail(manifest, `has a settings row with an empty "${field}" name`)
           const module = path.join(FEATURES, manifest.dir, `${manifest.dir}.settings.ts`)
-          if (!fs.existsSync(module)) fail(manifest, `has a settings row naming the control "${row.control}", but packages/client/src/features/${manifest.dir}/${manifest.dir}.settings.ts is not there`)
+          if (!fs.existsSync(module)) fail(manifest, `has a settings row naming the ${field} "${name}", but packages/client/src/features/${manifest.dir}/${manifest.dir}.settings.ts is not there`)
+        }
+        if (row.switch !== undefined) {
+          const spec = PREFS[row.pref]
+          const sides = [row.switch?.on, row.switch?.off]
+          if (spec.type !== 'choice' || sides.some((value) => !spec.values.includes(value)) || sides[0] === sides[1]) {
+            fail(manifest, `draws "${row.pref}" as a switch, which needs two different values of that choice as "on" and "off"`)
+          }
         }
         if (row.experimental !== undefined && typeof row.experimental !== 'boolean') fail(manifest, 'has a settings row whose "experimental" is not true or false')
         for (const key of [row.title, row.desc, row.requires?.note]) {

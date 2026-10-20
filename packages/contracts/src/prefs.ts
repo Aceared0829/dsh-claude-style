@@ -158,6 +158,16 @@ export const PAGE_ZOOM_125 = '1.25'
 export const PAGE_ZOOM_15 = '1.5'
 export const PAGE_ZOOMS = [PAGE_ZOOM_SYSTEM, PAGE_ZOOM_08, PAGE_ZOOM_1, PAGE_ZOOM_125, PAGE_ZOOM_15] as const
 
+/**
+ * The sodium rewrite (D78): `undecided` until the reader or the first probe that
+ * finds a listed rule decides it, and drawn as off until then. The settings
+ * switch writes `on` or `off`, and the probe acts on `undecided` alone.
+ */
+export const SODIUM_ON = 'on'
+export const SODIUM_OFF = 'off'
+export const SODIUM_UNDECIDED = 'undecided'
+export const SODIUM_MODES = [SODIUM_UNDECIDED, SODIUM_ON, SODIUM_OFF] as const
+
 /** Longest accepted custom username. */
 export const USERNAME_MAX = 64
 /** Most quick-provider ids kept, and the longest id accepted. */
@@ -215,6 +225,7 @@ export const PREFS = {
   quickProviders: { type: 'list', default: [], max: QUICK_PROVIDERS_MAX, entryMax: PROVIDER_ID_MAX, drop: [OFFICIAL_MODEL_GROUP] },
   username: { type: 'text', default: '', max: USERNAME_MAX },
   pageZoom: { type: 'choice', values: PAGE_ZOOMS, default: PAGE_ZOOM_SYSTEM },
+  sodium: { type: 'choice', values: SODIUM_MODES, default: SODIUM_UNDECIDED },
   banLocale: { type: 'choice', values: BAN_LOCALES, default: BAN_LOCALE_EN },
   homeLayout: { type: 'choice', values: HOME_LAYOUTS, default: HOME_LAYOUT_STUDIO },
   homeRipple: { type: 'boolean', default: false },

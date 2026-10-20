@@ -158,6 +158,18 @@ export interface FeatureSettingsRow {
    * draw. The build collects these modules for the settings page (D72).
    */
   control?: string
+  /**
+   * A choice preference drawn as an on/off switch: the value each side of the
+   * switch writes. A stored value outside the two is drawn as off, and stays
+   * stored until the reader flips the switch.
+   */
+  switch?: { on: string, off: string }
+  /**
+   * The feature's own module that draws a live line under the row's title,
+   * beside its main module like `control`: what the feature is doing on the
+   * page right now, which no fixed description can say.
+   */
+  status?: string
   /** The row carries the host's experimental tag beside its title: the feature is on show but not settled. */
   experimental?: boolean
 }
@@ -189,9 +201,9 @@ export interface SettingsRowView {
 /** One feature's own row controls, by the name its manifest gives each row. */
 export type SettingsRowControls = Readonly<Record<string, React.ComponentType<SettingsRowView>>>
 
-/** The names a manifest's `settingsRows` give their own controls. */
+/** The names a manifest's `settingsRows` give their own controls and status lines. */
 export type RowControlNames<M> = M extends { settingsRows: readonly (infer R)[] }
-  ? R extends { control: infer C extends string } ? C : never
+  ? (R extends { control: infer C extends string } ? C : never) | (R extends { status: infer S extends string } ? S : never)
   : never
 
 /**

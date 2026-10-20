@@ -154,23 +154,29 @@ function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
     // A row the feature draws itself renders its own control (D72); every other
     // row follows the preference's own type.
     const own = row.control === undefined ? undefined : ROW_CONTROLS[feature.id]?.[row.control]
+    const sides = row.switch
     const control = own !== undefined
       ? React.createElement(own, { prefs: view.prefs, write: view.write, disabled: off })
       : spec.type === 'boolean'
         ? controls.toggle(stored !== false, write, off)
-        : controls.segment(
-          (spec.type === 'choice' ? spec.values : []).map((value: string) => ({ value, label: rowLine(feature, row.choiceLabels?.[value] ?? value) })),
-          String(stored),
-          write,
-          off,
-        )
+        : sides !== undefined
+          ? controls.toggle(stored === sides.on, value => { write(value ? sides.on : sides.off) }, off)
+          : controls.segment(
+            (spec.type === 'choice' ? spec.values : []).map((value: string) => ({ value, label: rowLine(feature, row.choiceLabels?.[value] ?? value) })),
+            String(stored),
+            write,
+            off,
+          )
     const still = row.stillWhenReduced === true && motionReduced()
     const note = waits ?? (offWindows ? sharedLine('windowsOnlyNote') : still ? sharedLine('motionStillNote') : null)
     // A yielded row says who manages it even when it carries no description of
     // its own: the switch rows over the preview cards have none.
-    const description = yielded
+    const described = yielded
       ? managedDesc(desc, true)
       : (row.desc === undefined && note === null ? null : noteDesc(desc, note))
+    const ownStatus = row.status === undefined ? undefined : ROW_CONTROLS[feature.id]?.[row.status]
+    const status = ownStatus === undefined ? null : React.createElement(ownStatus, { key: 'status', prefs: view.prefs, write: view.write, disabled: off })
+    const description = status === null ? described : described === null ? status : [described, status]
     const node = row.parent === undefined
       ? controls.row(pref, title, description, control, {
         disabled: off,

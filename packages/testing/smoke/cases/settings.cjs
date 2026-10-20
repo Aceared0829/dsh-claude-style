@@ -16,7 +16,7 @@ module.exports = {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['brand', 'username', 'pageZoom', 'autoPopover'],
+      general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
       appearance: ['palette', 'brandAccent', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope', 'brandName', 'brandMark', 'brandWordmark', 'brandInk'],
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],

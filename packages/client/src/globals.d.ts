@@ -13,8 +13,11 @@ interface Navigator {
 }
 
 interface Window {
-  /** The host's boot manifest: every client entry the loader will evaluate (D74's peer check reads it). */
-  readonly __DSH_BOOT__?: { entries?: unknown }
+  /**
+   * The host's boot manifest: every client entry the loader will evaluate (D74's
+   * peer check reads it), and the host release it was composed for (D78).
+   */
+  readonly __DSH_BOOT__?: { entries?: unknown, release?: { version?: unknown } }
   /** ds-bot's registry, present while its browser half runs (D74 reads only its presence). */
   readonly dshBot?: unknown
 }

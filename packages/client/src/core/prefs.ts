@@ -15,10 +15,13 @@ import { pageOwner } from '../shared/visual-owner'
  */
 export let prefs = clampPrefs({})
 const prefsListeners: ((prefs: Prefs) => void)[] = []
+/** Whether the preferences on hand came from the form: until then they are the table's defaults. */
+let readFromForm = false
 
 const binding = createSettingsBinding({
   namespaces: [PACKAGE_NAME, SETTINGS_ENTRY_FALLBACK],
   adoptForm(value) {
+    readFromForm = true
     adoptPrefs(clampPrefs(value))
     moveLocalPrefs(value)
   },
@@ -63,6 +66,15 @@ export function retireComposerRestyle() {
 /** The current preferences (live object; treat as read-only). */
 export function readPrefs() {
   return prefs
+}
+
+/**
+ * Whether the preferences are the reader's own: a decision taken on the
+ * reader's behalf (the sodium probe, D78) waits for this, since the defaults
+ * that hold until then say nothing about what the reader chose.
+ */
+export function prefsFromForm() {
+  return readFromForm
 }
 
 /** Observe preference changes; returns the unsubscriber. */

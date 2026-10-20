@@ -1,8 +1,8 @@
 import { SESSION_SEARCH_ROUTE } from '../../constants'
-import { currentSessionId, hostConversation, hostLayout, hostLocale, hostPluginNavigation, hostRemotePluginInventory, hostRemotePluginManager, hostRemoteSkills, hostSessions, hostShortcuts, hostSlots, hostUiWorkspace, hostWorkspaces } from '@dsh-claude-style/engine/host'
+import { currentSessionId, hostConversation, hostLayout, hostLocale, hostPluginNavigation, hostRemoteSkills, profileBundles, hostSessions, hostShortcuts, hostSlots, hostUiWorkspace, hostWorkspaces } from '@dsh-claude-style/engine/host'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { ContentHit, SearchAnswer } from '@dsh-claude-style/contracts/usage'
-import type { HostBundleListAnswer, HostConversationInput, HostConversationService, HostInventoryAnswer, HostPluginBundle, HostSessionBinding, HostSessionSummary, HostShortcutRow, HostShortcutsService, HostSkill, HostSkillListAnswer, HostSlotsService, HostSlotStore, HostWorkspaceListSnapshot } from '@dsh-claude-style/contracts/services'
+import type { HostConversationInput, HostConversationService, HostPluginBundle, HostSessionBinding, HostSessionSummary, HostShortcutRow, HostShortcutsService, HostSkill, HostSkillListAnswer, HostSlotsService, HostSlotStore, HostWorkspaceListSnapshot } from '@dsh-claude-style/contracts/services'
 import { copy } from './copy'
 
 /** The kinds of thing the palette lists, and the filter that shows them all. */
@@ -259,26 +259,17 @@ export function createSearchSources(ctx: HostContext, reveal: (sessionId: string
   }
 
   /**
-   * The profile's bundles, when the host manages a profile. The plugin
-   * page reads the inventory first for the same reason: the manager Remote
-   * is mounted either way.
+   * The profile's bundles, when the host manages a profile and can open a
+   * bundle's page.
    * @returns a promise that settles once the list is in (or known absent).
    */
   function loadPlugins(owner: number): Promise<void> {
-    const inventory = hostRemotePluginInventory(ctx)
-    const manager = hostRemotePluginManager(ctx)
-    if (!inventory || !manager || !hostPluginNavigation(ctx)) {
+    const bundles = hostPluginNavigation(ctx) ? profileBundles(ctx) : null
+    if (bundles === null) {
       plugins = []
       return Promise.resolve()
     }
-    return inventory.list().then((answer: HostInventoryAnswer) => {
-      if (!answer.ok) throw new Error(answer.error?.message ?? 'the plugin inventory answered without a reason')
-      if (answer.value.managementAvailable !== true) return []
-      return manager.listBundles().then((bundles: HostBundleListAnswer) => {
-        if (!bundles.ok) throw new Error(bundles.error?.message ?? 'the plugin manager answered without a reason')
-        return bundles.value.filter((bundle) => bundle.error === undefined)
-      })
-    }).then((list: HostPluginBundle[]) => {
+    return bundles.then((list: HostPluginBundle[]) => {
       if (owner !== generation) return
       plugins = list.slice().sort((a, b) => shortPackageName(a.name).localeCompare(shortPackageName(b.name)))
     })
