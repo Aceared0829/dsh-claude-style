@@ -17,6 +17,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。
 - 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
+- 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
 - 修复钠的改写写入失败后样式表恢复不回来、宿主改动规则后改写无声失效的问题：一次写入失败会把这次写入的规则全部写回，已写入的规则逐张表登记；生效条数归零时设置项写明宿主已改动这些规则，开关关闭时读不回原样的规则也会上报。
 
 ### 其他变更
@@ -34,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus.
 - Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
+- Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
 - Fix a Sodium rewrite that could not be undone after a failed write, and the rewrite going quiet once the host changed the rules: a failed write now writes back every rule it wrote, the rules taken are held sheet by sheet, the setting says so when the number in effect falls to zero, and a rule that cannot be read back as the rewrite left it is reported.
 
 ### Chores
