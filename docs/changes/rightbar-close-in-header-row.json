@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "面板打开时，右侧栏的收起按钮出现在顶栏右端，面板自己那一枚仍留在面板上，按下即收起面板，宿主的打开按钮回到原处。",
-  "en": "While the panel is open, the right panel's collapse button appears at the top bar's right end and the panel keeps its own copy; pressing it closes the panel and the host's open button returns."
-}

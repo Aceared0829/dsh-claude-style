@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "改善推理强度滑杆最高档的点阵动效：一条光带从右端扫过，方块按簇亮起，亮度峰值连续变化，入场时前沿带一道亮光。",
-  "en": "Improve the strongest rung's dot matrix on the reasoning slider: a band of light sweeps in from the right, the blocks light in clusters, their peaks vary continuously, and the arrival carries a bright leading edge."
-}

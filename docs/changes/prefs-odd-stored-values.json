@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "修复设置里某一项偏好存成带 `toString` 字段的对象、或存成 `toString` 这类内置名字时整套偏好读取出错的问题：这样的值现在读作该项的默认值。",
-  "en": "Fix reading the preferences failing when one of them is stored as an object holding a `toString` field or as a built-in name such as `toString`: such a value now reads as that preference's default."
-}

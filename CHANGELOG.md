@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.17.0] - 2026-10-20
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.17.0) | [English](#en-0.17.0)
+
+<h3 id="cn-0.17.0">新增功能</h3>
 
 - 新增通用设置里的实验性开关「钠(Sodium)渲染引擎」：打开后就地改写宿主对话流的间距规则，只拿对话流的直接子元素去匹配，长会话流式输出时每次插入的样式重算更省；首次检测到适配的宿主版本时自动打开，小字显示生效中的规则条数，悬停列出每一条。
 
@@ -39,7 +41,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - README 改成展示文案：截图与动画帧在前，预览各一行说明，安装两个命令块，鸣谢四条。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.17.0">New Features</h3>
 
 - Add the experimental Sodium rendering engine switch to the General settings: it rewrites the host conversation flow's spacing rules in place so only the flow's own children are matched against them, so each insertion costs less style recalculation while a long conversation streams; it turns itself on the first time it detects a host release it covers, and its line shows how many rules are in effect and lists each one on hover.
 

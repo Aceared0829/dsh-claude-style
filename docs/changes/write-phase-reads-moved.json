@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "改善长会话流式输出时的帧耗时：标题栏布局、侧栏底部入口的隐藏、输入框下统计行与上下文用量药丸的重新测量、思考强度按钮的重新定位、思考行的自动折叠，以及对话与过程分组的跟随滚动，不再在其他写入之后强制页面重算样式与布局。",
-  "en": "Improve frame time while a long conversation streams: the title bar layout, hiding the sidebar footer's entries, measuring the stats line and the context meter's pill under the composer again, repositioning the effort trigger, folding thinking rows automatically and following the conversation and its process groups no longer force the page to recompute style and layout after other writes."
-}

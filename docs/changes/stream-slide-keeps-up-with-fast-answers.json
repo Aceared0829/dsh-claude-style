@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "修复流式输出很快时聊天区的跟随滑动跟不上内容的问题：滑动重新起步时改从动画自己画到的位置算起，一个回合开头读者自己那条消息在场期间让位结束后立刻恢复，一帧长高超过滑动一段距离的内容也照常滑完能滑的那一段，输入卡片的位置在整个回合里不再移动。",
-  "en": "Fix the chat area's follow falling behind a fast answer: a restart of the stream slide is measured from where the animation itself has painted, the stand-down over the reader's own message ends with that message's entrance instead of a fixed window, and a frame growing by more than one slide carries is slid as far as a slide does; the composer's own box no longer moves through the turn."
-}

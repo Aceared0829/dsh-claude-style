@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "修复窄窗口下对话区底部残留一条横向滚动条的问题：面板自身的横向溢出不再产生滚动条，面板内需要横向滚动的代码块与表格仍各自滚动。",
-  "en": "Fix the horizontal scrollbar that appeared under the composer on a narrow window: the transcript pane's own horizontal overflow is clipped, while code blocks and tables inside it keep their own scrolling."
-}

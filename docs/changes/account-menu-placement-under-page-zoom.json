@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "修复页面缩放不为 100% 时账号菜单跑到用户名下方并越出窗口的问题：宿主按自身几何摆放的那张卡片由皮肤按同一套几何重新摆放，卡片的高度与位置在同一个坐标空间里算出，缩放后仍贴在账号行上方。",
-  "en": "Fix the account menu opening below the account row and past the window's edge at any page zoom other than 100%: the card the host places from its own geometry is placed by the skin from the same geometry, with the card's height and position computed in one space, so it still hangs over the row once the page is drawn at a factor."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "removals",
-  "order": 0,
-  "at": "2026-10-18",
-  "external": false,
-  "zh": "移除功能一览与设置说明两份文档，功能清单不再写中英文描述。",
-  "en": "Remove the feature list and the settings documents; a feature manifest no longer carries a two-language description."
-}

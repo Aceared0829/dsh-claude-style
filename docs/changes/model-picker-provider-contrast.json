@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-19",
-  "external": false,
-  "zh": "修复浅色主题下模型菜单里的供应商名颜色过浅、对比度不足以读清 11px 标签的问题。",
-  "en": "Fix the provider names in the model menu reading too faint in the light theme for an 11px label."
-}
