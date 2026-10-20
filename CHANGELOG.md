@@ -6,11 +6,19 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">其他变更</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
+
+### 其他变更
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
 
-<h3 id="en-unreleased">Chores</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
+
+### Chores
 
 - Make a decision's prose cite only the decisions in force, say in the index that an abandoned option belongs under 后果 and that a decision with nothing to revisit writes 「无。」, and have lint check that every decision carries its four sections in order with a review condition that says something, and that no live decision cites a retired number.
 

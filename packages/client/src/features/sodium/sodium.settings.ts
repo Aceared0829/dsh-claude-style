@@ -32,7 +32,7 @@ function ruleLines(rules: readonly RuleInEffect[]) {
 function SodiumRules() {
   const rules = React.useSyncExternalStore(subscribeRules, rulesInEffect)
   // The line takes the keyboard focus while it has rules to list, so the list is reachable without a pointer.
-  const anchor: React.HTMLAttributes<HTMLSpanElement> = { tabIndex: rules.length === 0 ? undefined : 0 }
+  const anchor: React.HTMLAttributes<HTMLSpanElement> = { tabIndex: rules.length === 0 ? undefined : 0, className: 'dsh-claude-sodium-rules' }
   return React.createElement(Tooltip, {
     label: () => ruleLines(rules),
     side: 'bottom',
