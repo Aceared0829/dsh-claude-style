@@ -1,30 +1,30 @@
 /**
  * The sodium rewrite's mechanism (D78): a rule is rewritten where it stands and
- * written back exactly; a selector the sheet refuses is an error; the flow
- * marks agree with the host's own structural tests through every change; and
+ * written back exactly; a selector the sheet refuses is an error; the flow-child
+ * mark stands on every child of the flow's containers through every change; and
  * the table's rewrite of the host's flow rules selects the same elements as the
  * rules themselves, at the same specificity, as the browser's own cascade
- * judges it.
+ * judges it — an item filled or emptied included, in the very task that
+ * changed it.
  *
  * @capability style-rewrite
  * @features engine, sodium
- * @risk With the switch on, a flow item that should collapse keeps its height or its gap, the running line's divider shows at the wrong moment, or a rule loses to one it used to beat, and the conversation's spacing changes under the reader.
+ * @risk With the switch on, a flow item that should collapse keeps its height or its gap, a filled one stays collapsed while the host reads the layout and the conversation's position slides back, the running line's divider shows at the wrong moment, or a rule loses to one it used to beat.
  */
 import { afterEach, expect, test } from 'vitest'
-import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_KEY_ATTRIBUTE, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, FLOW_KIND_ATTRIBUTE, STEERING_ROW_KIND, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND, TURN_TRIGGER_ROW_KIND, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
-import { keepFlowMarks } from '@dsh-claude-style/engine/flow-items'
+import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, CHAT_RUNNING_SELECTOR, FLOW_BLOCK_SELECTOR, FLOW_KIND_ATTRIBUTE, PENDING_STEERING_SELECTOR, SUBMISSION_ECHO_SELECTOR, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { keepFlowChildMark } from '@dsh-claude-style/engine/flow-items'
 import { applyRewrite, planRewrite, restoreRewrite } from '@dsh-claude-style/engine/sheet-rewrite'
 import { SODIUM_MEMBERS } from '@dsh-claude-style/client/pure'
 import { hostElement } from '../../fixtures/host-markup'
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))
-const MARKS = { empty: 'data-test-empty', child: 'data-test-child' } as const
+const CHILD_MARK = 'data-test-child'
 /** The host chat module's hashed classes stand in as these. */
 const ITEM = 'hx_flowItem'
 const COLUMN = 'hx_column'
 const OLDER = 'hx_older'
 const RUNNING = 'hx_running'
-const DIVIDER = 'hx_runningDivider'
 /** The host's own test of an empty flow item, as its sheet writes it. */
 const EMPTY = `.${ITEM}:is(:empty, :has(> ${CHAT_NODE_SELECTOR}:empty))`
 
@@ -45,9 +45,9 @@ function sheetOf(text: string) {
 
 type ItemKind = 'empty' | 'empty-node' | 'node' | 'text'
 
-/** A flow item: empty, holding a chat node (empty or with content), or holding text of its own. */
+/** A flow item, as the host creates it a flow block: empty, holding a chat node (empty or with content), or holding text of its own. */
 function item(kind: ItemKind, attributes: Record<string, string> = {}) {
-  const element = document.createElement('div')
+  const element = hostElement(FLOW_BLOCK_SELECTOR, 'key')
   element.className = ITEM
   for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value)
   if (kind === 'text') element.append('words')
@@ -59,9 +59,24 @@ function item(kind: ItemKind, attributes: Record<string, string> = {}) {
   return element
 }
 
+/** The host's running line: not a flow item, and the last child of the flow while a turn is live. */
+function runningLine() {
+  const running = hostElement(CHAT_RUNNING_SELECTOR)
+  running.className = RUNNING
+  running.append('working')
+  return running
+}
+
+/** A user bubble the host mounts before the transcript takes the message in. */
+function bubble(selector: string) {
+  const element = hostElement(selector)
+  element.append('words')
+  return element
+}
+
 /**
- * A chat column after older turns, its flow slot holding every kind of row the
- * host's rules tell apart and ending on the running line, and beside it a
+ * A chat column after older turns, its flow slot holding every kind of child
+ * the host's rules tell apart and ending on the running line, and beside it a
  * process group's own list of items, which none of the flow rules spaces.
  */
 function conversation() {
@@ -70,13 +85,8 @@ function conversation() {
   const older = document.createElement('div')
   older.className = OLDER
   const slot = hostElement(CHAT_FLOW_SLOT_SELECTOR)
-  const running = item('text')
-  running.classList.add(RUNNING)
-  const divider = document.createElement('div')
-  divider.className = DIVIDER
-  running.append(divider)
   slot.append(
-    item('node', { [FLOW_KIND_ATTRIBUTE]: USER_ROW_KIND }),
+    item('node'),
     item('empty'),
     item('empty-node'),
     item('text', { [CHAT_GROUP_PART_ATTRIBUTE]: CHAT_GROUP_PART_RESPONSE }),
@@ -84,9 +94,9 @@ function conversation() {
     item('node', { [FLOW_KIND_ATTRIBUTE]: TURN_PROCESS_ROW_KIND }),
     item('node', { [TURN_PROCESS_ANSWER_ATTRIBUTE]: '' }),
     item('node', { hidden: '' }),
-    item('node', { [FLOW_KIND_ATTRIBUTE]: STEERING_ROW_KIND }),
-    item('node', { [CHAT_GROUP_KEY_ATTRIBUTE]: 'g' }),
-    running,
+    bubble(SUBMISSION_ECHO_SELECTOR),
+    bubble(PENDING_STEERING_SELECTOR),
+    runningLine(),
   )
   column.append(older, slot)
   const process = document.createElement('div')
@@ -95,10 +105,9 @@ function conversation() {
   return { column, slot, process }
 }
 
-function expectMarksAgree() {
-  for (const element of document.getElementsByClassName(ITEM)) expect(element.hasAttribute(MARKS.empty)).toBe(element.matches(EMPTY))
+function expectChildrenMarked() {
   for (const container of document.querySelectorAll(`.${COLUMN}, ${CHAT_FLOW_SLOT_SELECTOR}`)) {
-    for (const child of container.children) expect(child.hasAttribute(MARKS.child)).toBe(true)
+    for (const child of container.children) expect(child.hasAttribute(CHILD_MARK)).toBe(true)
   }
 }
 
@@ -120,19 +129,15 @@ test('a selector the sheet refuses is an error', () => {
   expect(() => applyRewrite(planRewrite(sheet, { rewrite: () => ({ selector: '.a[[', captured: {} }) }))).toThrow()
 })
 
-test('the flow marks agree with the host tests through every change', async () => {
+test('the flow-child mark stands on every child of the flow\'s containers through every change', async () => {
   const { slot, process } = conversation()
-  cleanups.push(keepFlowMarks({ items: [ITEM], columns: [COLUMN] }, MARKS.empty, MARKS.child))
-  expectMarksAgree()
-  const [, empty, emptyNode, , full] = [...slot.children]
-  empty.append('arrived')
-  emptyNode.firstElementChild!.append('streamed')
-  full.firstElementChild!.replaceChildren()
-  process.lastElementChild!.append(hostElement(CHAT_NODE_SELECTOR))
+  cleanups.push(keepFlowChildMark([COLUMN], CHILD_MARK))
+  expectChildrenMarked()
   slot.prepend(item('empty'))
+  slot.append(item('node'))
+  process.append(item('node'))
   await settle()
-  expectMarksAgree()
-  emptyNode.firstElementChild!.remove()
+  expectChildrenMarked()
   const later = document.createElement('section')
   const column = document.createElement('div')
   column.className = COLUMN
@@ -140,17 +145,16 @@ test('the flow marks agree with the host tests through every change', async () =
   later.append(column)
   document.body.append(later)
   await settle()
-  expectMarksAgree()
-  expect(process.querySelectorAll(`[${MARKS.child}]`).length).toBe(0)
+  expectChildrenMarked()
+  expect(process.querySelectorAll(`[${CHILD_MARK}]`).length).toBe(0)
 })
 
-test('stopping the keeper takes both marks off', () => {
+test('stopping the keeper takes the mark off', () => {
   conversation()
-  const stop = keepFlowMarks({ items: [ITEM], columns: [COLUMN] }, MARKS.empty, MARKS.child)
-  expect(document.querySelectorAll(`[${MARKS.empty}]`).length).toBeGreaterThan(0)
-  expect(document.querySelectorAll(`[${MARKS.child}]`).length).toBeGreaterThan(0)
+  const stop = keepFlowChildMark([COLUMN], CHILD_MARK)
+  expect(document.querySelectorAll(`[${CHILD_MARK}]`).length).toBeGreaterThan(0)
   stop()
-  expect(document.querySelectorAll(`[${MARKS.empty}], [${MARKS.child}]`).length).toBe(0)
+  expect(document.querySelectorAll(`[${CHILD_MARK}]`).length).toBe(0)
 })
 
 /** The host chat module's flow rules as its sheet writes them, with the stand-in classes. */
@@ -161,10 +165,12 @@ const HOST_RULES = [
   `.${ITEM}[${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"], ${SCOPE} > [${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"]:not([hidden]):not(:empty) + ${VISIBLE}:not(.${RUNNING}) { --gap: 12px }`,
   `.${ITEM}[${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"], .${ITEM}[${TURN_PROCESS_ANSWER_ATTRIBUTE}], ${SCOPE} > [${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"] + ${VISIBLE}:not(.${RUNNING}) { --gap: 16px }`,
   `${EMPTY} { height: 0px }`,
-  `${SCOPE} > :nth-last-child(2 of ${VISIBLE}):is(.${ITEM}:not([${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]):not([${FLOW_KIND_ATTRIBUTE}="${STEERING_ROW_KIND}"]):not([${FLOW_KIND_ATTRIBUTE}="${TURN_TRIGGER_ROW_KIND}"]), [${CHAT_GROUP_KEY_ATTRIBUTE}]) ~ .${RUNNING} > .${DIVIDER} { display: block }`,
 ]
 
-/** The table's chat flow entry, rewriting and keeping the marks on a sheet holding the host rules. */
+/** The host rules whose subject is the visible item, the compound the browser cannot bucket: the ones the table spreads. */
+const SPREAD = HOST_RULES.filter(rule => rule.includes(VISIBLE))
+
+/** The table's chat flow entry, rewriting and keeping the mark on a sheet holding the host rules. */
 function rewriteHostRules() {
   const adapter = SODIUM_MEMBERS.flatMap(member => member.adapters).find(entry => entry.id === 'chat-flow')!
   const sheet = sheetOf(HOST_RULES.join('\n'))
@@ -175,16 +181,46 @@ function rewriteHostRules() {
   return applyRewrite(planned)
 }
 
-test('the table rewrites every host flow rule to select the same elements', () => {
+/** Each rewritten rule's elements beside the elements the host rule it stands for selects. */
+function selections(rewritten: ReturnType<typeof rewriteHostRules>) {
+  return rewritten.map(entry => ({ original: [...document.querySelectorAll(entry.original)], rewritten: [...document.querySelectorAll(entry.rewritten)] }))
+}
+
+test('the table rewrites every host gap rule to select the same elements, and leaves the collapse rule as the host wrote it', () => {
   conversation()
-  const selected = HOST_RULES.map(rule => [...document.querySelectorAll(rule.slice(0, rule.lastIndexOf(' {')))])
   const rewritten = rewriteHostRules()
-  expect(rewritten.length).toBe(HOST_RULES.length)
-  rewritten.forEach((entry, at) => {
-    expect(selected[at].length).toBeGreaterThan(0)
-    expect(entry.rewritten).not.toContain(`:has(> ${CHAT_NODE_SELECTOR}`)
-    expect([...document.querySelectorAll(entry.rewritten)]).toEqual(selected[at])
-  })
+  expect(rewritten.length).toBe(SPREAD.length)
+  expect(rewritten.map(entry => entry.original)).not.toContain(EMPTY)
+  for (const { original, rewritten: now } of selections(rewritten)) {
+    expect(original.length).toBeGreaterThan(0)
+    expect(now).toEqual(original)
+  }
+})
+
+test('a turn ending in one task is read by the rewritten rules as the host rules read it, before any observer runs', () => {
+  const { slot } = conversation()
+  const rewritten = rewriteHostRules()
+  const [, empty, emptyNode, , full] = [...slot.children]
+  // The host fills and empties items, takes the running line down and puts
+  // the turn's last rows in, then reads the layout, all in one task: the
+  // rewritten rules have to agree at that moment.
+  empty.append('arrived')
+  emptyNode.firstElementChild!.append('streamed')
+  full.firstElementChild!.replaceChildren()
+  slot.lastElementChild!.remove()
+  slot.append(item('node'), bubble(SUBMISSION_ECHO_SELECTOR), item('text'), runningLine())
+  for (const { original, rewritten: now } of selections(rewritten)) expect(now).toEqual(original)
+})
+
+test('a child of a kind the host writes no key on is spaced once the keeper\'s observer has run', async () => {
+  const { slot } = conversation()
+  const rewritten = rewriteHostRules()
+  const stranger = document.createElement('section')
+  stranger.append('a plugin\'s row')
+  slot.insertBefore(stranger, slot.lastElementChild)
+  await settle()
+  for (const { original, rewritten: now } of selections(rewritten)) expect(now).toEqual(original)
+  expect(selections(rewritten).some(({ rewritten: now }) => now.includes(stranger))).toBe(true)
 })
 
 test('every rewritten flow rule weighs what the host rule weighs', () => {

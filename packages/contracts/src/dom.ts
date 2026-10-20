@@ -26,8 +26,6 @@ export const CHAT_FLOW_SELECTOR = '[data-chat-flow]'
 export const CHAT_NODE_SELECTOR = '[data-slot="conversation.chat.node"]'
 /** The slot the chat column renders its flow into; its children and the column's are what the host's flow rules space (D78). */
 export const CHAT_FLOW_SLOT_SELECTOR = '[data-slot="conversation.chat.flow"]'
-/** A flow item standing for a whole group of steps; the running line's divider counts it as an answer (D78). */
-export const CHAT_GROUP_KEY_ATTRIBUTE = 'data-chat-group-key'
 /** The answer a turn's process group closes on. */
 export const TURN_PROCESS_ANSWER_ATTRIBUTE = 'data-turn-process-answer'
 /**
@@ -87,6 +85,8 @@ export const COMPOSER_CARD_SELECTOR = '[data-composer-card]'
 export const COMPOSER_SCROLL_SELECTOR = '[data-input-scroll]'
 /** The echo bubble the host mounts the moment a submission goes through. */
 export const SUBMISSION_ECHO_SELECTOR = '[data-submission-echo]'
+/** The bubble the host mounts for a steering message until the turn takes it in. */
+export const PENDING_STEERING_SELECTOR = '[data-pending-steering]'
 /**
  * A plain text box inside the composer seat: a question card's answer box
  * (under [data-question-key]) and a queued message's inline editor (under
@@ -111,10 +111,8 @@ export const FLOW_KIND_ATTRIBUTE = 'data-chat-flow-kind'
 /** The kind of an assistant step's row: its thinking or its output. */
 export const ASSISTANT_STEP_KIND = 'assistant-step'
 export const TOOL_CALL_KIND = 'tool-call'
-/** The kinds the host's flow rules single out (D78): a turn's process group, a steering message, and the row a turn starts from. */
+/** The kind of a turn's process group, which the host's widest flow gap follows (D78). */
 export const TURN_PROCESS_ROW_KIND = 'turn-process'
-export const STEERING_ROW_KIND = 'steering'
-export const TURN_TRIGGER_ROW_KIND = 'turn-trigger'
 /**
  * Which part of an assistant step a row holds: the host splits a step into its
  * thinking and its output and writes the part on the row.

@@ -1,5 +1,5 @@
-import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_KEY_ATTRIBUTE, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, FLOW_KIND_ATTRIBUTE, STEERING_ROW_KIND, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND, TURN_TRIGGER_ROW_KIND, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
-import { keepFlowMarks } from '@dsh-claude-style/engine/flow-items'
+import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, CHAT_RUNNING_SELECTOR, FLOW_BLOCK_SELECTOR, FLOW_KIND_ATTRIBUTE, PENDING_STEERING_SELECTOR, SUBMISSION_ECHO_SELECTOR, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { keepFlowChildMark } from '@dsh-claude-style/engine/flow-items'
 import type { SelectorRewrite } from '@dsh-claude-style/engine/sheet-rewrite'
 import { firstShape, selectorShape } from './selector-shape'
 
@@ -36,55 +36,61 @@ export interface SodiumAdapter extends SelectorRewrite {
   maintain(captured: ReadonlyMap<string, readonly string[]>): () => void
 }
 
-/** The marks the rewritten flow rules read (engine/src/flow-items.ts). */
-const EMPTY_ITEM_ATTR = 'data-dsh-claude-empty-item'
+/** The mark the rewritten flow rules read (engine/src/flow-items.ts). */
 const FLOW_CHILD_ATTR = 'data-dsh-claude-flow-child'
 
 /*
- * The host chat module's flow rules, as the browser serializes them. Each asks
- * of a flow item whether it is empty — no children, or an empty chat node — and
- * most end in "a visible item that is not empty", a compound nearly every
- * element on the page matches, so every change has the browser try the whole
- * page against them. The replacements read two marks instead, and weigh the
- * same: the empty test's `:is()` counts a class and the heavier of `:empty` and
- * `:has(> [slot]:empty)`, which two attribute tests match; a visible item keeps
- * one of them and takes the flow-child mark for the other. Every compound the
- * flow-child mark enters stands on a child of the column or the flow slot, so
- * the mark changes nothing it selects.
+ * The host chat module's gap rules, as the browser serializes them. Their
+ * subject is "a visible item that is not empty", a compound with no class, tag
+ * or attribute for the browser to bucket the rule under, so every change has
+ * the browser try the whole page against them. The replacement spreads that
+ * subject over the flow's children by what the host puts on each one when it
+ * creates it — a flow block, the running line, a submission's echo, a steering
+ * bubble, the flow slot — so only those are tried, and a child is tried from
+ * the moment it exists: the host inserts one and reads the layout in the same
+ * task (D78). The flow-child mark the keeper writes catches a child of any
+ * other kind, from its observer on.
+ *
+ * Each branch weighs what the subject weighed: `[hidden]` joins the empty test
+ * in one `:not()`, which counts only the heavier of the two, and the key takes
+ * the place that frees. Every key stands on a child of the column or the flow
+ * slot, so the branches together select what the subject selected there.
  */
 const FLOW = CHAT_FLOW_SLOT_SELECTOR
 const EMPTY = `.{item}:is(:empty, :has(> ${CHAT_NODE_SELECTOR}:empty))`
 const VISIBLE = `:not([hidden]):not(${EMPTY})`
+const NOT_RUNNING = ':not(.{running})'
 const SCOPE = `:is(.{column}, ${FLOW})`
-const EMPTY_NOW = `.{item}[${EMPTY_ITEM_ATTR}][${EMPTY_ITEM_ATTR}]`
-const VISIBLE_NOW = `:not([hidden]):not(.{item}[${EMPTY_ITEM_ATTR}])[${FLOW_CHILD_ATTR}]`
+const SUBJECT_KEYS = [FLOW_BLOCK_SELECTOR, CHAT_RUNNING_SELECTOR, SUBMISSION_ECHO_SELECTOR, PENDING_STEERING_SELECTOR, FLOW, `[${FLOW_CHILD_ATTR}]`]
 
-/** One flow rule, rewritten by swapping its two costly compounds for the marks. */
-function flowRule(template: string) {
-  return selectorShape(template, template.split(VISIBLE).join(VISIBLE_NOW).split(EMPTY).join(EMPTY_NOW))
+/**
+ * One gap rule, given as its complex selectors: each that ends in the visible
+ * subject is spread over the subject keys, the rest stand as written.
+ */
+function gapRule(complexes: readonly string[]) {
+  const spread = complexes.flatMap((complex) => {
+    for (const suffix of ['', NOT_RUNNING]) {
+      const subject = VISIBLE + suffix
+      if (complex.endsWith(subject)) return SUBJECT_KEYS.map((key) => `${complex.slice(0, -subject.length)}${key}:not([hidden], ${EMPTY})${suffix}`)
+    }
+    return [complex]
+  })
+  return selectorShape(complexes.join(', '), spread.join(', '))
 }
 
-/** An empty item takes no height. */
-const COLLAPSE = flowRule(EMPTY)
 /** The gap above every visible item after the first, and above the first one after older turns. */
-const GAP = flowRule(`${SCOPE} > ${VISIBLE} ~ ${VISIBLE}, .{column}:has(> .{older}) > ${FLOW} > ${VISIBLE}`)
+const GAP = gapRule([`${SCOPE} > ${VISIBLE} ~ ${VISIBLE}`, `.{column}:has(> .{older}) > ${FLOW} > ${VISIBLE}`])
 /** The wider gap after a step's output. */
-const GAP_AFTER_RESPONSE = flowRule(`.{item}[${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"], ${SCOPE} > [${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"]:not([hidden]):not(:empty) + ${VISIBLE}:not(.{running})`)
+const GAP_AFTER_RESPONSE = gapRule([`.{item}[${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"]`, `${SCOPE} > [${CHAT_GROUP_PART_ATTRIBUTE}="${CHAT_GROUP_PART_RESPONSE}"]:not([hidden]):not(:empty) + ${VISIBLE}${NOT_RUNNING}`])
 /** The widest gap, after a turn's process group. */
-const GAP_AFTER_PROCESS = flowRule(`.{item}[${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"], .{item}[${TURN_PROCESS_ANSWER_ATTRIBUTE}], ${SCOPE} > [${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"] + ${VISIBLE}:not(.{running})`)
-/** The running line's divider, shown when the item before it is an answer. */
-const RUNNING_DIVIDER = flowRule(`${SCOPE} > :nth-last-child(2 of ${VISIBLE}):is(.{item}:not([${FLOW_KIND_ATTRIBUTE}="${USER_ROW_KIND}"]):not([${FLOW_KIND_ATTRIBUTE}="${STEERING_ROW_KIND}"]):not([${FLOW_KIND_ATTRIBUTE}="${TURN_TRIGGER_ROW_KIND}"]), [${CHAT_GROUP_KEY_ATTRIBUTE}]) ~ .{running} > .{divider}`)
+const GAP_AFTER_PROCESS = gapRule([`.{item}[${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"]`, `.{item}[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`, `${SCOPE} > [${FLOW_KIND_ATTRIBUTE}="${TURN_PROCESS_ROW_KIND}"] + ${VISIBLE}${NOT_RUNNING}`])
 
 const CHAT_FLOW: SodiumAdapter = {
   id: 'chat-flow',
   owner: '@deepseek-ai/dsh-client-ui-chat',
   sheet: '@deepseek-ai/dsh-client-ui-chat/ChatView.module.css',
-  rewrite: firstShape([GAP, GAP_AFTER_RESPONSE, GAP_AFTER_PROCESS, COLLAPSE, RUNNING_DIVIDER]),
-  maintain: (captured) => keepFlowMarks(
-    { items: captured.get('item') ?? [], columns: captured.get('column') ?? [] },
-    EMPTY_ITEM_ATTR,
-    FLOW_CHILD_ATTR,
-  ),
+  rewrite: firstShape([GAP, GAP_AFTER_RESPONSE, GAP_AFTER_PROCESS]),
+  maintain: (captured) => keepFlowChildMark(captured.get('column') ?? [], FLOW_CHILD_ATTR),
 }
 
 export const SODIUM_MEMBERS: readonly SodiumMember[] = [
