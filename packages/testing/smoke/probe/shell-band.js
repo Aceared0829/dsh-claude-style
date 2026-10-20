@@ -65,8 +65,8 @@
         '<div class="_headerCorner_b_1" style="width:28px;height:28px"></div></div>' +
         '<div class="_tabs_b_1" role="tablist" style="width:152px;height:26px"></div>'
       document.body.insertBefore(header, document.body.firstChild)
-      // The right panel's own collapse control, inside the panel it belongs to: the
-      // pass stands it down while the skin's control shows in the header's row.
+      // The right panel's own collapse control, inside the panel it belongs to:
+      // the pass leaves it alone while the skin's control shows in the header's row.
       var panel = document.createElement('div')
       panel.setAttribute('data-sidebar-right-panel', 'push')
       panel.setAttribute('data-sidebar-right-open', '')

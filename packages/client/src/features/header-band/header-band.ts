@@ -111,8 +111,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let bandHost: Element | null = null
   /** Every control the skin registered for the right panel, kept current by the bus (D40). */
   const closeButtons = observeMatches<HTMLElement>(`.${CLOSE_CLASS}`)
-  /** The host's own collapse control this pass stood down, or null. */
-  let hiddenToggle: HTMLElement | null = null
 
   /**
    * The skin's own control for the right panel, in the header's utilities seat.
@@ -121,7 +119,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * hangs from a transformed subtree and is clipped at the panel's own edge: a
    * fixed box placed there is measured from the panel and cut at its edge, so
    * that control cannot be lifted into the header's row. This button stands
-   * there instead and presses it, and the pass shows one of the two.
+   * there instead and presses it, and the host's own copy stays where it is.
    */
   function RightbarClose() {
     const label = copy('rightbarClose')
@@ -139,10 +137,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Show the skin's control wherever the panel is open, and stand the host's own
-   * copy down. The swap is a `display` on the two nodes rather than a rule:
-   * the host's control exists only while the panel does, and a rule keyed on
-   * either state would be a marker no page outside the desktop carries.
+   * Show the skin's control wherever the panel is open. Its `display` is written
+   * on the node rather than by a rule: the host's control exists only while the
+   * panel does, and a rule keyed on that state would be a marker no page outside
+   * the desktop carries.
    */
   function syncRightbarClose() {
     const host = findRightbarToggle()
@@ -150,13 +148,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       const wanted = host === null ? 'none' : 'inline-flex'
       if (button.style.display !== wanted) button.style.display = wanted
     }
-    if (hiddenToggle !== null && hiddenToggle !== host) {
-      hiddenToggle.style.removeProperty('display')
-      hiddenToggle = null
-    }
-    if (host === null) return
-    hiddenToggle = host
-    if (host.style.display !== 'none') host.style.display = 'none'
   }
 
   /** Register that control in the header's utilities seat, which renders it wherever it stands. */
@@ -321,7 +312,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (!measured) measure()
     measured = false
     // The right panel's control is placed on every page, not only where the
-    // caption row exists: which of the two stands is the panel's own state.
+    // caption row exists: whether it shows is the panel's own state.
     syncRightbarClose()
     const current = reading
     if (current === null) {
@@ -454,8 +445,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (utilities !== null) utilities.style.removeProperty(ACTIONS_RIGHT)
     if (corner !== null) corner.style.removeProperty(ACTIONS_RIGHT)
     if (strip !== null) strip.style.removeProperty(TABS_LEFT)
-    if (hiddenToggle !== null) hiddenToggle.style.removeProperty('display')
-    hiddenToggle = null
     clear()
     watch(null)
     titleRows.release()

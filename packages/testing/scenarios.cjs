@@ -249,9 +249,9 @@ const SCENARIOS = {
   /**
    * The right panel's own collapse control: the skin's button stands in the
    * header's row while that panel is open — its own copy hangs from a
-   * transformed, clipped subtree and cannot be placed there — and pressing the
-   * skin's button closes the panel, the host's own open button taking its place
-   * again.
+   * transformed, clipped subtree and cannot be placed there, so it stays in the
+   * panel — and pressing the skin's button closes the panel, the host's own open
+   * button taking its place again.
    */
   rightbar: {
     script: 'greeting',
@@ -271,7 +271,7 @@ const SCENARIOS = {
           shown: shown.length,
           box,
           host: host !== null,
-          hostHidden: host !== null && getComputedStyle(host).display === 'none',
+          hostShown: host !== null && getComputedStyle(host).display !== 'none',
           expand: expand !== null,
           panel: document.querySelector('[data-sidebar-right-open]') !== null,
         }
@@ -289,8 +289,8 @@ const SCENARIOS = {
         check('收起时那枚按钮不占位置，宿主自己的打开按钮在',
           before.buttons === 1 && before.shown === 0 && before.expand === true && before.panel === false,
           JSON.stringify(before)),
-        check('面板打开后它出现在头部那一行，面板里宿主自己那枚让位',
-          open.shown === 1 && open.box !== null && open.host === true && open.hostHidden === true,
+        check('面板打开后它出现在头部那一行，面板里宿主自己那枚留在原处',
+          open.shown === 1 && open.box !== null && open.host === true && open.hostShown === true,
           JSON.stringify(open)),
         check('按下它面板收起，宿主的打开按钮回到原处',
           closed.panel === false && closed.expand === true && closed.shown === 0 && closed.host === false,
