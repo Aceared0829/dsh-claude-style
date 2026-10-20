@@ -189,7 +189,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       row: rowBox,
       // The meter stands outside the row, so the margin the write phase puts on
       // the model trigger does not move it: its edge is read here with the row's.
-      wall: meterWall(closestComposerCard(modelBtn)),
+      wall: meterWall(closestComposerCard(modelBtn), box),
       need: effortPlace.need,
       width: effortPlace.width,
       height: effortPlace.height,
@@ -207,17 +207,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * left edge while the meter is on it. The meter is placed absolutely in the
    * dock (features/composer/inline-bar.css) and the row never sees it, so the
    * row's own right edge is not that wall — clamping to it pinned the level's
-   * name into the reading's band on a narrow card.
+   * name into the reading's band on a narrow card. A meter the stats line took
+   * under the row shares no height with the model trigger and is no wall.
    *
    * Reached through the engine's accessors from the card the model trigger sits
    * in: a whole-document lookup would be a new line in document-lookups.json,
    * and those records only shrink (scripts/ci-scope.mjs --ledgers).
    */
-  function meterWall(card: Element | null): number | null {
+  function meterWall(card: Element | null, line: DOMRect): number | null {
     const meter = findDockedContextMeter(card)
     if (meter === null) return null
     const box = meter.getBoundingClientRect()
     if (box.width === 0 || box.height === 0) return null
+    if (box.bottom <= line.top || box.top >= line.bottom) return null
     return Math.round(box.left)
   }
 
