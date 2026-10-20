@@ -138,7 +138,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const effortPlace = { left: -1, top: -1, need: 0, width: 0, widthLabel: '', height: 0, rowKey: '' }
 
   /** What the read phase resolved for this frame's placement of the trigger. */
-  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, row: DOMRect | null, rowKey: string, need: number, width: number, height: number, fresh: boolean, settle: boolean, marginChanged: boolean } | null | 'hide' | 'none' = null
+  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, row: DOMRect | null, wall: number | null, rowKey: string, need: number, width: number, height: number, fresh: boolean, settle: boolean, marginChanged: boolean } | null | 'hide' | 'none' = null
   /** The slider's track as the same read phase found it, for the pass's update of the slider. */
   let sliderBox: EffortTrackBox | null = null
 
@@ -187,6 +187,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       modelBtn,
       box,
       row: rowBox,
+      // The meter stands outside the row, so the margin the write phase puts on
+      // the model trigger does not move it: its edge is read here with the row's.
+      wall: meterWall(closestComposerCard(modelBtn)),
       need: effortPlace.need,
       width: effortPlace.width,
       height: effortPlace.height,
@@ -241,7 +244,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hideEffortTrigger()
       return
     }
-    const { modelBtn, box, row, rowKey, need, width, height, fresh, settle, marginChanged } = plan
+    const { modelBtn, box, row, wall: meter, rowKey, need, width, height, fresh, settle, marginChanged } = plan
     // Show it BEFORE placing: a trigger coming back from the hidden state (its
     // seat returned) would otherwise read offsetWidth 0, reserve no room for
     // that one pass and overlap the control that follows.
@@ -269,7 +272,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // meter is on this line; a meter that is hidden or lives elsewhere (the
     // hero, the reading moved under the row) leaves the row's own edge in
     // charge, which is the behaviour this trigger shipped with.
-    const wall = meterWall(closestComposerCard(modelBtn)) ?? (row === null ? null : Math.round(row.right))
+    const wall = meter ?? (row === null ? null : Math.round(row.right))
     const wanted = Math.round(shifted.right + 2)
     const left = wall === null
       ? wanted
