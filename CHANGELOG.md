@@ -26,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。
 - 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
 - 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
+- 修复切换会话时统计行的费用区先消失再出现、整行跟着重新排版的问题：费用区在会话金额到达之前保留原来的位置，以币种符号加一道短横占位并压暗，宽度按金额的量度预留，新金额到达后在同一位置替换。
 - 修复钠的改写写入失败后样式表恢复不回来、宿主改动规则后改写无声失效的问题：一次写入失败会把这次写入的规则全部写回，已写入的规则逐张表登记；生效条数归零时设置项写明宿主已改动这些规则，开关关闭时读不回原样的规则也会上报。
 - 修复首页「工作台」的用量面板停在打开窗口那一刻的数字：面板挂载期间按固定周期重取，回到窗口时也重取；宿主侧的汇总缓存从 5 分钟降到 30 秒，等汇总结果的轮询上限放宽，大历史不再先看到旧值。
 - 修复模型选择器搜索框的三处问题：搜索框紧贴卡片上沿、输入时光标高于文字、清空后光标不回最左边。搜索框自带一段上边距，单行输入框的光标按内容框居中后与文字齐平，清空时把插入点放回开头并重新测量光标。
@@ -33,6 +34,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
+- 钠渲染引擎改为以 PolyForm Shield 1.0.0 授权：可以阅读、修改与分发，不能用来提供与本插件竞争的产品；仓库其余部分仍为 MIT，已发布的 0.17.0 不受影响，名字的来源在通知文件里写明致敬 Minecraft 的 Sodium 模组。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -54,6 +56,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus.
 - Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
 - Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
+- Fix the cost segment of the statistics line vanishing and reappearing across a session switch, which re-laid the whole line: the segment now keeps its place until the session's amount arrives, standing as the currency symbol and a dash in the quiet ink, with the width of an amount reserved, and the new figure replaces it in the same room.
 - Fix a Sodium rewrite that could not be undone after a failed write, and the rewrite going quiet once the host changed the rules: a failed write now writes back every rule it wrote, the rules taken are held sheet by sheet, the setting says so when the number in effect falls to zero, and a rule that cannot be read back as the rewrite left it is reported.
 - Fix the Studio home's usage panel standing on the figures of the moment the window opened: the panel reads the roll-up again on a fixed period while it stands on the page and once more when the reader comes back to the window, the host half's roll-up cache drops from five minutes to thirty seconds, and waiting for a cold fold no longer gives up before the numbers land.
 - Fix three faults of the model picker's search field: it sat flush against the card's top edge, its drawn caret stood above the text, and clearing left the caret where the old words ended. The field now carries its own inset above, a single-line field's caret is centred in its content box, and a clear puts the insertion point back at the start and measures the caret again.
@@ -61,6 +64,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - Make a decision's prose cite only the decisions in force, say in the index that an abandoned option belongs under 后果 and that a decision with nothing to revisit writes 「无。」, and have lint check that every decision carries its four sections in order with a review condition that says something, and that no live decision cites a retired number.
+- License the Sodium rendering engine under PolyForm Shield 1.0.0: read, change and redistribute it, but not to provide a product competing with this plugin; the rest of the repository stays MIT, the published 0.17.0 is unaffected, and the notice file states that the name is a tribute to Minecraft's Sodium mod.
 
 ## [0.17.0] - 2026-10-20
 

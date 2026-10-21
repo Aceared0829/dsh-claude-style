@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "修复切换会话时统计行的费用区先消失再出现、整行跟着重新排版的问题：费用区在会话金额到达之前保留原来的位置，以币种符号加一道短横占位并压暗，宽度按金额的量度预留，新金额到达后在同一位置替换。",
+  "en": "Fix the cost segment of the statistics line vanishing and reappearing across a session switch, which re-laid the whole line: the segment now keeps its place until the session's amount arrives, standing as the currency symbol and a dash in the quiet ink, with the width of an amount reserved, and the new figure replaces it in the same room."
+}

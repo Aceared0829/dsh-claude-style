@@ -302,12 +302,20 @@ body[data-dsh-claude-style] .dsh-claude-inline-arrow {
   color: var(--dsw-alias-label-tertiary);
 }
 /* The session's cost: the line's own figure style, the currency symbol
-   carrying the unit (features/context-stats/inline-stats.ts). */
+   carrying the unit (features/context-stats/inline-stats.ts). The width is
+   held at an amount's own measure and the figure is right-aligned in it, so a
+   switch's placeholder and the amount that replaces it occupy the same room. */
 body[data-dsh-claude-style] .dsh-claude-inline-cost {
   display: inline-flex;
   align-items: center;
   flex: none;
+  min-width: 7ch;
+  justify-content: flex-end;
   font-variant-numeric: tabular-nums;
+}
+/* No figure for this session yet: the segment keeps its place with a dash. */
+body[data-dsh-claude-style] .dsh-claude-inline-cost[data-pending] {
+  color: var(--dsw-alias-label-tertiary);
 }
 /* The ladder's third step: the meter keeps its ring and gives up the number
    beside it (features/context-stats/inline-stats.ts). That number is the

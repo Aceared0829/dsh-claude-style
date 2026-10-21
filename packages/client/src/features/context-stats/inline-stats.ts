@@ -7,7 +7,7 @@ import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createStatsCount } from './stats-count'
 import { CACHE_HIT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { sessionStatsCacheHit, sessionStatsGrouped, sessionStatsSpeed } from './stats-format'
-import { formatMoneyMicro } from '@dsh-claude-style/contracts/prices'
+import { formatMoneyMicro, CURRENCY_SYMBOL } from '@dsh-claude-style/contracts/prices'
 import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import type { HostText } from '@dsh-claude-style/engine/host'
@@ -147,6 +147,16 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
   let fittedWidth = -1
   /** The words the fitted step would show, as their character count; -1 asks for a fit. */
   let fittedShape = -1
+  /**
+   * Until when the line stands as it is though it has no reading.
+   *
+   * A session switch releases the old projections before the new ones answer,
+   * and the host re-renders the row the line stands beside; without this the
+   * line is taken off the page for that gap and put back, and everything above
+   * it moves twice. The hold keeps the element (and its height) where it is
+   * until the new reading arrives or the deadline passes.
+   */
+  let holdUntil = 0
 
   /** The figures counting from what the reader sees to the newest reading. */
   const count = createStatsCount((reading: StatsReading) => {
@@ -300,7 +310,6 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     const hasOutput = usage !== null && usage.outputTokens > 0
     const hasTokens = hasInput || hasOutput
     const hasCache = hasInput && hit !== null
-    const hasCost = cost !== null && cost > 0
     const merged = at >= 4
     if (!hasCounts && !hasSpeed && !hasTokens) return
 
@@ -311,8 +320,10 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     show(shown.input, hasInput && !merged)
     show(shown.output, hasOutput && !merged)
     // The cost stands beside the written-back figure until the ladder needs
-    // its room for the total.
-    show(shown.cost, hasCost && at < 3)
+    // its room for the total. It stands whenever the line has tokens, with a
+    // placeholder while the session's figure is not known yet (a switch): the
+    // segment keeps its width, so the line does not fold and unfold around it.
+    show(shown.cost, hasTokens && at < 3)
     show(shown.total, hasTokens && merged)
     show(shown.cache, hasCache)
     shown.cell.cacheHead.hidden = at >= 1
@@ -335,7 +346,11 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
       writeTextInPlace(shown.cell.output, readTokens(usage.outputTokens))
       writeText(shown.cell.outputTail, tokenParts[1] ?? '')
       writeTextInPlace(shown.cell.total, readTokens(billed + usage.outputTokens))
-      if (cost !== null && cost > 0) writeTextInPlace(shown.cell.cost, formatMoneyMicro(cost, currency))
+      // A figure that is not known yet keeps the segment's place with the
+      // currency's own dash; the amount replaces it in the same width.
+      const known = cost !== null && cost > 0
+      writeTextInPlace(shown.cell.cost, known ? formatMoneyMicro(cost, currency) : `${CURRENCY_SYMBOL[currency]}\u2014`)
+      shown.cell.cost.toggleAttribute('data-pending', !known)
       writeLabel(shown.cell.cacheHead, cacheParts[0] ?? '')
       if (hit !== null) writeTextInPlace(shown.cell.cache, hit)
       writeLabel(shown.cell.cacheTail, cacheParts[1] ?? '')
@@ -481,13 +496,21 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
       clear()
       return
     }
+    const held = Date.now() < holdUntil && line !== null && line.root.parentElement !== null
     const reading = read()
     if (reading.stats === null && reading.usage === null) {
+      // A session switch leaves the reading empty for a moment; the line stands
+      // with the figures it had rather than folding the composer's bottom line
+      // and unfolding it again.
+      if (held) return
       clear()
       return
     }
     if (line === null) line = buildLine()
     if (!place(line.root)) {
+      // The host took the row the line stands beside away for its own render.
+      // The line is kept until the deadline, then it goes with the row.
+      if (held) return
       clear()
       return
     }
@@ -502,6 +525,19 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     render,
     /** Measure again after a viewport or composer change, without rewriting the figures. */
     refit,
+    /**
+     * Keep the line where it is for a moment though it has no reading.
+     *
+     * A session switch rebinds the projections and the host re-renders the row
+     * beside the line; the count is reset so the new session's figures are
+     * written as they are instead of rolling over from the old ones.
+     *
+     * @param ms - how long the line may stand without a reading.
+     */
+    hold(ms: number) {
+      holdUntil = Date.now() + ms
+      count.reset()
+    },
     clear,
     /**
      * The line's own element while it stands on the page: the panel's second

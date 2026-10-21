@@ -59,6 +59,14 @@ export function createSessionStats(ctx: HostContext) {
   /** The projections the reading follows: the figures, and the route the cost prices at. */
   const STATS_KEYS = ['sessionStats', 'tokenUsage', 'modelSelection']
 
+  /**
+   * How long the line stands without a reading across a session switch. The new
+   * session's faces usually answer within a frame or two; the hold covers the
+   * host's own re-render on the way, and gives up rather than leave stale
+   * figures standing.
+   */
+  const SWITCH_HOLD_MS = 800
+
   /** The projection keys this page is following, and how to stop. */
   let watch: { sessionId: string, faces: Record<string, HostSnapshotSource<unknown>>, off: (() => void)[] } | null = null
 
@@ -232,6 +240,10 @@ export function createSessionStats(ctx: HostContext) {
   function syncWatch() {
     const sessionId = shownSessionId()
     if (watch !== null && watch.sessionId === sessionId) return
+    // The old session's faces go before the new ones answer, and the host
+    // re-renders the row the line stands beside: the line keeps its place for
+    // a moment instead of folding and unfolding the composer's bottom line.
+    if (watch !== null) inline.hold(SWITCH_HOLD_MS)
     releaseWatch()
     block.resetContent()
     if (sessionId === '') return
