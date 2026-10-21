@@ -1,4 +1,5 @@
 import { installScaledLayer } from '@dsh-claude-style/engine/page-scale'
+import { installFrameColumns } from './page-scale-columns'
 import { subscribePrefs } from '../core/prefs'
 import { pageViewport, pageZoomFactor } from './page-zoom'
 
@@ -52,10 +53,12 @@ export function installPageScale() {
     body.style.setProperty(PAGE_WIDTH, `${Math.round(view.width)}px`)
   }
   let layer: ReturnType<typeof installScaledLayer> | null = null
-  /** The page's readings and every carried card, in one pass. */
+  let columns: ReturnType<typeof installFrameColumns> | null = null
+  /** The page's readings, every carried card and the frame's columns, in one pass. */
   const settle = () => {
     measure()
     layer?.settle()
+    columns?.settle()
   }
   // The teardown asks a re-run for the readings of the page it hands back: it has
   // taken its own properties off by then, and the body outlives this run. The
@@ -67,12 +70,14 @@ export function installPageScale() {
     onChange: measure,
     onRelease: () => settle(),
   })
+  columns = installFrameColumns({ scale: () => pageZoomFactor() })
   const offPrefs = subscribePrefs(settle)
   settle()
   return () => {
     offPrefs()
     body.style.removeProperty(PAGE_HEIGHT)
     body.style.removeProperty(PAGE_WIDTH)
+    if (columns !== null) columns.stop()
     layer.stop()
   }
 }
