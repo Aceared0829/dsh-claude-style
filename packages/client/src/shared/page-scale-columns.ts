@@ -13,15 +13,9 @@
  *
  * A written list holding anything but a length is left alone: `1fr`, `minmax`
  * and `fit-content` are resolved against the track the page gives them, and only
- * a length the host measured doubles.
- *
- * A track it cannot read a length out of leaves the whole write to the host: a
- * frame whose last column narrows to nothing (`0px`) stands at a scale-free zero
- * on both sides of the division, and reading the rest as written would leave the
- * columns adding up to a factor past the window again. When the page is scaled
- * the host's own write is therefore handed straight back and the frame keeps the
- * space the page gives it, its first column standing at the width the host asked
- * for.
+ * a length the host measured doubles. A zero track needs no such guard: it
+ * stands at zero on both sides of the division, and the `1fr` beside it takes
+ * the rest of the page's own width.
  */
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
@@ -68,29 +62,12 @@ function tracks(written: string) {
 }
 
 /**
- * Whether a track has no width at all: a zero length, or a bracket group whose
- * every bound is a zero length. Such a track stands at zero on both sides of the
- * division, so the page gives it nothing on either side of it either, and the
- * rest of the list reads as written.
- */
-function isNothing(track: string): boolean {
-  const length = LENGTH.exec(track)
-  if (length !== null) return Number(length[1]) === 0
-  const group = GROUP.exec(track)
-  if (group === null) return false
-  const bounds = group[2].split(',').map(part => part.trim())
-  return bounds.every(bound => LENGTH.test(bound) && isNothing(bound))
-}
-
-/**
  * The host's own column list, in the page's pixels.
  *
  * @param written - the value the host wrote into `grid-template-columns`.
  * @param scale - the scale the page is drawn at.
  * @returns the list to write instead, or null when the page is at its own scale,
- *     when a track holds a `fr` or a keyword the page resolves itself, or when a
- *     track reads as nothing — a zero track stands at zero in both spaces, and
- *     dividing the rest would leave the columns a factor past the window.
+ *     or the list holds a track the page resolves itself (`1fr`, a keyword).
  */
 export function inPageColumns(written: string, scale: number) {
   if (!(scale > 0) || scale === 1 || written.trim() === '') return null
@@ -98,7 +75,6 @@ export function inPageColumns(written: string, scale: number) {
   for (const part of tracks(written)) {
     const converted = trackInPage(part, scale)
     if (converted === null) return null
-    if (0 === Number.parseFloat(converted) || isNothing(part)) return null
     inPage.push(converted)
   }
   return inPage.join(' ')
@@ -116,6 +92,8 @@ interface Carry {
   from: string
   /** The value read from it, which this rule left in place. */
   to: string
+  /** The page's scale when the read happened: a different scale asks for the read again. */
+  scale: number
 }
 
 /**
@@ -126,30 +104,73 @@ interface Carry {
 const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
 
 /**
+ * What each frame's last carry left, kept on the frame itself.
+ *
+ * The skin's rules can stand on the page twice — a hot reload mounts the new
+ * module before the old one is torn down — and a record kept in the module would
+ * be one per copy: the copy that was not the writer reads the other's number as
+ * the host's measurement, and divides the columns again on every pass until
+ * almost nothing is left. The frame is what both copies share, so the record is
+ * kept there, under a name no host and no stylesheet writes.
+ */
+const CARRY_ATTRIBUTE = 'data-dsh-claude-frame-columns'
+
+function seenOn(frame: HTMLElement): Carry | null {
+  const raw = frame.getAttribute(CARRY_ATTRIBUTE)
+  if (raw === null) return null
+  const [scale, from, to] = raw.split('\u0000')
+  if (scale === undefined || from === undefined || to === undefined) return null
+  return { from, to, scale: Number(scale) }
+}
+
+function markOn(frame: HTMLElement, carry: Carry) {
+  frame.setAttribute(CARRY_ATTRIBUTE, `${carry.scale}\u0000${carry.from}\u0000${carry.to}`)
+}
+
+function forgetOn(frame: HTMLElement) {
+  frame.removeAttribute(CARRY_ATTRIBUTE)
+}
+
+/**
  * Lay the host frame's columns out in the page's own pixels.
  *
  * @returns settle: read the frame again, for a host write or a scale that
  *     changed under it; stop: give every frame back.
  */
 export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
-  /** What this rule has carried, per frame: the frame's own record of what it read. */
-  const carried = new Map<HTMLElement, Carry>()
-
   const carry = (frame: HTMLElement) => {
     const value = frame.style.getPropertyValue('grid-template-columns')
     if (value === '') return
-    const seen = carried.get(frame)
+    const seen = seenOn(frame)
+    const scale = vocabulary.scale()
     // A second pass reads this rule's own number back as the host's write; it is
     // the one kept from the last read, and dividing it again would shrink the
-    // columns on every pass.
-    if (seen !== undefined && (value === seen.from || value === seen.to)) return
-    const inPage = inPageColumns(value, vocabulary.scale())
-    if (inPage === null) {
-      carried.delete(frame)
+    // columns on every pass. A different scale is a different answer, though: the
+    // held number is the host's own, and it is carried again from there.
+    if (seen !== null && value === seen.to && seen.scale !== scale) {
+      const converted = inPageColumns(seen.from, scale)
+      if (converted === null) {
+        forgetOn(frame)
+        frame.style.setProperty('grid-template-columns', seen.from)
+        return
+      }
+      markOn(frame, { from: seen.from, to: converted, scale })
+      frame.style.setProperty('grid-template-columns', converted)
       return
     }
+    if (seen !== null && (value === seen.from || value === seen.to)) return
+    const inPage = inPageColumns(value, scale)
+    if (inPage === null) {
+      // The page is at its own scale again, or the write holds a track this rule
+      // does not read: the host's own numbers are the ones that stand.
+      if (seen !== null) {
+        forgetOn(frame)
+        frame.style.setProperty('grid-template-columns', seen.from)
+      }
+      return
+    }
+    markOn(frame, { from: value, to: inPage, scale })
     frame.style.setProperty('grid-template-columns', inPage)
-    carried.set(frame, { from: value, to: inPage })
   }
 
   /** The frames being heard, each with the subscription that hears its own write. */
@@ -183,7 +204,7 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
       if (present.has(frame)) continue
       heard.delete(frame)
       off()
-      carried.delete(frame)
+      forgetOn(frame)
     }
   }
 
@@ -197,10 +218,10 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
       offPrefs()
       for (const [frame, off] of heard) {
         off()
-        const seen = carried.get(frame)
-        if (seen !== undefined) frame.style.setProperty('grid-template-columns', seen.from)
+        const seen = seenOn(frame)
+        if (seen !== null) frame.style.setProperty('grid-template-columns', seen.from)
+        forgetOn(frame)
       }
-      carried.clear()
       heard.clear()
     },
   }
