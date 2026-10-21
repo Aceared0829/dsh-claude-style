@@ -5,6 +5,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { findHeroRoot } from '@dsh-claude-style/engine/host'
 import type { FrameTask } from '@dsh-claude-style/engine/frame'
 import { motionReduced } from '../../core/prefs'
+import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createGlyphField } from './ripple-field'
 import type { FieldPalette, GlyphField, Rgb } from './ripple-field'
 import { RIPPLE } from './ripple-params'
@@ -168,9 +169,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     function onPress(event: PointerEvent) {
       if (event.button !== 0 || motionReduced()) return
-      const box = canvas.getBoundingClientRect()
-      const column = Math.floor((event.clientX - box.left) / RIPPLE.cellWidth)
-      const row = Math.floor((event.clientY - box.top) / RIPPLE.cellHeight)
+      // The press arrives in the window's pixels and the cells are the page's:
+      // the offset is divided by the page's scale before it is counted in them.
+      const box = inPageBox(canvas.getBoundingClientRect())
+      const column = Math.floor((inPagePixels(event.clientX) - box.left) / RIPPLE.cellWidth)
+      const row = Math.floor((inPagePixels(event.clientY) - box.top) / RIPPLE.cellHeight)
       previous = performance.now()
       current.waves.disturb(column, row)
       wake()

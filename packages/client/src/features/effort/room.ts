@@ -31,7 +31,9 @@ export function reserveEffortRoom(modelBtn: HTMLElement, need: number): DOMRect 
   const row = modelBtn.closest(EFFORT_ROW_SELECTOR)
   if (row !== null && row.scrollWidth > row.clientWidth) {
     const over = row.scrollWidth - row.clientWidth
-    modelBtn.style.maxWidth = `${Math.max(0, Math.round(modelBtn.getBoundingClientRect().width - over))}px`
+    // The overflow and the cap are both lengths the page reads, while the box
+    // the trigger is drawn in comes back in the window's pixels.
+    modelBtn.style.maxWidth = `${Math.max(0, Math.round(modelBtn.offsetWidth - over))}px`
   }
   return modelBtn.getBoundingClientRect()
 }

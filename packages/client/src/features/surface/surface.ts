@@ -9,6 +9,7 @@ import { onModelCopyLoaded } from '../model/model-copy'
 import { mountStylesheet } from '../../core/stylesheet'
 import { buildElement, createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { dsBotInstalled, dsBotSurfaceActive, subscribePageOwner } from '../../shared/visual-owner'
+import { inPagePixels } from '../../shared/page-zoom'
 import { copy } from './copy'
 
 /**
@@ -180,14 +181,17 @@ export function install() {
     if (root.parentElement !== body) body.appendChild(root)
     const width = root.offsetWidth
     const height = root.offsetHeight
-    let clear = band.controls.side === 'left' ? band.controls.size : 0
+    // The strip and the column are measured in the window's pixels while both
+    // properties are read as the page's, so every measurement is halved across
+    // by the page's scale before it is written (shared/page-zoom.ts).
+    let clear = band.controls.side === 'left' ? inPagePixels(band.controls.size) : 0
     for (const read of [findSidebarToggle, findWindowsMenu]) {
       const box = read()?.getBoundingClientRect()
-      if (box !== undefined && box.width > 0 && box.top < band.height) clear = Math.max(clear, box.right)
+      if (box !== undefined && box.width > 0 && box.top < band.height) clear = Math.max(clear, inPagePixels(box.right))
     }
-    const left = Math.round(column.getBoundingClientRect().right - BAND_INSET - width)
+    const left = Math.round(inPagePixels(column.getBoundingClientRect().right) - BAND_INSET - width)
     setProperty(LEFT_PROPERTY, `${left}px`)
-    setProperty(TOP_PROPERTY, `${Math.round((band.height - height) / 2)}px`)
+    setProperty(TOP_PROPERTY, `${Math.round((inPagePixels(band.height) - height) / 2)}px`)
     mark(left < clear + BAND_CLEARANCE ? 'tucked' : 'band')
   }
 
