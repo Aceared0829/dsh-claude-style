@@ -35,6 +35,17 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-we-wallp
   background: var(--dsh-claude-canvas);
 }
 
+/* ---------- the window's chrome is not text ---------- */
+/* A press on the sidebar's rows or on the conversation header is a gesture at
+   the window — on Windows the caption row is the shell's own drag region — and
+   the drag that follows must not paint a selection across the labels it passes
+   (issue #109). The transcript and the draft stand outside both boxes, so the
+   reader's own selection keeps its paints; a text field inside the chrome keeps
+   its own, which Chromium grants an editing host under a locked ancestor. */
+body[data-dsh-claude-style] :is([data-slot="sidebar"], [data-slot="conversation.header"]) {
+  user-select: none;
+}
+
 /* ---------- Windows titlebar: the columns run to the window's top ---------- */
 /* The shell keeps a caption row above every column and paints the three window
    buttons over it. Each column extends its fill up through the row with an

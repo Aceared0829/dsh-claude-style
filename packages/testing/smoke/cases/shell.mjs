@@ -114,6 +114,9 @@ export default {
       laid.titlePosition === 'fixed' && laid.titleZ === '30' &&
         laid.titleRegion === 'no-drag' && laid.utilitiesRegion === 'no-drag' && laid.cornerRegion === 'no-drag',
       JSON.stringify({ position: laid.titlePosition, z: laid.titleZ, regions: [laid.titleRegion, laid.utilitiesRegion, laid.cornerRegion] }))
+    check('the words the row carries are the window\'s own: a press on the title starts no selection',
+      laid.titleSelect === 'none' && laid.headerSelect === 'none',
+      JSON.stringify({ title: laid.titleSelect, header: laid.headerSelect }))
     check('the title is handed the room left between its own edge and the controls once the strip\'s width is reserved, and the row it left tucks under it',
       laid.titleLeft === laid.row.x + 'px' &&
         laid.titleMax === laid.utilities.x - b.air - ((laid.strip.right - laid.strip.x) + b.air) - laid.title.x + 'px' &&

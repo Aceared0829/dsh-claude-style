@@ -143,6 +143,8 @@
         titlePosition: getComputedStyle(title).position,
         titleZ: getComputedStyle(title).zIndex,
         titleRegion: getComputedStyle(title).webkitAppRegion,
+        titleSelect: getComputedStyle(title).userSelect,
+        headerSelect: getComputedStyle(header).userSelect,
         utilitiesRegion: getComputedStyle(utilities).webkitAppRegion,
         cornerRegion: getComputedStyle(corner).webkitAppRegion,
         closeInline: closeButton.style.display,

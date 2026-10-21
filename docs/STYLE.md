@@ -387,6 +387,14 @@ address. `packages/client/src/features/composer/selection-mirror.ts` therefore m
 onto `data-dsh-window-blur` and the stylesheet switches on that attribute; the
 selection itself survives the blur.
 
+The window's chrome is not text. The sidebar column and the conversation header
+take `user-select: none`: a press on a row or on the session title is a gesture
+at the window — on the Windows desktop the caption row is the shell's own drag
+region — and the drag that follows must not paint a selection across the labels
+it passes. The transcript, the composer's draft and a text field inside the
+chrome keep their own selection, which Chromium grants an editing host under a
+locked ancestor.
+
 ## Markdown material
 
 A quote is a **container**, not a link: it keeps the prose face on a neutral bar

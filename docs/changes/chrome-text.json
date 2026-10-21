@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。",
+  "en": "Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do."
+}
