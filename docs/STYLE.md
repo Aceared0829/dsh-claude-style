@@ -64,6 +64,7 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsw-alias-button-info-hover` | `#c6613f` | `#3a57e8` | `#e08a6d` | `#6a84ff` | host's own |  |
 | `--dsw-alias-interactive-bg-active` | `rgba(217, 119, 87, 0.30)` | `rgba(77, 107, 254, 0.22)` | `rgba(217, 119, 87, 0.30)` | `rgba(77, 107, 254, 0.30)` | host's own |  |
 | `--dsh-claude-hover-bg` | `rgba(0, 0, 0, 0.08)` | `rgba(38, 49, 72, 0.08)` | `rgba(255, 255, 255, 0.08)` | `rgba(255, 255, 255, 0.08)` | `var(--dsw-alias-interactive-bg-hover)` | hover wash |
+| `--dsh-claude-field-ring` | `#2a78d6` | `#2a78d6` | `#2a78d6` | `#2a78d6` | `var(--dsw-alias-brand-primary)` | the ring around a field the reader is renaming in: the session title's own editor, drawn from the selection blue |
 | `--dsh-claude-inline-code-bg` | `rgba(0, 0, 0, 0.05)` | `rgba(38, 49, 72, 0.05)` | `rgba(255, 255, 255, 0.05)` | `rgba(255, 255, 255, 0.05)` | `var(--dsw-alias-markdown-inline-code)` | inline code fill |
 | `--dsh-claude-inline-code-fg` | `#943333` | `var(--dsw-alias-label-primary)` | `#e8a08a` | `var(--dsw-alias-label-primary)` | `var(--dsw-alias-label-primary)` | inline code ink |
 | `--dsh-claude-link` | `#184f95` | `#3b56d9` | `#8ab4f8` | `#8fa4ff` | `var(--dsw-alias-link)` | markdown links |
@@ -394,6 +395,18 @@ region — and the drag that follows must not paint a selection across the label
 it passes. The transcript, the composer's draft and a text field inside the
 chrome keep their own selection, which Chromium grants an editing host under a
 locked ancestor.
+
+The session title is the session's name, and a press on it renames the session.
+The pointer over the title's last crumb raises a plate under the words — the
+host's own crumb already carries the padding and the radius — with a tip under
+the segment naming the press, in the label ink on the canvas tone the usage
+panel's day tip uses. The segment carries the tip rather than the words because
+the host clips a crumb's overflow for its ellipsis. The press opens a field over
+the words: canvas fill, a 1px ring in the selection blue, a 4px radius and 12px
+by 3px of padding, hugging the words it holds so the title reads as the words
+being edited rather than a card laid over them. It stands in the page's own
+space, so the reader's zoom keeps it on the title; a rename the host refuses
+keeps the field, ringed in the host's error tone.
 
 ## Markdown material
 

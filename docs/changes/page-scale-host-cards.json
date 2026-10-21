@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复页面缩放不为 100% 时浮层按窗口量出的尺寸与位置都不成立：宿主自己画的会话卡片、账号菜单、上下文弹层把量到的位置直接写进坐标，在缩放下又被放大一次，开在触发控件上方的菜单还会因为自身高度是在另一个空间里量的而压在控件上；按窗口封顶的卡片同样会高出窗口一截，末尾几行读不到。现在宿主自己的浮层拿回一像素对一像素的空间，写下的长度与量到的盒子在屏幕上一致；按窗口封顶的规则改读皮肤量出的页面尺寸，不再用 vh 与 vw。",
-  "en": "Fix the cards and caps measured against the window not holding at a page scale other than 100%: the host's own session card, account menu and context popover write a measured position straight into their coordinates, which the scale then multiplies a second time, and a menu opening over its trigger lands on it because its own height was measured in the other space; a card capped against the window comes out taller than it as well, leaving its last rows unreadable. The host's own floating cards are now given a space one pixel to one pixel with the window, so a length the host writes and a box the host measures are the same length on screen, and a rule that caps a card against the window reads the page's own size instead of `vh` and `vw`."
-}
