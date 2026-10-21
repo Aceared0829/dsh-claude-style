@@ -24,7 +24,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     /**
      * A viewport move under the context panel: the panel is the host's,
      * and the feature only re-takes its own reading of where the panel's
-     * right edge belongs.
+     * edges belong.
      */
     reposition: stats.reposition,
     /** Composer focus closes the panel. */

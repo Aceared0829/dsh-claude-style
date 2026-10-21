@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "修复页面缩放时输入区右下角的上下文弹层纵向位置偏低、下沿越出窗口的问题：皮肤按页面自身像素把弹层放在计量圆环上方，留出宿主原来的间距，弹层长高时重新对齐。",
+  "en": "Fix the context popover above the composer's meter sitting too low and running past the window's bottom edge under page zoom: the skin places it above the meter in the page's own pixels, at the host's own gap, and re-takes that reading when the popover grows."
+}

@@ -45,10 +45,12 @@
         skeletonRows: statsSkeleton === null ? 0 : statsSkeleton.querySelectorAll('.dsh-claude-context-stats-skeleton-value').length,
         skeletonItemHeight: statsSkeleton === null ? null : Math.round(statsSkeleton.querySelector('.dsh-claude-context-stats-item').getBoundingClientRect().height),
       }
-      // The first projection frame: the numbers replace the place, in full.
+      // The first projection frame: the numbers replace the place, in full. The
+      // count they run to changes the block's width, so the panel's own size
+      // settles only after it lands; the alignment follows that size.
       window.__pushStats('sessionStats', { turns: 2, steps: 3, llmMs: 1200, toolMs: 400, ttftMs: 800, ttftSteps: 1, decodeMs: 2000, decodeTokens: 210 })
       window.__pushStats('tokenUsage', { uncachedInputTokens: 1000, outputTokens: 105, cacheReadTokens: 9000, cacheWriteTokens: 0 })
-      await sleep(200)
+      await sleep(450)
       var statsBlock = document.querySelector('.dsh-claude-context-stats')
       var statsPanel = statsBlock === null ? null : statsBlock.closest('[role="dialog"]')
       r.context.opened = statsPanel !== null

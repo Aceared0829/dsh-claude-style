@@ -1048,6 +1048,13 @@
       "a menu row is no composer row: the open menu carries none of the composer's marks": [
         0
       ],
+      "页面缩放到 125% 时，上下文弹层仍贴在计量圆环上方并留在窗口内": [
+        0,
+        1,
+        1.25,
+        7,
+        9
+      ],
       "控制台没有异常": [
         0
       ]
