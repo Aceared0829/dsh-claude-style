@@ -13,14 +13,14 @@
  *   scripts/chunks.mjs                           the deferred features' chunks (D72), routed like the assets
  *   scripts/build-cache.mjs                      the vectors and brotli payloads kept between runs in .debug/build-cache/
  *   packages/client/src/core/ packages/client/src/shared/ packages/client/src/features/<name>/   the modules, TypeScript, strict
- *   packages/client/src/features/<dir>/<main>.manifest.ts   each feature's manifest (D72), read by scripts/shared/read-manifests.cjs
+ *   packages/client/src/features/<dir>/<main>.manifest.ts   each feature's manifest (D72), read by scripts/shared/read-manifests.mjs
  *   packages/client/src/theme/*.css and the feature stylesheets   concatenated by rank (THEME_SHEETS and the manifests),
  *                                checked and gated on the syntax tree (scripts/css.mjs)
  *   packages/client/src/theme/tokens.json        the design tokens: the token stylesheet and docs/STYLE.md's table
  *   packages/assets/src/                  every image (packages/assets/assets.mjs): small ones inline, the rest
  *                                written to lib/assets/<hash>.<ext> and served by the host half
- *   packages/assets/src/fonts/            the four faces the package ships with their licences and
- *                                authors file, copied to lib/fonts/ (buildFonts)
+ *   packages/assets/src/fonts/            the four faces the package ships with the one licence file that
+ *                                covers them, copied to lib/fonts/ (buildFonts)
  *
  * What the build produces for the browser half reaches the source as one
  * generated module, `virtual:dsh-claude-style/generated` (typed in
@@ -50,7 +50,7 @@ import vm from 'node:vm'
 import { brotliCompressSync } from 'node:zlib'
 import esbuild from 'esbuild'
 import { PNG } from 'pngjs'
-import { buildHostHalf } from '../packages/host/build.mjs'
+import { buildHostHalf } from './build-host.mjs'
 import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, planAssets, routeText, vectorizeSheet, writeAssets } from '../packages/assets/assets.mjs'
 import { openBuildCache } from './build-cache.mjs'
 import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkMotionSources, checkScrollOwner, checkTypes } from './build-checks.mjs'
@@ -62,9 +62,9 @@ import { readSourceTree } from './source-tree.mjs'
 import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import { PRICES_FILE, validatePrices } from './prices.mjs'
-import manifestReader from './shared/read-manifests.cjs'
-import { withLock } from './shared/verify-lock.cjs'
-import { loadModule } from './shared/ts-module.cjs'
+import { readManifests } from './shared/read-manifests.mjs'
+import { withLock } from './shared/verify-lock.mjs'
+import { loadModule } from './shared/ts-module.mjs'
 import { chunkModulesModule, featuresModule, generatedModule, settingsControlsModule } from './virtual-modules.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
@@ -137,7 +137,7 @@ const THEME_SHEETS = [
  * by rank. A rank two sheets share would leave their order to chance, so it
  * fails the build.
  *
- * @param manifests - the feature manifests (scripts/shared/read-manifests.cjs).
+ * @param manifests - the feature manifests (scripts/shared/read-manifests.mjs).
  * @returns `{ file, rank, gate? }` with `file` relative to packages/client/src.
  */
 function styleFiles(manifests) {
@@ -342,7 +342,7 @@ function vectorizeDeepySheets(cache) {
 
 async function main() {
   checkTypes()
-  const manifests = manifestReader.readManifests()
+  const manifests = readManifests()
   checkManifests(manifests)
   checkContracts(manifests)
   checkDependencies()

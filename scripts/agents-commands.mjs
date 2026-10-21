@@ -35,7 +35,7 @@ const OVERRIDES = {
 }
 
 /** A script whose file is the script itself, so the header line can be read. */
-const SCRIPT_FILE = /^node\s+(\S+\.(?:mjs|cjs))(?:\s|$)/
+const SCRIPT_FILE = /^node\s+(\S+\.(?:mjs))(?:\s|$)/
 
 /**
  * The purpose one script states in its own header: the line that names the file

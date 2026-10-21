@@ -26,7 +26,7 @@
  * token, motion and layer tables in docs/STYLE.md; it also declares the brand marks' addresses
  * as `--dsh-claude-image-<name>`, the one thing in the CSS only the build knows.
  *
- * The joined sheet ships minified (scripts/shared/minify-css.cjs): comments and
+ * The joined sheet ships minified (scripts/shared/minify-css.mjs): comments and
  * formatting are for the source, and the checks above read the source.
  */
 import fs from 'node:fs'
@@ -35,9 +35,9 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 import { featureSheet } from './feature-sheets.mjs'
-import { minifyCss } from './shared/minify-css.cjs'
-import { loadModule } from './shared/ts-module.cjs'
-import { ruleKey } from './shared/rule-key.cjs'
+import { minifyCss } from './shared/minify-css.mjs'
+import { loadModule } from './shared/ts-module.mjs'
+import { ruleKey } from './shared/rule-key.mjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'
@@ -653,7 +653,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
  * off the page by that walk. The walk writes every declaration it read — the
  * ones it proved necessary with what each beats, and the ones no page state
  * could reach with the verdict that says so — into
- * packages/testing/importance-ledger.json, keyed by the declaration's rule text
+ * packages/testing/data/importance-ledger.json, keyed by the declaration's rule text
  * and property, which is the same key this check computes over the built sheet.
  * A declaration in no entry is weight nobody has read the page for: write the
  * reason into a decision, then run the walk with `DSH_IMPORTANCE_LEDGER=write`
@@ -666,7 +666,7 @@ export function buildStylesheet({ sheets, srcDir, sources, tokenDoc, gates, imag
 function checkImportance(main, srcDir) {
   if (process.env.DSH_IMPORTANCE_LEDGER === 'write') return
   const root = path.resolve(srcDir, '..', '..', '..')
-  const ledger = JSON.parse(fs.readFileSync(path.join(root, 'packages', 'testing', 'importance-ledger.json'), 'utf8')).entries
+  const ledger = JSON.parse(fs.readFileSync(path.join(root, 'packages', 'testing', 'data', 'importance-ledger.json'), 'utf8')).entries
   const problems = []
   postcss.parse(main).walkRules((rule) => {
     const important = rule.nodes.filter((node) => node.type === 'decl' && node.important)

@@ -8,7 +8,7 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadModule, loadModuleEsm } from './shared/ts-module.cjs'
+import { loadModule, loadModuleEsm } from './shared/ts-module.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
@@ -72,7 +72,7 @@ export function checkDependencies() {
  * preference table (packages/contracts/src/prefs.ts, D73), the table the
  * settings form serves.
  *
- * @param manifests - the feature manifests (scripts/shared/read-manifests.cjs).
+ * @param manifests - the feature manifests (scripts/shared/read-manifests.mjs).
  */
 export function checkManifests(manifests) {
   const covered = new Set(manifests.map((manifest) => manifest.dir))
@@ -136,7 +136,7 @@ export function checkCycles(metafile) {
  * cannot enter the skin without a note and an owner, and a host upgrade can be
  * audited by walking one list.
  *
- * @param manifests - the feature manifests (scripts/shared/read-manifests.cjs).
+ * @param manifests - the feature manifests (scripts/shared/read-manifests.mjs).
  * @returns the table, for the build log.
  */
 export function checkContracts(manifests) {
@@ -190,7 +190,7 @@ function specIdExists(id) {
   const dir = path.join(ROOT, 'packages', 'testing', 'specs', layer ?? '', capability ?? '')
   if (name === '' || !fs.existsSync(dir)) return false
   const quoted = [`'${name.replace(/'/g, "\\'")}'`, `"${name}"`]
-  return fs.readdirSync(dir).filter((file) => /\.spec\.(ts|cjs)$/.test(file))
+  return fs.readdirSync(dir).filter((file) => /\.spec\.(ts|mjs)$/.test(file))
     .some((file) => quoted.some((literal) => fs.readFileSync(path.join(dir, file), 'utf8').includes(`test(${literal}`)))
 }
 
@@ -217,7 +217,7 @@ function checkTiming() {
     for (const check of entry.checks) {
       const [kind, name] = String(check).split(':')
       if (kind === 'scenario') {
-        if (!scenarios.has(name)) throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" names the lane scenario "${name}", which packages/testing/e2e.cjs does not run`)
+        if (!scenarios.has(name)) throw new Error(`build: packages/contracts/src/timing.ts entry "${entry.id}" names the lane scenario "${name}", which packages/testing/e2e.mjs does not run`)
         continue
       }
       if (kind === 'spec') {

@@ -8,7 +8,7 @@
  * there still prices its sessions. The build runs the host half's own parser over
  * it, so a snapshot the runtime would refuse cannot ship.
  */
-import { loadModule } from './shared/ts-module.cjs'
+import { loadModule } from './shared/ts-module.mjs'
 
 /** The snapshot's file name under packages/host/data/, and beside the bundle in lib/. */
 export const PRICES_FILE = 'prices.json'

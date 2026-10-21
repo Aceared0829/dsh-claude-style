@@ -5,5 +5,5 @@
     "noEmit": true,
     "types": []
   },
-  "include": ["*.cjs", "smoke/cases/*.cjs", "smoke/probe/*.js"]
+  "include": ["*.mjs", "smoke/cases/*.mjs", "smoke/probe/*.js"]
 }

@@ -1,4 +1,6 @@
 Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
@@ -91,3 +93,9 @@ INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
 DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
+
+Authors of JetBrains Mono, from the AUTHORS file it ships beside this licence (copyright purposes):
+
+JetBrains <>
+Philipp Nurullin <philipp.nurullin@jetbrains.com>
+Konstantin Bulenkov <kb@jetbrains.com>

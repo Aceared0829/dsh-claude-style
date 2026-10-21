@@ -1,7 +1,7 @@
-import registry from '../../surface.json'
+import registry from '../../data/surface.json'
 
 /**
- * The skin's own names, read from the surface table by id (packages/testing/surface.json,
+ * The skin's own names, read from the surface table by id (packages/testing/data/surface.json,
  * D77). A spec never spells one, so a rename in the skin moves the table alone.
  */
 interface SurfaceEntry {
@@ -12,7 +12,7 @@ interface SurfaceEntry {
 
 function entry(id: string): SurfaceEntry {
   const found = (registry.surface as SurfaceEntry[]).find((candidate) => candidate.id === id)
-  if (found === undefined) throw new Error(`surface: no entry "${id}" in packages/testing/surface.json`)
+  if (found === undefined) throw new Error(`surface: no entry "${id}" in packages/testing/data/surface.json`)
   return found
 }
 

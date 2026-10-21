@@ -9,7 +9,7 @@
  *
  * Refresh it by hand with `node scripts/fetch-peakrate-catalog.mjs`.
  */
-import { loadModule } from './shared/ts-module.cjs'
+import { loadModule } from './shared/ts-module.mjs'
 
 /** The shipped catalog's file name under packages/host/data/, and beside the bundle in lib/. */
 export const PEAKRATE_CATALOG = 'peakrate-catalog.json'

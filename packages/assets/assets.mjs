@@ -49,8 +49,8 @@ export const FONT_DIR = 'fonts'
 export const PRIVATE_FONT_DIR = 'anthropic'
 /**
  * What `packages/assets/src/fonts/` ships, in the order the build log counts it: the
- * four faces and the three licences plus the authors file, which OFL 1.1
- * requires to travel with the fonts it covers.
+ * four faces and the one licence file that covers them, which OFL 1.1 requires
+ * to travel with them.
  */
 const SHIPPED_FONTS = [
   'JetBrainsMonoVariable.ttf',
@@ -58,9 +58,6 @@ const SHIPPED_FONTS = [
   'InterVariable.woff2',
   'NotoSerifVariable.woff2',
   'OFL.txt',
-  'OFL-Inter.txt',
-  'OFL-NotoSerif.txt',
-  'AUTHORS.txt',
 ]
 
 /** Content type per extension; an extension outside this table is refused. */
@@ -78,8 +75,8 @@ const CONTENT_TYPES = {
  */
 export const SOURCE_ONLY = new Set([
   // scripts/draw-crab.py takes the crab's own laptop frames from these.
-  'mascot/crab-laptop-body.png',
-  'mascot/crab-laptop-ink.png',
+  'mascot/crab/crab-laptop-body.png',
+  'mascot/crab/crab-laptop-ink.png',
   // scripts/fetch-lobe-combines.py composes the openai lockup from this mark.
   'icons/openai.svg',
   // No upstream icon carries Beam's vendor, so its lockup is composed from this
@@ -397,8 +394,8 @@ export function writeAssets(libDir, plan, { retain = false, compress = brotliCom
 }
 
 /**
- * Copy the faces the package ships, with the licences and the authors file that
- * OFL 1.1 requires to travel with them, from `packages/assets/src/fonts/` into
+ * Copy the faces the package ships, with the one licence file that OFL 1.1
+ * requires to travel with them, from `packages/assets/src/fonts/` into
  * `<out>/fonts/`, where the host half's font route reads them.
  *
  * The file list is the whole contract for that directory, as the manifest is

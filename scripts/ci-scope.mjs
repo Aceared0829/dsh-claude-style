@@ -17,7 +17,7 @@
  * arrangement around them is in `.github/workflows/ci.yml`.
  *
  * It also holds the one push this cannot accept: a change to the appearance
- * snapshot (`packages/testing/appearance.json`) with no change under
+ * snapshot (`packages/testing/data/appearance.json`) with no change under
  * `packages/client/src` and none to the files that read it (D77). The
  * snapshot is what the pages look like, so it only moves when what draws them
  * or what reads them moved; a push that carries it alone is a snapshot
@@ -77,8 +77,8 @@ const UNREAD = [/^docs\//, /^locale\//, /^\.github\//, /\.md$/, /^LICENSE$/, /^T
  * reading — the reader, the parts it reads and the walk whose states it reads
  * in.
  */
-const APPEARANCE = 'packages/testing/appearance.json'
-const APPEARANCE_READERS = ['packages/testing/appearance.cjs', 'packages/testing/appearance-parts.json', 'packages/testing/importance.cjs']
+const APPEARANCE = 'packages/testing/data/appearance.json'
+const APPEARANCE_READERS = ['packages/testing/appearance.mjs', 'packages/testing/data/appearance-parts.json', 'packages/testing/importance.mjs']
 const APPEARANCE_SOURCES = [/^packages\/client\/src\//]
 
 function git(...argv) {
@@ -144,7 +144,7 @@ function changedFiles() {
 
 /** The answers the workflow's jobs read. */
 function scope(files) {
-  const { featureCases, readManifests } = require('./shared/read-manifests.cjs')
+  const { featureCases, readManifests } = require('./shared/read-manifests.mjs')
   const featureCasesOf = featureCases(readManifests())
   const features = new Set()
   let code = false
@@ -168,7 +168,7 @@ function scope(files) {
 /**
  * The one push the mapping refuses: the appearance snapshot moved and nothing
  * under `packages/client/src` did, nor any file that reads it. The snapshot is
- * written by the importance walk (packages/testing/appearance.cjs), so a push
+ * written by the importance walk (packages/testing/appearance.mjs), so a push
  * carrying it alone is a snapshot recorded by hand — it would accept whatever
  * the page happened to look like on the machine that wrote it, with no change
  * to the sheets to say why. A snapshot
@@ -194,22 +194,22 @@ function refuseSnapshotAlone(files) {
  */
 const LEDGERS = [
   {
-    file: 'packages/testing/importance-unreachable.json',
+    file: 'packages/testing/data/importance-unreachable.json',
     entries: (record) => new Map(record.groups.flatMap((group) => group.selectors.map((selector) => [selector, 1]))),
     what: 'unreachable selector',
   },
   {
-    file: 'packages/testing/document-lookups.json',
+    file: 'packages/testing/data/document-lookups.json',
     entries: (record) => new Map(Object.entries(record.files).map(([file, entry]) => [file, entry.count])),
     what: 'whole-document lookup count',
   },
   {
-    file: 'packages/testing/quarantine.json',
+    file: 'packages/testing/data/quarantine.json',
     entries: (record) => new Map(record.tests.map((entry) => [entry.id, 1])),
     what: 'quarantined test',
   },
   {
-    file: 'packages/testing/skin-literals.json',
+    file: 'packages/testing/data/skin-literals.json',
     entries: (record) => new Map(Object.entries(record.files)),
     what: 'spelled skin mark',
   },
@@ -243,7 +243,7 @@ function refuseLedgerGrowth() {
   }
   if (problems.length === 0) return
   for (const problem of problems) console.error(`ci-scope: ${problem}`)
-  console.error('ci-scope: these records only shrink — reach the selector from the walk, read the seat through the engine host.ts and bus.ts, fix the defect a quarantined test fails over, or read a skin mark from packages/testing/surface.json, rather than recording it')
+  console.error('ci-scope: these records only shrink — reach the selector from the walk, read the seat through the engine host.ts and bus.ts, fix the defect a quarantined test fails over, or read a skin mark from packages/testing/data/surface.json, rather than recording it')
   process.exit(1)
 }
 

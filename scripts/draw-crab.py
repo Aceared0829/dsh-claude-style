@@ -7,7 +7,7 @@ Run by hand after changing a drawing; the build never runs it:
 Needs Pillow. The crab is drawn on a 52x36 grid of cells, one pixel a cell,
 feet on the bottom row and the right claw four columns in from the right
 edge (the room a lean, a note or a sparkle takes on that side) — the stance
-of Claude Code's own crab, whose laptop routine (packages/assets/src/mascot/
+of Claude Code's own crab, whose laptop routine (packages/assets/src/mascot/crab/
 crab-laptop-body.png and crab-laptop-ink.png, 34x23 cells a frame: the crab
 pulls out a laptop, types, and puts it away) is laid onto the same grid for the
 typing animations. Every animation is written as two sheets: `<key>.png`
@@ -23,8 +23,8 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'src', 'assets', 'mascot', 'crab')
-LEGACY_BODY = os.path.join(ROOT, 'src', 'assets', 'mascot', 'crab-laptop-body.png')
-LEGACY_INK = os.path.join(ROOT, 'src', 'assets', 'mascot', 'crab-laptop-ink.png')
+LEGACY_BODY = os.path.join(ROOT, 'src', 'assets', 'mascot', 'crab', 'crab-laptop-body.png')
+LEGACY_INK = os.path.join(ROOT, 'src', 'assets', 'mascot', 'crab', 'crab-laptop-ink.png')
 
 W, H = 52, 36
 COLOURS = {'A': (0xd9, 0x77, 0x57, 255), 'B': (0x14, 0x14, 0x13, 255), 'C': (0xb9, 0x60, 0x3f, 255)}

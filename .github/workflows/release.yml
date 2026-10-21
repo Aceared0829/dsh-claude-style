@@ -102,8 +102,8 @@ jobs:
       # The assembled host on the newest published version, walked over the scenario
       # table's own default walk: what a pull request runs is what the promotion
       # waits on (D77).
-      - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.cjs)
-      - run: node packages/testing/e2e.cjs
+      - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.mjs)
+      - run: node packages/testing/e2e.mjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:

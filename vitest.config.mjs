@@ -2,7 +2,7 @@
 // driving a local Chrome/Edge through Playwright, so the DOM, MutationObserver,
 // ResizeObserver, layout and frames a spec reads are the browser's own.
 // CHROME_PATH chooses the browser, as for the smoke. The behaviour layer drives
-// the built page instead and has its own runner (packages/testing/behaviour.cjs).
+// the built page instead and has its own runner (packages/testing/behaviour.mjs).
 //
 // A spec reaches the product through three names only, which the aliases below
 // resolve and lint holds (scripts/lint.mjs): the browser half's declared logic
@@ -16,18 +16,10 @@
 import { defineConfig } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 import fs from 'node:fs'
-import { createRequire } from 'node:module'
 import path from 'node:path'
 import { motionValues } from './scripts/shared/motion-tokens.mjs'
 import { generatedSource } from './scripts/virtual-modules.mjs'
-
-// The lookup lives in the CJS helper every testing tool shares (D77). This file
-// is bundled as ESM before it runs, and a static import of that helper carries
-// its own `require('playwright')` into the bundle as a file URL, which the CJS
-// loader cannot resolve; loading it here keeps the browser driver out of the
-// config bundle.
-const require = createRequire(import.meta.url)
-const { findChrome } = require('./packages/testing/browser.cjs')
+import { findChrome } from './packages/testing/browser.mjs'
 
 const executablePath = findChrome()
 if (executablePath === undefined) throw new Error('vitest: no Chrome or Edge found; set CHROME_PATH')

@@ -54,10 +54,10 @@ import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
 import { changedPaths } from './shared/changed-paths.mjs'
 import { SKIPPED, TREES, treeHash } from './shared/tree-hash.mjs'
-import { HELD, LOCK, takeLock } from './shared/verify-lock.cjs'
+import { HELD, LOCK, takeLock } from './shared/verify-lock.mjs'
 
 const require = createRequire(import.meta.url)
-const { UNJUDGED_EXIT } = require('../packages/testing/host-version.cjs')
+const { UNJUDGED_EXIT } = require('../packages/testing/host-version.mjs')
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CACHE = path.join(ROOT, '.debug', 'verify-cache')
 /**
@@ -216,23 +216,23 @@ function gatesFor(request) {
     { id: 'docs', script: 'scripts/decisions-index.mjs', args: ['--check'] },
     { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
     { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
-    { id: 'numbers', script: 'packages/testing/check-numbers.cjs', args: ['--check'] },
+    { id: 'numbers', script: 'packages/testing/check-numbers.mjs', args: ['--check'] },
     // The rule that the appearance snapshot only moves with what draws or reads
     // the pages (D77), and the records that only shrink, against HEAD.
     { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--ledgers', '--tree'] },
     { id: 'build', script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]
-  if (request.smoke !== null) gates.push({ id: 'smoke', script: 'packages/testing/smoke.cjs', args: request.smoke })
+  if (request.smoke !== null) gates.push({ id: 'smoke', script: 'packages/testing/smoke.mjs', args: request.smoke })
   // The behaviour specs ride with the smoke: they read the same build and the
   // same stand-in host. A request naming smoke cases alone names no spec.
   if (request.smoke !== null && !(request.cases.length > 0 && request.features.length === 0)) {
-    gates.push({ id: 'behaviour', script: 'packages/testing/behaviour.cjs', args: request.features.length > 0 ? ['--feature', request.features.join(',')] : [] })
+    gates.push({ id: 'behaviour', script: 'packages/testing/behaviour.mjs', args: request.features.length > 0 ? ['--feature', request.features.join(',')] : [] })
   }
   if (request.e2e) {
     gates.push({
       id: 'e2e',
-      script: 'packages/testing/e2e.cjs',
+      script: 'packages/testing/e2e.mjs',
       args: request.scenarios.length > 0 ? ['--scenario', request.scenarios.join(',')] : [],
     })
   }

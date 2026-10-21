@@ -31,7 +31,7 @@ name: CI
 # specs over the built plugin; `smoke-windows` carries the same over the readers'
 # own system; `behaviour-macos` walks the behaviour specs on the third platform;
 # `e2e` drives a scratch `dsh web` on the newest host version published, under
-# whichever dist-tag (`packages/testing/host-version.cjs` reads the registry; the
+# whichever dist-tag (`packages/testing/host-version.mjs` reads the registry; the
 # lane gives no verdict on a machine whose host differs) with the scripted
 # model service (D77), so a selector or entry the host stopped honouring shows
 # up in the run that meets the new host. Every job carries a deadline, and
@@ -39,7 +39,7 @@ name: CI
 # backstop, the step's ends a stuck wait in minutes.
 #
 # The end-to-end lane's default table is sliced by
-# `packages/testing/e2e.cjs --shard <index>:<total>`, one slice per matrix entry,
+# `packages/testing/e2e.mjs --shard <index>:<total>`, one slice per matrix entry,
 # because the scenarios do not depend on one another: the whole table is covered
 # in the time the longest single scenario takes, and each shard uploads its own
 # traces under its own name. The cost is that one failure's traces sit in one of
@@ -161,7 +161,7 @@ jobs:
         timeout-minutes: 15
       # The entry is called directly: the selection `changed` printed carries a
       # flag, and npm would read a flag of its own rather than pass it on.
-      - run: node packages/testing/smoke.cjs ${{ needs.changed.outputs.smoke }}
+      - run: node packages/testing/smoke.mjs ${{ needs.changed.outputs.smoke }}
         timeout-minutes: 30
       # The behaviour specs read the same build on the same stand-in host (D77);
       # a failure leaves its trace, screenshot and evidence for the artifact.
@@ -209,7 +209,7 @@ jobs:
           path: .debug/behaviour
           if-no-files-found: ignore
 
-  # The third platform of the release matrix (packages/testing/matrix.json,
+  # The third platform of the release matrix (packages/testing/data/matrix.json,
   # D77): the behaviour specs over macOS's own fonts and Chrome, where a layout
   # that fits on the other two can still overflow.
   behaviour-macos:
@@ -271,10 +271,10 @@ jobs:
         timeout-minutes: 15
       # The lane boots the host's own CLI, which needs pnpm to install a
       # profile's plugins.
-      - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.cjs)
+      - run: npm install --global pnpm@11 @deepseek-ai/dsh@$(node packages/testing/host-version.mjs)
         timeout-minutes: 10
       # A named scenario takes its own deadline; this is the shard's backstop.
-      - run: node packages/testing/e2e.cjs --shard ${{ matrix.shard }}:4
+      - run: node packages/testing/e2e.mjs --shard ${{ matrix.shard }}:4
         timeout-minutes: 25
       - uses: actions/upload-artifact@v7
         if: always()
