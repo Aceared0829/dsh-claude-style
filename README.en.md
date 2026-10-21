@@ -12,7 +12,7 @@
 [![downloads](https://img.shields.io/npm/dm/dsh-claude-style?style=flat&label=downloads&color=D97757)](https://www.npmjs.com/package/dsh-claude-style)
 [![GitHub stars](https://img.shields.io/github/stars/Nwflower/dsh-claude-style?style=flat&label=%E2%98%85&color=08C)](https://github.com/Nwflower/dsh-claude-style)
 [![dsh.so install](https://www.dsh.so/badge/install/dsh-claude-style.svg)](https://www.dsh.so/artifact/dsh-claude-style/)
-[![license](https://img.shields.io/badge/license-MIT-2EA44F?style=flat)](LICENSE)
+[![license](https://img.shields.io/badge/license-MIT%20%2B%20PolyForm%20Shield-2EA44F?style=flat)](LICENSE)
 
 </div>
 
@@ -97,8 +97,13 @@ To enable them, install the `.ttf` files on your system, or copy them into `$DSH
 | [Changelog](CHANGELOG.md) | Version history |
 | [Contributing](CONTRIBUTING.md) | Building from `packages/client/src/`, commit conventions, and the screenshot and regression tooling |
 
+## License
+
+The code in this repository is MIT-licensed, except the Sodium rendering engine: every file under `packages/client/src/features/sodium/` and `packages/engine/src/sheet-rewrite.ts` is licensed under the [PolyForm Shield License 1.0.0](packages/client/src/features/sodium/LICENSE) — read, change and redistribute it, but not to provide a product competing with this plugin. Releases up to and including 0.17.0 were published under the MIT license; this license applies to the releases after them.
+
 ## Acknowledgements
 
+- "Sodium" (钠) is named after Minecraft's [Sodium](https://github.com/CaffeineMC/sodium) rendering mod as a tribute; this plugin is not affiliated with CaffeineMC, uses none of that mod's code, and is not endorsed by it.
 - The message navigator follows SherUnlocked-4869's [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav) (MIT).
 - The animation frames of Deepy the pixel whale come from the Deepy whale theme pack drawn by calmly-eating-bugs ([@wp3171216237](https://github.com/wp3171216237)), and ship with the plugin by the author's permission; GIFs of all 20 animations are in [docs/gifs/](docs/gifs/).
 - The enhanced animations in the chat area are modified from [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux) (MIT).

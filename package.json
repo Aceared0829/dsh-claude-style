@@ -58,6 +58,9 @@
     "README.md",
     "README.en.md",
     "LICENSE",
+    "NOTICE.md",
+    "packages/client/src/features/sodium/LICENSE",
+    "packages/client/src/features/sodium/NOTICE",
     "THIRD_PARTY_NOTICES.md"
   ],
   "keywords": [

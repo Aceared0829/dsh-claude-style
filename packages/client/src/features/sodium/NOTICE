@@ -1,0 +1,29 @@
+Sodium rendering engine — notice
+
+The Sodium rendering engine is every file under this directory and
+`packages/engine/src/sheet-rewrite.ts`. It is licensed under the PolyForm
+Shield License 1.0.0, whose text is in `LICENSE` beside this file: read it,
+change it, redistribute it, but not to provide a product competing with this
+plugin. The rest of dsh-claude-style stays MIT. Releases up to and including
+0.17.0 were published under the MIT license; this license applies to the
+releases published after it.
+
+The name is a tribute
+
+"Sodium" (钠) is named after Minecraft's Sodium rendering mod by CaffeineMC
+(JellySquid), <https://github.com/CaffeineMC/sodium>, as a nod to what a
+rendering engine for one's own client can do. This project is not affiliated
+with CaffeineMC, carries none of that mod's code, and is not endorsed by it.
+The mod itself is licensed under the PolyForm Shield License 1.0.0.
+
+钠渲染引擎说明
+
+钠渲染引擎包括本目录下的全部文件与 `packages/engine/src/sheet-rewrite.ts`，以
+PolyForm Shield 1.0.0 授权（条款见同目录的 `LICENSE`）：可以阅读、修改与分发，
+不能用来提供与本插件竞争的产品。dsh-claude-style 的其余部分仍为 MIT；0.17.0
+及其之前发布的版本以 MIT 发布，这一许可适用于之后发布的版本。
+
+「钠 / Sodium」这个名字致敬 CaffeineMC（JellySquid）为 Minecraft 开发的 Sodium
+渲染优化模组，用以致意一个为自家客户端打磨渲染引擎的项目。本项目与 CaffeineMC
+没有关联，没有使用该模组的代码，也没有获得它的背书；该模组本身以 PolyForm
+Shield 1.0.0 授权。

@@ -202,6 +202,8 @@ const BUILD_ID_SLOT = '%%BUILD_ID%%'
 const FACTORY_OPEN = `/**
  * Claude Style — Claude Code Desktop theme for the DeepSeek Harness web GUI.
  * GENERATED FILE — do not edit. Source lives in packages/client/src/; \`npm run build\` bundles it.
+ * Contains the Sodium rendering engine, licensed under the PolyForm Shield License 1.0.0
+ * rather than MIT; see NOTICE.md and packages/client/src/features/sodium/LICENSE.
  */
 window.__ModuleLoader__.load({
   id: ${JSON.stringify(PACKAGE_ID)},

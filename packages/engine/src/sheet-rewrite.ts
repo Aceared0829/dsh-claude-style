@@ -6,6 +6,9 @@
  * CSSOM, so the cascade order and every other rule stay as the owner wrote
  * them, and writing the original back restores the sheet exactly. A sheet the
  * owner injects again is a new object, which carries none of this.
+ *
+ * Licensed under the PolyForm Shield License 1.0.0, not the MIT license of the
+ * rest of this repository (packages/client/src/features/sodium/LICENSE).
  */
 
 /** One rewrite: a selector in, the selector to take its place out. */

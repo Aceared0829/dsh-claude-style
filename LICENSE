@@ -22,6 +22,14 @@ SOFTWARE.
 
 ---
 
+Sodium engine notice: the files under `packages/client/src/features/sodium/` and
+`packages/engine/src/sheet-rewrite.ts` are the Sodium rendering engine. They are
+licensed under the PolyForm Shield License 1.0.0, **not** under the MIT license
+above; the terms are in `packages/client/src/features/sodium/LICENSE`. Read,
+change and redistribute them, but not to provide a product competing with this
+plugin. Releases up to and including 0.17.0 were published under the MIT license;
+this license applies to the releases published after it.
+
 Font files notice:
 
 - `packages/assets/src/fonts/anthropic/AnthropicSansWebText.ttf`,
