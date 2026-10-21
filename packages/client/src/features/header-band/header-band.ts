@@ -80,12 +80,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The air between anything placed here and its neighbour. */
   const GAP = 8
   /**
-   * How far the row the title left tucks into the title's own box. The title
-   * draws 20px of text in a 28px box (ink ending 5px above the box), and a
-   * chip's text starts about 7px below the row's top, so this is what leaves
-   * about 10px of air between the two lines of text.
+   * The air the row the title left keeps under the title's own box. The caption
+   * row is the window's strip, and a row crossing into it paints under the
+   * shell's chrome: its top is placed this far below the title's box instead.
    */
-  const ROW_TUCK = 2
+  const ROW_GAP = 8
   /** What the row keeps clear at its left end when the shell mounts no menu seat: the sidebar's control. */
   const FURNITURE = 48
   /** Below this a lifted title would be a stub: it stays in the row instead. */
@@ -376,7 +375,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const liftTitle = title !== null && room >= MIN_TITLE
     // The row the title leaves holds only controls, and the host's inset for a
     // row that still carried a title would leave them floating below the caption
-    // row. It rides up to tuck ROW_TUCK px into the title's own box, which the
+    // row. It rides up to stand its top ROW_GAP below the title's box, which the
     // stylesheet centres in the caption row — the target is computed rather than
     // read, because the title's box is not there yet on the pass that lifts it
     // and nothing would wake a second pass. Where the offset already applied is
@@ -384,7 +383,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const titleHeight = titleBox === null ? 0 : titleBox.height
     const titleCentre = band.height / 2 + TITLE_NUDGE
     const applied = parseFloat(row.style.getPropertyValue(ROW_LIFT))
-    const rise = !liftTitle ? 0 : Math.max(0, Math.round(rowBox.top - (isFinite(applied) ? applied : 0) - (titleCentre + titleHeight / 2 - ROW_TUCK)))
+    const rise = !liftTitle ? 0 : Math.max(0, Math.round(rowBox.top - (isFinite(applied) ? applied : 0) - (titleCentre + titleHeight / 2 + ROW_GAP)))
 
     rowStamp.mark(liftTitle ? row : null)
     if (liftTitle) setVar(row, ROW_LIFT, `${-rise}px`)
