@@ -1,8 +1,8 @@
 import { conversationSessionId, findConversationSession, hostSessions } from '@dsh-claude-style/engine/host'
 import { hostChatSeat } from '../../core/i18n'
-import { readPrefs } from '../../core/prefs'
+import { prefsFromForm, readPrefs } from '../../core/prefs'
 import { peerPresent } from '../../shared/peer-plugin'
-import { STATS_POSITION_INLINE } from '../../constants'
+import { BILLING_OFF, STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
@@ -114,9 +114,25 @@ export function createSessionStats(ctx: HostContext) {
     return hostChatSeat(ctx)
   }
 
-  /** Which official price table the reader chose. */
-  function currency(): Currency {
-    return readPrefs().billingCurrency as Currency
+  /** Which official price table the reader chose, or null when billing is off. */
+  function currency(): Currency | null {
+    const choice = readPrefs().billingCurrency
+    return choice === BILLING_OFF ? null : choice
+  }
+
+  /**
+   * Whether the billing choice is the reader's own yet.
+   *
+   * The settings form answers a moment after the page's first pass, and until
+   * it does the table's default says CNY. Asking then would fetch a price table
+   * and a session's total for a reader who turned billing off; the form's
+   * arrival runs a pass of its own, which is where the first ask belongs. A
+   * host that never binds the form loses nothing: after a short wait the
+   * default is the only answer there is.
+   */
+  const billingSettledAt = Date.now() + 2000
+  function billingChosen(): boolean {
+    return prefsFromForm() || Date.now() >= billingSettledAt
   }
 
   /** One projection's current whole value, with no stream estimate added. */
@@ -127,26 +143,32 @@ export function createSessionStats(ctx: HostContext) {
   }
 
   /**
-   * What the session has cost so far, in micro units: the host's settled total
-   * plus the tokens the streaming answer has grown by, priced at the output
-   * rate in force now. The increment stays output-only — the prompt and the
-   * cache are settled with the call — so the figure steps up when a step ends.
+   * What the session has cost so far, in micro units, and whether the figure is
+   * still being fetched.
+   *
+   * The amount is the host's settled total plus the tokens the streaming answer
+   * has grown by, priced at the output rate in force now. `pending` is true only
+   * while something is still coming — the host's answer or the price table — so
+   * the line can hold the segment's width with a dash. A route the table does
+   * not price is not pending: it answers null and the segment goes.
    */
-  function costOfReading(usage: HostTokenUsageProjection | null, grown: number): number | null {
+  function costOfReading(usage: HostTokenUsageProjection | null, grown: number, currency: Currency): { cost: number | null, pending: boolean } {
     const answered = cost.value()
-    if (answered === null || usage === null) return null
+    if (answered === null) return { cost: null, pending: true }
+    if (usage === null) return { cost: null, pending: false }
     // The host names the route the last settlement was billed at; the
     // selection projection is the fallback for a session that has not settled
     // yet, and it is not always served.
     const selection = faceValue<ModelSelection>('modelSelection')
     const model = answered.model ?? selection?.lastUsed?.model ?? selection?.next?.model
     const document = priceDocument()
-    if (model === null || model === undefined || document === null) return null
-    const price = priceFor(document, model, currency())
-    if (price === undefined) return null
+    if (document === null) return { cost: null, pending: true }
+    if (model === null || model === undefined) return { cost: null, pending: false }
+    const price = priceFor(document, model, currency)
+    if (price === undefined) return { cost: null, pending: false }
     const tier = priceTierAt(price, Date.now(), document.schedule)
-    const settled = currency() === 'CNY' ? answered.cny : answered.usd
-    return settled + grown * tier.output
+    const settled = currency === 'CNY' ? answered.cny : answered.usd
+    return { cost: settled + grown * tier.output, pending: false }
   }
 
   /** The whole reading, with the stream's estimate on both the usage and the cost. */
@@ -160,7 +182,9 @@ export function createSessionStats(ctx: HostContext) {
       grown = estimate.tokens()
       if (grown > 0) usage = { ...raw, outputTokens: Math.round(raw.outputTokens + grown) }
     }
-    return { stats, usage, cost: costOfReading(usage, grown) }
+    const billing = currency()
+    const priced = billing === null ? { cost: null, pending: false } : costOfReading(usage, grown, billing)
+    return { stats, usage, cost: priced.cost, billing: billing !== null, costPending: priced.pending }
   }
 
   /** One reading per pass, so the block and the line price the same frame the same way. */
@@ -228,8 +252,9 @@ export function createSessionStats(ctx: HostContext) {
    */
   function onStatsFrame() {
     // A settlement is what moves the settled cost. The ask is throttled like a
-    // pass's own: several projections can change on one settlement.
-    cost.ask(Date.now())
+    // pass's own: several projections can change on one settlement, and with
+    // billing off there is nothing to ask for.
+    if (billingChosen() && currency() !== null) cost.ask(Date.now())
     renderNumbers()
   }
 
@@ -265,17 +290,21 @@ export function createSessionStats(ctx: HostContext) {
   function syncNumbers() {
     syncWatch()
     cost.follow(watch?.sessionId ?? '')
-    // A table that arrives after the page's first pass re-prices everything:
-    // the host clears its totals on the swap, so its settled figure is asked
-    // for again before the new rate is drawn. The pass itself never waits on
-    // the fetch — the figures of this frame are drawn from what is in hand.
-    const before = priceGeneration()
-    void loadPrices(Date.now()).then(() => {
-      if (priceGeneration() === before) return
-      cost.ask(Date.now(), true)
-      renderNumbers()
-    })
-    cost.ask(Date.now())
+    // With billing off nothing is priced and nothing is asked: the price table,
+    // the session's total and the host route behind it stay untouched.
+    if (billingChosen() && currency() !== null) {
+      // A table that arrives after the page's first pass re-prices everything:
+      // the host clears its totals on the swap, so its settled figure is asked
+      // for again before the new rate is drawn. The pass itself never waits on
+      // the fetch — the figures of this frame are drawn from what is in hand.
+      const before = priceGeneration()
+      void loadPrices(Date.now()).then(() => {
+        if (priceGeneration() === before) return
+        cost.ask(Date.now(), true)
+        renderNumbers()
+      })
+      cost.ask(Date.now())
+    }
     const meter = findContextMeter()
     if (meter !== null) {
       binding.bindMeter(meter)

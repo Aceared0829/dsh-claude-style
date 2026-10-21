@@ -7,7 +7,7 @@ import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createStatsCount } from './stats-count'
 import { CACHE_HIT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { sessionStatsCacheHit, sessionStatsGrouped, sessionStatsSpeed } from './stats-format'
-import { formatMoneyMicro, CURRENCY_SYMBOL } from '@dsh-claude-style/contracts/prices'
+import { formatMoneyMicro, CURRENCY_CNY, CURRENCY_SYMBOL } from '@dsh-claude-style/contracts/prices'
 import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostSessionStatsProjection, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import type { HostText } from '@dsh-claude-style/engine/host'
@@ -136,7 +136,7 @@ function templateParts(chat: HostText, key: string, names: string[]) {
  * @param currency - which price table the cost figure follows.
  * @returns { render, refit, clear, root }.
  */
-export function createInlineStats(read: () => StatsReading, chatText: () => HostText | null, meter: () => HTMLElement | null, currency: () => Currency) {
+export function createInlineStats(read: () => StatsReading, chatText: () => HostText | null, meter: () => HTMLElement | null, currency: () => Currency | null) {
   let line: Line | null = null
   /** The twin a fit measures on, built on the first fit that asks. */
   let probe: Line | null = null
@@ -161,7 +161,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
   /** The figures counting from what the reader sees to the newest reading. */
   const count = createStatsCount((reading: StatsReading) => {
     const chat = chatText()
-    if (line !== null && chat !== null) writeLine(line, level, chat, reading.stats, reading.usage, reading.cost, currency())
+    if (line !== null && chat !== null) writeLine(line, level, chat, reading.stats, reading.usage, reading.cost, reading.billing, reading.costPending, currency())
   })
 
   /** Build the line once, in the order its segments appear. */
@@ -292,7 +292,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
   }
 
   /** Every figure that has data, in the words the host's templates give it, on ladder step `at`. */
-  function writeLine(shown: Line, at: number, chat: HostText, stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, currency: Currency) {
+  function writeLine(shown: Line, at: number, chat: HostText, stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, billing: boolean, costPending: boolean, currency: Currency | null) {
     const counts = stats === null ? null : templateParts(chat, 'stats.counts', ['turns', 'steps'])
     const speedParts = templateParts(chat, 'message.tokensPerSecond', ['tps'])
     const tokenParts = templateParts(chat, 'message.turnUsage.count', ['count'])
@@ -320,10 +320,12 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     show(shown.input, hasInput && !merged)
     show(shown.output, hasOutput && !merged)
     // The cost stands beside the written-back figure until the ladder needs
-    // its room for the total. It stands whenever the line has tokens, with a
-    // placeholder while the session's figure is not known yet (a switch): the
-    // segment keeps its width, so the line does not fold and unfold around it.
-    show(shown.cost, hasTokens && at < 3)
+    // its room for the total. It stands whenever the line has tokens and the
+    // reader keeps billing on, with a placeholder only while the figure is
+    // still coming (a switch): the segment keeps its width, so the line does
+    // not fold and unfold around it. A route the price table cannot price has
+    // nothing to wait for, and the segment goes.
+    show(shown.cost, billing && hasTokens && (cost !== null || costPending) && at < 3)
     show(shown.total, hasTokens && merged)
     show(shown.cache, hasCache)
     shown.cell.cacheHead.hidden = at >= 1
@@ -346,11 +348,16 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
       writeTextInPlace(shown.cell.output, readTokens(usage.outputTokens))
       writeText(shown.cell.outputTail, tokenParts[1] ?? '')
       writeTextInPlace(shown.cell.total, readTokens(billed + usage.outputTokens))
-      // A figure that is not known yet keeps the segment's place with the
-      // currency's own dash; the amount replaces it in the same width.
-      const known = cost !== null && cost > 0
-      writeTextInPlace(shown.cell.cost, known ? formatMoneyMicro(cost, currency) : `${CURRENCY_SYMBOL[currency]}\u2014`)
-      shown.cell.cost.toggleAttribute('data-pending', !known)
+      // A figure that is still coming keeps the segment's place with the
+      // currency's own dash; the amount replaces it in the same width. A route
+      // the table cannot price has nothing to wait for, so the segment is
+      // hidden and no dash is written. With billing off neither is written.
+      if (billing && (cost !== null || costPending)) {
+        const cur = currency ?? CURRENCY_CNY
+        const known = cost !== null && cost > 0
+        writeTextInPlace(shown.cell.cost, known ? formatMoneyMicro(cost, cur) : `${CURRENCY_SYMBOL[cur]}\u2014`)
+        shown.cell.cost.toggleAttribute('data-pending', !known)
+      }
       writeLabel(shown.cell.cacheHead, cacheParts[0] ?? '')
       if (hit !== null) writeTextInPlace(shown.cell.cache, hit)
       writeLabel(shown.cell.cacheTail, cacheParts[1] ?? '')
@@ -410,7 +417,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
    */
   function lineShape(reading: StatsReading, chat: HostText) {
     const twin = ensureProbe()
-    writeLine(twin, level, chat, reading.stats, reading.usage, reading.cost, currency())
+    writeLine(twin, level, chat, reading.stats, reading.usage, reading.cost, reading.billing, reading.costPending, currency())
     let length = 0
     for (let i = 0; i < twin.root.children.length; i++) {
       const segment = twin.root.children[i] as HTMLElement
@@ -430,7 +437,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
    */
   function probeWidth(shown: Line, at: number, chat: HostText, reading: StatsReading) {
     const twin = ensureProbe()
-    writeLine(twin, at, chat, reading.stats, reading.usage, reading.cost, currency())
+    writeLine(twin, at, chat, reading.stats, reading.usage, reading.cost, reading.billing, reading.costPending, currency())
     tightenMeter(at)
     shown.root.before(twin.root)
     const needed = neededWidth(shown, inPagePixels(twin.root.getBoundingClientRect().width))
@@ -474,7 +481,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     // The step that stands is written onto the shown line with the numbers it
     // shows, so the figures that remain are the ones the reader is watching.
     const displayed = count.current()
-    writeLine(shown, level, chat, displayed.stats, displayed.usage, displayed.cost, currency())
+    writeLine(shown, level, chat, displayed.stats, displayed.usage, displayed.cost, displayed.billing, displayed.costPending, currency())
     fitted = true
     fittedShape = lineShape(goal, chat)
     return level

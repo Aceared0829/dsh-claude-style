@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "设置页的计费币种新增「关闭」：选它后统计行不显示费用，也不向宿主索取价目表与会话金额。",
+  "en": "Add Off to the settings page's Billing currency: chosen, the statistics line draws no cost and the browser asks the host for neither the price table nor the session's amount."
+}

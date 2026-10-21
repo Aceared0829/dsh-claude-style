@@ -73,4 +73,16 @@ module.exports = spec({ page: 'stats-inline' }, ({ test }) => {
     t.expectThat.equal(order === null ? null : order.hidden, false, 'the segment keeps its place')
     t.expectThat.equal(order === null ? null : order.text, '¥—', 'no price snapshot answered, so the segment stands as a dash')
   })
+
+  /** The reader can take billing off: the segment is not drawn and nothing is asked. */
+  test('with billing off the cost segment is not drawn', async (t) => {
+    await t.prefs({ motion: 'reduced', billingCurrency: 'off' })
+    await seatSession(t)
+    const hidden = await t.page.evaluate(([line, cost]) => {
+      const root = document.querySelector(line)
+      const figure = root === null ? null : root.querySelector(cost)
+      return figure === null ? null : figure.parentElement.hidden
+    }, [t.surface('stats.inline-line'), t.surface('stats.inline-cost')])
+    t.expectThat.equal(hidden, true, 'billing off hides the segment')
+  })
 })

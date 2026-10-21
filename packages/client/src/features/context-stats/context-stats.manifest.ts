@@ -33,7 +33,7 @@ export default {
     pref: 'billingCurrency',
     title: 'billingCurrencyTitle',
     desc: 'billingCurrencyDesc',
-    choiceLabels: { CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
+    choiceLabels: { off: 'billingCurrencyOff', CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
     requires: {
       pref: 'composerScope',
       values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],

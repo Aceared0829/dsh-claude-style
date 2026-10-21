@@ -47,7 +47,7 @@ const COMPACT_SKELETON_ITEMS = 4
  * @param currency - which price table the cost figure follows.
  * @returns { render, stopSkeleton, resetContent }.
  */
-export function createStatsBlock(read: () => StatsReading, chatText: () => HostText | null, currency: () => Currency) {
+export function createStatsBlock(read: () => StatsReading, chatText: () => HostText | null, currency: () => Currency | null) {
   /** The block's last written rows, so an unchanged pass rebuilds nothing. */
   let blockSignature = ''
   /** The value cells of the block as built, in section order. */
@@ -83,7 +83,7 @@ export function createStatsBlock(read: () => StatsReading, chatText: () => HostT
       cacheWriteTokens: Math.round(reading.usage.cacheWriteTokens),
       outputTokens: Math.round(reading.usage.outputTokens),
     }
-    return { stats, usage, cost: reading.cost }
+    return { stats, usage, cost: reading.cost, billing: reading.billing, costPending: reading.costPending }
   }
 
   /** Write one reading onto the open panel, wherever the count stands between two. */

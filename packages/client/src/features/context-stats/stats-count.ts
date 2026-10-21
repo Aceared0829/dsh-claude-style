@@ -29,6 +29,14 @@ export interface StatsReading {
   usage: HostTokenUsageProjection | null
   /** Micro units of the chosen currency, or null while no figure is known. */
   cost: number | null
+  /** Whether the reader has billing on: off takes the cost segment off the line. */
+  billing: boolean
+  /**
+   * Whether the figure is still being fetched: the segment then stands with a
+   * dash in its own width. A route the price table does not carry is not
+   * pending — there is nothing to wait for, and the segment goes.
+   */
+  costPending: boolean
 }
 
 /**
@@ -44,7 +52,7 @@ const MAX_FRAME_MS = 64
 
 /** Whether two readings carry the same numbers. */
 function sameReading(before: StatsReading, after: StatsReading) {
-  return before.cost === after.cost
+  return before.cost === after.cost && before.billing === after.billing && before.costPending === after.costPending
     && sameNumbers(before.stats, after.stats, STAT_FIELDS)
     && sameNumbers(before.usage, after.usage, USAGE_FIELDS)
 }
@@ -79,6 +87,8 @@ function mixReading(before: StatsReading, after: StatsReading, share: number): S
     stats: before.stats === null || after.stats === null ? after.stats : mixNumbers(before.stats, after.stats, STAT_FIELDS, share),
     usage: before.usage === null || after.usage === null ? after.usage : mixNumbers(before.usage, after.usage, USAGE_FIELDS, share),
     cost: before.cost === null || after.cost === null ? after.cost : before.cost + (after.cost - before.cost) * share,
+    billing: after.billing,
+    costPending: after.costPending,
   }
 }
 
@@ -110,11 +120,13 @@ function withinHalfOf<Shape extends object>(reading: Shape | null, goal: Shape |
 }
 
 /** A copy of a reading, so the host's projection objects can never move under the count. */
-function takeReading(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null): StatsReading {
+function takeReading(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, billing: boolean, costPending: boolean): StatsReading {
   return {
     stats: stats === null ? null : { ...stats },
     usage: usage === null ? null : { ...usage },
     cost,
+    billing,
+    costPending,
   }
 }
 
@@ -130,7 +142,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
   // three time constants; the token's stretch is that distance.
   const timeConstant = motionMs('--dsh-claude-duration-count') / 3
   /** The reading the line shows right now. */
-  let displayed: StatsReading = { stats: null, usage: null, cost: null }
+  let displayed: StatsReading = { stats: null, usage: null, cost: null, billing: false, costPending: false }
   /** The reading the count is heading for, or null before the first one. */
   let goal: StatsReading | null = null
   /** The last frame this loop ran, and the canceller of the one in flight. */
@@ -173,7 +185,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
    */
   function to(reading: StatsReading) {
     if (goal !== null && sameReading(goal, reading)) return false
-    goal = takeReading(reading.stats, reading.usage, reading.cost)
+    goal = takeReading(reading.stats, reading.usage, reading.cost, reading.billing, reading.costPending)
     if (motionReduced() || !countable(displayed) || !countable(goal)) {
       stop()
       displayed = goal
@@ -203,7 +215,7 @@ export function createStatsCount(write: (reading: StatsReading) => void) {
     reset() {
       stop()
       goal = null
-      displayed = { stats: null, usage: null, cost: null }
+      displayed = { stats: null, usage: null, cost: null, billing: false, costPending: false }
     },
     stop,
   }

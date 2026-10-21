@@ -7,7 +7,8 @@
   "statsPositionContext": { "zh": "收进上下文", "en": "Inside the context popover" },
   "statsComposerRequired": { "zh": "只在「重绘对话框」覆盖对话页时生效。", "en": "Takes effect only while Composer restyle covers the conversation." },
   "billingCurrencyTitle": { "zh": "计费币种", "en": "Billing currency" },
-  "billingCurrencyDesc": { "zh": "会话费用按哪一种官方价表计算。", "en": "Which official price table the session's cost follows." },
+  "billingCurrencyDesc": { "zh": "会话费用按哪一种官方价表计算；关闭则不显示费用。", "en": "Which official price table the session's cost follows; off hides the cost." },
+  "billingCurrencyOff": { "zh": "关闭", "en": "Off" },
   "billingCurrencyCny": { "zh": "人民币", "en": "CNY" },
   "billingCurrencyUsd": { "zh": "美元", "en": "USD" }
 }

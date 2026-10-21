@@ -561,7 +561,9 @@ replaced while the next one is being priced, so the amount sits in a box of an
 amount's measure, right-aligned so a growing figure extends left, and the box
 stands as the currency symbol and a dash in `label-tertiary` until the new
 figure arrives. Without it the segment folds out of the line and back, and the
-whole bottom line re-lays around it.
+whole bottom line re-lays around it. The `billingCurrency` choice's Off takes
+the segment out of the line altogether: nothing is drawn, and the browser asks
+the host for neither the price table nor the session's total.
 
 Which figures appear follows the host's statistics row. Its detailed form gets
 the whole list. Its compact form carries only the output speed and the cache-hit

@@ -13,6 +13,12 @@ import { CURRENCIES, CURRENCY_CNY } from './prices'
 
 /* ---------- the value vocabulary ---------- */
 
+/** The billing choice's off value: no figure is drawn and no settlement is priced. */
+export const BILLING_OFF = 'off'
+/** The billing choices, in the settings' order: the two official tables, or no billing at all. */
+export const BILLING_CHOICES = [BILLING_OFF, ...CURRENCIES] as const
+export type BillingChoice = typeof BILLING_CHOICES[number]
+
 /** Brand marks selectable from the settings page. `claude` is the default. */
 export const BRAND_CLAUDE = 'claude'
 /**
@@ -237,8 +243,8 @@ export const PREFS = {
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },
   permissionsControl: { type: 'boolean', default: true },
   statsPosition: { type: 'choice', values: STATS_POSITIONS, default: STATS_POSITION_CONTEXT },
-  /** Which official price table the session's cost figure follows. */
-  billingCurrency: { type: 'choice', values: CURRENCIES, default: CURRENCY_CNY },
+  /** Which official price table the session's cost follows, or off for no figure at all. */
+  billingCurrency: { type: 'choice', values: BILLING_CHOICES, default: CURRENCY_CNY },
   workspaceView: { type: 'boolean', default: true },
   dockCards: { type: 'boolean', default: true },
   sidebarSearch: { type: 'boolean', default: true },

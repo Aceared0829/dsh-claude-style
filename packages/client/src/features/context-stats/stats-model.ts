@@ -75,9 +75,9 @@ function usageBilled(usage: HostTokenUsageProjection): number | null {
  * @param chat - the host's `chat` translate seat.
  * @param compact - whether the host rendered its compact statistics row.
  */
-export function sessionStatsSections(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, currency: Currency, chat: HostText, compact: boolean) {
+export function sessionStatsSections(stats: HostSessionStatsProjection | null, usage: HostTokenUsageProjection | null, cost: number | null, currency: Currency | null, chat: HostText, compact: boolean) {
   const sections: { title: string, rows: StatsRow[] }[] = []
-  const costRow: StatsRow | null = cost === null ? null : { label: copy('contextCost'), value: formatMoneyMicro(cost, currency) }
+  const costRow: StatsRow | null = cost === null ? null : { label: copy('contextCost'), value: formatMoneyMicro(cost, currency ?? 'CNY') }
   if (compact) {
     const rows: StatsRow[] = []
     if (stats !== null) {
