@@ -30,6 +30,13 @@ export interface PageScaleVocabulary {
   isOwn(node: Element): boolean
   /** The scale the page is drawn at right now: 1 while the page is not scaled. */
   scale(): number
+  /**
+   * A scale change was read; set the page's own readings straight. Called from
+   * the child observer the update walks, so it must not write the body's children.
+   */
+  onChange?(): void
+  /** Every card is handed back; the readings of the page in hand wait to be read again. */
+  onRelease?(): void
 }
 
 /** The scale one card's own space is drawn at: the page's scale taken out again. */
@@ -111,7 +118,10 @@ export function installScaledLayer(vocabulary: PageScaleVocabulary) {
     }
   }
 
-  const stopWatch = subscribeMutations(document.body, { childList: true }, sync)
+  const stopWatch = subscribeMutations(document.body, { childList: true }, () => {
+    sync()
+    vocabulary.onChange?.()
+  })
   sync()
 
   return {
@@ -123,6 +133,7 @@ export function installScaledLayer(vocabulary: PageScaleVocabulary) {
         hand(node)
       }
       heard.clear()
+      vocabulary.onRelease?.()
     },
   }
 }

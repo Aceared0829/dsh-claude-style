@@ -148,6 +148,16 @@ body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.5"] {
   zoom: 1.5;
 }
 
+/* The host caps its own dialogs against the window's viewport units, which a
+   scaled page multiplies by the factor again: at 125% a dialog may stand wider
+   or taller than the window it was capped against. The page's own size is the
+   length that cap needs (shared/page-scale.ts writes it), and at a factor of
+   one the two are the same length. */
+body[data-dsh-claude-style] [role="dialog"][aria-modal="true"] {
+  max-width: calc(var(--dsh-claude-page-width, 100vw) - 48px);
+  max-height: calc(var(--dsh-claude-page-height, 100vh) - 48px);
+}
+
 /* ---------- clay accent: one emphasis color, disciplined ---------- */
 /* A host button anchor (`_linkButton`, e.g. the settings page's 充值) states its
    own ink; repainting it here would paint the label the same colour as its fill. */

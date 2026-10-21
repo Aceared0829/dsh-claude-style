@@ -39,10 +39,6 @@ export const PAGE_WIDTH = '--dsh-claude-page-width'
  * @returns the teardown.
  */
 export function installPageScale() {
-  const layer = installScaledLayer({
-    isOwn: isSkinNode,
-    scale: () => pageZoomFactor(),
-  })
   const body = document.body
   /** Write the page's own size, or take it away while the page is not scaled. */
   const measure = () => {
@@ -55,12 +51,24 @@ export function installPageScale() {
     body.style.setProperty(PAGE_HEIGHT, `${Math.round(view.height)}px`)
     body.style.setProperty(PAGE_WIDTH, `${Math.round(view.width)}px`)
   }
-  const sync = () => {
+  let layer: ReturnType<typeof installScaledLayer> | null = null
+  /** The page's readings and every carried card, in one pass. */
+  const settle = () => {
     measure()
-    layer.settle()
+    layer?.settle()
   }
-  const offPrefs = subscribePrefs(sync)
-  sync()
+  // The teardown asks a re-run for the readings of the page it hands back: it has
+  // taken its own properties off by then, and the body outlives this run. The
+  // observer that hears a card appear leaves the body's children alone, so the
+  // readings are written here rather than from inside the listener.
+  layer = installScaledLayer({
+    isOwn: isSkinNode,
+    scale: () => pageZoomFactor(),
+    onChange: measure,
+    onRelease: () => settle(),
+  })
+  const offPrefs = subscribePrefs(settle)
+  settle()
   return () => {
     offPrefs()
     body.style.removeProperty(PAGE_HEIGHT)

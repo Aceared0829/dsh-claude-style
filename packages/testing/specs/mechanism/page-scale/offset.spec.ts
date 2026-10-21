@@ -160,3 +160,24 @@ test('a card the reader leaves at 100% is handed back with the scale', async () 
   await settle()
   expect(drawn(card)).toEqual({ left: 100, top: 200, height: 40, zoom: '' })
 })
+
+test('a card the host mounts is heard, and the skin is told the page changed', async () => {
+  drawnAt(1.25)
+  const told: number[] = []
+  const layer = installScaledLayer({ ...vocabulary, onChange: () => told.push(told.length) })
+  cleanups.push(layer.stop)
+  await settle()
+  const card = hostCard(300, 400)
+  await settle()
+  expect(drawn(card)).toEqual({ left: 300, top: 400, height: 40, zoom: '0.8' })
+  expect(told.length).toBeGreaterThan(0)
+})
+
+test('the teardown asks the skin for the readings of the page it hands back', async () => {
+  drawnAt(1.25)
+  let released = 0
+  const layer = installScaledLayer({ ...vocabulary, onRelease: () => (released += 1) })
+  await settle()
+  layer.stop()
+  expect(released).toBe(1)
+})
