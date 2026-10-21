@@ -4,6 +4,24 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善会话标题的重命名：鼠标扫过顶栏标题时浮出一块底板与「重命名会话」提示，点击即可就地编辑，回车写入新名称、Esc 保持原名。
+
+### 问题修复
+
+- 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one.
+
+### Bug Fixes
+
+- Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
+
 ## [0.18.2] - 2026-10-21
 
 [中文](#cn-0.18.2) | [English](#en-0.18.2)
