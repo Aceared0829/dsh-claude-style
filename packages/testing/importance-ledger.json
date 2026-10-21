@@ -781,9 +781,14 @@
       "prop": "display",
       "verdict": "transient state"
     },
-    "body[data-dsh-claude-style][data-dsh-claude-composer-active] [data-dsh-claude-context-panel][data-dsh-claude-context-aligned]{left:var(--dsh-claude-context-panel-left)!}|left": {
+    "body[data-dsh-claude-style][data-dsh-claude-composer-active] [data-dsh-claude-context-panel][data-dsh-claude-context-aligned]{left:var(--dsh-claude-context-panel-left)!;top:var(--dsh-claude-context-panel-top)!}|left": {
       "selector": "body[data-dsh-claude-style][data-dsh-claude-composer-active] [data-dsh-claude-context-panel][data-dsh-claude-context-aligned]",
       "prop": "left",
+      "verdict": "transient state"
+    },
+    "body[data-dsh-claude-style][data-dsh-claude-composer-active] [data-dsh-claude-context-panel][data-dsh-claude-context-aligned]{left:var(--dsh-claude-context-panel-left)!;top:var(--dsh-claude-context-panel-top)!}|top": {
+      "selector": "body[data-dsh-claude-style][data-dsh-claude-composer-active] [data-dsh-claude-context-panel][data-dsh-claude-context-aligned]",
+      "prop": "top",
       "verdict": "transient state"
     },
     "body[data-dsh-claude-style][data-dsh-claude-composer-active] .dsh-claude-context-stats[data-dsh-claude-context-skeleton] .dsh-claude-context-stats-item{min-height:37px!;justify-content:center!}|min-height": {

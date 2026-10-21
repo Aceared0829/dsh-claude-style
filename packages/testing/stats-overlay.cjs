@@ -15,6 +15,21 @@
  */
 'use strict'
 
+/**
+ * The skin's own marks, read off the surface table rather than spelled here
+ * (D77): the table is what a lane names a skin mark through.
+ */
+const SURFACE = require('./surface.json').surface
+const mark = (id) => {
+  const entry = SURFACE.find((candidate) => candidate.id === id)
+  if (entry === undefined || entry.attribute === undefined) throw new Error(`stats-overlay: surface "${id}" names no attribute`)
+  return entry.attribute
+}
+const PAGE_ZOOM = mark('skin.page-zoom')
+const CONTEXT_METER = mark('stats.context-meter')
+const CONTEXT_PANEL = mark('stats.context-panel')
+const CONTEXT_PANEL_PLACED = mark('stats.context-panel-placed')
+
 /** The row's box, the dock's box, the pill's own box and the properties the overlay reads. */
 const readOverlay = (page) => page.evaluate(() => {
   const card = document.querySelector('[data-composer-card]')
@@ -141,6 +156,51 @@ const readOverlayWithMenu = async (page) => {
   return { open, inCard, measured, nudged, closed: await readOverlay(page) }
 }
 
+/**
+ * The context popover at a page zoom: the page is put at the factor the
+ * preference mirror writes onto <body> (the stylesheet draws the page at that
+ * attribute, and the skin's geometry reads it back — shared/page-zoom.ts), the
+ * popover is opened from the meter, and the boxes are read.
+ *
+ * The host places the panel from the trigger's box in the window's pixels and
+ * writes them into the inline style, which the zoom scales again; the skin reads
+ * the meter and the window in the panel's own pixels and places it there.
+ */
+const readContextPopoverAtZoom = async (page, zoom) => {
+  await page.evaluate(([attribute, value]) => document.body.setAttribute(attribute, value), [PAGE_ZOOM, zoom])
+  await page.waitForTimeout(700)
+  const opened = await page.evaluate((meter) => {
+    const trigger = document.querySelector(`[${meter}] button`)
+    if (trigger === null) return false
+    trigger.click()
+    return true
+  }, CONTEXT_METER)
+  await page.waitForTimeout(1000)
+  const reading = opened ? await page.evaluate(([panelMark, placedMark, meterMark]) => {
+    const panel = document.querySelector(`[${panelMark}]`)
+    const meter = document.querySelector(`[${meterMark}]`)
+    if (panel === null || meter === null) return null
+    const box = (el) => {
+      const b = el.getBoundingClientRect()
+      const round = (value) => Math.round(value * 10) / 10
+      return { left: round(b.left), top: round(b.top), right: round(b.right), bottom: round(b.bottom), width: round(b.width), height: round(b.height) }
+    }
+    return {
+      aligned: panel.hasAttribute(placedMark),
+      panel: box(panel),
+      meter: box(meter),
+      window: { width: innerWidth, height: innerHeight },
+      zoom: Number.parseFloat(getComputedStyle(document.body).zoom),
+    }
+  }, [CONTEXT_PANEL, CONTEXT_PANEL_PLACED, CONTEXT_METER]) : null
+  await page.evaluate(([attribute, meter]) => {
+    document.body.removeAttribute(attribute)
+    document.querySelector(`[${meter}] button`)?.click()
+  }, [PAGE_ZOOM, CONTEXT_METER])
+  await page.waitForTimeout(700)
+  return reading
+}
+
 function statsOverlayScenario({ check }) {
   return {
     script: 'greeting',
@@ -167,6 +227,9 @@ function statsOverlayScenario({ check }) {
       // The host's own `@` menu, mounted in the card's overlay seat: a menu row is
       // no composer row, so the dock must not follow it (issue #102).
       const withMenu = await readOverlayWithMenu(page)
+      // The context popover on the same real page, at the reader's page zoom.
+      const popover = await readContextPopoverAtZoom(page, '1.25')
+      const popoverGap = popover === null ? null : (popover.meter.top - popover.panel.bottom) / popover.zoom
       return [
         check('the dock stands on the toolbar row\'s own line, measured off the row rather than assumed',
           onTheRow(resting) && Number.parseFloat(resting.offset) >= 0 && Number.parseFloat(resting.height) > 0,
@@ -195,6 +258,11 @@ function statsOverlayScenario({ check }) {
         check('closing the menu puts the page back where it stood',
           onTheRow(withMenu.closed) && withMenu.closed.offset === resting.offset,
           JSON.stringify({ closed: withMenu.closed, resting })),
+        check('页面缩放到 125% 时，上下文弹层仍贴在计量圆环上方并留在窗口内',
+          popover !== null && popover.aligned && popover.zoom === 1.25 &&
+            popoverGap >= 7 && popoverGap <= 9 &&
+            popover.panel.top >= 0 && popover.panel.bottom <= popover.window.height + 1,
+          JSON.stringify(popover === null ? null : { ...popover, gap: popoverGap })),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },

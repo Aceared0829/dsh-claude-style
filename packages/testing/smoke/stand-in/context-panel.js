@@ -15,9 +15,31 @@
 
   var meterTrigger = document.getElementById('context-meter')
   var contextPanel = null
+  var panelSizer = null
+  /**
+   * The host's own placement (ui-chat's useStatDialog): the panel stands above
+   * its trigger by the host's gap, clamped into the window. The trigger's box
+   * comes back in the window's pixels while the panel's height is its own, and a
+   * page drawn at a zoom factor scales what the host writes into the inline
+   * style again (packages/client/src/theme/chrome.css) — the placement the skin
+   * answers for (features/context-stats/stats-binding.ts).
+   */
+  function placeHostPanel() {
+    if (contextPanel === null || meterTrigger === null) return
+    var row = meterTrigger.getBoundingClientRect()
+    var width = contextPanel.offsetWidth
+    var height = contextPanel.offsetHeight
+    var left = row.left
+    var top = row.top - 8 - height
+    if (width > 0) left = Math.min(Math.max(left, 12), window.innerWidth - width - 12)
+    if (height > 0) top = Math.min(Math.max(top, 12), window.innerHeight - height - 12)
+    contextPanel.style.left = Math.round(left) + 'px'
+    contextPanel.style.top = Math.round(top) + 'px'
+  }
   if (meterTrigger !== null) {
     meterTrigger.addEventListener('click', function () {
       if (contextPanel !== null) {
+        if (panelSizer) { panelSizer.disconnect(); panelSizer = null }
         if (contextPanel.parentElement) contextPanel.parentElement.removeChild(contextPanel)
         contextPanel = null
         meterTrigger.setAttribute('aria-expanded', 'false')
@@ -34,7 +56,26 @@
           '<div class="_row_m_1"><dt>工具定义</dt><dd>~7.8K</dd></div>' +
           '<div class="_row_m_1"><dt>对话消息</dt><dd>~242K</dd></div>' +
         '</dl>'
+      // The host's portal: fixed to the window, placed from the trigger's box,
+      // at the width its own sheet keeps (ui-chat's stat-dialog: max-content
+      // between 300px and 440px, boxed). A panel left to shrink-to-fit would
+      // take its width from the room between `left` and the window's edge, so
+      // each placement would resize it and the skin would chase its own write.
+      contextPanel.style.position = 'fixed'
+      contextPanel.style.boxSizing = 'border-box'
+      contextPanel.style.width = 'max-content'
+      contextPanel.style.minWidth = '300px'
+      contextPanel.style.maxWidth = '440px'
       document.body.appendChild(contextPanel)
+      placeHostPanel()
+      // The host re-places the panel whenever its size moves, the skin's block
+      // arriving below the host's rows included. The write waits for the next
+      // frame, as the host's own re-render does: one made inside the observer's
+      // callback is a resize loop the page reports.
+      if (typeof ResizeObserver === 'function') {
+        panelSizer = new ResizeObserver(function () { requestAnimationFrame(placeHostPanel) })
+        panelSizer.observe(contextPanel)
+      }
     })
   }
   if (statsFixtureCase) {

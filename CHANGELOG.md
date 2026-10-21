@@ -25,6 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 修复按下输入卡片或过程分组自行展开时输入框的光标跳回草稿开头的问题：焦点交还之前先记下选区，连同焦点一起放回。
 - 修复上下文占用与统计收进弹出面板时，输入框的 @ 菜单把数字那一行顶到菜单上的问题：部件标记不再把宿主挂在输入卡片浮层座位里的菜单读成输入框自己的行与右侧控件，菜单打开时数字仍站在工具栏那一行。
+- 修复页面缩放时输入区右下角的上下文弹层纵向位置偏低、下沿越出窗口的问题：皮肤按页面自身像素把弹层放在计量圆环上方，留出宿主原来的间距，弹层长高时重新对齐。
 - 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
 - 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
 - 修复切换会话时统计行的费用区先消失再出现、整行跟着重新排版的问题：费用区在会话金额到达之前保留原来的位置，以币种符号加一道短横占位并压暗，宽度按金额的量度预留，新金额到达后在同一位置替换。
@@ -56,6 +57,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Fix the composer's caret jumping back to the start of the draft when a press on the input card or a process group's own toggle moves the focus: the selection is captured before the move and restored with the focus.
 - Fix the composer's numbers riding up onto the @ menu when the statistics live in the context popover: the part walk no longer reads the host's own menu, mounted in the input card's overlay seat, as the composer's row and trailing cluster, so the numbers stay on the toolbar row while a menu is open.
+- Fix the context popover above the composer's meter sitting too low and running past the window's bottom edge under page zoom: the skin places it above the meter in the page's own pixels, at the host's own gap, and re-takes that reading when the popover grows.
 - Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
 - Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
 - Fix the cost segment of the statistics line vanishing and reappearing across a session switch, which re-laid the whole line: the segment now keeps its place until the session's amount arrives, standing as the currency symbol and a dash in the quiet ink, with the width of an amount reserved, and the new figure replaces it in the same room.

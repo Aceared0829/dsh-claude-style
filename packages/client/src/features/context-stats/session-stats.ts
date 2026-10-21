@@ -331,7 +331,7 @@ export function createSessionStats(ctx: HostContext) {
     },
     /**
      * The viewport moved under the panel: the host re-places it from its
-     * anchor, so the skin's own reading of where its right edge belongs
+     * anchor, so the skin's own reading of where its edges belong
      * is taken again in the same frame. A narrower card is also a new
      * budget for the line of figures, which is measured again on the next
      * frame (inline-stats.ts).

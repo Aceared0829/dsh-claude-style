@@ -2,7 +2,7 @@ import { AUTO_POPOVER_ALL } from '../../constants'
 import { observeSize } from '@dsh-claude-style/engine/bus'
 import { readPrefs } from '../../core/prefs'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress } from '../../shared/popover'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, resolveAnchoredPosition } from '../../shared/popover'
 import { inPageBox, pageViewport } from '../../shared/page-zoom'
 import { CONTEXT_PANEL_ALIGNED_ATTR, CONTEXT_PANEL_ATTR, contextPanel, contextTrigger, findContextMeter } from './stats-panel'
 import { copy } from './copy'
@@ -10,14 +10,18 @@ import { copy } from './copy'
 /**
  * The hover path onto the host's own panel: opening and
  * closing it through the host's trigger, keeping a node's bindings to one
- * generation, and the reading that lines the panel's right edge up with the
- * meter's.
+ * generation, and the reading that places the panel over the meter in the
+ * page's own pixels.
  */
 
-/** The custom property the stylesheet reads to line the panel up with the meter. */
+/** The custom property the stylesheet reads to line the panel's right edge up with the meter's. */
 const CONTEXT_PANEL_LEFT = '--dsh-claude-context-panel-left'
+/** The custom property the stylesheet reads to keep the panel's bottom edge on the meter's top. */
+const CONTEXT_PANEL_TOP = '--dsh-claude-context-panel-top'
 /** The viewport margin the host keeps for this panel (ui-chat's stat-dialog). */
 const CONTEXT_PANEL_MARGIN = 12
+/** The host's distance from the meter's top edge to the panel's bottom (ui-chat's stat-dialog). */
+const CONTEXT_PANEL_GAP = 8
 
 /**
  * The panel's bindings.
@@ -174,32 +178,40 @@ export function createContextStatsBinding() {
   }
 
   /**
-   * Line the panel's right edge up with the meter's.
+   * Place the panel over the meter: both edges, in the page's own pixels.
    *
-   * The panel is the host's and its coordinates are inline: ui-chat places
-   * it from the anchor's LEFT edge and only then clamps it into the
-   * viewport, which for a trigger at the composer's right end parks the
-   * panel against the window's right margin, past the ring. The skin reads
-   * the two boxes and hands the stylesheet one left value
-   * (features/composer/inline-bar.css), the hand-over the hero menu makes
-   * for the menu the host places below its own trigger. The property and
-   * the mark are written together, so the rule never runs on a reading
-   * that has gone.
+   * The panel is the host's and its coordinates are inline: ui-chat places it
+   * above the anchor from the box `getBoundingClientRect` answers in the
+   * window's pixels and the panel's own laid-out height, and writes the answer
+   * into the inline style. The stylesheet reads that space at the page's zoom
+   * factor, which scales a written `left` or `top` again — at 125% the panel
+   * lands a quarter of its distance from the window's top too low and runs past
+   * the bottom edge. The skin reads the meter's box and the window in the same
+   * pixels (shared/page-zoom.ts), keeps the host's own placement — above the
+   * meter, by the gap ui-chat's stat dialog keeps — and hands the stylesheet two
+   * values (features/composer/inline-bar.css), the hand-over the hero menu makes
+   * for the menu the host places below its own trigger. The properties and the
+   * mark are written together, so the rule never runs on a reading that has
+   * gone.
    */
   function alignContextPanel(panel: HTMLElement) {
     const meter = findContextMeter()
     if (meter === null) return
-    // The meter's box and the window arrive in the pixels the panel's own
-    // laid-out width is given in (shared/page-zoom.ts).
     const anchor = inPageBox(meter.getBoundingClientRect())
     // The panel's own entrance scales it (the cards' 0.98), and a TRANSFORMED
-    // rect is two percent narrower than the box that settles: read the
-    // layout width, which is the one the panel ends up with.
+    // rect is two percent narrower than the box that settles: read the layout
+    // size, which is the one the panel ends up with.
     const width = panel.offsetWidth
-    if (width === 0) return
-    const widest = pageViewport().width - width - CONTEXT_PANEL_MARGIN
-    const left = Math.round(Math.min(Math.max(anchor.right - width, CONTEXT_PANEL_MARGIN), widest))
-    panel.style.setProperty(CONTEXT_PANEL_LEFT, `${left}px`)
+    const height = panel.offsetHeight
+    if (width === 0 || height === 0) return
+    const { x, y } = resolveAnchoredPosition(anchor, width, height, {
+      side: 'above',
+      gap: CONTEXT_PANEL_GAP,
+      margin: CONTEXT_PANEL_MARGIN,
+      viewport: pageViewport(),
+    })
+    panel.style.setProperty(CONTEXT_PANEL_LEFT, `${Math.round(x)}px`)
+    panel.style.setProperty(CONTEXT_PANEL_TOP, `${Math.round(y)}px`)
     panel.setAttribute(CONTEXT_PANEL_ALIGNED_ATTR, '')
   }
 
