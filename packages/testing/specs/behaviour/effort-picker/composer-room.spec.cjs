@@ -42,4 +42,40 @@ module.exports = spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], den
     t.expectThat.equal(name.scroll - name.client <= 1, true, `the model name stands whole (${name.scroll}px of text in a ${name.client}px box)`)
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
+
+  test('switching the level keeps the button\'s width and the open card in place', async (t) => {
+    // The stand-in's directory answers one fixed snapshot: the wrapper makes
+    // its `select` move the level the way the host's own store does, so the
+    // button's label is the level the reader just picked.
+    await t.page.evaluate(() => {
+      const host = window.__dshSmokeHost
+      const dir = host.modelDirectories.directoryFor('smoke-session')
+      const snapshot = dir.store.getSnapshot.bind(dir.store)
+      let level = 'max'
+      dir.store.getSnapshot = () => {
+        const snap = snapshot()
+        return snap === null || snap.current === null ? snap : { ...snap, current: { ...snap.current, reasoningEffort: level } }
+      }
+      dir.select = (selection) => {
+        if (selection && selection.reasoningEffort !== undefined) level = selection.reasoningEffort
+        return Promise.resolve()
+      }
+    })
+    await t.page.click(t.surface('effort.trigger'))
+    await t.settle()
+    const before = await t.read.box(t.surface('effort.trigger'))
+    const cardBefore = await t.read.box(t.surface('effort.card'))
+    const levelBefore = await t.read.text(t.surface('effort.trigger'))
+    const track = await t.read.box(t.surface('effort.track'))
+    // One third along a four-stop track: the second level, whose name is wider
+    // than the last one the button was showing.
+    await t.page.mouse.click(track.left + track.width / 3, track.top + track.height / 2)
+    await t.settle()
+    const after = await t.read.box(t.surface('effort.trigger'))
+    const cardAfter = await t.read.box(t.surface('effort.card'))
+    const levelAfter = await t.read.text(t.surface('effort.trigger'))
+    t.expectThat.equal(levelAfter !== levelBefore, true, `the level changed (${levelBefore} → ${levelAfter})`)
+    t.expectThat.equal(Math.round(after.width * 10), Math.round(before.width * 10), 'the button keeps its width')
+    t.expectThat.equal(Math.round(cardAfter.left * 10), Math.round(cardBefore.left * 10), 'the open card keeps its place')
+  })
 })

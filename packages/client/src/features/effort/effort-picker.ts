@@ -49,6 +49,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * that names no ladder takes the trigger away.
    */
   let lastEffort: ReturnType<ModelCatalog['effort']> = null
+  /** The ladder whose widest level name the trigger's width is reserved for. */
+  let reservedLadder = ''
+  /** The canvas the trigger's label widths are measured on, kept for the generation. */
+  let labelMetrics: CanvasRenderingContext2D | null = null
   const effortHoverIntent = createHoverIntent(
     () => { openEffortPopover() },
     () => { closeEffortPopover() },
@@ -64,6 +68,28 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** True while the catalog cannot name the seat (a selection in flight). */
   function seatInFlight() {
     return typeof ui.model?.settled === 'function' && !ui.model.settled()
+  }
+
+  /**
+   * Reserve the ladder's widest level name on the trigger, so a swap between
+   * levels leaves its width alone. That width is what the row reserves room for
+   * and what the open card is anchored to: a wider incoming name pushed the
+   * model trigger left, and the card went with it in the frame of the change.
+   * Measured with the trigger's own font, once per ladder.
+   */
+  function reserveLabelWidth(button: HTMLButtonElement, names: readonly string[], current: string) {
+    const key = names.join('\u0001')
+    if (key === reservedLadder) return
+    reservedLadder = key
+    labelMetrics ??= document.createElement('canvas').getContext('2d')
+    if (labelMetrics === null) return
+    const style = getComputedStyle(button)
+    labelMetrics.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+    let widest = labelMetrics.measureText(current).width
+    for (const name of names) widest = Math.max(widest, labelMetrics.measureText(name).width)
+    // The trigger's own 2px padding on either side, rounded up: a min-width a
+    // fraction under its text still lets a long name widen the box.
+    button.style.minWidth = `${Math.ceil(widest) + 4}px`
   }
 
   /**
@@ -381,6 +407,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortPlace.left = -1
     effortPlace.top = -1
     effortPlace.rowKey = ''
+    reservedLadder = ''
     if (effortBtn !== null) {
       if (effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
       effortBtn = null
@@ -450,6 +477,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // Same-value guards: sync runs on every scheduler pass, and an identical
     // write still mutates the DOM (textContent replaces the text node;
     // setAttribute queues a record the scheduler's observer sees).
+    reserveLabelWidth(effortBtn, info.reasoning.efforts.map((level) => level.name), info.label)
     const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
     if (labelEl !== null && labelEl.textContent !== info.label) labelEl.textContent = info.label
     const aria = `${copy('effortLabel')} ${info.label}`
@@ -480,6 +508,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortPlace.top = -1
     effortPlace.widthLabel = ''
     effortPlace.width = 0
+    reservedLadder = ''
     releaseModelRoom()
     unregisterPopover('effort')
   }
