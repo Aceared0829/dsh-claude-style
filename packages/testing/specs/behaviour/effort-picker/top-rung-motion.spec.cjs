@@ -1,8 +1,8 @@
 /**
  * The effort picker's strongest rung shows an animated matrix of dots. It
- * plays while the reader lets the skin move, and stands still the moment they
- * ask for reduced motion — whether they asked before opening the card or while
- * the rung is on screen.
+ * plays only while its card is open and the reader lets the skin move, and
+ * holds no animation at all the moment they ask for reduced motion — whether
+ * they asked before opening the card or while the rung is on screen.
  *
  * @capability effort-picker
  * @features effort
@@ -24,6 +24,12 @@ async function openCard({ page, surface, settle }) {
 }
 
 module.exports = spec({ page: 'effort' }, ({ test }) => {
+  test('the closed card runs no matrix animation', async (t) => {
+    t.expectThat.absent(await t.read.animations(t.surface('effort.particle')), 'no matrix dot animates while the card is closed')
+    await openCard(t)
+    t.expectThat.moving(await t.read.animations(t.surface('effort.particle')), 'the matrix dots animate once the card opens')
+  })
+
   test('the strongest rung animates its matrix while motion plays', async (t) => {
     await openCard(t)
     t.expectThat.visible(await t.read.box(t.surface('effort.card')), 'the effort card is open')
@@ -34,13 +40,13 @@ module.exports = spec({ page: 'effort' }, ({ test }) => {
     await reduceMotion(t)
     await openCard(t)
     t.expectThat.visible(await t.read.box(t.surface('effort.card')), 'the effort card is open')
-    t.expectThat.still(await t.read.animations(t.surface('effort.particle')), 'no matrix dot moves')
+    t.expectThat.absent(await t.read.animations(t.surface('effort.particle')), 'no matrix dot carries an animation')
   })
 
   test('asking for reduced motion while the strongest rung shows stills it at once', async (t) => {
     await openCard(t)
     t.expectThat.moving(await t.read.animations(t.surface('effort.particle')), 'the matrix dots animate before the change')
     await reduceMotion(t)
-    t.expectThat.still(await t.read.animations(t.surface('effort.particle')), 'no matrix dot moves after the change')
+    t.expectThat.absent(await t.read.animations(t.surface('effort.particle')), 'no matrix dot carries an animation after the change')
   })
 })

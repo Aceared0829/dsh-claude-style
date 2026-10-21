@@ -249,6 +249,21 @@ body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq::after {
   opacity: 0;
   animation: dshClaudeEffortFlow var(--dsh-claude-period-flow) linear var(--dsh-flow-delay, 0s) infinite;
 }
+/* The closed card keeps its blocks laid out — placement reads the card's box —
+   and visibility:hidden stops their pixels, not their animation clocks. The
+   flash paints a background-color, so a card left closed with the top rung in
+   force kept a style recalculation and two infinite animations per block on
+   the main thread with nothing on screen. Reduced motion stops the same pair:
+   the net in theme/chrome.css shortens every animation it reaches, but the
+   flash's own `infinite` outranks that net's iteration count, so it kept
+   repainting the same colour every frame. Opening with motion full puts the
+   shorthand back. */
+body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open="true"]) .dsh-claude-effort-matrix-sq,
+body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open="true"]) .dsh-claude-effort-matrix-sq::before,
+body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open="true"]) .dsh-claude-effort-matrix-sq::after,
+body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-effort-matrix-sq {
+  animation: none !important;
+}
 /* The reduced answer stops the two added layers at once: their animations are
    not `!important`, so the choice in the selector outranks them (theme/chrome.css
    holds the base flash, which is). */

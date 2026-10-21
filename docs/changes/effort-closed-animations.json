@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "修复档位矩阵的方块在卡片关闭后仍带着两个无限动效运行、页面空闲时主线程持续被占满的问题：卡片不在打开状态或读者选了减弱动效时，方块与两层装饰的动画停下，打开且动效全开时恢复。",
+  "en": "Fix the effort matrix's blocks keeping two infinite animations each while their card is closed, which kept the main thread busy with nothing on screen, and their shortened cycle still repainting every frame under reduced motion: the animations stop while the card is not open or the reader has chosen reduced motion, and resume when the card opens with motion full."
+}

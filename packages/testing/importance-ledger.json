@@ -2042,6 +2042,11 @@
       "selector": "html[data-dsh-theme-transitioning] body[data-dsh-claude-style][data-dsh-theme-transitioning] *",
       "prop": "transition",
       "verdict": "transient state"
+    },
+    "body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq,body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq:before,body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq:after,body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-effort-matrix-sq{animation:none!}|animation": {
+      "selector": "body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq,body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq:before,body[data-dsh-claude-style] .dsh-claude-effort-popover:not([data-open=true]) .dsh-claude-effort-matrix-sq:after,body[data-dsh-claude-style][data-dsh-claude-motion=reduced] .dsh-claude-effort-matrix-sq",
+      "prop": "animation",
+      "verdict": "unmatched"
     }
   }
 }
