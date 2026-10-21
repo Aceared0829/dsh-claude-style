@@ -117,10 +117,10 @@ export default {
     check('the words the row carries are the window\'s own: a press on the title starts no selection',
       laid.titleSelect === 'none' && laid.headerSelect === 'none',
       JSON.stringify({ title: laid.titleSelect, header: laid.headerSelect }))
-    check('the title is handed the room left between its own edge and the controls once the strip\'s width is reserved, and the row it left tucks under it',
+    check('the title is handed the room left between its own edge and the controls once the strip\'s width is reserved, and the row it left keeps its gap under it',
       laid.titleLeft === laid.row.x + 'px' &&
         laid.titleMax === laid.utilities.x - b.air - ((laid.strip.right - laid.strip.x) + b.air) - laid.title.x + 'px' &&
-        laid.row.y === laid.title.y + 28 - b.tuck && laid.rowPosition === 'relative' && laid.rowOffset === laid.rowLift &&
+        laid.row.y === laid.title.y + 28 + b.gap && laid.rowPosition === 'relative' && laid.rowOffset === laid.rowLift &&
         laid.row.y === laid.rowLift.replace('px', '') * 1 + laid.header.y + parseFloat(laid.headerPaddingTop) &&
         laid.preset.x === laid.row.x,
       JSON.stringify({ left: laid.titleLeft, max: laid.titleMax, lift: laid.rowLift, offset: laid.rowOffset, row: laid.row, header: laid.header, preset: laid.preset, utilities: laid.utilities, strip: laid.strip }))
