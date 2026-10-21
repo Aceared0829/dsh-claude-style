@@ -134,7 +134,7 @@ Every test run goes through `npm run verify` (D77), and a run belongs to the str
 
 ### Live Inspection
 
-- Desktop window: `node D:\DSH\dsh-desktop-bridge\bin\bridge.cjs "<expression>"` evaluates in the window the user sees (`--stdin` reads a script file). While that window is in the background its animation frames are paused: a probe waiting on `requestAnimationFrame` hangs, and anything it put in the page must be cleaned up by hand.
+- Desktop window: `node D:\DSH\dsh-gui-bridge\bin\bridge.cjs "<expression>"` evaluates in the window the user sees (`--stdin` reads a script file). While that window is in the background its animation frames are paused: a probe waiting on `requestAnimationFrame` hangs, and anything it put in the page must be cleaned up by hand.
 - Which build a page runs: `document.body.getAttribute('data-dsh-claude-style')`; `npm run build` prints the id it wrote. Hot reload swaps the bundle without reloading the page; reload a page that went through many hot reloads before treating it as evidence.
 - Host sources: the globally installed `@deepseek-ai/dsh` carries the host's client packages under `node_modules/@deepseek-ai/dsh-client-*/lib/`; the desktop's own copies are fetched from the `url` of each entry in the page's `__DSH_BOOT__.entries`.
 - A scratch worktree under `.debug/` that borrows this tree's `node_modules` through a directory link is taken off with `node scripts/worktree.mjs remove .debug/<name>`: `git worktree remove` follows the link on Windows and deletes the directory it names, which for `node_modules` is the main tree's own.
