@@ -1,5 +1,7 @@
 import { installScaledLayer } from '@dsh-claude-style/engine/page-scale'
 import { installFrameColumns } from './page-scale-columns'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { PAGE_ZOOM_ATTR } from '../constants'
 import { subscribePrefs } from '../core/prefs'
 import { pageViewport, pageZoomFactor } from './page-zoom'
 
@@ -72,8 +74,14 @@ export function installPageScale() {
   })
   columns = installFrameColumns({ scale: () => pageZoomFactor() })
   const offPrefs = subscribePrefs(settle)
+  // The scale itself is the reading that moves every one of these numbers, and
+  // the mirror that writes it is not the only writer: it is an attribute on the
+  // body, so a page that sets it from a stylesheet, a script or another session
+  // must wake the rule the same way a preference change does.
+  const stopScaleWatch = subscribeMutations(body, { attributes: true, attributeFilter: [PAGE_ZOOM_ATTR] }, settle)
   settle()
   return () => {
+    stopScaleWatch()
     offPrefs()
     body.style.removeProperty(PAGE_HEIGHT)
     body.style.removeProperty(PAGE_WIDTH)
