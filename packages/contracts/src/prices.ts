@@ -73,6 +73,15 @@ export interface PriceDocument {
   models: Record<string, Record<Currency, ModelPrice>>
   /** Retired or provider-prefixed ids that bill as another model. */
   aliases: Record<string, string>
+  /**
+   * The fallback list prices, one per model id the public catalogue knows:
+   * `"input cacheRead output"` in USD per million tokens (§ the catalogue's own
+   * unit). A session on a model the official table does not carry still shows
+   * the list-price equivalent rather than nothing.
+   */
+  catalog?: Record<string, string>
+  /** The rate the USD catalogue converts at when the reader chose CNY. */
+  usdToCny?: number
 }
 
 /** One usage sample's four disjoint buckets. */
@@ -157,7 +166,10 @@ function clockMinutes(value: string) {
 export function isPeak(atMs: number, schedule: PriceSchedule): boolean {
   const clock = clockAt(atMs, schedule.timeZone)
   if (clock === null || !schedule.peakDays.includes(clock.weekday)) return false
-  if (schedule.holidays.includes(clock.date)) return false
+  // The holiday list is the calendar's own (Asia/Shanghai for DeepSeek), which
+  // is not always the clock's zone: the catalog states the windows in UTC.
+  const holiday = clockAt(atMs, schedule.holidayZone)
+  if (holiday !== null && schedule.holidays.includes(holiday.date)) return false
   for (let i = 0; i < schedule.peakWindows.length; i++) {
     const window = schedule.peakWindows[i]
     const start = clockMinutes(window.start)
@@ -167,20 +179,64 @@ export function isPeak(atMs: number, schedule: PriceSchedule): boolean {
   return false
 }
 
-/** The model id the document prices, following the aliases the snapshot carries. */
-export function priceModelId(document: PriceDocument, modelId: string): string | null {
+/** One model id's bare form: lowercase, without a provider prefix, or null. */
+export function bareModelId(modelId: string): string | null {
   const raw = modelId.trim().toLowerCase()
   if (raw === '') return null
-  const bare = raw.includes('/') ? raw.slice(raw.lastIndexOf('/') + 1) : raw
+  return raw.includes('/') ? raw.slice(raw.lastIndexOf('/') + 1) : raw
+}
+
+/** The suffixes a session may add to a model id that the catalogue does not carry. */
+const CATALOG_SUFFIXES = ['-high', '-low', '-fast', '-sg', '-256k', '-128k', '-1m', '-32k', '-200k', '-flex']
+
+/**
+ * The catalogue id one model resolves to, trying the id itself, the snapshot's
+ * alias, and the bare id with a variant suffix taken off.
+ */
+function catalogIdFor(document: PriceDocument, bare: string): string | null {
+  const catalog = document.catalog
+  if (catalog === undefined) return null
+  const candidates = [document.aliases[bare], bare]
+  for (const suffix of CATALOG_SUFFIXES) {
+    if (bare.endsWith(suffix) && bare.length > suffix.length) candidates.push(bare.slice(0, -suffix.length))
+  }
+  for (const candidate of candidates) {
+    if (candidate !== undefined && Object.hasOwn(catalog, candidate)) return candidate
+  }
+  return null
+}
+
+/** The model id the document prices, following the aliases the snapshot carries. */
+export function priceModelId(document: PriceDocument, modelId: string): string | null {
+  const bare = bareModelId(modelId)
+  if (bare === null) return null
   if (Object.hasOwn(document.models, bare)) return bare
   const alias = document.aliases[bare]
   return alias !== undefined && Object.hasOwn(document.models, alias) ? alias : null
 }
 
-/** One model's two tiers for one currency, or undefined when the document does not price it. */
+/**
+ * One model's two tiers for one currency, or undefined when the document does
+ * not price it.
+ *
+ * The official table answers first, in the currency the reader chose. A model
+ * only the catalogue knows answers at its USD list price, converted at the
+ * snapshot's rate when the reader chose CNY; its two tiers are the same, since
+ * the catalogue has no clock.
+ */
 export function priceFor(document: PriceDocument, modelId: string, currency: Currency): ModelPrice | undefined {
   const id = priceModelId(document, modelId)
-  return id === null ? undefined : document.models[id]?.[currency]
+  if (id !== null) return document.models[id]?.[currency]
+  const bare = bareModelId(modelId)
+  if (bare === null) return undefined
+  const catalogId = catalogIdFor(document, bare)
+  if (catalogId === null) return undefined
+  const parts = (document.catalog?.[catalogId] ?? '').split(' ').map(Number)
+  if (parts.length !== 3 || !parts.every(value => Number.isFinite(value) && value >= 0)) return undefined
+  if (parts[0] === 0 && parts[2] === 0) return undefined
+  const rate = currency === 'CNY' ? (document.usdToCny ?? 7.2) : 1
+  const tier: PriceTier = { cacheHit: parts[1] * rate, cacheMiss: parts[0] * rate, output: parts[2] * rate }
+  return { offPeak: tier, peak: tier }
 }
 
 /** The tier in force at one instant. */

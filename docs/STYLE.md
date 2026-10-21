@@ -551,7 +551,10 @@ the browser adds the tokens the streaming answer has grown by at the output
 rate in force, so the figure moves with the written-back tokens and settles
 with them. It writes four decimals and the symbol of the `billingCurrency`
 setting (`¥0.0015`, `$0.0002`): the official CNY and USD tables are stored
-apart, so the setting picks a table rather than converting one. On the line it
+apart, so the setting picks a table rather than converting one. A model the
+official table does not carry is priced from the snapshot's catalogue at its
+USD list price, converted at the snapshot's fixed rate when CNY is chosen; a
+model neither carries keeps the segment out of the line. On the line it
 stands between the written-back tokens and the cache share, and it is among the
 figures the ladder gives up when the line needs the room for the total; in the
 block it is the usage section's first row.

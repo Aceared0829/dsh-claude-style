@@ -15,6 +15,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 设置页的计费币种新增「关闭」：选它后统计行不显示费用，也不向宿主索取价目表与会话金额。
 - 把设置页「侧栏」页的「面板悬浮卡片」改名为「右侧栏卡片布局」，开关本身与存下的设置值不变。
 - 模型选择器的二级菜单顶部新增搜索框：输入名称即可在整份模型目录里筛选，回车之外的方向键、选择与编辑照常可用；行距同时收紧。清除按钮沿用 transitions.dev 的溶解效果（文字下沉模糊、占位符从上方落入、每个词下方亮起一道光带），并跟随设置的动画档位；搜索框里的光标使用皮肤自己的光标动画。
+- 扩大费用的模型覆盖：快照附带一份公共模型目录的刊例价（美元/百万 token），官方价表没有的模型按它计价，人民币按快照内的固定汇率折算；Kimi K3 这类订阅渠道的模型也按 API 刊例价出数，不再一律留空。
 - 改善钠的兜底标记：它只跟随流容器自己的子节点变化，一批变化只标记这一批新增的子元素，流式输出期间不再读整页的变化记录。
 - 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
 - 把设置页「折叠侧栏设置区」「侧栏搜索」「对话导航」三行改名为「重绘账户区」「重绘搜索面板」「重绘消息导航」，三处开关与存下的设置值不变。
@@ -48,6 +49,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Add Off to the settings page's Billing currency: chosen, the statistics line draws no cost and the browser asks the host for neither the price table nor the session's amount.
 - Rename the Sidebar tab's Float docked panels switch to Right sidebar card layout, with the switch and the stored value unchanged.
 - Add a search field to the top of the model picker's second level: typing a name filters the whole model catalog, while selection, editing and the arrow keys keep working as before, and the rows sit closer together. Its clear control plays transitions.dev's dissolve — the words fly down through a blur, the placeholder falls in from above, and a streak ignites under each word — answering the animation choice in force, and the field's caret is the skin's own animated one.
+- Widen the cost figure's model coverage: the snapshot carries the public catalogue's list prices (USD per million tokens), a model the official table does not price falls back to it, and CNY converts at the snapshot's fixed rate; subscription-channel models such as Kimi K3 now show their API list-price equivalent instead of nothing.
 - Improve Sodium's fallback mark: it follows the changes of a flow container's own children and marks only the children a batch added, so streaming output no longer reads the whole page's change records.
 - Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
 - Rename three settings rows to Redraw the account area, Redraw the search panel and Redraw the message navigator, with their switches and stored values unchanged.

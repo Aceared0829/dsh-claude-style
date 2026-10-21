@@ -35,7 +35,13 @@ const document: PriceDocument = {
       },
     },
   },
-  aliases: { 'deepseek-v4-flash': 'deepseek-flash' },
+  aliases: { 'deepseek-v4-flash': 'deepseek-flash', 'k3-256k': 'kimi-k3' },
+  catalog: {
+    'kimi-k3': '3 3 15',
+    'gemini-3.8-flash': '0.75 0.75 3.75',
+    'plan-only': '0 0 0',
+  },
+  usdToCny: 7.2,
 }
 
 test('the clock reads Beijing weekdays, windows and holidays', () => {
@@ -47,6 +53,20 @@ test('the clock reads Beijing weekdays, windows and holidays', () => {
   expect(isPeak(Date.parse('2026-10-17T02:00:00Z'), schedule)).toBe(false)
   // Thursday 10:00 Beijing, a listed holiday.
   expect(isPeak(Date.parse('2026-10-01T02:00:00Z'), schedule)).toBe(false)
+})
+
+test('a UTC clock reads the holiday list on the calendar it names', () => {
+  // The shipped snapshot copies the catalog's clock: windows in UTC, holidays
+  // on the Beijing calendar. The holiday must still match at 10:00 Beijing.
+  const utc: PriceSchedule = {
+    timeZone: 'UTC',
+    peakDays: [1, 2, 3, 4, 5],
+    peakWindows: [{ start: '01:00', end: '04:00' }, { start: '06:00', end: '10:00' }],
+    holidays: ['2026-10-01'],
+    holidayZone: 'Asia/Shanghai',
+  }
+  expect(isPeak(Date.parse('2026-09-30T02:00:00Z'), utc)).toBe(true)
+  expect(isPeak(Date.parse('2026-10-01T02:00:00Z'), utc)).toBe(false)
 })
 
 test('a price is the sum of the buckets against their own rates', () => {
@@ -62,6 +82,16 @@ test('a route is resolved through its aliases and a provider prefix', () => {
   expect(priceFor(document, 'deepseek-v4-flash', 'CNY')?.peak.output).toBe(8)
   expect(priceFor(document, 'deepseek-official/deepseek-flash', 'USD')?.offPeak.cacheMiss).toBe(0.15)
   expect(priceFor(document, 'unknown-model', 'CNY')).toBeUndefined()
+})
+
+test('a model the official table does not carry is priced from the catalogue', () => {
+  // The picker's own id for Kimi K3, aliased to the catalogue's id.
+  expect(priceFor(document, 'k3-256k', 'USD')?.offPeak.output).toBe(15)
+  expect(priceFor(document, 'k3-256k', 'CNY')?.offPeak.output).toBe(108)
+  // A variant suffix falls back to the base id the catalogue lists.
+  expect(priceFor(document, 'gemini-3.8-flash-high', 'USD')?.offPeak.cacheMiss).toBe(0.75)
+  // A plan listing (every number zero) is no price at all.
+  expect(priceFor(document, 'plan-only', 'USD')).toBeUndefined()
 })
 
 test('the figure keeps four decimals and its currency symbol', () => {

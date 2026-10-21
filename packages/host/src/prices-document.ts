@@ -130,16 +130,35 @@ export function parsePriceDocument(value: unknown): PriceDocument | null {
     models[id] = priced
   }
   if (Object.keys(models).length === 0) return null
+  // The catalogue is a flat list of list prices, one line per model id. A line
+  // that is not three non-negative numbers is dropped alone: the rest of the
+  // table still answers, and the official models never depend on it.
+  const catalog: Record<string, string> = {}
+  if (raw.catalog !== undefined) {
+    const rawCatalog = asRecord(raw.catalog)
+    if (rawCatalog === null) return null
+    for (const [id, line] of Object.entries(rawCatalog)) {
+      if (typeof line !== 'string' || id.trim() === '') continue
+      const parts = line.split(' ').map(Number)
+      if (parts.length !== 3 || !parts.every(value => Number.isFinite(value) && value >= 0)) continue
+      catalog[id.trim().toLowerCase()] = line
+    }
+  }
   const aliases: Record<string, string> = {}
   if (raw.aliases !== undefined) {
     const rawAliases = asRecord(raw.aliases)
     if (rawAliases === null) return null
     for (const [from, to] of Object.entries(rawAliases)) {
       const target = asText(to)
-      if (target !== undefined && Object.hasOwn(models, target) && from.trim() !== '') aliases[from.trim()] = target
+      if (target !== undefined && (Object.hasOwn(models, target) || Object.hasOwn(catalog, target)) && from.trim() !== '') {
+        aliases[from.trim().toLowerCase()] = target
+      }
     }
   }
   const document: PriceDocument = { schemaVersion: PRICE_SCHEMA_VERSION, updatedAt, schedule, models, aliases }
+  if (Object.keys(catalog).length > 0) document.catalog = catalog
+  const rate = raw.usdToCny
+  if (typeof rate === 'number' && Number.isFinite(rate) && rate > 0) document.usdToCny = rate
   const capturedAt = asText(raw.capturedAt)
   if (capturedAt !== undefined) document.capturedAt = capturedAt
   const source = asRecord(raw.source)

@@ -29,18 +29,24 @@ const SOURCE = {
   zh: 'https://api-docs.deepseek.com/zh-cn/quick_start/pricing/',
   en: 'https://api-docs.deepseek.com/quick_start/pricing/',
 }
-const SCHEDULE = {
-  timeZone: 'Asia/Shanghai',
-  peakDays: [1, 2, 3, 4, 5],
-  peakWindows: [{ start: '09:00', end: '12:00' }, { start: '14:00', end: '18:00' }],
-  holidayZone: 'Asia/Shanghai',
-}
+/**
+ * The public model catalogue the fallback prices come from: every vendor's
+ * list price in USD per million tokens, one entry per model id. The snapshot
+ * keeps only the id and three numbers, so a session on any listed model shows
+ * the list-price equivalent instead of no figure at all. Vendors' differences
+ * are not kept apart: the first positive entry for an id wins.
+ */
+const CATALOG_URL = 'https://models.dev/api.json'
+/** The rate the USD catalogue converts at for a reader who chose CNY. */
+const USD_TO_CNY = 7.2
 const ALIASES = {
   'deepseek-v4-flash': 'deepseek-flash',
   'deepseek-v4-flash-vision-exp': 'deepseek-flash',
   'deepseek-v4.1-flash': 'deepseek-flash',
   'deepseek-chat': 'deepseek-flash',
   'deepseek-reasoner': 'deepseek-flash',
+  // The Kimi Code picker's own id for K3, which the catalogue lists as kimi-k3.
+  'k3-256k': 'kimi-k3',
 }
 const MODEL_ID = /deepseek-[a-z0-9_.-]+/i
 
@@ -160,15 +166,75 @@ function parsePage(html, url) {
 }
 
 /** The Chinese public holidays the peak rate catalog carries for DeepSeek. */
-function holidays() {
+/**
+ * The clock the snapshot prices by: the peak rate catalog's own DeepSeek profile.
+ *
+ * The catalog is the one place this package's billing clock comes from — the
+ * meter draws its badge from the same document — so the price snapshot copies
+ * the profile's windows, days and holidays instead of keeping a second copy
+ * that would drift. The pricing page only supplies money.
+ */
+function scheduleFromCatalog() {
   if (!fs.existsSync(CATALOG)) throw new Error(`fetch-prices: ${CATALOG} is missing; run scripts/fetch-peakrate-catalog.mjs first`)
   const catalog = JSON.parse(fs.readFileSync(CATALOG, 'utf8'))
   const profile = (catalog.profiles ?? []).find(entry => entry?.id === 'deepseek-v4')
-  const dates = profile?.schedule?.publicHolidayDates
+  const schedule = profile?.schedule
+  if (schedule === null || schedule === undefined) {
+    throw new Error('fetch-prices: the peak rate catalog carries no DeepSeek clock')
+  }
+  const timeZone = typeof schedule.timeZone === 'string' && schedule.timeZone !== '' ? schedule.timeZone : null
+  const holidayZone = typeof schedule.publicHolidayTimeZone === 'string' && schedule.publicHolidayTimeZone !== ''
+    ? schedule.publicHolidayTimeZone
+    : timeZone
+  const peakDays = Array.isArray(schedule.peakDays)
+    ? [...new Set(schedule.peakDays.filter(day => Number.isInteger(day) && day >= 0 && day <= 6))].sort()
+    : []
+  const peakWindows = Array.isArray(schedule.peakWindows)
+    ? schedule.peakWindows
+      .filter(win => win !== null && typeof win === 'object' && /^([01]?\d|2[0-3]):[0-5]\d$/.test(win.start) && /^([01]?\d|2[0-3]):[0-5]\d$/.test(win.end))
+      .map(win => ({ start: win.start, end: win.end }))
+    : []
+  const dates = schedule.publicHolidayDates
+  if (timeZone === null || holidayZone === null) throw new Error('fetch-prices: the DeepSeek clock names no time zone')
+  if (peakDays.length === 0) throw new Error('fetch-prices: the DeepSeek clock lists no peak day')
+  if (peakWindows.length === 0) throw new Error('fetch-prices: the DeepSeek clock lists no peak window')
   if (!Array.isArray(dates) || dates.length === 0) {
     throw new Error('fetch-prices: the peak rate catalog carries no Chinese public holidays for DeepSeek')
   }
-  return [...new Set(dates.filter(day => typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day)))].sort()
+  const holidays = [...new Set(dates.filter(day => typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day)))].sort()
+  return { timeZone, holidayZone, peakDays, peakWindows, holidays }
+}
+
+/**
+ * The fallback price table: every model in the public catalogue that carries a
+ * positive list price, as `[input, cacheRead, output]` USD per million tokens.
+ *
+ * A model id served by several vendors keeps the first positive entry in
+ * provider order: the point is coverage, not whose list price it is. Models
+ * whose entry is a plan listing (every number zero) are left out, so a session
+ * on them shows nothing rather than a zero.
+ */
+async function catalogPrices() {
+  const body = JSON.parse(await load(CATALOG_URL))
+  const providers = body !== null && typeof body === 'object' ? body : {}
+  const priced = new Map()
+  for (const providerId of Object.keys(providers).sort()) {
+    const models = providers[providerId]?.models
+    if (models === null || typeof models !== 'object') continue
+    for (const [id, entry] of Object.entries(models)) {
+      const cost = entry?.cost
+      if (cost === null || typeof cost !== 'object') continue
+      const input = Number(cost.input)
+      const output = Number(cost.output)
+      const cacheRead = cost.cache_read === undefined ? input : Number(cost.cache_read)
+      if (![input, output, cacheRead].every(value => Number.isFinite(value) && value >= 0)) continue
+      if (input === 0 && output === 0) continue
+      const key = id.trim().toLowerCase()
+      if (key === '' || priced.has(key)) continue
+      priced.set(key, [input, cacheRead, output].join(' '))
+    }
+  }
+  return Object.fromEntries([...priced].sort(([a], [b]) => (a < b ? -1 : 1)))
 }
 
 const zh = parsePage(await load(SOURCE.zh), SOURCE.zh)
@@ -188,14 +254,27 @@ for (const id of ids) {
 }
 
 const now = new Date()
+// A catalogue outage must not take the official prices down with it: the
+// previous snapshot's table answers, and only a run with neither fails.
+let catalog
+try {
+  catalog = await catalogPrices()
+} catch (error) {
+  const previous = fs.existsSync(TARGET) ? JSON.parse(fs.readFileSync(TARGET, 'utf8')) : null
+  if (previous?.catalog === undefined) throw error
+  console.warn(`fetch-prices: ${CATALOG_URL} unreachable (${error.message}); keeping the committed catalogue`)
+  catalog = previous.catalog
+}
 const document = {
   schemaVersion: 1,
   updatedAt: now.toISOString().slice(0, 10),
   capturedAt: now.toISOString(),
   source: SOURCE,
-  schedule: { ...SCHEDULE, holidays: holidays() },
+  schedule: scheduleFromCatalog(),
   models,
   aliases: ALIASES,
+  catalog,
+  usdToCny: USD_TO_CNY,
 }
 validatePrices(document, TARGET)
 
