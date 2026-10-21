@@ -8,11 +8,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">问题修复</h3>
 
-- 修复一轮收进过程分组后，读者点开看到的是一整段连着的文字：组里一轮说过的几行话被折进最后的回答，前后没有空行、小标题也没有高度；现在最终回答按自己的排版占位，组里的每一步仍各自单独排版与绘制。
+- 修复收起的一轮里，一段推理正文重新出现在最终回答中：会话行离开视口时不再参与排版，留下的是估算的高度，并占出了位置；最终回答、以及宿主收起的行已不在这条规则里。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
-- Fix a turn reading as one run of text once it is folded into its process group: the lines a turn said between its steps were folded into the final answer with no gap and no height for their subheads. The final answer is now laid out in its own place, and every step inside the group keeps its own layout and paint.
+- Fix a stretch of reasoning reappearing inside a folded turn's final answer: rows outside the viewport left the layout to an estimate of their height and so took up room they do not take. The final answer and the rows the host has folded are no longer under that rule.
 
 ## [0.18.0] - 2026-10-21
 

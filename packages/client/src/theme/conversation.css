@@ -8,14 +8,21 @@
    only for a row nothing has rendered yet. The streamed tail is on screen and stays laid
    out; the rows behind it stop costing a layout each.
 
-   Two kinds of row stay laid out. A message the reader sent, because chat-fold reads its
-   bubble's scrollHeight to decide whether the cap hides part of it, and a row the browser
-   has skipped answers that question with no layout at all. The answer a process group
-   closes on, because a skipped row is one the host draws no box for: the lines a turn
-   said between its steps — subheads, a short explanation of a call — would stand with no
-   height and no gap, and the group would read as one run of text. */
+   Rows that stay laid out:
 
-body[data-dsh-claude-style] [data-chat-flow-kind]:not([data-chat-flow-kind='user']):not([data-turn-process-answer]) {
+     a message the reader sent   chat-fold reads its bubble's scrollHeight to decide
+                                 whether the cap hides part of it, and a row the browser
+                                 has skipped answers that question with no layout at all.
+     the answer of a process     the answer is what the reader came for, and it keeps its
+     group                       own layout while the group above it is a door away.
+     a row hiding something      the host folds a turn's process members with
+                                 hidden="until-found", and draws them no box: a skipped
+                                 row would stand at the fallback's size, so a folded group
+                                 would open a page of empty band. The row that holds a
+                                 hidden cell or a hidden mark carries the hold
+                                 (parts-table.ts). */
+
+body[data-dsh-claude-style] [data-chat-flow-kind]:not([data-chat-flow-kind='user']):not([data-turn-process-answer], [data-turn-process-hidden], [data-disclosure-row] [hidden], [hidden], [data-dsh-claude-holds~='hidden-row']) {
   content-visibility: auto;
   contain-intrinsic-size: auto 240px;
 }

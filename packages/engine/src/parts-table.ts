@@ -396,5 +396,15 @@ export function holdRelations(vocabulary: PartsTableVocabulary): HoldRelation[] 
     direct: true,
     attributes: [],
   },
+  // theme/conversation.css: a row the host has folded stands no box, and the row keeps
+  // its content-visibility: auto only while nothing under it is hidden. The host's own
+  // mark, any element's hidden attribute, and the chat area as the scope.
+  {
+    name: 'hidden-row',
+    holder: '[data-chat-flow-kind]',
+    held: '[data-turn-process-hidden], [hidden]',
+    scope: '[data-chat-flow]',
+    attributes: ['data-turn-process-hidden', 'hidden'],
+  },
   ]
 }
