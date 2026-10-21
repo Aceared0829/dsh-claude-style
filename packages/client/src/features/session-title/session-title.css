@@ -31,19 +31,20 @@ body[data-dsh-claude-style] .dsh-claude-session-title-tip {
   pointer-events: none;
 }
 
-/* The field the press opens, standing over the words it renames: its face is
-   Claude's own — a canvas field ringed in the selection blue, just round enough
-   to read as a field, hugging the words it holds with the room Claude leaves
-   around them, so the title reads as the words being edited rather than a card
-   laid over them. Its width follows the draft (`field-sizing: content`), and a
-   title the host refuses keeps the field, ringed in the host's error colour, so
-   the draft is not lost. */
+/* The field the press opens, standing over the words it renames: a canvas field
+   ringed in the selection blue at the title's own small radius, holding the words
+   with the room Claude leaves round them — 1px to each side, 3px above and below —
+   so the title reads as the words being edited rather than a card laid over them.
+   Its box is the words' own line (session-title.ts measures the text, not the
+   host's padded segment), and its width follows the draft (`field-sizing:
+   content`). A title the host refuses keeps the field, ringed in the host's error
+   colour, so the draft is not lost. */
 body[data-dsh-claude-style] .dsh-claude-session-title {
   position: fixed;
   box-sizing: border-box;
   z-index: var(--dsh-claude-layer-float);
   margin: 0;
-  padding: 3px 12px;
+  padding: 3px 1px;
   border: 1px solid var(--dsh-claude-field-ring, #2a78d6);
   border-radius: 4px;
   background: var(--dsw-alias-bg-base, #FCFCFB);

@@ -402,11 +402,12 @@ host's own crumb already carries the padding and the radius — with a tip under
 the segment naming the press, in the label ink on the canvas tone the usage
 panel's day tip uses. The segment carries the tip rather than the words because
 the host clips a crumb's overflow for its ellipsis. The press opens a field over
-the words: canvas fill, a 1px ring in the selection blue, a 4px radius and 12px
-by 3px of padding, hugging the words it holds so the title reads as the words
-being edited rather than a card laid over them. It stands in the page's own
-space, so the reader's zoom keeps it on the title; a rename the host refuses
-keeps the field, ringed in the host's error tone.
+the words' own line: canvas fill, a 1px ring in the selection blue, a 4px radius,
+and 1px to either side of the words with 3px above and below them, so the ring
+hugs the name the way Claude's own field does rather than laying a card over it.
+The field stands in the page's own space, so the reader's zoom keeps it on the
+title; a rename the host refuses keeps the field, ringed in the host's error
+tone.
 
 ## Markdown material
 

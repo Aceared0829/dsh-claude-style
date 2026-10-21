@@ -5,6 +5,7 @@
     { "id": "skin.motion", "attribute": "data-dsh-claude-motion", "feature": "core", "sees": "the motion the reader asked for, resolved: the stylesheets still every animation under its reduced value" },
     { "id": "skin.page-zoom", "attribute": "data-dsh-claude-page-zoom", "feature": "core", "sees": "the page's own scale, resolved: every length the skin writes is divided by it, and the stylesheets draw the page at it" },
     { "id": "skin.part", "attribute": "data-dsh-claude-part", "feature": "core", "sees": "the part a host element plays, written by the parts walk; a mechanism spec that builds a host node marks it under this name rather than spelling it" },
+    { "id": "skin.frame-columns", "attribute": "data-dsh-claude-frame-columns", "feature": "shared", "sees": "the host's own column list and the one this skin drew from it, kept on a frame it carried: a second copy of the rule on the page reads the frame as already carried" },
     { "id": "popover.open", "attribute": "data-open", "feature": "shared", "sees": "a skin menu card standing open: the stylesheet shows the card while it reads true" },
     { "id": "home.heat-grid", "selector": ".dsh-claude-home-heat", "feature": "home", "sees": "the usage panel's heat grid, one square per day" },
     { "id": "home.heat-cell", "selector": ".dsh-claude-home-heat-cell", "feature": "home", "sees": "one day's square; hovering it shows that day's tip pill" },
