@@ -9,24 +9,38 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 改善会话标题的重命名：鼠标扫过顶栏标题时浮出一块底板与「重命名会话」提示，点击即可就地编辑，回车写入新名称、Esc 保持原名。
+- 改善流式回复期间写回 token 的估算：正文按中文字符、中文标点、拉丁词、数字、空白与标点各段本身的形状计价，替换原先按宽窄字符计数的规则，估算值贴近服务商的分词结果。
 
 ### 问题修复
 
-- 修复页面缩放不为 100% 时浮层按窗口量出的尺寸与位置都不成立：宿主自己画的会话卡片、账号菜单、上下文弹层把量到的位置直接写进坐标，在缩放下又被放大一次，开在触发控件上方的菜单还会因为自身高度是在另一个空间里量的而压在控件上；按窗口封顶的卡片同样会高出窗口一截，末尾几行读不到。现在宿主自己的浮层拿回一像素对一像素的空间，写下的长度与量到的盒子在屏幕上一致；按窗口封顶的规则改读皮肤量出的页面尺寸，不再用 vh 与 vw。
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
-- 修复页面缩放不为 100% 时宿主框架的三列按窗口像素排布：宿主量框架用窗口像素，写下的列却是页面像素，右列被推出框架，左侧栏拉开后比它该有的宽度多出这一份倍率、显示不全。宿主自己的列宽现在按页面的像素重算；一列被收窄到零时这一份不换算，交给宿主原样摆放。
-- 修复页面缩放不为 100% 时皮肤自己画的三处几何落在别处：首页的点击涟漪按窗口像素数格子却画在页面里，落在点击点的右下方；标题栏上的切换按钮在桌面窗口里量左邻控件与侧栏时混用了两种像素，站到了侧栏之外；推理档位触发器让出宽度时按窗口像素读取自己的宽度，窄卡片里算出的上限偏大。三处都改按页面自身的像素换算。
 
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one.
+- Improve the written-back token estimate while an answer streams: the text is now priced by the shape of its runs — CJK characters and marks, Latin words, digits, whitespace, punctuation — in place of the wide/narrow character rule, so the figure stays close to the provider's own count.
 
 ### Bug Fixes
 
-- Fix the cards and caps measured against the window not holding at a page scale other than 100%: the host's own session card, account menu and context popover write a measured position straight into their coordinates, which the scale then multiplies a second time, and a menu opening over its trigger lands on it because its own height was measured in the other space; a card capped against the window comes out taller than it as well, leaving its last rows unreadable. The host's own floating cards are now given a space one pixel to one pixel with the window, so a length the host writes and a box the host measures are the same length on screen, and a rule that caps a card against the window reads the page's own size instead of `vh` and `vw`.
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
+
+## [0.18.2] - 2026-10-21
+
+[中文](#cn-0.18.2) | [English](#en-0.18.2)
+
+<h3 id="cn-0.18.2">问题修复</h3>
+
+- 修复页面缩放不为 100% 时浮层按窗口量出的尺寸与位置都不成立：宿主自己画的会话卡片、账号菜单、上下文弹层把量到的位置直接写进坐标，在缩放下又被放大一次，开在触发控件上方的菜单还会因为自身高度是在另一个空间里量的而压在控件上；按窗口封顶的卡片同样会高出窗口一截，末尾几行读不到。现在宿主自己的浮层拿回一像素对一像素的空间，写下的长度与量到的盒子在屏幕上一致；按窗口封顶的规则改读皮肤量出的页面尺寸，不再用 vh 与 vw。
+- 修复页面缩放不为 100% 时宿主框架的三列按窗口像素排布：宿主量框架用窗口像素，写下的列却是页面像素，右列被推出框架，左侧栏拉开后比它该有的宽度多出这一份倍率、显示不全。宿主自己的列宽现在按页面的像素重算；一列被收窄到零时这一份不换算，交给宿主原样摆放。
+- 修复页面缩放不为 100% 时皮肤自己画的三处几何落在别处：首页的点击涟漪按窗口像素数格子却画在页面里，落在点击点的右下方；标题栏上的切换按钮在桌面窗口里量左邻控件与侧栏时混用了两种像素，站到了侧栏之外；推理档位触发器让出宽度时按窗口像素读取自己的宽度，窄卡片里算出的上限偏大。三处都改按页面自身的像素换算。
+
+<h3 id="en-0.18.2">Bug Fixes</h3>
+
+- Fix the cards and caps measured against the window not holding at a page scale other than 100%: the host's own session card, account menu and context popover write a measured position straight into their coordinates, which the scale then multiplies a second time, and a menu opening over its trigger lands on it because its own height was measured in the other space; a card capped against the window comes out taller than it as well, leaving its last rows unreadable. The host's own floating cards are now given a space one pixel to one pixel with the window, so a length the host writes and a box the host measures are the same length on screen, and a rule that caps a card against the window reads the page's own size instead of `vh` and `vw`.
 - Fix the host frame's three columns being laid out in the window's pixels at a page scale other than 100%: the host measures its frame in the window's pixels and writes the columns in the page's, so the right column stands outside the frame and a sidebar dragged to a width is drawn that factor wider and shows cut off. The host's own column widths are now recomputed in the page's pixels, and a write that narrows a column to nothing is left as the host made it.
 - Fix three pieces of the skin's own geometry landing elsewhere at a page scale other than 100%: the home page counted its ripple cells in the window's pixels while drawing them in the page's, so a press rippled down and right of where it landed; the window tab strip measured the controls and the sidebar beside it in one set of pixels and wrote the answer in another, standing outside the sidebar; and the effort trigger read its own width in the window's pixels while giving room back to the model name, so a narrow card kept a cap that was too wide. All three now convert through the page's own pixels.
+
+Full Changelog: [v0.18.1...v0.18.2](https://github.com/Nwflower/dsh-claude-style/compare/v0.18.1...v0.18.2)
 
 ## [0.18.1] - 2026-10-21
 

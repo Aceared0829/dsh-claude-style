@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复页面缩放不为 100% 时皮肤自己画的三处几何落在别处：首页的点击涟漪按窗口像素数格子却画在页面里，落在点击点的右下方；标题栏上的切换按钮在桌面窗口里量左邻控件与侧栏时混用了两种像素，站到了侧栏之外；推理档位触发器让出宽度时按窗口像素读取自己的宽度，窄卡片里算出的上限偏大。三处都改按页面自身的像素换算。",
-  "en": "Fix three pieces of the skin's own geometry landing elsewhere at a page scale other than 100%: the home page counted its ripple cells in the window's pixels while drawing them in the page's, so a press rippled down and right of where it landed; the window tab strip measured the controls and the sidebar beside it in one set of pixels and wrote the answer in another, standing outside the sidebar; and the effort trigger read its own width in the window's pixels while giving room back to the model name, so a narrow card kept a cap that was too wide. All three now convert through the page's own pixels."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复页面缩放不为 100% 时宿主框架的三列按窗口像素排布：宿主量框架用窗口像素，写下的列却是页面像素，右列被推出框架，左侧栏拉开后比它该有的宽度多出这一份倍率、显示不全。宿主自己的列宽现在按页面的像素重算；一列被收窄到零时这一份不换算，交给宿主原样摆放。",
-  "en": "Fix the host frame's three columns being laid out in the window's pixels at a page scale other than 100%: the host measures its frame in the window's pixels and writes the columns in the page's, so the right column stands outside the frame and a sidebar dragged to a width is drawn that factor wider and shows cut off. The host's own column widths are now recomputed in the page's pixels, and a write that narrows a column to nothing is left as the host made it."
-}
