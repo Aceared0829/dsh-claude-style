@@ -11,30 +11,14 @@
 import { afterEach, expect, test } from 'vitest'
 import { counterScale, installScaledLayer } from '@dsh-claude-style/engine/page-scale'
 import type { PageScaleVocabulary } from '@dsh-claude-style/engine/page-scale'
-
-/** The scale the page is drawn at in this file: the stylesheet's own `zoom` on the body. */
-let scale = 1
+import { after, drawnAt, drawnScale, resetPage, settle } from './drawn-page'
 
 const vocabulary: PageScaleVocabulary = {
   isOwn: node => node.classList.contains('own'),
-  scale: () => scale,
+  scale: drawnScale,
 }
 
-const settle = () => new Promise(resolve => setTimeout(resolve, 0))
-
-const cleanups: (() => void)[] = []
-afterEach(() => {
-  for (const cleanup of cleanups.splice(0)) cleanup()
-  document.body.replaceChildren()
-  scale = 1
-  document.body.style.removeProperty('zoom')
-})
-
-/** Draw the page at `factor`, the way the stylesheet's own rule does. */
-function drawnAt(factor: number) {
-  scale = factor
-  document.body.style.zoom = String(factor)
-}
+afterEach(resetPage)
 
 /** A card the host measured a row for: a body-level floating box with its own `left` and `top`. */
 function hostCard(left: number, top: number, position = 'fixed') {
@@ -47,7 +31,7 @@ function hostCard(left: number, top: number, position = 'fixed') {
 /** Install the mechanism and register its teardown. */
 function installed() {
   const layer = installScaledLayer(vocabulary)
-  cleanups.push(layer.stop)
+  after(layer.stop)
   return layer
 }
 
@@ -165,7 +149,7 @@ test('a card the host mounts is heard, and the skin is told the page changed', a
   drawnAt(1.25)
   const told: number[] = []
   const layer = installScaledLayer({ ...vocabulary, onChange: () => told.push(told.length) })
-  cleanups.push(layer.stop)
+  after(layer.stop)
   await settle()
   const card = hostCard(300, 400)
   await settle()
