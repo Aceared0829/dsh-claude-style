@@ -44,6 +44,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - 让决策记录的正文只引用在册的编号，决策索引写明放弃的方案归入后果一节、没有重审条件时写「无。」，lint 核对每条决策的四个小节按序齐全、重审条件非空，且在册决策引用作废编号即失败。
+- 去掉模型二级分组三处规则上多余的 !important：同一批取值已由别的规则给出，importance 场景逐条实测去掉优先级后页面没有任何变化。
 - 钠渲染引擎改为以 PolyForm Shield 1.0.0 授权：可以阅读、修改与分发，不能用来提供与本插件竞争的产品；仓库其余部分仍为 MIT，已发布的 0.17.0 不受影响，名字的来源在通知文件里写明致敬 Minecraft 的 Sodium 模组。
 - 把测试层从 CommonJS 改成 ESM，十一份测试数据表集中到 packages/testing/data/，三份字体许可证与作者清单合并成一份，宿主半的构建脚本移入 scripts/，两张螃蟹笔记帧归入 mascot/crab/，插件的表现与断言不变。
 
@@ -85,6 +86,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - Make a decision's prose cite only the decisions in force, say in the index that an abandoned option belongs under 后果 and that a decision with nothing to revisit writes 「无。」, and have lint check that every decision carries its four sections in order with a review condition that says something, and that no live decision cites a retired number.
+- Drop the redundant !important on the model picker's level-2 group rules: other rules already carry the same values, and the importance scenario measured no change on the page with the priority removed.
 - License the Sodium rendering engine under PolyForm Shield 1.0.0: read, change and redistribute it, but not to provide a product competing with this plugin; the rest of the repository stays MIT, the published 0.17.0 is unaffected, and the notice file states that the name is a tribute to Minecraft's Sodium mod.
 - Move the testing layer from CommonJS to ESM, gather its eleven data tables under packages/testing/data/, merge the three font licences and the authors list into one file, take the host half's build script into scripts/, and put the two crab laptop frames into mascot/crab/, with the plugin's behavior and assertions unchanged.
 
