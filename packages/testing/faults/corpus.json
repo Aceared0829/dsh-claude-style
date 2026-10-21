@@ -224,6 +224,13 @@
       "apply": "forward",
       "patch": "patches/intent-estimate-counts-wide-as-narrow.patch",
       "defect": "While a Chinese answer streams, the token figure under the composer grows at a third of the rate the text does."
+    },
+    {
+      "id": "intent-part-marking-reads-menu",
+      "from": "intent",
+      "apply": "forward",
+      "patch": "patches/intent-part-marking-reads-menu.patch",
+      "defect": "With the @ menu open inside the composer's overlay seat, the menu's own rows read the composer's row and cluster marks, so the meter's dock is measured off a menu row and the numbers are lifted onto the open menu."
     }
   ]
 }

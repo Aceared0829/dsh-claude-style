@@ -37,6 +37,12 @@ const LIFELINE = path.join(__dirname, 'lifeline.cjs')
 /** A console line the GPU process writes into the page on a runner without one. */
 const DRIVER_MESSAGE = /^\[\.WebGL-[^\]]*\]GL Driver Message/
 
+/** The one file the workspace holds: with none, the `@` menu has no candidate to open on. */
+function writeLaneNote(directory) {
+  fs.mkdirSync(directory, { recursive: true })
+  fs.writeFileSync(path.join(directory, 'lane-note.md'), '# Lane workspace\n\nA file the @ menu can offer.\n')
+}
+
 /**
  * Give the home a workspace of the lane's own when it has none.
  *
@@ -51,9 +57,14 @@ const DRIVER_MESSAGE = /^\[\.WebGL-[^\]]*\]GL Driver Message/
 function ensureWorkspace(home) {
   const storages = path.join(home, 'storages')
   const file = path.join(storages, 'workspace.json')
-  if (fs.existsSync(file)) return
   const directory = path.join(home, 'workspace')
-  fs.mkdirSync(directory, { recursive: true })
+  if (fs.existsSync(file)) {
+    // A home a run before this one made keeps its registry and its workspace:
+    // the note goes back, so the `@` menu has a candidate on this run too.
+    if (fs.existsSync(directory)) writeLaneNote(directory)
+    return
+  }
+  writeLaneNote(directory)
   fs.mkdirSync(storages, { recursive: true })
   const id = randomUUID()
   const now = new Date().toISOString()

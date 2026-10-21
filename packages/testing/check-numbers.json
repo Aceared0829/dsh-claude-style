@@ -1045,6 +1045,9 @@
       "the room covers the pill itself: a trigger reaching outside the node it is parked in keeps 8px clear of the row's text": [
         7
       ],
+      "a menu row is no composer row: the open menu carries none of the composer's marks": [
+        0
+      ],
       "控制台没有异常": [
         0
       ]

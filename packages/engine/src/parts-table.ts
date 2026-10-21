@@ -30,7 +30,7 @@ export interface PartsTableVocabulary {
  * part gate) and holds every part a stylesheet reads to the table here. A host
  * rename is one line in this file.
  */
-import { CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_OVERLAY_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /** Host CSS-module local name → the skin's part name. */
 export type PartTable = Record<string, string>
@@ -262,6 +262,14 @@ export interface PartRegion {
   within: string
   parts: PartTable
   /**
+   * A subtree the region does not read inside: another element of the host's,
+   * mounted in the region's own box. The element carrying the mark keeps its
+   * parts; nothing standing in it does — the composer's overlay seat holds the
+   * host's `@` and `/` menus, whose own `item` and `trailing` are not the
+   * composer's (D3, the same name in two regions).
+   */
+  skip?: string
+  /**
    * Parts read on the anchor's own element children alone — where the host puts
    * a slot's content. A local name as common as `root` cannot be read anywhere
    * inside the region: rows and tooltips have a `_root` of their own.
@@ -284,7 +292,7 @@ export function partRegions(vocabulary: PartsTableVocabulary): PartRegion[] {
     rootParts: { root: 'sidebar-root', collapsed: 'sidebar-collapsed', quietBars: 'sidebar-quiet', fading: 'sidebar-fading' },
     },
     { within: CONVERSATION_HEADER_SLOT_SELECTOR, parts: HEADER_PARTS },
-    { within: CONVERSATION_SCROLL_SELECTOR, parts: CONVERSATION_PARTS },
+    { within: CONVERSATION_SCROLL_SELECTOR, parts: CONVERSATION_PARTS, skip: COMPOSER_OVERLAY_SELECTOR },
     { within: RIGHTBAR_COLUMN_SELECTOR, parts: RIGHTBAR_PARTS },
     { within: `[${vocabulary.regions.account}], [${vocabulary.regions.hero}]`, parts: MENU_PARTS },
   ]

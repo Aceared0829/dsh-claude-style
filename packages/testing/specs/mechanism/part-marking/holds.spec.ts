@@ -8,43 +8,20 @@
  * @features engine
  * @risk After the host re-renders, a header keeps a hold mark for a tab strip it lost (or never gains it), so the skin's styling of the header, the sidebar column or the account row is wrong until a reload.
  */
-import { afterEach, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { installParts } from '@dsh-claude-style/engine/parts'
-import { holdRelations, partRegions } from '@dsh-claude-style/engine/parts-table'
+import { holdRelations } from '@dsh-claude-style/engine/parts-table'
 import { COMPOSER_CARD_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, PHASE_ATTRIBUTE, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { partRegion } from '../../fixtures/part-region'
 import { hostElement } from '../../fixtures/host-markup'
+import { pageCleanups } from '../../fixtures/page'
 import { HOLDS_ATTR, PART_ATTR, TEST_PARTS } from '../../fixtures/vocabulary'
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))
-const cleanups: (() => void)[] = []
-afterEach(() => {
-  for (const cleanup of cleanups.splice(0)) cleanup()
-  document.body.replaceChildren()
-})
+const cleanups = pageCleanups()
 
-/**
- * One region of the host's tables, read by the selector it is walked within:
- * `box(local)` builds the host's element for a local class name the region
- * names (the hash is the fixture's), and `part(local)` is the part it becomes.
- */
-function region(within: string) {
-  const found = partRegions(TEST_PARTS).find(candidate => candidate.within === within)
-  if (found === undefined) throw new Error(`no part region walked within ${within}`)
-  const table = { ...found.parts, ...found.rootParts }
-  const known = (local: string) => {
-    if (!(local in table)) throw new Error(`the region within ${within} names no class "${local}"`)
-    return local
-  }
-  return {
-    box(local: string, ...children: Node[]) {
-      const element = document.createElement('div')
-      element.className = `_${known(local)}_ab`
-      element.append(...children)
-      return element
-    },
-    part: (local: string) => table[known(local)]!,
-  }
-}
+/** One region of the host's tables, by the selector it is walked within. */
+const region = (within: string) => partRegion(within, TEST_PARTS)
 
 /** A hold word the relations table answers. */
 function hold(name: string) {
