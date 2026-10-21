@@ -58,6 +58,21 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return { sessionId, title: summary.displayTitle }
   }
 
+  /**
+   * The words' own line, in the page's pixels: the text the crumb draws, without
+   * the padding the host puts round it. A host that renders the name as an
+   * element wrapping no text of its own still answers, with that element's box.
+   */
+  function wordsBox(seat: HTMLElement) {
+    const words = seat.querySelector<HTMLElement>(WORDS)
+    if (words === null) return inPageBox(seat.getBoundingClientRect())
+    const range = document.createRange()
+    range.selectNodeContents(words)
+    const ink = range.getBoundingClientRect()
+    range.detach()
+    return inPageBox(ink.width > 0 ? ink : words.getBoundingClientRect())
+  }
+
   /** Take the tip away from the page. */
   function hideTip() {
     if (tip === null) return
@@ -145,16 +160,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     input.className = FIELD
     input.value = request.title
     input.setAttribute('aria-label', copy('renameSession'))
-    // The segment's own box: for the session the header shows it is the title's
-    // words, and under a child session it also holds the lineage control. The
-    // field's width follows its draft from the words' own width on (the face sets
-    // `field-sizing: content`), so a short name is not padded into a card and a
-    // long one still reads to its end.
-    const box = inPageBox(spot.getBoundingClientRect())
-    input.style.left = `${box.left}px`
-    input.style.top = `${box.top}px`
-    input.style.minWidth = `${box.width}px`
-    input.style.minHeight = `${box.height}px`
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault()
@@ -169,6 +174,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     })
     input.addEventListener('blur', commit)
     document.body.append(input)
+    // The words' own text, not the segment's box: the host pads that box, and the
+    // field draws the same words again, so it takes the words' line and grows on
+    // both sides by its own ring and padding, which the sheet sets.
+    const ink = wordsBox(spot)
+    const face = getComputedStyle(input)
+    const startX = Number.parseFloat(face.paddingLeft) + Number.parseFloat(face.borderLeftWidth)
+    const startY = Number.parseFloat(face.paddingTop) + Number.parseFloat(face.borderTopWidth)
+    const left = ink.left - startX
+    const top = ink.top - startY
+    input.style.left = `${left}px`
+    input.style.top = `${top}px`
+    input.style.minWidth = `${ink.width + startX * 2}px`
+    input.style.minHeight = `${ink.height + startY * 2}px`
     field = input
     openedFor = request.sessionId
     input.focus()

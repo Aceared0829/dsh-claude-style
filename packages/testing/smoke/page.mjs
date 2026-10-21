@@ -237,9 +237,9 @@ function page(name, tier, cases, probe = PROBE) {
         '<div class="_titleCluster_s_1" style="display:flex;align-items:center;flex:1 1 0%">' +
         '<nav class="_crumbs_s_1" style="display:flex;align-items:center;height:28px">' +
         '<span class="_crumbSeg_s_1" style="display:inline-flex;padding-right:8px">' +
-        '<button type="button" class="_crumb_s_1" style="background:none;border:0;padding:0;font:inherit;color:inherit">parent session</button></span>' +
+        '<button type="button" class="_crumb_s_1" style="background:none;border:0;padding:4px 8px;font:inherit;font-size:14px;color:inherit">parent session</button></span>' +
         '<span class="_crumbSeg_s_1" style="display:inline-flex">' +
-        '<span class="_crumb_s_1 _crumbCurrent_s_1">smoke session</span></span>' +
+        '<span class="_crumb_s_1 _crumbCurrent_s_1" style="padding:4px 8px;font-size:14px;font-weight:500">smoke session</span></span>' +
         '</nav></div></div></header>'
     : ''
   // The caret case drives both editable surfaces: the shared contenteditable
