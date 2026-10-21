@@ -15,7 +15,6 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
-- 修复桌面窗口里 ds-bot 的 Bot 界面占住页面时 Chat / Code 切换消失的问题：切换器改留在 ds-bot 自己的顶行，不再按标题栏里本主题侧栏列的标记定位，从 Bot 界面回到代码界面的路一直都在。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -26,7 +25,6 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
-- Fix the Chat / Code switch disappearing when ds-bot's Bot surface has the page in the desktop window: the switch now stays in ds-bot's own top row instead of taking the caption strip through this theme's sidebar-column mark, so the way back to the code interface stays on screen.
 
 ## [0.18.2] - 2026-10-21
 
