@@ -194,7 +194,8 @@ function statsOverlayScenario({ check }) {
           JSON.stringify(withMenu.measured)),
         check('closing the menu puts the page back where it stood',
           onTheRow(withMenu.closed) && withMenu.closed.offset === resting.offset,
-          JSON.stringify({ closed: withMenu.closed, resting })),        check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
+          JSON.stringify({ closed: withMenu.closed, resting })),
+        check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },
   }
