@@ -1,6 +1,6 @@
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { CHAT_PROSE_ATTR } from '../../constants'
-import { CHAT_CALL_SELECTOR, FLOW_BLOCK_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { ASSISTANT_STEP_KIND, CHAT_CALL_SELECTOR, FLOW_BLOCK_SELECTOR, FLOW_KIND_ATTRIBUTE, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR, TOOL_CALL_KIND } from '@dsh-claude-style/contracts/dom'
 
 /** The host's markdown renderer's own marks: the prose it sets is set by its rules. */
 const RENDERED = '[data-dsh-claude-part~="markdown"], [data-markdown-variant], ._markdown_'
@@ -20,6 +20,11 @@ const RENDERED = '[data-dsh-claude-part~="markdown"], [data-markdown-variant], .
  * on the body inside it, and neither is the conversation's prose — the steps in
  * there are the skin's process rows, laid out by the fold.
  *
+ * Only the steps of a turn and the calls a tool made are read: the reader's own
+ * messages, a turn's process section as a whole, its tail and the waiting line
+ * are the host's boxes with their own layout, and a face written onto them would
+ * reach the controls those rows hold.
+ *
  * The mark goes on the run and on the boxes under it that hold plain text, left
  * out from under anything the renderer has drawn. A thinking row is passed over
  * whole: what it holds is the reasoning the reader watches, and its window's own
@@ -32,7 +37,7 @@ const RENDERED = '[data-dsh-claude-part~="markdown"], [data-markdown-variant], .
  * @returns teardown: the mark comes off.
  */
 export function createChatProse() {
-  const isFlowRow = (element: Element) => (element.matches(FLOW_BLOCK_SELECTOR) || element.matches(CHAT_CALL_SELECTOR))
+  const isFlowRow = (element: Element) => element.matches(`${FLOW_BLOCK_SELECTOR}:is([${FLOW_KIND_ATTRIBUTE}="${ASSISTANT_STEP_KIND}"], [${FLOW_KIND_ATTRIBUTE}="${TOOL_CALL_KIND}"]), ${CHAT_CALL_SELECTOR}`)
     && !element.matches(PROCESS_GROUP_SELECTOR)
     && element.parentElement !== null
     && !element.parentElement.matches(PROCESS_GROUP_SELECTOR)
@@ -43,15 +48,33 @@ export function createChatProse() {
     && box.querySelector(RENDERED) === null
     && ((box.textContent ?? '').trim() !== '' || box.querySelector('img, table, pre, ul, ol') !== null)
 
-  /** Mark one run and the boxes inside it that hold plain text. */
+  /**
+   * Mark one run and the boxes that hold its plain text, wherever the host has
+   * put them under the run: a step's own node may hand the text down a chain of
+   * boxes with no mark of their own, and only the renderer's own box ends that.
+   */
   const dress = (run: Element) => {
     if (!isFlowRow(run)) return
-    let holds = false
-    for (const child of run.children) {
-      const text = holdsPlainText(child)
-      if (text !== child.hasAttribute(CHAT_PROSE_ATTR)) child.toggleAttribute(CHAT_PROSE_ATTR, text)
-      holds = holds || text
+
+    const walk = (box: Element): boolean => {
+      let holds = false
+      for (const child of box.children) {
+        const marked = holdsPlainText(child)
+        if (marked) {
+          if (!child.hasAttribute(CHAT_PROSE_ATTR)) child.setAttribute(CHAT_PROSE_ATTR, '')
+          holds = true
+          continue
+        }
+        // The renderer's own box is left exactly as the host draws it, and a run
+        // standing inside one — a tool call in a group — is not this reading's.
+        if (child.matches(RENDERED)) continue
+        if (child.querySelector(RENDERED) !== null) holds = walk(child) || holds
+        else if (child.hasAttribute(CHAT_PROSE_ATTR)) child.removeAttribute(CHAT_PROSE_ATTR)
+      }
+      return holds
     }
+
+    const holds = walk(run)
     if (holds !== run.hasAttribute(CHAT_PROSE_ATTR)) run.toggleAttribute(CHAT_PROSE_ATTR, holds)
   }
 
