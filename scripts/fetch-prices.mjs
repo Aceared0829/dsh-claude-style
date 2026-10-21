@@ -214,19 +214,23 @@ function scheduleFromCatalog() {
 }
 
 /**
- * The fallback price table: every model in the public catalogue that carries a
- * positive list price, as `[input, cacheRead, output]` USD per million tokens.
+ * The fallback price table: one list price per model, as
+ * `[input, cacheRead, output]` USD per million tokens.
  *
- * A model id served by several vendors keeps the first positive entry in
- * provider order: the point is coverage, not whose list price it is. Models
- * whose entry is a plan listing (every number zero) are left out, so a session
- * on them shows nothing rather than a zero.
+ * The public catalogue lists the same model under many vendors, each with its
+ * own price. Coarse matching folds them into one entry per bare model id, the
+ * median of each field across the entries that carry a positive price: the
+ * result does not depend on provider order, an outlier reseller neither wins
+ * nor is lost, and the table has one row per model instead of one per route.
+ * Plan listings (every number zero) are left out, so a session on them shows
+ * nothing rather than a zero.
  */
 async function catalogPrices() {
   const body = JSON.parse(await load(CATALOG_URL))
   const providers = body !== null && typeof body === 'object' ? body : {}
-  const priced = new Map()
-  for (const providerId of Object.keys(providers).sort()) {
+  /** Bare model id → the positive prices the vendors list for it. */
+  const entries = new Map()
+  for (const providerId of Object.keys(providers)) {
     const models = providers[providerId]?.models
     if (models === null || typeof models !== 'object') continue
     for (const [id, entry] of Object.entries(models)) {
@@ -237,12 +241,30 @@ async function catalogPrices() {
       const cacheRead = cost.cache_read === undefined ? input : Number(cost.cache_read)
       if (![input, output, cacheRead].every(value => Number.isFinite(value) && value >= 0)) continue
       if (input === 0 && output === 0) continue
-      const key = id.trim().toLowerCase()
-      if (key === '' || priced.has(key)) continue
-      priced.set(key, [input, cacheRead, output].join(' '))
+      // The vendor's own prefix is not part of the model: `alibaba/kimi-k3`
+      // and `kimi-k3` are one model, and a session id may name either.
+      const key = id.trim().toLowerCase().replace(/^.*\//, '')
+      if (key === '') continue
+      let held = entries.get(key)
+      if (held === undefined) {
+        held = []
+        entries.set(key, held)
+      }
+      held.push({ input, cacheRead, output })
     }
   }
-  return Object.fromEntries([...priced].sort(([a], [b]) => (a < b ? -1 : 1)))
+  /** The middle of a field's values, so one reseller's outlier does not set the row. */
+  const median = (values) => {
+    const sorted = [...values].sort((a, b) => a - b)
+    const middle = sorted.length >> 1
+    const value = sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+    return Number(value.toFixed(6))
+  }
+  const catalog = {}
+  for (const [key, prices] of entries) {
+    catalog[key] = [median(prices.map(price => price.input)), median(prices.map(price => price.cacheRead)), median(prices.map(price => price.output))].join(' ')
+  }
+  return Object.fromEntries(Object.entries(catalog).sort(([a], [b]) => (a < b ? -1 : 1)))
 }
 
 const zh = parsePage(await load(SOURCE.zh), SOURCE.zh)
