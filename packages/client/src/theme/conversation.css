@@ -1,0 +1,14 @@
+/* ---------- the conversation's rows: what the reader cannot see is not laid out ---------- */
+/* A long transcript is laid out whole on every measurement: the host's follow reads
+   scrollHeight after each streamed batch, and every such read pays for every row.
+   content-visibility: auto skips a row's style, layout and paint while it stands far
+   from the viewport, and contain-intrinsic-size keeps the row's box in the scroller's
+   range meanwhile: the `auto` keyword remembers the height the row had when it was last
+   rendered, so a row that has stood on screen keeps its real size, and the fallback is
+   only for a row nothing has rendered yet. The streamed tail is on screen and stays laid
+   out; the rows behind it stop costing a layout each. */
+
+body[data-dsh-claude-style] [data-chat-flow-kind] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
