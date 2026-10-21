@@ -25,7 +25,7 @@
       var CONTROLS = 140
       var AIR = 8
       var BAND = 40
-      var TUCK = 2
+      var GAP = 8
       // The skin's own optical drop below the caption row's middle: the title's
       // text draws 20px in a 28px box, so the box sits 2px low to read centred.
       var TITLE_DROP = 2
@@ -111,7 +111,7 @@
         controls: CONTROLS,
         air: AIR,
         band: BAND,
-        tuck: TUCK,
+        gap: GAP,
         titleDrop: TITLE_DROP,
         headerTop: HEADER_TOP,
         headerInset: HEADER_INSET,
