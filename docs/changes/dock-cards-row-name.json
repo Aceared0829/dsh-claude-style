@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "把设置页「侧栏」页的「面板悬浮卡片」改名为「右侧栏卡片布局」，开关本身与存下的设置值不变。",
-  "en": "Rename the Sidebar tab's Float docked panels switch to Right sidebar card layout, with the switch and the stored value unchanged."
-}

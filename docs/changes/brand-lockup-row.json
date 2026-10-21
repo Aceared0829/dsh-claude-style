@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 3,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "把设置页外观标签的「品牌名称」「标志图片」「文字标志」「图片颜色」四行合并成一行「品牌标志」，排在外观标签的最前面：直接把侧栏的品牌区搬进设置页，标志与名称居中，图片颜色作为同一块的子行；指针移到标志或名称上即出现灰色矩形，点一下就在原处更换图片或输入名称，四行原有的开关与存下的值不变。",
-  "en": "Merge the Appearance tab's Brand name, Brand mark, Wordmark and Image colours rows into one Brand row that opens the tab: the sidebar's brand area itself now stands in the settings page with its mark and name centred, a grey rectangle follows the pointer onto the mark or the name, a press replaces the image or types the name in place, and the image colours sit under it as a sub-row; the four rows' switches and stored values are unchanged."
-}

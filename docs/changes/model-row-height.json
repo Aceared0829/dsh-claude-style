@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 4,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "把模型选择器里模型行的高度从 30px 收到 27px，字号与行内文字不变，一级与二级菜单同步。",
-  "en": "Tighten the model picker's model rows from 30px to 27px, with the font sizes and the text inside them unchanged, on both levels of the menu."
-}

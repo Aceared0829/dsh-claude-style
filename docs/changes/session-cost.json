@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "新增对话统计上的会话费用：宿主半按每次结算的发生时刻与模型计价，人民币与美元两张官方价表都随快照下发，设置里可选显示币种；价格快照与峰值费率目录由仓库的定时工作流抓取，安装端每天从仓库更新一次，包内副本兜底。",
-  "en": "Add the session's cost to the conversation statistics: the host half prices every settlement at its own instant and route, both official price tables ship in the snapshot, and the settings choose the currency; a scheduled workflow keeps the price snapshot and the peak rate catalog in the repository, every install refreshes from it once a day, and the packaged copies answer when it cannot be reached."
-}

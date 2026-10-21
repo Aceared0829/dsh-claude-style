@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.18.0] - 2026-10-21
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.18.0) | [English](#en-0.18.0)
+
+<h3 id="cn-0.18.0">新增功能</h3>
 
 - 新增对话统计上的会话费用：宿主半按每次结算的发生时刻与模型计价，人民币与美元两张官方价表都随快照下发，设置里可选显示币种；价格快照与峰值费率目录由仓库的定时工作流抓取，安装端每天从仓库更新一次，包内副本兜底。
 
@@ -48,7 +50,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 钠渲染引擎改为以 PolyForm Shield 1.0.0 授权：可以阅读、修改与分发，不能用来提供与本插件竞争的产品；仓库其余部分仍为 MIT，已发布的 0.17.0 不受影响，名字的来源在通知文件里写明致敬 Minecraft 的 Sodium 模组。
 - 把测试层从 CommonJS 改成 ESM，十一份测试数据表集中到 packages/testing/data/，三份字体许可证与作者清单合并成一份，宿主半的构建脚本移入 scripts/，两张螃蟹笔记帧归入 mascot/crab/，插件的表现与断言不变。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.18.0">New Features</h3>
 
 - Add the session's cost to the conversation statistics: the host half prices every settlement at its own instant and route, both official price tables ship in the snapshot, and the settings choose the currency; a scheduled workflow keeps the price snapshot and the peak rate catalog in the repository, every install refreshes from it once a day, and the packaged copies answer when it cannot be reached.
 

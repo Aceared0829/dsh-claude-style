@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 2,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "模型选择第二层的卡片在搜索时按新列表的高度平滑改变大小，不再跳变；把动画设为「减弱」时立即落位。",
-  "en": "Make the model picker's second-level card resize smoothly to the height of the list a search leaves, instead of jumping; under Reduced motion it lands at once."
-}

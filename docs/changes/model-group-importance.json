@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "去掉模型二级分组三处规则上多余的 !important：同一批取值已由别的规则给出，importance 场景逐条实测去掉优先级后页面没有任何变化。",
-  "en": "Drop the redundant !important on the model picker's level-2 group rules: other rules already carry the same values, and the importance scenario measured no change on the page with the priority removed."
-}

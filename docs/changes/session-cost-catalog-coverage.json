@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "扩大费用的模型覆盖：快照附带一份公共模型目录的刊例价（美元/百万 token），官方价表没有的模型按它计价，人民币按快照内的固定汇率折算；Kimi K3 这类订阅渠道的模型也按 API 刊例价出数，不再一律留空。",
-  "en": "Widen the cost figure's model coverage: the snapshot carries the public catalogue's list prices (USD per million tokens), a model the official table does not price falls back to it, and CNY converts at the snapshot's fixed rate; subscription-channel models such as Kimi K3 now show their API list-price equivalent instead of nothing."
-}

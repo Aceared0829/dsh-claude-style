@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复切换推理等级时档位按钮的宽度随新名字伸缩、把模型名与已经打开的档位弹层一起挤动的问题：按钮按当前档位表里最宽的名字预留宽度，换档时按钮宽度与弹层位置都不动。",
-  "en": "Fix the effort button taking each level's own width, which pushed the model name and the open effort card sideways whenever the level changed: the button now reserves the widest name of its ladder, so a switch leaves both its width and the card's place alone."
-}

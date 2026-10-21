@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "修复上下文占用与统计收进弹出面板时，输入框的 @ 菜单把数字那一行顶到菜单上的问题：部件标记不再把宿主挂在输入卡片浮层座位里的菜单读成输入框自己的行与右侧控件，菜单打开时数字仍站在工具栏那一行。",
-  "en": "Fix the composer's numbers riding up onto the @ menu when the statistics live in the context popover: the part walk no longer reads the host's own menu, mounted in the input card's overlay seat, as the composer's row and trailing cluster, so the numbers stay on the toolbar row while a menu is open."
-}

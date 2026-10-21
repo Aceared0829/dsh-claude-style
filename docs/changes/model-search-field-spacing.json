@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "修复模型选择器搜索框的三处问题：搜索框紧贴卡片上沿、输入时光标高于文字、清空后光标不回最左边。搜索框自带一段上边距，单行输入框的光标按内容框居中后与文字齐平，清空时把插入点放回开头并重新测量光标。",
-  "en": "Fix three faults of the model picker's search field: it sat flush against the card's top edge, its drawn caret stood above the text, and clearing left the caret where the old words ended. The field now carries its own inset above, a single-line field's caret is centred in its content box, and a clear puts the insertion point back at the start and measures the caret again."
-}

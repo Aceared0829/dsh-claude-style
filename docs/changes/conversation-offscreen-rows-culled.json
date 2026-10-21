@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 5,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "改善长会话里流式输出的流畅度：离视口的历史条目不再参与样式计算、布局与绘制，滚动的总高度仍按它们各自的尺寸保留。",
-  "en": "Improve streaming smoothness in long conversations: rows outside the viewport no longer take part in style calculation, layout or paint, while the scroll range keeps their own sizes."
-}

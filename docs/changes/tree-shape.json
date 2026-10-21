@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "把测试层从 CommonJS 改成 ESM，十一份测试数据表集中到 packages/testing/data/，三份字体许可证与作者清单合并成一份，宿主半的构建脚本移入 scripts/，两张螃蟹笔记帧归入 mascot/crab/，插件的表现与断言不变。",
-  "en": "Move the testing layer from CommonJS to ESM, gather its eleven data tables under packages/testing/data/, merge the three font licences and the authors list into one file, take the host half's build script into scripts/, and put the two crab laptop frames into mascot/crab/, with the plugin's behavior and assertions unchanged."
-}

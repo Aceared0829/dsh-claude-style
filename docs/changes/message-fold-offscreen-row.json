@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-20",
-  "external": false,
-  "zh": "修复读者自己发的那条消息滚动出视口后不再出现高度折叠控制：这类消息所在的流条目保留排版，助手行仍跳过视口之外的排版。",
-  "en": "Fix the fold control under a message the reader sent going missing once that message scrolled out of view: rows holding the reader's own messages keep their layout, while assistant rows still skip layout off screen."
-}
