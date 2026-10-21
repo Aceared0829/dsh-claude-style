@@ -126,6 +126,22 @@ export const CHAT_FOLLOW_ATTR = 'data-dsh-claude-chat-follow'
  */
 export const FOLLOW_HOLD_ATTR = 'data-dsh-claude-follow-hold'
 /**
+ * On the conversation's scroller while the chat follow is installed and the
+ * position it took had not yet fallen a screen behind the end
+ * (packages/client/src/features/chat-follow/chat-follow.ts) — the page as it
+ * stands at install, which a plugin reload during a turn carries from the copy
+ * that went away.
+ */
+export const FOLLOW_START_ATTR = 'data-dsh-claude-follow-start'
+/**
+ * On a flow's own row and the boxes under it that hold plain text, for the lines a
+ * turn says between its process steps
+ * (packages/client/src/features/chat-fold/chat-prose.ts). The stylesheet sets them
+ * as the conversation's prose: face, leading and a gap between paragraphs
+ * (packages/client/src/theme/typography.css).
+ */
+export const CHAT_PROSE_ATTR = 'data-dsh-claude-prose'
+/**
  * On a container the reader has taken over with his own scrolling
  * (packages/client/src/shared/scroll-owner.ts), until he comes back to its end. The
  * waiting line's pin (packages/client/src/features/chat-wait/chat-wait.css) reads it: a

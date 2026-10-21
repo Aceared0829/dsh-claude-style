@@ -102,6 +102,21 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="markdown"] {
   line-height: calc(23px + var(--dsh-content-font-delta, 0px));
 }
 
+/* Prose the host keeps in the answer without its markdown renderer — a line a
+   turn says between two of its process steps — is the conversation's prose all
+   the same, and reads as one block against it: the serif face, the same leading,
+   and the markdown's own gap between paragraphs. The run is a flow row the skin
+   marks (chat-prose.ts), and the mark rides on the row and on the boxes inside
+   it, so the rule reaching the row sets what its lines are written in. */
+body[data-dsh-claude-style] [data-dsh-claude-prose] {
+  font-family: var(--dsh-claude-font-prose);
+  line-height: calc(23px + var(--dsh-content-font-delta, 0px));
+}
+
+body[data-dsh-claude-style] [data-dsh-claude-prose] > :is(p, ul, ol, dl, pre, blockquote, table) {
+  margin-block: 12px;
+}
+
 /* Claude keeps 12px between blocks, not the host's 16px; first/last-child zeroing
    stays with the host's !important rules. */
 body[data-dsh-claude-style] [data-dsh-claude-part~="markdown"] p {
