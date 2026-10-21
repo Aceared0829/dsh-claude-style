@@ -13,7 +13,7 @@ import { expect, test } from 'vitest'
 import { installParts } from '@dsh-claude-style/engine/parts'
 import { COMPOSER_OVERLAY_SELECTOR, CONVERSATION_SCROLL_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { partRegion } from '../../fixtures/part-region'
-import { hostElement } from '../../fixtures/host-markup'
+import { hostAttribute, hostElement } from '../../fixtures/host-markup'
 import { pageCleanups } from '../../fixtures/page'
 import { PART_ATTR, TEST_PARTS } from '../../fixtures/vocabulary'
 
@@ -22,8 +22,7 @@ const cleanups = pageCleanups()
 const conversation = partRegion(CONVERSATION_SCROLL_SELECTOR, TEST_PARTS)
 const marksIn = (root: Element) => root.querySelectorAll(`[${PART_ATTR}]`).length
 /** The page: the conversation scroller holding the card, its overlay seat and its toolbar row. */
-function mountComposer(seatChildren: Node[]) {
-  const seat = hostElement(COMPOSER_OVERLAY_SELECTOR)
+function mountComposer(seatChildren: Node[], seat: HTMLElement = hostElement(COMPOSER_OVERLAY_SELECTOR)) {
   seat.append(...seatChildren)
   const scroller = hostElement(CONVERSATION_SCROLL_SELECTOR)
   const stack = conversation.box('composerStack')
@@ -45,6 +44,16 @@ const expectComposerMarked = () => {
 test('a menu mounted in the overlay seat before the walk plays none of the composer\'s parts', () => {
   const seat = mountComposer([conversation.box('row', conversation.box('trailing'))])
   cleanups.push(installParts(TEST_PARTS))
+  expect(marksIn(seat)).toBe(0)
+  expectComposerMarked()
+})
+
+test('the seat keeps the part its own class names carry, while the menu mounted in it keeps none', () => {
+  const seat = conversation.box('overlayAnchor')
+  seat.setAttribute(hostAttribute(COMPOSER_OVERLAY_SELECTOR), '')
+  mountComposer([conversation.box('row', conversation.box('trailing'))], seat)
+  cleanups.push(installParts(TEST_PARTS))
+  expect(seat.getAttribute(PART_ATTR)).toBe(conversation.part('overlayAnchor'))
   expect(marksIn(seat)).toBe(0)
   expectComposerMarked()
 })
