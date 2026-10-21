@@ -1375,11 +1375,6 @@
       "prop": "font-weight",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-foot{border-top-color:var(--dsw-alias-border-l2)!}|border-top-color": {
-      "selector": "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-foot",
-      "prop": "border-top-color",
-      "verdict": "unmatched"
-    },
     "body[data-dsh-claude-style] .dsh-claude-turn-rail[data-fade-top]{mask-image:linear-gradient(transparent 0,#000 24px 100%)!}|mask-image": {
       "selector": "body[data-dsh-claude-style] .dsh-claude-turn-rail[data-fade-top]",
       "prop": "mask-image",

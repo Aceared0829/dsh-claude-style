@@ -291,7 +291,7 @@ body[data-dsh-claude-style] .dsh-claude-file-io-section {
 body[data-dsh-claude-style] .dsh-claude-file-io-divider {
   flex: none;
   height: 0.5px;
-  background: var(--dsw-alias-border-l2);
+  background: var(--dsh-claude-divider, var(--dsw-alias-border-l2));
 }
 
 body[data-dsh-claude-style] .dsh-claude-file-io-label {

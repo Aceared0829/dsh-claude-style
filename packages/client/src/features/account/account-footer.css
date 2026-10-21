@@ -1,16 +1,13 @@
 /* ---------- Claude Code layout: account row & floating popover ---------- */
-/* footArea positioning with crisp hairline border spanning entire sidebar */
+/* The account row's separator spans the entire sidebar. */
 body[data-dsh-claude-style] [data-dsh-claude-part~="foot-area"] {
   position: relative;
   overflow: visible;
   margin: 0 calc(-1 * var(--dsh-sidebar-inline-padding, 12px)) -6px;
   padding: 8px var(--dsh-sidebar-inline-padding, 12px) 6px;
-  border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l1, #e8e6dc));
   background: transparent;
   box-sizing: border-box;
-}
-body[data-dsh-claude-style][data-ds-dark-theme] [data-dsh-claude-part~="foot-area"] {
-  border-top-color: var(--dsw-alias-border-l2);
 }
 
 /* Account trigger button in sidebar */
@@ -441,7 +438,7 @@ body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-footer"] {
   margin-top: 2px;
   padding-top: 2px;
-  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
 }
 
 /* Our injected container and header already use the shared popover rules; the
