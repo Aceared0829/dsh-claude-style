@@ -39,6 +39,9 @@ function readFragments() {
   const fragments = []
   if (!fs.existsSync(CHANGES)) return fragments
   for (const name of fs.readdirSync(CHANGES)) {
+    // dsh-ops leaves a hidden `.dsh-ops-update-<hash>.lock` beside a file it wrote;
+    // it is no fragment, and reading it as one fails every commit in this directory.
+    if (name.startsWith('.')) continue
     if (!/^[a-z0-9][a-z0-9-]*\.json$/.test(name)) throw new Error(`changelog: docs/changes/${name} is not <slug>.json`)
     const fragment = JSON.parse(fs.readFileSync(path.join(CHANGES, name), 'utf8'))
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fragment.at ?? '')) throw new Error(`changelog: docs/changes/${name} needs an "at" date (YYYY-MM-DD)`)
