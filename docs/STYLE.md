@@ -395,6 +395,16 @@ it passes. The transcript, the composer's draft and a text field inside the
 chrome keep their own selection, which Chromium grants an editing host under a
 locked ancestor.
 
+The session title is the session's name, and a press on it renames the session.
+The pointer over the title's last crumb raises a plate under the words — the
+host's own crumb already carries the padding and the radius — with a tip under
+the segment naming the press, in the label ink on the canvas tone the usage
+panel's day tip uses. The segment carries the tip rather than the words because
+the host clips a crumb's overflow for its ellipsis. The press opens a field over
+the words at the header's own size and radius, standing in the page's own space
+so the reader's zoom keeps it on the title; a rename the host refuses keeps the
+field, ringed in the host's error tone.
+
 ## Markdown material
 
 A quote is a **container**, not a link: it keeps the prose face on a neutral bar

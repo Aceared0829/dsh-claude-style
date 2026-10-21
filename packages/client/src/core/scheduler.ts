@@ -45,6 +45,7 @@ export interface Handles {
   caret: FeatureHandle
   viewTabs: FeatureHandle
   headerBand: FeatureHandle
+  sessionTitle: FeatureHandle
   settingsNav: FeatureHandle
   sodium: FeatureHandle
   surface: FeatureHandle

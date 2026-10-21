@@ -32,6 +32,7 @@ const STAND_IN_PARTS = [
   'stats-projections.js',
   'workspaces.js',
   'sessions.js',
+  'session-title.js',
   'model-directory.js',
   'config-forms.js',
   'slots.js',
@@ -225,6 +226,21 @@ function page(name, tier, cases, probe = PROBE) {
       '<div id="debugTail"><button type="button">Back to the end</button></div></div>' +
       '<div data-step-process><div data-step-process-body><div data-step-process-content style="height:400px">capped</div></div></div>' +
       '<div data-step-process data-group-expanded-mode="detailed"><div data-step-process-body><div data-step-process-content style="height:400px">expanded</div></div></div>'
+    : ''
+  // The conversation header the session-title spec presses: the host's own
+  // title row carrying a breadcrumb of one parent segment that opens its own
+  // session and the segment of the session the header shows. The skin reads the
+  // row's parts from these class names (D3).
+  var sessionTitleArea = name === 'session-title'
+    ? '<header class="_header_s_1" data-slot="conversation.header" style="position:relative;padding:10px">' +
+        '<div class="_titleRow_s_1" style="display:flex;align-items:center;height:30px">' +
+        '<div class="_titleCluster_s_1" style="display:flex;align-items:center;flex:1 1 0%">' +
+        '<nav class="_crumbs_s_1" style="display:flex;align-items:center;height:28px">' +
+        '<span class="_crumbSeg_s_1" style="display:inline-flex">' +
+        '<button type="button" class="_crumb_s_1">parent session</button></span>' +
+        '<span class="_crumbSeg_s_1" style="display:inline-flex">' +
+        '<span class="_crumb_s_1 _crumbCurrent_s_1">smoke session</span></span>' +
+        '</nav></div></div></header>'
     : ''
   // The caret case drives both editable surfaces: the shared contenteditable
   // composer input, and a plain textarea under a composer seat — the shape a
@@ -470,6 +486,7 @@ ${dock}
 ${heroLayout}
 ${hostControls}
 ${caretArea}
+${sessionTitleArea}
 ${chatSubmit}
 ${dockArea}
 ${foldArea}

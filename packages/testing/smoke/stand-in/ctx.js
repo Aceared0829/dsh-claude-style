@@ -25,12 +25,13 @@
       if (name === 'configForms') return forms
       if (name === 'remote.account') return account
       if (name === 'remote.permissionPresets') return permissionPresets
-      if (name === 'remote') return CASE === 'desktop' ? remote : undefined
+      if (name === 'remote') return CASE === 'desktop' || CASE === 'session-title' ? remote : undefined
+      if (name === 'remote.session') return CASE === 'session-title' ? remote.session : undefined
       if (name === 'sessions') return sessions
       if (name === 'modelDirectories') return host.modelDirectories
       if (name === 'workspaces') return workspacesService
       if (name === 'uiConversation') return deepy !== undefined ? deepy.conversation : turnNav !== undefined ? turnNav.conversation : waitChat
-      if (name === 'uiSession') return deepy !== undefined ? deepy.uiSession : undefined
+      if (name === 'uiSession') return deepy !== undefined ? deepy.uiSession : CASE === 'session-title' ? { current: { value: { key: 'smoke-session' } } } : undefined
       if (name === 'locale') return localeService
       if (name === 'slots') return slotRegistry
       return undefined

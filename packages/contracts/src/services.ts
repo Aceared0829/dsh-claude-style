@@ -303,6 +303,17 @@ export interface HostRemoteListAnswer {
 }
 
 /**
+ * What the session remote's rename answers: whether it worked, and the title it
+ * accepted, with the event sequence that carries it. The host normalizes the
+ * text, so `value.title` is what the row and the header will show.
+ */
+export interface HostSessionRenameAnswer {
+  ok?: boolean
+  value?: { title?: string, seq?: number }
+  error?: { message?: string }
+}
+
+/**
  * One event of a session's feed, of the four types the skin reads: a turn
  * ending, a tool result, and a compaction starting or finishing. A host that
  * adds another type is ignored by the reader, which compares the type first.

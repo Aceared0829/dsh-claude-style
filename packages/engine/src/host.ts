@@ -1,5 +1,5 @@
 import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
 
@@ -442,6 +442,18 @@ export function hostRemoteAccount(lookup: HostServiceLookup | null | undefined):
 /** The session service behind the remote: the list, and the shown session. */
 export function hostRemoteSession(lookup: HostServiceLookup | null | undefined): HostValue {
   return lookup?.get('remote.session')
+}
+
+/**
+ * One session's title, written through the host's own rename (`session.rename`,
+ * the call behind the host's rename dialog). Null where the host carries no
+ * session remote or no rename on it: a host older than the method keeps the
+ * title its own header draws.
+ */
+export function hostRenameSession(lookup: HostServiceLookup | null | undefined, sessionId: string, title: string): Promise<HostSessionRenameAnswer> | null {
+  const session = hostRemoteSession(lookup)
+  if (session === null || session === undefined || typeof session.rename !== 'function') return null
+  return session.rename({ sessionId, title }) as Promise<HostSessionRenameAnswer>
 }
 
 /** The permission presets the host serves, behind the remote. */
