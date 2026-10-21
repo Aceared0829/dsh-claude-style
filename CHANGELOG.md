@@ -4,14 +4,18 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.18.1] - 2026-10-21
 
-<h3 id="cn-unreleased">问题修复</h3>
+[中文](#cn-0.18.1) | [English](#en-0.18.1)
 
+<h3 id="cn-0.18.1">问题修复</h3>
+
+- 修复页面缩放不为 100% 时宿主自己画的浮层偏到别处：会话行的信息卡片、宿主的菜单这类浮层把量到的位置直接写进坐标，在缩放下又被放大一次，于是偏离它所属的那一行，倍率越大偏得越远；现在这些浮层由皮肤用一段位移带回量到的位置，尺寸仍随缩放放大，回到 100% 时位移撤掉。
 - 修复收起的一轮里，一段推理正文重新出现在最终回答中：会话行离开视口时不再参与排版，留下的是估算的高度，并占出了位置；最终回答、以及宿主收起的行已不在这条规则里。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-0.18.1">Bug Fixes</h3>
 
+- Fix the floating cards the host draws landing off their row whenever the page scale is not 100%: a card measures its anchor in the viewport's pixels and writes that box as its position, which the scale then multiplies a second time, so it drifts away from the row it belongs to by the factor of the scale. Such cards are carried back to where they were measured, keep the size the scale asks for, and lose the offset when the scale returns to 100%.
 - Fix a stretch of reasoning reappearing inside a folded turn's final answer: rows outside the viewport left the layout to an estimate of their height and so took up room they do not take. The final answer and the rows the host has folded are no longer under that rule.
 
 ## [0.18.0] - 2026-10-21

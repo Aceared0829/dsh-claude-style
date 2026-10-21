@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复收起的一轮里，一段推理正文重新出现在最终回答中：会话行离开视口时不再参与排版，留下的是估算的高度，并占出了位置；最终回答、以及宿主收起的行已不在这条规则里。",
-  "en": "Fix a stretch of reasoning reappearing inside a folded turn's final answer: rows outside the viewport left the layout to an estimate of their height and so took up room they do not take. The final answer and the rows the host has folded are no longer under that rule."
-}
