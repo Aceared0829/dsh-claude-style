@@ -557,13 +557,14 @@ async function hostHalf() {
   const missing = await request(costHost, '/dsh-claude-style/session-cost?id=no-such-session', 'GET', '', browser)
   check('a session the host cannot read answers no figure rather than zero',
     missing.status === 200 && JSON.parse(missing.body).value === null, JSON.stringify(missing))
-  // The catalogue's list price for kimi-k3 is 3/3/15 USD per million tokens:
-  // one million output tokens is 15 USD, and 108 CNY at the snapshot's rate.
+  // The catalogue's USD list price for kimi-k3 is 3/3/15 per million tokens,
+  // and its vendor publishes a CNY line of 20/2/100: one million output tokens
+  // is 15 USD and 100 CNY, with the published line answering as it stands.
   const catalogAnswer = await request(costHost, '/dsh-claude-style/session-cost?id=session-catalog', 'GET', '', browser)
   const catalogBody = catalogAnswer.status === 200 ? JSON.parse(catalogAnswer.body) : null
   check('a model only the public catalogue prices answers at its list price, in both currencies',
     catalogBody !== null && catalogBody.ok === true && catalogBody.value !== null &&
-      catalogBody.value.usd === 15_000_000 && catalogBody.value.cny === 108_000_000 &&
+      catalogBody.value.usd === 15_000_000 && catalogBody.value.cny === 100_000_000 &&
       catalogBody.value.partial === false,
     JSON.stringify(catalogBody?.value ?? catalogBody))
 

@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "K3 的人民币费用改按厂商公布的人民币价目表计算：未命中 20 元、命中 2 元、输出 100 元每百万 token，不再用美元价乘固定汇率。",
+  "en": "Price K3 in CNY from the vendor's own CNY table — 20 input, 2 cache hit, 100 output per million tokens — instead of converting the USD list price at the snapshot's rate."
+}

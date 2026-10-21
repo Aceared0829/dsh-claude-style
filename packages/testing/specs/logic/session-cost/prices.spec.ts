@@ -41,6 +41,7 @@ const document: PriceDocument = {
     'gemini-3.8-flash': '0.75 0.75 3.75',
     'plan-only': '0 0 0',
   },
+  catalogCny: { 'kimi-k3': '20 2 100' },
   usdToCny: 7.2,
 }
 
@@ -87,7 +88,13 @@ test('a route is resolved through its aliases and a provider prefix', () => {
 test('a model the official table does not carry is priced from the catalogue', () => {
   // The picker's own id for Kimi K3, aliased to the catalogue's id.
   expect(priceFor(document, 'k3-256k', 'USD')?.offPeak.output).toBe(15)
-  expect(priceFor(document, 'k3-256k', 'CNY')?.offPeak.output).toBe(108)
+  // K3's vendor publishes a CNY list price: that line answers as published,
+  // without the USD conversion.
+  expect(priceFor(document, 'k3-256k', 'CNY')?.offPeak.cacheHit).toBe(2)
+  expect(priceFor(document, 'k3-256k', 'CNY')?.offPeak.cacheMiss).toBe(20)
+  expect(priceFor(document, 'k3-256k', 'CNY')?.offPeak.output).toBe(100)
+  // A model with only a USD line converts at the snapshot's rate.
+  expect(priceFor(document, 'gemini-3.8-flash', 'CNY')?.offPeak.output).toBeCloseTo(27, 5)
   // A variant suffix falls back to the base id the catalogue lists.
   expect(priceFor(document, 'gemini-3.8-flash-high', 'USD')?.offPeak.cacheMiss).toBe(0.75)
   // A plan listing (every number zero) is no price at all.

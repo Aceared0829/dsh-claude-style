@@ -34,8 +34,7 @@ function asClock(value: unknown): string | undefined {
   return text
 }
 
-function asTier(value: unknown): PriceTier | null {
-  const raw = asRecord(value)
+function asTier(value: unknown): PriceTier | null {  const raw = asRecord(value)
   if (raw === null) return null
   const cacheHit = asRate(raw.cacheHit)
   const cacheMiss = asRate(raw.cacheMiss)
@@ -102,6 +101,24 @@ function asSchedule(value: unknown): PriceSchedule | null {
 }
 
 /**
+ * One catalogue table, validated: model id → `"input cacheRead output"`.
+ * Lines that are not three non-negative numbers are dropped alone, and an
+ * entry's id is read lowercase.
+ */
+function asCatalog(value: unknown): Record<string, string> | null {
+  const raw = asRecord(value)
+  if (raw === null) return null
+  const out: Record<string, string> = {}
+  for (const [id, line] of Object.entries(raw)) {
+    if (typeof line !== 'string' || id.trim() === '') continue
+    const parts = line.split(' ').map(Number)
+    if (parts.length !== 3 || !parts.every(candidate => Number.isFinite(candidate) && candidate >= 0)) continue
+    out[id.trim().toLowerCase()] = line
+  }
+  return out
+}
+
+/**
  * Validate one snapshot.
  *
  * @param value - the parsed JSON.
@@ -133,30 +150,24 @@ export function parsePriceDocument(value: unknown): PriceDocument | null {
   // The catalogue is a flat list of list prices, one line per model id. A line
   // that is not three non-negative numbers is dropped alone: the rest of the
   // table still answers, and the official models never depend on it.
-  const catalog: Record<string, string> = {}
-  if (raw.catalog !== undefined) {
-    const rawCatalog = asRecord(raw.catalog)
-    if (rawCatalog === null) return null
-    for (const [id, line] of Object.entries(rawCatalog)) {
-      if (typeof line !== 'string' || id.trim() === '') continue
-      const parts = line.split(' ').map(Number)
-      if (parts.length !== 3 || !parts.every(value => Number.isFinite(value) && value >= 0)) continue
-      catalog[id.trim().toLowerCase()] = line
-    }
-  }
+  const catalog = raw.catalog === undefined ? {} : asCatalog(raw.catalog)
+  if (catalog === null) return null
+  const catalogCny = raw.catalogCny === undefined ? {} : asCatalog(raw.catalogCny)
+  if (catalogCny === null) return null
   const aliases: Record<string, string> = {}
   if (raw.aliases !== undefined) {
     const rawAliases = asRecord(raw.aliases)
     if (rawAliases === null) return null
     for (const [from, to] of Object.entries(rawAliases)) {
       const target = asText(to)
-      if (target !== undefined && (Object.hasOwn(models, target) || Object.hasOwn(catalog, target)) && from.trim() !== '') {
+      if (target !== undefined && (Object.hasOwn(models, target) || Object.hasOwn(catalog, target) || Object.hasOwn(catalogCny, target)) && from.trim() !== '') {
         aliases[from.trim().toLowerCase()] = target
       }
     }
   }
   const document: PriceDocument = { schemaVersion: PRICE_SCHEMA_VERSION, updatedAt, schedule, models, aliases }
   if (Object.keys(catalog).length > 0) document.catalog = catalog
+  if (Object.keys(catalogCny).length > 0) document.catalogCny = catalogCny
   const rate = raw.usdToCny
   if (typeof rate === 'number' && Number.isFinite(rate) && rate > 0) document.usdToCny = rate
   const capturedAt = asText(raw.capturedAt)

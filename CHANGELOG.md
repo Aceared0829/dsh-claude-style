@@ -31,6 +31,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
 - 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
 - 修复切换会话时统计行的费用区先消失再出现、整行跟着重新排版的问题：费用区在会话金额到达之前保留原来的位置，以币种符号加一道短横占位并压暗，宽度按金额的量度预留，新金额到达后在同一位置替换。
+- K3 的人民币费用改按厂商公布的人民币价目表计算：未命中 20 元、命中 2 元、输出 100 元每百万 token，不再用美元价乘固定汇率。
 - 修复钠的改写写入失败后样式表恢复不回来、宿主改动规则后改写无声失效的问题：一次写入失败会把这次写入的规则全部写回，已写入的规则逐张表登记；生效条数归零时设置项写明宿主已改动这些规则，开关关闭时读不回原样的规则也会上报。
 - 修复首页「工作台」的用量面板停在打开窗口那一刻的数字：面板挂载期间按固定周期重取，回到窗口时也重取；宿主侧的汇总缓存从 5 分钟降到 30 秒，等汇总结果的轮询上限放宽，大历史不再先看到旧值。
 - 修复模型选择器搜索框的三处问题：搜索框紧贴卡片上沿、输入时光标高于文字、清空后光标不回最左边。搜索框自带一段上边距，单行输入框的光标按内容框居中后与文字齐平，清空时把插入点放回开头并重新测量光标。
@@ -65,6 +66,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
 - Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
 - Fix the cost segment of the statistics line vanishing and reappearing across a session switch, which re-laid the whole line: the segment now keeps its place until the session's amount arrives, standing as the currency symbol and a dash in the quiet ink, with the width of an amount reserved, and the new figure replaces it in the same room.
+- Price K3 in CNY from the vendor's own CNY table — 20 input, 2 cache hit, 100 output per million tokens — instead of converting the USD list price at the snapshot's rate.
 - Fix a Sodium rewrite that could not be undone after a failed write, and the rewrite going quiet once the host changed the rules: a failed write now writes back every rule it wrote, the rules taken are held sheet by sheet, the setting says so when the number in effect falls to zero, and a rule that cannot be read back as the rewrite left it is reported.
 - Fix the Studio home's usage panel standing on the figures of the moment the window opened: the panel reads the roll-up again on a fixed period while it stands on the page and once more when the reader comes back to the window, the host half's roll-up cache drops from five minutes to thirty seconds, and waiting for a cold fold no longer gives up before the numbers land.
 - Fix three faults of the model picker's search field: it sat flush against the card's top edge, its drawn caret stood above the text, and clearing left the caret where the old words ended. The field now carries its own inset above, a single-line field's caret is centred in its content box, and a clear puts the insertion point back at the start and measures the caret again.

@@ -39,6 +39,14 @@ const SOURCE = {
 const CATALOG_URL = 'https://models.dev/api.json'
 /** The rate the USD catalogue converts at for a reader who chose CNY. */
 const USD_TO_CNY = 7.2
+/**
+ * CNY list prices for models whose vendor publishes them, in the same
+ * `"input cacheRead output"` form (yuan per million tokens). K3's official
+ * table also lists cache writes at ¥20 (5 min) and ¥40 (1 hour); this meter
+ * bills writes at the hit rate, so the line carries the three it prices.
+ * Source: Kimi's pricing page, observed 2026-10-21.
+ */
+const CATALOG_CNY = { 'kimi-k3': '20 2 100' }
 const ALIASES = {
   'deepseek-v4-flash': 'deepseek-flash',
   'deepseek-v4-flash-vision-exp': 'deepseek-flash',
@@ -274,6 +282,7 @@ const document = {
   models,
   aliases: ALIASES,
   catalog,
+  catalogCny: CATALOG_CNY,
   usdToCny: USD_TO_CNY,
 }
 validatePrices(document, TARGET)

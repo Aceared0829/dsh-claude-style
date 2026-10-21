@@ -80,6 +80,12 @@ export interface PriceDocument {
    * the list-price equivalent rather than nothing.
    */
   catalog?: Record<string, string>
+  /**
+   * The same lines for models whose vendor publishes a CNY list price: those
+   * answer in CNY as published, and only a model without one is converted from
+   * `catalog` at `usdToCny`.
+   */
+  catalogCny?: Record<string, string>
   /** The rate the USD catalogue converts at when the reader chose CNY. */
   usdToCny?: number
 }
@@ -220,9 +226,9 @@ export function priceModelId(document: PriceDocument, modelId: string): string |
  * not price it.
  *
  * The official table answers first, in the currency the reader chose. A model
- * only the catalogue knows answers at its USD list price, converted at the
- * snapshot's rate when the reader chose CNY; its two tiers are the same, since
- * the catalogue has no clock.
+ * only the catalogue knows answers at its list price — the published CNY line
+ * when there is one, the USD line converted at the snapshot's rate otherwise.
+ * Its two tiers are the same, since the catalogue has no clock.
  */
 export function priceFor(document: PriceDocument, modelId: string, currency: Currency): ModelPrice | undefined {
   const id = priceModelId(document, modelId)
@@ -231,10 +237,13 @@ export function priceFor(document: PriceDocument, modelId: string, currency: Cur
   if (bare === null) return undefined
   const catalogId = catalogIdFor(document, bare)
   if (catalogId === null) return undefined
-  const parts = (document.catalog?.[catalogId] ?? '').split(' ').map(Number)
+  const published = currency === 'CNY' ? document.catalogCny?.[catalogId] : undefined
+  const parts = (published ?? document.catalog?.[catalogId] ?? '').split(' ').map(Number)
   if (parts.length !== 3 || !parts.every(value => Number.isFinite(value) && value >= 0)) return undefined
   if (parts[0] === 0 && parts[2] === 0) return undefined
-  const rate = currency === 'CNY' ? (document.usdToCny ?? 7.2) : 1
+  // A published CNY line is already in the reader's currency; a USD line is
+  // converted only when the reader chose CNY.
+  const rate = published !== undefined ? 1 : currency === 'CNY' ? (document.usdToCny ?? 7.2) : 1
   const tier: PriceTier = { cacheHit: parts[1] * rate, cacheMiss: parts[0] * rate, output: parts[2] * rate }
   return { offPeak: tier, peak: tier }
 }
