@@ -93,7 +93,7 @@ test('a frame mounted after the rule runs is found and converted', async () => {
   expect(columnsOf(frame)).toBe('224px 400px 320px')
 })
 
-test('the teardown hands the frame back as the host left it', async () => {
+test('the teardown hands the host its own numbers back', async () => {
   drawnAt(1.25)
   const frame = hostFrame('280px 500px 400px')
   const rule = installFrameColumns({ scale: drawnScale })
@@ -101,5 +101,5 @@ test('the teardown hands the frame back as the host left it', async () => {
   expect(columnsOf(frame)).toBe('224px 400px 320px')
   rule.stop()
   await settle()
-  expect(columnsOf(frame)).toBe('')
+  expect(columnsOf(frame)).toBe('280px 500px 400px')
 })

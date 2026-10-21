@@ -24,6 +24,8 @@
  * for.
  */
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
+import { ROOT_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { subscribePrefs } from '../core/prefs'
 
 /** One length in the host's written column list, and the bracket group a length
@@ -108,12 +110,19 @@ export interface FrameColumnsVocabulary {
   scale(): number
 }
 
-/** The columns each frame stands at, as the number left beside it. The host's
- * own measurement and this rule's write look alike, so a value equal to it is
- * this rule's own and the frame is not divided a second time on the next pass. */
-const LANDED = new WeakMap<HTMLElement, string>()
+/** One write this rule made: the frame, the number the host wrote, and the number it drew. */
+interface Carry {
+  /** The value the host itself wrote, which this rule has already read. */
+  from: string
+  /** The value read from it, which this rule left in place. */
+  to: string
+}
 
-/** The shell's frame: the element the parts walk marks as the one the three columns sit in. */
+/**
+ * The shell's frame. It is marked only while it carries a host class the parts
+ * table reads; a shell whose class names the table has not been taught leaves
+ * it unmarked, and the frame is then the root slot's own child (D3).
+ */
 const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
 
 /**
@@ -123,21 +132,24 @@ const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
  *     changed under it; stop: give every frame back.
  */
 export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
-  /** The frames this rule has written to, so the teardown hands each one back. */
-  const written = new Set<HTMLElement>()
+  /** What this rule has carried, per frame: the frame's own record of what it read. */
+  const carried = new Map<HTMLElement, Carry>()
 
   const carry = (frame: HTMLElement) => {
     const value = frame.style.getPropertyValue('grid-template-columns')
     if (value === '') return
-    if (LANDED.get(frame) === value) return
+    const seen = carried.get(frame)
+    // A second pass reads this rule's own number back as the host's write; it is
+    // the one kept from the last read, and dividing it again would shrink the
+    // columns on every pass.
+    if (seen !== undefined && (value === seen.from || value === seen.to)) return
     const inPage = inPageColumns(value, vocabulary.scale())
     if (inPage === null) {
-      LANDED.delete(frame)
+      carried.delete(frame)
       return
     }
     frame.style.setProperty('grid-template-columns', inPage)
-    LANDED.set(frame, inPage)
-    written.add(frame)
+    carried.set(frame, { from: value, to: inPage })
   }
 
   /** The frames being heard, each with the subscription that hears its own write. */
@@ -145,11 +157,22 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
   // The frame is remounted with the shell: the bus's registry follows it (D40),
   // and the host's own write lands on the frame, which this hears.
   const seats = observeMatches<HTMLElement>(FRAME_SELECTOR, () => sync())
+  // The root slot is read through the engine's kept match (D40), never walked.
+  const rootSlot = cacheFirstMatch<HTMLElement>(ROOT_SLOT_SELECTOR)
+
+  /** Every frame standing in the shell: the marked one, or the root slot's own child. */
+  const framesInShell = () => {
+    const marked = seats.all()
+    if (marked.length > 0) return marked
+    const slot = rootSlot()
+    const child = slot === null ? null : slot.firstElementChild
+    return child instanceof HTMLElement ? [child] : []
+  }
 
   /** Hear every frame the page draws, and drop the ones that left. */
   const sync = () => {
     const present = new Set<HTMLElement>()
-    for (const frame of seats.all()) {
+    for (const frame of framesInShell()) {
       present.add(frame)
       if (!heard.has(frame)) {
         heard.set(frame, subscribeMutations(frame, { attributes: true, attributeFilter: ['style'] }, () => carry(frame)))
@@ -160,8 +183,7 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
       if (present.has(frame)) continue
       heard.delete(frame)
       off()
-      written.delete(frame)
-      LANDED.delete(frame)
+      carried.delete(frame)
     }
   }
 
@@ -175,9 +197,10 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
       offPrefs()
       for (const [frame, off] of heard) {
         off()
-        LANDED.delete(frame)
-        if (written.delete(frame)) frame.style.removeProperty('grid-template-columns')
+        const seen = carried.get(frame)
+        if (seen !== undefined) frame.style.setProperty('grid-template-columns', seen.from)
       }
+      carried.clear()
       heard.clear()
     },
   }
