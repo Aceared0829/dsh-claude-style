@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善对话里夹在过程步骤之间的那几行文字：它与答案用同一套衬线、行高与段距，不再贴着上一步的文字连成一片。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve the lines a turn says between its process steps: they take the answer's own face, leading and paragraph gap instead of running on against the step above.
+
 ## [0.18.0] - 2026-10-21
 
 [中文](#cn-0.18.0) | [English](#en-0.18.0)
