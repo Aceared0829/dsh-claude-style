@@ -6,10 +6,10 @@ import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 
 /**
- * The settings page's Appearance tab: who paints the colours — with the accent
- * colour as that row's sub-row — who sets the type, and the custom brand rows
- * (settings-brand.ts). The home layout, the mascot and where it stands are the
- * features' own rows, placed here by their manifests (D72).
+ * The settings page's Appearance tab: the custom brand rows that open it
+ * (settings-brand.ts), who paints the colours — with the accent colour as that
+ * row's sub-row — and who sets the type. The home layout, the mascot and where
+ * it stands are the features' own rows, placed here by their manifests (D72).
  */
 export function createSettingsAppearanceTab(): SettingsTab {
   function rows(view: SettingsView) {
@@ -25,6 +25,7 @@ export function createSettingsAppearanceTab(): SettingsTab {
       { value: TYPEFACE_HOST, label: copy('typefaceHost') },
     ]
     return [
+      ...brandRows(view),
       {
         rank: 10,
         node: controls.row(
@@ -44,7 +45,6 @@ export function createSettingsAppearanceTab(): SettingsTab {
           controls.segment(typefaceOptions, prefs.typeface, value => { write({ typeface: value }) }),
         ),
       },
-      ...brandRows(view),
     ]
   }
   return { id: 'appearance', label: () => copy('tabAppearance'), rows }

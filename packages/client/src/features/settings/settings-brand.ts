@@ -6,7 +6,7 @@ import type { Prefs } from '../../constants'
 import { copy } from './copy'
 
 /**
- * The Appearance tab's custom brand row (D30), after the mascot: the brand
+ * The Appearance tab's custom brand row (D30), which opens the tab: the brand
  * area drawn as the lockup the reader edits in place
  * (settings-brand-lockup.ts), with how the images are inked as its sub-row.
  * The name and the two images are the reader's own data, written through the
@@ -104,7 +104,7 @@ export function accentRow(view: SettingsView): SettingsRow {
   }
 }
 
-/** The custom brand row, ranked after the mascot's placement row (rank 40): the lockup the reader edits in place, with how images are inked as its sub-row. */
+/** The custom brand row, ranked ahead of every other row on the tab: the lockup the reader edits in place, with how images are inked as its sub-row. */
 export function brandRows(view: SettingsView): SettingsRow[] {
   const { prefs, write, controls } = view
   const inkOptions: SegmentOption<Prefs['brandInk']>[] = [
@@ -113,7 +113,7 @@ export function brandRows(view: SettingsView): SettingsRow[] {
   ]
   return [
     {
-      rank: 50,
+      rank: 5,
       node: controls.row(
         'brandLockup',
         copy('brandLockupTitle'),
@@ -123,7 +123,7 @@ export function brandRows(view: SettingsView): SettingsRow[] {
       ),
     },
     {
-      rank: 51,
+      rank: 6,
       node: controls.subRow(
         'brandInk',
         copy('brandInkTitle'),

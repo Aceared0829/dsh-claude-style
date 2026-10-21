@@ -2,18 +2,25 @@
    area the sidebar draws, at the size the settings column gives it. Every
    metric comes from the cap height the sidebar paints the identity at
    (theme/sidebar.css), scaled up by --dsh-claude-lockup-scale, so the mark,
-   the word and the gap keep their proportions at any column width. */
+   the word and the gap keep their proportions at any column width. The plate
+   spans the settings column, so the lockup stands in the middle of it. */
 
 body[data-dsh-claude-style] .dsh-claude-brand-lockup {
   --dsh-claude-lockup-unit: 18px;
   --dsh-claude-lockup-scale: 1.75;
   --dsh-claude-lockup-cap: calc(var(--dsh-claude-lockup-unit) * var(--dsh-claude-lockup-scale));
   --dsh-claude-lockup-gap: calc(8px * var(--dsh-claude-lockup-scale));
+  /* The action plate's whole box: the 16px icon inside 6px of padding on each
+     side. The wordmark's image button holds this width until the pointer comes;
+     the spacer below holds the same width on the mark's other side, so the
+     shown lockup stands in the middle of the plate. */
+  --dsh-claude-brand-action: 28px;
 
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: var(--dsh-claude-lockup-gap);
   width: 100%;
   min-height: calc(var(--dsh-claude-lockup-cap) + 32px);
@@ -22,6 +29,16 @@ body[data-dsh-claude-style] .dsh-claude-brand-lockup {
   border-radius: 12px;
   background: var(--dsw-alias-bg-base);
   container-type: inline-size;
+}
+
+/* The mark and the word stand in the middle of the plate, and the room the
+   image button keeps beside the word is kept again on the mark's other side:
+   the plate is as wide as the settings column, so an unpaired reservation
+   would draw the lockup off centre. */
+body[data-dsh-claude-style] .dsh-claude-brand-lockup::before {
+  content: '';
+  flex: none;
+  width: var(--dsh-claude-brand-action);
 }
 
 /* A narrow settings column keeps the lockup inside the row rather than

@@ -18,7 +18,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 改善钠设置项的说明：写成「改写dsh及插件的样式表，在牺牲兼容性的前提下优化渲染性能」，生效中的规则条数改用强调色显示。
 - 把设置页「折叠侧栏设置区」「侧栏搜索」「对话导航」三行改名为「重绘账户区」「重绘搜索面板」「重绘消息导航」，三处开关与存下的设置值不变。
 - 模型选择第二层的卡片在搜索时按新列表的高度平滑改变大小，不再跳变；把动画设为「减弱」时立即落位。
-- 把设置页外观标签的「品牌名称」「标志图片」「文字标志」「图片颜色」四行合并成一行「品牌标志」：直接把侧栏的品牌区搬进设置页，指针移到标志或名称上即出现灰色矩形，点一下就在原处更换图片或输入名称，图片颜色作为同一块的子行；四行原有的开关与存下的值不变。
+- 把设置页外观标签的「品牌名称」「标志图片」「文字标志」「图片颜色」四行合并成一行「品牌标志」，排在外观标签的最前面：直接把侧栏的品牌区搬进设置页，标志与名称居中，图片颜色作为同一块的子行；指针移到标志或名称上即出现灰色矩形，点一下就在原处更换图片或输入名称，四行原有的开关与存下的值不变。
 - 把模型选择器里模型行的高度从 30px 收到 27px，字号与行内文字不变，一级与二级菜单同步。
 
 ### 问题修复
@@ -46,7 +46,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Improve the Sodium setting's copy: it now reads that it rewrites dsh's and plugins' stylesheets, trading compatibility for rendering performance, and the number of rules in effect stands in the accent colour.
 - Rename three settings rows to Redraw the account area, Redraw the search panel and Redraw the message navigator, with their switches and stored values unchanged.
 - Make the model picker's second-level card resize smoothly to the height of the list a search leaves, instead of jumping; under Reduced motion it lands at once.
-- Merge the Appearance tab's Brand name, Brand mark, Wordmark and Image colours rows into one Brand row: the sidebar's brand area itself now stands in the settings page, a grey rectangle follows the pointer onto the mark or the name, a press replaces the image or types the name in place, and the image colours sit under it as a sub-row; the four rows' switches and stored values are unchanged.
+- Merge the Appearance tab's Brand name, Brand mark, Wordmark and Image colours rows into one Brand row that opens the tab: the sidebar's brand area itself now stands in the settings page with its mark and name centred, a grey rectangle follows the pointer onto the mark or the name, a press replaces the image or types the name in place, and the image colours sit under it as a sub-row; the four rows' switches and stored values are unchanged.
 - Tighten the model picker's model rows from 30px to 27px, with the font sizes and the text inside them unchanged, on both levels of the menu.
 
 ### Bug Fixes
