@@ -15,6 +15,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
+- 修复窗口标题栏里的会话标题与它下方那一行控件重叠：行顶原先插进标题自己的框里，标题框随窗口与字号变高时两行字就压在一起；行顶现在停在标题框下方一段固定的空白处，整行始终留在会话头部里。
+- 修复页面缩放不为 100% 时搜索面板比它该在的位置低一截：面板顶部的空白读的是窗口高度的百分比，而面板画在页面自己的像素里；这条空白现在按皮肤量出的页面高度换算。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -25,6 +27,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
+- Fix the conversation title in the window's caption row overlapping the row of controls below it: the row's top was tucked into the title's own box, so a taller window or type size pressed the two lines together. The row's top now stands a fixed gap below the title's box, keeping the row inside the conversation header.
+- Fix the search panel standing lower than its place at a page scale other than 100%: the air above it was a percentage of the window's height while the panel is drawn in the page's pixels, and that gap now converts through the page height the skin measures.
 
 ## [0.18.2] - 2026-10-21
 
