@@ -1,5 +1,4 @@
 import { CHAT_FOLD_ATTR } from '../../constants'
-import { createChatProse } from './chat-prose'
 import { isChatFoldBusy } from './fold-glide-parts'
 import { installChatFoldGlide } from './fold-glide'
 import { createMessageFold } from './message-fold'
@@ -25,12 +24,11 @@ export interface ChatFoldHandle extends FeatureHandle {
  * skin's own toggle under it hands the whole message back (message-fold.ts), a
  * reader's own press on a row rolls the body down or up instead of snapping it
  * (fold-glide.ts), a process group's header counts what the group holds
- * (process-summary.ts), the prose between the steps is marked so the stylesheet
- * can set it as a document (chat-prose.ts), and a running reasoning plays back
- * inside a window that steps up as it streams (reasoning-stream.ts). All of them
- * ride the one preference: it means "the skin may fold the chat area", so off
- * leaves the automatic folding, the door, the header's words, the reasoning's
- * window, the prose's mark and the reader's own folded messages to the host.
+ * (process-summary.ts), and a running reasoning plays back inside a window that
+ * steps up as it streams (reasoning-stream.ts). All of them ride the one
+ * preference: it means "the skin may fold the chat area", so off leaves the
+ * automatic folding, the door, the header's words, the reasoning's window and
+ * the reader's own folded messages to the host.
  *
  * The door takes over the reader's clicks on a folding row, a takeover of the
  * host's interface like any other (D72): the entry installs this only while
@@ -46,7 +44,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   })
   const stopProcess = createProcessFold()
   const summary = createProcessSummary()
-  const stopProse = createChatProse()
   const messageFold = createMessageFold(() => ui.schedule?.())
   const stopGlide = installChatFoldGlide()
   ui.chatFold = {
@@ -71,7 +68,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     stopReasoning()
     stopProcess()
     summary.stop()
-    stopProse()
     messageFold.stop()
     stopGlide()
     document.body.removeAttribute(CHAT_FOLD_ATTR)

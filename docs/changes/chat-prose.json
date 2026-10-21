@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 1,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "改善对话里夹在过程步骤之间的那几行文字：它与答案用同一套衬线、行高与段距，不再贴着上一步的文字连成一片。",
-  "en": "Improve the lines a turn says between its process steps: they take the answer's own face, leading and paragraph gap instead of running on against the step above."
-}
