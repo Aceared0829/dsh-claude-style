@@ -6,9 +6,14 @@
    range meanwhile: the `auto` keyword remembers the height the row had when it was last
    rendered, so a row that has stood on screen keeps its real size, and the fallback is
    only for a row nothing has rendered yet. The streamed tail is on screen and stays laid
-   out; the rows behind it stop costing a layout each. */
+   out; the rows behind it stop costing a layout each.
 
-body[data-dsh-claude-style] [data-chat-flow-kind] {
+   A message the reader sent stays laid out: chat-fold reads its bubble's scrollHeight
+   to decide whether the cap hides part of it, and a row the browser has skipped answers
+   that question with no layout at all, so the control under a scrolled-back message of
+   their own would never be drawn. */
+
+body[data-dsh-claude-style] [data-chat-flow-kind]:not([data-chat-flow-kind='user']) {
   content-visibility: auto;
   contain-intrinsic-size: auto 240px;
 }

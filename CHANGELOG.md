@@ -32,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复档位矩阵的方块在卡片关闭后仍带着两个无限动效运行、页面空闲时主线程持续被占满的问题：卡片不在打开状态或读者选了减弱动效时，方块与两层装饰的动画停下，打开且动效全开时恢复。
 - 修复切换推理等级时档位按钮的宽度随新名字伸缩、把模型名与已经打开的档位弹层一起挤动的问题：按钮按当前档位表里最宽的名字预留宽度，换档时按钮宽度与弹层位置都不动。
 - 修复第三方插件挂在侧栏页脚的对话框被接管隐藏、打开成模态框后整页失去响应的问题：自身是浮层的页脚条目不再收进账号菜单，皮肤也不向它写入 display。
+- 修复读者自己发的那条消息滚动出视口后不再出现高度折叠控制：这类消息所在的流条目保留排版，助手行仍跳过视口之外的排版。
 - 修复自定义模型的标识是服务商内部别名时（如 kmodel 显示为 kimi-k2.6）模型选择器里没有说明行、也画不出厂商标的问题：文案规则与厂商规则改为同时读标识与显示名称。
 - 修复切换会话时统计行的费用区先消失再出现、整行跟着重新排版的问题：费用区在会话金额到达之前保留原来的位置，以币种符号加一道短横占位并压暗，宽度按金额的量度预留，新金额到达后在同一位置替换。
 - K3 的人民币费用改按厂商公布的人民币价目表计算：未命中 20 元、命中 2 元、输出 100 元每百万 token，不再用美元价乘固定汇率。
@@ -72,6 +73,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the effort matrix's blocks keeping two infinite animations each while their card is closed, which kept the main thread busy with nothing on screen, and their shortened cycle still repainting every frame under reduced motion: the animations stop while the card is not open or the reader has chosen reduced motion, and resume when the card opens with motion full.
 - Fix the effort button taking each level's own width, which pushed the model name and the open effort card sideways whenever the level changed: the button now reserves the widest name of its ladder, so a switch leaves both its width and the card's place alone.
 - Fix the whole page going unresponsive when a dialog a plugin mounts into the sidebar footer was hidden by the takeover: a footer entry that is itself a floating overlay is no longer collected into the account menu, and the skin writes no display rule onto it.
+- Fix the fold control under a message the reader sent going missing once that message scrolled out of view: rows holding the reader's own messages keep their layout, while assistant rows still skip layout off screen.
 - Fix a custom model whose id is the provider's own alias (`kmodel` shown as `kimi-k2.6`) losing its description line and its vendor mark in the model picker: the copy and brand rules now read the display name as well as the id.
 - Fix the cost segment of the statistics line vanishing and reappearing across a session switch, which re-laid the whole line: the segment now keeps its place until the session's amount arrives, standing as the currency symbol and a dash in the quiet ink, with the width of an amount reserved, and the new figure replaces it in the same room.
 - Price K3 in CNY from the vendor's own CNY table — 20 input, 2 cache hit, 100 output per million tokens — instead of converting the USD list price at the snapshot's rate.
