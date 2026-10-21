@@ -98,11 +98,13 @@ dsh plugin --profile web add Nwflower/dsh-claude-style#dist      # GitHub 发布
 
 ## 许可
 
-本仓库以 MIT 授权，钠（Sodium）渲染引擎除外：`packages/client/src/features/sodium/` 下的全部文件与 `packages/engine/src/sheet-rewrite.ts` 以 [PolyForm Shield 1.0.0](packages/client/src/features/sodium/LICENSE) 授权，可以阅读、修改与分发，不能用来提供与本插件竞争的产品。0.17.0 及其之前发布的版本以 MIT 发布，之后的版本适用这一许可。
+除特别说明，本仓库以 MIT 授权。
+
+钠（Sodium）渲染引擎以 [PolyForm Shield 1.0.0](packages/client/src/features/sodium/LICENSE) 授权。
 
 ## 鸣谢
 
-- 「钠 / Sodium」这个名字致敬 Minecraft 的 [Sodium](https://github.com/CaffeineMC/sodium) 渲染优化模组；本插件与 CaffeineMC 没有关联，没有使用它的代码，也没有获得它的背书。
+- 「钠 / Sodium」取名自 Minecraft 的 [Sodium](https://github.com/CaffeineMC/sodium) 渲染优化模组，本插件与它没有关联。
 - 消息导航参考 SherUnlocked-4869 的 [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav)（MIT）。
 - Deepy 的动画帧图来自 calmly-eating-bugs（[@wp3171216237](https://github.com/wp3171216237)）绘制的 Deepy 小鲸鱼主题包。
 - 聊天区的增强动效改自 [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux)（MIT）。

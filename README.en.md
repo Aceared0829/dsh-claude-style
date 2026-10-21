@@ -99,11 +99,13 @@ To enable them, install the `.ttf` files on your system, or copy them into `$DSH
 
 ## License
 
-The code in this repository is MIT-licensed, except the Sodium rendering engine: every file under `packages/client/src/features/sodium/` and `packages/engine/src/sheet-rewrite.ts` is licensed under the [PolyForm Shield License 1.0.0](packages/client/src/features/sodium/LICENSE) — read, change and redistribute it, but not to provide a product competing with this plugin. Releases up to and including 0.17.0 were published under the MIT license; this license applies to the releases after them.
+Except where otherwise stated, this repository is licensed under MIT.
+
+The Sodium rendering engine is licensed under the [PolyForm Shield License 1.0.0](packages/client/src/features/sodium/LICENSE).
 
 ## Acknowledgements
 
-- "Sodium" (钠) is named after Minecraft's [Sodium](https://github.com/CaffeineMC/sodium) rendering mod as a tribute; this plugin is not affiliated with CaffeineMC, uses none of that mod's code, and is not endorsed by it.
+- "Sodium" (钠) is named after Minecraft's [Sodium](https://github.com/CaffeineMC/sodium) rendering mod; this plugin is not affiliated with it.
 - The message navigator follows SherUnlocked-4869's [dsh-plugin-msg-nav](https://github.com/SherUnlocked-4869/dsh-plugin-msg-nav) (MIT).
 - The animation frames of Deepy the pixel whale come from the Deepy whale theme pack drawn by calmly-eating-bugs ([@wp3171216237](https://github.com/wp3171216237)), and ship with the plugin by the author's permission; GIFs of all 20 animations are in [docs/gifs/](docs/gifs/).
 - The enhanced animations in the chat area are modified from [dsh-chat-ux](https://github.com/alm-allen/dsh-chat-ux) (MIT).
