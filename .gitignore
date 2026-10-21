@@ -8,5 +8,8 @@ lib/
 # Local debugging scratch (Chrome profile, CDP scripts, screenshots)
 .debug/
 
+# dsh-ops' persistent update locks, left beside every file a write touches
+.dsh-ops-update-*.lock
+
 # Editor session state
 .claude/
