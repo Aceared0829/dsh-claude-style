@@ -1,6 +1,7 @@
 import { CHAT_CALL_SELECTOR, CONVERSATION_SCROLL_SELECTOR, STREAMING_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { findConversationScroller } from '@dsh-claude-style/engine/host'
+import { textTokens } from './text-tokens'
 
 /**
  * The tokens a streaming answer has added so far, as an estimate.
@@ -8,27 +9,19 @@ import { findConversationScroller } from '@dsh-claude-style/engine/host'
  * The host settles its usage a step at a time (`tokenUsage` moves on
  * `assistant/message`), so the written-back figure would stand still while the
  * answer streams and jump once when the step ends. The text the host streams is
- * on the page: counting the characters the streaming containers have grown by
+ * on the page: pricing the text the streaming containers have grown by
  * is enough to let the figure move, and the settlement replaces the estimate
  * with the provider's own number.
  *
  * The page's text is thinner than what the provider bills: a tool call's
  * arguments are not on the page as text at all, and the renderer drops the
  * markers it parses. So each call row of the step counts `CALL_TOKENS` beside
- * the text — a wide (CJK) character at `WIDE_TOKENS`, everything else at
- * `NARROW_TOKENS` — and the figure is corrected as soon as the step's usage
- * lands, so only the written-back side rides on them: a request's prompt is
- * fixed while it streams. The counts are read off the structure bus, not per
- * frame, and the readings stay on the interval above.
+ * the text, whose own share is priced by shape (text-tokens.ts), and the figure
+ * is corrected as soon as the step's usage lands, so only the written-back side
+ * rides on them: a request's prompt is fixed while it streams. The counts are
+ * read off the structure bus, not per frame, and the readings stay on the
+ * interval above.
  */
-
-/**
- * A wide character's share of a token, and a narrow one's: a page's own word
- * is worth well under a token, and the arguments no page shows are held apart
- * in `CALL_TOKENS` rather than folded into these.
- */
-const WIDE_TOKENS = 1
-const NARROW_TOKENS = 0.3
 /**
  * What one call adds, wherever the page has put its arguments behind.
  *
@@ -43,12 +36,6 @@ const NARROW_TOKENS = 0.3
 const CALL_TOKENS = 170
 /** How old the last reading may be before the streamed text is read again, in milliseconds. */
 const SCAN_MS = 100
-
-/** One streaming container's character counts at the last reading. */
-interface Counts {
-  wide: number
-  narrow: number
-}
 
 /**
  * The estimate's reader.
@@ -71,8 +58,8 @@ export function createStreamEstimate() {
   let readAt = 0
   /** The frame clock the estimate's readings run on; zero before the first reading. */
   let clock = 0
-  /** The streaming containers seen, with the counts their text stood at. */
-  const seen = new Map<Element, Counts>()
+  /** The streaming containers seen, with the tokens their text stood at. */
+  const seen = new Map<Element, number>()
   /** The streaming container the page has held since the settlement, or null. */
   let streamingSeen: Element | null = null
   /** The call rows this session has accounted for, so none of them counts twice. */
@@ -140,24 +127,12 @@ export function createStreamEstimate() {
     }
   }
 
-  /** Count the wide and the narrow characters of one container's text nodes. */
+  /** The tokens one container's text is worth, its runs read across the nodes. */
   function countText(container: Element) {
-    const counts: Counts = { wide: 0, narrow: 0 }
+    const texts: string[] = []
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
-    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
-      const text = (node as Text).data
-      for (let index = 0; index < text.length; index++) {
-        const code = text.charCodeAt(index)
-        if (code < 0x2e80) {
-          counts.narrow += 1
-          continue
-        }
-        counts.wide += 1
-        // A surrogate pair is one character, not two.
-        if (code >= 0xd800 && code <= 0xdbff) index += 1
-      }
-    }
-    return counts
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) texts.push((node as Text).data)
+    return textTokens(texts)
   }
 
   /**
@@ -202,10 +177,7 @@ export function createStreamEstimate() {
       // page belongs to a settlement or to an answer that started before this
       // reader asked, and counting it again would double the figure.
       const before = seen.get(container)
-      if (before !== undefined) {
-        grown += Math.max(0, counts.wide - before.wide) * WIDE_TOKENS
-          + Math.max(0, counts.narrow - before.narrow) * NARROW_TOKENS
-      }
+      if (before !== undefined) grown += Math.max(0, counts - before)
       seen.set(container, counts)
     }
     for (const container of seen.keys()) if (!live.has(container)) seen.delete(container)
