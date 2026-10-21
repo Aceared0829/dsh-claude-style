@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "at": "2026-10-20",
+  "external": false,
+  "zh": "修复模型选择器在模型较多时压扁带描述的行、让描述文字挤进下一行的问题，列表改为随内容滚动。",
+  "en": "Fix the model picker squeezing rows that carry a description when the catalog outgrows the card, where the second line ran into the row below; the list scrolls instead."
+}

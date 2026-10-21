@@ -276,6 +276,19 @@ body[data-dsh-claude-style] .dsh-claude-model-cell {
   cursor: pointer;
   box-sizing: border-box;
 }
+/* The lists are height-capped column flex boxes: an item whose min-height is
+   explicit stops there instead of overflowing, so a long catalog squeezed every
+   row to the 27px single-line floor and a description row's second line ran into
+   the row below. Rows keep their copy's height; the list scrolls. */
+body[data-dsh-claude-style] .dsh-claude-model-option,
+body[data-dsh-claude-style] .dsh-claude-model-cell {
+  flex: none;
+}
+/* A description makes the row two lines — 16px name, 2px, 14px description —
+   inside 1px of padding above and below, so 34px is its floor. */
+body[data-dsh-claude-style] .dsh-claude-model-option:has(.dsh-claude-model-desc) {
+  min-height: 34px;
+}
 body[data-dsh-claude-style] .dsh-claude-model-option:hover,
 body[data-dsh-claude-style] .dsh-claude-model-cell:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;

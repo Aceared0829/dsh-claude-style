@@ -35,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - K3 的人民币费用改按厂商公布的人民币价目表计算：未命中 20 元、命中 2 元、输出 100 元每百万 token，不再用美元价乘固定汇率。
 - 修复钠的改写写入失败后样式表恢复不回来、宿主改动规则后改写无声失效的问题：一次写入失败会把这次写入的规则全部写回，已写入的规则逐张表登记；生效条数归零时设置项写明宿主已改动这些规则，开关关闭时读不回原样的规则也会上报。
 - 修复首页「工作台」的用量面板停在打开窗口那一刻的数字：面板挂载期间按固定周期重取，回到窗口时也重取；宿主侧的汇总缓存从 5 分钟降到 30 秒，等汇总结果的轮询上限放宽，大历史不再先看到旧值。
+- 修复模型选择器在模型较多时压扁带描述的行、让描述文字挤进下一行的问题，列表改为随内容滚动。
 - 修复模型选择器搜索框的三处问题：搜索框紧贴卡片上沿、输入时光标高于文字、清空后光标不回最左边。搜索框自带一段上边距，单行输入框的光标按内容框居中后与文字齐平，清空时把插入点放回开头并重新测量光标。
 
 ### 其他变更
@@ -71,6 +72,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Price K3 in CNY from the vendor's own CNY table — 20 input, 2 cache hit, 100 output per million tokens — instead of converting the USD list price at the snapshot's rate.
 - Fix a Sodium rewrite that could not be undone after a failed write, and the rewrite going quiet once the host changed the rules: a failed write now writes back every rule it wrote, the rules taken are held sheet by sheet, the setting says so when the number in effect falls to zero, and a rule that cannot be read back as the rewrite left it is reported.
 - Fix the Studio home's usage panel standing on the figures of the moment the window opened: the panel reads the roll-up again on a fixed period while it stands on the page and once more when the reader comes back to the window, the host half's roll-up cache drops from five minutes to thirty seconds, and waiting for a cold fold no longer gives up before the numbers land.
+- Fix the model picker squeezing rows that carry a description when the catalog outgrows the card, where the second line ran into the row below; the list scrolls instead.
 - Fix three faults of the model picker's search field: it sat flush against the card's top edge, its drawn caret stood above the text, and clearing left the caret where the old words ended. The field now carries its own inset above, a single-line field's caret is centred in its content box, and a clear puts the insertion point back at the start and measures the caret again.
 
 ### Chores
