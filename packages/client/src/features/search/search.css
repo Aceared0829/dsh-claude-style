@@ -375,7 +375,7 @@ body[data-dsh-claude-style] .dsh-claude-search-filters:not([data-dsh-claude-pill
 body[data-dsh-claude-style] .dsh-claude-search-list {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: min(520px, 62vh);
+  max-height: min(520px, calc(var(--dsh-claude-page-height, 100vh) * 0.62));
   overflow-y: auto;
   padding: 4px 12px 10px;
   overscroll-behavior: contain;

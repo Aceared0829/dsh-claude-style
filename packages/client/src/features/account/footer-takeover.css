@@ -107,7 +107,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-clau
   bottom: auto;
   top: auto;
   width: 220px;
-  max-width: min(220px, calc(100vw - 16px));
+  max-width: min(220px, calc(var(--dsh-claude-page-width, 100vw) - 16px));
   transform-origin: bottom left;
 }
 /* The host's own account menu in the rail: the card's width follows the account
@@ -120,7 +120,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-clau
    (data-dsh-claude-holds="sidebar-rail") and this rule reads that mark. */
 body[data-dsh-claude-style][data-dsh-claude-holds~="sidebar-rail"] [data-dsh-claude-account-menu] {
   width: 220px;
-  max-width: min(220px, calc(100vw - 16px));
+  max-width: min(220px, calc(var(--dsh-claude-page-width, 100vw) - 16px));
 }
 /* The rail opens the panel beside the trigger, not above it, so the hover bridge
    has to span the horizontal gap: the base rule's downward strip would sit under

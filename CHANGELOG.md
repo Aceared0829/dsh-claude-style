@@ -8,10 +8,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">问题修复</h3>
 
+- 修复页面缩放不为 100% 时浮层按窗口量出的尺寸与位置都不成立：宿主自己画的会话卡片、账号菜单、上下文弹层把量到的位置直接写进坐标，在缩放下又被放大一次，开在触发控件上方的菜单还会因为自身高度是在另一个空间里量的而压在控件上；按窗口封顶的卡片同样会高出窗口一截，末尾几行读不到。现在宿主自己的浮层拿回一像素对一像素的空间，写下的长度与量到的盒子在屏幕上一致；按窗口封顶的规则改读皮肤量出的页面尺寸，不再用 vh 与 vw。
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
+- Fix the cards and caps measured against the window not holding at a page scale other than 100%: the host's own session card, account menu and context popover write a measured position straight into their coordinates, which the scale then multiplies a second time, and a menu opening over its trigger lands on it because its own height was measured in the other space; a card capped against the window comes out taller than it as well, leaving its last rows unreadable. The host's own floating cards are now given a space one pixel to one pixel with the window, so a length the host writes and a box the host measures are the same length on screen, and a rule that caps a card against the window reads the page's own size instead of `vh` and `vw`.
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
 
 ## [0.18.1] - 2026-10-21
@@ -20,12 +22,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-0.18.1">问题修复</h3>
 
-- 修复页面缩放不为 100% 时宿主自己画的浮层偏到别处：会话行的信息卡片、宿主的菜单这类浮层把量到的位置直接写进坐标，在缩放下又被放大一次，于是偏离它所属的那一行，倍率越大偏得越远；现在这些浮层由皮肤用一段位移带回量到的位置，尺寸仍随缩放放大，回到 100% 时位移撤掉。
 - 修复收起的一轮里，一段推理正文重新出现在最终回答中：会话行离开视口时不再参与排版，留下的是估算的高度，并占出了位置；最终回答、以及宿主收起的行已不在这条规则里。
 
 <h3 id="en-0.18.1">Bug Fixes</h3>
 
-- Fix the floating cards the host draws landing off their row whenever the page scale is not 100%: a card measures its anchor in the viewport's pixels and writes that box as its position, which the scale then multiplies a second time, so it drifts away from the row it belongs to by the factor of the scale. Such cards are carried back to where they were measured, keep the size the scale asks for, and lose the offset when the scale returns to 100%.
 - Fix a stretch of reasoning reappearing inside a folded turn's final answer: rows outside the viewport left the layout to an estimate of their height and so took up room they do not take. The final answer and the rows the host has folded are no longer under that rule.
 
 ## [0.18.0] - 2026-10-21

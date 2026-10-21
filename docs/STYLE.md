@@ -958,5 +958,8 @@ plays its reaction.
 - The page's scale (settings › General) is the `zoom` the theme sheet puts on the body, so a
   length written into the page is read in a smaller space than the one a bounding rect is
   measured in: code that turns a measured box into a written length goes through
-  `packages/client/src/shared/page-zoom.ts`.
+  `packages/client/src/shared/page-zoom.ts`. The host's own floating cards write a measured box
+  whole: `packages/client/src/shared/page-scale.ts` gives each one a space one pixel to one
+  pixel with the window (D81), and a rule that caps a card against the window reads
+  `--dsh-claude-page-height` / `--dsh-claude-page-width` rather than `vh` / `vw`.
 

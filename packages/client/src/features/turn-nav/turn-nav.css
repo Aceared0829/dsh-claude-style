@@ -105,7 +105,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav[data-open="true"] {
   position: absolute;
   left: auto;
   width: 288px;
-  max-width: calc(100vw - 16px);
+  max-width: calc(var(--dsh-claude-page-width, 100vw) - 16px);
   transform: none;
   transition: opacity var(--dsh-claude-timing-feedback);
 }

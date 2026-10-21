@@ -1,6 +1,7 @@
 import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, LIVE_PREFS, PACKAGE_NAME, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
 import type { LivePref } from './constants'
 import { installParts } from '@dsh-claude-style/engine/parts'
+import { installPageScale } from './shared/page-scale'
 import { adoptSkin } from '@dsh-claude-style/engine/skin'
 import { motionReduced } from './core/prefs'
 import { setHostContext } from './core/host-context'
@@ -92,6 +93,8 @@ export function apply(ctx: HostContext) {
   let offOwnerWatch: (() => void) | null = null
   /** Unmounts this generation's stylesheet; set once the sheet is mounted. */
   let stopStylesheet: (() => void) | null = null
+  /** Carries the host's floating layer in a page drawn at a scale; set with the sheet that scales it. */
+  let stopScale: (() => void) | null = null
   /** Stops the part-marking pass; set once the page is taken (D3). */
   let stopParts: (() => void) | null = null
   let disposed = false
@@ -127,7 +130,12 @@ export function apply(ctx: HostContext) {
     body.removeAttribute('data-dsh-claude-style')
     body.removeAttribute(HANDOFF_ATTR)
     // This generation's own sheet, handed over rather than taken away when a
-    // newer generation has mounted after it (mountStylesheet).
+    // newer generation has mounted after it (mountStylesheet). The carried layer
+    // goes with it: it is this sheet's own zoom those cards are carried under.
+    if (stopScale !== null) {
+      stopScale()
+      stopScale = null
+    }
     if (stopStylesheet !== null) {
       stopStylesheet()
       stopStylesheet = null
@@ -358,6 +366,9 @@ export function apply(ctx: HostContext) {
         if (typeof ui.schedule === 'function') ui.schedule()
       })
     }
+    // With the sheet: the page is drawn at the reader's own scale from here on,
+    // and the host's floating cards are carried under it (engine/src/page-scale.ts).
+    if (stopScale === null) stopScale = installPageScale()
     for (const feature of FEATURES) {
       if (failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) continue
       if (isLive(feature)) applySwitch(feature)

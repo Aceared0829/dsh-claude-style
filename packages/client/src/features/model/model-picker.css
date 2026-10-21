@@ -6,12 +6,12 @@
 body[data-dsh-claude-style] .dsh-claude-model-popover {
   position: fixed;
   min-width: 248px;
-  max-width: min(360px, calc(100vw - 16px));
+  max-width: min(360px, calc(var(--dsh-claude-page-width, 100vw) - 16px));
   /* The first level is sized by its content like the second: the cap is only
      the viewport, so a short list does not leave a tall empty card. The level-1
      list scrolls inside the body instead (see the scoped rule below); this
      overflow-y stays for the sub popover, whose whole card scrolls. */
-  max-height: calc(100vh - 80px);
+  max-height: calc(var(--dsh-claude-page-height, 100vh) - 80px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;

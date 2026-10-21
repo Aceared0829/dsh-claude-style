@@ -26,6 +26,7 @@
 | [D78](D78-sodium-rule-rewrite.md) | 改写宿主与插件的昂贵样式规则 |  |
 | [D79](D79-model-rules-read-name.md) | 模型规则同时读标识与显示名 |  |
 | [D80](D80-cost-snapshot-and-channel.md) | 价格与时段快照走仓库，会话费用由宿主半计价 |  |
+| [D81](D81-page-scale-carries-host-cards.md) | 页面缩放留在样式表，宿主的浮层拿回一像素对一像素的空间 |  |
 
 ## 作废的编号
 

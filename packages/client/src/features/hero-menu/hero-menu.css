@@ -16,8 +16,8 @@
 
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu] {
   min-width: 248px;
-  max-width: min(360px, calc(100vw - 16px));
-  max-height: min(440px, calc(100vh - 96px));
+  max-width: min(360px, calc(var(--dsh-claude-page-width, 100vw) - 16px));
+  max-height: min(440px, calc(var(--dsh-claude-page-height, 100vh) - 96px));
   /* The host re-places this card from its own geometry on every frame while it
      is open, writing plain inline `left` / `top`; an inline write from the
      browser half would survive only until that frame. The position travels in
@@ -85,7 +85,7 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [data-dsh-claude-part~
    need to. The current folder keeps the accent check. */
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu="workspace"] {
   min-width: 180px;
-  max-width: min(280px, calc(100vw - 16px));
+  max-width: min(280px, calc(var(--dsh-claude-page-width, 100vw) - 16px));
   padding: 4px;
   gap: 4px;
 }
