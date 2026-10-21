@@ -9,6 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 改善会话标题的重命名：鼠标扫过顶栏标题时浮出一块底板与「重命名会话」提示，点击即可就地编辑，回车写入新名称、Esc 保持原名。
+- 改善会话标题重命名输入框的样子：换成与 Claude 一致的样式，画布底色、一圈选区蓝细边、小圆角，宽度随输入的会话名伸展。
 
 ### 问题修复
 
@@ -17,6 +18,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one.
+- Improve the field a session title is renamed in: it takes Claude's own face — the canvas fill, a thin ring in the selection blue and a small radius — and grows with the name being typed.
 
 ### Bug Fixes
 

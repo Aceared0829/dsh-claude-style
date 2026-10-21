@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 2,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "改善会话标题重命名输入框的样子：换成与 Claude 一致的样式，画布底色、一圈选区蓝细边、小圆角，宽度随输入的会话名伸展。",
+  "en": "Improve the field a session title is renamed in: it takes Claude's own face — the canvas fill, a thin ring in the selection blue and a small radius — and grows with the name being typed."
+}

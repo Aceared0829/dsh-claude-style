@@ -146,12 +146,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     input.value = request.title
     input.setAttribute('aria-label', copy('renameSession'))
     // The segment's own box: for the session the header shows it is the title's
-    // words, and under a child session it also holds the lineage control.
+    // words, and under a child session it also holds the lineage control. The
+    // field's width follows its draft from the words' own width on (the face sets
+    // `field-sizing: content`), so a short name is not padded into a card and a
+    // long one still reads to its end.
     const box = inPageBox(spot.getBoundingClientRect())
     input.style.left = `${box.left}px`
     input.style.top = `${box.top}px`
-    input.style.width = `${Math.max(box.width, 160)}px`
-    input.style.height = `${box.height}px`
+    input.style.minWidth = `${box.width}px`
+    input.style.minHeight = `${box.height}px`
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault()

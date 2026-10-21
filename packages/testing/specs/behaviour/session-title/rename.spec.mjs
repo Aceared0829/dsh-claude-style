@@ -45,7 +45,10 @@ export default spec({ page: 'session-title' }, ({ test }) => {
     const fieldBox = await t.read.box(field)
     const wordBox = await t.read.box(words(t))
     t.expectThat.visible(fieldBox, 'the field is drawn')
-    t.expectThat.boxWithin(fieldBox, { ...wordBox, left: wordBox.left - 60, right: wordBox.right + 60 }, 'the field stands over the words it renames')
+    // Over the words, wide enough for every one of them: the field's own ring and
+    // padding stand a little above and below the line, so the vertical slack is
+    // that edge rather than a position.
+    t.expectThat.boxWithin(fieldBox, { left: wordBox.left - 60, right: wordBox.right + 60, top: wordBox.top - 8, bottom: wordBox.bottom + 8 }, 'the field stands over the words it renames')
     t.expectThat.equal(await t.page.inputValue(field), 'smoke session', 'the field carries the title the session list holds')
     t.expectThat.equal(await t.read.attribute(field, 'aria-label'), 'Rename session', 'the field names what it does')
   })

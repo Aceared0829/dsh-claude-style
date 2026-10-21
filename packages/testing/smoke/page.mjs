@@ -236,8 +236,8 @@ function page(name, tier, cases, probe = PROBE) {
         '<div class="_titleRow_s_1" style="display:flex;align-items:center;height:30px">' +
         '<div class="_titleCluster_s_1" style="display:flex;align-items:center;flex:1 1 0%">' +
         '<nav class="_crumbs_s_1" style="display:flex;align-items:center;height:28px">' +
-        '<span class="_crumbSeg_s_1" style="display:inline-flex">' +
-        '<button type="button" class="_crumb_s_1">parent session</button></span>' +
+        '<span class="_crumbSeg_s_1" style="display:inline-flex;padding-right:8px">' +
+        '<button type="button" class="_crumb_s_1" style="background:none;border:0;padding:0;font:inherit;color:inherit">parent session</button></span>' +
         '<span class="_crumbSeg_s_1" style="display:inline-flex">' +
         '<span class="_crumb_s_1 _crumbCurrent_s_1">smoke session</span></span>' +
         '</nav></div></div></header>'
