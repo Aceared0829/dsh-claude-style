@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 3,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "把只做分隔的线收细、调淡一档：侧栏账号行上沿、搜索面板页脚、上下文统计、设置行、弹层与菜单分隔线以及正文分隔线改用新的分隔线令牌，宽度收到 0.5px，卡片与输入框的轮廓保持原样。",
-  "en": "Bring every line that only separates down one finer, quieter step: the account row's upper edge, the search panel's foot, the context stats, the settings rows, the menu and popover separators and the transcript's rule take the new divider token at 0.5px, while a card's and a field's outline keep theirs."
-}

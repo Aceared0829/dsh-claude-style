@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 6,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "改善切换模型时模型名的样子：名字在原地换成新模型名，离开的名字向上穿过一层模糊，新名字从下方升上来，两段文字同时站在座位框里，座位宽度随两段中较宽的一段过渡；选了减弱动效时名字直接换过去。",
-  "en": "Improve how the model's name changes when another model is picked: the name swaps in place — the words leaving rise through a blur while the new name comes up from below, both standing in the seat box at once, with the seat travelling to the wider of the two as it runs; with reduced motion the name simply changes."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 11,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复切换模型时模型名横向滑动的问题：旧名字与新名字的右边都停在座位框的右端，座位框向左移动宽度时文字不再跟着移动，换字只在竖直方向上发生。",
-  "en": "Fix the model's name sliding sideways while another model is picked: the outgoing and arriving names both hold the seat box's right end, so the box travelling to the other width leaves the words where they stand and the swap stays vertical."
-}

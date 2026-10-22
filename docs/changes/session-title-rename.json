@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 1,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "改善会话标题的重命名：鼠标扫过顶栏标题时浮出一块底板与「重命名会话」提示，点击即可就地编辑，回车写入新名称、Esc 保持原名。",
-  "en": "Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one."
-}

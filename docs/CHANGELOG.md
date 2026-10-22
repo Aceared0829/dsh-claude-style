@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.18.3] - 2026-10-22
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.18.3) | [English](#en-0.18.3)
+
+<h3 id="cn-0.18.3">新增功能</h3>
 
 - 新增思考强度重点色选项：推理等级按钮按当前档位取色，关闭的档位与模型自己的默认档位保持灰色，每个思考档位在蓝色到紫色之间取自己的一档，越高越靠紫色一端。
 
@@ -47,7 +49,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 删除十二个没有调用方的导出，把注释里三十二处指向引擎迁移前位置的路径改成现址，四条故障补丁按当前代码重记，构建里「滚动位置只由 scroll-owner 写入」那条检查按引擎所在的位置恢复生效，AGENTS.md 的四处陈述与实现一致，工作树的删除工具接受 .agents/worktrees/，插件的表现与断言不变。
 - 新增本地工单系统：每个任务在 `.debug/work/` 下拥有自己的目录、索引与临时文件，测量值随工单退役，关闭时整目录删除，孤儿目录与散落临时文件由 `npm run work -- gc` 清理。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.18.3">New Features</h3>
 
 - Add the effort accent colour option, which paints the reasoning-effort button by the level in force: a switched-off level and the model's own default level stay grey, each thinking level takes its own step between the blue and the violet, and the ladder climbs toward the violet.
 

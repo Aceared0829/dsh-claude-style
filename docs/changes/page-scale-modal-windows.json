@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复页面缩放不为 100% 时费用窗口比窗口宽：插件的费用明细窗口与单步费用弹窗按视口单位声明尺寸，缩放再乘一次，右侧一列连同它所在的边缘被推出窗口，倍率越高越明显；这两个窗口现在按页面自己的尺寸封顶，卡片比内容窄时窗口里的表格可以横向滚动。",
-  "en": "Fix the cost meter's fee windows standing wider than the window at a page scale other than 100%: both state their size in viewport units, which the scale multiplies once more, so the right column and the edge it sits on are pushed out of the window and the higher the factor the further. Both are now capped with the page's own size, and a card narrower than its rows lets the table inside scroll sideways."
-}

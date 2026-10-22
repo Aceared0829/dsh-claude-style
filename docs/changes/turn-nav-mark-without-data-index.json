@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 8,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复重绘消息导航在宿主轨标不再写 `data-index` 的宿主上点击无反应的问题：轨标数量与列表一致时按轨道自己的顺序取标记，宿主写下的位置照旧优先。",
-  "en": "Fix the redrawn message navigator ignoring a press on hosts whose rail marks carry no `data-index`: while the rail holds as many marks as the list has turns, a mark is now taken by its place in the rail, and a place the host states is still read first."
-}

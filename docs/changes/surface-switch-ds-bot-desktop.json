@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 4,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复桌面窗口里 ds-bot 的 Bot 界面占住页面时 Chat / Code 切换消失的问题：切换器改留在 ds-bot 自己的顶行，不再按标题栏里本主题侧栏列的标记定位，从 Bot 界面回到代码界面的路一直都在。",
-  "en": "Fix the Chat / Code switch disappearing when ds-bot's Bot surface has the page in the desktop window: the switch now stays in ds-bot's own top row instead of taking the caption strip through this theme's sidebar-column mark, so the way back to the code interface stays on screen."
-}

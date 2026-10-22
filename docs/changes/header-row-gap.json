@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复窗口标题栏里的会话标题与它下方那一行控件重叠：行顶原先插进标题自己的框里，标题框随窗口与字号变高时两行字就压在一起；行顶现在停在标题框下方一段固定的空白处，整行始终留在会话头部里。",
-  "en": "Fix the conversation title in the window's caption row overlapping the row of controls below it: the row's top was tucked into the title's own box, so a taller window or type size pressed the two lines together. The row's top now stands a fixed gap below the title's box, keeping the row inside the conversation header."
-}

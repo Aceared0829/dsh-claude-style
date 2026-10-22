@@ -1,8 +1,0 @@
-{
-  "group": "chores",
-  "order": 0,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "删除十二个没有调用方的导出，把注释里三十二处指向引擎迁移前位置的路径改成现址，四条故障补丁按当前代码重记，构建里「滚动位置只由 scroll-owner 写入」那条检查按引擎所在的位置恢复生效，AGENTS.md 的四处陈述与实现一致，工作树的删除工具接受 .agents/worktrees/，插件的表现与断言不变。",
-  "en": "Remove twelve exported symbols with no caller, rewrite thirty-two comment references that still named the files' pre-migration paths, rebase four defect patches onto the current code, restore the build check that only the scroll owner writes a scroll position at its engine path, bring four statements in AGENTS.md in line with the implementation, and let the worktree remover accept .agents/worktrees/, with the plugin's behavior and assertions unchanged."
-}

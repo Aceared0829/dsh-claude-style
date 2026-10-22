@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 2,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "改善流式回复期间写回 token 的估算：正文按中文字符、中文标点、拉丁词、数字、空白与标点各段本身的形状计价，替换原先按宽窄字符计数的规则，估算值贴近服务商的分词结果。",
-  "en": "Improve the written-back token estimate while an answer streams: the text is now priced by the shape of its runs — CJK characters and marks, Latin words, digits, whitespace, punctuation — in place of the wide/narrow character rule, so the figure stays close to the provider's own count."
-}

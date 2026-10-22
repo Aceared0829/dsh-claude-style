@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 4,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "把配色改为由少量种子颜色与一张共用音阶表在构建时生成：两档各自的强调色、明暗画布与正文链接成为仅有的输入，其余颜色按明度、彩度与透明度的台阶推出；两档的观感保持不变，个别中性色与强调色与此前的取值最多相差几个色差单位。",
-  "en": "Generate the palette at build time from a handful of seed colours and one shared tone ladder: each look's accent, its light and dark canvases and its prose link are the only inputs, and every other colour follows a lightness, chroma and alpha step; both looks keep their appearance, with individual neutral and accent colours a few ΔE00 away from their former values."
-}

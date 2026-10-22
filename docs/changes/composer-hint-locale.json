@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 4,
-  "at": "2026-10-21",
-  "external": false,
-  "zh": "修复输入框提示在中文界面里仍读英文的问题：提示文案按宿主的界面语言取词，宿主不画提示的卡片由皮肤补上自己的提示。",
-  "en": "Fix the composer's hint reading English under a Chinese interface: the words now follow the host's interface language, and the skin supplies its own hint where the host draws none, as on a card holding an attachment."
-}
