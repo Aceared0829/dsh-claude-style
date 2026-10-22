@@ -1,8 +1,9 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
-import { MODEL_EFFORT_LABEL } from '../model/copy-fallbacks'
+import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_LABEL } from '../model/copy-fallbacks'
 import { readPrefs } from '../../core/prefs'
 import { createEffortControl } from './control'
 import type { EffortTrackBox } from './control'
+import { effortSteps, effortTint } from './ladder'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import { closestComposerCard, findDockedContextMeter } from '@dsh-claude-style/engine/host'
 import type { CloseReason } from '@dsh-claude-style/engine/scheduler'
@@ -51,6 +52,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let lastEffort: ReturnType<ModelCatalog['effort']> = null
   /** The ladder whose widest level name the trigger's width is reserved for. */
   let reservedLadder = ''
+  /** The rung's place on the trigger's colour ramp, as last written; empty while the trigger wears no ramp. */
+  let tintPercent = ''
   /** The canvas the trigger's label widths are measured on, kept for the generation. */
   let labelMetrics: CanvasRenderingContext2D | null = null
   const effortHoverIntent = createHoverIntent(
@@ -408,6 +411,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortPlace.top = -1
     effortPlace.rowKey = ''
     reservedLadder = ''
+    // The same holds for the colour ramp: the replacement is a new node.
+    tintPercent = ''
     if (effortBtn !== null) {
       if (effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
       effortBtn = null
@@ -477,7 +482,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // Same-value guards: sync runs on every scheduler pass, and an identical
     // write still mutates the DOM (textContent replaces the text node;
     // setAttribute queues a record the scheduler's observer sees).
-    reserveLabelWidth(effortBtn, info.reasoning.efforts.map((level) => level.name), info.label)
+    const ladder = effortSteps(info, MODEL_EFFORT_DEFAULT)
+    reserveLabelWidth(effortBtn, ladder.steps.map((step) => step.name), info.label)
+    // Where the rung stands on the trigger's colour ramp, in percent. The
+    // stylesheet reads it only while the Composer tab's effort-accent row is on;
+    // a rung with no place on the ramp takes the mark and the property off, and
+    // the label keeps the resting ink.
+    const tint = effortTint(ladder.steps, ladder.index)
+    const percent = tint === null ? '' : String(Math.round(tint * 100))
+    if (percent !== tintPercent) {
+      if (percent === '') {
+        effortBtn.removeAttribute('data-tint')
+        effortBtn.style.removeProperty('--dsh-claude-effort-tint')
+      } else {
+        effortBtn.setAttribute('data-tint', '')
+        effortBtn.style.setProperty('--dsh-claude-effort-tint', percent)
+      }
+      tintPercent = percent
+    }
     const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
     if (labelEl !== null && labelEl.textContent !== info.label) labelEl.textContent = info.label
     const aria = `${copy('effortLabel')} ${info.label}`
@@ -509,6 +531,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortPlace.widthLabel = ''
     effortPlace.width = 0
     reservedLadder = ''
+    tintPercent = ''
     releaseModelRoom()
     unregisterPopover('effort')
   }

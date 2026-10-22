@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 0,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "新增思考强度重点色选项：推理等级按钮按当前档位取色，关闭的档位与模型自己的默认档位保持灰色，每个思考档位在蓝色到紫色之间取自己的一档，越高越靠紫色一端。",
+  "en": "Add the effort accent colour option, which paints the reasoning-effort button by the level in force: a switched-off level and the model's own default level stay grey, each thinking level takes its own step between the blue and the violet, and the ladder climbs toward the violet."
+}

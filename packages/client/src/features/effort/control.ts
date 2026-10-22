@@ -1,17 +1,12 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_FASTER, MODEL_EFFORT_LABEL, MODEL_EFFORT_NONE, MODEL_EFFORT_SMARTER } from '../model/copy-fallbacks'
-import { orderEffortIds } from './ladder'
+import { effortSteps } from './ladder'
+import type { EffortStep } from './ladder'
 import { createEffortMatrix } from './matrix'
 import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { inPagePixels } from '../../shared/page-zoom'
 import type { ModelCatalog } from '../model/catalog'
 import { copy } from './copy'
-
-/** One rung of the ladder: the level's id (undefined for the model's own default) and its name. */
-interface EffortStep {
-  id: string | undefined
-  name: string
-}
 
 /** The words around the slider. */
 interface EffortLabels {
@@ -169,30 +164,12 @@ export function createEffortControl(opts: {
    */
   function state(): { steps: EffortStep[], index: number, labels: EffortLabels } {
     const effort = opts.read()
-    const list: EffortStep[] = []
-    let index = -1
-    if (effort !== null) {
-      /* The host records the levels as a strength scale; an adapter that hands
-         them over unordered is put right here (ladder.ts). */
-      const declared = effort.reasoning.efforts
-      const order = orderEffortIds([
-        ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
-        ...declared.map(level => level.id),
-      ])
-      const byId = new Map(declared.map(level => [level.id, level.name]))
-      for (const id of order) {
-        list.push(id === undefined
-          ? { id: undefined, name: MODEL_EFFORT_DEFAULT }
-          : { id, name: byId.get(id) ?? id })
-      }
-      index = 0
-      for (let s = 0; s < list.length; s++) {
-        if (list[s].id === effort.effective) { index = s; break }
-      }
-    }
+    const ladder = effort === null
+      ? { steps: [] as EffortStep[], index: -1 }
+      : effortSteps(effort, MODEL_EFFORT_DEFAULT)
     return {
-      steps: list,
-      index,
+      steps: ladder.steps,
+      index: ladder.index,
       labels: {
         label: copy('effortLabel'),
         faster: copy('effortFaster'),

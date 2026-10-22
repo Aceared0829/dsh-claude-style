@@ -10,7 +10,7 @@
  */
 import { spec } from '../../fixtures/behaviour.mjs'
 import { boxOf } from '../../fixtures/boxes.mjs'
-import { MODEL_SEAT_NAME } from '../../fixtures/model-seat.mjs'
+import { MODEL_SEAT_NAME, echoSelection } from '../../fixtures/model-seat.mjs'
 
 /** The host's model button: the reader finds it by its name, the model's. */
 const modelButton = (page) => page.getByRole('button', { name: MODEL_SEAT_NAME })
@@ -46,20 +46,7 @@ export default spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], densi
     // The stand-in's directory answers one fixed snapshot: the wrapper makes
     // its `select` move the level the way the host's own store does, so the
     // button's label is the level the reader just picked.
-    await t.page.evaluate(() => {
-      const host = window.__dshSmokeHost
-      const dir = host.modelDirectories.directoryFor('smoke-session')
-      const snapshot = dir.store.getSnapshot.bind(dir.store)
-      let level = 'max'
-      dir.store.getSnapshot = () => {
-        const snap = snapshot()
-        return snap === null || snap.current === null ? snap : { ...snap, current: { ...snap.current, reasoningEffort: level } }
-      }
-      dir.select = (selection) => {
-        if (selection && selection.reasoningEffort !== undefined) level = selection.reasoningEffort
-        return Promise.resolve()
-      }
-    })
+    await echoSelection(t.page, 'max')
     await t.page.click(t.surface('effort.trigger'))
     await t.settle()
     const before = await t.read.box(t.surface('effort.trigger'))

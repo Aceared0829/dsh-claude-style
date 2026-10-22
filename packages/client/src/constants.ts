@@ -98,6 +98,13 @@ export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
 export const ONGOING_INDICATOR_ATTR = 'data-dsh-claude-ongoing-indicator'
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
 /**
+ * Present while the effort trigger takes a colour from the rung in force
+ * (features/effort/effort-picker.css): the switch-off rung keeps the resting
+ * ink, the rungs below the top take the accent, and the top rung takes the
+ * violet the effort card's own apex wears.
+ */
+export const EFFORT_ACCENT_ATTR = 'data-dsh-claude-effort-accent'
+/**
  * The page zoom in force, as the factor the stylesheet scales the page by
  * (theme/chrome.css). Absent while the page follows the system; the scale every
  * geometry that converts a measured box into the page's own pixels divides by

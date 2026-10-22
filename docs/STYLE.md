@@ -151,9 +151,25 @@ carries no serif), `--dsh-claude-font-code` to `--ds-font-family-code`.
 
 Two colours stay whoever paints: the reasoning slider's violet top rung
 (`--dsh-claude-apex*`) and the account-hold page, which reproduces a Claude
-screen. Translucent neutral hover tints and the usage panel's data colours stay
-literal; they read on any canvas. Every other colour that paints a surface, a
-text, a border or an accent reads a token.
+screen. The effort trigger's ramp (`--dsh-claude-effort-*`) is the same kind of
+colour — a copy of the reference effort slider's own blue-to-violet ladder, kept
+apart from the brand's accent. Translucent neutral hover tints and the usage
+panel's data colours stay literal; they read on any canvas. Every other colour
+that paints a surface, a text, a border or an accent reads a token.
+
+**The effort trigger's tone.** While the Composer tab's effort-accent row is on,
+the reasoning-effort button beside the model name takes its colour from the rung
+in force. Every thinking rung has a place on one ramp between two fixed colours —
+the blue `--dsh-claude-effort-low` and the violet `--dsh-claude-effort-high`, the
+ladder the reference effort slider draws — and the rung's place is its index over
+the ladder's span, so a four-stop ladder reads blue, two steps between, then the
+violet on the strongest level. The ramp is mixed in OKLCH, which keeps the steps
+apart at every ladder length. It reads no brand token: a ramp derived from the
+DeepSeek brand's blue accent left its three levels within a few steps of each
+other, indistinguishable at 13px. The switch-off level and the model's own
+default level have no strength the catalog names, so both keep the resting ink
+(`--dsw-alias-label-secondary`). The row off leaves the resting ink on every
+rung.
 
 ## Windows titlebar · 桌面顶栏
 

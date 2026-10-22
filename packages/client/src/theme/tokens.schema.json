@@ -24,7 +24,7 @@
       }
     },
     "apex": {
-      "description": "The reasoning slider's top rung: the same violet under every palette.",
+      "description": "The reasoning slider's own colours — its violet top rung and the effort trigger's ramp — the same under every palette.",
       "type": "array",
       "items": {
         "type": "object",
