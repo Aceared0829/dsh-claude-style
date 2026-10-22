@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { BRAND_INK_ORIGINAL, BRAND_INK_TEXT, PALETTE_HOST } from '../../constants'
+import { BRAND_INK_ACCENT, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM } from '../../constants'
+import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
 import { BrandLockup } from './settings-brand-lockup'
 import type { SegmentOption, SettingsRow, SettingsView } from './settings-controls'
 import type { Prefs } from '../../constants'
@@ -11,110 +12,130 @@ import { copy } from './copy'
  * (settings-brand-lockup.ts), with how the images are inked as its sub-row.
  * The name and the two images are the reader's own data, written through the
  * page's write path and the host half's brand routes, so the lockup edits the
- * same values the sidebar paints. The accent colour stands apart from them as
- * Colours' sub-row (accentRow).
+ * same values the sidebar paints. The colour cards stand apart from them as
+ * Colours' sub-row (paletteCardsRow).
  */
 
-/** Pause after the last drag before a picked colour is written to the settings store. */
-const DRAFT_SAVE_DEBOUNCE_MS = 600
-/** What the colour well shows while no custom accent is set and the accent token is not a `#rrggbb` colour. */
-const ACCENT_FALLBACK = '#d97757'
+/** One colour of a card: the preference it writes on the reader's card, and its name. */
+const COLOURS = [
+  { field: 'customAccent', label: 'paletteSwatchAccent', pick: (card: Card) => card.accent },
+  { field: 'customCanvasLight', label: 'paletteSwatchLight', pick: (card: Card) => card.canvas.light },
+  { field: 'customCanvasDark', label: 'paletteSwatchDark', pick: (card: Card) => card.canvas.dark },
+  { field: 'customCode', label: 'paletteSwatchCode', pick: (card: Card) => card.code.light },
+] as const
 
-/**
- * A preference edited as a draft: the control follows every drag at once, the
- * store gets the value after a pause or when the control lets go, and a stored
- * value that changes elsewhere replaces the draft while the control is not
- * being edited.
- */
-function useDraft(stored: string, commit: (value: string) => void) {
-  const [draft, setDraft] = React.useState(stored)
-  const editing = React.useRef(false)
-  const timer = React.useRef<number | null>(null)
-  React.useEffect(() => {
-    if (!editing.current) setDraft(stored)
-  }, [stored])
-  React.useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current) }, [])
-  const flush = (value: string) => {
-    if (timer.current !== null) {
-      clearTimeout(timer.current)
-      timer.current = null
-    }
-    editing.current = false
-    setDraft(value)
-    if (value !== stored) commit(value)
-  }
-  const change = (value: string) => {
-    editing.current = true
-    setDraft(value)
-    if (timer.current !== null) clearTimeout(timer.current)
-    timer.current = setTimeout(() => flush(value), DRAFT_SAVE_DEBOUNCE_MS)
-  }
-  return { draft, change, flush }
+type Card = (typeof PALETTE_CARDS)[number]
+type ColourField = (typeof COLOURS)[number]['field']
+
+/** The name a card goes by, in the settings page's own language. */
+function cardName(card: Card) {
+  return card.id === 'claude' ? copy('brandClaude') : copy('brandDeepseek')
 }
 
 /**
- * The accent colour: a colour well and, while a custom colour is set, the
- * button that hands the accent back to the brand. Unset, the well shows the
- * accent the page paints right now.
+ * The four swatches of one card. A brand card's swatches are its colours as the
+ * token sheet resolves them; the reader's card takes a colour well each, and
+ * every pick switches the page to that card at once.
  */
-function BrandAccentControl(props: { stored: string, write: SettingsView['write'], disabled?: boolean }) {
-  const { draft, change, flush } = useDraft(props.stored, value => props.write({ brandAccent: value }))
-  const live = getComputedStyle(document.body).getPropertyValue('--dsw-alias-brand-primary').trim().toLowerCase()
-  const shown = draft !== '' ? draft : /^#[0-9a-f]{6}$/.test(live) ? live : ACCENT_FALLBACK
+function Swatches(props: { colours: string[], onChange?: (field: ColourField, value: string) => void }) {
+  const { colours, onChange } = props
+  return React.createElement(
+    'span',
+    { className: 'dsh-claude-palette-swatches' },
+    COLOURS.map((colour, index) => {
+      const label = copy(colour.label)
+      const value = colours[index]
+      if (onChange === undefined) {
+        return React.createElement('span', {
+          key: colour.field,
+          className: 'dsh-claude-palette-swatch',
+          style: { background: value },
+          title: label,
+          'aria-label': label,
+          role: 'img',
+        })
+      }
+      return React.createElement(
+        'span',
+        { key: colour.field, className: 'dsh-claude-palette-swatch', style: { background: value }, title: label },
+        React.createElement('input', {
+          type: 'color',
+          className: 'dsh-claude-palette-swatch-input',
+          value,
+          'aria-label': label,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChange(colour.field, event.target.value),
+        }),
+      )
+    }),
+  )
+}
+
+/** The three cards: the two brands, whose colours the page already paints, and the reader's own. */
+function PaletteCards(props: { prefs: Prefs, write: SettingsView['write'] }) {
+  const { prefs, write } = props
+  const brand = PALETTE_CARDS.find((entry) => entry.id === prefs.brand) ?? PALETTE_CARDS[0]
+  const custom = prefs.paletteColors === PALETTE_COLORING_CUSTOM
+  const reader = COLOURS.map((colour) => {
+    const stored = prefs[colour.field]
+    return stored === '' ? colour.pick(brand) : stored
+  })
+  const pick = (field: ColourField, value: string) => write({ paletteColors: PALETTE_COLORING_CUSTOM, [field]: value })
   return React.createElement(
     'div',
-    { className: 'dsh-claude-brand-accent' },
-    React.createElement('input', {
-      type: 'color',
-      className: 'dsh-claude-settings-color',
-      value: shown,
-      disabled: props.disabled === true,
-      'aria-label': copy('brandAccentTitle'),
-      onChange: (event: React.ChangeEvent<HTMLInputElement>) => change(event.target.value),
-      onBlur: () => flush(draft),
-    }),
-    draft === ''
-      ? React.createElement('span', { className: 'dsh-claude-brand-accent-note' }, copy('brandAccentUnset'))
-      : React.createElement('button', {
+    { className: 'dsh-claude-palette-cards', role: 'group', 'aria-label': copy('paletteCardsTitle') },
+    PALETTE_CARDS.map((card) => React.createElement(
+      'div',
+      { key: card.id, className: 'dsh-claude-palette-card', 'data-brand': card.id },
+      React.createElement(Swatches, { colours: COLOURS.map((colour) => colour.pick(card)) }),
+      React.createElement('span', { className: 'dsh-claude-palette-card-name' }, cardName(card)),
+    )),
+    React.createElement(
+      'button',
+      {
         type: 'button',
-        className: 'dsh-claude-settings-button',
-        disabled: props.disabled === true,
-        onClick: () => flush(''),
-      }, copy('brandAccentReset')),
+        className: 'dsh-claude-palette-card',
+        'data-active': custom ? '' : undefined,
+        'aria-pressed': custom ? 'true' : 'false',
+        'aria-label': copy('paletteCustom'),
+        onClick: () => { if (!custom) write({ paletteColors: PALETTE_COLORING_CUSTOM }) },
+      },
+      React.createElement(Swatches, { colours: reader, onChange: pick }),
+      React.createElement('span', { className: 'dsh-claude-palette-card-name' }, copy('paletteCustom')),
+    ),
+    custom
+      ? React.createElement('button', {
+        type: 'button',
+        className: 'dsh-claude-settings-button dsh-claude-palette-reset',
+        onClick: () => write({ paletteColors: PALETTE_COLORING_BRAND }),
+      }, copy('paletteUseBrand'))
+      : null,
   )
 }
 
 /**
- * The accent colour as Colours' sub-row (D72): the accent paints only over
- * the skin's own palette (D30), so the row greys out while Colours follows
- * the host, still showing the stored colour.
+ * The colour cards as Colours' sub-row (D72): the two brands' colours as the
+ * page paints them, and the reader's own four, which switch the page to that
+ * card the moment one is picked. The row carries no title of its own.
  */
-export function accentRow(view: SettingsView): SettingsRow {
-  const { prefs, write, controls } = view
-  const enabled = prefs.palette !== PALETTE_HOST
+export function paletteCardsRow(view: SettingsView): SettingsRow {
   return {
     rank: 15,
-    node: controls.subRow(
-      'brandAccent',
-      copy('brandAccentTitle'),
-      copy('brandAccentDesc'),
-      React.createElement(BrandAccentControl, { stored: prefs.brandAccent, write, disabled: !enabled }),
-      enabled,
-    ),
+    node: view.controls.row('paletteCards', null, null, React.createElement(PaletteCards, { prefs: view.prefs, write: view.write }), { block: true }),
   }
 }
 
 /** The custom brand row, ranked ahead of every other row on the tab: the lockup the reader edits in place, with how images are inked as its sub-row. */
 export function brandRows(view: SettingsView): SettingsRow[] {
-  const { prefs, write, controls } = view
+  const { prefs, write } = view
   const inkOptions: SegmentOption<Prefs['brandInk']>[] = [
     { value: BRAND_INK_ORIGINAL, label: copy('brandInkOriginal') },
+    { value: BRAND_INK_ACCENT, label: copy('brandInkAccent') },
     { value: BRAND_INK_TEXT, label: copy('brandInkText') },
   ]
   return [
     {
       rank: 5,
-      node: controls.row(
+      node: view.controls.row(
         'brandLockup',
         copy('brandLockupTitle'),
         copy('brandLockupDesc'),
@@ -124,11 +145,11 @@ export function brandRows(view: SettingsView): SettingsRow[] {
     },
     {
       rank: 6,
-      node: controls.subRow(
+      node: view.controls.subRow(
         'brandInk',
         copy('brandInkTitle'),
         copy('brandInkDesc'),
-        controls.segment(inkOptions, prefs.brandInk, value => { write({ brandInk: value }) }),
+        view.controls.segment(inkOptions, prefs.brandInk, value => { write({ brandInk: value }) }),
         true,
       ),
     },

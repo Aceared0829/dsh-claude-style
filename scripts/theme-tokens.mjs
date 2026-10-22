@@ -83,7 +83,7 @@ function tokenValue(spec, card, scheme, tones) {
   if (spec.alias !== undefined) return `var(${spec.alias})`
   if (spec.tone !== undefined) return tones.get(tokenTone(spec, card))
   if (spec.card === 'logoInk') return card.logoInk === 'ink' ? tones.get('ink') : card.accent
-  if (spec.card === 'codeInk') return card.codeInk === 'accent' ? tones.get('code-ink') : tones.get('ink')
+  if (spec.card === 'code') return card.code[scheme]
   throw new Error('build: a palette token names no colour source')
 }
 
@@ -131,7 +131,7 @@ export function loadTokens(srcDir) {
       const hue = tone[scheme]?.hue
       if (seed === undefined) continue
       for (const name of [seed, hue]) {
-        if (name === undefined || ['canvas', 'accent', 'link'].includes(name) || tones.has(name)) continue
+        if (name === undefined || ['canvas', 'accent', 'link', 'code'].includes(name) || tones.has(name)) continue
         throw new Error(`build: packages/client/src/${TOKEN_SHEET} has the tone ${tone.id} read ${name}, which is neither a card seed nor a tone above it`)
       }
     }
@@ -168,6 +168,76 @@ function declarationsOf(doc, values) {
   })
 }
 
+/** The attribute selector a gate names. */
+function gateOf({ attribute }, value) {
+  return `[${attribute}="${value}"]`
+}
+
+/** The relative-colour form of one tone step: the seed's own colour, moved by the step. */
+function relativeColour(seed, step) {
+  const l = step.l !== undefined
+    ? String(step.l)
+    : step.dl === undefined || step.dl === 0 ? 'l' : `calc(l ${step.dl > 0 ? '+' : '-'} ${Math.abs(step.dl)})`
+  const c = step.c !== undefined
+    ? String(step.c)
+    : step.m !== undefined ? `calc(c * ${step.m})`
+      : step.dc === undefined || step.dc === 0 ? 'c' : `calc(c ${step.dc > 0 ? '+' : '-'} ${Math.abs(step.dc)})`
+  const h = step.h === undefined || step.h === 0 ? 'h' : `calc(h ${step.h > 0 ? '+' : '-'} ${Math.abs(step.h)})`
+  const alpha = step.a === undefined ? '' : ` / ${step.a}`
+  return `oklch(from ${seed} ${l} ${c} ${h}${alpha})`
+}
+
+/**
+ * The reader's own palette, resolved in the page: the same ladder, written as
+ * relative colours over the four seeds the brand layer writes on <body>. One
+ * block per card and scheme keeps the card's edge style and logo ink, and the
+ * link family follows the custom accent the way a card without its own link
+ * does at build time.
+ */
+function customPaletteBlocks(doc, gates) {
+  const blocks = []
+  for (const card of doc.palette.cards) {
+    for (const scheme of SCHEMES) {
+      const custom = `[data-dsh-claude-brand="${card.id}"][data-dsh-claude-custom-palette]`
+      const seeds = {
+        canvas: `var(--dsh-claude-custom-canvas-${scheme})`,
+        accent: 'var(--dsh-claude-custom-accent)',
+        code: 'var(--dsh-claude-custom-code)',
+        link: scheme === 'light'
+          ? 'oklch(from var(--dsh-claude-custom-accent) calc(l - 0.06) c h)'
+          : 'oklch(from var(--dsh-claude-custom-accent) calc(l + 0.15) c h)',
+      }
+      const declarations = []
+      for (const tone of doc.palette.tones) {
+        const step = tone[scheme]
+        if (step === undefined) continue
+        const seed = seeds[step.seed] ?? `var(--dsh-tone-${step.seed})`
+        // A step that moves nothing is the seed itself: a direct reference keeps the value a plain colour.
+        const plain = step.l === undefined && step.c === undefined && step.a === undefined &&
+          (step.dl === undefined || step.dl === 0) && (step.dc === undefined || step.dc === 0) &&
+          (step.m === undefined || step.m === 1) && (step.h === undefined || step.h === 0)
+        declarations.push([`--dsh-tone-${tone.id}`, plain ? seed : relativeColour(seed, step)])
+      }
+      for (const spec of doc.palette.tokens) {
+        if (spec.schemes !== undefined && !spec.schemes.includes(scheme)) continue
+        let value
+        if (spec.tone !== undefined) value = `var(--dsh-tone-${card.edges === 'surface' && spec.flat !== undefined && scheme === 'dark' ? spec.flat : spec.tone})`
+        else if (spec.literal !== undefined) value = spec.literal[scheme]
+        else if (spec.alias !== undefined) value = `var(${spec.alias})`
+        else if (spec.card === 'code') value = 'var(--dsh-claude-custom-code)'
+        else if (spec.card === 'logoInk') value = card.logoInk === 'accent' ? 'var(--dsh-claude-custom-accent)' : 'var(--dsh-tone-ink)'
+        else throw new Error('build: a palette token names no colour source')
+        declarations.push([spec.token, value])
+      }
+      // Text on a custom accent fill is picked by contrast, not derived from the canvas.
+      declarations.push(['--dsw-alias-brand-text', 'var(--dsh-claude-custom-accent-ink)'])
+      declarations.push(['--dsw-alias-label-primary-foreground', 'var(--dsh-claude-custom-accent-ink)'])
+      blocks.push(tokenBlock(`${SCOPE}${gateOf(gates.palette, gates.palette.claude)}${custom}${scheme === 'dark' ? '[data-ds-dark-theme]' : ':not([data-ds-dark-theme])'}`, declarations))
+    }
+  }
+  return blocks
+}
+
 /**
  * The token stylesheet, in cascade order.
  *
@@ -187,7 +257,7 @@ function declarationsOf(doc, values) {
 export function tokenSheet(doc, gates, images) {
   const dark = '[data-ds-dark-theme]'
   const light = ':not([data-ds-dark-theme])'
-  const gate = ({ attribute }, value) => `[${attribute}="${value}"]`
+  const gate = gateOf
   const gated = (brand) => `${SCOPE}${gate(gates.palette, gates.palette.claude)}${brand === undefined ? '' : gate(gates.brand, brand)}`
   const typeface = (value) => `${SCOPE}${gate(gates.typeface, value)}`
   const values = resolvePalette(doc)
@@ -214,6 +284,7 @@ export function tokenSheet(doc, gates, images) {
     tokenBlock(`${SCOPE}${dark}`, doc.apex.map((item) => [item.token, item.dark])),
     tokenBlock(`${SCOPE}${light}`, doc.apex.map((item) => [item.token, item.light])),
     ...blocks,
+    ...customPaletteBlocks(doc, gates),
     tokenBlock(`${SCOPE}${gate(gates.palette, gates.palette.host)}`, doc.palette.tokens.flatMap((spec) => (spec.host === undefined ? [] : [[spec.token, spec.host]]))),
   ].filter((block) => block !== '').join('\n')
 }
@@ -258,7 +329,8 @@ function tokenTable(doc) {
     cell(card.link?.dark),
     card.edges,
     card.logoInk,
-    card.codeInk,
+    tableCell(card.code.light),
+    tableCell(card.code.dark),
   ]))
   const toneRows = doc.palette.tones.map((tone) => row([`\`${tone.id}\``, tone.seed, toneCell(tone.light), toneCell(tone.dark)]))
   const schemeHeader = cards.flatMap((card) => [`${card.id} light`, `${card.id} dark`])
@@ -273,8 +345,8 @@ function tokenTable(doc) {
   })
   const tokenHeader = ['Token', 'Tone', ...schemeHeader, 'Host alias', 'Use']
   return [
-    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code ink']),
-    row(['---', '---', '---', '---', '---', '---', '---', '---', '---']),
+    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code light', 'Code dark']),
+    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
     ...cardRows,
     '',
     row(['Tone', 'Seed', 'Light', 'Dark']),

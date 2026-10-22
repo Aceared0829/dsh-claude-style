@@ -16,7 +16,7 @@ export default {
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
       general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
-      appearance: ['brandLockup', 'brandInk', 'palette', 'brandAccent', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
+      appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
       composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'statsPosition', 'billingCurrency', 'viewTabs', 'headerBand'],
@@ -42,7 +42,7 @@ export default {
       JSON.stringify(onWindows))
     const off = settings.parentsOff || {}
     check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
-      !!off.appearance && JSON.stringify(off.appearance.disabled) === '["brandAccent","mascotScope"]' &&
+      !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&
         !!off.composer && JSON.stringify(off.composer.disabled) === '["modelDescriptions","effortAccent","quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))

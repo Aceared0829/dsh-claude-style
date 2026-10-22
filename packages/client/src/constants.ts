@@ -65,15 +65,20 @@ export const BRAND_ATTR = 'data-dsh-claude-brand'
  * the reader has supplied it: CUSTOM_MARK_ATTR while a mark image is in place,
  * CUSTOM_WORD_ATTR as `image` while a wordmark image is and as `text` while
  * only a brand name is, CUSTOM_TINT_ATTR while the images take the text colour
- * (`brandInk` set to `text`), and ACCENT_ATTR while a custom accent colour is
- * set. The images, the name and the colour ride <body> as custom properties.
+ * (`brandInk` set to `text`), CUSTOM_ACCENT_TINT_ATTR while the images take
+ * the accent, and CUSTOM_PALETTE_ATTR while the reader's own four colours are
+ * in force. BRAND_INK_ATTR carries `accent` or `text` while that choice
+ * repaints the brand art. The images, the name and the colours ride <body> as
+ * custom properties.
  */
 export const CUSTOM_MARK_ATTR = 'data-dsh-claude-custom-mark'
 export const CUSTOM_WORD_ATTR = 'data-dsh-claude-custom-word'
 export const CUSTOM_WORD_IMAGE = 'image'
 export const CUSTOM_WORD_TEXT = 'text'
 export const CUSTOM_TINT_ATTR = 'data-dsh-claude-custom-tint'
-export const ACCENT_ATTR = 'data-dsh-claude-accent'
+export const CUSTOM_ACCENT_TINT_ATTR = 'data-dsh-claude-custom-accent-tint'
+export const CUSTOM_PALETTE_ATTR = 'data-dsh-claude-custom-palette'
+export const BRAND_INK_ATTR = 'data-dsh-claude-brand-ink'
 
 /** The document attribute the resolved animation answer rides. */
 export const MOTION_ATTR = 'data-dsh-claude-motion'

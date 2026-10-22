@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_CLAUDE, TYPEFACE_HOST } from '../../constants'
-import { accentRow, brandRows } from './settings-brand'
+import { brandRows, paletteCardsRow } from './settings-brand'
 import { copy } from './copy'
 import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 
 /**
  * The settings page's Appearance tab: the custom brand rows that open it
- * (settings-brand.ts), who paints the colours — with the accent colour as that
+ * (settings-brand.ts), who paints the colours — with the colour cards as that
  * row's sub-row — and who sets the type. The home layout, the mascot and where
  * it stands are the features' own rows, placed here by their manifests (D72).
  */
@@ -35,7 +35,8 @@ export function createSettingsAppearanceTab(): SettingsTab {
           controls.segment(paletteOptions, prefs.palette, value => { write({ palette: value }) }),
         ),
       },
-      accentRow(view),
+      // The cards belong to the skin's own colours: following the host leaves nothing to pick.
+      ...(prefs.palette === PALETTE_HOST ? [] : [paletteCardsRow(view)]),
       {
         rank: 20,
         node: controls.row(

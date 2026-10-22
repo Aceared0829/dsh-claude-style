@@ -1,14 +1,21 @@
-import { ACCENT_ATTR, BRAND_INK_TEXT, CUSTOM_MARK_ATTR, CUSTOM_TINT_ATTR, CUSTOM_WORD_ATTR, CUSTOM_WORD_IMAGE, CUSTOM_WORD_TEXT } from '../../constants'
+import { BRAND_INK_ACCENT, BRAND_INK_ATTR, BRAND_INK_TEXT, CUSTOM_ACCENT_TINT_ATTR, CUSTOM_MARK_ATTR, CUSTOM_PALETTE_ATTR, CUSTOM_TINT_ATTR, CUSTOM_WORD_ATTR, CUSTOM_WORD_IMAGE, CUSTOM_WORD_TEXT, PALETTE_COLORING_CUSTOM } from '../../constants'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { loadBrandImages, readBrandImages, resetBrandImages, subscribeBrandImages } from '../../shared/custom-brand'
+import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
 
 /**
- * The custom brand layer (D30): the reader's own name, images and accent
- * colour over whichever brand is chosen. Each part is written onto <body>
- * only while the reader has supplied it — an attribute the stylesheets switch
- * on (brand.css, and the account avatar's rule in account-footer.css) and the
- * value as a custom property — so a reader who supplied nothing gets the
- * brand's own art and colours untouched.
+ * The custom brand layer (D30): the reader's own name, images and the four
+ * colours of the colour card they authored, over whichever brand is chosen.
+ * Each part is written onto <body> only while the reader has supplied it — an
+ * attribute the stylesheets switch on (brand.css, and the account avatar's rule
+ * in account-footer.css) and the value as a custom property — so a reader who
+ * supplied nothing gets the brand's own art and colours untouched.
+ *
+ * The four colours are seeds: the token sheet turns them into the whole palette
+ * at runtime (scripts/theme-tokens.mjs), which is why they are written as
+ * properties rather than resolved here. A seed the reader has not picked falls
+ * back to the card's own value, so picking one colour keeps the rest of the
+ * look.
  */
 
 /** The custom properties written on <body>, read by the rules gated on the attributes. */
@@ -18,8 +25,16 @@ const WORD_RATIO_PROPERTY = '--dsh-claude-custom-word-ratio'
 const NAME_PROPERTY = '--dsh-claude-custom-name'
 const ACCENT_PROPERTY = '--dsh-claude-custom-accent'
 const ACCENT_INK_PROPERTY = '--dsh-claude-custom-accent-ink'
-const PROPERTIES = [MARK_PROPERTY, WORD_PROPERTY, WORD_RATIO_PROPERTY, NAME_PROPERTY, ACCENT_PROPERTY, ACCENT_INK_PROPERTY]
-const ATTRIBUTES = [CUSTOM_MARK_ATTR, CUSTOM_WORD_ATTR, CUSTOM_TINT_ATTR, ACCENT_ATTR]
+const CANVAS_LIGHT_PROPERTY = '--dsh-claude-custom-canvas-light'
+const CANVAS_DARK_PROPERTY = '--dsh-claude-custom-canvas-dark'
+const CODE_PROPERTY = '--dsh-claude-custom-code'
+/** The brand art's ink while the image-colour choice names the accent or the text colour. */
+const LOGO_INK_PROPERTY = '--dsh-claude-logo-ink'
+const PROPERTIES = [
+  MARK_PROPERTY, WORD_PROPERTY, WORD_RATIO_PROPERTY, NAME_PROPERTY,
+  ACCENT_PROPERTY, ACCENT_INK_PROPERTY, CANVAS_LIGHT_PROPERTY, CANVAS_DARK_PROPERTY, CODE_PROPERTY, LOGO_INK_PROPERTY,
+]
+const ATTRIBUTES = [CUSTOM_MARK_ATTR, CUSTOM_WORD_ATTR, CUSTOM_TINT_ATTR, CUSTOM_ACCENT_TINT_ATTR, CUSTOM_PALETTE_ATTR, BRAND_INK_ATTR]
 
 /** The two inks text on an accent fill can take: the dark and the light canvas (docs/STYLE.md). */
 const INK_DARK = '#141413'
@@ -64,16 +79,29 @@ export function install() {
   function apply() {
     const prefs = readPrefs()
     const { mark, wordmark } = readBrandImages()
+    const card = PALETTE_CARDS.find((entry) => entry.id === prefs.brand) ?? PALETTE_CARDS[0]
+    const custom = prefs.paletteColors === PALETTE_COLORING_CUSTOM
+    const accent = prefs.customAccent === '' ? card.accent : prefs.customAccent
     attribute(CUSTOM_MARK_ATTR, mark === null ? null : '')
     property(MARK_PROPERTY, mark === null ? null : `url("${mark.url}")`)
     attribute(CUSTOM_WORD_ATTR, wordmark !== null ? CUSTOM_WORD_IMAGE : prefs.brandName !== '' ? CUSTOM_WORD_TEXT : null)
     property(WORD_PROPERTY, wordmark === null ? null : `url("${wordmark.url}")`)
     property(WORD_RATIO_PROPERTY, wordmark === null ? null : String(wordmark.ratio))
     property(NAME_PROPERTY, wordmark === null && prefs.brandName !== '' ? cssString(prefs.brandName) : null)
-    attribute(CUSTOM_TINT_ATTR, prefs.brandInk === BRAND_INK_TEXT && (mark !== null || wordmark !== null) ? '' : null)
-    attribute(ACCENT_ATTR, prefs.brandAccent === '' ? null : '')
-    property(ACCENT_PROPERTY, prefs.brandAccent === '' ? null : prefs.brandAccent)
-    property(ACCENT_INK_PROPERTY, prefs.brandAccent === '' ? null : accentInk(prefs.brandAccent))
+    const images = mark !== null || wordmark !== null
+    attribute(CUSTOM_TINT_ATTR, prefs.brandInk === BRAND_INK_TEXT && images ? '' : null)
+    attribute(CUSTOM_ACCENT_TINT_ATTR, prefs.brandInk === BRAND_INK_ACCENT && images ? '' : null)
+    attribute(BRAND_INK_ATTR, prefs.brandInk === BRAND_INK_ACCENT ? BRAND_INK_ACCENT : prefs.brandInk === BRAND_INK_TEXT ? BRAND_INK_TEXT : null)
+    attribute(CUSTOM_PALETTE_ATTR, custom ? '' : null)
+    property(ACCENT_PROPERTY, custom ? accent : null)
+    property(ACCENT_INK_PROPERTY, custom ? accentInk(accent) : null)
+    property(CANVAS_LIGHT_PROPERTY, custom ? (prefs.customCanvasLight === '' ? card.canvas.light : prefs.customCanvasLight) : null)
+    property(CANVAS_DARK_PROPERTY, custom ? (prefs.customCanvasDark === '' ? card.canvas.dark : prefs.customCanvasDark) : null)
+    property(CODE_PROPERTY, custom ? (prefs.customCode === '' ? card.code.light : prefs.customCode) : null)
+    // The art's ink is a sheet token; this choice sits above every palette block, so it is written inline.
+    property(LOGO_INK_PROPERTY, prefs.brandInk === BRAND_INK_ACCENT
+      ? 'var(--dsw-alias-brand-primary)'
+      : prefs.brandInk === BRAND_INK_TEXT ? 'var(--dsw-alias-label-primary)' : null)
   }
 
   const offPrefs = subscribePrefs(apply)

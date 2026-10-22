@@ -498,36 +498,81 @@ body[data-dsh-claude-style] .dsh-claude-brand-image-error {
   text-align: right;
 }
 
-/* The accent colour: the native colour well, trimmed to a swatch with the
-   inputs' corner, beside either the note that the brand's own accent stands
-   or the button that hands it back. */
-body[data-dsh-claude-style] .dsh-claude-brand-accent {
-  flex: none;
+/* The colour cards (settings-brand.ts): the brand's four colours and the
+   reader's own, each a row of overlapping discs — the accent, the light and
+   dark canvases and the inline-code ink. A brand card is a read-out; the
+   reader's card is a button, and its discs take a colour well each. */
+body[data-dsh-claude-style] .dsh-claude-palette-cards {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-card {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-body[data-dsh-claude-style] .dsh-claude-settings-color {
-  width: 32px;
-  height: 32px;
-  box-sizing: border-box;
-  padding: 3px;
+  min-width: 124px;
+  padding: 14px 16px 10px;
   border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
+  border-radius: 12px;
+  background: var(--dsh-claude-card);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+}
+
+body[data-dsh-claude-style] button.dsh-claude-palette-card {
   cursor: pointer;
 }
-body[data-dsh-claude-style] .dsh-claude-settings-color::-webkit-color-swatch-wrapper {
+
+body[data-dsh-claude-style] button.dsh-claude-palette-card:hover {
+  border-color: var(--dsw-alias-border-l3);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-card[data-active] {
+  border-color: var(--dsw-alias-brand-primary);
+  box-shadow: 0 0 0 1px var(--dsw-alias-brand-primary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-swatches {
+  display: flex;
+  align-items: center;
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-swatch {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  margin-left: -9px;
+  border: 2px solid var(--dsh-claude-card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--dsw-alias-border-l1);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-swatch:first-child {
+  margin-left: 0;
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-swatch-input {
+  width: 100%;
+  height: 100%;
   padding: 0;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
 }
-body[data-dsh-claude-style] .dsh-claude-settings-color::-webkit-color-swatch {
-  border: none;
-  border-radius: 5px;
-}
-body[data-dsh-claude-style] .dsh-claude-brand-accent-note {
+
+body[data-dsh-claude-style] .dsh-claude-palette-card-name {
   font-size: 13px;
   line-height: 18px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-reset {
+  align-self: center;
 }
 
 /* The quick-provider picker's card (packages/client/src/features/settings/quick-providers.ts):

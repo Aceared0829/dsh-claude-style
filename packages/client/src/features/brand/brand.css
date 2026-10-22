@@ -93,39 +93,22 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark] [data-dsh-claude-part~=
   height: 42.5px;
 }
 
-/* ---------- Custom brand: accent colour ---------- */
-/* Every accent token the palette blocks state (tokens.json) is rewritten from
-   the one colour: the fill steps as the colour itself, the hover and link step
-   mixed toward the theme's ink so it moves the way Claude's clay does, the
-   active plate at the palette's 30%, and the ink on a fill the canvas colour
-   brand.ts picked for contrast. These blocks weigh the same as the DeepSeek
-   brand's and come after them, so the custom colour holds under either brand;
-   under "follow the host" none of them apply (D30). */
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent] {
-  --dsw-alias-brand-primary: var(--dsh-claude-custom-accent);
-  --dsw-alias-brand-primary-new-colorprimary-new-color: var(--dsh-claude-custom-accent);
-  --dsw-alias-button-primary-fill: var(--dsh-claude-custom-accent);
-  --dsw-alias-button-info-fill: var(--dsh-claude-custom-accent);
-  --dsw-alias-state-business-primary: var(--dsh-claude-custom-accent);
-  --dsw-alias-interactive-bg-active: color-mix(in srgb, var(--dsh-claude-custom-accent) 30%, transparent);
-  --dsw-alias-brand-text: var(--dsh-claude-custom-accent-ink);
-  --dsw-alias-label-primary-foreground: var(--dsh-claude-custom-accent-ink);
+/* ---------- Custom brand: the reader's own colours ---------- */
+/* Their four colours are seeds: the token sheet renders the whole palette from
+   them at runtime (scripts/theme-tokens.mjs), so nothing here restates a token.
+   The image tint follows the image-colour choice: the accent as a flat shape
+   when it names the accent, the text colour when it names that, and the image's
+   own colours otherwise. */
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-accent-tint] :is([data-dsh-claude-part~="brand-mark"], [data-dsh-claude-part~="rail-mark"])::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-accent-tint] [data-dsh-claude-part~="hero-mark"]::before,
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"][data-dsh-claude-custom-accent-tint] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]::before {
+  background: var(--dsh-claude-custom-accent);
+  -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
+  mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent]:not([data-ds-dark-theme]) {
-  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
-  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
-  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 86%, #141413);
+body[data-dsh-claude-style][data-dsh-claude-custom-word="image"][data-dsh-claude-custom-accent-tint] [data-dsh-claude-part~="brand-identity"] > [data-dsh-claude-part~="brand-name"]::before {
+  -webkit-mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
+  mask: var(--dsh-claude-custom-word) left center / contain no-repeat;
 }
 
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-accent][data-ds-dark-theme] {
-  --dsw-alias-button-primary-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
-  --dsw-alias-button-info-hover: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
-  --dsw-alias-link: color-mix(in oklab, var(--dsh-claude-custom-accent) 85%, #faf9f5);
-}
-
-/* The DeepSeek brand inks its whale and wordmark in the brand colour; a custom
-   accent takes that place too. */
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-brand="deepseek"][data-dsh-claude-accent] {
-  --dsh-claude-logo-ink: var(--dsh-claude-custom-accent);
-}

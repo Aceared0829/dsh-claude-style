@@ -21,6 +21,8 @@ declare module 'virtual:dsh-claude-style/generated' {
   export const CRAB_SHEET_URLS: Record<string, { body: string, ink: string }>
   /** The motion tokens, by token name (packages/client/src/theme/tokens.json, D9); read through shared/motion.ts. */
   export const MOTION: Record<string, string>
+  /** The colour cards the token sheet resolves (packages/client/src/theme/tokens.json, D30); the settings page's swatches read them. */
+  export const PALETTE_CARDS: { id: string, accent: string, canvas: { light: string, dark: string }, link?: { light: string, dark: string }, code: { light: string, dark: string }, edges: 'highlight' | 'surface', logoInk: 'ink' | 'accent' }[]
 }
 
 /**

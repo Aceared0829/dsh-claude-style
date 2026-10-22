@@ -423,6 +423,9 @@ async function main() {
     // generated token stylesheet carries, so a duration cannot be 200 ms in the
     // CSS and 250 ms in a Web Animations call (D9).
     MOTION: motionValues(tokenDoc),
+    // The colour cards, as the settings page shows them: the same data the token
+    // sheet resolves, so the swatches and the page cannot disagree.
+    PALETTE_CARDS: tokenDoc.palette.cards,
   })
 
   /**
