@@ -1,6 +1,6 @@
 /**
  * The context meter's reading as a pie, derived from dsh-chat-ux
- * (THIRD_PARTY_NOTICES.md): the share taken in the colour its occupancy fell
+ * (docs/THIRD_PARTY_NOTICES.md): the share taken in the colour its occupancy fell
  * on, the rest of the plate in the quiet tone beside it, drawn as two sectors on
  * one centre.
  *

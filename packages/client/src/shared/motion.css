@@ -116,7 +116,7 @@ body[data-dsh-claude-style] {
 }
 
 /* The colour wash, transitions.dev's "Pro gradient text" (MIT,
-   THIRD_PARTY_NOTICES.md): the washes orbit the glyph box while the hue turns a
+   docs/THIRD_PARTY_NOTICES.md): the washes orbit the glyph box while the hue turns a
    full circle through them, so the letters pass through every colour and no two
    moments of the loop look alike. */
 @keyframes dsh-claude-wash-hue {

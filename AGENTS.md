@@ -2,7 +2,7 @@
 
 `dsh-claude-style` is a theme plugin for DeepSeek Harness that replicates the look and interaction of Claude Code Desktop. It is a layer over the host: until the host offers an extension point for something, the effect is made with CSS and DOM overrides in the browser (D43).
 
-The shape of the tree, the two halves and the invariants that cross them are in [ARCHITECTURE.md](ARCHITECTURE.md). A direction is recorded in [docs/adr/](docs/adr/README.md) as one page: the background it answers, the decision, what follows from it, and what would make it worth revisiting. Read the ones a change touches before making it; the numbers code comments cite are those files' names.
+The shape of the tree, the two halves and the invariants that cross them are in [ARCHITECTURE.md](docs/ARCHITECTURE.md). A direction is recorded in [docs/adr/](docs/adr/README.md) as one page: the background it answers, the decision, what follows from it, and what would make it worth revisiting. Read the ones a change touches before making it; the numbers code comments cite are those files' names.
 
 ## Writing Rules
 
@@ -78,7 +78,7 @@ Before writing to disk, `scripts/shared/privacy.mjs` replaces workspace names, s
 
 ## Layout
 
-The tree's shape, the two halves and what each holds are in [ARCHITECTURE.md](ARCHITECTURE.md). The rules that follow from it: `locale/<language>.json` is plugin metadata, and `package.json`'s `exports` must cover it with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`; a new handle goes into `Handles` in `core/scheduler.ts`, and lint refuses a feature module importing the whole `Ui`; a stylesheet that belongs to no feature goes into `THEME_SHEETS` in `scripts/build.mjs`; a non-null assertion `!` only marks a value the call order guarantees; the mechanism that only talks to the host page goes into `packages/engine/`, and it reads the skin's own vocabulary through the seam its entry hands over rather than importing the skin (D73) — a host service is read through an accessor in `packages/engine/src/host.ts`, never by name at the feature.
+The tree's shape, the two halves and what each holds are in [ARCHITECTURE.md](docs/ARCHITECTURE.md). The rules that follow from it: `locale/<language>.json` is plugin metadata, and `package.json`'s `exports` must cover it with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`; a new handle goes into `Handles` in `core/scheduler.ts`, and lint refuses a feature module importing the whole `Ui`; a stylesheet that belongs to no feature goes into `THEME_SHEETS` in `scripts/build.mjs`; a non-null assertion `!` only marks a value the call order guarantees; the mechanism that only talks to the host page goes into `packages/engine/`, and it reads the skin's own vocabulary through the seam its entry hands over rather than importing the skin (D73) — a host service is read through an accessor in `packages/engine/src/host.ts`, never by name at the feature.
 
 ## Commands
 
@@ -91,7 +91,7 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm install` | the dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright and the React types |
 | `npm run build` | bundle `lib/client.js` from the TypeScript modules and stylesheets in `packages/client/src/` |
 | `npm run dev` | rebuild on every change to what the build reads |
-| `npm run changelog` | assemble CHANGELOG.md's [Unreleased] section from docs/changes/ |
+| `npm run changelog` | assemble docs/CHANGELOG.md's [Unreleased] section from docs/changes/ |
 | `npm run changelog:check` | fail when the committed `[Unreleased]` section differs from `docs/changes/`; the cloud job runs this |
 | `npm run docs:index` | write docs/adr/README.md from the ADR files themselves |
 | `npm run docs:check` | fail when the committed ADR index differs from the ADR files; the cloud job runs this |

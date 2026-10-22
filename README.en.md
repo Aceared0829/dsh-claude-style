@@ -94,7 +94,7 @@ To enable them, install the `.ttf` files on your system, or copy them into `$DSH
 | --- | --- |
 | [Design tokens](docs/STYLE.md) | The palette, typography, shape, motion and layer rules |
 | [Architecture decisions](docs/adr/README.md) | One page per direction: background, decision, consequences, revisiting conditions |
-| [Changelog](CHANGELOG.md) | Version history |
+| [Changelog](docs/CHANGELOG.md) | Version history |
 | [Contributing](CONTRIBUTING.md) | Building from `packages/client/src/`, commit conventions, and the screenshot and regression tooling |
 
 ## License

@@ -69,7 +69,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * One figure of the row's tail. Every character whose own digit changed turns
    * over its own middle in its own box — the digit that was there swings down and
    * away as the new one swings in from above, the 160 ms the stylesheet's own
-   * roll runs (zai-org/ZCode's metric flip, THIRD_PARTY_NOTICES.md) — while the
+   * roll runs (zai-org/ZCode's metric flip, docs/THIRD_PARTY_NOTICES.md) — while the
    * characters that hold keep their place, so a growing number reads as one
    * figure turning rather than as a whole new number. The animation choice
    * decides whether a digit on its way out is drawn at all (D40).

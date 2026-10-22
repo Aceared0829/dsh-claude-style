@@ -54,13 +54,13 @@
     "skin.json",
     "cordis.patch.yml",
     "docs/STYLE.md",
-    "CHANGELOG.md",
+    "docs/CHANGELOG.md",
     "README.md",
     "README.en.md",
     "LICENSE",
-    "NOTICE.md",
+    "docs/NOTICE.md",
     "packages/client/src/features/sodium/LICENSE",
-    "THIRD_PARTY_NOTICES.md"
+    "docs/THIRD_PARTY_NOTICES.md"
   ],
   "keywords": [
     "dsh",

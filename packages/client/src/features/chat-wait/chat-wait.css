@@ -101,7 +101,7 @@ body[data-dsh-claude-style] [data-chat-running][data-dsh-claude-wait] [data-dsh-
    character. Under the Claude brand the skin hides it and stands its own loader
    where it was: the line's first child, ahead of the wording, so the row reads
    loader, words, clock. The snippet the bouncing motion is ported from is
-   recorded in THIRD_PARTY_NOTICES.md. */
+   recorded in docs/THIRD_PARTY_NOTICES.md. */
 body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [data-chat-running][data-dsh-claude-wait] [data-dsh-claude-part~="running-icon"] {
   display: none;
 }
@@ -315,7 +315,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-orbit .dsh-claude-chat
   91.67%, 100% { translate: -4.75px 5.8px; }
 }
 
-/* The bouncing lane, ported from the snippet (THIRD_PARTY_NOTICES.md): the dot
+/* The bouncing lane, ported from the snippet (docs/THIRD_PARTY_NOTICES.md): the dot
    rests on the loader's floor and the animation lifts it the skin's 8px,
    squashing it against the floor as it leaves; the three start behind each other
    by two and three fifths of the period, which is the wave the snippet makes.
