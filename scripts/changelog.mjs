@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * changelog.mjs — assemble CHANGELOG.md's [Unreleased] section from docs/changes/ (D48).
+ * changelog.mjs — assemble docs/CHANGELOG.md's [Unreleased] section from docs/changes/ (D48).
  *
  * A change adds one small JSON file under docs/changes/ and never edits the
  * CHANGELOG: the file carries its group, where it sits in that group, whether it
@@ -22,7 +22,7 @@ import path from 'node:path'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CHANGES = path.join(ROOT, 'docs', 'changes')
-const FILE = path.join(ROOT, 'CHANGELOG.md')
+const FILE = path.join(ROOT, 'docs', 'CHANGELOG.md')
 
 /** The groups in their fixed order, with the heading each language uses. */
 const GROUPS = [
@@ -91,10 +91,10 @@ function releaseSection(fragments, version, date) {
   return `${lines.join('\n').split('cn-unreleased').join(`cn-${version}`).split('en-unreleased').join(`en-${version}`)}\n\n`
 }
 
-/** Split CHANGELOG.md into its head and its [Unreleased] section and everything after it. */
+/** Split docs/CHANGELOG.md into its head and its [Unreleased] section and everything after it. */
 function split(changelog) {
   const start = changelog.indexOf('## [Unreleased]')
-  if (start === -1) throw new Error('changelog: CHANGELOG.md has no "## [Unreleased]" section')
+  if (start === -1) throw new Error('changelog: docs/CHANGELOG.md has no "## [Unreleased]" section')
   const next = changelog.indexOf('\n## [', start)
   return { start, body: changelog.slice(start, next === -1 ? changelog.length : next + 1), rest: changelog.slice(next === -1 ? changelog.length : next + 1) }
 }
@@ -108,13 +108,13 @@ if (process.argv.includes('--notes')) {
   const version = process.argv[process.argv.indexOf('--notes') + 1]
   const heading = `## [${version}] - `
   const at = changelog.indexOf(`\n${heading}`)
-  if (version === undefined || at === -1) throw new Error(`changelog: CHANGELOG.md has no "${heading}" section`)
+  if (version === undefined || at === -1) throw new Error(`changelog: docs/CHANGELOG.md has no "${heading}" section`)
   const from = changelog.indexOf('\n', at + 1) + 1
   const next = changelog.indexOf('\n## [', from)
   process.stdout.write(`${changelog.slice(from, next === -1 ? changelog.length : next).trim()}\n`)
 } else if (process.argv.includes('--check')) {
   if (currentSection !== built) {
-    throw new Error('changelog: CHANGELOG.md\'s [Unreleased] section is not what docs/changes/ says; run `npm run changelog`')
+    throw new Error('changelog: docs/CHANGELOG.md\'s [Unreleased] section is not what docs/changes/ says; run `npm run changelog`')
   }
   console.log(`changelog: ${fragments.length} pending changes, up to date`)
 } else if (process.argv.includes('--release')) {

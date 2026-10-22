@@ -2,7 +2,7 @@
 
 `dsh-claude-style` is a theme plugin for DeepSeek Harness that replicates the look and interaction of Claude Code Desktop. It is a layer over the host: until the host offers an extension point for something, the effect is made with CSS and DOM overrides in the browser (D43).
 
-The shape of the tree, the two halves and the invariants that cross them are in [ARCHITECTURE.md](ARCHITECTURE.md). A direction is recorded in [docs/adr/](docs/adr/README.md) as one page: the background it answers, the decision, what follows from it, and what would make it worth revisiting. Read the ones a change touches before making it; the numbers code comments cite are those files' names.
+The shape of the tree, the two halves and the invariants that cross them are in [ARCHITECTURE.md](docs/ARCHITECTURE.md). A direction is recorded in [docs/adr/](docs/adr/README.md) as one page: the background it answers, the decision, what follows from it, and what would make it worth revisiting. Read the ones a change touches before making it; the numbers code comments cite are those files' names.
 
 ## Writing Rules
 
@@ -68,6 +68,12 @@ Read D3 before adding a host selector. After adding a substring selector, compar
 
 Comments carry only what a reader needs to keep the code correct: why the code has this shape, the host contract it depends on, the ordering that matters, what breaks if it changes. One to three lines is the norm. Never restate the code, narrate the change, or record measurements or release history. A direction with reasoning behind it lives in `docs/adr/`; cite the file's number (`D9`) and let the comment carry only what the code needs. Visual rules cite `docs/STYLE.md`.
 
+### Work Orders
+
+A work order is one task under `.debug/work/<id>/`: `work.md` carries the goal, screenshots, acceptance criteria and a JSON block, while `refs/`, `shots/` and `tmp/` hold its evidence and scratch files. `npm run work -- new <slug> --title "…"` starts one; `list`, `start`, `verify`, `review`, `check`, `close` and `gc` are the other commands, and `npm run lint` runs the work-order check.
+
+Every temporary file belongs in the open order's `tmp/`. `npm run work -- gc` removes orphaned orders and loose `.debug` temporary files. Measurements live in the order only: before review each one names where it survives — a token, a spec, a comment, an ADR, or `none`. Durable documents never name a work-order id, and `close` deletes the directory after the change file or ADR has taken what survives. A behavior change still adds `docs/changes/`; a direction change still adds an ADR. The work order is not a substitute for either.
+
 ### Model Copy
 
 Read D5 before editing `packages/client/data/model-descriptions.json`.
@@ -78,7 +84,7 @@ Before writing to disk, `scripts/shared/privacy.mjs` replaces workspace names, s
 
 ## Layout
 
-The tree's shape, the two halves and what each holds are in [ARCHITECTURE.md](ARCHITECTURE.md). The rules that follow from it: `locale/<language>.json` is plugin metadata, and `package.json`'s `exports` must cover it with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`; a new handle goes into `Handles` in `core/scheduler.ts`, and lint refuses a feature module importing the whole `Ui`; a stylesheet that belongs to no feature goes into `THEME_SHEETS` in `scripts/build.mjs`; a non-null assertion `!` only marks a value the call order guarantees; the mechanism that only talks to the host page goes into `packages/engine/`, and it reads the skin's own vocabulary through the seam its entry hands over rather than importing the skin (D73) — a host service is read through an accessor in `packages/engine/src/host.ts`, never by name at the feature.
+The tree's shape, the two halves and what each holds are in [ARCHITECTURE.md](docs/ARCHITECTURE.md). The rules that follow from it: `locale/<language>.json` is plugin metadata, and `package.json`'s `exports` must cover it with `"./locale/*"`, or the host degrades the whole metadata (icon included) to `meta.error`; a new handle goes into `Handles` in `core/scheduler.ts`, and lint refuses a feature module importing the whole `Ui`; a stylesheet that belongs to no feature goes into `THEME_SHEETS` in `scripts/build.mjs`; a non-null assertion `!` only marks a value the call order guarantees; the mechanism that only talks to the host page goes into `packages/engine/`, and it reads the skin's own vocabulary through the seam its entry hands over rather than importing the skin (D73) — a host service is read through an accessor in `packages/engine/src/host.ts`, never by name at the feature.
 
 ## Commands
 
@@ -91,7 +97,7 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm install` | the dev dependencies: TypeScript, esbuild, Ajv, Vitest, Playwright and the React types |
 | `npm run build` | bundle `lib/client.js` from the TypeScript modules and stylesheets in `packages/client/src/` |
 | `npm run dev` | rebuild on every change to what the build reads |
-| `npm run changelog` | assemble CHANGELOG.md's [Unreleased] section from docs/changes/ |
+| `npm run changelog` | assemble docs/CHANGELOG.md's [Unreleased] section from docs/changes/ |
 | `npm run changelog:check` | fail when the committed `[Unreleased]` section differs from `docs/changes/`; the cloud job runs this |
 | `npm run docs:index` | write docs/adr/README.md from the ADR files themselves |
 | `npm run docs:check` | fail when the committed ADR index differs from the ADR files; the cloud job runs this |
@@ -106,6 +112,7 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm run coverage` | which layer guards which feature (D77), as an observation |
 | `npm test` | the logic and mechanism specs on their own, as the cloud job runs them: Vitest in browser mode on the local Chrome or Edge |
 | `npm run verify` | the one entry a test run goes through |
+| `npm run work` | one local work order per task, deleted when the task lands |
 
 <!-- commands:end -->
 

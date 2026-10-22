@@ -150,7 +150,7 @@ body[data-dsh-claude-style] [data-dsh-claude-file-merge="gone"] {
    digit changed flips over its own middle — the old one swinging down and away
    as the new one swings in from above — while the characters that hold keep
    their place, so a growing number reads as one figure turning rather than as a
-   whole new number (zai-org/ZCode's metric flip, THIRD_PARTY_NOTICES.md). Each
+   whole new number (zai-org/ZCode's metric flip, docs/THIRD_PARTY_NOTICES.md). Each
    character is its own clipping box, an inline block of the figure's own type
    size, with the perspective the flip turns in. The clip is `clip-path`:
    `overflow` would take the box's lower edge as an inline block's baseline, and

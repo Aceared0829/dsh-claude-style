@@ -341,7 +341,7 @@ edit; the build refuses a time or a curve written anywhere else.
 - Travel: something moving along its own track (a fold's door, the reasoning
   slider).
 - The swap, its gap and the roll of a figure's digits come from the transitions
-  this skin ports; `THIRD_PARTY_NOTICES.md` names each one.
+  this skin ports; `docs/THIRD_PARTY_NOTICES.md` names each one.
 - Loop periods are separate from durations: a sweep, a pulse, a blink, a breath.
 - Open: a menu growing out of its trigger, a dialog out of the centre, a
   settings page sliding in — the transitions.dev surfaces, settling on their own

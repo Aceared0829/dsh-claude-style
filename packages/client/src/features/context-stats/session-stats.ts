@@ -312,7 +312,7 @@ export function createSessionStats(ctx: HostContext) {
       const rampMoved = writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
       // The pie is dsh-chat-ux's own reading of the same meter: while that
       // plugin draws it, the host's ring is left to that plugin's draw
-      // (THIRD_PARTY_NOTICES.md).
+      // (docs/THIRD_PARTY_NOTICES.md).
       if (peerPresent('dsh-chat-ux')) paintContextPie(meter, null, null)
       else {
         // The read phase's colours hold until this pass moves the band they

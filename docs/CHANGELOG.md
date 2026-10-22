@@ -36,6 +36,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 其他变更
 
 - 删除十二个没有调用方的导出，把注释里三十二处指向引擎迁移前位置的路径改成现址，四条故障补丁按当前代码重记，构建里「滚动位置只由 scroll-owner 写入」那条检查按引擎所在的位置恢复生效，AGENTS.md 的四处陈述与实现一致，工作树的删除工具接受 .agents/worktrees/，插件的表现与断言不变。
+- 新增本地工单系统：每个任务在 `.debug/work/` 下拥有自己的目录、索引与临时文件，测量值随工单退役，关闭时整目录删除，孤儿目录与散落临时文件由 `npm run work -- gc` 清理。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -67,6 +68,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Chores
 
 - Remove twelve exported symbols with no caller, rewrite thirty-two comment references that still named the files' pre-migration paths, rebase four defect patches onto the current code, restore the build check that only the scroll owner writes a scroll position at its engine path, bring four statements in AGENTS.md in line with the implementation, and let the worktree remover accept .agents/worktrees/, with the plugin's behavior and assertions unchanged.
+- Add a local work-order system: each task owns a directory, index entry and temporary files under `.debug/work/`, measurements retire with the order, closing deletes the directory, and `npm run work -- gc` clears orphaned directories and loose temporary files.
 
 ## [0.18.2] - 2026-10-21
 
