@@ -1,37 +1,67 @@
-import { findComposerInput, findComposerPlaceholder } from '@dsh-claude-style/engine/host'
+import { COMPOSER_PLACEHOLDER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { findComposerInput } from '@dsh-claude-style/engine/host'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
+import { activeLocale, copyIn, COPY_FALLBACK_LOCALE } from '../../core/i18n'
+import type { CopyEntries } from '../../core/i18n'
+import COPY from './composer.copy.json'
 
-/** The hero composer's own hint, which the skin's placeholder stands in for. */
-const HERO_HINT = 'How can I help you today?'
-/** The conversation composer's hint, which the same placeholder settles on. */
-const DEFAULT_HINT = 'Type / for commands'
+/** This feature's copy, as a table of lines rather than of keys (composer.copy.json). */
+const ENTRIES: CopyEntries = COPY
+
 /** The mark that tells the skin's own placeholder from the host's (its teardown swears by it). */
 const SYNTHETIC_ATTR = 'data-dsh-synthetic-placeholder'
+/** The host's hint as the composer card carries it, the skin's stand-in among them. */
+const HINT_ATTRIBUTE = '[data-composer-placeholder]'
+/** The composer pass's mark on a card holding attachments, which is when the host draws no hint. */
+const ATTACHED_ATTR = 'data-has-attachments'
+/** The pass that drew a stand-in, so the pass right after it leaves the stand-in standing. */
+const DRAWN_ATTR = 'data-dsh-claude-drawn'
 
-/** Shipped idle composer hints (zh / en, hero / default) this skin replaces. */
+/**
+ * Shipped idle composer hints (zh / en, hero / default) this skin replaces:
+ * the host's own two sentences, and the skin's two in each language.
+ */
 const HINT_SOURCES = [
   '描述你想要构建的内容',
   '发消息或创建任务',
   'Describe what you want to build',
   'Message or run a task',
-  HERO_HINT,
-  DEFAULT_HINT,
+  ENTRIES.heroHint.zh,
+  ENTRIES.defaultHint.zh,
+  ENTRIES.heroHint[COPY_FALLBACK_LOCALE],
+  ENTRIES.defaultHint[COPY_FALLBACK_LOCALE],
 ]
 
 /**
- * The composer's idle hint, in the skin's own words.
+ * The composer's idle hint, in the skin's own words and the shell's language.
  *
- * The host draws its placeholder inside the draft editor, and the editor's
- * markup is rebuilt as the card changes form, so the hint is written on
- * every pass and after every input rather than once. The attachment form
- * draws no placeholder of its own, so the skin adds one
- * (`data-dsh-synthetic-placeholder`) and takes it away again when the draft
- * has text; the teardown removes whatever it left.
+ * The host draws its hint as one of the composer card's children, inside the
+ * field's wrapper, and leaves it off in two card forms: one holding an
+ * attachment, and one whose field answers for something else. The skin's own
+ * words go where a shipped hint already stands, and where the host draws none
+ * for a card the skin covers — the attachment form, a draft of images alone —
+ * the skin adds its own hint (`data-dsh-synthetic-placeholder`).
+ *
+ * A commit of the host's runs several passes, and the pass after a stand-in's
+ * write reads the card the way it did before: the stand-in carries the pass
+ * that drew it, and only a later pass takes it back once the card has moved on.
+ * Whether the card holds a hint of the host's is read on the card itself: the
+ * bus may still hold a hint the page has already dropped.
+ *
+ * The words follow the shell's locale rather than the hint already on the
+ * node, because a locale switch and a rebuild between two passes need not
+ * arrive in one order: a writer that only moves a shipped hint across would
+ * leave the previous language standing.
  *
  * @param cards - the composer cards, kept current by the bus (D40).
  * @param placeholders - the placeholders those cards carry, from the same source.
  */
 export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholders: MatchList<HTMLElement>) {
+  /** How many passes this generation has run. */
+  let pass = 0
+  /** The shell's locale when the stand-in was last drawn. */
+  let drawnLocale = ''
+
   /** Whether a placeholder's text is one of the hints this skin replaces. */
   function isShippedHint(text: string) {
     for (let j = 0; j < HINT_SOURCES.length; j++) {
@@ -40,57 +70,101 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
     return false
   }
 
-  function rewriteHint(hero: boolean, active: boolean) {
+  /**
+   * Whether the card's field declares a shipped hint in the shell's language:
+   * the field in the attachment form says the same sentence the host draws as a
+   * placeholder, and its other sentences say why the field is closed.
+   */
+  function declaresShippedHint(input: HTMLElement) {
+    const words = (input.getAttribute(COMPOSER_PLACEHOLDER_ATTRIBUTE) || '').trim()
+    if (activeLocale().startsWith('zh')) return words !== '' && words === copyIn(ENTRIES, 'defaultHint', 'zh')
+    return isShippedHint(words)
+  }
+
+  /** The words the skin's hint shows, in the shell's language. */
+  function targetHint(hero: boolean) {
+    return copyIn(ENTRIES, hero ? 'heroHint' : 'defaultHint', activeLocale())
+  }
+
+  /** Write the skin's words into every shipped hint the page shows. */
+  function rewriteHint(target: string, active: boolean) {
     if (!active) return
-    const targetHint = hero ? HERO_HINT : DEFAULT_HINT
     const hints = placeholders.all()
     for (let i = 0; i < hints.length; i++) {
       const node = hints[i]
+      if (node.hasAttribute(SYNTHETIC_ATTR)) continue
       const text = node.textContent || ''
-      if (isShippedHint(text) && text !== targetHint) node.textContent = targetHint
+      if (isShippedHint(text) && text !== target) node.textContent = target
     }
   }
 
-  function syncAttachmentPlaceholder(hero: boolean, active: boolean) {
-    if (!active) {
-      // The synthetic ones are ordinary placeholders too, so the registry in
-      // hand names every node this sweep has to take away.
-      for (const node of placeholders.all()) {
-        if (node.hasAttribute(SYNTHETIC_ATTR)) node.remove()
-      }
-      return
-    }
-    const targetHint = hero ? HERO_HINT : DEFAULT_HINT
+  /**
+   * Whether the card wants the skin's words where the host draws none: the
+   * attachment form, where the host keeps the field's own text and drops its
+   * hint. A card that holds a shipped hint of the host's keeps that hint.
+   */
+  function wantsStandIn(card: HTMLElement) {
+    if (card.querySelector(`${HINT_ATTRIBUTE}:not([${SYNTHETIC_ATTR}])`) !== null) return false
+    return card.hasAttribute(ATTACHED_ATTR)
+  }
+
+  /**
+   * The stand-in the skin draws where the host draws none.
+   *
+   * A commit of the host's runs several passes, and the pass that follows the
+   * drawing one reads the card the way the drawing did: the stand-in carries the
+   * pass that drew it, and only a later pass takes it back once the card has
+   * moved on. A card that holds a hint of the host's keeps it, and the sweep
+   * takes the skin's away: one field never shows two hints.
+   */
+  function syncStandIn(target: string, active: boolean) {
+    pass += 1
+    const draw = active && activeLocale() !== drawnLocale
+    drawnLocale = activeLocale()
     const found = cards.all()
-    for (let ci = 0; ci < found.length; ci++) {
-      const card = found[ci]
-      const input = findComposerInput(card)
-      if (!input) continue
-      const text = (input.textContent || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim()
-      const isEmpty = text.length === 0
-      let placeholder = findComposerPlaceholder(card)
-      const grow = input.closest ? input.closest('[data-dsh-claude-part~="input-grow"]') : input.parentElement
-
-      if (isEmpty) {
-        if (!placeholder && grow) {
-          placeholder = document.createElement('div')
-          placeholder.setAttribute('data-composer-placeholder', '')
-          placeholder.setAttribute(SYNTHETIC_ATTR, 'true')
-          placeholder.textContent = targetHint
-          grow.appendChild(placeholder)
-        } else if (placeholder) {
-          if (placeholder.style.display === 'none') placeholder.style.display = ''
-          const curText = placeholder.textContent || ''
-          if (isShippedHint(curText) && curText !== targetHint) placeholder.textContent = targetHint
-        }
-      } else {
-        if (placeholder && placeholder.hasAttribute(SYNTHETIC_ATTR)) {
-          if (placeholder.parentElement) placeholder.parentElement.removeChild(placeholder)
-        }
+    const standIns = placeholders.all()
+    // The answer stands at the head of the pass: a card whose hint the host has
+    // drawn keeps it, and the stand-in beside it goes whichever pass reads it.
+    const over = new Set<Element>()
+    for (const card of found) {
+      if (card.querySelector(`${HINT_ATTRIBUTE}:not([${SYNTHETIC_ATTR}])`) !== null) over.add(card)
+    }
+    for (let i = 0; i < standIns.length; i++) {
+      const node = standIns[i]
+      if (!node.hasAttribute(SYNTHETIC_ATTR) || node.parentElement === null) continue
+      let owner: HTMLElement | null = null
+      for (let c = 0; c < found.length; c++) if (found[c].contains(node)) owner = found[c]
+      if (owner !== null && over.has(owner)) {
+        node.remove()
+        continue
       }
+      const wants = owner !== null && wantsStandIn(owner)
+      // The pass right after the drawing one finds the card as the drawing did,
+      // and leaves the stand-in standing; every later pass takes it back once
+      // the card has moved on.
+      const fresh = draw || node.getAttribute(DRAWN_ATTR) === String(pass - 1)
+      if (wants && fresh) continue
+      node.remove()
+    }
+    if (!active) return
+    for (let c = 0; c < found.length; c++) {
+      const card = found[c]
+      if (!wantsStandIn(card)) continue
+      const held = card.querySelector<HTMLElement>(`[${SYNTHETIC_ATTR}]`)
+      if (held !== null && !draw) {
+        if (held.textContent !== target) held.textContent = target
+        held.setAttribute(DRAWN_ATTR, String(pass))
+        continue
+      }
+      if (held !== null) held.remove()
+      const standIn = document.createElement('div')
+      standIn.setAttribute('data-composer-placeholder', '')
+      standIn.setAttribute(SYNTHETIC_ATTR, 'true')
+      standIn.setAttribute(DRAWN_ATTR, String(pass))
+      standIn.textContent = target
+      card.appendChild(standIn)
     }
   }
-
   return {
     /**
      * One pass: the visible hint follows the page (hero or conversation).
@@ -98,12 +172,13 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
      * again, so this runs whether or not the restyle applies.
      */
     sync(hero: boolean, active: boolean) {
-      rewriteHint(hero, active)
-      syncAttachmentPlaceholder(hero, active)
+      const target = targetHint(hero)
+      rewriteHint(target, active)
+      syncStandIn(target, active)
     },
-    /** A composer input or composition event: only the synthetic placeholder can have changed. */
+    /** A composer input or composition event: only the stand-in can have changed. */
     onInput(hero: boolean, active: boolean) {
-      syncAttachmentPlaceholder(hero, active)
+      syncStandIn(targetHint(hero), active)
     },
     /** The placeholders the skin added stand in for the host's own, so they leave with it. */
     dispose() {

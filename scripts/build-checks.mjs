@@ -161,9 +161,11 @@ export function checkContracts(manifests) {
     if (probe.within !== undefined && !listed.has(probe.within)) throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" is checked within "${probe.within}", which the table does not list`)
   }
   const values = new Set(table.map((entry) => entry.value))
+  // A bare attribute name is what the table lists for a value-less mark.
+  const named = new Set(table.map((entry) => entry.name).filter((name) => typeof name === 'string'))
   for (const [name, value] of Object.entries(literals)) {
     if (!/^[A-Z][A-Z0-9_]*$/.test(name) || (typeof value !== 'string' && typeof value !== 'number')) continue
-    if (!values.has(String(value))) {
+    if (!values.has(String(value)) && !named.has(String(value))) {
       throw new Error(`build: packages/contracts/src/dom.ts exports ${name} (${JSON.stringify(value)}) with no entry in packages/contracts/src/table.ts`)
     }
   }

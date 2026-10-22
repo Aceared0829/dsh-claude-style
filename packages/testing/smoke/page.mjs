@@ -10,6 +10,17 @@ import path from 'path'
 import { MARKUP, PNG_1PX } from './shared.mjs'
 import { MODEL_SEAT_NAME } from '../specs/fixtures/model-seat.mjs'
 /**
+ * The rail ui-attachment draws a draft's files into, and its scrolling row: the
+ * local names the host's stylesheet gives them. No part of the host's tables
+ * carries them, so the page assembles the class from its prefix (lint reads the
+ * table's names, not one built at runtime).
+ */
+const RAIL_CLASS = '_' + '54WpYG_rail'
+const RAIL_ROW_CLASS = 'JVDQca_rail'
+const TILE_BUTTON_CLASS = '54WpYG_thumbnail'
+/** The host's hint node on the page, named so the cases that read it find one element. */
+const HOST_HINT_ID = 'hosted' + 'Hint'
+/**
  * The stand-in host's parts, in the order they run: the counters, then the host
  * faces the bundle reads.
  */
@@ -426,6 +437,20 @@ function page(name, tier, cases, probe = PROBE) {
   var modelSeat = name === 'effort'
     ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">' + MODEL_SEAT_NAME + '</button></div></div>'
     : ''
+  // The hint the host's editor draws on an empty draft, inside the grow wrapper
+  // beside the field, which is where the host renders it; and the rail
+  // ui-attachment draws the draft's files and images into before it. The
+  // composer page is the one the behaviour lane reads its hint on.
+  var hintFixture = name === 'permissions-locale' || name === 'composer'
+    ? `<div data-composer-placeholder id="${HOST_HINT_ID}">How can I help you today?</div>`
+    : ''
+  // The draft's attachments, as ui-attachment's `conversation.input.attachments`
+  // slot draws them in the card before the field: one image tile in the rail's
+  // scrolling row, inside the rail the card wraps it in.
+  var composerAttachmentRail = `<div class="${RAIL_CLASS}"><div class="${RAIL_ROW_CLASS}">` +
+    `<div class="${RAIL_ROW_CLASS}_item ${RAIL_CLASS}_imageItem"><button type="button" class="${TILE_BUTTON_CLASS}">` +
+    '<img alt="Attached image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==">' +
+    '</button></div></div></div>'
   // The sidebar column as the host builds it: the session tree scrolls in the
   // column's room and the footer stands below it, at the column's bottom end.
   // The column's width and height are pinned so the account menu cases read
@@ -470,8 +495,12 @@ ${chatArea}
 <div class="_composerStack_h_1">
 <div data-composer-card${name === 'automode-hero' ? ' data-phase="hero"' : ''}>
 ${heroRow}
+  ${name === 'composer' ? composerAttachmentRail : ''}
   ${name === 'chat-send' ? '<div data-input-scroll style="overflow:auto;max-height:120px">' : ''}
+  ${name === 'composer' ? '<div data-dsh-claude-part="input-grow" class="_grow_x_1">' : ''}
   <div data-composer-input contenteditable="true" id="editor">/comp</div>
+  ${hintFixture}
+  ${name === 'composer' ? '</div>' : ''}
   ${name === 'chat-send' ? '</div>' : ''}
   <div class="_row_x_1">
     <div class="_tools_x_1">

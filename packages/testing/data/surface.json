@@ -13,6 +13,7 @@
     { "id": "effort.trigger", "selector": ".dsh-claude-effort-btn", "feature": "effort", "sees": "the thinking-effort button beside the model name in the composer" },
     { "id": "effort.card", "selector": ".dsh-claude-effort", "feature": "effort", "sees": "the effort picker's card, with its slider of strengths" },
     { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
+    { "id": "composer.hint-standin", "attribute": "data-dsh-synthetic-placeholder", "feature": "composer", "sees": "the hint the skin draws in the composer card where the host draws none, over an empty field: the shell's words in the field's caption ink" },
     { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },
     { "id": "effort.track", "selector": ".dsh-claude-effort-track", "feature": "effort", "sees": "the slider's track: the groove the reader drags or clicks to pick a level, one stop per effort" },
     { "id": "stats.inline-line", "selector": "[data-dsh-claude-inline-stats]", "feature": "context-stats", "sees": "the line of statistics under the composer card: turns, speed, tokens, the session's cost and the cache share" },

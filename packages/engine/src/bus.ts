@@ -211,6 +211,10 @@ function registryFor(selector: string): MatchRegistry {
     // dropped by the next read: a removal needs no walk of the whole set. The
     // skin's quiet writes are heard too — its own synthetic placeholder is a
     // match — and the check on them is one `matches` per topmost added node.
+    // A batch may bring in an element before the page has attached it, and that
+    // element is kept as a match: a pass that follows reads the registry, and the
+    // hint drawn into a card being rebuilt has to stand by then. The element the
+    // addition went into answers as the node does: that card is there already.
     stop: () => {},
   }
   registry.stop = subscribeMutations(document.body, { childList: true, subtree: true }, records => {
@@ -228,12 +232,25 @@ function registryFor(selector: string): MatchRegistry {
       if (record.removedNodes.length > 0) changed = true
     }
     const added = [...batch]
+    // The element the addition went into, asked the same way as the node.
+    let placedIn: Element | null = null
+    for (const record of records) {
+      if (record.addedNodes.length === 0 || !(record.target instanceof Element)) continue
+      placedIn = record.target
+    }
     for (let at = 0; at < added.length; at += 1) {
       const node = added[at]
       // Only an addition the batch already walked carries this one; a carrier
       // that arrives later is walked after, and reaching this node twice costs
       // one set insert.
       if (added.some((other, index) => index < at && other.contains(node))) continue
+      // A node the page has not attached yet is asked of itself: it may already
+      // be the card it will stand in.
+      if (!node.isConnected && (node.matches(selector) || placedIn?.matches(selector) === true)) {
+        registry.items.add(node)
+        changed = true
+        continue
+      }
       if (node.matches(selector)) {
         registry.items.add(node)
         changed = true

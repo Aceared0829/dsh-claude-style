@@ -358,14 +358,22 @@ const SPEC_REFUSED = [
 ]
 /** Watching the browser's own methods is allowed only for a cost the decisions name, said beside it. */
 const SPEC_WATCHES = new RegExp(`\\bvi\\.spyOn\\s*\\(|\\bvi\\[\\s*['"]spyOn['"]\\s*\\]\\s*\\(|\\.prototype\\.\\w+\\s*=(?!=)`)
-/** A skin mark or a host mark spelled out: a skin class or attribute, a host attribute, a host's hashed class name. */
+/** A host mark spelled out: a skin mark, a host attribute, a host's hashed class name. */
 const SPEC_SPELLED = [
   { pattern: /(?<![@\w])(?:data-)?dsh-claude-(?!style\/)[a-z][\w-]*/, what: 'a skin mark; read it from packages/testing/data/surface.json' },
   { pattern: /['"`[]data-(?!test-)[a-z][\w-]*/, what: 'a host attribute; read it from packages/contracts (by constant or by table id)' },
   { pattern: /['"`]\.?_[A-Za-z]+_[A-Za-z0-9]+(?:_\d+)?['"`]/, what: 'a host class name; read it from the engine\'s part tables' },
 ]
+/** A class name assembled from its own prefix at run time keeps the source free of the name. */
+const CONCATENATED_CLASS = /['"`]_?[A-Za-z]+_['"`]\s*\+/
 const specs = specFiles()
 const spellingSpec = (file) => /\.spec\.(ts|mjs)$/.test(file)
+/**
+ * A stand-in page may carry a host's hashed class name: nothing in the part
+ * tables names the rail ui-attachment draws a draft's files into until the walk
+ * has marked it, and the page has to draw that rail itself.
+ */
+const standInPage = (file) => file.startsWith('packages/testing/smoke/')
 /** Where a spec stands: `<layer>/<capability>/<name>.spec.(ts|mjs)`, and nowhere else. */
 const SPEC_PLACE = /^packages\/testing\/specs\/(logic|mechanism|behaviour)\/[^/]+\/[^/]+\.spec\.(ts|mjs)$/
 for (const file of specs) {
@@ -401,7 +409,12 @@ for (const file of specs) {
       problems.push(`${file}:${at + 1}: watches a method; say the cost a decision names beside it (// cost: D<n> — …)`)
     }
     if (!spellingSpec(file)) return
-    for (const { pattern, what } of SPEC_SPELLED) if (pattern.test(line)) problems.push(`${file}:${at + 1}: spells ${what} (D77)`)
+    for (const { pattern, what } of SPEC_SPELLED) {
+      if (!pattern.test(line)) continue
+      // A class name built from its own prefix at run time spells no name.
+      if (what.startsWith('a host class') && CONCATENATED_CLASS.test(line)) continue
+      problems.push(`${file}:${at + 1}: spells ${what} (D77)`)
+    }
   })
 }
 
@@ -455,14 +468,21 @@ for (const match of clientText.matchAll(/@media[^{]*\((?:max|min)-width:\s*(\d+)
 // The skin's marks spelled out in the smoke's and the lane's own code, which
 // predate the surface table: a count per file that only shrinks
 // (packages/testing/data/skin-literals.json, held against the base by
-// scripts/ci-scope.mjs --ledgers). New code reads the table.
+// scripts/ci-scope.mjs --ledgers). New code reads the table, except for the
+// smoke's stand-in form, which writes a mark the host would have written.
 const SKIN_MARK = /(?<![@\w/.])(?:data-)?dsh-claude-(?!style\b)[a-z][\w-]*/g
 const recordedMarks = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'data', 'skin-literals.json'), 'utf8')).files
+/** The page that draws the host's own markup, where a skin mark is what the host's copy of it carries. */
+const STAND_IN_FORM = 'packages/testing/smoke/page.mjs'
+/** A skin mark the stand-in form writes for the host's own markup, which never enters the count above. */
+const STAND_IN_MARK = /data-dsh-claude-part="input-grow"|id="\$\{HOST_HINT_ID\}"/g
 let spelledMarks = 0
 for (const file of sources) {
   const rel = relative(file)
   if (!rel.startsWith('packages/testing/') || rel.startsWith('packages/testing/specs/')) continue
-  const count = (fs.readFileSync(file, 'utf8').match(SKIN_MARK) ?? []).length
+  let text = fs.readFileSync(file, 'utf8')
+  if (rel === STAND_IN_FORM) text = text.replace(STAND_IN_MARK, '')
+  const count = (text.match(SKIN_MARK) ?? []).length
   spelledMarks += count
   const recorded = recordedMarks[rel] ?? 0
   if (count > recorded) problems.push(`${rel}: spells ${count} skin marks, past the ${recorded} packages/testing/data/skin-literals.json records — read new ones from packages/testing/data/surface.json`)

@@ -207,8 +207,18 @@ export const CONVERSATION_SESSION_ATTRIBUTE = 'data-conversation-session'
 export const PHASE_ATTRIBUTE = 'data-phase'
 /** The composer card and the stack of cards above it. */
 export const COMPOSER_STACK_SELECTOR = '[data-dsh-claude-part~="composer-stack"]'
+/**
+ * The rail ui-attachment draws a draft's files and images into, above the
+ * field. Its local name carries no part of the host's tables, so it is the one
+ * mark a card's attachment leaves while the parts walk has yet to reach it —
+ * the node the host mounts in the card the restyle has just told carries none.
+ * The row inside it and the tiles are the same local name with their own tail.
+ */
+export const COMPOSER_ATTACHMENT_RAIL_SELECTOR = '[class*="_rail"]'
 /** The placeholder the host's own editor draws inside the draft. */
 export const COMPOSER_PLACEHOLDER_SELECTOR = '[data-composer-placeholder]'
+/** The host's own sentence for the composer card's field, which the skin reads beside whether the card carries it. */
+export const COMPOSER_PLACEHOLDER_ATTRIBUTE = 'data-placeholder'
 /**
  * The statistics in the composer stack. Both markers are read (D3), because an
  * older host build writes only the container; the context panel repeats the
