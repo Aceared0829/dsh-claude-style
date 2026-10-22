@@ -62,8 +62,9 @@ export interface FeatureFields {
   stylesheets: FeatureStylesheet[]
   /**
    * The settings rows this feature owns (D72): each writes one preference, and
-   * the settings page assembles them by tab and rank with the rows it writes
-   * itself. A preference is written by one row, in the feature it belongs to.
+   * the settings page assembles them by slot — a tab, or one of the main
+   * window's groups — and rank with the rows it writes itself. A preference is
+   * written by one row, in the feature it belongs to.
    */
   settingsRows?: FeatureSettingsRow[]
   /** The smoke cases that cover the feature (`npm run smoke -- --feature <dir>`). */
@@ -105,7 +106,17 @@ export interface FeatureStylesheetGenerated {
 /**
  * The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts).
  */
-export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 'conversation' | 'motion'
+export type SettingsTabId = 'general' | 'appearance' | 'main-window' | 'sidebar' | 'motion'
+
+/**
+ * The two groups the main-window tab draws, by id: the conversation side above
+ * and the composer's below, each under its own label
+ * (packages/client/src/features/settings/settings-tab-main-window.ts).
+ */
+export type SettingsGroupId = 'conversation' | 'composer'
+
+/** Where a settings row stands: a tab of the strip, or one of the main window's two groups. */
+export type SettingsRowSlot = SettingsTabId | SettingsGroupId
 
 /**
  * One settings row a feature owns (D72). The control follows the preference's
@@ -114,7 +125,8 @@ export type SettingsTabId = 'general' | 'appearance' | 'composer' | 'sidebar' | 
  * line is a key in the feature's own copy (`<功能>.copy.json`).
  */
 export interface FeatureSettingsRow {
-  tab: SettingsTabId
+  /** The tab, or the main window group, the row stands in. */
+  tab: SettingsRowSlot
   /** Position among the tab's rows, shared with the rows the settings feature writes itself. */
   rank: number
   /** The preference the row writes. */
@@ -254,11 +266,11 @@ export function setFeatureRegistry(features: readonly Feature[]) {
   registry = features
 }
 
-/** One settings row on a tab, with the feature that owns it (its copy carries the row's lines). */
-export function settingsRowsOf(tab: SettingsTabId) {
+/** One settings row in a slot, with the feature that owns it (its copy carries the row's lines). */
+export function settingsRowsOf(slot: SettingsRowSlot) {
   const out: { feature: Feature, row: FeatureSettingsRow }[] = []
   for (const feature of registry) {
-    for (const row of feature.settingsRows ?? []) if (row.tab === tab) out.push({ feature, row })
+    for (const row of feature.settingsRows ?? []) if (row.tab === slot) out.push({ feature, row })
   }
   return out
 }

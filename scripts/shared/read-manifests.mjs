@@ -22,8 +22,8 @@ const FEATURES = path.join(SRC, 'features')
 const SUFFIX = '.manifest.ts'
 /** The preference table both halves share: a settings row names one of its keys (D73). */
 const { PREFS } = loadModule('packages/contracts/src/prefs.ts')
-/** The settings page's tabs (core/feature.ts SettingsTabId). */
-const SETTINGS_TABS = new Set(['general', 'appearance', 'composer', 'sidebar', 'conversation', 'motion'])
+/** Where a settings row can stand (core/feature.ts SettingsRowSlot): the strip's tabs and the main window's two groups. */
+const SETTINGS_SLOTS = new Set(['general', 'appearance', 'main-window', 'sidebar', 'motion', 'conversation', 'composer'])
 /** The settings page's own copy: the lines two features' rows share live there (D72). */
 const SETTINGS_COPY = (() => {
   const file = path.join(FEATURES, 'settings', 'settings.copy.json')
@@ -108,9 +108,9 @@ function checkManifests(manifests) {
       const carries = (key) => copy[key] !== undefined || SETTINGS_COPY[key] !== undefined
       const ranks = new Map()
       for (const row of manifest.settingsRows) {
-        if (!SETTINGS_TABS.has(row?.tab)) fail(manifest, `has a settings row on the tab "${row?.tab}", which the settings page does not carry`)
+        if (!SETTINGS_SLOTS.has(row?.tab)) fail(manifest, `has a settings row on the slot "${row?.tab}", which the settings page does not carry`)
         if (!Number.isInteger(row.rank) || row.rank < 0) fail(manifest, 'has a settings row without a whole "rank"')
-        if (ranks.has(`${row.tab}:${row.rank}`)) fail(manifest, `repeats the rank ${row.rank} on the "${row.tab}" tab`)
+        if (ranks.has(`${row.tab}:${row.rank}`)) fail(manifest, `repeats the rank ${row.rank} on the "${row.tab}" slot`)
         ranks.set(`${row.tab}:${row.rank}`, true)
         if (manifest.pref === undefined && manifest.ungated === undefined) fail(manifest, 'has a settings row and names neither "pref" nor "ungated"')
         if (typeof row.pref !== 'string' || !(row.pref in PREFS)) fail(manifest, `has a settings row for "${row.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)

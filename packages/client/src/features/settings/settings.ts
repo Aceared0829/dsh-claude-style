@@ -8,9 +8,8 @@ import { cacheFirstMatch, hostSlots } from '@dsh-claude-style/engine/host'
 import { motionMs } from '../../shared/motion'
 import { ClaudeStyleSegmentGroup, createSettingsControls, tabRows } from './settings-controls'
 import { createSettingsAppearanceTab } from './settings-tab-appearance'
-import { createSettingsComposerTab } from './settings-tab-composer'
-import { createSettingsConversationTab } from './settings-tab-conversation'
 import { createSettingsGeneralTab } from './settings-tab-general'
+import { createSettingsMainWindowTab } from './settings-tab-main-window'
 import { createSettingsMotionTab } from './settings-tab-motion'
 import { createSettingsSidebarTab } from './settings-tab-sidebar'
 import { installThemeFlip } from './theme-flip'
@@ -52,8 +51,9 @@ type PageDirection = 'forward' | 'back'
  *
  * The rows are grouped into tabs (packages/client/src/features/settings/settings-tab-*.ts),
  * picked from a strip at the top that reuses the segmented control and its
- * sliding highlight. The open tab lives in the component: it survives a
- * preference change, not a remount.
+ * sliding highlight; the main window tab draws its rows as two labelled groups,
+ * the conversation side above and the composer's below. The open tab lives in
+ * the component: it survives a preference change, not a remount.
  */
 /**
  * The quick-provider popover (packages/client/src/features/settings/quick-providers.ts). The settings
@@ -80,9 +80,8 @@ export const SETTINGS_SECTION_ID = 'claude-style'
 export const SETTINGS_TABS: SettingsTab[] = [
   createSettingsGeneralTab(),
   createSettingsAppearanceTab(),
-  createSettingsComposerTab(),
+  createSettingsMainWindowTab(),
   createSettingsSidebarTab(),
-  createSettingsConversationTab(),
   createSettingsMotionTab(),
 ]
 export const SETTINGS_CONTROLS = createSettingsControls()

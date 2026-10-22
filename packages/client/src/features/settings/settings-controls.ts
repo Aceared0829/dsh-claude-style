@@ -11,7 +11,7 @@ import { copy, sharedLine } from './copy'
 import { createSlidingPill } from '../../shared/sliding-pill'
 import type { Feature, FeatureSettingsRow } from '../../core/feature'
 import type { Prefs } from '../../constants'
-import type { SettingsTabId } from '../../core/feature'
+import type { SettingsGroupId, SettingsRowSlot, SettingsTabId } from '../../core/feature'
 import type { QuickProvidersHandle } from './quick-providers'
 
 /**
@@ -52,31 +52,72 @@ export interface SettingsView {
   }
 }
 
-/** One row of a tab, with its place among the tab's rows and the switch rows the manifests add (D72). */
+/** One row of a tab, with its place among the slot's rows and the switch rows the manifests add (D72). */
 export interface SettingsRow {
   rank: number
   node: React.ReactNode
 }
 
 /**
- * One tab of the settings page: its id, its strip label, the rows it writes
- * itself and, when the page it is open on calls for one, the line it opens
- * with.
+ * One labelled group of the main-window tab: the label that opens it and the
+ * rows this page writes for it; the manifests' rows that name the group stand
+ * among them (settings-tab-main-window.ts).
  */
-export interface SettingsTab {
+export interface SettingsGroup {
+  id: SettingsGroupId
+  label(): string
+  rows?(view: SettingsView): SettingsRow[]
+}
+
+/**
+ * One tab that draws a single list of rows: its id, its strip label, the rows
+ * it writes itself and, when the page it is open on calls for one, the line it
+ * opens with.
+ */
+export interface ListSettingsTab {
   id: SettingsTabId
   label(): string
   rows(view: SettingsView): SettingsRow[]
   notice?(): string | null
 }
 
+/** One tab that draws labelled groups of rows: the main window's conversation side and the composer's. */
+export interface GroupedSettingsTab {
+  id: SettingsTabId
+  label(): string
+  groups(view: SettingsView): SettingsGroup[]
+  notice?(): string | null
+}
+
+export type SettingsTab = ListSettingsTab | GroupedSettingsTab
+
 /**
- * The tab's whole row list: its notice, then the rows the tab writes itself and
- * the rows the feature manifests place here, in rank order.
+ * The rows of one slot: the rows the page writes for it and the rows the
+ * feature manifests place in it, in rank order.
+ */
+function slotRows(id: SettingsRowSlot, own: SettingsRow[], view: SettingsView) {
+  const rows = [...own, ...featureRows(id, view)]
+  return rows.sort((a, b) => a.rank - b.rank).map(row => row.node)
+}
+
+/**
+ * The tab's whole row list: its notice, then the rows of the tab's slot — a
+ * single list, or the main window's groups with a label before each one.
  */
 export function tabRows(tab: SettingsTab, view: SettingsView) {
-  const rows = [...tab.rows(view), ...featureRows(tab.id, view)]
-  const nodes = rows.sort((a, b) => a.rank - b.rank).map(row => row.node)
+  let nodes: React.ReactNode[]
+  if ('groups' in tab) {
+    nodes = []
+    for (const group of tab.groups(view)) {
+      const own = group.rows === undefined ? [] : group.rows(view)
+      // The label is the group's heading, so a screen reader can move between
+      // the main window's two halves without passing every row.
+      nodes.push(React.createElement('div', { key: `group-${group.id}`, className: 'dsh-claude-settings-group', role: 'heading', 'aria-level': 3 }, group.label()))
+      nodes.push(...slotRows(group.id, own, view))
+    }
+  } else {
+    nodes = slotRows(tab.id, tab.rows(view), view)
+  }
   const notice = tab.notice === undefined ? null : tab.notice()
   if (notice === null) return nodes
   return [React.createElement('div', { key: 'notice', className: 'dsh-claude-settings-notice dsh-claude-settings-tab-notice', role: 'note' }, notice), ...nodes]
@@ -91,10 +132,11 @@ function rowLine(feature: Feature, key: string) {
 }
 
 /**
- * The rows the feature manifests declare for a tab (D72). The control follows
- * the preference's own declaration (packages/contracts/src/prefs.ts): a boolean
- * is an on/off switch, a choice a segmented control over the values the table
- * carries, each labelled by the row's own copy.
+ * The rows the feature manifests declare for a slot (D72): a tab of the strip,
+ * or one of the main window's groups. The control follows the preference's own
+ * declaration (packages/contracts/src/prefs.ts): a boolean is an on/off switch,
+ * a choice a segmented control over the values the table carries, each labelled
+ * by the row's own copy.
  *
  * A row refuses input and says why where it cannot act: a preference its
  * feature yields for (dsh-chat-ux on the page, managedDesc), one that only
@@ -103,9 +145,9 @@ function rowLine(feature: Feature, key: string) {
  * itself waiting), and one acting on the Windows desktop window alone
  * (`windowsOnly`) on every page that is not that window.
  */
-function featureRows(tab: SettingsTabId, view: SettingsView): SettingsRow[] {
+function featureRows(slot: SettingsRowSlot, view: SettingsView): SettingsRow[] {
   const controls = view.controls
-  const entries = settingsRowsOf(tab)
+  const entries = settingsRowsOf(slot)
   const prefs = view.prefs
   const rowsByPref = new Map(entries.map(({ row }) => [row.pref, row]))
 

@@ -189,6 +189,29 @@ body[data-dsh-claude-style] .dsh-claude-settings-tab-notice + .dsh-claude-settin
   border-top: none;
 }
 
+/* The main window tab's two groups, each under the label that names it
+   (settings-tab-main-window.ts). The label opens its group with no hairline
+   under it, so the label and its rows read as one section; a group after
+   another carries the line that separates the two. */
+body[data-dsh-claude-style] .dsh-claude-settings-group {
+  padding: 24px 0 4px;
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: .04em;
+  color: var(--dsw-alias-label-secondary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-group:first-child {
+  padding-top: 16px;
+  border-top: none;
+}
+
+body[data-dsh-claude-style] .dsh-claude-settings-group + .dsh-claude-settings-row {
+  border-top: none;
+}
+
 /* A sub-row belongs to the row above it: no hairline between the two and no
    air above it, so they read as one group, and it greys out while its parent
    is off (its control is disabled as well, so the keyboard skips it). */
