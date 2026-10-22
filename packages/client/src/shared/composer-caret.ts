@@ -1,4 +1,4 @@
-import { COMPOSER_INPUT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_COMPOSING_ATTRIBUTE, COMPOSER_INPUT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
  * The composer's selection, carried across the two focus moves the skin makes
@@ -27,6 +27,20 @@ export function captureComposerCaret(doc: Document = document): Range | null {
     : start.parentElement?.closest(COMPOSER_INPUT_SELECTOR) ?? null
   if (composer === null) return null
   return range.cloneRange()
+}
+
+/**
+ * Whether the reader is in the middle of an input-method composition.
+ *
+ * The composer editor is a contenteditable: a focus moved or a selection
+ * rewritten under a composition makes the browser drop the characters the
+ * reader has typed but not committed. The host's keymap raises
+ * data-composer-composing for the span of one, which is the only reading a
+ * press outside the composer gets before it takes the focus away.
+ * @param doc - the document to read; the page's own by default.
+ */
+export function composerComposing(doc: Document = document): boolean {
+  return doc.querySelector('[' + COMPOSER_COMPOSING_ATTRIBUTE + ']') !== null
 }
 
 /**

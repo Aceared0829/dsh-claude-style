@@ -10,8 +10,8 @@
  * @risk Pressing the input card or a process group's header sends the caret back to the start of the draft, and the next words the reader types land in the wrong place.
  */
 import { afterEach, expect, test } from 'vitest'
-import { captureComposerCaret, focusKeepingComposerCaret } from '@dsh-claude-style/client/pure'
-import { COMPOSER_INPUT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '@dsh-claude-style/client/pure'
+import { COMPOSER_COMPOSING_ATTRIBUTE, COMPOSER_INPUT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { hostElement } from '../../fixtures/host-markup'
 
 /** Everything this spec put on the page, taken away after each test. */
@@ -114,4 +114,19 @@ test('a caret the editor has replaced is dropped, and the focus still lands', ()
   focusKeepingComposerCaret(input, caret)
 
   expect(document.activeElement).toBe(input)
+})
+
+test('the draft reports no composition until the host raises the flag, and reports one while it stands', () => {
+  composer()
+  expect(composerComposing(document)).toBe(false)
+
+  // The host's keymap sets it on the editor for the span of a composition.
+  const [editor] = document.querySelectorAll(COMPOSER_INPUT_SELECTOR)
+  editor.setAttribute(COMPOSER_COMPOSING_ATTRIBUTE, '')
+
+  expect(composerComposing(document)).toBe(true)
+
+  editor.removeAttribute(COMPOSER_COMPOSING_ATTRIBUTE)
+
+  expect(composerComposing(document)).toBe(false)
 })
