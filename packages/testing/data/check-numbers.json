@@ -745,6 +745,9 @@
       "words that settle shorter take the box down with them, so the clock sits right after them": [
         10
       ],
+      "状态行钉住时行下的画布铺到输入框顶，跟随关掉后这块画布随之退场": [
+        17
+      ],
       "the flight plays an animation": [
         0
       ],
