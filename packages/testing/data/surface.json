@@ -15,6 +15,7 @@
     { "id": "effort.popover", "selector": ".dsh-claude-effort-popover", "feature": "effort", "sees": "the floating panel the effort card sits in: the box its trigger's right edge anchors, opened and closed by data-open" },
     { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
     { "id": "composer.hint-standin", "attribute": "data-dsh-synthetic-placeholder", "feature": "composer", "sees": "the hint the skin draws in the composer card where the host draws none, over an empty field: the shell's words in the field's caption ink" },
+    { "id": "composer.transcript", "attribute": "data-dsh-claude-transcript", "feature": "composer", "sees": "the conversation root while a message column is mounted on the page: the stylesheet holds the composer on the scrollport's bottom edge from this mark as it does from the host's active phase" },
     { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },
     { "id": "effort.track", "selector": ".dsh-claude-effort-track", "feature": "effort", "sees": "the slider's track: the groove the reader drags or clicks to pick a level, one stop per effort" },
     { "id": "effort.knob", "selector": ".dsh-claude-effort-knob", "feature": "effort", "sees": "the slider's knob: the handle that rides the track and rests on the level in force" },

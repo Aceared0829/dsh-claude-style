@@ -240,6 +240,16 @@ export const COMPOSER_ATTR = 'data-dsh-claude-composer-active'
  */
 export const COMPOSER_HIDDEN_ATTR = 'data-dsh-claude-composer-hidden'
 /**
+ * Present on the conversation root while a message column is mounted on the
+ * page. The host pins the composer seat and sizes the view area from
+ * `data-phase="active"` alone, so a phase mark landing on `hero` or `settling`
+ * with the transcript already mounted drops both and leaves the composer
+ * standing in the middle of the rows, which paint on below it. The stylesheet
+ * keys the pin, the bar and the view area's contract on this mark as well
+ * (packages/client/src/features/composer/inline.css).
+ */
+export const TRANSCRIPT_ATTR = 'data-dsh-claude-transcript'
+/**
  * Present while a mobile remote plugin's portrait layer owns the page
  * (packages/contracts/src/dom.ts, MOBILE_PORTRAIT_SELECTOR). That layer floats the
  * composer's controls with transforms of its own, and the skin's placement of

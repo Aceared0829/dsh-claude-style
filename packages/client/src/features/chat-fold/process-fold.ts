@@ -48,6 +48,8 @@ const ANSWER_ROW_SELECTOR = `[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`
 export function createProcessFold() {
   /** The phase a group was in when the reader last touched it. */
   const touchedIn = new WeakMap<Element, string>()
+  /** The groups whose turn has shown an answer row at some point. */
+  const answeredGroups = new WeakSet<Element>()
   /** The state a group's body stood in when it was last pressed, so a press that changed nothing is not retried. */
   const attemptedIn = new WeakMap<Element, string>()
   /** Whether a scan is already queued. */
@@ -81,7 +83,10 @@ export function createProcessFold() {
      *
      * A stopped turn gets none, and folding its process away leaves the page
      * with nothing below it: the reader was watching that work, and the stop is
-     * what ended it, not an answer taking its place.
+     * what ended it, not an answer taking its place. The host takes the mark off
+     * the answer row while the turn's own control is open, so a group whose
+     * turn was once seen with one keeps folding: the memory lives on the group,
+     * which outlives the mark.
      */
     const showsAnswer = (group: Element, flow: Element) => {
       const turn = group.getAttribute(CHAT_TURN_ATTRIBUTE)
@@ -91,7 +96,11 @@ export function createProcessFold() {
         turns = new Set([...flow.querySelectorAll(ANSWER_ROW_SELECTOR)].map(row => row.getAttribute(CHAT_TURN_ATTRIBUTE) ?? ''))
         answered.set(flow, turns)
       }
-      return turns.has(turn)
+      if (turns.has(turn)) {
+        answeredGroups.add(group)
+        return true
+      }
+      return answeredGroups.has(group)
     }
     for (const group of groups) {
       // A frame sits between collecting and settling, and the group may be gone by then.
