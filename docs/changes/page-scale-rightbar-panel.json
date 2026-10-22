@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复页面缩放不为 100% 时右栏面板比它自己的列宽：宿主按窗口像素写下面板宽度与拖拽手柄，缩放又把两者放大一次，面板因此盖住中间列，手柄也离面板可见边缘一截；现在两者按页面的像素重算，面板宽度以框架分给它的那一列为上限。",
+  "en": "Fix the right panel standing wider than the column the frame gives it at a page scale other than 100%: the host states the panel's width and the drag handle's place in the window's pixels, and the scale enlarges both once more, so the panel covers the centre and the handle leaves the panel's visible edge. Both are recomputed in the page's pixels here, with the width the frame gives that column as the panel's ceiling."
+}
