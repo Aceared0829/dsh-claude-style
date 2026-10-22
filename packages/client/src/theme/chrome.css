@@ -152,8 +152,11 @@ body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.5"] {
    scaled page multiplies by the factor again: at 125% a dialog may stand wider
    or taller than the window it was capped against. The page's own size is the
    length that cap needs (shared/page-scale.ts writes it), and at a factor of
-   one the two are the same length. */
-body[data-dsh-claude-style] [role="dialog"][aria-modal="true"] {
+   one the two are the same length. A dialog opened by the host or by a plugin
+   carries `role="dialog"` alone as often as it carries `aria-modal`, and a
+   native `<dialog>` need carry neither, so the cap is matched by what the card
+   is rather than by the attribute beside the role. */
+body[data-dsh-claude-style] :is(dialog, [role="dialog"]) {
   max-width: calc(var(--dsh-claude-page-width, 100vw) - 48px);
   max-height: calc(var(--dsh-claude-page-height, 100vh) - 48px);
 }

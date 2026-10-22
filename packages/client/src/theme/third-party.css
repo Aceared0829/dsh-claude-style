@@ -60,3 +60,15 @@ body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-p
   background: transparent !important;
 }
 
+/* ---------- Third-party repair: the cost meter's fee cards ---------- */
+/* The fee window (`dialog.cm-stat-dialog`) and the step fee popup
+   (`dialog.cm-fee-dialog`) state their size in viewport units, and
+   theme/chrome.css caps both with the page's own size, the length a scaled page
+   needs there. A card that cap narrows is narrower than the rows inside it, so
+   the dialog bodies keep their own sideways scroll and the columns beyond the
+   edge stay reachable. */
+body[data-dsh-claude-style] :is(dialog.cm-stat-dialog, dialog.cm-fee-dialog) :is(.cm-stat-dialog-body, .cm-fee-dialog-body) {
+  min-width: 0;
+  overflow-x: auto;
+}
+
