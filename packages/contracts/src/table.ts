@@ -145,7 +145,7 @@ export const HOST_DOM: HostDomEntry[] = [
   { id: 'fold.skipped', value: FOLD_SKIPPED_CONTROL_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'a turn\u2019s header and trigger notice: skipped whole' },
   { id: 'turn.rail', value: TURN_RAIL_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'the host\u2019s turn rail, which the skin\u2019s navigator replaces in place' },
   { id: 'turn.rail-scroller', value: TURN_RAIL_SCROLLER_SELECTOR, probe: { state: 'conversation', kind: 'selector', within: 'turn.rail' }, use: 'the rail\u2019s own scroller, whose content height gives the mark count' },
-  { id: 'turn.rail-mark', value: TURN_RAIL_MARK_SELECTOR, probe: { state: 'conversation', kind: 'selector', within: 'turn.rail', min: 2 }, use: 'one rail mark, keyed by position in the rail\u2019s list' },
+  { id: 'turn.rail-mark', value: TURN_RAIL_MARK_SELECTOR, probe: { state: 'conversation', kind: 'selector', within: 'turn.rail', min: 2 }, use: 'one rail mark: the place the host states for it or, where it states none, its order in a rail that renders every mark' },
   { id: 'turn.rail-current', value: TURN_RAIL_CURRENT_SELECTOR, probe: { state: 'conversation', kind: 'selector', within: 'turn.rail' }, use: 'the mark of the turn at the reading position' },
   { id: 'turn.rail-pitch', value: String(TURN_RAIL_PITCH), probe: { state: 'conversation', kind: 'rail-geometry' }, use: 'the rail\u2019s fixed pitch, which the skin\u2019s own rail matches' },
   { id: 'turn.rail-inset', value: String(TURN_RAIL_INSET), probe: { state: 'any', kind: 'none' }, use: 'the rail\u2019s inset at each end, read by the same geometry check as turn.rail-pitch' },

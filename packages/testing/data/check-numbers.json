@@ -517,6 +517,9 @@
       "switching it off hands the host its rail back; on stands the skin's in again, live": [
         0,
         1
+      ],
+      "a host that writes no place on its marks keeps the reading position and presses the mark at the row's place, the first row included": [
+        4
       ]
     },
     "packages/testing/smoke/cases/chat.mjs": {

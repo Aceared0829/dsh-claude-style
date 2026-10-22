@@ -297,6 +297,9 @@ export default {
       !!nav.switchedOff && nav.switchedOff.rail === 0 && nav.switchedOff.hostReplaced === false && nav.switchedOff.hostShown === 'visible' &&
         !!nav.switchedOn && nav.switchedOn.rail === 1 && nav.switchedOn.hostReplaced === true,
       JSON.stringify({ off: nav.switchedOff, on: nav.switchedOn }))
+    const older = nav.olderHost || {}
+    check('a host that writes no place on its marks keeps the reading position and presses the mark at the row\'s place, the first row included',
+      older.current === 4 && JSON.stringify(older.mid) === '[3]' && JSON.stringify(older.first) === '[3,0]', JSON.stringify(older))
     commonChecks(r)
   },
 }

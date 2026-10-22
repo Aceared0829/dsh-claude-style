@@ -22,13 +22,15 @@ export interface TurnItem {
  * mark's click is the host's whole jump — paging history in first when the
  * turn is outside the loaded window, landing it, and moving the reading
  * position — and its current mark is the host's reading position. Two
- * things follow from the rail's shape. It renders only the marks near its
+ * things follow from the rail's shape. It may render only the marks near its
  * own scroll position, so a jump to a far turn first scrolls the rail until
- * that mark exists. And its marks carry their position in the list, not
- * their turn number, so the turns are read from the same two sources the
- * host merges — the chat snapshot's loaded turns and the whole-log outline
- * — and a mark is trusted only while the rail holds as many marks as that
- * list has turns.
+ * that mark exists. And its marks are addressed by their place in the rail's
+ * list, not by turn: a host that virtualises the rail writes that place as
+ * `data-index`, one that draws every mark writes nothing, and its order in
+ * the rail is then the place — read only while the rail holds as many marks
+ * as the skin's list has turns. The turns themselves are read from the same
+ * two sources the host merges — the chat snapshot's loaded turns and the
+ * whole-log outline.
  *
  * @param ctx - client context: the session binding, the chat target and the locale.
  * @returns { findRail, railShown, turnItems, currentIndex, jumpToTurn, chatText, stop }.
@@ -67,14 +69,45 @@ export function createTurnNavHost(ctx: HostContext) {
     return Math.round((scroller.scrollHeight - 2 * (TURN_RAIL_INSET - TURN_RAIL_PITCH / 2)) / TURN_RAIL_PITCH)
   }
 
+  /** The marks the rail has rendered, in the rail's own order. */
+  function railMarks(found: Element) {
+    return Array.from(found.querySelectorAll<HTMLElement>(TURN_RAIL_MARK_SELECTOR))
+  }
+
+  /** Whether the marks state their place: the rail then renders only the ones near its scroll position. */
+  function statesPlaces(found: Element) {
+    return found.querySelector(`${TURN_RAIL_MARK_SELECTOR}[data-index]`) !== null
+  }
+
   /**
-   * The reading position's place in `list`, or -1: its mark is not
-   * rendered, or the rail does not hold the list's turns yet.
+   * The mark standing at one place in the rail's list: the one that states that
+   * place — read only while the rail's content height agrees with the list,
+   * since the place is the rail's own numbering — else, where the rail renders
+   * every mark, the mark that stands there, again only while the rail and the
+   * list hold the same number of turns.
+   */
+  function markAt(found: Element, index: number, listLength: number) {
+    if (statesPlaces(found)) {
+      if (railMarkCount(found) !== listLength) return null
+      return found.querySelector<HTMLElement>(`${TURN_RAIL_MARK_SELECTOR}[data-index="${index}"]`)
+    }
+    const marks = railMarks(found)
+    return marks.length === listLength ? marks[index] ?? null : null
+  }
+
+  /**
+   * The reading position's place in `list`, or -1: its mark is absent, the
+   * rail's list no longer lines up with the skin's, or the rail renders every
+   * mark and holds a different number of them than the list has turns.
    */
   function currentIndex(found: Element, list: TurnItem[]) {
     const mark = found.querySelector<HTMLElement>(TURN_RAIL_CURRENT_SELECTOR)
-    if (mark === null || railMarkCount(found) !== list.length) return -1
-    return Number(mark.dataset.index)
+    if (mark === null) return -1
+    const stated = mark.dataset.index
+    if (stated !== undefined && /^\d+$/.test(stated)) return railMarkCount(found) === list.length ? Number(stated) : -1
+    const marks = railMarks(found)
+    if (marks.length !== list.length) return -1
+    return marks.indexOf(mark)
   }
 
   /** The whole-log outline's current value (the `turnOutline` projection), or undefined. */
@@ -125,11 +158,12 @@ export function createTurnNavHost(ctx: HostContext) {
   }
 
   /**
-   * Jump to one turn by pressing its mark. The rail is first scrolled so the
-   * mark renders, and nothing is pressed while the rail's mark count and the
-   * list disagree (the host commits a new turn a frame after the snapshot
-   * carries it). A mark that never renders is a host the rail contract no
-   * longer describes, and is said loudly.
+   * Jump to one turn by pressing its mark. A rail that renders only some marks
+   * is scrolled until the wanted one appears. Where the rail renders every
+   * mark, its count against the list is the host's own lag (a new turn lands a
+   * frame after the snapshot carries it), so the press waits for the two to
+   * agree. A mark that never appears is a host the rail contract no longer
+   * describes, and is said loudly.
    *
    * @param turn - the turn to jump to.
    * @param onPressed - called right after the mark is pressed, with the
@@ -150,24 +184,23 @@ export function createTurnNavHost(ctx: HostContext) {
       const list = turnItems(sessionId)
       const index = list.findIndex(item => item.turn === turn)
       if (index < 0) return
-      if (railMarkCount(found) === list.length) {
-        const mark = found.querySelector<HTMLElement>(`${TURN_RAIL_MARK_SELECTOR}[data-index="${index}"]`)
-        if (mark !== null) {
-          const scroller = closestFrom(found, CONVERSATION_SCROLL_SELECTOR)
-          const before = scroller === null ? null : scroller.scrollTop
-          mark.click()
-          onPressed(scroller, before)
-          return
-        }
-        if (!scrolled) {
-          // railMarkCount matched the list, so the scroller it read is there.
-          const scroller = found.querySelector(TURN_RAIL_SCROLLER_SELECTOR)!
+      const mark = markAt(found, index, list.length)
+      if (mark !== null) {
+        const scroller = closestFrom(found, CONVERSATION_SCROLL_SELECTOR)
+        const before = scroller === null ? null : scroller.scrollTop
+        mark.click()
+        onPressed(scroller, before)
+        return
+      }
+      if (!scrolled) {
+        const scroller = found.querySelector<HTMLElement>(TURN_RAIL_SCROLLER_SELECTOR)
+        if (scroller !== null && scroller.scrollHeight > scroller.clientHeight) {
           scroller.scrollTop = index * TURN_RAIL_PITCH + TURN_RAIL_INSET - scroller.clientHeight / 2
           scrolled = true
         }
       }
       if (++frames > MARK_WAIT_FRAMES) {
-        throw new Error(`dsh-claude-style: the turn rail never rendered mark ${index} of ${list.length} (it holds ${railMarkCount(found)})`)
+        throw new Error(`dsh-claude-style: the turn rail never offered a mark for turn ${turn} of ${list.length} (it holds ${railMarkCount(found)})`)
       }
       cancelJumpFrame = requestFrame({ write: step })
     }
