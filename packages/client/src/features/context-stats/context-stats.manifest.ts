@@ -12,8 +12,10 @@ export default {
   prefValues: [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT],
   stylesheets: [],
   settingsRows: [{
-    tab: 'conversation',
-    rank: 35,
+    tab: 'composer',
+    // The two figures' rows stand with the composer's other billing display,
+    // under the group's peak-rate row (peakrate.manifest.ts, rank 45).
+    rank: 46,
     pref: 'statsPosition',
     title: 'statsPositionTitle',
     choiceLabels: {
@@ -28,8 +30,8 @@ export default {
       note: 'statsComposerRequired',
     },
   }, {
-    tab: 'conversation',
-    rank: 36,
+    tab: 'composer',
+    rank: 47,
     pref: 'billingCurrency',
     title: 'billingCurrencyTitle',
     desc: 'billingCurrencyDesc',
