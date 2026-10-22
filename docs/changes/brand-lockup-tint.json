@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 14,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。",
+  "en": "Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes."
+}

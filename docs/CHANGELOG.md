@@ -9,10 +9,12 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">问题修复</h3>
 
 - 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
+- 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
 
 <h3 id="en-unreleased">Bug Fixes</h3>
 
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
+- Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes.
 
 ## [0.18.3] - 2026-10-22
 

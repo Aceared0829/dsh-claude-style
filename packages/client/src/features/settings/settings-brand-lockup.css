@@ -106,10 +106,10 @@ body[data-dsh-claude-style] .dsh-claude-brand-seat:disabled {
 }
 
 /* The art: the brand's own or the reader's picture, at the cap height or the
-   width its own proportions give it. Both brands' words are drawn as shapes
-   masked over one ink — the same drawing the sidebar makes, and the one an SVG
-   used as an image can carry: it has no ink of its own to inherit. The ink is
-   the brand's, so the DeepSeek word stays its blue (--dsh-claude-logo-ink). */
+   width its own proportions give it. A shape carries the ink and no picture:
+   the drawing is the mask and the ink fills it, the same pair the sidebar
+   paints (theme/sidebar.css). The ink is the brand's, so the DeepSeek word
+   stays its blue (--dsh-claude-logo-ink). */
 body[data-dsh-claude-style] .dsh-claude-brand-art {
   display: block;
   flex: none;
@@ -118,7 +118,6 @@ body[data-dsh-claude-style] .dsh-claude-brand-art {
   height: calc(var(--dsh-claude-lockup-cap) * var(--dsh-claude-brand-height, 1));
   width: calc(var(--dsh-claude-lockup-cap) * var(--dsh-claude-brand-height, 1) * var(--dsh-claude-brand-ratio));
   background-color: var(--dsh-claude-logo-ink);
-  background-image: var(--dsh-claude-brand-art);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -133,9 +132,10 @@ body[data-dsh-claude-style] .dsh-claude-brand-art-word {
   mask-position: left center;
 }
 
-/* A picture: the file's own inks, no mask. */
+/* A picture: the file's own inks under no mask. */
 body[data-dsh-claude-style] .dsh-claude-brand-art[data-shape="picture"] {
   background-color: transparent;
+  background-image: var(--dsh-claude-brand-art);
   -webkit-mask: none;
   mask: none;
 }
