@@ -104,10 +104,18 @@
       foldGroup.style.width = ''
       r.fold.wide = await settledSummary()
       // The reasoning stops and the process section ends: both fold back, and
-      // the host's words stop sweeping.
+      // the host's words stop sweeping. The group carries no answer row, so it
+      // is a stopped turn's group: the host folds it itself at the end, and the
+      // skin opens it again, because a stopped turn's work is all the page has.
+      const answeredGroup = document.getElementById('debugAnsweredGroup')
+      const answeredBody = document.getElementById('debugAnsweredBody')
+      const stoppedGroup = document.getElementById('debugStoppedGroup')
+      const stoppedBody = document.getElementById('debugStoppedBody')
+      const foldedBy = (body) => body.hasAttribute('hidden')
       foldThink.setAttribute('data-state', 'ok')
       foldWords.removeAttribute('data-shimmer')
       foldWords.textContent = 'Worked'
+      stoppedBody.setAttribute('hidden', 'until-found')
       await probe.settle()
       r.fold.after = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
@@ -115,6 +123,24 @@
         summary: summaryOf(),
         clicks: Object.assign({}, window.__foldClicks),
       }
+      // The two turn groups: one whose turn ends with an answer row stays as the
+      // host left it, one whose turn was stopped is opened again after the host
+      // folds it.
+      r.fold.turnGroups = {
+        answeredOpen: !foldedBy(answeredBody),
+        stoppedOpen: !foldedBy(stoppedBody),
+        stoppedGroupPresent: stoppedGroup.isConnected,
+        answeredGroupPresent: answeredGroup.isConnected,
+      }
+      // The stopped turn's answer arrives late (a restored transcript): the
+      // group it belongs to closes like any answered one.
+      const lateAnswer = document.createElement('div')
+      lateAnswer.setAttribute('data-chat-flow-kind', 'assistant-step')
+      lateAnswer.setAttribute('data-turn-process-answer', '')
+      lateAnswer.setAttribute('data-chat-turn', '2')
+      stoppedGroup.after(lateAnswer)
+      await probe.settle()
+      r.fold.stoppedLateAnswer = { open: !foldedBy(stoppedBody) }
       // The reasoning's streamed window (reasoning-stream.ts, transitions.dev's
       // "Reasoning stream"): the window takes the text's own height up to the cap
       // reasoning may reach, and only at that cap does the text step up on the

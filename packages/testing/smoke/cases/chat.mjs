@@ -158,6 +158,10 @@ export default {
     check('the thinking row folds back when the reasoning stops', after.thinkOpen === false, JSON.stringify(after))
     check('the process group folds back when the section ends, and its summary stops sweeping',
       after.groupOpen === false && (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
+    check('a group the host folds when its turn is stopped opens again, so a stopped turn keeps its work on the page',
+      fold.turnGroups?.answeredOpen === false && fold.turnGroups?.stoppedOpen === true, JSON.stringify(fold.turnGroups))
+    check('a stopped turn that later carries an answer row closes like any answered one',
+      fold.stoppedLateAnswer?.open === false, JSON.stringify(fold.stoppedLateAnswer))
     check('a group the reader opened himself in that phase stays open', fold.readerOpen === true, JSON.stringify(fold.readerOpen))
     const message = fold.message || {}
     const messageOpen = fold.messageOpen || {}

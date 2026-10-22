@@ -3,7 +3,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
 import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '../../shared/composer-caret'
-import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, STREAMING_ATTRIBUTE, TURN_PROCESS_ANSWER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 
 /**
  * A running process group opens by default and folds back once the piece of
@@ -29,9 +29,15 @@ import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SEL
  * phase keeps it for that phase. The hand-over is per phase — folding a group
  * while its process still runs means he does not want to watch it right now,
  * and folding it back when the section ends would mean nothing.
+ *
+ * A turn folds only when its answer takes the group's place. A turn the reader
+ * stopped has no answer row, and the host folds its group itself at the end: the
+ * skin opens it again, so the work up to the stop stays on the page.
  */
 /** The piece of work is over and the final answer is due. */
 const PROCESS_CLOSED = 'closed'
+/** The answer row a turn ends with; a stopped turn never gets one. */
+const ANSWER_ROW_SELECTOR = `[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`
 
 /**
  * Watch every process group on the page and bring each to what its phase
@@ -42,7 +48,7 @@ const PROCESS_CLOSED = 'closed'
 export function createProcessFold() {
   /** The phase a group was in when the reader last touched it. */
   const touchedIn = new WeakMap<Element, string>()
-  /** The phase a group was in when it was last toggled, so a press that changed nothing is not retried. */
+  /** The state a group's body stood in when it was last pressed, so a press that changed nothing is not retried. */
   const attemptedIn = new WeakMap<Element, string>()
   /** Whether a scan is already queued. */
   let scanQueued = false
@@ -50,10 +56,43 @@ export function createProcessFold() {
   const touchedGroups = new Set<Element>()
 
   /**
+   * Queue the groups of the turn a node belongs to.
+   *
+   * A stream ending and an answer row arriving are the moments a turn's groups
+   * settle, and neither change happens inside the group itself. The turn comes
+   * off the nearest row carrying it, so the walk stays inside that turn.
+   */
+  const settleTurnOf = (node: Element) => {
+    const flow = node.closest(CHAT_FLOW_SELECTOR)
+    const turn = node.closest(`[${CHAT_TURN_ATTRIBUTE}]`)?.getAttribute(CHAT_TURN_ATTRIBUTE) ?? null
+    if (flow === null || turn === null) return
+    for (const group of flow.querySelectorAll(`${PROCESS_GROUP_SELECTOR}[${CHAT_TURN_ATTRIBUTE}="${CSS.escape(turn)}"]`)) touchedGroups.add(group)
+  }
+
+  /**
    * Bring these groups to what their current phase asks for.
    * @param groups - this batch of groups; some may already be unattached.
    */
   const syncGroups = (groups: Iterable<Element>) => {
+    /** The turns carrying an answer row, per flow, read once for this scan. */
+    const answered = new Map<Element, Set<string>>()
+    /**
+     * Whether the turn this group belongs to ends with an answer row.
+     *
+     * A stopped turn gets none, and folding its process away leaves the page
+     * with nothing below it: the reader was watching that work, and the stop is
+     * what ended it, not an answer taking its place.
+     */
+    const showsAnswer = (group: Element, flow: Element) => {
+      const turn = group.getAttribute(CHAT_TURN_ATTRIBUTE)
+      if (turn === null) return true
+      let turns = answered.get(flow)
+      if (turns === undefined) {
+        turns = new Set([...flow.querySelectorAll(ANSWER_ROW_SELECTOR)].map(row => row.getAttribute(CHAT_TURN_ATTRIBUTE) ?? ''))
+        answered.set(flow, turns)
+      }
+      return turns.has(turn)
+    }
     for (const group of groups) {
       // A frame sits between collecting and settling, and the group may be gone by then.
       if (!group.isConnected) continue
@@ -66,11 +105,22 @@ export function createProcessFold() {
       const body = group.querySelector(PROCESS_BODY_SELECTOR)
       if (!(header instanceof HTMLElement) || body === null) continue
       const phase = header.querySelector(SHIMMER_SELECTOR) === null ? PROCESS_CLOSED : RUNNING_STATE
+      const closed = phase === PROCESS_CLOSED
       // The reader has decided this group's state in this phase: leave it.
       if (touchedIn.get(group) === phase) continue
-      if (body.hasAttribute('hidden') === (phase === PROCESS_CLOSED)) continue
+      // A closed group folds only when the turn's answer takes its place. A
+      // stopped turn never gets one, and the host folds the group itself at the
+      // end; this is the press that opens it again, so the work stays on screen.
+      const flow = group.closest(CHAT_FLOW_SELECTOR)
+      const desiredHidden = closed && (flow === null || showsAnswer(group, flow))
+      if (body.hasAttribute('hidden') === desiredHidden) continue
+      // A group the reader folded by hand stays folded.
+      if (!desiredHidden && touchedIn.has(group)) continue
       // A press that changed nothing will not change anything next time either.
-      if (attemptedIn.get(group) === phase) continue
+      // Both sides name the state the body stands in, so the host's own fold
+      // later in the turn is a state this module has not pressed from.
+      const standing = `${phase}:${body.hasAttribute('hidden') ? 'shut' : 'open'}`
+      if (attemptedIn.get(group) === standing) continue
       // The reader is part-way through an input-method composition. The press
       // below takes the focus off the editor and hands it back, and a focus or
       // selection moved under an uncommitted composition makes the browser drop
@@ -78,7 +128,6 @@ export function createProcessFold() {
       // candidate window opens again. Left unrecorded, so the group is settled
       // once the composition has landed (compositionend below).
       if (composerComposing()) continue
-      attemptedIn.set(group, phase)
       // The host's header onClick focuses the control, which is meant for a
       // real press. A programmatic one must not take the focus away from the
       // reader, or the browser draws a focus ring on the header that just
@@ -108,6 +157,12 @@ export function createProcessFold() {
       } finally {
         endChatFoldToggle()
       }
+      // A press that landed is forgotten: a fold the host makes later from the
+      // same state is a new moment and gets its own press. One that changed
+      // nothing is recorded against the state it was made from, so it is never
+      // repeated.
+      if (body.hasAttribute('hidden') === desiredHidden) attemptedIn.delete(group)
+      else attemptedIn.set(group, standing)
       // The position goes back, but not to a place short of the end for a
       // reader who was at the end: that write is a scroll too, and the host
       // would read it as the reader moving and switch its follow off. At the
@@ -143,6 +198,11 @@ export function createProcessFold() {
   const onRecords = (records: MutationRecord[]) => {
     const known = touchedGroups.size
     for (const record of records) {
+      if (record.type === 'attributes' && record.attributeName === STREAMING_ATTRIBUTE) {
+        // The stream ended: the turn's answer is in place, or its work was stopped.
+        if (record.target instanceof Element && !record.target.hasAttribute(STREAMING_ATTRIBUTE)) settleTurnOf(record.target)
+        continue
+      }
       const target = record.target
       const element = target instanceof Element ? target : target.parentElement
       const group = element?.closest(PROCESS_GROUP_SELECTOR) ?? null
@@ -151,6 +211,9 @@ export function createProcessFold() {
         if (!(node instanceof HTMLElement)) continue
         if (node.matches(PROCESS_GROUP_SELECTOR)) touchedGroups.add(node)
         for (const found of node.querySelectorAll(PROCESS_GROUP_SELECTOR)) touchedGroups.add(found)
+        // The answer row the group waits for: its arrival is when the fold is due.
+        const answer = node.matches(ANSWER_ROW_SELECTOR) ? node : node.querySelector(ANSWER_ROW_SELECTOR)
+        if (answer !== null) settleTurnOf(answer)
       }
     }
     // A change with no process group in it (the sidebar, the plugin page) is
@@ -182,7 +245,7 @@ export function createProcessFold() {
     attributes: true,
     // The group root's expand-mode attribute is in range too: switching tiers
     // adds or removes it, and that batch has to be scanned again.
-    attributeFilter: [SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, 'hidden', PROCESS_EXPANDED_MODE_ATTRIBUTE],
+    attributeFilter: [SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, 'hidden', PROCESS_EXPANDED_MODE_ATTRIBUTE, STREAMING_ATTRIBUTE],
   }, onRecords)
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)

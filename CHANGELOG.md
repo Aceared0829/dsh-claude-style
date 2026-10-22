@@ -26,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复回复流式生成时在输入框里用输入法打字被打断：过程分组与思考行自己折叠时，原先在每次活动状态变化时替读者按一下标题，按下与抬起焦点都发生在输入法还没上屏的那一刻，浏览器于是把已敲的拼音丢掉、重新弹出候选框。这两处现在等到上屏之后再按，上屏那一刻补做一次折叠。
 - 修复桌面窗口里 ds-bot 的 Bot 界面占住页面时 Chat / Code 切换消失的问题：切换器改留在 ds-bot 自己的顶行，不再按标题栏里本主题侧栏列的标记定位，从 Bot 界面回到代码界面的路一直都在。
 - 修复大量输出时等待行下方露出正文残行的问题：等待行钉在输入框上方时，它脚下的画布一直铺到输入框顶，滑动中的正文不再从状态行下沿透出。
+- 修复中止生成后过程内容被收起、页面只剩空白的问题：被读者中止的轮次没有最终回答，它的过程组保持展开，工作到停下为止的内容留在页面上。
 - 修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。
 
 ### 其他变更
@@ -52,6 +53,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix input-method typing in the composer being cut short while an answer streams: when a process group or a thinking row folded itself, the skin pressed its header for the reader on every activity change, and the focus leaving and returning landed mid-composition, so the browser dropped the letters typed so far and opened the candidate window again. Both now wait for the composition to land, and settle once it has.
 - Fix the Chat / Code switch disappearing when ds-bot's Bot surface has the page in the desktop window: the switch now stays in ds-bot's own top row instead of taking the caption strip through this theme's sidebar-column mark, so the way back to the code interface stays on screen.
 - Fix a sliver of the answer showing under the waiting line while a large answer streams in: while the line is pinned over the composer, the canvas under it now reaches the composer's top, so the text the stream slide is bringing up no longer shows below the line.
+- Fix the page collapsing to a blank band when a turn is stopped: a turn the reader stopped has no final answer, so its process group stays open and the work up to the stop stays on the page.
 - Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open.
 
 ### Chores

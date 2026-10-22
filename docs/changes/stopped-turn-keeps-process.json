@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 6,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复中止生成后过程内容被收起、页面只剩空白的问题：被读者中止的轮次没有最终回答，它的过程组保持展开，工作到停下为止的内容留在页面上。",
+  "en": "Fix the page collapsing to a blank band when a turn is stopped: a turn the reader stopped has no final answer, so its process group stays open and the work up to the stop stays on the page."
+}

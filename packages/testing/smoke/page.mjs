@@ -336,6 +336,17 @@ function page(name, tier, cases, probe = PROBE) {
         '<button type="button" data-process-activity id="debugExpandedHeader"><span data-shimmer>Expanded</span></button>' +
         '<div data-step-process-body id="debugExpandedBody"><div data-step-process-content>open</div></div>' +
       '</div>' +
+      '<div data-chat-flow id="debugTurnFlow">' +
+        '<div data-step-process id="debugAnsweredGroup" data-chat-turn="1">' +
+          '<button type="button" data-process-activity id="debugAnsweredHeader"><span>Worked</span></button>' +
+          '<div data-step-process-body id="debugAnsweredBody"><div data-step-process-content>answered work</div></div>' +
+        '</div>' +
+        '<div data-chat-flow-kind="assistant-step" data-turn-process-answer data-chat-turn="1">answer</div>' +
+        '<div data-step-process id="debugStoppedGroup" data-chat-turn="2">' +
+          '<button type="button" data-process-activity id="debugStoppedHeader"><span>Stopped</span></button>' +
+          '<div data-step-process-body hidden="until-found" id="debugStoppedBody"><div data-step-process-content>stopped work</div></div>' +
+        '</div>' +
+      '</div>' +
       '<script>' +
       '(function () {' +
       '  window.__foldClicks = { think: 0, group: 0, expanded: 0 };' +
@@ -385,6 +396,19 @@ function page(name, tier, cases, probe = PROBE) {
       '    if (expandedBody.hasAttribute("hidden")) expandedBody.removeAttribute("hidden");' +
       '    else expandedBody.setAttribute("hidden", "until-found");' +
       '  });' +
+      '  var wireGroup = function (headerId, bodyId) {' +
+      '    var groupBody = document.getElementById(bodyId);' +
+      '    document.getElementById(headerId).addEventListener("click", function () {' +
+      '      window.__foldClicks.group += 1;' +
+      '      if (groupBody.hasAttribute("hidden")) groupBody.removeAttribute("hidden");' +
+      '      else groupBody.setAttribute("hidden", "until-found");' +
+      '    });' +
+      '  };' +
+      '  wireGroup("debugAnsweredHeader", "debugAnsweredBody");' +
+      '  wireGroup("debugStoppedHeader", "debugStoppedBody");' +
+      '  window.__foldStoppedBody = function () {' +
+      '    document.getElementById("debugStoppedBody").setAttribute("hidden", "until-found");' +
+      '  };' +
       '})();' +
       '</script>'
     : ''
