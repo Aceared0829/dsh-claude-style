@@ -11,6 +11,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 改善会话标题的重命名：鼠标扫过顶栏标题时浮出一块底板与「重命名会话」提示，点击即可就地编辑，回车写入新名称、Esc 保持原名。
 - 改善会话标题重命名输入框的样子：换成与 Claude 一致的样式，画布底色、一圈选区蓝细边、小圆角，宽度随输入的会话名伸展。
 - 改善流式回复期间写回 token 的估算：正文按中文字符、中文标点、拉丁词、数字、空白与标点各段本身的形状计价，替换原先按宽窄字符计数的规则，估算值贴近服务商的分词结果。
+- 把只做分隔的线收细、调淡一档：侧栏账号行上沿、搜索面板页脚、上下文统计、设置行、弹层与菜单分隔线以及正文分隔线改用新的分隔线令牌，宽度收到 0.5px，卡片与输入框的轮廓保持原样。
 
 ### 问题修复
 
@@ -30,6 +31,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one.
 - Improve the field a session title is renamed in: it takes Claude's own face — the canvas fill, a thin ring in the selection blue and a small radius — and grows with the name being typed.
 - Improve the written-back token estimate while an answer streams: the text is now priced by the shape of its runs — CJK characters and marks, Latin words, digits, whitespace, punctuation — in place of the wide/narrow character rule, so the figure stays close to the provider's own count.
+- Bring every line that only separates down one finer, quieter step: the account row's upper edge, the search panel's foot, the context stats, the settings rows, the menu and popover separators and the transcript's rule take the new divider token at 0.5px, while a card's and a field's outline keep theirs.
 
 ### Bug Fixes
 

@@ -289,7 +289,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="markdown"] :is(a:hover, a:fo
 
 body[data-dsh-claude-style] hr {
   border: none;
-  border-top: 1px solid rgba(20, 20, 19, 0.14);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l1, #e8e6dc));
   margin: 1.6em 0;
 }
 

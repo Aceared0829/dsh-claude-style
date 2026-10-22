@@ -91,17 +91,18 @@ body[data-dsh-claude-style] .dsh-claude-popover-status {
 }
 
 /* The separator inside a card, whichever half drew it: the host's own menu
-   separators and the rows the skin builds take the host's line — 0.5px of the
-   border ladder's second rung, the rung the host itself picks for a menu surface
-   (Menu.module.css). It is drawn as a top border on a zero-height box rather
-   than as the background of a half-pixel box, so the line belongs to the layout
-   and does not change thickness with the card's opening scale. Every card the
-   shell governs is covered here — the skin's own cards and the two host menus it
-   repaints — so one declaration decides the line everywhere; a surface that
-   wants its own insets states only its margin beside this. */
+   separators and the rows the skin builds take the skin's one line — 0.5px of
+   the divider token, the rung below the lightest border, so a separator stays
+   quieter than the card's own outline. It is drawn as a top border on a
+   zero-height box rather than as the background of a half-pixel box, so the
+   line belongs to the layout and does not change thickness with the card's
+   opening scale. Every card the shell governs is covered here — the skin's own
+   cards and the two host menus it repaints — so one declaration decides the
+   line everywhere; a surface that wants its own insets states only its margin
+   beside this. */
 body[data-dsh-claude-style] :is(.dsh-claude-popover-card, [data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [role="separator"] {
   height: 0;
-  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
   background: transparent;
 }
 

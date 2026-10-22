@@ -71,11 +71,11 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [role="separator"] {
 }
 
 /* The pinned footer ("添加工作区…") keeps the host's spacing with the skin's
-   hairline. */
+   separator. */
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu] > [data-dsh-claude-part~="menu-footer"] {
   margin-top: 4px;
   padding-top: 4px;
-  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
 }
 
 /* The workspace picker is Claude Code's folder menu: a narrow card of plain

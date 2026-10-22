@@ -15,6 +15,7 @@ Design tokens for `dsh-claude-style`, recreating the Claude Code Desktop aesthet
 | clay | `#D97757` | single accent — CTA / links |
 | accent deep | `#C6613F` | accent hover |
 | hairline | `#1414131a` | 1px warm border |
+| divider | `rgba(20, 20, 19, .05)`, `rgba(255, 255, 255, .06)` in dark | 0.5px separator line |
 
 Rules:
 
@@ -53,6 +54,7 @@ keeps where it states none of its own; `—` is a token that theme leaves unset.
 | `--dsw-alias-border-l1` | `#e8e6dc` | `#e7ecf7` | `rgba(255, 255, 255, 0.09)` | `#212631` | host's own | the standard edge: card and panel outlines, dividers, field outlines |
 | `--dsw-alias-border-l2` | `#dedcd2` | `#dde4f1` | `rgba(255, 255, 255, 0.18)` | `#2a303c` | host's own |  |
 | `--dsw-alias-border-l3` | `#d0cdc1` | `#cfd8ea` | `rgba(255, 255, 255, 0.30)` | `#363d4b` | host's own |  |
+| `--dsh-claude-divider` | `rgba(20, 20, 19, 0.05)` | `rgba(38, 49, 72, 0.05)` | `rgba(255, 255, 255, 0.06)` | `rgba(255, 255, 255, 0.06)` | `var(--dsw-alias-border-l1)` | a line that only separates: foot areas, settings rows, menu separators, the transcript's rule |
 | `--dsw-alias-brand-primary` | `#d97757` | `#4d6bfe` | `#d97757` | `#4d6bfe` | host's own | the single accent: checks, focus rings, selected marks |
 | `--dsw-alias-brand-text` | `#faf9f5` | `#fafbff` | `#faf9f5` | `#eef1f8` | host's own |  |
 | `--dsw-alias-button-primary-fill` | `#d97757` | `#4d6bfe` | `#d97757` | `#4d6bfe` | host's own |  |
@@ -219,11 +221,16 @@ and scrolls to its end.
   re-picked per surface. The light rungs stay the warm opaque ladder. A copy of a
   host control keeps that control's own stroke: the inline composer's 1.6px stop
   square.
-- Hairline: 0.5px, for the split between the sidebar and the conversation
-  (`theme/chrome.css`, one device pixel on a retina display and the width the
-  product itself states), the Markdown table frame and the trajectory chip
-  (`theme/typography.css`, `features/chat-files`). Every other single-direction
-  rule stays 1px.
+- Separator: `--dsh-claude-divider`, a rung below the lightest border, drawn at
+  0.5px on every line that only separates — the sidebar's foot area, the search
+  panel's foot, the context stats, the settings rows, a menu's separators, the
+  file block's IN/OUT line and the transcript's `hr` (one device pixel on a
+  retina display; elsewhere `0.5px` rasterises to one physical pixel). A card, a
+  field and a popover keep their 1px border in l1, so an outline always reads
+  heavier than a separator inside it. The split between the sidebar and the
+  conversation stays 0.5px of l1 (`theme/chrome.css`); the Markdown table frame
+  and the trajectory chip stay 0.5px of l2 (`theme/typography.css`,
+  `features/chat-files`).
 - Spacing: 4 px rhythm.
 - Bottom edge: the transcript never fades behind the composer by shadow. The
   composer seat paints an opaque `var(--dsw-alias-bg-base)` bar across its own
@@ -490,13 +497,13 @@ the shell itself. What it carries is described under "Context popover" below.
 **Heading, separator, footer**
 
 - heading row: 11px / 16px at 600, `letter-spacing: .04em`, uppercase, `label-tertiary`, `padding: 6px 7px 2px`
-- separator: `0.5px` `var(--dsw-alias-border-l2)` — the host's own line on a menu
-  surface (`Menu.module.css`) — `margin: 2px 4px`, drawn as a top border on a
-  zero-height box. One rule in the shared shell covers every separator in a card,
-  the host's own menu separators included, so the line is one thickness wherever
-  it appears and does not follow the card's opening scale
-- pinned footer: `margin-top` / `padding-top` 4px, and the same `0.5px`
-  `var(--dsw-alias-border-l2)` line above it
+- separator: `0.5px` `var(--dsh-claude-divider)` — one rung below the lightest
+  border — `margin: 2px 4px`, drawn as a top border on a zero-height box. One
+  rule in the shared shell covers every separator in a card, the host's own menu
+  separators included, so the line is one thickness wherever it appears and does
+  not follow the card's opening scale
+- pinned footer: `margin-top` / `padding-top` 4px, and the same `0.5px` divider
+  line above it
 
 **Host surfaces**
 

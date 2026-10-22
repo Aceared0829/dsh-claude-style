@@ -376,12 +376,11 @@ body[data-dsh-claude-style] .dsh-claude-model-desc {
 /* The divider that closes the model list carries the shared separator's role, so
    its line comes from shared/popover.css with every other separator in a card;
    what stays here is its margin. The provider header's own rule is the one line
-   this sheet states, in the same language: a 0.5px border of the border ladder's
-   second rung, the rung the host picks on a menu surface (Menu.module.css). It is
-   a border on a zero-height box so the line belongs to the layout. */
+   this sheet states, in the same language: a 0.5px border of the divider token.
+   It is a border on a zero-height box so the line belongs to the layout. */
 body[data-dsh-claude-style] .dsh-claude-model-rule::after {
   height: 0;
-  border-top: 0.5px solid var(--dsw-alias-border-l2, #dedcd2);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
 }
 body[data-dsh-claude-style] .dsh-claude-model-divider {
   margin: 2px 4px;

@@ -515,12 +515,9 @@ body[data-dsh-claude-style] .dsh-claude-search-foot {
   align-items: center;
   gap: 24px;
   padding: 12px 24px;
-  border-top: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l1, #e8e6dc));
   color: var(--dsw-alias-label-secondary, #787672);
   font-size: 13px;
-}
-body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-search-foot {
-  border-top-color: var(--dsw-alias-border-l2) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-search-hint {
   display: inline-flex;
