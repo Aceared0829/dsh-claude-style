@@ -30,7 +30,6 @@ export interface ModelHandle extends FeatureHandle {
   trigger(): HTMLButtonElement | null
   effort(): ReturnType<ModelCatalog['effort']>
   named(): boolean
-  settled(): boolean
   pickEffort(effort: string | undefined): void
   providers(): CatalogProvider[]
   onProviders(listener: (providers: CatalogProvider[]) => void): () => void
@@ -335,7 +334,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // providers whose adapters resolve over the network. Only a directory with
     // nothing to show yet falls back to the loading line.
     const seated = groups.length > 0 && current !== null
-    if (!seated && (status === 'idle' || status === 'loading' || status === 'selecting')) {
+    if (!seated && modelCatalog.inFlight()) {
       modelBody.appendChild(buildElement('div', 'dsh-claude-popover-status', copy('loading')))
       layoutModelFooter(false)
     } else {
@@ -596,7 +595,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
     const snap = modelCatalog.snapshot()
     const current = modelCatalog.current(snap)
-    const groupsNow = (snap && snap.groups) || []
     const label = current ? current.model.name : copy('fallbackLabel')
     const labelEl = modelBtn.querySelector('.dsh-claude-model-btn-label')
     if (labelEl) {
@@ -606,13 +604,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // helper writes nothing when the words stand already, so a pass costs no
       // mutation — which is what keeps the scheduler's observer quiet.
       setSwappingText(labelEl as HTMLElement, label)
-      // The dimmed tone means "no seat to name yet". A selection in flight
-      // still names the model in force, so it keeps the normal tone — the
-      // host can hold `selecting` for seconds (the effort slider commits
-      // through that same RPC), and a greyed-out trigger for that long
-      // reads as broken rather than busy.
-      const unsettled = !!(snap && (snap.status === 'loading' || snap.status === 'idle' || snap.status === 'selecting')) && !(groupsNow.length > 0 && current !== null)
-      labelEl.classList.toggle('dsh-claude-model-btn-loading', unsettled)
+      // The dimmed tone means "no seat to name yet". A re-enumeration no longer
+      // counts: the catalogue stands on the last seat it named (catalog.ts), so
+      // the words in the box are the seat in force and keep the normal tone.
+      labelEl.classList.toggle('dsh-claude-model-btn-loading', current === null)
     }
     // The level is NOT part of this trigger any more: it has its own button
     // beside it (packages/client/src/features/effort/effort-picker.ts). A stale "· High" span from
@@ -674,22 +669,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      * has no levels".
      */
     named() { return modelCatalog.current(modelCatalog.snapshot()) !== null },
-    /**
-     * Whether the catalog is currently able to name the seat. FALSE means
-     * "in flight": the host re-enumerates the whole directory for seconds
-     * after every selection, and during that window the snapshot can have no
-     * groups, no current seat and no reasoning metadata. Readers must not
-     * read that as "this model has no levels" — the model card learned this
-     * the hard way (it blanked its list on every pick), and the effort card
-     * would take its trigger away mid-selection.
-     */
-    settled() {
-      const snap = modelCatalog.snapshot()
-      if (!snap) return true
-      const inFlight = snap.status === 'loading' || snap.status === 'idle' || snap.status === 'selecting'
-      const groups = snap.groups || []
-      return !inFlight || (groups.length > 0 && modelCatalog.current(snap) !== null)
-    },
     pickEffort,
     owns(target: Node) {
       if (!target) return false

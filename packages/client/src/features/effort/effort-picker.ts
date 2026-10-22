@@ -8,7 +8,6 @@ import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CloseReason } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './effort-picker.manifest'
-import type { ModelCatalog } from '../model/catalog'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { copy } from './copy'
@@ -33,7 +32,7 @@ import { copy } from './copy'
  *
  * @param ctx - the plugin context (unused; kept for the installer shape).
  * @param ui - the shared UI registry. `ui.model` provides the seat box
- *   (`seatBox()`), the catalog's state (`effort()`, `named()`, `settled()`), the
+ *   (`seatBox()`), the catalog's state (`effort()`, `named()`), the
  *   commit call (`pickEffort()`) and `close()`.
  * @returns a teardown function.
  */
@@ -41,14 +40,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let effortBtn: HTMLButtonElement | null = null
   let effortPop: HTMLElement | null = null
   let effortSlider: ReturnType<typeof createEffortControl> | null = null
-  /**
-   * The last ladder the seat named. A selection makes the host re-enumerate
-   * the whole directory for seconds, and the snapshot can go blank in that
-   * window — the level must not vanish and the knob must not fall into its
-   * empty state just because the answer is in flight. Only a SETTLED seat
-   * that names no ladder takes the level away.
-   */
-  let lastEffort: ReturnType<ModelCatalog['effort']> = null
   /** The rung's place on the level's colour ramp, as last written; empty while it wears no ramp. */
   let tintPercent = ''
   /** The slider's track as the pass's read phase found it, for the pass's update of the slider. */
@@ -60,14 +51,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     POPOVER_CLOSE_DELAY
   )
 
-  /** What the catalog currently says about the seat's ladder. */
+  /**
+   * The ladder to draw: what the catalog says about the seat. The catalogue
+   * answers with the last directory that named it while the host re-enumerates
+   * (features/model/catalog.ts), so the level holds through a selection on its
+   * own, and null means the seat itself names no ladder.
+   */
   function effortInfo() {
     return typeof ui.model?.effort === 'function' ? ui.model.effort() : null
-  }
-
-  /** True while the catalog cannot name the seat (a selection in flight). */
-  function seatInFlight() {
-    return typeof ui.model?.settled === 'function' && !ui.model.settled()
   }
 
   /** The box this level shares with the model's name (owned by the model picker). */
@@ -78,20 +69,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Whether the level's card stands open right now. */
   function cardOpen() {
     return effortPop !== null && effortPop.getAttribute('data-open') === 'true'
-  }
-
-  /**
-   * The ladder to draw: the catalog's when it has one, otherwise the last one
-   * it named — but only while the seat is in flight. A settled seat with no
-   * ladder returns null, which is the control's empty state.
-   */
-  function readEffort() {
-    const info = effortInfo()
-    if (info !== null) {
-      lastEffort = info
-      return info
-    }
-    return seatInFlight() ? lastEffort : null
   }
 
   /** Whether the hover preference covers this picker: the `all` scope alone. */
@@ -132,7 +109,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function effortControlElement() {
     if (effortSlider === null) {
       effortSlider = createEffortControl({
-        read: readEffort,
+        read: effortInfo,
         onPick(levelId) {
           if (typeof ui.model?.pickEffort === 'function') ui.model.pickEffort(levelId)
         },
@@ -240,18 +217,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hideEffortTrigger()
       return
     }
-    // Never take the level away on an in-flight catalog: that is the
-    // "selector crashed" report — a pick blanks the snapshot for seconds and
-    // the level (with its open card) disappeared with it.
-    if (seatInFlight()) {
-      if (effortSlider !== null) effortSlider.update(sliderBox)
-      return
-    }
     const info = effortInfo()
     if (info === null) {
-      // A catalog that cannot name the seat (the current selection is not in
-      // its snapshot yet) has said nothing about that seat's levels: the level
-      // stays as it is, the way the in-flight branch above keeps it. Only a
+      // A catalog that has not named the seat yet (the first load) has said
+      // nothing about its levels: the level keeps what it stands on. Only a
       // named model without a ladder takes it away.
       if (typeof ui.model?.named === 'function' && !ui.model.named()) return
       hideEffortTrigger()

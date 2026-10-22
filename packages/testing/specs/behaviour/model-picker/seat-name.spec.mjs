@@ -9,7 +9,7 @@
  * @risk A model picked from the list lands on the seat in silence — the name changes between two frames with nothing showing which words left and which arrived — or the swap holds the seat's width and pushes the composer's row sideways as it runs.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
-import { MODEL_SEAT_NAME, echoModel } from '../../fixtures/model-seat.mjs'
+import { MODEL_SEAT_NAME } from '../../fixtures/model-seat.mjs'
 
 /** The host's model button: the reader finds it by its name, the model's. */
 const modelButton = (page) => page.getByRole('button', { name: MODEL_SEAT_NAME })
@@ -39,8 +39,6 @@ function watchName(t, ms) {
 
 export default spec({ page: 'effort' }, ({ test }) => {
   test('picking another model swaps the name in place', async (t) => {
-    await echoModel(t.page, { provider: 'deepseek-official', model: 'deepseek-reasoner' })
-    await t.settle()
     await modelButton(t.page).click()
     await t.settle()
     // The stand-in's other provider sits behind More models.

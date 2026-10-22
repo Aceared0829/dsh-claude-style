@@ -33,6 +33,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。
 - 修复重绘消息导航在宿主轨标不再写 `data-index` 的宿主上点击无反应的问题：轨标数量与列表一致时按轨道自己的顺序取标记，宿主写下的位置照旧优先。
 - 修复切换会话时费用金额停在币种符号加短横的占位上的问题：金额的请求还在路上时离开这场会话，回到会话后照常重新索取，金额落在原位。
+- 修复选完模型、宿主重新枚举目录期间座位短暂变空的问题：模型名与推理等级留在原处，打开的卡片不移动，宿主答复到达时两者一同更新。
 
 ### 其他变更
 
@@ -66,6 +67,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open.
 - Fix the redrawn message navigator ignoring a press on hosts whose rail marks carry no `data-index`: while the rail holds as many marks as the list has turns, a mark is now taken by its place in the rail, and a place the host states is still read first.
 - Fix the cost segment staying on the currency's dash after a session switch: an answer still on its way when the reader leaves the conversation no longer blocks the next ask, and the total lands in the segment's place.
+- Fix the seat blanking while the host re-enumerates the directory after a model is picked: the model's name and the reasoning level stay where they are, the open card holds still, and both move together when the host answers.
 
 ### Chores
 

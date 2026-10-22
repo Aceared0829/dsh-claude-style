@@ -20,8 +20,15 @@ export type ModelCatalog = ReturnType<typeof createModelCatalog>
  * only through its options — `ctx` (the host context, for
  * `sessions` / `modelDirectories`) and `schedule()` (the scheduler
  * wake-up the directory's store subscription calls). The directory
- * instance, the session id, the warm-up flag and the provider listeners
- * stay in this closure and are handed back through the returned handle.
+ * instance, the session id, the warm-up flag, the last usable snapshot and the
+ * provider listeners stay in this closure and are handed back through the
+ * returned handle.
+ *
+ * The host re-enumerates the whole directory after every selection, and for
+ * seconds its snapshot can carry no groups and no seat. That window is one
+ * fact, so it is held here once rather than in each reader: `snapshot()`
+ * answers with the last directory that named the seat, and `inFlight()` is the
+ * loading state a reader asks for by name.
  *
  * @param options - { ctx, schedule }.
  */
@@ -32,6 +39,8 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
   let modelDir: HostModelDirectory | null = null
   let modelSessionId: string | null = null
   let modelWarmRequested = false
+  /** The last snapshot that could name the seat, kept while the host re-enumerates (readers' one copy). */
+  let lastGood: HostModelCatalogSnapshot | null = null
   /** Settings-page listeners waiting on the provider list. */
   const providerListeners: ((providers: CatalogProvider[]) => void)[] = []
 
@@ -61,12 +70,16 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
       dropSubscription()
       modelDir = null
       modelSessionId = null
+      lastGood = null
       return null
     }
     if (modelSessionId === id && modelDir !== null) return modelDir
     dropSubscription()
     modelDir = null
     modelSessionId = null
+    // The catalogue belongs to the session: a snapshot standing in for one
+    // session must never name a seat in the next.
+    lastGood = null
     const dirs = hostModelDirectories(ctx)
     if (typeof dirs?.directoryFor === 'function') {
       try {
@@ -89,9 +102,37 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
     return modelDir
   }
 
-  function snapshot(): HostModelCatalogSnapshot | null {
+  /** The store's own answer, whether or not it can name the seat. */
+  function fresh(): HostModelCatalogSnapshot | null {
     if (modelDir === null || !modelDir.store) return null
     return modelDir.store.getSnapshot()
+  }
+
+  /**
+   * The directory as readers should see it: the host's own answer when it names
+   * the seat, and otherwise the last one that did. A first load has no last
+   * good yet, so it still hands the loading snapshot through and the picker
+   * shows that the catalog is on its way.
+   */
+  function snapshot(): HostModelCatalogSnapshot | null {
+    const answer = fresh()
+    if (answer !== null && current(answer) !== null) {
+      lastGood = answer
+      return answer
+    }
+    return lastGood ?? answer
+  }
+
+  /**
+   * Whether the host is re-enumerating the directory: the load before the first
+   * list, or the whole selectModel round trip after every selection. The
+   * snapshot stands on its last good through it, so a reader asks here when it
+   * wants to show the loading state.
+   */
+  function inFlight(): boolean {
+    const answer = fresh()
+    if (answer === null) return true
+    return answer.status === 'idle' || answer.status === 'loading' || answer.status === 'selecting'
   }
 
   /**
@@ -188,11 +229,12 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
     }
   }
 
-  /** Drop the directory and its subscription (a feature switch-off). */
+  /** Drop the directory, its subscription and its standing snapshot (a feature switch-off). */
   function reset() {
     dropSubscription()
     modelDir = null
     modelSessionId = null
+    lastGood = null
   }
 
   /** Let a fresh install warm the catalog again (teardown). */
@@ -203,6 +245,7 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
   return {
     directory,
     snapshot,
+    inFlight,
     providers,
     notifyProviders,
     warm,
