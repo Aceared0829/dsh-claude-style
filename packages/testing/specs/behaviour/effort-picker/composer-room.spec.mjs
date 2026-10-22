@@ -1,12 +1,14 @@
 /**
  * The composer's seat is one item in the row: the model's name and the effort
  * level share a box that stands against the row's right end and grows leftward,
- * so a level's name changing width moves the box's left end and leaves the edge
- * both cards hang from where it was.
+ * and the context meter's ring stands after that box, in the row's own flow. A
+ * level's name changing width moves the box's left end and leaves the edge both
+ * cards hang from where it was; a card too narrow for the row shortens the
+ * model's name before it takes the ring out of the card.
  *
  * @capability effort-picker
- * @features effort, model
- * @risk In a narrow window the level covers the model's name or pushes the composer wider than the window, and the conversation grows a horizontal scrollbar.
+ * @features effort, model, context-stats
+ * @risk In a narrow window the ring covers the model's name or pushes the composer wider than the window, and the conversation grows a horizontal scrollbar.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
 import { boxOf } from '../../fixtures/boxes.mjs'
@@ -34,10 +36,47 @@ export default spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], densi
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
 
-  test('switching the picker off hands the seat back whole, the level with it', async (t) => {
+  test('the meter\'s ring stands after the seat box, on the row\'s own line and inside the card', async (t) => {
+    const seat = await t.read.box(t.surface('model.seat'))
+    const ring = await t.read.box(t.surface('stats.meter-ring'))
+    const card = await t.read.box(t.host('composer.card'))
+    const row = await t.read.box(t.surface('composer.row'))
+    t.expectThat.visible(ring, 'the ring is drawn')
+    t.expectThat.equal(ring.left >= seat.right - 1, true, `the ring stands after the seat box (${ring.left} against ${seat.right})`)
+    // One line: the ring's box sits inside the seat box's own band.
+    t.expectThat.equal(ring.top >= seat.top - 1 && ring.bottom <= seat.bottom + 1, true,
+      `the ring shares the seat box's line (ring ${ring.top}–${ring.bottom}, seat ${seat.top}–${seat.bottom})`)
+    t.expectThat.equal(ring.right <= row.right + 1, true, `the ring ends inside the row (${ring.right} against ${row.right})`)
+    t.expectThat.boxWithin(ring, card, 'the ring stays inside the composer card')
+    t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('composer.card')), 'the composer card')
+  })
+
+  test('a card too narrow for the row shortens the model\'s name before it takes the ring out of the card', async (t) => {
+    const card = t.host('composer.card')
+    const roomy = await t.read.box(t.surface('model.seat'))
+    await t.page.evaluate((selector) => {
+      const node = document.querySelector(selector)
+      node.style.width = '320px'
+    }, card)
+    await t.settle()
+    const narrow = await t.read.box(t.surface('model.seat'))
+    const ring = await t.read.box(t.surface('stats.meter-ring'))
+    const cardBox = await t.read.box(card)
+    const row = await t.read.box(t.surface('composer.row'))
+    t.expectThat.visible(narrow, 'the seat box is still drawn')
+    t.expectThat.visible(ring, 'the ring is still drawn')
+    t.expectThat.equal(narrow.width < roomy.width, true,
+      `the seat box gives way (${roomy.width} → ${narrow.width}; card ${cardBox.left}–${cardBox.right}, row ${row.left}–${row.right}, ring ${ring.left}–${ring.right})`)
+    t.expectThat.equal(ring.right <= cardBox.right + 1, true, `the ring stays inside the card (${ring.right} against ${cardBox.right})`)
+    t.expectThat.noHorizontalOverflow(await t.read.overflow(card), 'the composer card')
+    t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
+  })
+
+  test('switching the picker off hands the seat back whole, the level and the ring with it', async (t) => {
     await t.prefs({ modelPicker: false })
     t.expectThat.absent(await t.read.box(t.surface('model.seat')), 'the seat box')
     t.expectThat.absent(await t.read.box(t.surface('effort.trigger')), 'the level')
+    t.expectThat.absent(await t.read.box(t.surface('stats.meter-ring')), 'the ring')
     t.expectThat.visible(await boxOf(modelButton(t.page)), 'the host\'s own seat')
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })

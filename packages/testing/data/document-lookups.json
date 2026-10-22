@@ -22,8 +22,12 @@
       "reason": "The footer's own sweeps at teardown, and the sweep for a copy a client reload stranded."
     },
     "packages/client/src/features/composer/composer.ts": {
-      "count": 3,
+      "count": 2,
       "reason": "The marks the composer wrote, swept once at install and once at teardown."
+    },
+    "packages/client/src/features/context-stats/meter-ring.ts": {
+      "count": 1,
+      "reason": "The ring a generation whose teardown a client reload dropped left behind in the model slot, swept once when the next generation installs."
     },
     "packages/client/src/features/chat-fold/process-summary.ts": {
       "count": 3,

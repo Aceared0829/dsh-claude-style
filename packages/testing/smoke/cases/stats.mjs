@@ -54,36 +54,32 @@ export default {
     checkPanelEdge(r)
     check('leaving the meter closes the popover and takes the block with it',
       r.context.closedAfterLeave === true, JSON.stringify(r.context.closedAfterLeave))
-    check('the meter\'s room survives a reading taken with no box',
-      r.context.roomBefore !== '' && /^\d+px$/.test(r.context.roomAfter || ''),
-      JSON.stringify({ before: r.context.roomBefore, after: r.context.roomAfter }))
-    // A mobile plugin's statistics strip takes the dock's own band; the overlay's
-    // line gives that band up, and only that band (issue #47).
-    const withStrip = r.context.bandWith || {}
-    const removed = r.context.bandRemoved || {}
-    const restored = r.context.bandRestored || {}
-    check('a mobile plugin\'s statistics strip is measured, and the dock\'s line is lifted by its height alone',
-      withStrip.stripHeight > 0 && withStrip.lift === `${withStrip.stripHeight}px` &&
-        withStrip.lowestLine !== null && withStrip.lowestLine <= withStrip.stripBottom,
-      JSON.stringify(withStrip))
-    check('the strip leaving takes the lift with it, and the band comes back with it',
-      removed.gone === true && removed.lift === '' &&
-        restored.stripHeight === withStrip.stripHeight && restored.lift === withStrip.lift,
-      JSON.stringify({ removed: removed.lift, restored: restored.lift }))
-    const stripStack = r.context.stripStack || {}
-    check('the strip stands above the card, with the line it makes room for',
-      stripStack.strip === '4' && Number(stripStack.strip) > Number(stripStack.card),
-      JSON.stringify(stripStack))
-    // The composer's own switch is live, and the numbers outlive it: the meter
-    // is taken from the host's dock when the composer's mark is not there.
+    // The ring the skin draws stands in the row after the seat box, and the
+    // host's own meter keeps the dock's place, unpainted. The row's layout is
+    // what holds the ring: nothing measures it and nothing keeps room for it.
+    const row = r.context.meterRow || {}
+    check('the ring stands in the row after the seat box, inside the card, and the host\'s meter leaves the row unpainted',
+      row.oneLine === true && row.afterSeat === true && row.insideCard === true &&
+        row.cardOverflow !== null && row.cardOverflow <= 1 && row.meterDisplay === 'none',
+      JSON.stringify(row))
+    check('the ring says what the host\'s meter says, in the band its occupancy fell on, and paints the plate in that same colour',
+      row.reading === row.hostReading && row.reading !== null && row.label === row.hostLabel &&
+        row.label !== null && row.ramped === true && row.pieTone === true,
+      JSON.stringify({ reading: row.reading, host: row.hostReading, label: row.label, hostLabel: row.hostLabel, ramped: row.ramped, tone: row.pieTone }))
+    check('a new reading on the host\'s ring reaches the ring the skin draws',
+      r.context.meterReadingMoved !== undefined && r.context.meterReadingMoved.ring === r.context.meterReadingMoved.host &&
+        r.context.meterReadingMoved.ring !== row.reading,
+      JSON.stringify({ before: row.reading, ...r.context.meterReadingMoved }))
+    // The composer's own switch is live, and the numbers outlive it: the ring
+    // goes with the seat box, and the host's meter takes its own place back.
     const composerOff = r.context.composerOff || {}
     const composerBack = r.context.composerBack || {}
-    check('with the composer restyle switched off the numbers still read the host\'s docked meter',
-      composerOff.gate === false && composerOff.marked === false &&
-        composerOff.ramp === 'context' && composerOff.pie === true,
+    check('with the composer restyle switched off the ring goes and the host\'s meter comes back at its own place',
+      composerOff.gate === false && composerOff.marked === true && composerOff.ringGone === true &&
+        composerOff.meterDisplay !== 'none' && composerOff.ramp === 'context' && composerOff.pie === true,
       JSON.stringify(composerOff))
-    check('the composer restyle coming back marks the meter again',
-      composerBack.gate === true && composerBack.marked === true,
+    check('the composer restyle coming back puts the ring back in the row',
+      composerBack.gate === true && composerBack.marked === true && composerBack.ringBack === true,
       JSON.stringify(composerBack))
     commonChecks(r)
   },

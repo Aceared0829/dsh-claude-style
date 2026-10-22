@@ -463,7 +463,10 @@ function page(name, tier, cases, probe = PROBE) {
   // The host's model seat inside the composer row, the way ui-conversation
   // renders it, for the pages that read the controls standing beside it: a long
   // model name, so the row has to share its width between the name and them.
-  var modelSeat = name === 'effort'
+  // The context meter's own ring stands after that seat
+  // (features/context-stats/meter-ring.ts), so the cases that read that row
+  // carry the slot too.
+  var modelSeat = name === 'effort' || name === 'context-stats' || name === 'stats-compact'
     ? '<div data-slot="conversation.input.model" style="display:contents"><div class="_root_m_1"><button type="button" class="_trigger_m_1">' + MODEL_SEAT_NAME + '</button></div></div>'
     : ''
   // The hint the host's editor draws on an empty draft, inside the grow wrapper

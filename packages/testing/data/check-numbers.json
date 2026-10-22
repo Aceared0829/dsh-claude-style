@@ -1014,8 +1014,8 @@
       "the first projection frame replaces the place with the numbers read from the projections": [
         3
       ],
-      "a mobile plugin's statistics strip is measured, and the dock's line is lifted by its height alone": [
-        0
+      "the ring stands in the row after the seat box, inside the card, and the host's meter leaves the row unpainted": [
+        1
       ],
       "the compact row is hidden too, and no card of the skin's own is left": [
         0
@@ -1073,28 +1073,22 @@
       ]
     },
     "packages/testing/stats-overlay.mjs": {
-      "the dock stands on the toolbar row's own line, measured off the row rather than assumed": [
+      "the ring the skin draws stands in the row after the seat box, inside the card": [
+        1
+      ],
+      "the host's meter keeps the place the host rendered it in and paints nothing there": [
         0
       ],
-      "the dock is a positioning layer: the card and its row stand above it, and the meter stands above the card": [
-        0
+      "a press on the ring opens the host's panel, and every frame it is painted in stands over the ring": [
+        0,
+        7,
+        9
       ],
-      "a card leaving no gap under that row still keeps the meter on the row's line": [
-        0
-      ],
-      "a card leaving a wider gap under that row keeps the meter on the row's line": [
-        12
-      ],
-      "the room covers the pill itself: a trigger reaching outside the node it is parked in keeps 8px clear of the row's text": [
-        7
-      ],
-      "a menu row is no composer row: the open menu carries none of the composer's marks": [
+      "no frame of the panel stands outside the window": [
         0
       ],
       "页面缩放到 125% 时，上下文弹层仍贴在计量圆环上方并留在窗口内": [
         0,
-        1,
-        1.25,
         7,
         9
       ],

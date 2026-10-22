@@ -1,8 +1,8 @@
 /**
  * The context-statistics case: the session's meter, the host panel it opens and
  * the skin's block inside it — the skeleton before the first projection frame,
- * the numbers that replace it, a rewrite while the popover is open, and the room
- * the row keeps for the meter.
+ * the numbers that replace it, a rewrite while the popover is open, and the ring
+ * the composer row carries after the seat box.
  */
 (function () {
   var probe = window.__dshSmokeProbe
@@ -32,7 +32,11 @@
       statsDock.style.position = 'relative'
       await sleep(300)
       var statsMeter = document.querySelector('[data-dsh-claude-context-meter]')
-      if (statsMeter !== null) statsMeter.dispatchEvent(new MouseEvent('mouseenter'))
+      // The face the panel hangs from: the ring the skin draws in the row, or
+      // the host's own meter wherever the host keeps it.
+      var statsRing = document.querySelector('[data-dsh-claude-meter-ring]')
+      var statsFace = statsRing === null ? statsMeter : statsRing
+      if (statsFace !== null) statsFace.dispatchEvent(new MouseEvent('mouseenter'))
       await sleep(700)
       // No projection frame yet: the block holds the numbers' place, under the
       // host's own headings, at a row's own size.
@@ -65,27 +69,32 @@
         !foreignPopover.hasAttribute('data-dsh-claude-context-aligned')
       r.context.expanded = statsMeter === null ? null : statsMeter.querySelector('button').getAttribute('aria-expanded')
       // The meter's reading is a pie in both positions: the surface the numbers
-      // live on never changes the ring's own look.
-      r.context.meterPie = statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-meter-pie')
+      // live on never changes the reading's own look. The ring the skin draws
+      // carries it in this position, the host's meter in the other.
+      r.context.meterPie = statsFace !== null && statsFace.hasAttribute('data-dsh-claude-meter-pie')
       // A press on the ring whose panel the dwell opened leaves the panel up:
-      // the host's trigger toggles on a click, and the skin stops that press on
-      // its way to the host (shared/popover.ts::pressKeepsPopoverOpen).
-      var meterTrigger = statsMeter === null ? null : statsMeter.querySelector('button')
-      if (meterTrigger !== null) meterTrigger.click()
+      // the host's trigger toggles on a click, and the skin hands the press to
+      // that trigger rather than letting the host read it as a press outside.
+      // The press is the one the reader makes, on the face the panel hangs from.
+      var faceButton = statsFace === null ? null : statsFace.querySelector('button')
+      if (faceButton !== null) {
+        faceButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, isPrimary: true, button: 0 }))
+        faceButton.click()
+      }
       await sleep(150)
       r.meterPanelAfterPress = statsPanel !== null && statsPanel.isConnected
-      r.meterExpandedAfterPress = meterTrigger === null ? null : meterTrigger.getAttribute('aria-expanded')
+      r.meterExpandedAfterPress = statsMeter === null ? null : statsMeter.querySelector('button').getAttribute('aria-expanded')
       r.context.hostRows = statsPanel === null ? 0 : statsPanel.querySelectorAll('dl dt').length
       // The panel is the host's and it places from the anchor's left edge; the
       // skin hands over the left value that puts the panel's right edge on the
-      // meter's — or on the viewport margin when the panel is wider than the
-      // room left of the window's edge.
+      // face the reader pressed — or on the viewport margin when the panel is
+      // wider than the room left of the window's edge.
       var statsWidth = statsPanel === null ? 0 : statsPanel.offsetWidth
-      var statsMeterRight = statsMeter === null ? 0 : Math.round(statsMeter.getBoundingClientRect().right)
+      var statsFaceRight = statsFace === null ? 0 : Math.round(statsFace.getBoundingClientRect().right)
       var statsLeft = statsPanel === null ? NaN : parseInt(statsPanel.style.getPropertyValue('--dsh-claude-context-panel-left'), 10)
       r.context.aligned = statsPanel !== null && statsPanel.hasAttribute('data-dsh-claude-context-aligned')
       r.context.edgeAligned = statsPanel !== null && statsWidth > 0 && !isNaN(statsLeft) &&
-        (statsLeft + statsWidth === statsMeterRight ||
+        (Math.abs(statsLeft + statsWidth - statsFaceRight) <= 1 ||
           statsLeft === 12 ||
           statsLeft === window.innerWidth - statsWidth - 12)
       r.context.skeletonGone = statsBlock !== null && !statsBlock.hasAttribute('data-dsh-claude-context-skeleton')
@@ -110,79 +119,64 @@
       await sleep(330)
       var statsPushed = document.querySelector('.dsh-claude-context-stats .dsh-claude-context-stats-value')
       r.context.pushed = statsPushed === null ? null : (statsPushed.textContent || '').trim()
-      if (statsMeter !== null) statsMeter.dispatchEvent(new MouseEvent('mouseleave'))
+      if (statsFace !== null) statsFace.dispatchEvent(new MouseEvent('mouseleave'))
       await sleep(500)
       r.context.closedAfterLeave = document.querySelector('.dsh-claude-context-stats') === null
-      // The room the skin keeps for the meter is what holds the model trigger
-      // clear of the ring. A pass that measures the meter with no box — the seat
-      // is display: none while another conversation tab is up — is no reading,
-      // so the row keeps its room and the pass after the box returns measures
-      // again. Taking the room away here left the trigger under the ring until
-      // the reading itself moved.
-      r.context.roomBefore = statsCard.parentElement.style.getPropertyValue('--dsh-claude-meter-room')
-      // The host rewrites the reading beside the ring (ContextMeter's `<span>`).
+      // The ring the skin draws stands in the row after the seat box, and the
+      // host's meter keeps the dock the host renders it in, unpainted: the row
+      // lays the ring out, so nothing has to keep room for it.
+      var rowBox = function (node) {
+        if (node === null) return null
+        var box = node.getBoundingClientRect()
+        return { left: Math.round(box.left), right: Math.round(box.right), top: Math.round(box.top), bottom: Math.round(box.bottom), height: Math.round(box.height) }
+      }
+      var seatBoxNode = document.querySelector('.dsh-claude-model-seat')
+      var ringButton = statsRing === null ? null : statsRing.querySelector('button')
+      var ringValue = ringButton === null ? null : ringButton.querySelector('span')
+      var pieImage = ringButton === null ? null : getComputedStyle(ringButton).backgroundImage
+      var pieDraw = pieImage === null || pieImage === 'none' ? null : decodeURIComponent(pieImage)
+      var ringRamp = statsRing === null ? null : statsRing.getAttribute('data-dsh-claude-ramp')
+      r.context.meterRow = {
+        ring: rowBox(statsRing),
+        seat: rowBox(seatBoxNode),
+        meterDisplay: statsMeter === null ? null : getComputedStyle(statsMeter).display,
+        // The two stand on one line, the ring after the seat, inside the card:
+        // the row's own layout is the room the ring takes.
+        oneLine: statsRing !== null && seatBoxNode !== null && rowBox(statsRing).top >= rowBox(seatBoxNode).top && rowBox(statsRing).bottom <= rowBox(seatBoxNode).bottom,
+        afterSeat: statsRing !== null && seatBoxNode !== null && rowBox(statsRing).left >= rowBox(seatBoxNode).right,
+        insideCard: statsRing !== null && statsCard !== null && rowBox(statsRing).right <= rowBox(statsCard).right,
+        cardOverflow: statsCard === null ? null : statsCard.scrollWidth - statsCard.clientWidth,
+        reading: statsRing === null ? null : (statsRing.textContent || '').trim(),
+        hostReading: statsMeter === null ? null : (statsMeter.textContent || '').trim(),
+        label: ringButton === null ? null : ringButton.getAttribute('aria-label'),
+        hostLabel: statsMeter === null ? null : statsMeter.querySelector('button').getAttribute('aria-label'),
+        ramped: ringRamp === 'context',
+        pieTone: pieDraw !== null && ringValue !== null && pieDraw.indexOf('fill="' + getComputedStyle(ringValue).color + '"') !== -1,
+      }
+      // A new reading on the host's own ring — the words a host serving no
+      // context-pressure projection is read by — reaches the ring the skin
+      // draws, without any room being measured for it.
       var meterReading = statsMeter === null ? null : statsMeter.querySelector('button > span')
       if (statsMeter !== null) statsMeter.style.display = 'none'
       if (meterReading !== null) meterReading.textContent = meterReading.textContent === '43%' ? '44%' : '43%'
       statsCard.appendChild(document.createElement('span'))
       await sleep(400)
       if (statsMeter !== null) statsMeter.style.display = ''
-      statsCard.appendChild(document.createElement('span'))
-      await sleep(400)
-      r.context.roomAfter = statsCard.parentElement.style.getPropertyValue('--dsh-claude-meter-room')
-
-      // Another plugin's statistics strip shares the dock's band with the skin's
-      // overlay (issue #47). The strip's height is what the line above it has to
-      // give up, and the skin lifts the whole overlay by exactly that much once
-      // the strip is gone again.
-      var readBand = function () {
-        var strip = statsDock.querySelector('[data-mobile-nav="stats"]')
-        var lift = statsDock.style.getPropertyValue('--dsh-claude-mobile-stats-lift')
-        if (strip === null) return { lift: lift, gone: true }
-        var stripBox = strip.getBoundingClientRect()
-        var lowest = null
-        for (var o = 0; o < statsDock.children.length; o++) {
-          var child = statsDock.children[o]
-          if (child === strip || child.getAttribute('data-dsh-claude-mobile-stats') !== null) continue
-          var box = child.getBoundingClientRect()
-          if (box.width <= 0 || box.height <= 0) continue
-          lowest = lowest === null ? box.bottom : Math.max(lowest, box.bottom)
-        }
-        return {
-          lift: lift,
-          stripHeight: Math.round(stripBox.height),
-          stripBottom: Math.round(stripBox.bottom),
-          lowestLine: lowest === null ? null : Math.round(lowest),
-        }
+      r.context.meterReadingMoved = {
+        host: meterReading === null ? null : (meterReading.textContent || '').trim(),
+        ring: statsRing === null ? null : (statsRing.textContent || '').trim(),
       }
-      r.context.bandWith = readBand()
-      var bandStripNode = statsDock.querySelector('[data-mobile-nav="stats"]')
-      r.context.stripStack = bandStripNode === null ? null : {
-        strip: getComputedStyle(bandStripNode).zIndex,
-        card: getComputedStyle(statsCard).zIndex,
-      }
-      var bandStrip = statsDock.querySelector('[data-mobile-nav="stats"]')
-      if (bandStrip !== null) statsDock.removeChild(bandStrip)
-      statsCard.appendChild(document.createElement('span'))
-      await sleep(400)
-      r.context.bandRemoved = readBand()
-      // The strip arriving on a page already showing the numbers is the reported
-      // order: what this plugin's own sheet is doing under the skin.
-      if (bandStrip !== null) {
-        statsDock.appendChild(bandStrip)
-        statsCard.appendChild(document.createElement('span'))
-        await sleep(400)
-      }
-      r.context.bandRestored = readBand()
 
       // The composer feature leaves the page while its scope preference is off.
-      // The numbers keep reading the host's own docked meter, so the pie and the
-      // ramp stand on it after the composer's mark has gone.
+      // The ring goes with the seat box it stood behind, and the host's own
+      // meter takes its place back.
       window.__pushForm({ composerScope: 'off' })
       await sleep(600)
       r.context.composerOff = {
         gate: document.body.hasAttribute('data-dsh-claude-composer-active'),
         marked: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-context-meter'),
+        ringGone: document.querySelector('[data-dsh-claude-meter-ring]') === null,
+        meterDisplay: statsMeter === null ? null : getComputedStyle(statsMeter).display,
         ramp: statsMeter === null ? null : statsMeter.getAttribute('data-dsh-claude-ramp'),
         pie: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-meter-pie'),
       }
@@ -191,6 +185,7 @@
       r.context.composerBack = {
         gate: document.body.hasAttribute('data-dsh-claude-composer-active'),
         marked: statsMeter !== null && statsMeter.hasAttribute('data-dsh-claude-context-meter'),
+        ringBack: document.querySelector('[data-dsh-claude-meter-ring]') !== null,
       }
     })
   })
