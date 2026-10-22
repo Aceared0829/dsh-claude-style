@@ -142,9 +142,6 @@ export function createMessageFold(requestPass: () => void) {
   function buildToggle(bubble: HTMLElement) {
     const toggle = buildElement('button', MESSAGE_FOLD_TOGGLE_CLASS)
     toggle.type = 'button'
-    // No aria-expanded: the chat fold's own door takes every [aria-expanded]
-    // control for a host disclosure (fold-glide.ts), and this control is the
-    // skin's; its label says which way the press goes.
     owners.set(toggle, bubble)
     under.set(bubble, toggle)
     // The toggle stands after the bubble, inside the host's own message stack:
@@ -180,14 +177,14 @@ export function createMessageFold(requestPass: () => void) {
     const standing = under.get(bubble)
     const toggle = standing !== undefined && standing.isConnected ? standing : buildToggle(bubble)
     writeLabel(toggle, collapsed)
+    setAttributeIfChanged(toggle, 'aria-expanded', String(!collapsed))
   }
 
   /**
    * The reader pressing the skin's own toggle: the message takes the other state.
    *
    * The press is caught before the row hears it — the row belongs to the host,
-   * and a click on it may mean something else (a selection, the whole turn) —
-   * and it never reaches the fold's own door, which rolls host disclosures.
+   * and a click on it may mean something else (a selection, the whole turn).
    */
   const onPress = (event: Event) => {
     const target = event.target
