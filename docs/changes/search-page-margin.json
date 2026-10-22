@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "修复页面缩放不为 100% 时搜索面板比它该在的位置低一截：面板顶部的空白读的是窗口高度的百分比，而面板画在页面自己的像素里；这条空白现在按皮肤量出的页面高度换算。",
+  "en": "Fix the search panel standing lower than its place at a page scale other than 100%: the air above it was a percentage of the window's height while the panel is drawn in the page's pixels, and that gap now converts through the page height the skin measures."
+}
