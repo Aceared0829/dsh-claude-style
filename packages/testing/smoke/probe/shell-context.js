@@ -156,6 +156,11 @@
         }
       }
       r.context.bandWith = readBand()
+      var bandStripNode = statsDock.querySelector('[data-mobile-nav="stats"]')
+      r.context.stripStack = bandStripNode === null ? null : {
+        strip: getComputedStyle(bandStripNode).zIndex,
+        card: getComputedStyle(statsCard).zIndex,
+      }
       var bandStrip = statsDock.querySelector('[data-mobile-nav="stats"]')
       if (bandStrip !== null) statsDock.removeChild(bandStrip)
       statsCard.appendChild(document.createElement('span'))

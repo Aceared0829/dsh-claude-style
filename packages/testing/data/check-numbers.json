@@ -1042,6 +1042,9 @@
       "the dock stands on the toolbar row's own line, measured off the row rather than assumed": [
         0
       ],
+      "the dock is a positioning layer: the card and its row stand above it, and the meter stands above the card": [
+        0
+      ],
       "a card leaving no gap under that row still keeps the meter on the row's line": [
         0
       ],

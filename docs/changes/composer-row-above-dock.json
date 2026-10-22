@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 12,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复「收进上下文」档位下统计条可能盖住输入区底行控件的问题：统计条退到卡片下面只作定位层，卡片与底行画在它上面，计量圆环与手机插件的信息条仍立在卡片之上。",
+  "en": "Fix the statistics dock being able to draw over the composer row's controls in the \"into the context\" position: the dock now sits below the card as a positioning layer, the card and its row paint above it, and the meter and a mobile plugin's strip still stand above the card."
+}

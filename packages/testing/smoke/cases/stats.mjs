@@ -70,6 +70,10 @@ export default {
       removed.gone === true && removed.lift === '' &&
         restored.stripHeight === withStrip.stripHeight && restored.lift === withStrip.lift,
       JSON.stringify({ removed: removed.lift, restored: restored.lift }))
+    const stripStack = r.context.stripStack || {}
+    check('the strip stands above the card, with the line it makes room for',
+      stripStack.strip === '4' && Number(stripStack.strip) > Number(stripStack.card),
+      JSON.stringify(stripStack))
     // The composer's own switch is live, and the numbers outlive it: the meter
     // is taken from the host's dock when the composer's mark is not there.
     const composerOff = r.context.composerOff || {}

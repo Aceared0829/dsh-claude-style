@@ -38,23 +38,26 @@ const readOverlay = (page) => page.evaluate(() => {
   const cluster = card?.querySelector('[data-dsh-claude-part~="trailing"]') ?? null
   const meter = document.querySelector('[data-dsh-claude-context-meter]')
   const trigger = meter?.querySelector('button') ?? null
+  const dock = card?.nextElementSibling ?? null
   const box = (el) => {
     if (el === null || el === undefined) return null
     const b = el.getBoundingClientRect()
     return { left: Math.round(b.left * 100) / 100, right: Math.round(b.right * 100) / 100, top: Math.round(b.top * 100) / 100, bottom: Math.round(b.bottom * 100) / 100, height: Math.round(b.height * 100) / 100 }
   }
+  const z = (el) => el === null || el === undefined ? null : getComputedStyle(el).zIndex
   // The row's box rides the card's parent, the ancestor both readers share.
   const style = getComputedStyle(card?.parentElement ?? document.body)
   const clusterBox = box(cluster)
   const pillBox = box(trigger)
   return {
     row: box(row),
-    dock: box(card?.nextElementSibling ?? null),
+    dock: box(dock),
     meter: box(meter),
     pill: pillBox,
     pillGap: clusterBox === null || pillBox === null ? null : Math.round((pillBox.left - clusterBox.right) * 100) / 100,
     offset: style.getPropertyValue('--dsh-claude-meter-row-offset').trim(),
     height: style.getPropertyValue('--dsh-claude-meter-row-height').trim(),
+    z: { card: z(card), dock: z(dock), meter: z(meter) },
   }
 })
 
@@ -217,6 +220,10 @@ function statsOverlayScenario({ check }) {
         undefined, { timeout: 20000 },
       ).catch(() => {})
       const resting = await readOverlay(page)
+      // The overlay is a positioning layer: the dock itself must not stand over
+      // the card, or a host that paints its stats band covers the toolbar row's
+      // own controls (issue #86). The meter is the one child lifted back above.
+      const stacking = resting.z
       // The host's own gap under the row, moved the way a host that leaves a
       // different one would: the overlay has to follow the row, not the number
       // this window happens to leave. Zero is the reading the issue reported.
@@ -235,6 +242,9 @@ function statsOverlayScenario({ check }) {
         check('the dock stands on the toolbar row\'s own line, measured off the row rather than assumed',
           onTheRow(resting) && Number.parseFloat(resting.offset) >= 0 && Number.parseFloat(resting.height) > 0,
           JSON.stringify(resting)),
+        check('the dock is a positioning layer: the card and its row stand above it, and the meter stands above the card',
+          stacking.dock === 'auto' && Number(stacking.card) > 0 && Number(stacking.meter) > Number(stacking.card),
+          JSON.stringify(stacking)),
         check('a card leaving no gap under that row still keeps the meter on the row\'s line',
           onTheRow(flush) && Number.parseFloat(flush.offset) === 0,
           JSON.stringify(flush)),

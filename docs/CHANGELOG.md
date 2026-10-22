@@ -37,6 +37,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复切换会话时费用金额停在币种符号加短横的占位上的问题：金额的请求还在路上时离开这场会话，回到会话后照常重新索取，金额落在原位。
 - 修复选完模型、宿主重新枚举目录期间座位短暂变空的问题：模型名与推理等级留在原处，打开的卡片不移动，宿主答复到达时两者一同更新。
 - 修复切换模型时模型名横向滑动的问题：旧名字与新名字的右边都停在座位框的右端，座位框向左移动宽度时文字不再跟着移动，换字只在竖直方向上发生。
+- 修复「收进上下文」档位下统计条可能盖住输入区底行控件的问题：统计条退到卡片下面只作定位层，卡片与底行画在它上面，计量圆环与手机插件的信息条仍立在卡片之上。
 
 ### 其他变更
 
@@ -74,6 +75,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the cost segment staying on the currency's dash after a session switch: an answer still on its way when the reader leaves the conversation no longer blocks the next ask, and the total lands in the segment's place.
 - Fix the seat blanking while the host re-enumerates the directory after a model is picked: the model's name and the reasoning level stay where they are, the open card holds still, and both move together when the host answers.
 - Fix the model's name sliding sideways while another model is picked: the outgoing and arriving names both hold the seat box's right end, so the box travelling to the other width leaves the words where they stand and the swap stays vertical.
+- Fix the statistics dock being able to draw over the composer row's controls in the "into the context" position: the dock now sits below the card as a positioning layer, the card and its row paint above it, and the meter and a mobile plugin's strip still stand above the card.
 
 ### Chores
 

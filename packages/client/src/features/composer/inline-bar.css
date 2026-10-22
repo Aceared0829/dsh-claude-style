@@ -105,7 +105,13 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
    would otherwise put the meter several pixels off the row's line. The values
    here are this window's own fallbacks, for the frames before the first
    reading. With the numbers asked onto a line of their own the dock keeps the
-   host's own placement instead, and every rule here stands aside. */
+   host's own placement instead, and every rule here stands aside.
+
+   The dock is a positioning layer rather than a paint: it keeps no z-index, so
+   the card (card.css's z-index 2) and the toolbar row inside it stand above the
+   dock's box, and a host that paints the stats band cannot draw over the row's
+   own controls (issue #86). The meter and a mobile plugin's strip are lifted
+   back above the card by their own rules below. */
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) {
   position: relative;
 }
@@ -127,7 +133,6 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-
   justify-content: center;
   gap: 12px;
   pointer-events: none;
-  z-index: 3;
   max-width: var(--dsh-composer-card-max-width, 100%);
   box-sizing: border-box;
 }
@@ -140,16 +145,25 @@ body[data-dsh-claude-style] [data-dsh-claude-mobile-stats] {
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] > * {
   pointer-events: auto;
 }
+/* A mobile plugin's strip shares the dock's band and stands above the card with
+   the line it makes room for: dropped behind the card it would lose the band
+   and the press the lift keeps for it. */
+body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] [data-mobile-nav="stats"] {
+  z-index: 4;
+}
 /* The meter holds the row's right end, inside the row's own 4px inset, after
    the seat box: the trailing cluster keeps that room free
    (--dsh-claude-meter-room, measured by the permissions pass). Centred by
    stretching over the dock's height, never by a transform — the meter's panel
-   is position: fixed, and a transform here would anchor it to the meter. */
+   is position: fixed, and a transform here would anchor it to the meter. It
+   rides above the card on its own, since the dock it rides keeps no z-index
+   (issue #86). */
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] + [data-dsh-claude-part~="composer-dock"] > [data-dsh-claude-context-meter] {
   position: absolute;
   top: 0;
   bottom: 0;
   right: 4px;
+  z-index: 4;
   align-items: center;
 }
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
