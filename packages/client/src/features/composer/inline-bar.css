@@ -82,6 +82,10 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   white-space: nowrap;
   min-width: 0;
   overflow: hidden;
+  /* The seat's right end is the edge that stands still while a name swap
+     travels the box's width (shared/swapping-text.ts): both names hold it, so
+     neither slides after the box. */
+  text-align: right;
 }
 /* (The effort level's own rules live in features/effort/effort-picker.css: the
    level's button is the seat box's second text.) */
