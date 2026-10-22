@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复页面缩放不为 100% 时模态对话框比窗口宽：宿主设置面板与费用窗口都按视口单位声明尺寸，缩放再乘一次，右侧边缘连同关闭按钮一起被推出窗口，倍率越高越明显；这些窗口现在按页面的像素取宽度，以各自的设计宽度为上限、以窗口为下限，缩放倍率变化时同比例跟随。",
+  "en": "Fix a modal dialog standing wider than the window at a page scale other than 100%: the host's settings panel and the cost meter's fee window state their size in viewport units, which the scale multiplies once more, so the right edge and the close control beside it are pushed out of the window and the higher the factor the further. These cards now take their width in the page's pixels, capped by their design width and floored by the window, and follow a change of factor at the same share."
+}

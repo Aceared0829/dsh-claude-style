@@ -542,3 +542,26 @@ body[data-dsh-claude-style] .dsh-claude-quick-popover {
   gap: 6px !important;
   transform-origin: bottom right !important;
 }
+
+/* ---------- Modal cards: size at the page's own zoom ---------- */
+/* The host caps its own dialogs in viewport units (the settings root's
+   stylesheet: `max-width: calc(100vw - 48px)`, `height: min(800px, calc(100vh -
+   …))`, and the cost meter's fee card the same way), and the page's zoom
+   multiplies a viewport length a second time: at 1.25x either card stands a
+   quarter past the window and its right edge is what gets cut. The factor is
+   stated per value because a `vw` inside the scaled page is multiplied once
+   more; with only the `var(..., 1)` fallback a higher factor overflows the
+   window. A card takes its design width up to the window's own, so it follows a
+   resize instead of holding the width it had at mount, and the dialogs the skin
+   does not draw (the settings panel, the fee card) are matched by their role.
+   At scale 1 every rule here is off and the host's own geometry stands. */
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="0.8"] { --dsh-claude-page-zoom-factor: 0.8; }
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1"] { --dsh-claude-page-zoom-factor: 1; }
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.25"] { --dsh-claude-page-zoom-factor: 1.25; }
+body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.5"] { --dsh-claude-page-zoom-factor: 1.5; }
+
+body[data-dsh-claude-style][data-dsh-claude-page-zoom] [role="dialog"] {
+  width: min(900px, calc(100vw / var(--dsh-claude-page-zoom-factor, 1) - 96px));
+  max-width: calc(100vw / var(--dsh-claude-page-zoom-factor, 1) - 96px);
+  max-height: calc(100dvh / var(--dsh-claude-page-zoom-factor, 1) - 96px);
+}
