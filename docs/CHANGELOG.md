@@ -8,6 +8,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
+- 改善运行中的过程组：由皮肤直接在组根上标记、由样式显示，不再替读者按下宿主标题；输入框的焦点、选区与滚动位置在流式输出期间不再被这一按移动，读者在运行中按一次标题时组保持显示，再按一次才收起。
 - 改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。
 
 ### 问题修复
@@ -22,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="en-unreleased">Improvements</h3>
 
+- Improve the running process group: the skin marks the group and the stylesheet shows it, instead of pressing the host's header for the reader; the press no longer moves the composer's focus or selection, or the scroll position, during a stream, and a reader's first press on a running group keeps it standing until the second press folds it.
 - Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group.
 
 ### Bug Fixes
