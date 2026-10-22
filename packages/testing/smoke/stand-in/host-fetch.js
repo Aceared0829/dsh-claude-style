@@ -3,7 +3,10 @@
  * for every case, the launcher's contract only for the case that models an HDSL
  * launch, the studio case's usage answer, and the launcher's atlas bytes. Three
  * different names — the custom nickname Tester, the account's Ada, the
- * launcher's HDSLPlayer — are what make the fallback order observable.
+ * launcher's HDSLPlayer — are what make the fallback order observable. The two
+ * price routes answer only for a spec that holds `window.__costFixture`: every
+ * other case leaves them to the real fetch, which is what makes the cost
+ * segment stand as a dash there.
  */
 (function () {
   var host = window.__dshSmokeHost
@@ -97,6 +100,29 @@
           },
         ],
       }))
+    }
+    // The cost fixture: a spec sets `window.__costFixture` with its own price
+    // document and holds every session answer until it releases one, so the
+    // switch it drives happens while an ask is in flight. The readings it
+    // releases are the spec's to choose, which is how one page can answer an
+    // old session's total after the reader has left it.
+    if (url === '/dsh-claude-style/prices' || url.indexOf('/dsh-claude-style/session-cost') === 0) {
+      var cost = window.__costFixture
+      if (cost === undefined || cost === null) return realFetch.apply(window, arguments)
+      var reading = { url: url, id: null }
+      var idAt = url.indexOf('?id=')
+      if (idAt !== -1) reading.id = decodeURIComponent(url.slice(idAt + 4))
+      ;(window.__costRequests = window.__costRequests || []).push(reading)
+      if (url === '/dsh-claude-style/prices') {
+        return Promise.resolve(jsonResponse({ ok: true, document: cost.prices, fetchedAt: new Date().toISOString() }))
+      }
+      if (cost.hold !== true) return Promise.resolve(jsonResponse({ ok: true, value: cost.value }))
+      return new Promise(function (resolve) {
+        ;(window.__costReleasers = window.__costReleasers || []).push(function (value) {
+          reading.released = true
+          resolve(jsonResponse({ ok: true, value: value }))
+        })
+      })
     }
     if (url === '/dsh-claude-style/hdsl-skin.png') {
       // An <img> or a canvas source loads this outside the fetch stub, so the

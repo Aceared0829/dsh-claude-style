@@ -18,6 +18,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 把只做分隔的线收细、调淡一档：侧栏账号行上沿、搜索面板页脚、上下文统计、设置行、弹层与菜单分隔线以及正文分隔线改用新的分隔线令牌，宽度收到 0.5px，卡片与输入框的轮廓保持原样。
 - 把配色改为由少量种子颜色与一张共用音阶表在构建时生成：两档各自的强调色、明暗画布与正文链接成为仅有的输入，其余颜色按明度、彩度与透明度的台阶推出；两档的观感保持不变，个别中性色与强调色与此前的取值最多相差几个色差单位。
 - 把模型名与推理等级放进同一个座位框里：两段文字在行里成为一个整体，贴着行的右端、向左生长，悬停底板画在整个框上，模型菜单与档位卡片都从它的右端挂下来；原先单独浮在行上、靠逐帧测量钉在模型按钮旁的档位按钮不再需要定位。
+- 改善切换模型时模型名的样子：名字在原地换成新模型名，离开的名字向上穿过一层模糊，新名字从下方升上来，两段文字同时站在座位框里，座位宽度随两段中较宽的一段过渡；选了减弱动效时名字直接换过去。
 
 ### 问题修复
 
@@ -32,6 +33,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复中止生成后过程内容被收起、页面只剩空白的问题：被读者中止的轮次没有最终回答，它的过程组保持展开，工作到停下为止的内容留在页面上。
 - 修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。
 - 修复重绘消息导航在宿主轨标不再写 `data-index` 的宿主上点击无反应的问题：轨标数量与列表一致时按轨道自己的顺序取标记，宿主写下的位置照旧优先。
+- 修复切换会话时费用金额停在币种符号加短横的占位上的问题：金额的请求还在路上时离开这场会话，回到会话后照常重新索取，金额落在原位。
+- 修复选完模型、宿主重新枚举目录期间座位短暂变空的问题：模型名与推理等级留在原处，打开的卡片不移动，宿主答复到达时两者一同更新。
 
 ### 其他变更
 
@@ -50,6 +53,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Bring every line that only separates down one finer, quieter step: the account row's upper edge, the search panel's foot, the context stats, the settings rows, the menu and popover separators and the transcript's rule take the new divider token at 0.5px, while a card's and a field's outline keep theirs.
 - Generate the palette at build time from a handful of seed colours and one shared tone ladder: each look's accent, its light and dark canvases and its prose link are the only inputs, and every other colour follows a lightness, chroma and alpha step; both looks keep their appearance, with individual neutral and accent colours a few ΔE00 away from their former values.
 - Put the model's name and the reasoning level in one seat box: the two texts are a single item in the row, standing against the row's right end and growing leftward, with the hover plate on the whole box and both the model menu and the effort card hanging from that right end. The level's button no longer floats over the row on coordinates measured every frame.
+- Improve how the model's name changes when another model is picked: the name swaps in place — the words leaving rise through a blur while the new name comes up from below, both standing in the seat box at once, with the seat travelling to the wider of the two as it runs; with reduced motion the name simply changes.
 
 ### Bug Fixes
 
@@ -64,6 +68,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the page collapsing to a blank band when a turn is stopped: a turn the reader stopped has no final answer, so its process group stays open and the work up to the stop stays on the page.
 - Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open.
 - Fix the redrawn message navigator ignoring a press on hosts whose rail marks carry no `data-index`: while the rail holds as many marks as the list has turns, a mark is now taken by its place in the rail, and a place the host states is still read first.
+- Fix the cost segment staying on the currency's dash after a session switch: an answer still on its way when the reader leaves the conversation no longer blocks the next ask, and the total lands in the segment's place.
+- Fix the seat blanking while the host re-enumerates the directory after a model is picked: the model's name and the reasoning level stay where they are, the open card holds still, and both move together when the host answers.
 
 ### Chores
 

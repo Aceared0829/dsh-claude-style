@@ -8,7 +8,6 @@
  * @risk The card slides sideways as levels change, so the slider moves under the pointer and the reader picks a level next to the one they aimed at.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
-import { echoSelection } from '../../fixtures/model-seat.mjs'
 
 /**
  * A frame-by-frame recording of the card's panel, the seat box, the level's slot
@@ -55,7 +54,6 @@ async function openCard(t) {
   const panel = t.surface('effort.popover')
   const seat = t.surface('model.seat')
   const trigger = t.surface('effort.trigger')
-  await echoSelection(t.page, 'max')
   await t.page.click(trigger)
   await t.settle()
   const frames = await record(t, panel, seat, trigger, 200)

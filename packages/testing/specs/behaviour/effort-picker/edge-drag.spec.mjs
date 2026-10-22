@@ -8,7 +8,6 @@
  * @risk A reader who drags to the strongest (or weakest) level cannot drag back without releasing, so the slider sticks at the extreme and the open card reads as frozen.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
-import { echoSelection } from '../../fixtures/model-seat.mjs'
 
 /** Let the skin's queued animation-frame write apply the pointer's last position. */
 function nextFrames(page) {
@@ -20,7 +19,6 @@ const centre = (box) => (box.left + box.right) / 2
 
 export default spec({ page: 'effort' }, ({ test }) => {
   test('a drag past an end stop follows the pointer back', async (t) => {
-    await echoSelection(t.page, 'low')
     await t.page.click(t.surface('effort.trigger'))
     await t.settle()
     const track = await t.read.box(t.surface('effort.track'))

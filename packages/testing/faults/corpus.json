@@ -231,6 +231,13 @@
       "apply": "forward",
       "patch": "patches/intent-part-marking-reads-menu.patch",
       "defect": "With the @ menu open inside the composer's overlay seat, the menu's own rows read the composer's row and cluster marks, so the meter's dock is measured off a menu row and the numbers are lifted onto the open menu."
+    },
+    {
+      "id": "intent-session-cost-stuck",
+      "from": "intent",
+      "apply": "forward",
+      "patch": "patches/intent-session-cost-stuck.patch",
+      "defect": "A reader who leaves a conversation before its first total arrives never sees a cost again: the line keeps the currency's dash for the rest of the page's life."
     }
   ]
 }

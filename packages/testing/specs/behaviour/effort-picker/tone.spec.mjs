@@ -10,7 +10,6 @@
  * @risk The reader cannot tell the strongest rung from the ones below it without opening the card, so they work at a weaker or stronger effort than they meant.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
-import { echoSelection } from '../../fixtures/model-seat.mjs'
 
 /** The colour an element paints its text in, as the pixels the reader sees: a mixed colour and a token resolve to one serialization only through the canvas. */
 function painted(t, selector) {
@@ -62,9 +61,8 @@ async function pick(t, share) {
   return t.read.text(t.surface('effort.trigger'))
 }
 
-/** The effort page's card, open, with the stand-in's directory echoing a selection like the host's own store. */
+/** The effort page's card, open on the level the page starts on. */
 async function open(t) {
-  await echoSelection(t.page, 'max')
   await t.page.click(t.surface('effort.trigger'))
   await t.settle()
 }

@@ -7,29 +7,19 @@
 const MODEL_SEAT_NAME = 'DeepSeek V4 Reasoner Extended Context'
 
 /**
- * Make the stand-in's model directory answer a reasoning selection the way the
- * host's own store does: `select` moves the level, and the snapshot the skin
- * reads back on its next pass names it. The stand-in answers one fixed snapshot,
- * so without this a commit moves the card's knob alone — the trigger keeps the
- * level the page started on.
+ * Hold the stand-in's directory in its selection round trip for `ms`: the host
+ * answers a selection only after re-enumerating the whole directory, and this
+ * is what lets a spec read that window out frame by frame. The stand-in's own
+ * speed is zero — the answer lands in the same task — so a spec that reads the
+ * window stretches it here.
  *
  * @param page - the behaviour spec's page.
- * @param start - the level the stand-in names before any selection.
+ * @param ms - how long the round trip takes.
  */
-async function echoSelection(page, start) {
-  await page.evaluate((level) => {
-    const directory = window.__dshSmokeHost.modelDirectories.directoryFor('smoke-session')
-    const snapshot = directory.store.getSnapshot.bind(directory.store)
-    let answer = level
-    directory.store.getSnapshot = () => {
-      const snap = snapshot()
-      return snap === null || snap.current === null ? snap : { ...snap, current: { ...snap.current, reasoningEffort: answer } }
-    }
-    directory.select = (selection) => {
-      if (selection && selection.reasoningEffort !== undefined) answer = selection.reasoningEffort
-      return Promise.resolve()
-    }
-  }, start)
+async function holdEcho(page, ms) {
+  await page.evaluate((delay) => {
+    window.__dshSmokeHost.modelDirectories.directoryFor('smoke-session').echoDelay = delay
+  }, ms)
 }
 
-export { MODEL_SEAT_NAME, echoSelection }
+export { MODEL_SEAT_NAME, holdEcho }
