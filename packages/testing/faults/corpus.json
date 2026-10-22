@@ -142,13 +142,6 @@
       "defect": "undoes: 写下的设置值在宿主答复之前不再被文档盖回"
     },
     {
-      "id": "effort-032509f6",
-      "from": "history 032509f6",
-      "apply": "reverse",
-      "patch": "patches/effort-032509f6.patch",
-      "defect": "undoes: 思考强度按钮的预留宽度从模型名里出，不从整行里出"
-    },
-    {
       "id": "chat-wait-20858422",
       "from": "history 20858422",
       "apply": "reverse",
