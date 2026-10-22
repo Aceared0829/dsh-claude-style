@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 9,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复切换会话时费用金额停在币种符号加短横的占位上的问题：金额的请求还在路上时离开这场会话，回到会话后照常重新索取，金额落在原位。",
+  "en": "Fix the cost segment staying on the currency's dash after a session switch: an answer still on its way when the reader leaves the conversation no longer blocks the next ask, and the total lands in the segment's place."
+}

@@ -32,6 +32,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复中止生成后过程内容被收起、页面只剩空白的问题：被读者中止的轮次没有最终回答，它的过程组保持展开，工作到停下为止的内容留在页面上。
 - 修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。
 - 修复重绘消息导航在宿主轨标不再写 `data-index` 的宿主上点击无反应的问题：轨标数量与列表一致时按轨道自己的顺序取标记，宿主写下的位置照旧优先。
+- 修复切换会话时费用金额停在币种符号加短横的占位上的问题：金额的请求还在路上时离开这场会话，回到会话后照常重新索取，金额落在原位。
 
 ### 其他变更
 
@@ -64,6 +65,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the page collapsing to a blank band when a turn is stopped: a turn the reader stopped has no final answer, so its process group stays open and the work up to the stop stays on the page.
 - Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open.
 - Fix the redrawn message navigator ignoring a press on hosts whose rail marks carry no `data-index`: while the rail holds as many marks as the list has turns, a mark is now taken by its place in the rail, and a place the host states is still read first.
+- Fix the cost segment staying on the currency's dash after a session switch: an answer still on its way when the reader leaves the conversation no longer blocks the next ask, and the total lands in the segment's place.
 
 ### Chores
 

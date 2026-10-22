@@ -62,6 +62,8 @@ export function createSessionCost() {
   let answer: SessionCostAnswer | null = null
   let askedAt = 0
   let asking = false
+  /** Bumped when the followed session changes and when an ask starts; a settle from another generation is dropped. */
+  let askGeneration = 0
   const listeners = new Set<() => void>()
 
   /** Follow the conversation on screen; a switch drops the previous session's answer. */
@@ -70,6 +72,11 @@ export function createSessionCost() {
     sessionId = id
     answer = null
     askedAt = 0
+    // The ask in flight belongs to the session left behind. Its answer is not
+    // this session's, and the flag it settles must not stand in the way of the
+    // ask this session still needs.
+    asking = false
+    askGeneration += 1
   }
 
   /**
@@ -87,14 +94,14 @@ export function createSessionCost() {
     if (!force && askedAt !== 0 && now - askedAt < ASK_MS) return
     askedAt = now
     asking = true
-    const started = sessionId
+    const generation = ++askGeneration
     fetch(`${SESSION_COST_PATH}?id=${encodeURIComponent(sessionId)}`, {
       credentials: 'same-origin',
       headers: { accept: 'application/json' },
     })
       .then(response => (response.ok ? response.json() : null))
       .then((body: { ok?: boolean, value?: SessionCostAnswer | null } | null) => {
-        if (sessionId !== started) return
+        if (generation !== askGeneration) return
         if (body !== null && body.ok === true && body.value !== undefined && body.value !== null) {
           answer = body.value
           for (const listener of listeners) listener()
@@ -104,7 +111,7 @@ export function createSessionCost() {
         // The last answer stays; the next settlement tries again.
       })
       .finally(() => {
-        if (sessionId !== started) return
+        if (generation !== askGeneration) return
         asking = false
         // A session the store has not folded yet answers an empty total; the
         // first settlement arrives a moment after the turn starts, so the next
