@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。",
+  "en": "Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group."
+}

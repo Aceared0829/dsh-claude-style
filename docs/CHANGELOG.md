@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。
+
+### 问题修复
 
 - 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
 - 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
@@ -16,7 +20,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 移除读者展开、合上折叠行与过程组时的卷帘门过渡：展开保留淡入，合上交给宿主自己的折叠动效，宿主没开启时即时合上；思考行在推理结束时的自动合上不再有过渡，读者在折叠控件上的点击直接到达宿主。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group.
+
+### Bug Fixes
 
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
 - Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes.
