@@ -10,6 +10,7 @@ import { createModelSubMenu } from './sub-menu'
 import { byModelId, createModelRows } from './rows'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { setSwappingText } from '../../shared/swapping-text'
 import { pageViewport } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelGroup } from '@dsh-claude-style/contracts/services'
@@ -599,13 +600,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const label = current ? current.model.name : copy('fallbackLabel')
     const labelEl = modelBtn.querySelector('.dsh-claude-model-btn-label')
     if (labelEl) {
-      // Same-value guards: syncModelControl runs on every scheduler pass,
-      // and an identical write still mutates the DOM (textContent replaces
-      // the text node; setAttribute queues an attribute record — and
-      // aria-label is in the observer's attributeFilter). Unguarded, each
-      // pass feeds the observer that schedules the next pass, keeping one
-      // full pass running every frame even at idle.
-      if (labelEl.textContent !== label) labelEl.textContent = label
+      // The name swaps in place on the way from one model to the next, the way
+      // the wait line's own words do (shared/swapping-text.ts): the copy leaving
+      // rises through a blur while the arriving copy comes up from below. The
+      // helper writes nothing when the words stand already, so a pass costs no
+      // mutation — which is what keeps the scheduler's observer quiet.
+      setSwappingText(labelEl as HTMLElement, label)
       // The dimmed tone means "no seat to name yet". A selection in flight
       // still names the model in force, so it keeps the normal tone — the
       // host can hold `selecting` for seconds (the effort slider commits

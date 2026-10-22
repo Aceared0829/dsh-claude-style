@@ -32,4 +32,28 @@ async function echoSelection(page, start) {
   }, start)
 }
 
-export { MODEL_SEAT_NAME, echoSelection }
+/**
+ * Make the stand-in's model directory answer a model selection the way the
+ * host's own store does: `select` moves the seat, and the snapshot the skin
+ * reads back on its next pass names the model it landed on.
+ *
+ * @param page - the behaviour spec's page.
+ * @param start - the provider and model the stand-in names before any selection.
+ */
+async function echoModel(page, start) {
+  await page.evaluate((initial) => {
+    const directory = window.__dshSmokeHost.modelDirectories.directoryFor('smoke-session')
+    const snapshot = directory.store.getSnapshot.bind(directory.store)
+    let chosen = initial
+    directory.store.getSnapshot = () => {
+      const snap = snapshot()
+      return snap === null || snap.current === null ? snap : { ...snap, current: { ...snap.current, ...chosen } }
+    }
+    directory.select = (selection) => {
+      if (selection && selection.model !== undefined) chosen = { provider: selection.provider, model: selection.model }
+      return Promise.resolve()
+    }
+  }, start)
+}
+
+export { MODEL_SEAT_NAME, echoModel, echoSelection }

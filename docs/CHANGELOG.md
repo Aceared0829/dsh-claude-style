@@ -17,6 +17,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 改善流式回复期间写回 token 的估算：正文按中文字符、中文标点、拉丁词、数字、空白与标点各段本身的形状计价，替换原先按宽窄字符计数的规则，估算值贴近服务商的分词结果。
 - 把只做分隔的线收细、调淡一档：侧栏账号行上沿、搜索面板页脚、上下文统计、设置行、弹层与菜单分隔线以及正文分隔线改用新的分隔线令牌，宽度收到 0.5px，卡片与输入框的轮廓保持原样。
 - 把模型名与推理等级放进同一个座位框里：两段文字在行里成为一个整体，贴着行的右端、向左生长，悬停底板画在整个框上，模型菜单与档位卡片都从它的右端挂下来；原先单独浮在行上、靠逐帧测量钉在模型按钮旁的档位按钮不再需要定位。
+- 改善切换模型时模型名的样子：名字在原地换成新模型名，离开的名字向上穿过一层模糊，新名字从下方升上来，两段文字同时站在座位框里，座位宽度随两段中较宽的一段过渡；选了减弱动效时名字直接换过去。
 
 ### 问题修复
 
@@ -48,6 +49,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Improve the written-back token estimate while an answer streams: the text is now priced by the shape of its runs — CJK characters and marks, Latin words, digits, whitespace, punctuation — in place of the wide/narrow character rule, so the figure stays close to the provider's own count.
 - Bring every line that only separates down one finer, quieter step: the account row's upper edge, the search panel's foot, the context stats, the settings rows, the menu and popover separators and the transcript's rule take the new divider token at 0.5px, while a card's and a field's outline keep theirs.
 - Put the model's name and the reasoning level in one seat box: the two texts are a single item in the row, standing against the row's right end and growing leftward, with the hover plate on the whole box and both the model menu and the effort card hanging from that right end. The level's button no longer floats over the row on coordinates measured every frame.
+- Improve how the model's name changes when another model is picked: the name swaps in place — the words leaving rise through a blur while the new name comes up from below, both standing in the seat box at once, with the seat travelling to the wider of the two as it runs; with reduced motion the name simply changes.
 
 ### Bug Fixes
 
