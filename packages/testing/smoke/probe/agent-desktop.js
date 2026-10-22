@@ -232,6 +232,22 @@
         await sleep(300)
         r.banSurvivesLeave = document.querySelectorAll('[data-dsh-ban]').length
         r.menuBehindBan = accountMenuOpen()
+        // The page is the window: the dialog cap theme/chrome.css puts on every
+        // `role="dialog"` card would hold it 48px inside two edges, so the box
+        // is read once the entrance animation has settled.
+        var banRoot = document.querySelector('.dsh-claude-ban')
+        if (banRoot) {
+          await Promise.all(banRoot.getAnimations().map(function (anim) {
+            return anim.finished.catch(function () {})
+          }))
+          var banBox = banRoot.getBoundingClientRect()
+          var banStyle = getComputedStyle(banRoot)
+          r.banCover = {
+            box: [banBox.left, banBox.top, banBox.right, banBox.bottom],
+            view: [window.innerWidth, window.innerHeight],
+            max: banStyle.maxWidth + ' ' + banStyle.maxHeight,
+          }
+        }
         // The page leaves on its own exit: it is marked leaving at once and gone
         // once the exit's duration has played.
         var banDismiss = document.querySelector('.dsh-claude-ban [data-dsh-ban-dismiss]')

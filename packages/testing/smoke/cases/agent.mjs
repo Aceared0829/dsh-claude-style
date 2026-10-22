@@ -240,6 +240,11 @@ export default {
     check('the hold screen opens over the menu and survives the leaves its overlay causes',
       r.banOpened === 1 && r.banSurvivesLeave === 1,
       JSON.stringify({ opened: r.banOpened, survived: r.banSurvivesLeave }))
+    check('the hold screen covers the whole window: no dialog cap holds it inside two edges',
+      !!r.banCover && r.banCover.max === 'none none' &&
+        r.banCover.box[0] === 0 && r.banCover.box[1] === 0 &&
+        r.banCover.box[2] === r.banCover.view[0] && r.banCover.box[3] === r.banCover.view[1],
+      JSON.stringify(r.banCover))
     check('the host menu stays up behind the hold screen and the screen leaves by its own control, playing its exit first',
       r.menuBehindBan === true && r.banLeaving === true && r.banAfterDismiss === 0,
       JSON.stringify({ menu: r.menuBehindBan, leaving: r.banLeaving, exitMs: r.banExitMs, dismissed: r.banAfterDismiss }))

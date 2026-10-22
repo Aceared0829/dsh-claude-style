@@ -484,6 +484,12 @@
       "the hold screen opens over the menu and survives the leaves its overlay causes": [
         1
       ],
+      "the hold screen covers the whole window: no dialog cap holds it inside two edges": [
+        0,
+        1,
+        2,
+        3
+      ],
       "the host menu stays up behind the hold screen and the screen leaves by its own control, playing its exit first": [
         0
       ],
@@ -505,7 +511,7 @@
       "a repeated same-state frame reads nothing more": [
         1
       ],
-      "no feature reported a failure (line 265)": [
+      "no feature reported a failure (line 270)": [
         0
       ],
       "the skin's rail stands in the host rail's slot, one mark per turn, the host's rail hidden but laid out": [

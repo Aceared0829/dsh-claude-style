@@ -52,6 +52,15 @@ body[data-dsh-claude-style] .dsh-claude-ban {
   animation: dsh-claude-ban-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
 }
 
+/* The page is the window, so it keeps none of the dialog cap theme/chrome.css
+   puts on every `role="dialog"` card (D81): that rule holds a card to the
+   page's size less 48px, which the overlay's own `role` would otherwise claim.
+   The root's marker out-specifies the cap rather than trusting sheet order. */
+body[data-dsh-claude-style] .dsh-claude-ban[data-dsh-ban] {
+  max-width: none;
+  max-height: none;
+}
+
 body[data-dsh-claude-style] .dsh-claude-ban[data-dsh-ban-settled] {
   animation: none;
 }
