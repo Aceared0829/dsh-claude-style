@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 7,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。",
+  "en": "Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open."
+}

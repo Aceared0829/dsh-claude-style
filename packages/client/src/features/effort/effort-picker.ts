@@ -343,12 +343,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         onPick(levelId) {
           if (typeof ui.model?.pickEffort === 'function') ui.model.pickEffort(levelId)
         },
-        // A drag must not be cut short by the hover-close timer: the pointer
-        // is inside the control the whole time.
+        // A drag must not be cut short by the hover-close timer, wherever
+        // the pointer travels with the button down.
         onDragStart: cancelCloseEffort,
-        // ...and a hold that leaves the card closes it on the RELEASE, not
-        // at the boundary crossing (the mouseleave guard stands down while
-        // the button is held; this is the other half).
+        // ...and the release closes the card when it lands outside: the
+        // mouseleave guard stands down while the button is held, and this is
+        // the other half.
         onDragEnd(e) {
           if (effortPop === null || effortPop.getAttribute('data-open') !== 'true') return
           const under = e && typeof e.clientX === 'number' ? document.elementFromPoint(e.clientX, e.clientY) : null
@@ -376,10 +376,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       setMenuPopoverOpen(effortPop, false)
       effortPop.addEventListener('mouseenter', cancelCloseEffort)
       effortPop.addEventListener('mouseleave', () => {
-        // A hold must not be cut short by the hover-close timer: the
-        // slider settles at its own edge while the pointer travels on
-        // with the button down, and the card closing mid-hold read as a
-        // crash. A release OUTSIDE the card closes it (onDragEnd).
+        // A hold must not be cut short by the hover-close timer: the pointer
+        // may travel out of the card with the button down and the gesture
+        // goes on; a release OUTSIDE the card closes it (onDragEnd).
         if (effortSlider !== null && effortSlider.isHeld()) return
         effortHoverIntent.scheduleClose()
       })

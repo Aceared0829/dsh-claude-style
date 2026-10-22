@@ -11,11 +11,11 @@ body[data-dsh-claude-style] .dsh-claude-effort-popover {
 
 /* ---------- Reasoning-effort slider (its own card) ---------- */
 /* The effort ladder drawn as a track instead of a second level. The knob
-   travels continuously with the pointer and settles on the nearest level when
-   the gesture ends — release, or the pointer leaving the control — so the
-   control never reads as a hard switch between fixed stops. The transition is
-   what makes that settle read as a settle; it is switched off while the pointer
-   owns the knob, which is what `data-dragging` marks. */
+   travels continuously with the pointer and settles on the nearest level at
+   the release, so the control never reads as a hard switch between fixed
+   stops. The transition is what makes that settle read as a settle; it is
+   switched off while the pointer owns the knob, which is what `data-dragging`
+   marks. */
 body[data-dsh-claude-style] .dsh-claude-effort {
   display: flex;
   flex-direction: column;
