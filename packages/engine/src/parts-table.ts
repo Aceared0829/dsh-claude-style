@@ -366,6 +366,15 @@ export function holdRelations(vocabulary: PartsTableVocabulary): HoldRelation[] 
     held: '[data-session-stats-details], [data-session-stats-usage]',
     attributes: ['data-session-stats-details', 'data-session-stats-usage'],
   },
+  // features/composer/inline-bar.css: the activity seat carries the stop button
+  // while a turn runs, and its flex item is out of the flow while it is empty —
+  // its gap would otherwise stand between the seat and the docked meter.
+  {
+    name: 'composer-activity-filled',
+    holder: part('composer-activity'),
+    held: '[data-slot="conversation.input.activity"] > *',
+    attributes: [],
+  },
   // features/account/account-footer.css, footer-takeover.css: only the footer
   // boxes around the host's own account row keep their size.
   {

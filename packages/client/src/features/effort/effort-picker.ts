@@ -1,41 +1,40 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
-import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_LABEL } from '../model/copy-fallbacks'
+import { MODEL_EFFORT_DEFAULT } from '../model/copy-fallbacks'
 import { readPrefs } from '../../core/prefs'
 import { createEffortControl } from './control'
 import type { EffortTrackBox } from './control'
 import { effortSteps, effortTint } from './ladder'
 import type { HostContext } from '@dsh-claude-style/engine/host'
-import { closestComposerCard, findDockedContextMeter } from '@dsh-claude-style/engine/host'
 import type { CloseReason } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './effort-picker.manifest'
 import type { ModelCatalog } from '../model/catalog'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
-import { inPageBox } from '../../shared/page-zoom'
-import { EFFORT_ROW_SELECTOR, releaseEffortRoom, reserveEffortRoom } from './room'
 import { copy } from './copy'
 
 /**
- * The reasoning-effort picker: its own seat trigger and its own card.
+ * The reasoning-effort level: the second text in the composer's seat box, and a
+ * card of its own.
  *
  * The level and the model are two decisions with two different cadences — the
- * model changes rarely, the level is nudged often — so the level owns a trigger
- * of its own beside the model's, and a card of its own. The model card keeps
- * only the model list and the More-models row.
+ * model changes rarely, the level is nudged often — so the level gets its own hit
+ * area and its own card. Both texts live in one box the row lays out as a single
+ * item (features/model/seat-box.ts): it stands against the row's right end and
+ * grows leftward, so the edge both cards hang from does not move when a level's
+ * name changes.
  *
- * Everything else follows the model picker's discipline: the trigger is
- * created once and reused, the card is a fixed-position sibling on <body>,
- * hover opens it under the "all" scope and click does so otherwise, and the
- * slider element is NEVER detached once built — re-inserting it restarts its
- * CSS animations (the name's blur-in, the apex matrix's entrance sweep) and
- * reads as a flicker on every host round-trip.
+ * Everything else follows the model picker's discipline: the button is created
+ * once and reused, the card is a fixed-position sibling on <body>, hover opens it
+ * under the "all" scope and click does so otherwise, and the slider element is
+ * NEVER detached once built — re-inserting it restarts its CSS animations (the
+ * name's blur-in, the apex matrix's entrance sweep) and reads as a flicker on
+ * every host round-trip.
  *
  * @param ctx - the plugin context (unused; kept for the installer shape).
- * @param ui - the shared UI registry. `ui.model` provides the seat element
- *   (`seat()`), the model trigger (`trigger()`), the catalog's state
- *   (`effort()`, `named()`, `settled()`), the commit call (`pickEffort()`)
- *   and `close()`.
+ * @param ui - the shared UI registry. `ui.model` provides the seat box
+ *   (`seatBox()`), the catalog's state (`effort()`, `named()`, `settled()`), the
+ *   commit call (`pickEffort()`) and `close()`.
  * @returns a teardown function.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
@@ -45,17 +44,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * The last ladder the seat named. A selection makes the host re-enumerate
    * the whole directory for seconds, and the snapshot can go blank in that
-   * window — the trigger must not vanish and the knob must not fall into its
+   * window — the level must not vanish and the knob must not fall into its
    * empty state just because the answer is in flight. Only a SETTLED seat
-   * that names no ladder takes the trigger away.
+   * that names no ladder takes the level away.
    */
   let lastEffort: ReturnType<ModelCatalog['effort']> = null
-  /** The ladder whose widest level name the trigger's width is reserved for. */
-  let reservedLadder = ''
-  /** The rung's place on the trigger's colour ramp, as last written; empty while the trigger wears no ramp. */
+  /** The rung's place on the level's colour ramp, as last written; empty while it wears no ramp. */
   let tintPercent = ''
-  /** The canvas the trigger's label widths are measured on, kept for the generation. */
-  let labelMetrics: CanvasRenderingContext2D | null = null
+  /** The slider's track as the pass's read phase found it, for the pass's update of the slider. */
+  let sliderBox: EffortTrackBox | null = null
   const effortHoverIntent = createHoverIntent(
     () => { openEffortPopover() },
     () => { closeEffortPopover() },
@@ -73,64 +70,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return typeof ui.model?.settled === 'function' && !ui.model.settled()
   }
 
-  /**
-   * Reserve the ladder's widest level name on the trigger while its card is up,
-   * so a swap between levels leaves its width alone. That width is what the row
-   * reserves room for and what the open card is right-aligned to: a wider
-   * incoming name pushed the model trigger left, and the card went with it in
-   * the frame of the change.
-   *
-   * With the card down the trigger takes the width of the level it shows: the
-   * reservation is a hole in the composer row for as long as it stands, and a
-   * level name is not changed without opening the card. Measured with the
-   * trigger's own font, once per ladder and level.
-   */
-  function reserveLabelWidth(button: HTMLButtonElement, names: readonly string[], current: string) {
-    const key = `${current}\u0001${names.join('\u0002')}`
-    if (key === reservedLadder) return
-    reservedLadder = key
-    labelMetrics ??= document.createElement('canvas').getContext('2d')
-    if (labelMetrics === null) return
-    const style = getComputedStyle(button)
-    labelMetrics.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
-    let widest = labelMetrics.measureText(current).width
-    for (const name of names) widest = Math.max(widest, labelMetrics.measureText(name).width)
-    // The trigger's own 2px padding on either side, rounded up: a min-width a
-    // fraction under its text still lets a long name widen the box.
-    button.style.minWidth = `${Math.ceil(widest) + 4}px`
+  /** The box this level shares with the model's name (owned by the model picker). */
+  function seatBox() {
+    return typeof ui.model?.seatBox === 'function' ? ui.model.seatBox() : null
   }
 
-  /** Whether the trigger's card stands open right now. */
+  /** Whether the level's card stands open right now. */
   function cardOpen() {
     return effortPop !== null && effortPop.getAttribute('data-open') === 'true'
-  }
-
-  /**
-   * The names the trigger may have to show on this seat: the ladder the control
-   * draws, with the model's own default level leading it when the catalog leaves
-   * `defaultEffort` out. The same list the control paints from (ladder.ts), so
-   * the width reserved here is the width a level change can ask for.
-   */
-  function ladderNames(info: NonNullable<ReturnType<ModelCatalog['effort']>>) {
-    return effortSteps(info, MODEL_EFFORT_DEFAULT).steps.map((step) => step.name)
-  }
-
-  /**
-   * Take the room the trigger needs from the row for the state it is in, and
-   * place the row and the card in the same frame: the trigger's width is what
-   * the model name gives up and what the open card hangs from, so a width taken
-   * or handed back in one frame must reposition both before the frame paints.
-   */
-  function reserveEffortWidth(open: boolean) {
-    if (effortBtn === null || modelTrigger() === null) return
-    const info = effortInfo()
-    if (info === null) return
-    reserveLabelWidth(effortBtn, open ? ladderNames(info) : [], info.label)
-    // The width just changed outside the pass: the cached reading of it is the
-    // one the placement would otherwise use.
-    effortPlace.widthLabel = ''
-    measureEffortTrigger(true)
-    applyEffortTrigger()
   }
 
   /**
@@ -147,29 +94,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return seatInFlight() ? lastEffort : null
   }
 
-  /** The host slot the seat lives in (owned by the model picker). */
-  function seat() {
-    return typeof ui.model?.seat === 'function' ? ui.model.seat() : null
-  }
-
-  /** The model trigger this one sits beside (owned by the model picker), or null. */
-  function modelTrigger() {
-    return typeof ui.model?.trigger === 'function' ? ui.model.trigger() : null
-  }
-
-  /**
-   * Hand back the room this trigger reserves on the model trigger (see
-   * room.ts), or the shorter model name outlives the trigger.
-   */
-  function releaseModelRoom() {
-    const modelBtn = modelTrigger()
-    if (modelBtn !== null) releaseEffortRoom(modelBtn)
-  }
-
-  function cancelCloseEffort() {
-    effortHoverIntent.cancel()
-  }
-
   /** Whether the hover preference covers this picker: the `all` scope alone. */
   function effortHoverOn() {
     return readPrefs().autoPopover === AUTO_POPOVER_ALL
@@ -178,24 +102,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function closeEffortPopover() {
     effortHoverIntent.cancel()
     if (effortPop === null) return
-    const wasOpen = cardOpen()
     setMenuPopoverOpen(effortPop, false, effortBtn)
-    // Hand the ladder's widest name back with the card: the resting trigger
-    // shows one level, and the room the rest of it took is a hole in the row.
-    if (wasOpen) reserveEffortWidth(false)
   }
 
   function openEffortPopover() {
     effortHoverIntent.cancel()
     ensureEffortChrome()
-    // One card at a time: the model trigger sits beside this one, so leaving
-    // its card up would stack two panels over the same corner.
+    // One card at a time: the model's text sits in the same box, so leaving its
+    // card up would stack two panels over the same corner.
     closeOtherPopovers('effort')
     if (effortSlider !== null) effortSlider.update()
-    // Take the ladder's widest name BEFORE placing: the card hangs from the
-    // trigger's right edge, and a level changed under the reader's hand must
-    // not move it. Opening is also the one moment the row gives up that room.
-    reserveEffortWidth(true)
     // Open BEFORE placing: the placement reads the card only while it is
     // marked open, so positioning first would skip it and leave the card
     // where it stood.
@@ -204,182 +120,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   function positionEffortPopover() {
-    if (effortBtn === null || effortPop === null) return
+    if (effortPop === null) return
     // A shut card has no anchor to re-read, so a scroll or resize costs it nothing.
     if (effortPop.getAttribute('data-open') !== 'true') return
-    positionAnchoredPopover(effortBtn, effortPop, { side: 'above', gap: 6 })
-  }
-
-  /** The measurements behind the trigger's placement, as of the last positioning. */
-  const effortPlace = { left: -1, top: -1, need: 0, width: 0, widthLabel: '', height: 0, rowKey: '' }
-
-  /** What the read phase resolved for this frame's placement of the trigger. */
-  let effortPlan: { modelBtn: HTMLElement, box: DOMRect, row: DOMRect | null, wall: number | null, rowKey: string, need: number, width: number, height: number, fresh: boolean, settle: boolean, marginChanged: boolean } | null | 'hide' | 'none' = null
-  /** The slider's track as the same read phase found it, for the pass's update of the slider. */
-  let sliderBox: EffortTrackBox | null = null
-
-  /**
-   * The pass's read phase: where the seat stands, how much room this trigger
-   * needs on its right edge, and the slider's track. The seat moves with the
-   * window and with the composer's own growth, so it is read every pass —
-   * before this frame's writes, which is where a read of it is cheap.
-   */
-  function measureEffortTrigger(settle = false) {
-    sliderBox = effortSlider === null ? null : effortSlider.measure()
-    if (effortBtn === null) {
-      effortPlan = 'none'
-      return
-    }
-    const modelBtn = modelTrigger()
-    if (modelBtn === null) {
-      effortPlan = 'hide'
-      return
-    }
-    // A seat the host keeps in the DOM without laying it out (another view is
-    // up, or an ancestor is hidden) reports a zero box; pinning to it put the
-    // trigger in the window's top-left corner. No box, no trigger.
-    const box = modelBtn.getBoundingClientRect()
-    if (box.width === 0 || box.height === 0) {
-      effortPlan = 'hide'
-      return
-    }
-    // The trigger's size follows its label: re-measure only when it moved
-    // (offsetWidth/offsetHeight force a layout the pass would rather not pay).
-    const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
-    const label = labelEl === null ? '' : labelEl.textContent
-    const fresh = label !== effortPlace.widthLabel
-    if (fresh) {
-      effortPlace.widthLabel = label
-      effortPlace.width = effortBtn.offsetWidth
-      effortPlace.need = Math.max(0, effortPlace.width - 6)
-      effortPlace.height = effortBtn.offsetHeight
-    }
-    const row = modelBtn.closest(EFFORT_ROW_SELECTOR)
-    const rowBox = row === null ? null : row.getBoundingClientRect()
-    // The room is the row's width less its other controls', so the widths the
-    // row lays out are what say whether it changed.
-    const rowKey = row === null || rowBox === null ? '' : `${rowBox.width}:${Array.from(row.children, (child) => child.getBoundingClientRect().width).join(',')}`
-    effortPlan = {
-      modelBtn,
-      box,
-      row: rowBox,
-      // The meter stands outside the row, so the margin the write phase puts on
-      // the model trigger does not move it: its edge is read here with the row's.
-      wall: meterWall(closestComposerCard(modelBtn), box),
-      need: effortPlace.need,
-      width: effortPlace.width,
-      height: effortPlace.height,
-      fresh,
-      rowKey,
-      // A scroll leaves the row as it was, and re-reserving the room there
-      // writes and reads the row on every frame.
-      settle: settle && (rowKey === '' || rowKey !== effortPlace.rowKey),
-      marginChanged: modelBtn.style.marginRight !== `${effortPlace.need}px`,
-    }
-  }
-
-  /**
-   * The wall this trigger may not pass on the row's line: the context meter's
-   * left edge while the meter is on it. The meter is placed absolutely in the
-   * dock (features/composer/inline-bar.css) and the row never sees it, so the
-   * row's own right edge is not that wall — clamping to it pinned the level's
-   * name into the reading's band on a narrow card. A meter the stats line took
-   * under the row shares no height with the model trigger and is no wall.
-   *
-   * Reached through the engine's accessors from the card the model trigger sits
-   * in: a whole-document lookup would be a new line in document-lookups.json,
-   * and those records only shrink (scripts/ci-scope.mjs --ledgers).
-   */
-  function meterWall(card: Element | null, line: DOMRect): number | null {
-    const meter = findDockedContextMeter(card)
-    if (meter === null) return null
-    const box = meter.getBoundingClientRect()
-    if (box.width === 0 || box.height === 0) return null
-    if (box.bottom <= line.top || box.top >= line.bottom) return null
-    return Math.round(box.left)
-  }
-
-  /**
-   * Pin the body-mounted trigger beside the model trigger from that reading.
-   *
-   * The row's own rhythm is the 12px flex gap (8px in narrow cards) the host
-   * puts between the trailing cluster's children: sit 2px past the model
-   * trigger, and with its 8px right padding and this trigger's 2px left
-   * padding the two texts land 12px apart — the same 12 the meter's ring (8px
-   * into its pill) and the send icon then keep. The model trigger is OUR
-   * element, so the effort picker reserves room for itself on its right edge (a
-   * margin on it shifts the trigger left, out from under the context meter /
-   * send button) and then sits in that reserved space: the row's 12px gap
-   * covers 12 of the needed width+2, the margin covers the rest. Measured, not
-   * a magic number: the width follows the current level's name, and the room
-   * the row can give it (room.ts).
-   */
-  function applyEffortTrigger() {
-    const plan = effortPlan
-    effortPlan = null
-    if (plan === null || plan === 'none') return
-    if (plan === 'hide') {
-      hideEffortTrigger()
-      return
-    }
-    const { modelBtn, box, row, wall: meter, rowKey, need, width, height, fresh, settle, marginChanged } = plan
-    // Show it BEFORE placing: a trigger coming back from the hidden state (its
-    // seat returned) would otherwise read offsetWidth 0, reserve no room for
-    // that one pass and overlap the control that follows.
-    if (effortBtn === null) return
-    if (effortBtn.style.display !== 'inline-flex') effortBtn.style.display = 'inline-flex'
-    // A settled seat re-reads the room; every other pass keeps what it found,
-    // since the room only changes with the name or the card.
-    const measured = fresh || settle ? reserveEffortRoom(modelBtn, need) : null
-    if (measured !== null) effortPlace.rowKey = rowKey
-    if (measured === null && marginChanged) modelBtn.style.marginRight = `${need}px`
-    // An unchanged margin leaves the box at the one just read: a second
-    // getBoundingClientRect after the write would force a reflow for the same
-    // numbers every pass. The box arrives in the pixels the style writes
-    // below are read in, the same ones the trigger's size is given in.
-    const shifted = inPageBox(measured ?? (marginChanged ? modelBtn.getBoundingClientRect() : box))
-    // A row too narrow for its controls leaves the model trigger's box outside
-    // the card, and this trigger is not clipped by the card: pinned from that
-    // box it would paint over whatever stands beside the composer, the sidebar
-    // included. The row's own edges are the last word on where it may stand —
-    // except at the right, where the meter stands in the row's way without
-    // being in the row: it is placed absolutely in the dock
-    // (features/composer/inline-bar.css), so the row never grows around it and
-    // clamping to the row's right edge pinned the level's name into the
-    // reading's band on a narrow card. Stop at the meter's left edge while the
-    // meter is on this line; a meter that is hidden or lives elsewhere (the
-    // hero, the reading moved under the row) leaves the row's own edge in
-    // charge, which is the behaviour this trigger shipped with.
-    const wall = meter ?? (row === null ? null : Math.round(row.right))
-    const wanted = Math.round(shifted.right + 2)
-    const left = wall === null
-      ? wanted
-      : Math.min(Math.max(wanted, row === null ? wanted : Math.round(row.left)), Math.round(wall - width))
-    const top = Math.round(shifted.top + (shifted.height - height) / 2)
-    if (left !== effortPlace.left) {
-      effortPlace.left = left
-      effortBtn.style.left = `${left}px`
-    }
-    if (top !== effortPlace.top) {
-      effortPlace.top = top
-      effortBtn.style.top = `${top}px`
-    }
-  }
-
-  /** Whether the viewport frame's read phase already took the reading `reposition` places from. */
-  let repositionMeasured = false
-
-  /**
-   * The immediate path — a viewport or composer-card change, which the
-   * scheduler calls outside a pass, as `reposition` has to land in the frame
-   * of the CSS reflow. A viewport change was read in that frame's read phase
-   * (measureReposition); a card resize arrives from its size observer, after
-   * the layout, and reads where it stands.
-   */
-  function positionEffortTrigger() {
-    if (!repositionMeasured) measureEffortTrigger(true)
-    repositionMeasured = false
-    applyEffortTrigger()
+    const anchor = seatBox() ?? effortBtn
+    if (anchor === null) return
+    positionAnchoredPopover(anchor, effortPop, { side: 'above', gap: 6 })
   }
 
   /** The slider, built once; the card holds this node for its whole life. */
@@ -392,7 +138,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         },
         // A drag must not be cut short by the hover-close timer, wherever
         // the pointer travels with the button down.
-        onDragStart: cancelCloseEffort,
+        onDragStart() { effortHoverIntent.cancel() },
         // ...and the release closes the card when it lands outside: the
         // mouseleave guard stands down while the button is held, and this is
         // the other half.
@@ -408,20 +154,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Build (or re-find) the trigger and the card. Idempotence guards, not
-   * null checks: client HMR drops the previous generation's disposals, so a
-   * stale trigger or card can still be in the document while this scope
-   * starts from null. The model picker sweeps its own strays the same way.
+   * Build (or re-find) the card. Idempotence guards, not null checks: client HMR
+   * drops the previous generation's disposals, so a stale card can still be in
+   * the document while this scope starts from null. The model picker sweeps its
+   * own strays the same way.
    */
   function ensureEffortChrome() {
-    const slot = seat()
-    if (slot !== null) removeStrayNodes(slot, '.dsh-claude-effort-btn', [effortBtn])
     removeStrayNodes(document, 'body > .dsh-claude-effort-popover', [effortPop])
     if (effortPop === null || effortPop.parentElement === null) {
       effortPop = document.createElement('div')
       effortPop.className = 'dsh-claude-popover-card dsh-claude-effort-popover'
       setMenuPopoverOpen(effortPop, false)
-      effortPop.addEventListener('mouseenter', cancelCloseEffort)
+      effortPop.addEventListener('mouseenter', () => effortHoverIntent.cancel())
       effortPop.addEventListener('mouseleave', () => {
         // A hold must not be cut short by the hover-close timer: the pointer
         // may travel out of the card with the button down and the gesture
@@ -438,47 +182,67 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Take the body-mounted trigger down with its seat. It is removed rather
-   * than hidden: the stylesheet pins `display: inline-flex` with !important,
-   * which beats an inline `display: none`, so a hidden trigger stayed on
-   * screen at its last coordinates after the seat lost its box (the
-   * trajectory and context views) or went away with the composer. The model
-   * trigger's reserved room goes back with it — margin and cap both — and so
-   * does every value the placement caches: the replacement is a new node.
+   * Put the level's button in the seat box, after the model's name, or take it
+   * out with the seat.
+   *
+   * The box is the skin's own node inside the host's slot (features/model/
+   * seat-box.ts), so a button may live in it; the host's slot above stays
+   * React's. The button is removed rather than hidden when the seat loses its
+   * ladder: the replacement is a new node, and the ramp written on the old one
+   * belongs to it alone.
    */
-  function hideEffortTrigger() {
-    // The next trigger is a NEW node, so the placement cache starts over.
-    // A left/top left behind here is a value the new node never received:
-    // the same-value guards below would skip both writes and the trigger
-    // would sit at its static position, the end of the document.
-    effortPlace.widthLabel = ''
-    effortPlace.width = 0
-    effortPlace.left = -1
-    effortPlace.top = -1
-    effortPlace.rowKey = ''
-    reservedLadder = ''
-    // The same holds for the colour ramp: the replacement is a new node.
+  function ensureEffortButton(box: HTMLElement): HTMLButtonElement {
+    if (effortBtn !== null && effortBtn.parentElement === box) return effortBtn
+    removeStrayNodes(box, '.dsh-claude-effort-btn', [effortBtn])
+    if (effortBtn !== null && effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
+    effortBtn = document.createElement('button')
+    effortBtn.type = 'button'
+    effortBtn.className = 'dsh-claude-effort-btn'
+    effortBtn.setAttribute('aria-haspopup', 'menu')
+    effortBtn.innerHTML = '<span class="dsh-claude-effort-btn-label"></span>'
+    // Same contract as the model trigger: hover under the "All" scope,
+    // click-only otherwise.
+    effortBtn.addEventListener('mouseenter', () => {
+      if (effortHoverOn()) effortHoverIntent.scheduleOpen()
+    })
+    effortBtn.addEventListener('mouseleave', () => {
+      if (effortHoverOn()) effortHoverIntent.scheduleClose()
+    })
+    effortBtn.addEventListener('click', e => {
+      e.stopPropagation()
+      // A press on the card the dwell just opened keeps it up
+      // (shared/popover.ts::pressKeepsPopoverOpen); the leave closes it.
+      if (pressKeepsPopoverOpen(effortHoverOn(), cardOpen())) return
+      if (cardOpen()) closeEffortPopover()
+      else openEffortPopover()
+    })
+    // After the model's name, which the model picker keeps first in the box.
+    box.appendChild(effortBtn)
     tintPercent = ''
+    return effortBtn
+  }
+
+  /** Take the level's button and card down with its seat. */
+  function hideEffortTrigger() {
     if (effortBtn !== null) {
       if (effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
       effortBtn = null
     }
-    releaseModelRoom()
+    tintPercent = ''
     closeEffortPopover()
   }
 
-  /** Re-point the trigger and the slider at the seat in force (every pass). */
+  /** Re-point the level's button and the slider at the seat in force (every pass). */
   function syncEffortControl() {
-    const slot = seat()
-    // No seat to sit beside, or no model trigger to attach to: the trigger
-    // comes down (see hideEffortTrigger).
-    if (slot === null || modelTrigger() === null) {
+    const box = seatBox()
+    // No box to sit in: the level comes down (see hideEffortTrigger).
+    if (box === null) {
       hideEffortTrigger()
       return
     }
-    // Never take the trigger away on an in-flight catalog: that is the
+    // Never take the level away on an in-flight catalog: that is the
     // "selector crashed" report — a pick blanks the snapshot for seconds and
-    // the trigger (with its open card) disappeared with it.
+    // the level (with its open card) disappeared with it.
     if (seatInFlight()) {
       if (effortSlider !== null) effortSlider.update(sliderBox)
       return
@@ -486,54 +250,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const info = effortInfo()
     if (info === null) {
       // A catalog that cannot name the seat (the current selection is not in
-      // its snapshot yet) has said nothing about that seat's levels: the
-      // trigger stays as it is, the way the in-flight branch above keeps it.
-      // Only a named model without a ladder takes it away.
+      // its snapshot yet) has said nothing about that seat's levels: the level
+      // stays as it is, the way the in-flight branch above keeps it. Only a
+      // named model without a ladder takes it away.
       if (typeof ui.model?.named === 'function' && !ui.model.named()) return
-      // No ladder on this seat: the trigger goes away with it, exactly as the
-      // model card drew no effort row for such a model.
       hideEffortTrigger()
       return
     }
     ensureEffortChrome()
-    if (effortBtn === null || effortBtn.parentElement !== document.body) {
-      if (effortBtn !== null && effortBtn.parentElement !== null) effortBtn.parentElement.removeChild(effortBtn)
-      effortBtn = document.createElement('button')
-      effortBtn.type = 'button'
-      effortBtn.className = 'dsh-claude-effort-btn'
-      effortBtn.setAttribute('aria-haspopup', 'menu')
-      effortBtn.innerHTML = '<span class="dsh-claude-effort-btn-label"></span>'
-      // Same contract as the model trigger: hover under the "All" scope,
-      // click-only otherwise.
-      effortBtn.addEventListener('mouseenter', () => {
-        if (effortHoverOn()) effortHoverIntent.scheduleOpen()
-      })
-      effortBtn.addEventListener('mouseleave', () => {
-        if (effortHoverOn()) effortHoverIntent.scheduleClose()
-      })
-      effortBtn.addEventListener('click', e => {
-        e.stopPropagation()
-        // A press on the card the dwell just opened keeps it up
-        // (shared/popover.ts::pressKeepsPopoverOpen); the leave closes it.
-        const open = effortPop !== null && effortPop.getAttribute('data-open') === 'true'
-        if (pressKeepsPopoverOpen(effortHoverOn(), open)) return
-        if (open) closeEffortPopover()
-        else openEffortPopover()
-      })
-      // NOT inside the seat slot: that subtree is React-managed, and no foreign
-      // node may be inserted into it. The button lives on <body> like the card
-      // and is pinned beside the model trigger on every pass instead.
-      document.body.appendChild(effortBtn)
-    }
+    const button = ensureEffortButton(box)
     // Same-value guards: sync runs on every scheduler pass, and an identical
     // write still mutates the DOM (textContent replaces the text node;
     // setAttribute queues a record the scheduler's observer sees).
     const ladder = effortSteps(info, MODEL_EFFORT_DEFAULT)
-    // The card down shows one level, so the trigger takes that name's width; the
-    // card up holds the ladder's widest name, so a change under the reader's
-    // hand leaves the row still (see reserveLabelWidth).
-    reserveLabelWidth(effortBtn, cardOpen() ? ladderNames(info) : [], info.label)
-    // Where the rung stands on the trigger's colour ramp, in percent. The
+    // Where the rung stands on the level's colour ramp, in percent. The
     // stylesheet reads it only while the Composer tab's effort-accent row is on;
     // a rung with no place on the ramp takes the mark and the property off, and
     // the label keeps the resting ink.
@@ -541,22 +271,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const percent = tint === null ? '' : String(Math.round(tint * 100))
     if (percent !== tintPercent) {
       if (percent === '') {
-        effortBtn.removeAttribute('data-tint')
-        effortBtn.style.removeProperty('--dsh-claude-effort-tint')
+        button.removeAttribute('data-tint')
+        button.style.removeProperty('--dsh-claude-effort-tint')
       } else {
-        effortBtn.setAttribute('data-tint', '')
-        effortBtn.style.setProperty('--dsh-claude-effort-tint', percent)
+        button.setAttribute('data-tint', '')
+        button.style.setProperty('--dsh-claude-effort-tint', percent)
       }
       tintPercent = percent
     }
-    const labelEl = effortBtn.querySelector('.dsh-claude-effort-btn-label')
+    const labelEl = button.querySelector('.dsh-claude-effort-btn-label')
     if (labelEl !== null && labelEl.textContent !== info.label) labelEl.textContent = info.label
-    const aria = `${copy('effortLabel')} ${info.label}`
-    setAttributeIfChanged(effortBtn, 'aria-label', aria)
+    setAttributeIfChanged(button, 'aria-label', `${copy('effortLabel')} ${info.label}`)
     if (effortSlider !== null) effortSlider.update(sliderBox)
-    applyEffortTrigger()
-
-    if (effortPop !== null && effortPop.getAttribute('data-open') === 'true') positionEffortPopover()
+    positionEffortPopover()
   }
 
   function ownsEffort(target: Node) {
@@ -575,26 +302,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     effortBtn = null
     effortPop = null
     effortSlider = null
-    effortPlace.left = -1
-    effortPlace.top = -1
-    effortPlace.widthLabel = ''
-    effortPlace.width = 0
-    reservedLadder = ''
     tintPercent = ''
-    releaseModelRoom()
+    sliderBox = null
     unregisterPopover('effort')
   }
 
   registerPopover('effort', closeEffortPopover)
 
   ui.effort = {
-    measure: measureEffortTrigger,
+    measure() {
+      sliderBox = effortSlider === null ? null : effortSlider.measure()
+    },
     sync: syncEffortControl,
-    // The trigger sits on the composer, outside the column a streaming batch
-    // touches, so such a batch skips this pass (D40).
+    // The level sits in the composer's seat box, outside the column a streaming
+    // batch touches, so such a batch skips this pass (D40).
     skipOnContentOnly: true,
     /**
-     * The effort card closes on an outside press and on Esc. Composer focus
+     * The level's card closes on an outside press and on Esc. Composer focus
      * is NOT one of its dismiss routes (the model picker closes there, this
      * one does not), so that reason is ignored.
      */
@@ -604,19 +328,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     },
     owns: ownsEffort,
     /**
-     * The trigger is JS-pinned beside the model trigger, so a viewport or
-     * composer-card change has to re-pin it in the SAME frame as the CSS
-     * reflow. The scheduler calls this on resize / scroll (and on a card
-     * resize); without it the pin waited for the next pass and visibly
-     * trailed the controls it sits between.
+     * The card hangs from the seat box, which a viewport or composer-card change
+     * moves; the scheduler calls this in the same frame as the CSS reflow.
      */
     reposition() {
-      positionEffortTrigger()
       positionEffortPopover()
-    },
-    measureReposition() {
-      measureEffortTrigger(true)
-      repositionMeasured = true
     },
     teardown,
   }

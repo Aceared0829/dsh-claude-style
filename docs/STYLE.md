@@ -158,7 +158,7 @@ panel's data colours stay literal; they read on any canvas. Every other colour
 that paints a surface, a text, a border or an accent reads a token.
 
 **The effort trigger's tone.** While the Composer tab's effort-accent row is on,
-the reasoning-effort button beside the model name takes its colour from the rung
+the effort level's text in the composer's seat box takes its colour from the rung
 in force. Every thinking rung has a place on one ramp between two fixed colours —
 the blue `--dsh-claude-effort-low` and the violet `--dsh-claude-effort-high`, the
 ladder the reference effort slider draws — and the rung's place is its index over
@@ -170,6 +170,16 @@ other, indistinguishable at 13px. The switch-off level and the model's own
 default level have no strength the catalog names, so both keep the resting ink
 (`--dsw-alias-label-secondary`). The row off leaves the resting ink on every
 rung.
+
+**The composer's seat.** The model's name and the effort level share one box in
+the row, the way the host's own seat carries both texts: the box is the row's one
+item, it stands against the row's right end and grows leftward, and both of its
+cards hang from that right end. The box paints the hover plate — the two texts are
+two hit areas of one control, not two chips side by side — and the text under the
+pointer takes the stronger ink, except a level wearing the accent ramp, which keeps
+its rung and lets the plate answer the pointer. Each text is as wide as the words
+it shows, so a level's name changing width moves the box's left end and nothing
+else.
 
 ## Windows titlebar · 桌面顶栏
 

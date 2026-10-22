@@ -366,50 +366,26 @@ body[data-dsh-claude-style] .dsh-claude-effort[data-empty] .dsh-claude-effort-va
   color: var(--dsw-alias-label-caption, #a6a094) !important;
 }
 
-/* ---------- reasoning-effort trigger ---------- */
-/* Body-mounted (the seat slot is React-managed and crashed on a foreign node),
-   pinned beside the model trigger by measurement — every pass, and in the same
-   frame as a resize / scroll / card-resize through the handle's reposition(). */
+/* ---------- reasoning-effort level ---------- */
+/* The second text of the composer's seat box (features/model/seat-box.ts): one
+   hit area of the row's one item, laid out by the row rather than pinned from a
+   box the page computes. The box's own rule carries its face, height and border
+   (features/composer/inline-bar.css), and this one carries what the level adds:
+   its colour. The box grows leftward from the row's right end, which is the edge
+   its card hangs from, so a level's name changing width moves nothing the reader
+   is pointing at. */
 body[data-dsh-claude-style] .dsh-claude-effort-btn {
-  position: fixed;
-  display: inline-flex;
-  align-items: center;
-  height: 28px;
-  /* The row's rhythm: 2px here plus the model trigger's 8px right padding and
-     the 2px the JS sits past its box land the two texts 12px apart — the
-     trailing cluster's own flex gap. */
-  padding: 0 2px;
-  border: none !important;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary, #6e6a60);
-  /* One set of metrics with the model trigger beside it: the row reads as one
-     line, so the two labels must not differ in line box or tracking. */
-  font-family: var(--dsw-font-family);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
-  letter-spacing: normal;
-  white-space: nowrap;
-  cursor: pointer;
-  /* Above the composer's own layers. The seat (the input area's container) is
-     the host's stacking context at z-index 9, so the card and its controls all
-     paint above anything lower — the trigger read as missing while it sat at 4
-     under the opaque card. Page-level surfaces sit at 1000 and above, and the
-     trigger goes with the seat when the composer does. */
-  z-index: var(--dsh-claude-layer-control);
-  transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
+  /* The level keeps its words when the row is tight: the model's name is the
+     one that shortens, since a level cut to a letter names nothing. */
+  flex: none;
+  transition: color var(--dsh-claude-timing-feedback);
 }
-body[data-dsh-claude-style] .dsh-claude-effort-btn:hover {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
-  color: var(--dsw-alias-label-primary, #141413);
-}
-/* The name sits in the middle of the trigger's box: the open card widens that box
-   to the ladder's widest name (effort-picker.ts), and against the box's left edge
-   the name would shift sideways on every rung. */
+/* The level's own 2px on either side are the chip's tail, carried by the words
+   themselves: the seat box has no right padding, so the meter's reserved gap
+   stays the only space after them. */
 body[data-dsh-claude-style] .dsh-claude-effort-btn-label {
-  margin-left: auto;
-  margin-right: auto;
+  display: block;
+  padding: 0 2px;
 }
 /* The rung in force colours the label while the Composer tab's effort-accent
    row is on. The override writes the rung's place on a ramp (0 to 100) between
@@ -419,9 +395,10 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn-label {
    brand's accent: a ramp derived from the DeepSeek brand's blue left three
    levels within a few steps of each other, unreadable at 13px. A rung with no
    place on the ramp — the switch-off level, the model's own default level —
-   leaves the attribute off and keeps the resting ink. The hover colour above
-   gives way to the ramp: the ramp outranks it, and the wash behind the label is
-   what answers the pointer. */
-body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-effort-btn[data-tint] {
+   leaves the attribute off and keeps the resting ink. The pointer's colour gives
+   way to the ramp: the ramp outranks it, and the plate behind the seat is what
+   answers the pointer. Named through the seat box because the row's one type
+   rule outranks this button on its own. */
+body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-model-seat > .dsh-claude-effort-btn[data-tint] {
   color: color-mix(in oklch, var(--dsh-claude-effort-low, #4d93f8), var(--dsh-claude-effort-high, #8b5cf6) calc(var(--dsh-claude-effort-tint, 0) * 1%));
 }

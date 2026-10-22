@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 7,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复切换推理等级时档位卡片闪动的问题：卡片打开期间按钮按档位表里最宽的名字占宽，而这张表漏掉了模型目录未声明默认档时控件补出的「默认」一档，按钮于是随档位在窄宽与宽宽之间来回跳，贴着按钮右沿的卡片跟着平移。现在两处读同一张档位表，卡片在换档期间不再移动。",
-  "en": "Fix the effort card flickering while a reasoning level is picked: the button held the widest name of the ladder while the card was open, but the list it measured left out the “Default” step the control adds when the model's catalog declares no default level, so the button swung between the narrow and the wide box and the card hanging from it moved with it. Both places now read the one ladder, so the card stands still while the level changes."
-}
