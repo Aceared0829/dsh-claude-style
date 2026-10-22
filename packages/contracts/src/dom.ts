@@ -166,12 +166,15 @@ export const TURN_RAIL_SELECTOR = `${CONVERSATION_SCROLL_SELECTOR} nav[data-dsh-
 /** The rail's own scroller, its first child: the marks scroll inside it. */
 export const TURN_RAIL_SCROLLER_SELECTOR = ':scope > [data-dsh-claude-part~="rail-scroller"]'
 /**
- * One mark: a button carrying its position in the rail's list, not its
- * turn number. The rail renders only the marks near its scroll position.
+ * One mark: a button in the rail's list, not the turn it presses. A host that
+ * draws only the marks near its scroll position writes the mark's place in
+ * that list as `data-index`; one that draws every mark writes nothing, and the
+ * mark's order in the rail is then the place, while the rail holds as many
+ * marks as the skin's list has turns (features/turn-nav).
  */
-export const TURN_RAIL_MARK_SELECTOR = 'button[data-index]'
+export const TURN_RAIL_MARK_SELECTOR = 'button'
 /** The mark of the turn at the reading position. */
-export const TURN_RAIL_CURRENT_SELECTOR = 'button[data-index][aria-current="true"]'
+export const TURN_RAIL_CURRENT_SELECTOR = 'button[aria-current="true"]'
 /**
  * The rail's fixed pitch and its inset at each end (TurnNavigator's
  * TURN_SPACING_PX and RAIL_INSET_PX): its scroller's content is
@@ -207,8 +210,18 @@ export const CONVERSATION_SESSION_ATTRIBUTE = 'data-conversation-session'
 export const PHASE_ATTRIBUTE = 'data-phase'
 /** The composer card and the stack of cards above it. */
 export const COMPOSER_STACK_SELECTOR = '[data-dsh-claude-part~="composer-stack"]'
+/**
+ * The rail ui-attachment draws a draft's files and images into, above the
+ * field. Its local name carries no part of the host's tables, so it is the one
+ * mark a card's attachment leaves while the parts walk has yet to reach it —
+ * the node the host mounts in the card the restyle has just told carries none.
+ * The row inside it and the tiles are the same local name with their own tail.
+ */
+export const COMPOSER_ATTACHMENT_RAIL_SELECTOR = '[class*="_rail"]'
 /** The placeholder the host's own editor draws inside the draft. */
 export const COMPOSER_PLACEHOLDER_SELECTOR = '[data-composer-placeholder]'
+/** The host's own sentence for the composer card's field, which the skin reads beside whether the card carries it. */
+export const COMPOSER_PLACEHOLDER_ATTRIBUTE = 'data-placeholder'
 /**
  * The statistics in the composer stack. Both markers are read (D3), because an
  * older host build writes only the container; the context panel repeats the

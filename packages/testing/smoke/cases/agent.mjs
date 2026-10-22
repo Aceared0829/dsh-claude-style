@@ -48,6 +48,15 @@ export default {
     check('switching the interface language repaints the rows and the trigger under the skin\'s own names',
       same(r.permNamesEn, ['Read only', 'Accept edits', 'Auto review', 'Full access']) && r.permTriggerEn === 'Full access',
       JSON.stringify({ names: r.permNamesEn, trigger: r.permTriggerEn }))
+    check('the composer\'s idle hint is the skin\'s own words in that language',
+      same(r.hintsZh, { hosted: '输入 / 以使用命令', synthetic: null }) &&
+        r.hintsDrawnZh === '输入 / 以使用命令',
+      JSON.stringify({ hints: r.hintsZh, drawn: r.hintsDrawnZh }))
+    check('a card outside the attachment form keeps the words the host drew for it',
+      r.hintsPlainZh === null, JSON.stringify(r.hintsPlainZh))
+    check('the same switch rewrites the hint in English, and back',
+      r.hintsBackZh === '输入 / 以使用命令' && r.hintsEn === 'Type / for commands',
+      JSON.stringify({ back: r.hintsBackZh, en: r.hintsEn }))
     commonChecks(r)
   },
   'automode-hero'(r) {
@@ -288,6 +297,9 @@ export default {
       !!nav.switchedOff && nav.switchedOff.rail === 0 && nav.switchedOff.hostReplaced === false && nav.switchedOff.hostShown === 'visible' &&
         !!nav.switchedOn && nav.switchedOn.rail === 1 && nav.switchedOn.hostReplaced === true,
       JSON.stringify({ off: nav.switchedOff, on: nav.switchedOn }))
+    const older = nav.olderHost || {}
+    check('a host that writes no place on its marks keeps the reading position and presses the mark at the row\'s place, the first row included',
+      older.current === 4 && JSON.stringify(older.mid) === '[3]' && JSON.stringify(older.first) === '[3,0]', JSON.stringify(older))
     commonChecks(r)
   },
 }

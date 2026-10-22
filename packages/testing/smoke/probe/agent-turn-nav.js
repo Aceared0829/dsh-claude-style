@@ -123,6 +123,52 @@
       }
       navOut.switchedOff = await navSwitch(false)
       navOut.switchedOn = await navSwitch(true)
+      // One conversation at a time on the page: the rail just exercised leaves.
+      navPhase.remove()
+      await sleep(200)
+
+      // A host that draws every mark and writes no place on it: the mark is
+      // then the one standing at the row's place in the rail's own order.
+      var oldPhase = document.createElement('div')
+      oldPhase.setAttribute('data-phase', 'active')
+      var oldMarks = ''
+      for (var oi = 0; oi < 5; oi++) {
+        oldMarks += '<button type="button" aria-label="跳转到第 ' + (oi + 1) + ' 轮"' + (oi === 4 ? ' aria-current="true"' : '') +
+          ' style="position:absolute;left:0;right:0;height:10px;top:' + (1 + oi * 10) + 'px"></button>'
+      }
+      oldPhase.innerHTML = '<div data-conversation-session="smoke-nav"><div data-conversation-scroll="" style="height:400px;overflow:auto">' +
+        '<div class="_slot_t_1" style="position:relative;height:300px"><nav class="_frame_t_1" style="position:fixed;right:12px;top:100px;width:28px">' +
+        '<div class="_scroller_t_1" style="position:relative;overflow:auto;max-height:200px"><div class="_marks_t_1" style="position:relative;height:52px">' + oldMarks + '</div></div>' +
+        '<div role="tooltip">host preview</div></nav></div>' +
+        '<div data-chat-flow="" style="display:flex;flex-direction:column">' +
+        '<div data-chat-flow-kind="user" data-chat-turn="4">fourth question</div>' +
+        '<div data-chat-flow-kind="assistant-step" data-chat-turn="4">fourth answer</div>' +
+        '<div data-chat-flow-kind="user" data-chat-turn="5">fifth question</div></div></div></div>'
+      document.body.appendChild(oldPhase)
+      var oldRail = oldPhase.querySelector('nav')
+      var oldPresses = []
+      oldRail.addEventListener('click', function (event) {
+        var button = event.target.closest('button')
+        if (button !== null) oldPresses.push(Array.prototype.indexOf.call(oldRail.querySelectorAll('button'), button))
+      })
+      await sleep(250)
+      var oldSkin = oldPhase.querySelector('.dsh-claude-turn-rail')
+      var oldCurrent = oldSkin === null ? -1 : Array.prototype.indexOf.call(oldSkin.querySelectorAll('.dsh-claude-turn-rail-mark'), oldSkin.querySelector('.dsh-claude-turn-rail-mark[data-current]'))
+      var oldRowPress = async function (index) {
+        if (oldSkin === null) return
+        oldSkin.dispatchEvent(new PointerEvent('pointerenter'))
+        await sleep(250)
+        var card = oldPhase.querySelector('.dsh-claude-turn-nav')
+        var rows = card === null ? [] : Array.prototype.slice.call(card.querySelectorAll('.dsh-claude-turn-nav-row'))
+        if (rows[index] !== undefined) rows[index].click()
+        await sleep(120)
+      }
+      await oldRowPress(3)
+      var oldMid = oldPresses.slice()
+      await oldRowPress(0)
+      navOut.olderHost = { current: oldCurrent, mid: oldMid, first: oldPresses.slice() }
+      oldPhase.remove()
+
       r.turnNav = navOut
     })
   })

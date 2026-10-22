@@ -11,11 +11,11 @@ body[data-dsh-claude-style] .dsh-claude-effort-popover {
 
 /* ---------- Reasoning-effort slider (its own card) ---------- */
 /* The effort ladder drawn as a track instead of a second level. The knob
-   travels continuously with the pointer and settles on the nearest level when
-   the gesture ends — release, or the pointer leaving the control — so the
-   control never reads as a hard switch between fixed stops. The transition is
-   what makes that settle read as a settle; it is switched off while the pointer
-   owns the knob, which is what `data-dragging` marks. */
+   travels continuously with the pointer and settles on the nearest level at
+   the release, so the control never reads as a hard switch between fixed
+   stops. The transition is what makes that settle read as a settle; it is
+   switched off while the pointer owns the knob, which is what `data-dragging`
+   marks. */
 body[data-dsh-claude-style] .dsh-claude-effort {
   display: flex;
   flex-direction: column;
@@ -403,4 +403,25 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn {
 body[data-dsh-claude-style] .dsh-claude-effort-btn:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
   color: var(--dsw-alias-label-primary, #141413);
+}
+/* The name sits in the middle of the trigger's box: the open card widens that box
+   to the ladder's widest name (effort-picker.ts), and against the box's left edge
+   the name would shift sideways on every rung. */
+body[data-dsh-claude-style] .dsh-claude-effort-btn-label {
+  margin-left: auto;
+  margin-right: auto;
+}
+/* The rung in force colours the label while the Composer tab's effort-accent
+   row is on. The override writes the rung's place on a ramp (0 to 100) between
+   two colours the reference effort slider ships — a blue at the weakest thinking
+   level, a violet at the strongest — mixed in OKLCH so every rung of any ladder
+   takes a step of its own. The ramp is its own palette rather than a mix of the
+   brand's accent: a ramp derived from the DeepSeek brand's blue left three
+   levels within a few steps of each other, unreadable at 13px. A rung with no
+   place on the ramp — the switch-off level, the model's own default level —
+   leaves the attribute off and keeps the resting ink. The hover colour above
+   gives way to the ramp: the ramp outranks it, and the wash behind the label is
+   what answers the pointer. */
+body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-effort-btn[data-tint] {
+  color: color-mix(in oklch, var(--dsh-claude-effort-low, #4d93f8), var(--dsh-claude-effort-high, #8b5cf6) calc(var(--dsh-claude-effort-tint, 0) * 1%));
 }

@@ -17,7 +17,7 @@ export default {
     const expected = {
       general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
       appearance: ['brandLockup', 'brandInk', 'palette', 'brandAccent', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
-      composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'permissionsControl'],
+      composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
       conversation: ['turnNav', 'statsPosition', 'billingCurrency', 'viewTabs', 'headerBand'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
@@ -41,14 +41,14 @@ export default {
         JSON.stringify(onWindows.disabled) === '[]' && JSON.stringify(onWindows.notes) === '[]',
       JSON.stringify(onWindows))
     const off = settings.parentsOff || {}
-    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
+    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["brandAccent","mascotScope"]' &&
-        !!off.composer && JSON.stringify(off.composer.disabled) === '["modelDescriptions","quickProviders","peakrate"]' &&
+        !!off.composer && JSON.stringify(off.composer.disabled) === '["modelDescriptions","effortAccent","quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))
     const unmet = settings.requirementsOff || {}
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
-      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","modelDescriptions","quickProviders","peakrate","permissionsControl"]' &&
+      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","permissionsControl"]' &&
         JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
         !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","billingCurrency","headerBand"]' &&
         JSON.stringify(unmet.conversation.notes) === '["statsPosition","billingCurrency","headerBand"]' &&

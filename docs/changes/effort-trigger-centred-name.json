@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 4,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "改善推理等级按钮里名字的位置：卡片打开期间按钮按档位表里最宽的名字占宽，名字原先靠左落在按钮里，现在居中，换档时它与两端的距离一样。",
+  "en": "Improve where the reasoning-effort button holds its level name: while the card is open the button is as wide as the ladder's widest name, and the name now sits in the middle of that box instead of against its left edge, so it stands the same distance from either end as levels change."
+}

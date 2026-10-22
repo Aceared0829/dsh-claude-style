@@ -221,6 +221,8 @@ export const PREFS = {
   composerScope: { type: 'choice', values: COMPOSER_SCOPES, default: COMPOSER_SCOPE_ALL },
   modelPicker: { type: 'boolean', default: true },
   modelDescriptions: { type: 'boolean', default: true },
+  /** Whether the reasoning-effort trigger takes its colour from the rung in force (features/effort/effort-picker.css). */
+  effortAccent: { type: 'boolean', default: true },
   peakrate: { type: 'boolean', default: true },
   /**
    * The provider ids the picker's first level carries: ids rather than names,

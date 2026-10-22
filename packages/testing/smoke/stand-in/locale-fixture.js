@@ -45,7 +45,9 @@
   var statsFixtureCase = CASE === 'context-stats' || CASE === 'stats-compact' || CASE === 'stats-inline'
   /** The case that switches the interface language while the page runs. */
   var localeSwitchCase = CASE === 'permissions-locale'
-  var localeServed = waitFixtureCase || statsFixtureCase || CASE === 'turn-nav' || localeSwitchCase
+  // The composer the language cases read is the page's only one, so they are served
+  // the switch, and the behaviour lane's composer-hint case reads the hint there.
+  var localeServed = waitFixtureCase || statsFixtureCase || CASE === 'turn-nav' || localeSwitchCase || CASE === 'composer'
   /** The active locale id; the language cases start in the language they assert. */
   var active = localeSwitchCase ? 'zh' : 'en'
   var listeners = []

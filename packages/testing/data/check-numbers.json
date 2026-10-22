@@ -501,7 +501,7 @@
       "a repeated same-state frame reads nothing more": [
         1
       ],
-      "no feature reported a failure (line 256)": [
+      "no feature reported a failure (line 265)": [
         0
       ],
       "the skin's rail stands in the host rail's slot, one mark per turn, the host's rail hidden but laid out": [
@@ -517,6 +517,9 @@
       "switching it off hands the host its rail back; on stands the skin's in again, live": [
         0,
         1
+      ],
+      "a host that writes no place on its marks keeps the reading position and presses the mark at the row's place, the first row included": [
+        4
       ]
     },
     "packages/testing/smoke/cases/chat.mjs": {
@@ -744,6 +747,9 @@
       ],
       "words that settle shorter take the box down with them, so the clock sits right after them": [
         10
+      ],
+      "状态行钉住时行下的画布铺到输入框顶，跟随关掉后这块画布随之退场": [
+        17
       ],
       "the flight plays an animation": [
         0

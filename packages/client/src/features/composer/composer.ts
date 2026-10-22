@@ -1,5 +1,5 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
-import { COMPOSER_INPUT_SELECTOR, DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findDockedContextMeter, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
@@ -103,15 +103,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /**
    * The attachment rails inside a card (ui-attachment): the shell rail and
-   * its scrolling inner rail, both `_rail`.
+   * its scrolling inner rail, both `_rail`, the local name the host's own
+   * stylesheet carries. Nothing in the parts tables names the rail, so the
+   * skin reads it by that local name here (D3).
    */
   const ATTACHMENT_RAIL = '[data-dsh-claude-part~="attachment-rail"]'
+  /**
+   * The shell rail as ui-attachment draws it, for a card whose nodes the parts
+   * walk has not carried into a region yet: the element the host mounts after
+   * the restyle was told the card carries no attachment.
+   */
+  const ATTACHMENT_SHELL_RAIL = COMPOSER_ATTACHMENT_RAIL_SELECTOR
   /**
    * Anything in a card that means it carries attachments: an image tile
    * (`_imageItem`, `_thumbnail`), or any item, image or file card
    * (FileCard's `_card`) on a rail.
    */
-  const ATTACHMENT_PRESENT = `[data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], ${ATTACHMENT_RAIL} :is([data-dsh-claude-part~="attachment-item"], img, [data-dsh-claude-part~="composer-card-box"])`
+  const ATTACHMENT_PRESENT = `[data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], ${ATTACHMENT_RAIL} :is([data-dsh-claude-part~="attachment-item"], img, [data-dsh-claude-part~="composer-card-box"]), ${ATTACHMENT_SHELL_RAIL} :is([data-dsh-claude-part~="attachment-item"], [class*="_imageItem"], img, [data-dsh-claude-part~="composer-card-box"], [class*="_card"])`
   /**
    * The attachment tiles the stylesheet reshapes into thumbnails. They are
    * found here once per pass and marked, so the rules read one attribute
@@ -120,12 +128,36 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   const ATTACHMENT_TILES = `${ATTACHMENT_RAIL} :is([data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], [data-dsh-claude-part~="attachment-item"]:has(img), [data-dsh-claude-part~="composer-card-box"]:has(img))`
   const ATTACHMENT_TILE_ATTR = 'data-dsh-claude-attachment'
+  /**
+   * The card's attachment nodes, as the restyle looks for them. A card the host
+   * has rebuilt holds them where neither the parts walk nor a class name says
+   * so yet; the rail from the pass before is what says so then.
+   */
+  const ATTACHMENT_ANYWHERE = ':is([data-dsh-claude-part~="attachment-image-item"], [data-dsh-claude-part~="attachment-thumbnail"], [data-dsh-claude-part~="attachment-item"], [data-dsh-claude-part~="composer-card-box"], [class*="_imageItem"], [class*="_thumbnail"], [class*="_card"])'
+  /**
+   * The card a node was last seen holding attachments in, kept after the node
+   * leaves the page: the host unmounts the rail and mounts it again as one
+   * draft, and a rail the page has just lost is the card's own, on its way back.
+   */
+  const lastHolder = new WeakMap<Element, Element>()
+  /** The nodes whose card that list answers for while they stand off the page, with the pass each was lost in. */
+  const heldNodes = new Map<Element, number>()
+  /** The passes run so far, so a lost rail answers for the one pass that reads the card next. */
+  let passCount = 0
 
-  /** Mark the cards that carry attachments, and the tiles inside them. */
+  /**
+   * Mark the cards that carry attachments, and the tiles inside them, and keep
+   * the rail that answers for a card the host has just rebuilt: the host unmounts
+   * the rail and mounts it again as one draft, so the pass that reads the card
+   * after that commit finds the rail in the node list every matched node's
+   * holder was read to.
+   */
   function syncAttachments(cards: readonly HTMLElement[]) {
+    passCount += 1
     const tiles = new Set<Element>()
     for (const card of cards) {
-      const carries = active && card.querySelector(ATTACHMENT_PRESENT) !== null
+      const held = [...heldNodes.keys()].some(node => lastHolder.get(node) === card)
+      const carries = active && (card.querySelector(ATTACHMENT_PRESENT) !== null || held)
       if (carries) {
         setAttributeIfChanged(card, 'data-has-attachments', 'true')
         for (const tile of card.querySelectorAll(ATTACHMENT_TILES)) tiles.add(tile)
@@ -143,6 +175,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const tile of tiles) {
       tile.toggleAttribute(ATTACHMENT_TILE_ATTR, true)
       markedTiles.add(tile)
+    }
+    // The rail answering for a card in the middle of a rebuild is the one the
+    // page has just lost: it answers for the pass that reads the card after
+    // the commit, and a node back on the page keeps its card from then on.
+    for (const [node, lostIn] of [...heldNodes]) {
+      if (node.isConnected || lostIn < passCount - 1) heldNodes.delete(node)
+    }
+    if (!active) heldNodes.clear()
+    for (const card of cards) {
+      for (const node of card.querySelectorAll(ATTACHMENT_ANYWHERE)) {
+        lastHolder.set(node, card)
+        if (!node.isConnected && !heldNodes.has(node)) heldNodes.set(node, passCount)
+      }
     }
   }
 

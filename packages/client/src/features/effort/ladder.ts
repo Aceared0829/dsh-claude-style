@@ -47,6 +47,18 @@ export function isRankedEffort(id: string): boolean {
   return Object.prototype.hasOwnProperty.call(EFFORT_STRENGTH, id)
 }
 
+/** One rung of a model's ladder: the level's id (undefined for the model's own default) and the name the control shows. */
+export interface EffortStep {
+  id: string | undefined
+  name: string
+}
+
+/** The reasoning metadata a ladder is read from: the levels the model offers, and the level in force. */
+export interface EffortLadder {
+  reasoning: { defaultEffort?: string, efforts: { id: string, name: string }[] }
+  effective: string | undefined
+}
+
 /**
  * Order one model's levels by strength.
  *
@@ -70,4 +82,51 @@ export function orderEffortIds(ids: readonly (string | undefined)[]): (string | 
     levels.push(isRankedEffort(id) ? ranked[next++] : id)
   }
   return [...ids.filter(id => id === undefined), ...levels]
+}
+
+/**
+ * One model's ladder as the controls draw it: the model's own default level
+ * leads when the adapter names no default of its own (the catalog leaves
+ * `defaultEffort` out), then every declared level in strength order. The index
+ * is the rung in force, or 0 while the catalog names a level the ladder does
+ * not hold.
+ *
+ * @param effort - the catalog's reasoning descriptor.
+ * @param defaultName - the word the model's own default level is shown by
+ *   (the interface copy), since the level carries no name of its own.
+ */
+export function effortSteps(effort: EffortLadder, defaultName: string): { steps: EffortStep[], index: number } {
+  const declared = effort.reasoning.efforts
+  const order = orderEffortIds([
+    ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
+    ...declared.map(level => level.id),
+  ])
+  const byId = new Map(declared.map(level => [level.id, level.name]))
+  const steps = order.map((id): EffortStep => id === undefined
+    ? { id, name: defaultName }
+    : { id, name: byId.get(id) ?? id })
+  let index = 0
+  for (let at = 0; at < steps.length; at++) {
+    if (steps[at].id === effort.effective) {
+      index = at
+      break
+    }
+  }
+  return { steps, index }
+}
+
+/**
+ * Where the rung in force stands on the trigger's colour ramp, or null for the
+ * ink the trigger rests in.
+ *
+ * The ramp runs from the accent's text step to the violet the card's apex
+ * matrix marks, so every thinking level takes a colour of its own and the top
+ * rung wears exactly the card's violet. The switch-off level and the model's
+ * own default level have no strength the catalog names, so both rest.
+ */
+export function effortTint(steps: readonly EffortStep[], index: number): number | null {
+  if (index < 0 || steps.length === 0) return null
+  const id = steps[index].id
+  if (id === undefined || EFFORT_STRENGTH[id] === 0) return null
+  return steps.length < 2 ? 1 : index / (steps.length - 1)
 }

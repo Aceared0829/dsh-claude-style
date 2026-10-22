@@ -38,16 +38,12 @@ body[data-dsh-claude-style] [data-composer-input] {
   height: auto;
 }
 
-/* The hero's hint, for the times the skin has to supply it.
+/* The hint the skin supplies for the attachment form, where the host draws none.
    The host renders its own placeholder only while the draft is empty AND
-   nothing is attached (`draft === "" && attachments.length === 0`), so pasting
-   an image with no text removes it — and the skin's synthetic stand-in carries
-   none of the host's classes, so without this rule it fell back to a static
-   block in the card's own ink colour, below the field instead of on it. The
-   hero keeps the host's field metrics (the skin only raises its min-height), so
-   the stand-in takes the host's own inset — 4px down, 14px in — rather than the
-   inline variant's zero-origin line box. The host's `.grow` is already
-   `position: relative`, so the offsets resolve against the field. */
+   nothing is attached, so attaching an image with no text leaves the card
+   without a hint of the host's. The stand-in hangs from the card, as the
+   host draws its own hint among the card's, and sits on the line the field
+   draws its own first line on: the field's inset, read from the card's top. */
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="hero"] [data-dsh-synthetic-placeholder] {
   position: absolute !important;
   top: 4px !important;
@@ -59,6 +55,23 @@ body[data-dsh-claude-style] [data-composer-card][data-composer-variant="hero"] [
   overflow: hidden !important;
   pointer-events: none !important;
   user-select: none !important;
+}
+
+/* The same stand-in in the inline card. The attachment rail stands above the
+   field there, so the hint is placed against the field's own band under that
+   rail rather than at the card's top, and is no wider than the field. */
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"][data-has-attachments="true"] [data-dsh-synthetic-placeholder],
+body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card][data-has-attachments="true"] [data-dsh-synthetic-placeholder] {
+  position: absolute;
+  top: 163px;
+  left: 14px;
+  right: 52px;
+  color: var(--dsw-alias-label-caption);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Tight bottom padding below the button controls row. The part names the host's

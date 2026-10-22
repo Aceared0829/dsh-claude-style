@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 5,
+  "at": "2026-10-21",
+  "external": false,
+  "zh": "修复大量输出时等待行下方露出正文残行的问题：等待行钉在输入框上方时，它脚下的画布一直铺到输入框顶，滑动中的正文不再从状态行下沿透出。",
+  "en": "Fix a sliver of the answer showing under the waiting line while a large answer streams in: while the line is pinned over the composer, the canvas under it now reaches the composer's top, so the text the stream slide is bringing up no longer shows below the line."
+}

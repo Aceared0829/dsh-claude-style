@@ -158,6 +158,10 @@ export default {
     check('the thinking row folds back when the reasoning stops', after.thinkOpen === false, JSON.stringify(after))
     check('the process group folds back when the section ends, and its summary stops sweeping',
       after.groupOpen === false && (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
+    check('a group the host folds when its turn is stopped opens again, so a stopped turn keeps its work on the page',
+      fold.turnGroups?.answeredOpen === false && fold.turnGroups?.stoppedOpen === true, JSON.stringify(fold.turnGroups))
+    check('a stopped turn that later carries an answer row closes like any answered one',
+      fold.stoppedLateAnswer?.open === false, JSON.stringify(fold.stoppedLateAnswer))
     check('a group the reader opened himself in that phase stays open', fold.readerOpen === true, JSON.stringify(fold.readerOpen))
     const message = fold.message || {}
     const messageOpen = fold.messageOpen || {}
@@ -623,6 +627,14 @@ export default {
       pin.on?.follow === true && pin.on?.pinned === true &&
         pin.off?.follow === false && pin.off?.pinned === false &&
         pin.back?.follow === true && pin.back?.pinned === true,
+      JSON.stringify(pin))
+    // 钉住的行把脚下的画布一直铺到输入框顶，宿主在行下沿留出的那条缝里
+    // 就不会露出滑动中的正文（chat-wait.css）。
+    check('状态行钉住时行下的画布铺到输入框顶，跟随关掉后这块画布随之退场',
+      pin.on?.mask?.position === 'absolute' && pin.on.mask.background === pin.on.mask.ink &&
+        Number.parseFloat(pin.on.mask.height) >= 17 &&
+        pin.off?.mask === null &&
+        pin.back?.mask?.position === 'absolute' && pin.back.mask.background === pin.back.mask.ink,
       JSON.stringify(pin))
     const replaced = wait.replaced || {}
     check('replacing the host words transfers their hiding marker without hiding the third-party line',

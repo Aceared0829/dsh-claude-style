@@ -1,17 +1,12 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { MODEL_EFFORT_DEFAULT, MODEL_EFFORT_FASTER, MODEL_EFFORT_LABEL, MODEL_EFFORT_NONE, MODEL_EFFORT_SMARTER } from '../model/copy-fallbacks'
-import { orderEffortIds } from './ladder'
+import { effortSteps } from './ladder'
+import type { EffortStep } from './ladder'
 import { createEffortMatrix } from './matrix'
 import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { inPagePixels } from '../../shared/page-zoom'
 import type { ModelCatalog } from '../model/catalog'
 import { copy } from './copy'
-
-/** One rung of the ladder: the level's id (undefined for the model's own default) and its name. */
-interface EffortStep {
-  id: string | undefined
-  name: string
-}
 
 /** The words around the slider. */
 interface EffortLabels {
@@ -36,9 +31,8 @@ export interface EffortTrackBox {
  * ladder as a track ordered by strength (ladder.ts): the label carries the
  * level's name, `Faster` / `Smarter` name the direction of travel, and the
  * knob follows the pointer
- * CONTINUOUSLY rather than hopping stop to stop. The value settles only when
- * the gesture ends — release, or the pointer leaving the control — and it
- * settles on the NEAREST level, so dragging never reads as a hard switch
+ * CONTINUOUSLY rather than hopping stop to stop. The value settles only at
+ * the release, on the NEAREST level, so dragging never reads as a hard switch
  * between fixed positions.
  *
  * The face of the control follows Claude Desktop's effort slider: a filled
@@ -64,9 +58,8 @@ export interface EffortTrackBox {
  *   the current seat's effort descriptor — the model picker's `effort()`,
  *   held over while a selection is in flight — or null,
  *   `onPick(levelId)` commits one level — `undefined` is the
- *   model's own default level — and `onDragEnd(event)` hears the physical
- *   release wherever it lands (the gesture itself may have settled earlier,
- *   at the control's edge).
+ *   model's own default level — and `onDragEnd(event)` hears the release
+ *   wherever it lands, the pointer outside the card included.
  * @returns `{ el, update, isHeld }`.
  */
 export function createEffortControl(opts: {
@@ -124,16 +117,14 @@ export function createEffortControl(opts: {
    * the knob keeps up with the pointer. Setting the drag flag at pointerdown
    * would kill the glide before the browser ever started it: the transition
    * list is read at the next style recalc, by which time the flag is on.
+   *
+   * The hold spans the whole gesture: the pointer capture keeps the moves
+   * coming after it leaves the control, and only the release ends it, so the
+   * picker's hover-close — which stands down while `pressed` — hears the
+   * button up first (onRelease).
    */
   let pressed = false
   let dragging = false
-  /**
-   * The PHYSICAL hold: down at pointerdown, up only at the real release.
-   * `pressed` ends early when the pointer leaves the control (the gesture
-   * settles there), but the picker's hover-close must stand down until the
-   * button is up — the card closing mid-hold read as a crash.
-   */
-  let held = false
   let painted = false
   let pointerId: number | null = null
   /** The dash shown when there is no level to name; cached, not re-read per move. */
@@ -169,30 +160,12 @@ export function createEffortControl(opts: {
    */
   function state(): { steps: EffortStep[], index: number, labels: EffortLabels } {
     const effort = opts.read()
-    const list: EffortStep[] = []
-    let index = -1
-    if (effort !== null) {
-      /* The host records the levels as a strength scale; an adapter that hands
-         them over unordered is put right here (ladder.ts). */
-      const declared = effort.reasoning.efforts
-      const order = orderEffortIds([
-        ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
-        ...declared.map(level => level.id),
-      ])
-      const byId = new Map(declared.map(level => [level.id, level.name]))
-      for (const id of order) {
-        list.push(id === undefined
-          ? { id: undefined, name: MODEL_EFFORT_DEFAULT }
-          : { id, name: byId.get(id) ?? id })
-      }
-      index = 0
-      for (let s = 0; s < list.length; s++) {
-        if (list[s].id === effort.effective) { index = s; break }
-      }
-    }
+    const ladder = effort === null
+      ? { steps: [] as EffortStep[], index: -1 }
+      : effortSteps(effort, MODEL_EFFORT_DEFAULT)
     return {
-      steps: list,
-      index,
+      steps: ladder.steps,
+      index: ladder.index,
       labels: {
         label: copy('effortLabel'),
         faster: copy('effortFaster'),
@@ -489,18 +462,17 @@ export function createEffortControl(opts: {
   }
 
   /**
-   * The physical release, wherever it lands: after a boundary settle the
-   * track's own pointerup only arrives while the capture holds, so the end
-   * of the hold is heard on the document — capture phase, so a host
-   * handler's stopPropagation cannot steal it. This fires BEFORE the
-   * track's bubble-phase pointerup (settle), which is safe: the close it
-   * may cause only flips data-open, the commit below proceeds regardless.
+   * The physical release, wherever it lands: the pointer may be outside the
+   * card when the button comes up, and the picker closes the card there. It
+   * is heard on the document — capture phase, so a host handler's
+   * stopPropagation cannot steal it — and fires BEFORE the track's
+   * bubble-phase pointerup (settle), which is safe: the close it may cause
+   * only flips data-open, the commit below proceeds regardless.
    */
-  function onHeldRelease(e: PointerEvent) {
+  function onRelease(e: PointerEvent) {
     if (e.pointerId !== pointerId) return
-    held = false
-    document.removeEventListener('pointerup', onHeldRelease, true)
-    document.removeEventListener('pointercancel', onHeldRelease, true)
+    document.removeEventListener('pointerup', onRelease, true)
+    document.removeEventListener('pointercancel', onRelease, true)
     if (typeof opts.onDragEnd === 'function') opts.onDragEnd(e)
   }
 
@@ -510,9 +482,8 @@ export function createEffortControl(opts: {
     e.stopPropagation()
     painted = true
     pointerId = e.pointerId
-    held = true
-    document.addEventListener('pointerup', onHeldRelease, true)
-    document.addEventListener('pointercancel', onHeldRelease, true)
+    document.addEventListener('pointerup', onRelease, true)
+    document.addEventListener('pointercancel', onRelease, true)
     track.setPointerCapture(e.pointerId)
     if (typeof opts.onDragStart === 'function') opts.onDragStart()
     const x = pointerTravel(e.clientX)
@@ -529,24 +500,20 @@ export function createEffortControl(opts: {
   /**
    * The gesture's latest pointer position. pointermove fires faster than
    * frames render; the event stores the position and ONE animation-frame
-   * callback applies it — reads first (boundary box, travel geometry),
-   * writes after (one transform + the level name) — so the drag costs one
-   * layout flush per frame instead of one forced reflow per event.
+   * callback applies it — reads the travel geometry first, writes after (one
+   * transform + the level name) — so the drag costs one layout flush per
+   * frame instead of one forced reflow per event.
    */
   let cancelPendingFrame: (() => void) | null = null
   let moveQueued = false
   let pendingX = 0
-  let pendingY = 0
 
   function applyPending() {
     if (!pressed) return
-    const box = root.getBoundingClientRect()
-    // Leaving the control ends the gesture where it stands — the knob
-    // settles on the nearest level instead of trailing the pointer away.
-    if (pendingX < box.left - 6 || pendingX > box.right + 6 || pendingY < box.top - 6 || pendingY > box.bottom + 6) {
-      settle()
-      return
-    }
+    // The pointer may run past either end or off the control with the button
+    // down: the travel clamps to the track and the gesture goes on, so an end
+    // stop stays reachable — ending it at the control's edge left the reader
+    // unable to drag back off that stop.
     const x = pointerTravel(pendingX)
     place(dampTravel(x), false)
     live = nearest(x)
@@ -562,7 +529,6 @@ export function createEffortControl(opts: {
       root.setAttribute('data-dragging', '')
     }
     pendingX = e.clientX
-    pendingY = e.clientY
     if (moveQueued) return
     moveQueued = true
     cancelPendingFrame = requestFrame({
@@ -642,11 +608,10 @@ export function createEffortControl(opts: {
     el: root,
     update,
     measure: measureTrack,
-    // The picker's hover-close guard keys on the PHYSICAL hold: from
-    // pointerdown until the real release, wherever it lands. `pressed`
-    // ends earlier — at the boundary settle — which is exactly when the
-    // pointer is on its way out of the card.
-    isHeld() { return held },
+    // The picker's hover-close guard keys on the hold, from pointerdown
+    // until the release wherever it lands: a gesture that travels out of the
+    // card keeps it open, and the release outside closes it (onDragEnd).
+    isHeld() { return pressed },
     /**
      * The control's own teardown. The listeners a hold put on the document,
      * the frame a pending move waits on and the wait for the host's echo all
@@ -655,11 +620,8 @@ export function createEffortControl(opts: {
      */
     dispose() {
       dotMatrix.dispose()
-      if (held) {
-        held = false
-        document.removeEventListener('pointerup', onHeldRelease, true)
-        document.removeEventListener('pointercancel', onHeldRelease, true)
-      }
+      document.removeEventListener('pointerup', onRelease, true)
+      document.removeEventListener('pointercancel', onRelease, true)
       if (cancelPendingFrame !== null) cancelPendingFrame()
       cancelPendingFrame = null
       moveQueued = false

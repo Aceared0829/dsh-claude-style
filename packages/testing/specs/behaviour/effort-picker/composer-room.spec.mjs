@@ -10,7 +10,7 @@
  */
 import { spec } from '../../fixtures/behaviour.mjs'
 import { boxOf } from '../../fixtures/boxes.mjs'
-import { MODEL_SEAT_NAME } from '../../fixtures/model-seat.mjs'
+import { MODEL_SEAT_NAME, echoSelection } from '../../fixtures/model-seat.mjs'
 
 /** The host's model button: the reader finds it by its name, the model's. */
 const modelButton = (page) => page.getByRole('button', { name: MODEL_SEAT_NAME })
@@ -42,24 +42,22 @@ export default spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], densi
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
 
+  test('with its card down the button takes the level it shows, and the card\'s width when it is up', async (t) => {
+    // The stand-in's ladder is low/medium/high/max with max in force: the closed
+    // trigger shows the shortest name, and opening the card reserves the widest.
+    const closed = await t.read.box(t.surface('effort.trigger'))
+    await t.page.click(t.surface('effort.trigger'))
+    await t.settle()
+    const open = await t.read.box(t.surface('effort.trigger'))
+    t.expectThat.equal(open.width > closed.width + 1, true, `the open card holds the ladder's widest name (${closed.width}px down, ${open.width}px up)`)
+    t.expectThat.equal(await t.read.computed(t.surface('effort.trigger'), 'min-width'), `${Math.round(open.width)}px`, 'the reserved width is the one the box takes')
+  })
+
   test('switching the level keeps the button\'s width and the open card in place', async (t) => {
     // The stand-in's directory answers one fixed snapshot: the wrapper makes
     // its `select` move the level the way the host's own store does, so the
     // button's label is the level the reader just picked.
-    await t.page.evaluate(() => {
-      const host = window.__dshSmokeHost
-      const dir = host.modelDirectories.directoryFor('smoke-session')
-      const snapshot = dir.store.getSnapshot.bind(dir.store)
-      let level = 'max'
-      dir.store.getSnapshot = () => {
-        const snap = snapshot()
-        return snap === null || snap.current === null ? snap : { ...snap, current: { ...snap.current, reasoningEffort: level } }
-      }
-      dir.select = (selection) => {
-        if (selection && selection.reasoningEffort !== undefined) level = selection.reasoningEffort
-        return Promise.resolve()
-      }
-    })
+    await echoSelection(t.page, 'max')
     await t.page.click(t.surface('effort.trigger'))
     await t.settle()
     const before = await t.read.box(t.surface('effort.trigger'))

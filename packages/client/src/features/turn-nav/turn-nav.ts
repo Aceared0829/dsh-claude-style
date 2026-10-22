@@ -4,7 +4,7 @@ import { conversationSessionId, findConversationSession } from '@dsh-claude-styl
 import { motionReduced } from '../../core/prefs'
 import { createTurnNavHost } from './turn-nav-host'
 import type { TurnItem } from './turn-nav-host'
-import { CHAT_TURN_ATTRIBUTE, FOREGROUND_SELECTOR, PEER_SHEET_SELECTOR, TURN_RAIL_CURRENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_TURN_ATTRIBUTE, FOREGROUND_SELECTOR, PEER_SHEET_SELECTOR, TURN_RAIL_CURRENT_SELECTOR, TURN_RAIL_MARK_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { buildElement, closestFrom } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, closeOtherPopovers, createHoverIntent, registerPopover, unregisterPopover } from '../../shared/popover'
 import { inPageBox } from '../../shared/page-zoom'
@@ -87,8 +87,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The turns the rail's marks show, mark for mark, and how far the track is scrolled. */
   let drawnItems: TurnItem[] | null = null
   let offset = 0
-  /** The host's current mark last read, and the place it gave; -1 when there is none. */
+  /** The host's current mark last read, what it was read from, and the place it gave; -1 when there is none. */
   let currentMark: HTMLElement | null = null
+  let currentItems: TurnItem[] | null = null
+  let currentStated: string | null = null
+  /** How many marks the rail showed when the place could not be read off one mark's own number; -1 otherwise. */
+  let currentMarks = -1
   let current = -1
   /** The card, its scrolling list, and the turns its rows show (null when the rows must be rebuilt). */
   let card: HTMLElement | null = null
@@ -132,6 +136,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hostRail = found
       found.setAttribute(TURN_NAV_REPLACED_ATTR, '')
       currentMark = null
+      currentItems = null
+      currentStated = null
+      currentMarks = -1
       current = -1
     }
     // The host's rail sits in its slot.
@@ -146,6 +153,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (rail !== null && rail.parentElement !== null) rail.remove()
     drawnItems = null
     currentMark = null
+    currentItems = null
+    currentStated = null
+    currentMarks = -1
     current = -1
   }
 
@@ -166,6 +176,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     rail!.style.setProperty('--dsh-claude-turn-rail-height', `${items.length * TURN_NAV_PITCH}px`)
     current = -1
     currentMark = null
+    currentItems = null
+    currentStated = null
+    currentMarks = -1
   }
 
   /**
@@ -204,13 +217,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /**
    * Read the reading position off the host's current mark and mark it on
-   * the rail and the open card. The host's mark element and its place are
-   * compared first, so a pass that finds them as they were reads no layout.
+   * the rail and the open card. What the place was read from — the mark, the
+   * turns, the place it states, and how many marks the rail shows where it
+   * states none — is compared first, so a pass that finds them as they were
+   * reads no layout.
    */
   function markCurrent(found: HTMLElement, items: TurnItem[]) {
     const mark = found.querySelector<HTMLElement>(TURN_RAIL_CURRENT_SELECTOR)
-    if (mark === currentMark && (mark === null || Number(mark.dataset.index) === current)) return
+    const stated = mark === null ? null : mark.dataset.index ?? null
+    const marks = stated === null ? found.querySelectorAll(TURN_RAIL_MARK_SELECTOR).length : -1
+    if (mark === currentMark && items === currentItems && stated === currentStated && marks === currentMarks) return
     currentMark = mark
+    currentItems = items
+    currentStated = stated
+    currentMarks = marks
     const next = host.currentIndex(found, items)
     if (next === current) return
     setCurrentRow(track!, current, next)

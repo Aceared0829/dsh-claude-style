@@ -437,9 +437,20 @@
       // back to the host. The fixture carries the host's own tail mark here,
       // which is the state a running turn leaves behind.
       var pinOf = function () {
+        var paint = getComputedStyle(row)
+        var after = getComputedStyle(row, '::after')
         return {
           follow: document.body.hasAttribute('data-dsh-claude-chat-follow'),
-          pinned: getComputedStyle(row).position === 'sticky',
+          pinned: paint.position === 'sticky',
+          // The canvas the pinned row carries under itself, down to the
+          // composer's top: the strip the host leaves unclipped under the row is
+          // where a slid line would otherwise show (chat-wait.css).
+          mask: after.content === 'none' ? null : {
+            position: after.position,
+            height: after.height,
+            background: after.backgroundColor,
+            ink: paint.backgroundColor,
+          },
         }
       }
       waitSession.setAttribute('data-chat-following-tail', '')
