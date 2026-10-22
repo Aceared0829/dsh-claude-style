@@ -84,7 +84,11 @@ function runProbes({ table, entries, frames = 0 }) {
       return { ok: matches >= (probe.min ?? 1), observed: `${matches} match${matches === 1 ? '' : 'es'}` }
     }
     if (probe.kind === 'attribute') {
-      const matches = document.querySelectorAll(`[${entry.value}]`).length
+      // A value-less mark is listed as its bare attribute name; an entry that
+      // holds a selector writes that name beside it (`composer.placeholder-
+      // attribute`), so the probe wraps the name, never a selector.
+      const name = entry.name ?? entry.value
+      const matches = document.querySelectorAll(`[${name}]`).length
       return { ok: matches > 0, observed: `${matches} element${matches === 1 ? '' : 's'}` }
     }
     if (probe.kind === 'property') {
