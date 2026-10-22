@@ -26,6 +26,7 @@
     "coverage": "node packages/testing/coverage.mjs",
     "test": "vitest run",
     "verify": "node scripts/verify.mjs",
+    "work": "node scripts/work.mjs",
     "prepublishOnly": "npm run build"
   },
   "exports": {

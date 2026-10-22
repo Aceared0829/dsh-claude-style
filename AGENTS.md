@@ -68,6 +68,12 @@ Read D3 before adding a host selector. After adding a substring selector, compar
 
 Comments carry only what a reader needs to keep the code correct: why the code has this shape, the host contract it depends on, the ordering that matters, what breaks if it changes. One to three lines is the norm. Never restate the code, narrate the change, or record measurements or release history. A direction with reasoning behind it lives in `docs/adr/`; cite the file's number (`D9`) and let the comment carry only what the code needs. Visual rules cite `docs/STYLE.md`.
 
+### Work Orders
+
+A work order is one task under `.debug/work/<id>/`: `work.md` carries the goal, screenshots, acceptance criteria and a JSON block, while `refs/`, `shots/` and `tmp/` hold its evidence and scratch files. `npm run work -- new <slug> --title "…"` starts one; `list`, `start`, `verify`, `review`, `check`, `close` and `gc` are the other commands, and `npm run lint` runs the work-order check.
+
+Every temporary file belongs in the open order's `tmp/`. `npm run work -- gc` removes orphaned orders and loose `.debug` temporary files. Measurements live in the order only: before review each one names where it survives — a token, a spec, a comment, an ADR, or `none`. Durable documents never name a work-order id, and `close` deletes the directory after the change file or ADR has taken what survives. A behavior change still adds `docs/changes/`; a direction change still adds an ADR. The work order is not a substitute for either.
+
 ### Model Copy
 
 Read D5 before editing `packages/client/data/model-descriptions.json`.
@@ -106,6 +112,7 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm run coverage` | which layer guards which feature (D77), as an observation |
 | `npm test` | the logic and mechanism specs on their own, as the cloud job runs them: Vitest in browser mode on the local Chrome or Edge |
 | `npm run verify` | the one entry a test run goes through |
+| `npm run work` | one local work order per task, deleted when the task lands |
 
 <!-- commands:end -->
 

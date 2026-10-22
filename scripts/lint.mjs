@@ -21,6 +21,7 @@ import fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
+import { checkWorkOrders } from './work.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DECISIONS = path.join(ROOT, 'docs', 'adr')
@@ -503,6 +504,12 @@ if (decisionProse === 0) problems.push('lint: no decision file named a decision 
 if (decisionFiles === 0) problems.push('lint: no decision file was read — the decision-shape rule matches nothing')
 if (prosePaths === 0) problems.push('lint: no repository path in prose was examined — the path pattern matches nothing')
 if (lookups === 0) problems.push('lint: no whole-document lookup was counted — the lookup rule matches nothing')
+
+// Work orders live under .debug/work: their facts are transient, so this reads
+// the local tree only and passes in CI, where the directory is absent.
+const workOrders = checkWorkOrders()
+problems.push(...workOrders.problems)
+for (const warning of workOrders.warnings) console.warn(`lint: ${warning}`)
 
 if (problems.length > 0) {
   for (const problem of problems) console.error(`lint: ${problem}`)
