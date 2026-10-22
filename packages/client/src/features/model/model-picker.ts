@@ -8,6 +8,7 @@ import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { createModelCatalog } from './catalog'
 import { createModelSubMenu } from './sub-menu'
 import { byModelId, createModelRows } from './rows'
+import { releaseTag } from './release-tag'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
 import { setSwappingText } from '../../shared/swapping-text'
@@ -609,12 +610,29 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // the words in the box are the seat in force and keep the normal tone.
       labelEl.classList.toggle('dsh-claude-model-btn-loading', current === null)
     }
+    // The official Flash model's release tag rides beside the seat's name, the
+    // way the host's own label draws it (release-tag.ts). The label's swap
+    // touches the label element alone, so the tag stands beside it and follows
+    // the model in force.
+    const seatTag = current === null ? null : releaseTag(current.group.id, current.model)
+    let seatTagEl = modelBtn.querySelector<HTMLElement>('.dsh-claude-model-tag')
+    if (seatTag === null) {
+      seatTagEl?.remove()
+    } else {
+      if (seatTagEl === null) {
+        seatTagEl = buildElement('span', 'dsh-claude-model-tag')
+        modelBtn.appendChild(seatTagEl)
+      }
+      if (seatTagEl.textContent !== seatTag) seatTagEl.textContent = seatTag
+    }
     // The level is NOT part of this trigger any more: it has its own button
     // beside it (packages/client/src/features/effort/effort-picker.ts). A stale "· High" span from
     // an older generation is swept rather than reused.
     const staleEffortEl = modelBtn.querySelector('.dsh-claude-model-btn-effort')
     if (staleEffortEl !== null) staleEffortEl.remove()
-    const triggerAria = copy('triggerLabel', { model: label })
+    // The tag is part of the model's name for a screen reader too, the way the
+    // host's own label reads the badge beside the words.
+    const triggerAria = copy('triggerLabel', { model: label }) + (seatTag === null ? '' : ` ${seatTag}`)
     setAttributeIfChanged(modelBtn, 'aria-label', triggerAria)
     modelBtn.disabled = false
 

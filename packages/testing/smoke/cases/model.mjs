@@ -21,6 +21,13 @@ export default {
     check('the picker draws level 1 with the seat\'s own row under the list',
       levelOne.length === 3 && one['V4.1 Flash'] !== undefined && one['Kimi K3'] !== undefined && one['GLM-5.3'] !== undefined,
       JSON.stringify(levelOne.map((row) => row.name)))
+    check('the official Flash row carries the host\'s 1017 release tag, and the other rows do not',
+      one['V4.1 Flash'] !== undefined && one['V4.1 Flash'].text.includes('1017') &&
+        one['Kimi K3'] !== undefined && !one['Kimi K3'].text.includes('1017'),
+      JSON.stringify({
+        flash: one['V4.1 Flash'] === undefined ? null : one['V4.1 Flash'].text,
+        kimi: one['Kimi K3'] === undefined ? null : one['Kimi K3'].text,
+      }))
     check('the seat\'s row is the current one and the last of that level',
       meter.currentRow !== null && meter.currentRow !== undefined && meter.currentRow.current === true && meter.currentRow.name === 'GLM-5.3',
       JSON.stringify(meter.currentRow))
@@ -67,5 +74,10 @@ export default {
       picker.off !== undefined && picker.off.trigger === false && picker.off.hostMarked === false &&
         picker.back !== undefined && picker.back.trigger === true && picker.back.hostMarked === true,
       JSON.stringify(picker))
+    const seat = r.modelSeat || {}
+    check('the seat\'s own line carries the tag with the Flash model in force, with its own face',
+      seat.text !== null && seat.text.includes('V4.1 Flash') && seat.text.includes('1017') &&
+        seat.tagBg !== null && seat.tagBg !== 'rgba(0, 0, 0, 0)',
+      JSON.stringify(seat))
   },
 }

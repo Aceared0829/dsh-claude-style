@@ -305,6 +305,30 @@ body[data-dsh-claude-style] .dsh-claude-model-name {
   font-weight: 500;
   line-height: 16px;
 }
+/* The name and the host's release tag share one line. The tag never squeezes the
+   name: a long name wraps inside its own share of the line. */
+body[data-dsh-claude-style] .dsh-claude-model-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+body[data-dsh-claude-style] .dsh-claude-model-line .dsh-claude-model-name {
+  min-width: 0;
+}
+/* The host's own label paints this tag in the info tone; the accent tint and its
+   ink keep that reading without a second colour family. */
+body[data-dsh-claude-style] .dsh-claude-model-tag {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--dsw-alias-state-business-tertiary);
+  color: var(--dsw-alias-state-business-primary);
+  font-family: var(--dsw-font-family);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 16px;
+}
 /* Claude's wordmark is set in Anthropic's serif, so the rest of the label follows
    it — the row reads as one piece of lettering rather than serif art beside sans. */
 body[data-dsh-claude-style] .dsh-claude-model-option[data-brand='claude'] .dsh-claude-model-name {

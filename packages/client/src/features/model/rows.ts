@@ -3,6 +3,7 @@ import { MODEL_OFFICIAL_GROUP } from './copy-fallbacks'
 import { readPrefs } from '../../core/prefs'
 import { buildModelLabel, modelBrand } from './brand'
 import { modelDescription } from './copy-lookup'
+import { releaseTag } from './release-tag'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem } from '../../shared/popover'
 import type { createHoverIntent } from '../../shared/popover'
@@ -83,7 +84,11 @@ export function createModelRows(options: {
     const copy = built.text
     // A model the host names with an empty string still reads as itself: the
     // row is picked by that id, so the label falls back to it.
-    copy.appendChild(buildModelLabel(model.name || model.id, brand))
+    const line = buildElement('span', 'dsh-claude-model-line')
+    line.appendChild(buildModelLabel(model.name || model.id, brand))
+    const tag = releaseTag(group.id, model)
+    if (tag !== null) line.appendChild(buildElement('span', 'dsh-claude-model-tag', tag))
+    copy.appendChild(line)
     // The description belongs to level 1 only: that list is the official
     // catalog, short enough that the line is what tells the models apart,
     // while "More models" is every provider's full catalog and reads better

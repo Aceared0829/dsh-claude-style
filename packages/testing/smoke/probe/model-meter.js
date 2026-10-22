@@ -40,6 +40,7 @@
           var style = getComputedStyle(option)
           rows.push({
             name: name === null ? '' : name.textContent,
+            text: (option.textContent || '').replace(/\s+/g, ' ').trim(),
             desc: desc === null ? null : desc.textContent,
             current: option.getAttribute('aria-checked') === 'true',
             // The shape every row shares: a row built apart from the others
@@ -134,6 +135,32 @@
           trigger: document.querySelector('.dsh-claude-model-btn') !== null,
           hostMarked: document.querySelector('[data-dsh-claude-model-host]') !== null,
         },
+      }
+      // The seat's own line carries the tag with the Flash model in force: the
+      // same rule the rows use (features/model/release-tag.ts), drawn beside the
+      // trigger's name. The reader picks the row; the seat names the model it
+      // landed on.
+      var seatTrigger = document.querySelector('.dsh-claude-model-btn')
+      if (seatTrigger !== null) {
+        seatTrigger.click()
+        await sleep(300)
+        var seatRows = document.querySelectorAll('.dsh-claude-model-popover:not(.dsh-claude-model-popover-sub) .dsh-claude-model-option')
+        for (var s = 0; s < seatRows.length; s++) {
+          var seatName = seatRows[s].querySelector('.dsh-claude-model-name')
+          if (seatName !== null && seatName.textContent === 'V4.1 Flash') {
+            seatRows[s].click()
+            break
+          }
+        }
+        await sleep(600)
+      }
+      var seatBtn = document.querySelector('.dsh-claude-model-btn')
+      var seatTag = seatBtn === null ? null : seatBtn.lastElementChild
+      r.modelSeat = {
+        text: seatBtn === null ? null : seatBtn.textContent,
+        // The tag's own face: the pill's background is what the trigger's
+        // transparent-innards rule must leave standing.
+        tagBg: seatTag === null ? null : getComputedStyle(seatTag).backgroundColor,
       }
       card.remove()
     })

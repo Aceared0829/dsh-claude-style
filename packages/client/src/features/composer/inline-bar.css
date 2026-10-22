@@ -62,6 +62,12 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   white-space: nowrap;
   cursor: pointer;
 }
+/* The official Flash model's release tag rides beside the name inside the
+   trigger; the button carries no gap of its own (model-picker.css draws the
+   tag). */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn > .dsh-claude-model-tag {
+  margin-left: 6px;
+}
 /* The text under the pointer takes the stronger ink; the plate is the box's. A
    level that wears the accent ramp keeps it — the ramp is the level's own colour,
    and the plate is what answers the pointer there. */
@@ -73,8 +79,9 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   color: var(--dsw-alias-label-caption, #a6a094) !important;
 }
 
-/* Only the buttons keep transparent innards; the box carries the plate. */
-body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn > * {
+/* Only the buttons keep transparent innards; the box carries the plate. The
+   release tag is the one child with a face of its own (model-picker.css). */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn > :not(.dsh-claude-model-tag) {
   background: transparent;
 }
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn-label {

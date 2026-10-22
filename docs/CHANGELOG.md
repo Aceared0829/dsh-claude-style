@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
+
 ## [0.18.3] - 2026-10-22
 
 [中文](#cn-0.18.3) | [English](#en-0.18.3)

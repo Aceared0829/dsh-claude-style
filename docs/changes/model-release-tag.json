@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 13,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。",
+  "en": "Fix the redrawn model picker and the seat's model name missing the \"1017\" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name."
+}
