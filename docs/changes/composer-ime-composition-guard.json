@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 4,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复回复流式生成时在输入框里用输入法打字被打断：过程分组与思考行自己折叠时，原先在每次活动状态变化时替读者按一下标题，按下与抬起焦点都发生在输入法还没上屏的那一刻，浏览器于是把已敲的拼音丢掉、重新弹出候选框。这两处现在等到上屏之后再按，上屏那一刻补做一次折叠。",
+  "en": "Fix input-method typing in the composer being cut short while an answer streams: when a process group or a thinking row folded itself, the skin pressed its header for the reader on every activity change, and the focus leaving and returning landed mid-composition, so the browser dropped the letters typed so far and opened the candidate window again. Both now wait for the composition to land, and settle once it has."
+}

@@ -2,7 +2,7 @@ import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
-import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
+import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '../../shared/composer-caret'
 import { CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -71,6 +71,13 @@ export function createProcessFold() {
       if (body.hasAttribute('hidden') === (phase === PROCESS_CLOSED)) continue
       // A press that changed nothing will not change anything next time either.
       if (attemptedIn.get(group) === phase) continue
+      // The reader is part-way through an input-method composition. The press
+      // below takes the focus off the editor and hands it back, and a focus or
+      // selection moved under an uncommitted composition makes the browser drop
+      // the letters typed so far: the pinyin reverts to its raw keys and the
+      // candidate window opens again. Left unrecorded, so the group is settled
+      // once the composition has landed (compositionend below).
+      if (composerComposing()) continue
       attemptedIn.set(group, phase)
       // The host's header onClick focuses the control, which is meant for a
       // real press. A programmatic one must not take the focus away from the
@@ -161,6 +168,14 @@ export function createProcessFold() {
       },
     })
   }
+  /**
+   * Settle everything once a composition has landed: a scan that ran while one
+   * was in flight left its groups alone (syncGroups), and the streaming may
+   * have stopped before another batch arrived to ask again.
+   */
+  const onCompositionEnd = () => {
+    requestFrame({ write() { syncEveryGroup() } })
+  }
   const stopMutations = subscribeMutations(document.body, {
     subtree: true,
     childList: true,
@@ -171,11 +186,13 @@ export function createProcessFold() {
   }, onRecords)
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)
+  document.addEventListener('compositionend', onCompositionEnd, true)
   syncEveryGroup()
 
   return () => {
     stopMutations()
     document.removeEventListener('click', rememberReaderTouched, true)
     document.removeEventListener('keydown', rememberReaderTouched, true)
+    document.removeEventListener('compositionend', onCompositionEnd, true)
   }
 }

@@ -79,6 +79,15 @@ export const CHAT_RUNNING_SELECTOR = '[data-chat-running]'
 export const COMPOSER_SELECTOR = '[data-composer-seat]'
 /** The composer's editable surface (contenteditable); the caret motion is drawn for it. */
 export const COMPOSER_INPUT_SELECTOR = '[data-composer-input]'
+/**
+ * The input's own composition flag: the host's composer keymap raises it on
+ * compositionstart (and while the editor reports one) and drops it at
+ * compositionend. The input is a contenteditable editor, so a selection
+ * rewritten or a focus moved under an in-flight composition makes the browser
+ * drop what the reader has typed but not yet committed — the pinyin reverts to
+ * its raw letters and the candidate window opens again.
+ */
+export const COMPOSER_COMPOSING_ATTRIBUTE = 'data-composer-composing'
 /** The card the input sits in; the send flight lifts a copy of the whole card. */
 export const COMPOSER_CARD_SELECTOR = '[data-composer-card]'
 /**

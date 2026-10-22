@@ -18,6 +18,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复窗口标题栏里的会话标题与它下方那一行控件重叠：行顶原先插进标题自己的框里，标题框随窗口与字号变高时两行字就压在一起；行顶现在停在标题框下方一段固定的空白处，整行始终留在会话头部里。
 - 修复页面缩放不为 100% 时搜索面板比它该在的位置低一截：面板顶部的空白读的是窗口高度的百分比，而面板画在页面自己的像素里；这条空白现在按皮肤量出的页面高度换算。
 - 修复页面缩放切换后宿主的框架与浮层停在旧倍率：换挡时皮肤量出的页面尺寸、宿主框架的列宽与宿主浮层的空间都由偏好写入唤醒，面板从别处写入倍率时它们不动；现在这一次写入本身也会唤醒它们，换挡、回到 100% 与从 100% 离开都立即生效。
+- 修复回复流式生成时在输入框里用输入法打字被打断：过程分组与思考行自己折叠时，原先在每次活动状态变化时替读者按一下标题，按下与抬起焦点都发生在输入法还没上屏的那一刻，浏览器于是把已敲的拼音丢掉、重新弹出候选框。这两处现在等到上屏之后再按，上屏那一刻补做一次折叠。
 - 修复桌面窗口里 ds-bot 的 Bot 界面占住页面时 Chat / Code 切换消失的问题：切换器改留在 ds-bot 自己的顶行，不再按标题栏里本主题侧栏列的标记定位，从 Bot 界面回到代码界面的路一直都在。
 
 ### 其他变更
@@ -36,6 +37,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the conversation title in the window's caption row overlapping the row of controls below it: the row's top was tucked into the title's own box, so a taller window or type size pressed the two lines together. The row's top now stands a fixed gap below the title's box, keeping the row inside the conversation header.
 - Fix the search panel standing lower than its place at a page scale other than 100%: the air above it was a percentage of the window's height while the panel is drawn in the page's pixels, and that gap now converts through the page height the skin measures.
 - Fix the host frame and the host's floating cards keeping the old factor after the page scale changes: the page's own size, the frame's columns and the space the host's cards are given were woken by a preference write alone, so a factor written from anywhere else left them as they were. The write itself now wakes them, so leaving 100%, switching between factors and coming back all take effect at once.
+- Fix input-method typing in the composer being cut short while an answer streams: when a process group or a thinking row folded itself, the skin pressed its header for the reader on every activity change, and the focus leaving and returning landed mid-composition, so the browser dropped the letters typed so far and opened the candidate window again. Both now wait for the composition to land, and settle once it has.
 - Fix the Chat / Code switch disappearing when ds-bot's Bot surface has the page in the desktop window: the switch now stays in ds-bot's own top row instead of taking the caption strip through this theme's sidebar-column mark, so the way back to the code interface stays on screen.
 
 ### Chores

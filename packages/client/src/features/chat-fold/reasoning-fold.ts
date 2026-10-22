@@ -2,6 +2,7 @@ import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import type { FoldPressReading } from './fold-toggle'
+import { composerComposing } from '../../shared/composer-caret'
 import { foldControlAt, foldControlAtBottom, foldExpandedBody } from './fold-glide-parts'
 import { inPagePixels } from '../../shared/page-zoom'
 import { EXPANDED_ATTRIBUTE, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
@@ -97,6 +98,12 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
     for (const row of rows) {
       const phase = phaseToPress(row)
       if (phase === null) continue
+      // The reader is part-way through an input-method composition: the press
+      // below runs the host's handler, which focuses the control, and a focus
+      // moved under an uncommitted composition makes the browser drop the
+      // letters typed so far. Left unrecorded, so the row is settled after the
+      // composition has landed.
+      if (composerComposing()) continue
       attemptedIn.set(row, phase)
       const control = controlOf(row)
       if (control === null) continue
@@ -172,6 +179,14 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
       },
     })
   }
+  /**
+   * Settle everything once a composition has landed: a scan that ran while one
+   * was in flight left its rows alone (syncRows), and the reasoning may have
+   * stopped before another batch arrived to ask again.
+   */
+  const onCompositionEnd = () => {
+    requestFrame({ write() { syncEveryRow() } })
+  }
   const stopMutations = subscribeMutations(document.body, {
     subtree: true,
     childList: true,
@@ -180,11 +195,13 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
   }, onRecords)
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)
+  document.addEventListener('compositionend', onCompositionEnd, true)
   syncEveryRow()
 
   return () => {
     stopMutations()
     document.removeEventListener('click', rememberReaderTouched, true)
     document.removeEventListener('keydown', rememberReaderTouched, true)
+    document.removeEventListener('compositionend', onCompositionEnd, true)
   }
 }
