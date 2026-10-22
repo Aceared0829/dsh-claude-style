@@ -1,0 +1,8 @@
+{
+  "group": "removals",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "移除读者展开、合上折叠行与过程组时的卷帘门过渡：展开保留淡入，合上交给宿主自己的折叠动效，宿主没开启时即时合上；思考行在推理结束时的自动合上不再有过渡，读者在折叠控件上的点击直接到达宿主。",
+  "en": "Remove the door transition from a reader's opening and closing a folding row or process group: opening keeps its fade-in, closing is the host's own fold motion, and the host's instant fold where it is off; the thinking row's automatic fold at the end of the reasoning no longer animates, and a press on a folding control reaches the host directly."
+}

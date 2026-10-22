@@ -11,10 +11,18 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
 - 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
 
+### 移除
+
+- 移除读者展开、合上折叠行与过程组时的卷帘门过渡：展开保留淡入，合上交给宿主自己的折叠动效，宿主没开启时即时合上；思考行在推理结束时的自动合上不再有过渡，读者在折叠控件上的点击直接到达宿主。
+
 <h3 id="en-unreleased">Bug Fixes</h3>
 
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
 - Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes.
+
+### Removals
+
+- Remove the door transition from a reader's opening and closing a folding row or process group: opening keeps its fade-in, closing is the host's own fold motion, and the host's instant fold where it is off; the thinking row's automatic fold at the end of the reasoning no longer animates, and a press on a folding control reaches the host directly.
 
 ## [0.18.3] - 2026-10-22
 
