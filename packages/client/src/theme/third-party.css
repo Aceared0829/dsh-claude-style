@@ -62,12 +62,12 @@ body[data-dsh-claude-style][data-dsh-claude-dock-look="card"] [data-dsh-claude-p
 
 /* ---------- Third-party repair: the cost meter's fee cards ---------- */
 /* The fee window (`dialog.cm-stat-dialog`) and the step fee popup
-   (`dialog.cm-fee-dialog`) are the plugin's own dialogs: neither carries
-   `aria-modal`, so the role-only cap in the settings sheet reaches them, and
-   their width comes off the window's own size there too. What the cap cannot
-   do is give a card too narrow for its rows a way to show them, so the dialog
-   bodies inside keep their own scroll. */
-body[data-dsh-claude-style][data-dsh-claude-page-zoom] :is(dialog.cm-stat-dialog, dialog.cm-fee-dialog) :is(.cm-stat-dialog-body, .cm-fee-dialog-body) {
+   (`dialog.cm-fee-dialog`) state their size in viewport units, and
+   theme/chrome.css caps both with the page's own size, the length a scaled page
+   needs there. A card that cap narrows is narrower than the rows inside it, so
+   the dialog bodies keep their own sideways scroll and the columns beyond the
+   edge stay reachable. */
+body[data-dsh-claude-style] :is(dialog.cm-stat-dialog, dialog.cm-fee-dialog) :is(.cm-stat-dialog-body, .cm-fee-dialog-body) {
   min-width: 0;
   overflow-x: auto;
 }

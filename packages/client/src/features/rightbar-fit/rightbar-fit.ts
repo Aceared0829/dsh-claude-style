@@ -1,5 +1,6 @@
 import { RIGHTBAR_COLUMN_SELECTOR, RIGHTBAR_HANDLE_SELECTOR, RIGHTBAR_PANEL_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { PAGE_ZOOM_ATTR } from '../../constants'
 import { pageZoomFactor } from '../../shared/page-zoom'
 
@@ -29,7 +30,8 @@ export function install() {
   const held = new Map<HTMLElement, Map<string, Held>>()
   let panel: HTMLElement | null = null
   let handle: HTMLElement | null = null
-  const stops: (() => void)[] = []
+  /** The subscriptions hearing the two elements standing right now. */
+  const heard: (() => void)[] = []
   let queued = false
 
   function apply(element: HTMLElement, property: string, raw: string, next: string) {
@@ -74,11 +76,14 @@ export function install() {
     // leaves the panel with no room to stand in at all. A column that has not
     // been given a width yet (the panel mounts before the grid expands) says
     // nothing, so the host's own value stands until the track is there.
-    const column = document.querySelector<HTMLElement>(RIGHTBAR_COLUMN_SELECTOR)
-    const limit = column === null || column.clientWidth <= 0 ? Number.POSITIVE_INFINITY : column.clientWidth
+    const track = column()
+    const limit = track === null || track.clientWidth <= 0 ? Number.POSITIVE_INFINITY : track.clientWidth
     const page = length(Math.min(width / factor, limit))
     apply(panel, 'width', raw, page)
-    apply(panel, '--dsh-sidebar-width', raw, page)
+    // The panel carries its width twice, and the second declaration states its
+    // own number: it is read from itself rather than from the width.
+    const sidebar = panel.style.getPropertyValue('--dsh-sidebar-width').trim()
+    if (sidebar.endsWith('px')) apply(panel, '--dsh-sidebar-width', hostValue(panel, '--dsh-sidebar-width', sidebar), page)
   }
 
   function fixHandle(factor: number) {
@@ -96,14 +101,14 @@ export function install() {
 
   function sync() {
     queued = false
-    const nextPanel = document.querySelector<HTMLElement>(RIGHTBAR_PANEL_SELECTOR)
-    const nextHandle = document.querySelector<HTMLElement>(RIGHTBAR_HANDLE_SELECTOR)
+    const nextPanel = panels.all()[0] ?? null
+    const nextHandle = handles.all()[0] ?? null
     if (nextPanel !== panel || nextHandle !== handle) {
-      for (const stop of stops.splice(0)) stop()
+      for (const stop of heard.splice(0)) stop()
       panel = nextPanel
       handle = nextHandle
       for (const element of [panel, handle]) {
-        if (element !== null) stops.push(subscribeMutations(element, { attributes: true, attributeFilter: ['style'] }, schedule))
+        if (element !== null) heard.push(subscribeMutations(element, { attributes: true, attributeFilter: ['style'] }, schedule))
       }
     }
     const factor = pageZoomFactor()
@@ -122,19 +127,21 @@ export function install() {
     queueMicrotask(sync)
   }
 
-  schedule()
-  const stopBody = subscribeMutations(document.body, { childList: true }, schedule)
+  // The panel and the handle mount inside the frame, where the body's own child
+  // list does not reach; the bus's kept matches hear them arrive and leave.
+  const panels = observeMatches<HTMLElement>(RIGHTBAR_PANEL_SELECTOR, schedule)
+  const handles = observeMatches<HTMLElement>(RIGHTBAR_HANDLE_SELECTOR, schedule)
+  const column = cacheFirstMatch<HTMLElement>(RIGHTBAR_COLUMN_SELECTOR)
   // The factor rides an attribute on the body, so a change of zoom re-derives both.
   const stopZoom = subscribeMutations(document.body, { attributes: true, attributeFilter: [PAGE_ZOOM_ATTR] }, schedule)
-  // The panel mounts inside the frame, not under the body: the child list of the
-  // body does not hear it, so the look is repeated while the page is scaled.
-  const timer = setInterval(schedule, 500)
+
+  schedule()
 
   return () => {
-    clearInterval(timer)
-    stopBody()
     stopZoom()
-    for (const stop of stops.splice(0)) stop()
+    panels.release()
+    handles.release()
+    for (const stop of heard.splice(0)) stop()
     restore()
   }
 }
