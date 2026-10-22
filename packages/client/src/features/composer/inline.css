@@ -40,7 +40,10 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-c
    viewArea shrink to exactly viewport-minus-composer, which put the
    composer seat near the TOP of the scroll content — sticky bottom:0
    cannot pull an element down past its normal position, so the composer
-   appeared mid-scroll and never followed message growth. */
+   appeared mid-scroll and never followed message growth.
+   The one place the skin states that contract is the transcript's own mark
+   below (TRANSCRIPT_ATTR), where the host has withdrawn it: it repeats the
+   active phase's values and nothing else. */
 body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) {
   flex: 0 0 auto;
   overflow: visible;
@@ -59,10 +62,12 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-c
    `--dsh-composer-fade-h` is the single knob: it is the band's height AND the
    transcript's bottom clearance below, so the last turn always comes to rest
    exactly at the band's top edge. */
-body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat] {
+body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat],
+body[data-dsh-claude-style] [data-dsh-claude-transcript] [data-composer-seat] {
   background: var(--dsw-alias-bg-base);
 }
-body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat]::before {
+body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="active"]) [data-composer-seat]::before,
+body[data-dsh-claude-style] [data-dsh-claude-transcript] [data-composer-seat]::before {
   content: "";
   position: absolute;
   left: 0;
@@ -73,6 +78,23 @@ body[data-dsh-claude-style] :is([data-phase="active"], [data-content-phase="acti
      the transcript's top band runs, in reverse. */
   background: linear-gradient(to top, var(--dsh-claude-fade-stops));
   pointer-events: none;
+}
+/* The seat's place is the host's as well: `position: sticky; bottom: 0` and the
+   view area's content-sized height are granted from `data-phase="active"`
+   alone. A phase mark landing on `hero` or `settling` with the transcript
+   already up drops both, and the composer then stands in the middle of the
+   rows, which paint on below it. The mark the composer pass writes
+   (composer.ts) says the column is mounted, so the pin and the view area's
+   contract hold under it whatever the phase says; the new-conversation page
+   carries no column and keeps the host's own centred layout. */
+body[data-dsh-claude-style] [data-dsh-claude-transcript] [data-dsh-claude-part~="view-area"] {
+  flex: 1 0 auto;
+  min-height: auto;
+}
+body[data-dsh-claude-style] [data-dsh-claude-transcript] [data-composer-seat] {
+  position: sticky;
+  bottom: 0;
+  z-index: 7;
 }
 /* Message body clearance: the transcript ends where the fade band begins (same
    token as the band's height), so the last turn's action buttons (copy, retry,

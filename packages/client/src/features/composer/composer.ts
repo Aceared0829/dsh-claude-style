@@ -1,7 +1,8 @@
-import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
+import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT, TRANSCRIPT_ATTR } from '../../constants'
 import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { observeSize } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
+import { conversationColumn } from '@dsh-claude-style/engine/chat-dom'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findDockedContextMeter, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '@dsh-claude-style/engine/host'
@@ -258,6 +259,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let stopMeterRow: (() => void) | null = null
   /** The conversation root carrying COMPOSER_HIDDEN_ATTR right now, or null. */
   let hiddenRoot: Element | null = null
+  /** The conversation root carrying TRANSCRIPT_ATTR right now, or null. */
+  let transcriptRoot: Element | null = null
   /** Whether the composer is restyled but the chat tab is not up, as of the last pass. */
   let chatHidden = false
   /** The cards carrying MOBILE_PORTRAIT_ATTR right now. */
@@ -514,6 +517,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
+   * The two marks the conversation root carries for the composer's place.
+   *
    * The composer is chat-view-only. The host mounts the seat inside the
    * conversation root on every tab (轨迹 / 上下文 even reserve room for
    * it), so the skin reflects the active view on that root and CSS drops the
@@ -527,8 +532,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * at order 0, so it is always the tablist's FIRST tab; reading that
    * tab's aria-selected is locale-independent. No tab bar at all (hero /
    * single view) means the chat surface is all there is.
+   *
+   * The second mark says the transcript is mounted. The host grants the
+   * seat's pin, the bar behind the card and the view area's content-sized
+   * height from `data-phase="active"` alone, so a phase mark landing on
+   * `hero` or `settling` with the column already up drops all three and leaves
+   * the composer standing in the middle of the rows, which paint on below it
+   * (inline.css follows this mark as it follows the phase). Written only while
+   * the restyle covers the page: the sheet holding those rules is dropped
+   * whole otherwise.
    */
-  function syncChatTabComposer() {
+  function syncRootMarks() {
     const root = closestFrom(findComposerSeat(), `[${PHASE_ATTRIBUTE}]`)
     const list = root === null ? null : root.querySelector('[role="tablist"]')
     const first = list === null ? null : list.querySelector('[role="tab"]')
@@ -539,6 +553,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       hiddenRoot = root
     }
     hiddenRoot?.toggleAttribute(COMPOSER_HIDDEN_ATTR, chatHidden)
+    if (root !== transcriptRoot) {
+      transcriptRoot?.removeAttribute(TRANSCRIPT_ATTR)
+      transcriptRoot = root
+    }
+    transcriptRoot?.toggleAttribute(TRANSCRIPT_ATTR, active && conversationColumn() !== null)
   }
 
   /**
@@ -571,7 +590,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     syncDraftState(found)
     syncControls(found)
     stampContextMeter(found[0])
-    syncChatTabComposer()
+    syncRootMarks()
   }
 
   /**
@@ -646,6 +665,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     document.body.removeAttribute(COMPOSER_ATTR)
     hiddenRoot?.removeAttribute(COMPOSER_HIDDEN_ATTR)
     hiddenRoot = null
+    transcriptRoot?.removeAttribute(TRANSCRIPT_ATTR)
+    transcriptRoot = null
     chatHidden = false
     for (const card of portraitCards) card.removeAttribute(MOBILE_PORTRAIT_ATTR)
     portraitCards.clear()
