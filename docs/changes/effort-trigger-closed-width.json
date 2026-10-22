@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 6,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复推理等级按钮收起时仍按档位表里最宽的名字占位、在它右侧的上下文表计前留下一段空白的问题：按钮收起时只占当前档位名字的宽度，弹出档位卡片时才按最宽的名字占住，让卡片里的换档不推动模型名与卡片。",
+  "en": "Fix the reasoning-effort button reserving the widest level name in its ladder while its card is down, which left a gap between the button and the context meter beside it: with the card down the button now takes the width of the level it shows, and only the open card holds the widest name, so changing levels in the card still moves neither the model name nor the card."
+}

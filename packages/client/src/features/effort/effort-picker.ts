@@ -74,14 +74,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Reserve the ladder's widest level name on the trigger, so a swap between
-   * levels leaves its width alone. That width is what the row reserves room for
-   * and what the open card is anchored to: a wider incoming name pushed the
-   * model trigger left, and the card went with it in the frame of the change.
-   * Measured with the trigger's own font, once per ladder.
+   * Reserve the ladder's widest level name on the trigger while its card is up,
+   * so a swap between levels leaves its width alone. That width is what the row
+   * reserves room for and what the open card is right-aligned to: a wider
+   * incoming name pushed the model trigger left, and the card went with it in
+   * the frame of the change.
+   *
+   * With the card down the trigger takes the width of the level it shows: the
+   * reservation is a hole in the composer row for as long as it stands, and a
+   * level name is not changed without opening the card. Measured with the
+   * trigger's own font, once per ladder and level.
    */
   function reserveLabelWidth(button: HTMLButtonElement, names: readonly string[], current: string) {
-    const key = names.join('\u0001')
+    const key = `${current}\u0001${names.join('\u0002')}`
     if (key === reservedLadder) return
     reservedLadder = key
     labelMetrics ??= document.createElement('canvas').getContext('2d')
@@ -93,6 +98,39 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The trigger's own 2px padding on either side, rounded up: a min-width a
     // fraction under its text still lets a long name widen the box.
     button.style.minWidth = `${Math.ceil(widest) + 4}px`
+  }
+
+  /** Whether the trigger's card stands open right now. */
+  function cardOpen() {
+    return effortPop !== null && effortPop.getAttribute('data-open') === 'true'
+  }
+
+  /**
+   * The names the trigger may have to show on this seat: the ladder the control
+   * draws, with the model's own default level leading it when the catalog leaves
+   * `defaultEffort` out. The same list the control paints from (ladder.ts), so
+   * the width reserved here is the width a level change can ask for.
+   */
+  function ladderNames(info: NonNullable<ReturnType<ModelCatalog['effort']>>) {
+    return effortSteps(info, MODEL_EFFORT_DEFAULT).steps.map((step) => step.name)
+  }
+
+  /**
+   * Take the room the trigger needs from the row for the state it is in, and
+   * place the row and the card in the same frame: the trigger's width is what
+   * the model name gives up and what the open card hangs from, so a width taken
+   * or handed back in one frame must reposition both before the frame paints.
+   */
+  function reserveEffortWidth(open: boolean) {
+    if (effortBtn === null || modelTrigger() === null) return
+    const info = effortInfo()
+    if (info === null) return
+    reserveLabelWidth(effortBtn, open ? ladderNames(info) : [], info.label)
+    // The width just changed outside the pass: the cached reading of it is the
+    // one the placement would otherwise use.
+    effortPlace.widthLabel = ''
+    measureEffortTrigger(true)
+    applyEffortTrigger()
   }
 
   /**
@@ -139,7 +177,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   function closeEffortPopover() {
     effortHoverIntent.cancel()
-    if (effortPop !== null) setMenuPopoverOpen(effortPop, false, effortBtn)
+    if (effortPop === null) return
+    const wasOpen = cardOpen()
+    setMenuPopoverOpen(effortPop, false, effortBtn)
+    // Hand the ladder's widest name back with the card: the resting trigger
+    // shows one level, and the room the rest of it took is a hole in the row.
+    if (wasOpen) reserveEffortWidth(false)
   }
 
   function openEffortPopover() {
@@ -149,6 +192,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // its card up would stack two panels over the same corner.
     closeOtherPopovers('effort')
     if (effortSlider !== null) effortSlider.update()
+    // Take the ladder's widest name BEFORE placing: the card hangs from the
+    // trigger's right edge, and a level changed under the reader's hand must
+    // not move it. Opening is also the one moment the row gives up that room.
+    reserveEffortWidth(true)
     // Open BEFORE placing: the placement reads the card only while it is
     // marked open, so positioning first would skip it and leave the card
     // where it stood.
@@ -482,7 +529,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // write still mutates the DOM (textContent replaces the text node;
     // setAttribute queues a record the scheduler's observer sees).
     const ladder = effortSteps(info, MODEL_EFFORT_DEFAULT)
-    reserveLabelWidth(effortBtn, ladder.steps.map((step) => step.name), info.label)
+    // The card down shows one level, so the trigger takes that name's width; the
+    // card up holds the ladder's widest name, so a change under the reader's
+    // hand leaves the row still (see reserveLabelWidth).
+    reserveLabelWidth(effortBtn, cardOpen() ? ladderNames(info) : [], info.label)
     // Where the rung stands on the trigger's colour ramp, in percent. The
     // stylesheet reads it only while the Composer tab's effort-accent row is on;
     // a rung with no place on the ramp takes the mark and the property off, and

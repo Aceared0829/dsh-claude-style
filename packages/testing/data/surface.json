@@ -12,6 +12,7 @@
     { "id": "home.heat-tip", "attribute": "data-tip", "feature": "home", "sees": "the words of a day's tip pill" },
     { "id": "effort.trigger", "selector": ".dsh-claude-effort-btn", "feature": "effort", "sees": "the thinking-effort button beside the model name in the composer" },
     { "id": "effort.card", "selector": ".dsh-claude-effort", "feature": "effort", "sees": "the effort picker's card, with its slider of strengths" },
+    { "id": "effort.popover", "selector": ".dsh-claude-effort-popover", "feature": "effort", "sees": "the floating panel the effort card sits in: the box its trigger's right edge anchors, opened and closed by data-open" },
     { "id": "composer.row", "selector": "[data-dsh-claude-part~=\"row\"]", "feature": "composer", "sees": "the composer's row of controls, the part walk's mark on the host row: the width the model name and its neighbours share" },
     { "id": "composer.hint-standin", "attribute": "data-dsh-synthetic-placeholder", "feature": "composer", "sees": "the hint the skin draws in the composer card where the host draws none, over an empty field: the shell's words in the field's caption ink" },
     { "id": "effort.particle", "selector": ".dsh-claude-effort-matrix-sq", "feature": "effort", "sees": "one dot of the animated matrix the strongest rung shows" },

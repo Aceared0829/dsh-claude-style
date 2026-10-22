@@ -404,6 +404,13 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
   color: var(--dsw-alias-label-primary, #141413);
 }
+/* The name sits in the middle of the trigger's box: the open card widens that box
+   to the ladder's widest name (effort-picker.ts), and against the box's left edge
+   the name would shift sideways on every rung. */
+body[data-dsh-claude-style] .dsh-claude-effort-btn-label {
+  margin-left: auto;
+  margin-right: auto;
+}
 /* The rung in force colours the label while the Composer tab's effort-accent
    row is on. The override writes the rung's place on a ramp (0 to 100) between
    two colours the reference effort slider ships — a blue at the weakest thinking

@@ -16,6 +16,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 改善会话标题重命名输入框的样子：换成与 Claude 一致的样式，画布底色、一圈选区蓝细边、小圆角，宽度随输入的会话名伸展。
 - 改善流式回复期间写回 token 的估算：正文按中文字符、中文标点、拉丁词、数字、空白与标点各段本身的形状计价，替换原先按宽窄字符计数的规则，估算值贴近服务商的分词结果。
 - 把只做分隔的线收细、调淡一档：侧栏账号行上沿、搜索面板页脚、上下文统计、设置行、弹层与菜单分隔线以及正文分隔线改用新的分隔线令牌，宽度收到 0.5px，卡片与输入框的轮廓保持原样。
+- 改善推理等级按钮里名字的位置：卡片打开期间按钮按档位表里最宽的名字占宽，名字原先靠左落在按钮里，现在居中，换档时它与两端的距离一样。
 
 ### 问题修复
 
@@ -26,7 +27,9 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复回复流式生成时在输入框里用输入法打字被打断：过程分组与思考行自己折叠时，原先在每次活动状态变化时替读者按一下标题，按下与抬起焦点都发生在输入法还没上屏的那一刻，浏览器于是把已敲的拼音丢掉、重新弹出候选框。这两处现在等到上屏之后再按，上屏那一刻补做一次折叠。
 - 修复桌面窗口里 ds-bot 的 Bot 界面占住页面时 Chat / Code 切换消失的问题：切换器改留在 ds-bot 自己的顶行，不再按标题栏里本主题侧栏列的标记定位，从 Bot 界面回到代码界面的路一直都在。
 - 修复大量输出时等待行下方露出正文残行的问题：等待行钉在输入框上方时，它脚下的画布一直铺到输入框顶，滑动中的正文不再从状态行下沿透出。
+- 修复推理等级按钮收起时仍按档位表里最宽的名字占位、在它右侧的上下文表计前留下一段空白的问题：按钮收起时只占当前档位名字的宽度，弹出档位卡片时才按最宽的名字占住，让卡片里的换档不推动模型名与卡片。
 - 修复中止生成后过程内容被收起、页面只剩空白的问题：被读者中止的轮次没有最终回答，它的过程组保持展开，工作到停下为止的内容留在页面上。
+- 修复切换推理等级时档位卡片闪动的问题：卡片打开期间按钮按档位表里最宽的名字占宽，而这张表漏掉了模型目录未声明默认档时控件补出的「默认」一档，按钮于是随档位在窄宽与宽宽之间来回跳，贴着按钮右沿的卡片跟着平移。现在两处读同一张档位表，卡片在换档期间不再移动。
 - 修复推理等级滑块拖到最高或最低档后无法往回拖的问题：指针越过轨道端点时滑钮停在端点、手势继续，往回拖仍跟着指针，直到松开才定在该档，卡片保持打开。
 - 修复重绘消息导航在宿主轨标不再写 `data-index` 的宿主上点击无反应的问题：轨标数量与列表一致时按轨道自己的顺序取标记，宿主写下的位置照旧优先。
 
@@ -44,6 +47,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Improve the field a session title is renamed in: it takes Claude's own face — the canvas fill, a thin ring in the selection blue and a small radius — and grows with the name being typed.
 - Improve the written-back token estimate while an answer streams: the text is now priced by the shape of its runs — CJK characters and marks, Latin words, digits, whitespace, punctuation — in place of the wide/narrow character rule, so the figure stays close to the provider's own count.
 - Bring every line that only separates down one finer, quieter step: the account row's upper edge, the search panel's foot, the context stats, the settings rows, the menu and popover separators and the transcript's rule take the new divider token at 0.5px, while a card's and a field's outline keep theirs.
+- Improve where the reasoning-effort button holds its level name: while the card is open the button is as wide as the ladder's widest name, and the name now sits in the middle of that box instead of against its left edge, so it stands the same distance from either end as levels change.
 
 ### Bug Fixes
 
@@ -54,7 +58,9 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix input-method typing in the composer being cut short while an answer streams: when a process group or a thinking row folded itself, the skin pressed its header for the reader on every activity change, and the focus leaving and returning landed mid-composition, so the browser dropped the letters typed so far and opened the candidate window again. Both now wait for the composition to land, and settle once it has.
 - Fix the Chat / Code switch disappearing when ds-bot's Bot surface has the page in the desktop window: the switch now stays in ds-bot's own top row instead of taking the caption strip through this theme's sidebar-column mark, so the way back to the code interface stays on screen.
 - Fix a sliver of the answer showing under the waiting line while a large answer streams in: while the line is pinned over the composer, the canvas under it now reaches the composer's top, so the text the stream slide is bringing up no longer shows below the line.
+- Fix the reasoning-effort button reserving the widest level name in its ladder while its card is down, which left a gap between the button and the context meter beside it: with the card down the button now takes the width of the level it shows, and only the open card holds the widest name, so changing levels in the card still moves neither the model name nor the card.
 - Fix the page collapsing to a blank band when a turn is stopped: a turn the reader stopped has no final answer, so its process group stays open and the work up to the stop stays on the page.
+- Fix the effort card flickering while a reasoning level is picked: the button held the widest name of the ladder while the card was open, but the list it measured left out the “Default” step the control adds when the model's catalog declares no default level, so the button swung between the narrow and the wide box and the card hanging from it moved with it. Both places now read the one ladder, so the card stands still while the level changes.
 - Fix the reasoning-effort slider sticking at its strongest or weakest level after the pointer overshot the track's end: the knob now stays at the end while the gesture goes on, follows the pointer back, and settles on the level under it at the release, with the card still open.
 - Fix the redrawn message navigator ignoring a press on hosts whose rail marks carry no `data-index`: while the rail holds as many marks as the list has turns, a mark is now taken by its place in the rail, and a place the host states is still read first.
 
