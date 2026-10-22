@@ -16,7 +16,11 @@ import type manifest from './context-stats.manifest'
  * installed at all.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
-  const stats = createSessionStats(ctx)
+  // The ring the composer row carries is the feature's own (meter-ring.ts,
+  // installed before this one): its reading and the face the panel opens from
+  // both cross over, and it stands down with this feature's switch.
+  const ring = () => (typeof ui.meterRing?.root === 'function' ? ui.meterRing : null)
+  const stats = createSessionStats(ctx, ring)
 
   ui.contextStats = {
     measure: stats.measure,

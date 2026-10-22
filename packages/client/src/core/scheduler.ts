@@ -8,6 +8,7 @@ import type { FooterHandle } from '../features/account/account-footer'
 import type { BanHandle } from '../features/ban-screen/ban-screen'
 import type { ComposerHandle } from '../features/composer/composer'
 import type { ChatSendHandle } from '../features/chat-send/send-flight'
+import type { MeterRingHandle } from '../features/context-stats/meter-ring'
 import type { ModelHandle } from '../features/model/model-picker'
 import type { PeakRateHandle } from '../features/peakrate/peakrate'
 import type { QuickProvidersHandle } from '../features/settings/quick-providers'
@@ -25,6 +26,7 @@ export interface Handles {
   mascot: FeatureHandle
   permissions: FeatureHandle
   contextStats: FeatureHandle
+  meterRing: MeterRingHandle
   model: ModelHandle
   peakrate: PeakRateHandle
   effort: FeatureHandle

@@ -1,9 +1,8 @@
-import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, STATS_POSITION_CONTEXT, TRANSCRIPT_ATTR } from '../../constants'
-import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, DIALOG_TRIGGER_SELECTOR, MOBILE_PORTRAIT_SELECTOR, MOBILE_STATS_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
-import { observeSize } from '@dsh-claude-style/engine/bus'
+import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, TRANSCRIPT_ATTR } from '../../constants'
+import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, MOBILE_PORTRAIT_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { conversationColumn } from '@dsh-claude-style/engine/chat-dom'
-import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findDockedContextMeter, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
+import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
 import { composerRestyleRetired, readPrefs } from '../../core/prefs'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -12,7 +11,6 @@ import type manifest from './composer.manifest'
 import { closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
 import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
-import { inPageBox } from '../../shared/page-zoom'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
 
@@ -33,14 +31,13 @@ export interface ComposerHandle extends FeatureHandle {
  * and every other feature reads that answer through `ui.composer` for the
  * rest of the pass. From the same reading it writes what the stylesheet
  * keys on: the hero/inline variant on the cards and their stack, the
- * composer gate on <body>, the attachment state and tiles, the context
- * meter's stamp and room, and whether the chat tab (the composer's only
- * view) is up. The scheduler triggers its behaviours through hooks: a press
- * on the inline card focuses the editor, a composer input refreshes the
- * hint's synthetic placeholder, and the transcript follows the card when it
- * changes height. The window-blur mirror the selection paints key on
- * and the idle hint's own words live here too — both read the same card
- * state this reading produces.
+ * composer gate on <body>, the attachment state and tiles, and whether the
+ * chat tab (the composer's only view) is up. The scheduler triggers its
+ * behaviours through hooks: a press on the inline card focuses the editor, a
+ * composer input refreshes the hint's synthetic placeholder, and the transcript
+ * follows the card when it changes height. The window-blur mirror the selection
+ * paints key on and the idle hint's own words live here too — both read the
+ * same card state this reading produces.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Whether the page shows the hero composer, as of the last reading. */
@@ -231,32 +228,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (const card of cards) card.toggleAttribute(DRAFT_EMPTY_ATTR, findComposerPlaceholder(card) !== null)
   }
 
-  /** The custom properties the dock overlay reads to copy the toolbar row's own box. */
-  const METER_ROW_OFFSET = '--dsh-claude-meter-row-offset'
-  const METER_ROW_HEIGHT = '--dsh-claude-meter-row-height'
-  /** How far the dock's own line stands above the band a mobile plugin's statistics strip took. */
-  const MOBILE_STATS_LIFT = '--dsh-claude-mobile-stats-lift'
-  /** The band-carrying spacer the dock's line is lifted by. */
-  const MOBILE_STATS_ATTR = 'data-dsh-claude-mobile-stats'
-  let mobileStatsLift = ''
-  /** The dock carrying MOBILE_STATS_LIFT right now, or null. */
-  let liftHost: HTMLElement | null = null
-  /** The room the meter takes at the toolbar row's right end, as the card's parent carries it. */
-  let meterRoom = ''
-  /** The element carrying --dsh-claude-meter-room right now, or null. */
-  let roomHost: HTMLElement | null = null
-  /** The meter node the room was measured from, and the reading and scope it had then. */
-  let meterNode: HTMLElement | null = null
-  let meterReading = ''
-  let meterMeasuredActive = false
-  let meterWidth = 0
-  /** The toolbar row's own box as the card's parent carries it (`"offset height"`), and the box it was read from. */
-  let meterRow = ''
-  let meterRowBox: Element | null = null
-  let meterRowStack: Element | null = null
-  /** The element carrying METER_ROW_OFFSET / METER_ROW_HEIGHT right now, or null. */
-  let meterRowHost: HTMLElement | null = null
-  let stopMeterRow: (() => void) | null = null
   /** The conversation root carrying COMPOSER_HIDDEN_ATTR right now, or null. */
   let hiddenRoot: Element | null = null
   /** The conversation root carrying TRANSCRIPT_ATTR right now, or null. */
@@ -265,256 +236,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let chatHidden = false
   /** The cards carrying MOBILE_PORTRAIT_ATTR right now. */
   const portraitCards = new Set<HTMLElement>()
-
-  /**
-   * Copy the toolbar row's own box onto the card's parent for the window
-   * overlay: the row's height, and how far its bottom stands above the box
-   * the dock is placed in (that box is the composer stack, which the
-   * stylesheet makes the containing block — inline-bar.css). Both belong to
-   * the host, and a host whose card leaves a different gap under the row, or
-   * a taller row, puts the meter off that row's line: the overlay reads these
-   * two numbers instead of assuming the 28px and the 4px this host leaves.
-   * The parent carries them because every reader — the card's trailing
-   * cluster and the dock beside it — sits under it, so a write invalidates
-   * the composer's subtree rather than the document (D9).
-   *
-   * The reading is taken when the row or the stack changes size, never on every
-   * pass: the same caching the room below keeps, and for the same reason.
-   */
-  function stampMeterRow(card: HTMLElement | undefined, meter: HTMLElement | null) {
-    const row = card === undefined || !active || readPrefs().statsPosition !== STATS_POSITION_CONTEXT || meter === null
-      ? null
-      : card.querySelector('[data-dsh-claude-part~="trailing"]')?.parentElement ?? null
-    const stack = row === null ? null : closestFrom(row, COMPOSER_STACK)
-    // The band a mobile plugin's strip took is measured on every pass: the strip
-    // appears and leaves without any size of this row changing, so the row's own
-    // cached reading says nothing about it.
-    liftDockLine(card)
-    if (row === null || stack === null) {
-      if (meterRow === '' && meterRowBox === null) return
-      meterRow = ''
-      meterRowBox = null
-      meterRowStack = null
-      if (stopMeterRow !== null) {
-        stopMeterRow()
-        stopMeterRow = null
-      }
-      meterRowHost?.style.removeProperty(METER_ROW_OFFSET)
-      meterRowHost?.style.removeProperty(METER_ROW_HEIGHT)
-      meterRowHost = null
-      return
-    }
-    if (meterRowBox !== row || meterRowStack !== stack) {
-      // A rebuilt row or stack: the watcher follows the new boxes.
-      if (stopMeterRow !== null) stopMeterRow()
-      stopMeterRow = observeSize([row, stack], () => {
-        meterRow = ''
-        stampContextMeter(cards.all()[0])
-      })
-      meterRowBox = row
-      meterRowStack = stack
-      meterRow = ''
-    }
-    if (meterRow !== '') return
-    // The row and the stack in the pixels the two properties are read in
-    // (shared/page-zoom.ts).
-    const rowBox = inPageBox(row.getBoundingClientRect())
-    if (rowBox.height <= 0) return
-    const stackBox = inPageBox(stack.getBoundingClientRect())
-    const round = (value: number) => Math.round(value * 100) / 100
-    meterRow = `${round(stackBox.bottom - rowBox.bottom)} ${round(rowBox.height)}`
-    const [offset, height] = meterRow.split(' ')
-    // The row was found inside the card, so the card is defined, connected and parented.
-    const host = card!.parentElement!
-    if (meterRowHost !== null && meterRowHost !== host) {
-      meterRowHost.style.removeProperty(METER_ROW_OFFSET)
-      meterRowHost.style.removeProperty(METER_ROW_HEIGHT)
-    }
-    host.style.setProperty(METER_ROW_OFFSET, `${offset}px`)
-    host.style.setProperty(METER_ROW_HEIGHT, `${height}px`)
-    meterRowHost = host
-  }
-
-  /**
-   * Park the dock's own line above the band a mobile plugin's statistics strip
-   * took.
-   *
-   * dsh-pocket draws its strip inside the host's dock — the box this overlay
-   * re-places — as its own absolutely positioned child, so the strip keeps the
-   * band the dock's line is pinned to and the two rows of text print over each
-   * other (issue #47). The strip carries no host mark, and a stylesheet cannot
-   * ask for a child and style its parent, so nothing in the sheet can see it: it
-   * is measured here and the dock is handed a spacer of the strip's own height
-   * plus a bottom offset of the same size (inline-bar.css). The spacer re-enters
-   * the flex flow to push the dock's children above the band — the strip being out
-   * of flow cannot do that for itself — and the offset moves the whole overlay up
-   * by the same amount, so the line lands in the band the spacer took. The
-   * strip's own height is the whole lift because that height is what the band
-   * costs, whatever box the strip is positioned against.
-   *
-   * The lift stands only while the strip really shares the band: a plugin that
-   * renders its strip somewhere else on the page leaves the geometry alone. A host
-   * without the plugin measures nothing and every rule reads its fallback.
-   */
-  function liftDockLine(card: HTMLElement | undefined) {
-    const dock = card?.nextElementSibling ?? null
-    const strip = dock === null || !dock.matches('[data-dsh-claude-part~="composer-dock"]') ? null : dock.querySelector(MOBILE_STATS_SELECTOR)
-    if (dock === null || strip === null) {
-      releaseMobileStats()
-      return
-    }
-    const stripBox = inPageBox(strip.getBoundingClientRect())
-    const dockBox = inPageBox(dock.getBoundingClientRect())
-    const sharesBand = stripBox.height > 0 && stripBox.top < dockBox.bottom && stripBox.bottom > dockBox.top
-    const lift = sharesBand ? Math.round(stripBox.height * 100) / 100 : 0
-    const next = lift <= 0 ? '' : `${lift}px`
-    if (next === mobileStatsLift && dock === liftHost) return
-    if (next === '') {
-      releaseMobileStats()
-      return
-    }
-    mobileStatsLift = next
-    const host = dock as HTMLElement
-    const spacer = dock.querySelector<HTMLElement>(`[${MOBILE_STATS_ATTR}]`) ?? document.createElement('div')
-    if (spacer.parentElement !== host || spacer.previousElementSibling !== null) host.insertBefore(spacer, host.firstChild)
-    spacer.setAttribute(MOBILE_STATS_ATTR, '')
-    spacer.style.height = next
-    if (liftHost !== null && liftHost !== host) liftHost.style.removeProperty(MOBILE_STATS_LIFT)
-    host.style.setProperty(MOBILE_STATS_LIFT, next)
-    liftHost = host
-    // The dock's own line moved, and its box is where the row's height was read.
-    meterRow = ''
-  }
-
-  /** Take the lift and its spacer back: the strip is gone, or the line left the dock. */
-  function releaseMobileStats() {
-    if (mobileStatsLift === '' && liftHost === null) return
-    mobileStatsLift = ''
-    liftHost?.style.removeProperty(MOBILE_STATS_LIFT)
-    liftHost = null
-    for (const spacer of document.querySelectorAll(`[${MOBILE_STATS_ATTR}]`)) spacer.remove()
-  }
-
-  /**
-   * The width the meter's pill takes: the node the host parks in the dock, and
-   * the trigger inside it — the button whose hover face is the pill the reader
-   * sees. A host whose trigger reaches outside its wrapper (the button wider
-   * than the span around it, or shifted inside it) would otherwise leave the
-   * row's own text under that face, so the room covers the two boxes' union.
-   */
-  function meterPillWidth(meter: HTMLElement) {
-    const trigger = meter.querySelector('button')
-    if (trigger === null) return meter.offsetWidth
-    const wrapper = inPageBox(meter.getBoundingClientRect())
-    const face = inPageBox(trigger.getBoundingClientRect())
-    // Rounded up: the room is a whole number of pixels, and one pixel more than
-    // the pill takes never leaves the row's text under its face.
-    return Math.ceil(Math.max(wrapper.right, face.right) - Math.min(wrapper.left, face.left))
-  }
-
-  /** The meter's pill width as the pass's read phase took it, with the node and reading it was read for. */
-  let meterRead: { meter: HTMLElement, reading: string, width: number } | null = null
-
-  /**
-   * The pass's read phase (D40): the meter's pill width, when its reading moved
-   * since it was last measured. The reading moves with every streamed figure,
-   * and read in the pass's sync it forced the page's layout under the writes
-   * made before it.
-   */
-  function measureComposer() {
-    meterRead = null
-    if (!active) return
-    const card = cards.all()[0]
-    if (card === undefined) return
-    const meter = meterNode !== null && meterNode.isConnected ? meterNode : findDockedContextMeter(card)
-    if (meter === null) return
-    const reading = meter.textContent || ''
-    if (reading === meterReading && meterMeasuredActive) return
-    meterRead = { meter, reading, width: meterPillWidth(meter) }
-  }
-
-  /**
-   * Stamp the context-occupancy meter and keep its room on the toolbar row.
-   *
-   * The meter stays in the host's dock line, its native React parent: moving
-   * it out crashed React's unmount (Node.removeChild). The stylesheet lays
-   * the dock over the toolbar row and puts the meter at the row's right end,
-   * after the seat box the model's name and the level share; the trailing
-   * cluster keeps that room free through --dsh-claude-meter-room — the pill the
-   * reader sees, trigger and wrapper together, plus the cluster's own 8px gap.
-   * With the session's numbers asked onto a line of their own the dock keeps the
-   * host's placement, nothing overlays the row, and no room is measured.
-   *
-   * The meter is re-resolved only when the cached node left the tree, and
-   * its width is re-read only when its reading moved (the trigger IS the
-   * percentage text, whose width follows the text): a pass with an unmoved
-   * meter reads no layout, which during streaming would otherwise force one.
-   * A reading taken with no box — the composer's seat is display: none while
-   * another conversation tab is up — is no reading: it stays unrecorded, the
-   * row keeps the room it has, and the next pass measures again.
-   *
-   * The write is decided against the value the document carries: a variable
-   * another generation or feature cleared has to come back, and the
-   * declaration is the cheapest thing to ask.
-   */
-  function stampContextMeter(card: HTMLElement | undefined) {
-    const read = meterRead
-    meterRead = null
-    if (meterNode !== null && !meterNode.isConnected) {
-      meterNode = null
-      meterReading = ''
-      meterWidth = 0
-    }
-    let meter = meterNode
-    if (card === undefined) meter = null
-    else if (meter === null) meter = findDockedContextMeter(card)
-    let room = ''
-    if (meter !== null) {
-      meter.toggleAttribute('data-dsh-claude-context-meter', true)
-      const reading = meter.textContent || ''
-      // Re-measure when the reading moved or the restyle scope flipped:
-      // either can change what the room should be.
-      if (reading !== meterReading || active !== meterMeasuredActive) {
-        // A stamp outside a pass (the row's size watch) reads where it stands.
-        const width = !active ? 0 : read !== null && read.meter === meter && read.reading === reading ? read.width : meterPillWidth(meter)
-        // A zero width with the restyle on is the composer having no box
-        // right now, never a meter that takes no room.
-        if (!active || width > 0) {
-          meterReading = reading
-          meterMeasuredActive = active
-          meterWidth = width
-        }
-      }
-      if (active && readPrefs().statsPosition === STATS_POSITION_CONTEXT) room = meterWidth > 0 ? `${meterWidth + 8}px` : meterRoom
-    }
-    meterNode = meter
-    stampMeterRow(card, meter)
-    // The room rides the card's parent: the trailing cluster and the dock
-    // that read it are both its children, so a write invalidates the
-    // composer's subtree rather than the document (D9).
-    const host = card === undefined ? null : card.parentElement
-    if (roomHost !== null && roomHost !== host) {
-      roomHost.style.removeProperty('--dsh-claude-meter-room')
-      roomHost = null
-    }
-    const written = host === null ? '' : host.style.getPropertyValue('--dsh-claude-meter-room')
-    if (room === written) {
-      meterRoom = room
-      roomHost = room === '' ? null : host
-      return
-    }
-    meterRoom = room
-    roomHost = host
-    if (room === '') host?.style.removeProperty('--dsh-claude-meter-room')
-    else host!.style.setProperty('--dsh-claude-meter-room', room)
-    // The room moves the trailing cluster, and a card the reader has open hangs
-    // from the seat box inside it (features/model/seat-box.ts). Ask for a pass:
-    // this write is an inline style, which the scheduler's observer does not
-    // watch, and a streaming (content-only) pass skips the features that place
-    // their cards, so the card would otherwise trail the seat until some later
-    // page-wide pass.
-    if (typeof ui.schedule === 'function') ui.schedule()
-  }
 
   /**
    * The two marks the conversation root carries for the composer's place.
@@ -589,7 +310,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     placeholderCopy.sync(hero, active)
     syncDraftState(found)
     syncControls(found)
-    stampContextMeter(found[0])
     syncRootMarks()
   }
 
@@ -632,7 +352,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   ui.composer = {
     sync: syncComposer,
-    measure: measureComposer,
     /** Whether the page shows the hero composer, as of this pass. */
     isHero() { return hero },
     /** The hero page's composer card as of this pass, or null off the hero page. */
@@ -670,27 +389,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     chatHidden = false
     for (const card of portraitCards) card.removeAttribute(MOBILE_PORTRAIT_ATTR)
     portraitCards.clear()
-    const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR, 'data-dsh-claude-context-meter']
+    const marks = ['data-composer-variant', 'data-has-attachments', ATTACHMENT_TILE_ATTR, DRAFT_EMPTY_ATTR, CONTROL_ATTR]
     for (const mark of marks) {
       for (const marked of document.querySelectorAll(`[${mark}]`)) marked.removeAttribute(mark)
     }
-    meterRoom = ''
-    roomHost?.style.removeProperty('--dsh-claude-meter-room')
-    roomHost = null
-    if (stopMeterRow !== null) {
-      stopMeterRow()
-      stopMeterRow = null
-    }
-    meterRow = ''
-    meterRowBox = null
-    meterRowStack = null
-    meterRowHost?.style.removeProperty(METER_ROW_OFFSET)
-    meterRowHost?.style.removeProperty(METER_ROW_HEIGHT)
-    meterRowHost = null
-    releaseMobileStats()
-    meterNode = null
-    meterReading = ''
-    meterMeasuredActive = false
-    meterWidth = 0
   }
 }

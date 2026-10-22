@@ -245,13 +245,6 @@ export const COMPOSER_PLACEHOLDER_ATTRIBUTE = 'data-placeholder'
 export const COMPOSER_STATS_SELECTOR = '[data-composer-stats]'
 export const COMPOSER_STAT_SELECTOR = '[data-composer-stat]'
 /**
- * The statistics strip a mobile plugin draws in the same band as the host's dock
- * (dsh-pocket marks its own strip `data-mobile-nav="stats"`). It is not the
- * host's, so no rule in this package hides it: the composer pass measures it and
- * lifts the dock's line above the band it took.
- */
-export const MOBILE_STATS_SELECTOR = '[data-mobile-nav="stats"]'
-/**
  * The portrait adaptation a mobile remote plugin applies to the desktop GUI
  * (dsh-remote-web-ui marks the body `dsh-remote-portrait`). Not the host's
  * either: its rules float the composer's controls with transforms of their

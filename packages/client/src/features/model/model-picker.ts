@@ -1,10 +1,10 @@
-import { AUTO_POPOVER_ALL } from '../../constants'
+import { AUTO_POPOVER_ALL, SLOT_NODE_ATTR } from '../../constants'
 import { MODEL_EMPTY_LABEL, MODEL_FALLBACK_LABEL, MODEL_LOADING_LABEL, MODEL_MORE_LABEL, MODEL_OFFICIAL_GROUP, MODEL_TRIGGER_LABEL } from './copy-fallbacks'
 import { activeLocale } from '../../core/i18n'
 import { ensureSeatBox } from './seat-box'
 import { loadModelCopy } from './model-copy'
 import { readPrefs } from '../../core/prefs'
-import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
+import { findModelSlot } from '@dsh-claude-style/engine/host'
 import { createModelCatalog } from './catalog'
 import { createModelSubMenu } from './sub-menu'
 import { byModelId, createModelRows } from './rows'
@@ -36,9 +36,6 @@ export interface ModelHandle extends FeatureHandle {
   onProviders(listener: (providers: CatalogProvider[]) => void): () => void
   teardown(): void
 }
-
-/** The host's model slot, resolved once and re-resolved when the host swaps it (D40). */
-const modelSlotOf = cacheFirstMatch<HTMLElement>('[data-slot="conversation.input.model"]')
 
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
@@ -547,7 +544,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     loadModelCopy()
     modelCatalog.directory()
     modelCatalog.warm()
-    const slot = modelSlotOf()
+    const slot = findModelSlot()
     modelSlot = slot
     if (slot === null) return
     // Hide the host's own seat (React owns the node; re-mark on swap).
@@ -558,9 +555,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     removeStrayNodes(slot, '.dsh-claude-model-seat', [seatBox])
     removeStrayNodes(slot, '.dsh-claude-model-btn', [modelBtn])
     removeStrayNodes(document, 'body > .dsh-claude-model-popover', [modelPop, modelSubPop])
-    // The host's own seat root, not the box the skin just appended: a swap can
-    // put React's node after ours.
-    const hostRoot = slot.querySelector(':scope > :not(.dsh-claude-model-seat)')
+    // The host's own seat root, not the nodes the skin appended beside it: a
+    // swap can put React's node after ours, and the effort level and the
+    // context meter's ring stand in the same slot.
+    const hostRoot = slot.querySelector(`:scope > :not([${SLOT_NODE_ATTR}])`)
     if (hostRoot !== null) hostRoot.toggleAttribute('data-dsh-claude-model-host', true)
     seatBox = ensureSeatBox(slot, seatBox)
     if (modelBtn === null || modelBtn.parentElement !== seatBox) {

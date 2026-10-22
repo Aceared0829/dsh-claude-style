@@ -167,6 +167,16 @@ export function observeComposerPlaceholders() {
 
 export const findComposerCard = cacheFirst<HTMLElement>(COMPOSER_CARD)
 
+/**
+ * The host's model slot in the composer row: the box the host renders its own
+ * model seat into. It is React's, and the skin only appends its own nodes
+ * beside the host's root (features/model/seat-box.ts,
+ * features/context-stats/meter-ring.ts), so both features read it here.
+ */
+const MODEL_SLOT = '[data-slot="conversation.input.model"]'
+
+export const findModelSlot = cacheFirst<HTMLElement>(MODEL_SLOT)
+
 /** The composer card `node` sits in, or null; `variant` narrows it to one variant. */
 export function closestComposerCard(node: EventTarget | null | undefined, variant?: string) {
   if (variant === undefined) return closestFrom(node, COMPOSER_CARD)

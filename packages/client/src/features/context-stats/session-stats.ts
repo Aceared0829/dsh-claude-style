@@ -9,14 +9,31 @@ import { createStatsBlock } from './stats-block'
 import { createStreamEstimate } from './stream-estimate'
 import { createSessionCost, loadPrices, priceDocument, priceGeneration } from './session-cost'
 import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
-import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
+import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, markContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { priceFor, priceTierAt } from '@dsh-claude-style/contracts/prices'
 import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
-import type { HostSessionStatsProjection, HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
+import type { HostContextPressureProjection, HostSessionStatsProjection, HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
 import type { StatsReading } from './stats-count'
 import type { PieColours } from './context-meter-pie'
+
+/** The ring the composer row carries, as the statistics read it (meter-ring.ts). */
+export interface MeterRingFace {
+  root(): HTMLElement | null
+  setReading(percent: number | null): void
+}
+
+/**
+ * The occupancy a context-pressure projection carries, as the host's own meter
+ * reads it, or null while it names no window.
+ */
+function pressureOccupancy(pressure: HostContextPressureProjection | null) {
+  const used = pressure?.projectedTokens ?? pressure?.pressureTokens
+  const window = pressure?.contextWindow
+  if (used === undefined || window === undefined || window <= 0) return null
+  return Math.min(100, Math.round(used / window * 100))
+}
 
 /**
  * The session's numbers, read from the host's own projections
@@ -30,15 +47,15 @@ import type { PieColours } from './context-meter-pie'
  * positions: with the numbers on their own line, that line is the panel's
  * second trigger, so the figures expand into the rows a reader asks for.
  *
- * They are read as DATA: the host computes `sessionStats` and `tokenUsage` as
- * durable whole-log session projections, and the session face carries their
- * key-addressed read faces (`session.projections.faceOf`) — the same seat the
- * host's own `useProjection` resolves. The host's two stat dialogs are never
- * opened, so nothing is rendered twice, and both surfaces are filled the moment
- * they appear (and again on every projection frame). The written-back figure
- * carries an estimate of the text streaming now (stream-estimate.ts): the host
- * settles a step's usage at its end, so without it that figure would stand
- * still through the answer.
+ * They are read as DATA: the host computes `sessionStats`, `tokenUsage` and
+ * `contextPressure` as durable whole-log session projections, and the session
+ * face carries their key-addressed read faces (`session.projections.faceOf`) —
+ * the same seat the host's own `useProjection` resolves. The host's two stat
+ * dialogs are never opened, so nothing is rendered twice, and both surfaces are
+ * filled the moment they appear (and again on every projection frame). The
+ * written-back figure carries an estimate of the text streaming now
+ * (stream-estimate.ts): the host settles a step's usage at its end, so without
+ * it that figure would stand still through the answer.
  *
  * The WORDS come from the host's own `chat` locale namespace, the one its
  * pills read, so the three surfaces agree letter for letter and follow the
@@ -49,15 +66,17 @@ import type { PieColours } from './context-meter-pie'
  * The projections are followed here, the rows and sections are built in
  * stats-model.ts, the host's panel and its marks are read in stats-panel.ts,
  * the popover block is written in stats-block.ts, the line of its own in
- * inline-stats.ts, and the hover path and the alignment reading are in
- * stats-binding.ts.
+ * inline-stats.ts, the ring the composer row carries in meter-ring.ts, and the
+ * hover path and the alignment reading in stats-binding.ts.
  *
  * @param ctx - client context: the session binding and the locale seat.
+ * @param ring - the ring the composer row carries (ui.meterRing), while the
+ *   feature that draws it is installed.
  * @returns { measure, sync, close, reposition, teardown }.
  */
-export function createSessionStats(ctx: HostContext) {
-  /** The projections the reading follows: the figures, and the route the cost prices at. */
-  const STATS_KEYS = ['sessionStats', 'tokenUsage', 'modelSelection']
+export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace | null) {
+  /** The projections the reading follows: the figures, the route the cost prices at, and the meter's share. */
+  const STATS_KEYS = ['sessionStats', 'tokenUsage', 'modelSelection', 'contextPressure']
 
   /**
    * How long the line stands without a reading across a session switch. The new
@@ -196,7 +215,7 @@ export function createSessionStats(ctx: HostContext) {
 
   const block = createStatsBlock(reading, chatText, currency)
   const inline = createInlineStats(reading, chatText, findContextMeter, currency)
-  const binding = createContextStatsBinding()
+  const binding = createContextStatsBinding(() => ring()?.root() ?? null)
 
   /**
    * A settled total landed. The figures on screen were priced from the previous
@@ -306,9 +325,22 @@ export function createSessionStats(ctx: HostContext) {
       cost.ask(Date.now())
     }
     const meter = findContextMeter()
-    if (meter !== null) {
-      binding.bindMeter(meter)
-      const occupancy = meterOccupancy(meter)
+    if (meter !== null) markContextMeter(meter)
+    // The meter's own face: the ring the composer row carries while it is
+    // drawn, else the host's meter wherever the host keeps it (the numbers on a
+    // line of their own leave it in the row). The panel hangs from the face the
+    // reader pressed, and the panel is the same one in either position.
+    const skinRing = ring()
+    const ringRoot = skinRing === null ? null : skinRing.root()
+    const face = ringRoot ?? meter
+    if (face !== null) binding.bindMeter(face, ringRoot !== null)
+    // The ring draws its own reading from the session's context-pressure
+    // projection: the host's meter keeps the host's place and stops painting,
+    // so its text is only the fallback of a host serving no such projection.
+    const occupancy = pressureOccupancy(faceValue<HostContextPressureProjection>('contextPressure') ?? null)
+      ?? (meter === null ? null : meterOccupancy(meter))
+    if (skinRing !== null && ringRoot !== null) skinRing.setReading(occupancy)
+    else if (meter !== null) {
       const rampMoved = writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
       // The pie is dsh-chat-ux's own reading of the same meter: while that
       // plugin draws it, the host's ring is left to that plugin's draw
@@ -348,7 +380,10 @@ export function createSessionStats(ctx: HostContext) {
      */
     measure() {
       const meter = findContextMeter()
-      pieColours = meter === null || peerPresent('dsh-chat-ux') ? null : readPieColours(meter)
+      // The ring the skin draws reads its own colours (meter-ring.ts): only a
+      // meter that keeps its place is read here.
+      const skinRing = ring()
+      pieColours = skinRing?.root() != null || meter === null || peerPresent('dsh-chat-ux') ? null : readPieColours(meter)
     },
     /** One pass: keep the numbers current on whichever surface the position names. */
     sync() {

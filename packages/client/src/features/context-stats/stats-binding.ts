@@ -4,14 +4,14 @@ import { readPrefs } from '../../core/prefs'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, createHoverIntent, isProgrammaticPress, pressKeepsPopoverOpen, programmaticPress, resolveAnchoredPosition } from '../../shared/popover'
 import { inPageBox, pageViewport } from '../../shared/page-zoom'
-import { CONTEXT_PANEL_ALIGNED_ATTR, CONTEXT_PANEL_ATTR, contextPanel, contextTrigger, findContextMeter } from './stats-panel'
+import { CONTEXT_PANEL_ALIGNED_ATTR, CONTEXT_PANEL_ATTR, contextPanel, contextTrigger, findContextMeter, observeDialogs } from './stats-panel'
 import { copy } from './copy'
+import type { MatchList } from '@dsh-claude-style/engine/bus'
 
 /**
- * The hover path onto the host's own panel: opening and
- * closing it through the host's trigger, keeping a node's bindings to one
- * generation, and the reading that places the panel over the meter in the
- * page's own pixels.
+ * The hover path onto the host's own panel: opening and closing it through the
+ * host's trigger, keeping a node's bindings to one generation, and the reading
+ * that places the panel over the meter in the page's own pixels.
  */
 
 /** The custom property the stylesheet reads to line the panel's right edge up with the meter's. */
@@ -26,20 +26,29 @@ const CONTEXT_PANEL_GAP = 8
 /**
  * The panel's bindings.
  *
+ * @param ring - the skin's own ring while it stands in the composer row, else
+ *   null. The panel hangs from the face the reader pressed, which is the ring
+ *   in the context position and the host's own meter wherever it keeps its
+ *   place.
  * @returns { bindMeter, bindPanel, align, close, cancelHover, releaseSize, release }.
  */
-export function createContextStatsBinding() {
+export function createContextStatsBinding(ring: () => HTMLElement | null) {
   /** Identity of the bindings THIS generation installed (a hot reload reuses the host's nodes). */
   const statsBindingToken = {}
   /** The open panel's size watcher, or null before a panel has been seen. */
   let stopPanelSize: (() => void) | null = null
   /**
    * Every listener this generation put on a node the host owns, with the call
-   * that takes it off. The meter, the line and the panel outlive the
+   * that takes it off. The ring, the meter, the line and the panel outlive the
    * generation, so the teardown has to remove what it bound: the token above
    * only keeps one generation from binding the same element twice.
    */
   const boundListeners: { remove: () => void }[] = []
+
+  /** The face the panel hangs from: the skin's ring when it is drawn, else the host's meter. */
+  function meterFace() {
+    return ring() ?? findContextMeter()
+  }
 
   /**
    * Open the context panel by pressing the host's trigger: the panel, its
@@ -67,9 +76,9 @@ export function createContextStatsBinding() {
   }
 
   const hoverIntent = createHoverIntent(openContextPanel, () => {
-    // Layout can return the pointer to the meter before the close grace expires.
+    // Layout can return the pointer to the face before the close grace expires.
     // Explicit line and keyboard dismissal still use closeContextPanel directly.
-    if (findContextMeter()?.matches(':hover')) return
+    if (meterFace()?.matches(':hover')) return
     closeContextPanel()
   }, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
 
@@ -78,9 +87,40 @@ export function createContextStatsBinding() {
     return readPrefs().autoPopover === AUTO_POPOVER_ALL
   }
 
-  function bindContextMeter(meter: Element) {
-    if (meter.__dshContextMeterToken === statsBindingToken) return
-    meter.__dshContextMeterToken = statsBindingToken
+  /**
+   * Bind one face as the panel's trigger: the host's own meter wherever it keeps
+   * its place, or the skin's ring that stands in the composer row instead.
+   *
+   * The host dismisses its panel on any press its root and the panel do not
+   * hold, and the ring stands in the composer row, outside both. But the ring is
+   * that trigger's face: the press it takes is the press the host's meter would
+   * have taken. So the press is delivered to the meter instead — stopped on the
+   * ring and dispatched again on the host's trigger, which the panel's root
+   * holds. The host's dismissal passes over it while every other reader of a
+   * press (the skin's own popovers closing on a press outside them) still hears
+   * one. The click that follows is the ring's own: it opens a shut panel, closes
+   * an open one, and leaves up the panel the pointer's own dwell opened
+   * (shared/popover.ts::pressKeepsPopoverOpen).
+   */
+  function bindContextMeter(surface: HTMLElement, ringSurface: boolean) {
+    if (surface.__dshContextMeterToken === statsBindingToken) return
+    surface.__dshContextMeterToken = statsBindingToken
+    const onDown = (event: Event) => {
+      if (!ringSurface || !(event instanceof PointerEvent)) return
+      const trigger = contextTrigger()
+      if (trigger === null) return
+      event.stopPropagation()
+      trigger.dispatchEvent(new PointerEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        button: event.button,
+        buttons: event.buttons,
+        pointerType: event.pointerType,
+        isPrimary: event.isPrimary,
+      }))
+    }
     const onEnter = () => {
       if (hoverEnabled()) hoverIntent.scheduleOpen()
     }
@@ -88,7 +128,7 @@ export function createContextStatsBinding() {
       if (hoverEnabled()) hoverIntent.scheduleClose()
     }
     // The host's own trigger toggles the panel on a press, and its onClick is
-    // delegated from the document, so a press on the ring the dwell just
+    // delegated from the document, so a press on the meter the dwell just
     // opened is stopped on its way there: the pointer is on the trigger it
     // opened from, and the leave is the way out
     // (shared/popover.ts::pressKeepsPopoverOpen). The line of figures keeps
@@ -97,18 +137,28 @@ export function createContextStatsBinding() {
       if (isProgrammaticPress()) return
       const trigger = contextTrigger()
       const target = event.target
-      if (trigger === null || !(target instanceof Node) || !trigger.contains(target)) return
-      if (!pressKeepsPopoverOpen(hoverEnabled(), trigger.getAttribute('aria-expanded') === 'true')) return
-      event.stopPropagation()
+      if (trigger === null || !(target instanceof Node)) return
+      const open = trigger.getAttribute('aria-expanded') === 'true'
+      if (!ringSurface) {
+        if (!trigger.contains(target)) return
+        if (!pressKeepsPopoverOpen(hoverEnabled(), open)) return
+        event.stopPropagation()
+        return
+      }
+      if (pressKeepsPopoverOpen(hoverEnabled(), open)) return
+      if (open) closeContextPanel()
+      else openContextPanel()
     }
-    meter.addEventListener('mouseenter', onEnter)
-    meter.addEventListener('mouseleave', onLeave)
-    meter.addEventListener('click', onClick, true)
+    surface.addEventListener('pointerdown', onDown, true)
+    surface.addEventListener('mouseenter', onEnter)
+    surface.addEventListener('mouseleave', onLeave)
+    surface.addEventListener('click', onClick, true)
     boundListeners.push({
       remove() {
-        meter.removeEventListener('mouseenter', onEnter)
-        meter.removeEventListener('mouseleave', onLeave)
-        meter.removeEventListener('click', onClick, true)
+        surface.removeEventListener('pointerdown', onDown, true)
+        surface.removeEventListener('mouseenter', onEnter)
+        surface.removeEventListener('mouseleave', onLeave)
+        surface.removeEventListener('click', onClick, true)
       },
     })
   }
@@ -183,19 +233,21 @@ export function createContextStatsBinding() {
    * The panel is the host's and its coordinates are inline: ui-chat places it
    * above the anchor from the box `getBoundingClientRect` answers in the
    * window's pixels and the panel's own laid-out height, and writes the answer
-   * into the inline style. The stylesheet reads that space at the page's zoom
-   * factor, which scales a written `left` or `top` again — at 125% the panel
-   * lands a quarter of its distance from the window's top too low and runs past
-   * the bottom edge. The skin reads the meter's box and the window in the same
-   * pixels (shared/page-zoom.ts), keeps the host's own placement — above the
-   * meter, by the gap ui-chat's stat dialog keeps — and hands the stylesheet two
-   * values (features/composer/inline-bar.css), the hand-over the hero menu makes
-   * for the menu the host places below its own trigger. The properties and the
-   * mark are written together, so the rule never runs on a reading that has
-   * gone.
+   * into the inline style. The anchor it reads is the host's own trigger, which
+   * stands in a dock the skin's ring replaces — a node with no box, so the
+   * host's answer is the window's corner. The stylesheet reads that space at
+   * the page's zoom factor, which scales a written `left` or `top` again — at
+   * 125% the panel lands a quarter of its distance from the window's top too
+   * low and runs past the bottom edge. The skin reads the face the reader
+   * pressed and the window in the same pixels (shared/page-zoom.ts), keeps the
+   * host's own placement — above that face, by the gap ui-chat's stat dialog
+   * keeps — and hands the stylesheet two values (features/composer/
+   * inline-bar.css), the hand-over the hero menu makes for the menu the host
+   * places below its own trigger. The properties and the mark are written
+   * together, so the rule never runs on a reading that has gone.
    */
   function alignContextPanel(panel: HTMLElement) {
-    const meter = findContextMeter()
+    const meter = meterFace()
     if (meter === null) return
     const anchor = inPageBox(meter.getBoundingClientRect())
     // The panel's own entrance scales it (the cards' 0.98), and a TRANSFORMED
@@ -217,7 +269,13 @@ export function createContextStatsBinding() {
 
   function bindContextPanel(panel: HTMLElement) {
     if (!panel.hasAttribute(CONTEXT_PANEL_ATTR)) panel.setAttribute(CONTEXT_PANEL_ATTR, '')
-    if (panel.__dshContextPanelToken === statsBindingToken) return
+    if (panel.__dshContextPanelToken === statsBindingToken) {
+      // A reading taken before the face had a box is no reading: the panel
+      // stays unpainted (features/composer/inline-bar.css) until one lands, and
+      // a later pass is where it is asked for again.
+      if (!panel.hasAttribute(CONTEXT_PANEL_ALIGNED_ATTR)) alignContextPanel(panel)
+      return
+    }
     panel.__dshContextPanelToken = statsBindingToken
     const onEnter = () => {
       hoverIntent.cancel()
@@ -244,6 +302,28 @@ export function createContextStatsBinding() {
     alignContextPanel(panel)
   }
 
+  /** The dialogs on the page, as the bus keeps them, while this generation stands. */
+  let panelArrivals: MatchList<HTMLElement> | null = null
+
+  /**
+   * Bind the panel the moment the host mounts it.
+   *
+   * The host places the panel from its anchor's box, and that anchor is a node
+   * with no box: the first frame the panel would paint stands in the window's
+   * corner. The bus delivers an arrival in the batch that made it, before the
+   * browser computes style (D40), so the stamp that holds the panel and the
+   * placement that reveals it are written in the frame it mounts in.
+   */
+  function watchPanelArrival() {
+    if (panelArrivals !== null) return
+    panelArrivals = observeDialogs(() => {
+      const panel = contextPanel()
+      if (panel !== null) bindContextPanel(panel)
+    })
+  }
+
+  watchPanelArrival()
+
   /**
    * Composer focus closes the panel the host's trigger opened, without the
    * `:hover` net the hover path keeps (the pointer is not what asked).
@@ -264,7 +344,7 @@ export function createContextStatsBinding() {
   }
 
   return {
-    /** Bind the meter once per generation. */
+    /** Bind one face as the panel's trigger, once per generation. */
     bindMeter: bindContextMeter,
     /** Bind the panel once per generation, and take the alignment reading. */
     bindPanel: bindContextPanel,
@@ -291,6 +371,8 @@ export function createContextStatsBinding() {
     release() {
       hoverIntent.cancel()
       releasePanelSize()
+      panelArrivals?.release()
+      panelArrivals = null
       for (let i = 0; i < boundListeners.length; i++) boundListeners[i].remove()
       boundListeners.length = 0
     },

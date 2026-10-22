@@ -25,26 +25,37 @@ export const CONTEXT_PANEL_ALIGNED_ATTR = 'data-dsh-claude-context-aligned'
  */
 const HOST_STATS_DIALOGS = '[data-session-stats-details], [data-session-stats-usage], [data-turn-usage-details]'
 
+/** The role every dialog on the page carries, wherever the host portals it. */
+const DIALOG_ROLE_SELECTOR = '[role="dialog"]'
+
 /** The dialog registry, taken on the first read of the panel and released with the feature. */
 let dialogs: MatchList<HTMLElement> | null = null
 
+/** The mark on the host's context meter, which every reader of it goes through. */
+export const CONTEXT_METER_ATTR = 'data-dsh-claude-context-meter'
+
 /**
- * The host's context meter: the node the composer pass marks
- * (features/composer/composer.ts), else the host's own docked meter — that
- * pass is gone while the composer's scope preference is off, and the numbers
- * this feature writes into the panel are read either way.
+ * The host's context meter: the docked ring the composer row carries. Its node
+ * is the host's and outlives a generation, so the mark keeping it for the bus's
+ * first match is written by this feature (markContextMeter), not by the pass
+ * that paints beside it.
  */
-const markedMeter = cacheFirstMatch<HTMLElement>('[data-dsh-claude-context-meter]')
+const markedMeter = cacheFirstMatch<HTMLElement>(`[${CONTEXT_METER_ATTR}]`)
 
 export function findContextMeter() {
   return markedMeter() ?? findDockedContextMeter(findComposerCard())
 }
 
+/** Mark the host's meter, so the next read of it is the bus's kept answer. */
+export function markContextMeter(meter: HTMLElement) {
+  if (meter.hasAttribute(CONTEXT_METER_ATTR)) return
+  meter.setAttribute(CONTEXT_METER_ATTR, '')
+}
+
 /**
  * The occupancy the meter reads, as a percentage, or null when the reading
- * cannot be taken. The host draws it as the trigger's own text, which the
- * composer pass reads the same way (it re-measures the room when that text
- * moves), so the number is taken from where the host shows it.
+ * cannot be taken. The host draws it as the trigger's own text, which is where
+ * a host serving no context-pressure projection is read (meter-ring.ts).
  */
 export function meterOccupancy(meter: HTMLElement) {
   const match = /(\d+(?:[.,]\d+)?)\s*%/.exec(meter.textContent ?? '')
@@ -88,9 +99,18 @@ export function contextPanel() {
  * The dialogs on the page, kept current by the bus (D40): the host portals its
  * dialogs to <body>, so the child list carries every one of them. The list is
  * taken on the first read and released with the feature.
+ *
+ * @param onChange - told in the batch that changed the set, before the browser
+ *   computes style: where a panel's own bindings are taken in the frame it
+ *   mounts in.
  */
+export function observeDialogs(onChange?: () => void) {
+  return observeMatches<HTMLElement>(DIALOG_ROLE_SELECTOR, onChange)
+}
+
+/** The dialogs on the page, the list every read of the panel goes through. */
 function dialogList() {
-  dialogs ??= observeMatches<HTMLElement>('[role="dialog"]')
+  dialogs ??= observeDialogs()
   return dialogs
 }
 

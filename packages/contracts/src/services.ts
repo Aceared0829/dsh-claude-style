@@ -607,3 +607,17 @@ export interface HostTokenUsageProjection {
   cacheWriteTokens: number
   outputTokens: number
 }
+
+/**
+ * The context-pressure projection: the context meter's own reading. The host
+ * works out the share of the route's window the session has taken and its meter
+ * paints it; the skin draws the same number on the ring of its own
+ * (features/context-stats/session-stats.ts). `projectedTokens` is what the next
+ * request is expected to carry and stands over `pressureTokens` when both are
+ * served.
+ */
+export interface HostContextPressureProjection {
+  projectedTokens?: number
+  pressureTokens?: number
+  contextWindow?: number
+}

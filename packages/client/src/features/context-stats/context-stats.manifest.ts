@@ -6,6 +6,9 @@ export default {
   order: 70,
   load: 'deferred',
   contracts: ['chat.call', 'chat.streaming', 'composer.dialog-trigger', 'composer.meter-fill', 'composer.stat', 'composer.stats'],
+  // The ring of the same directory draws the row's reading, and the panel this
+  // feature owns hangs from it (features/context-stats/meter-ring.ts).
+  reads: ['meterRing'],
   pref: 'statsPosition',
   // Both positions are this feature's: the line of its own is what the inline
   // one adds, since the panel the meter owns carries the rows either way.

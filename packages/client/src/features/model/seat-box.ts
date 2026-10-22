@@ -1,3 +1,5 @@
+import { SLOT_NODE_ATTR } from '../../constants'
+
 /**
  * The box the composer's two seat texts share: the model's name and the effort
  * level's.
@@ -20,6 +22,9 @@ export function ensureSeatBox(slot: HTMLElement, current: HTMLElement | null): H
   if (current !== null && current.parentElement !== null) current.parentElement.removeChild(current)
   const box = document.createElement('div')
   box.className = SEAT_BOX_CLASS
+  // The slot holds the host's root and the skin's own nodes: the reader that
+  // finds the host's root skips everything carrying this mark.
+  box.setAttribute(SLOT_NODE_ATTR, '')
   slot.appendChild(box)
   return box
 }

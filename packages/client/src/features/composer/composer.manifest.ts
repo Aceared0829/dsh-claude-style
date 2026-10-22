@@ -4,7 +4,7 @@ import type { FeatureManifest } from '../../core/feature'
 export default {
   id: 'composer',
   order: 20,
-  contracts: ['chat.scroller', 'composer.attachment-rail', 'composer.dialog-trigger', 'composer.input', 'composer.mobile-portrait', 'composer.mobile-stats', 'composer.placeholder', 'composer.placeholder-attribute', 'composer.seat', 'composer.stack', 'composer.variant', 'shell.phase'],
+  contracts: ['chat.scroller', 'composer.attachment-rail', 'composer.dialog-trigger', 'composer.input', 'composer.mobile-portrait', 'composer.placeholder', 'composer.placeholder-attribute', 'composer.seat', 'composer.stack', 'composer.variant', 'shell.phase'],
   pref: 'composerScope',
   prefValues: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
   stylesheets: [

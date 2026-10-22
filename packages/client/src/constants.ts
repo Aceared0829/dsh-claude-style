@@ -249,6 +249,13 @@ export const COMPOSER_HIDDEN_ATTR = 'data-dsh-claude-composer-hidden'
  */
 export const TRANSCRIPT_ATTR = 'data-dsh-claude-transcript'
 /**
+ * Present on every node the skin appends into one of the host's own slots: the
+ * seat box and the context meter's ring stand in the model slot beside the
+ * host's root, and the reader that names that root skips them by this mark
+ * (packages/client/src/features/model/model-picker.ts).
+ */
+export const SLOT_NODE_ATTR = 'data-dsh-claude-slot-node'
+/**
  * Present while a mobile remote plugin's portrait layer owns the page
  * (packages/contracts/src/dom.ts, MOBILE_PORTRAIT_SELECTOR). That layer floats the
  * composer's controls with transforms of its own, and the skin's placement of
