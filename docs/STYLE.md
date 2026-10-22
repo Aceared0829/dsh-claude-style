@@ -369,9 +369,11 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-instant` | `80ms` | the composer caret following the insertion point |
 | `--dsh-claude-duration-feedback` | `120ms` | a control answering hover, press or focus: its colour, background, border, shadow, or a small turn or slide of its own parts |
 | `--dsh-claude-duration-reveal` | `120ms` | content entering the chat area: an opened row's body, and each streamed piece of the answer |
-| `--dsh-claude-duration-enter` | `320ms` | one message the reader sends growing into its row, and the same growth on the Motion tab's card |
-| `--dsh-claude-duration-surface` | `150ms` | a floating surface or a group of controls appearing: popover cards, menus, panels, the search dialog, a toast, a strip fading in |
+| `--dsh-claude-duration-enter` | `320ms` | one message the reader sends growing into its row, the same growth on the Motion tab's card, and a colour disc lifting out of its row and springing back |
+| `--dsh-claude-duration-surface` | `150ms` | a floating surface or a group of controls appearing: popover cards, menus, panels, the search dialog, a toast, a strip fading in, a hint over what it names |
 | `--dsh-claude-duration-exit` | `120ms` | a surface leaving on the reader's dismissal: a menu or a dialog closing, the overtime badge leaving |
+| `--dsh-claude-duration-hint-exit` | `50ms` | a hint leaving the moment the pointer leaves what it names |
+| `--dsh-claude-duration-hint-delay` | `80ms` | how long the pointer rests on something before its hint starts to appear |
 | `--dsh-claude-duration-open` | `250ms` | a surface growing out of its anchor: a menu out of its trigger, a full-window dialog out of the centre, a settings page sliding in, the overtime badge sliding onto its line |
 | `--dsh-claude-duration-swap` | `150ms` | each half of a wording swap: the old words leaving, the new ones arriving |
 | `--dsh-claude-duration-swap-gap` | `50ms` | the offset the words arriving start after the words leaving, so the two halves of a wording swap travel together |
@@ -379,7 +381,7 @@ edit the JSON, not the table.
 | `--dsh-claude-duration-clear-text` | `400ms` | the two halves of clearing a field: the words leaving it, and the placeholder taking their place |
 | `--dsh-claude-duration-clear` | `1000ms` | one whole clear: the words leaving, the placeholder arriving, and the streak's rise, peak and fall |
 | `--dsh-claude-duration-roll` | `160ms` | a figure's characters rolling over to new digits |
-| `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill |
+| `--dsh-claude-duration-move` | `200ms` | something travelling along its own track: a fold's door, the reasoning slider's knob and fill, a hint moving from one colour disc to the next |
 | `--dsh-claude-duration-count` | `220ms` | a session number counting to its new reading |
 | `--dsh-claude-duration-slide` | `240ms` | the segmented controls' sliding highlight, a sidebar icon's quarter turn, the wording box taking the width of the words arriving, and streamed content sliding up from the bottom edge |
 | `--dsh-claude-duration-fade` | `300ms` | a slow cross-fade: the theme flip, the titlebar tabs' hover reveal, the reasoning knob's glow, a placeholder handing its place to what it stood for |
@@ -411,25 +413,28 @@ edit the JSON, not the table.
 | `--dsh-claude-period-dot-bounce` | `500ms` | one bounce of the waiting line's loader dots under the Claude brand, and the period each dot's own start is measured against |
 | `--dsh-claude-period-dot-line` | `1250ms` | one round trip of the waiting line's loader dots along their own lines, the motion the dots take while the turn is not thinking |
 | `--dsh-claude-ease-standard` | `ease` | feedback and surfaces: the default curve |
-| `--dsh-claude-ease-out` | `ease-out` | something arriving and settling: a fold's door, content entering the chat area, the landing mark |
+| `--dsh-claude-ease-out` | `ease-out` | something arriving and settling: a fold's door, content entering the chat area, the landing mark, a hint appearing and leaving |
 | `--dsh-claude-ease-enter` | `cubic-bezier(0.34, 1.3, 0.64, 1)` | a message the reader sends growing into its row: the slight overshoot as it takes its full size |
 | `--dsh-claude-ease-in-out` | `ease-in-out` | something that leaves and returns, or swaps in place: wording swaps, pulses, flashes |
 | `--dsh-claude-ease-glide` | `cubic-bezier(0.22, 0.61, 0.36, 1)` | travel along a track: the sliding highlight, the reasoning slider, the search dialog's entrance, the reasoning window's step, the wording box's width, the stream's slide |
 | `--dsh-claude-ease-roll` | `cubic-bezier(0.4, 0, 0.2, 1)` | digits rolling over: the file rows' tail and the process group header's counts |
 | `--dsh-claude-ease-spring` | `cubic-bezier(0.34, 1.45, 0.64, 1)` | a small overshoot as something lands: the overtime badge popping in, a switch's knob bouncing past its end |
-| `--dsh-claude-ease-settle` | `cubic-bezier(0.22, 1, 0.36, 1)` | a surface or a page settling into place out of its anchor: menus and dialogs opening and closing, a settings page sliding, the overtime badge sliding onto its line, the greeting's lines rising |
+| `--dsh-claude-ease-recoil` | `cubic-bezier(0.34, 3.85, 0.64, 1)` | a lifted colour disc springing back into its row once the pointer leaves, overshooting well past its place before it rests |
+| `--dsh-claude-ease-settle` | `cubic-bezier(0.22, 1, 0.36, 1)` | a surface or a page settling into place out of its anchor: menus and dialogs opening and closing, a settings page sliding, the overtime badge sliding onto its line, the greeting's lines rising, a hint travelling between colour discs, a colour disc lifting |
 | `--dsh-claude-ease-host-sweep` | `steps(48, end)` | the band across the waiting line's words and a running process group's header |
 | `--dsh-claude-ease-harmonic` | `cubic-bezier(0.37, 0, 0.63, 1)` | a loader dot walking its line from one end to the other, and its size between an end and the middle: a sine's simple harmonic, at rest at either end and fastest halfway |
 | `--dsh-claude-ease-damped-out` | `cubic-bezier(0.33, 1, 0.68, 1)` | a loader dot's fade in a hand-over that does most of its change early: a walking or swapping dot coming in, a bouncing one going out |
 | `--dsh-claude-ease-damped-in` | `cubic-bezier(0.32, 0, 0.67, 0)` | a loader dot's fade in a hand-over that does most of its change late: a walking or swapping dot going out, a bouncing one coming in |
-| `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, and a small row's wording swap travels |
+| `--dsh-claude-distance-nudge` | `4px` | the short offset a surface rises from, a small row's wording swap travels, and the colour disc under the pointer lifts |
 | `--dsh-claude-distance-travel` | `8px` | the waiting line's wording swap, a settings page's slide, the overtime badge's sideways slide, and both directions of the waiting line's loader dots: the lift off their floor and the reach along their own lines |
 | `--dsh-claude-distance-rise` | `12px` | how far below its place a line of the home greeting starts, and the overtime badge's upward slide |
 | `--dsh-claude-blur-soft` | `2px` | the blur words and badges pass through while they swap or pop in, and a placeholder passes through as it hands its place over |
 | `--dsh-claude-blur-enter` | `3px` | the blur a settings page or a line of the home greeting passes through as it slides or rises in |
-| `--dsh-claude-scale-surface` | `0.98` | the scale a surface grows from as it rises |
+| `--dsh-claude-scale-surface` | `0.98` | the scale a surface grows from as it rises, and a hint grows from as it appears |
 | `--dsh-claude-scale-dropdown` | `0.97` | the scale a menu grows from out of its trigger |
 | `--dsh-claude-scale-dropdown-exit` | `0.99` | the scale a menu shrinks to while it fades on closing |
+| `--dsh-claude-scale-lift` | `1.05` | the scale the colour disc under the pointer grows to as it lifts |
+| `--dsh-claude-scale-lift-falloff` | `0.45` | the share of its neighbour's lift a colour disc keeps, one disc further from the pointer |
 | `--dsh-claude-scale-dialog` | `0.96` | the scale a full-window dialog grows from and returns to |
 | `--dsh-claude-scale-dot-mid` | `0.55` | how small a loader dot is while it crosses the middle of its line; at either end it is the dot's own size, so the line motion never draws a dot larger than the bouncing one |
 | `--dsh-claude-duration-resize` | `300ms` | a surface taking a new size: the model picker's second level following the list a query leaves |

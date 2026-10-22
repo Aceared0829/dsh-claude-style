@@ -3,6 +3,6 @@
   "order": 5,
   "at": "2026-10-22",
   "external": false,
-  "zh": "把配色下的强调色选项改成颜色卡：两张品牌卡画出各自的强调色、明暗背景与行内代码色，第三张自定义卡可以改这四个颜色，改一个就整页换上；圆点悬停时说明它是什么颜色，「图片颜色」多了强调色一档，此前存下的强调色成为自定义卡的第一个颜色。",
-  "en": "Replace the accent option under Colours with colour cards: the two brand cards draw their accent, light and dark backgrounds and inline-code colour, and the third card lets the reader change those four, repainting the page as soon as one changes; each disc names its colour on hover, the image-colour choice gains an accent option, and a stored accent becomes the first colour of the reader's card."
+  "zh": "把配色下的强调色选项改成颜色卡：两张品牌卡画出各自的强调色、明暗背景与行内代码色，第三张自定义卡可以改这四个颜色，改一个就整页换上；正在生效的那张卡带选中边框，品牌卡不能点选，跟随当前品牌亮起；指向或聚焦一个圆点时它连同邻近的圆点一起抬起，上方的提示说明它是什么颜色，并随指针在圆点之间移动；「图片颜色」多了强调色一档，此前存下的强调色成为自定义卡的第一个颜色。",
+  "en": "Replace the accent option under Colours with colour cards: the two brand cards draw their accent, light and dark backgrounds and inline-code colour, and the third card lets the reader change those four, repainting the page as soon as one changes; the card in effect wears a selected border, and a brand card, which cannot be picked, lights up while its brand is the current one; pointing at or focusing a disc lifts it along with its neighbours, and a hint above names its colour and follows the pointer from disc to disc; the image-colour choice gains an accent option, and a stored accent becomes the first colour of the reader's card."
 }

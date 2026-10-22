@@ -501,21 +501,23 @@ body[data-dsh-claude-style] .dsh-claude-brand-image-error {
 /* The colour cards (settings-brand.ts): the brand's four colours and the
    reader's own, each a row of overlapping discs — the accent, the light and
    dark canvases and the inline-code ink. A brand card is a read-out; the
-   reader's card is a button, and its discs take a colour well each. */
+   reader's card is a button, and its discs take a colour well each. The card
+   the page paints wears the accent border, whichever kind it is. */
 body[data-dsh-claude-style] .dsh-claude-palette-cards {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  width: 100%;
+  align-items: stretch;
   gap: 10px;
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-card {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  min-width: 124px;
-  padding: 14px 16px 10px;
+  gap: 10px;
+  min-width: 0;
+  padding: 20px 16px 16px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 12px;
   background: var(--dsh-claude-card);
@@ -523,11 +525,11 @@ body[data-dsh-claude-style] .dsh-claude-palette-card {
   font: inherit;
 }
 
-body[data-dsh-claude-style] button.dsh-claude-palette-card {
+body[data-dsh-claude-style] .dsh-claude-palette-card[role="button"] {
   cursor: pointer;
 }
 
-body[data-dsh-claude-style] button.dsh-claude-palette-card:hover {
+body[data-dsh-claude-style] .dsh-claude-palette-card[role="button"]:not([data-active]):hover {
   border-color: var(--dsw-alias-border-l3);
 }
 
@@ -537,22 +539,97 @@ body[data-dsh-claude-style] .dsh-claude-palette-card[data-active] {
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-swatches {
+  position: relative;
   display: flex;
   align-items: center;
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-swatch {
   display: inline-flex;
-  width: 30px;
-  height: 30px;
-  margin-left: -9px;
-  border: 2px solid var(--dsh-claude-card);
+  flex: none;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  /* A card-coloured ring inside a hairline: each later disc laps over the one
+     before it, so the ring cuts the notch and the hairline traces its edge,
+     which also keeps a canvas-coloured disc visible on the card. */
+  border: 3px solid var(--dsh-claude-card);
   border-radius: 50%;
+  /* A true circle: the page inherits superellipse corners from <html>. */
+  corner-shape: round;
+  background-color: currentColor;
+  background-clip: padding-box;
   box-shadow: 0 0 0 1px var(--dsw-alias-border-l1);
+  /* The return springs past the row (transitions.dev's "Avatar group hover"):
+     this rule holds the leaving curve, the lifting rule below the arriving one. */
+  transition:
+    translate var(--dsh-claude-duration-enter) var(--dsh-claude-ease-recoil),
+    scale var(--dsh-claude-duration-enter) var(--dsh-claude-ease-recoil);
 }
 
-body[data-dsh-claude-style] .dsh-claude-palette-swatch:first-child {
-  margin-left: 0;
+body[data-dsh-claude-style] .dsh-claude-palette-swatch + .dsh-claude-palette-swatch {
+  margin-left: -8px;
+}
+
+/* --dsh-claude-lift-reach is how many discs stand between this one and the one
+   under the pointer (settings-brand.ts); each step keeps the falloff's share. */
+body[data-dsh-claude-style] .dsh-claude-palette-swatches[data-dsh-claude-lifting] > .dsh-claude-palette-swatch {
+  translate: 0 calc(var(--dsh-claude-distance-nudge) * -1 * pow(var(--dsh-claude-scale-lift-falloff), var(--dsh-claude-lift-reach)));
+  transition-timing-function: var(--dsh-claude-ease-settle);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-swatches[data-dsh-claude-lifting] > .dsh-claude-palette-swatch[data-dsh-claude-lifted] {
+  scale: var(--dsh-claude-scale-lift);
+}
+
+/* The group's one hint (transitions.dev's "Tooltip open/close"): it appears
+   after a short rest, travels and resizes between discs while it shows, and
+   leaves at once. The delay sits on the showing rule alone, so leaving and
+   moving carry none. Its place and width are written by placeHint. */
+body[data-dsh-claude-style] .dsh-claude-palette-hint {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  overflow: hidden;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-overlay);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px var(--dsw-alias-border-l1),
+    0 2px 6px rgba(20, 20, 19, 0.05),
+    0 4px 24px rgba(20, 20, 19, 0.06);
+  translate: var(--dsh-claude-hint-x, 0px) 0;
+  scale: var(--dsh-claude-scale-surface);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  pointer-events: none;
+  /* The showing rule swaps the fade's length through --dsh-claude-hint-fade and
+     leaves transition-duration alone, so the reduced-motion rule (chrome.css)
+     still outranks it. */
+  --dsh-claude-hint-fade: var(--dsh-claude-duration-hint-exit);
+  transition-property: opacity, scale, translate, width;
+  transition-duration: var(--dsh-claude-hint-fade), var(--dsh-claude-hint-fade), var(--dsh-claude-duration-move), var(--dsh-claude-duration-move);
+  transition-timing-function: var(--dsh-claude-ease-out), var(--dsh-claude-ease-out), var(--dsh-claude-ease-settle), var(--dsh-claude-ease-settle);
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-hint[data-show] {
+  --dsh-claude-hint-fade: var(--dsh-claude-duration-surface);
+  opacity: 1;
+  scale: 1;
+  transition-delay: var(--dsh-claude-duration-hint-delay), var(--dsh-claude-duration-hint-delay), 0s, 0s;
+}
+
+body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-palette-hint {
+  background: var(--dsh-claude-raised);
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-swatch-input {
@@ -566,13 +643,25 @@ body[data-dsh-claude-style] .dsh-claude-palette-swatch-input {
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-card-name {
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--dsw-alias-label-secondary);
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-reset {
-  align-self: center;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--dsw-alias-label-tertiary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+body[data-dsh-claude-style] .dsh-claude-palette-reset:hover {
+  color: var(--dsw-alias-label-secondary);
 }
 
 /* The quick-provider picker's card (packages/client/src/features/settings/quick-providers.ts):

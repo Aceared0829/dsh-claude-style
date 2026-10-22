@@ -33,32 +33,77 @@ function cardName(card: Card) {
 }
 
 /**
+ * Puts the group's one hint over a disc (transitions.dev's "Tooltip open/close",
+ * MIT): while it shows it travels there and takes the new label's width; while
+ * it is hidden its place and width are written with transitions off, so only
+ * the delayed appear plays.
+ */
+function placeHint(hint: HTMLElement, disc: HTMLElement, label: string) {
+  const text = hint.firstElementChild as HTMLElement
+  const showing = hint.hasAttribute('data-show')
+  text.textContent = label
+  const style = getComputedStyle(hint)
+  const width = Math.ceil(text.scrollWidth + Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
+  // offsetLeft, not the client rect: the disc's own lift and scale stay out of the measure.
+  const x = disc.offsetLeft + disc.offsetWidth / 2 - width / 2
+  if (!showing) hint.style.transition = 'none'
+  hint.style.width = `${width}px`
+  hint.style.setProperty('--dsh-claude-hint-x', `${x}px`)
+  if (!showing) {
+    void hint.offsetWidth
+    hint.style.transition = ''
+  }
+  hint.setAttribute('data-show', '')
+}
+
+/**
  * The four swatches of one card. A brand card's swatches are its colours as the
  * token sheet resolves them; the reader's card takes a colour well each, and
- * every pick switches the page to that card at once.
+ * every pick switches the page to that card at once. The disc under the pointer
+ * or the focus lifts its neighbours less the further they stand
+ * (transitions.dev's "Avatar group hover", MIT) and names itself in the hint.
  */
 function Swatches(props: { colours: string[], onChange?: (field: ColourField, value: string) => void }) {
   const { colours, onChange } = props
+  const [lifted, setLifted] = React.useState<number | null>(null)
+  const hint = React.useRef<HTMLSpanElement>(null)
+  const point = (disc: HTMLElement, index: number) => {
+    setLifted(index)
+    placeHint(hint.current!, disc, copy(COLOURS[index].label))
+  }
+  const release = () => {
+    setLifted(null)
+    hint.current!.removeAttribute('data-show')
+  }
   return React.createElement(
     'span',
-    { className: 'dsh-claude-palette-swatches' },
+    {
+      className: 'dsh-claude-palette-swatches',
+      'data-dsh-claude-lifting': lifted === null ? undefined : '',
+      onPointerLeave: release,
+    },
     COLOURS.map((colour, index) => {
       const label = copy(colour.label)
       const value = colours[index]
-      if (onChange === undefined) {
-        return React.createElement('span', {
-          key: colour.field,
-          className: 'dsh-claude-palette-swatch',
-          style: { background: value },
-          title: label,
-          'aria-label': label,
-          role: 'img',
-        })
-      }
+      const readOut = onChange === undefined
       return React.createElement(
         'span',
-        { key: colour.field, className: 'dsh-claude-palette-swatch', style: { background: value }, title: label },
-        React.createElement('input', {
+        {
+          key: colour.field,
+          className: 'dsh-claude-palette-swatch',
+          style: {
+            color: value,
+            '--dsh-claude-lift-reach': lifted === null ? undefined : String(Math.abs(index - lifted)),
+          } as React.CSSProperties,
+          'data-dsh-claude-lifted': index === lifted ? '' : undefined,
+          'aria-label': readOut ? label : undefined,
+          role: readOut ? 'img' : undefined,
+          onPointerEnter: (event: React.PointerEvent<HTMLSpanElement>) => point(event.currentTarget, index),
+          // A brand disc takes no focus; the reader's discs take it through their colour wells.
+          onFocus: (event: React.FocusEvent<HTMLSpanElement>) => point(event.currentTarget, index),
+          onBlur: release,
+        },
+        onChange === undefined ? null : React.createElement('input', {
           type: 'color',
           className: 'dsh-claude-palette-swatch-input',
           value,
@@ -67,10 +112,20 @@ function Swatches(props: { colours: string[], onChange?: (field: ColourField, va
         }),
       )
     }),
+    // The discs carry their own names; the hint repeats them for the eye only.
+    React.createElement(
+      'span',
+      { ref: hint, className: 'dsh-claude-palette-hint', 'aria-hidden': 'true' },
+      React.createElement('span', { className: 'dsh-claude-palette-hint-text' }),
+    ),
   )
 }
 
-/** The three cards: the two brands, whose colours the page already paints, and the reader's own. */
+/**
+ * The three cards: the two brands, whose colours the page already paints, and
+ * the reader's own. The card the page paints wears the selected border; a brand
+ * card cannot be picked, so it wears it only while its brand is the page's.
+ */
 function PaletteCards(props: { prefs: Prefs, write: SettingsView['write'] }) {
   const { prefs, write } = props
   const brand = PALETTE_CARDS.find((entry) => entry.id === prefs.brand) ?? PALETTE_CARDS[0]
@@ -83,32 +138,50 @@ function PaletteCards(props: { prefs: Prefs, write: SettingsView['write'] }) {
   return React.createElement(
     'div',
     { className: 'dsh-claude-palette-cards', role: 'group', 'aria-label': copy('paletteCardsTitle') },
-    PALETTE_CARDS.map((card) => React.createElement(
-      'div',
-      { key: card.id, className: 'dsh-claude-palette-card', 'data-brand': card.id },
-      React.createElement(Swatches, { colours: COLOURS.map((colour) => colour.pick(card)) }),
-      React.createElement('span', { className: 'dsh-claude-palette-card-name' }, cardName(card)),
-    )),
+    PALETTE_CARDS.map((card) => {
+      const selected = !custom && card.id === brand.id
+      return React.createElement(
+        'div',
+        {
+          key: card.id,
+          className: 'dsh-claude-palette-card',
+          'data-brand': card.id,
+          'data-active': selected ? '' : undefined,
+          'aria-current': selected ? 'true' : undefined,
+        },
+        React.createElement(Swatches, { colours: COLOURS.map((colour) => colour.pick(card)) }),
+        React.createElement('span', { className: 'dsh-claude-palette-card-name' }, cardName(card)),
+      )
+    }),
     React.createElement(
-      'button',
+      'div',
       {
-        type: 'button',
         className: 'dsh-claude-palette-card',
+        role: 'button',
+        tabIndex: 0,
         'data-active': custom ? '' : undefined,
         'aria-pressed': custom ? 'true' : 'false',
         'aria-label': copy('paletteCustom'),
         onClick: () => { if (!custom) write({ paletteColors: PALETTE_COLORING_CUSTOM }) },
+        onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          event.preventDefault()
+          if (!custom) write({ paletteColors: PALETTE_COLORING_CUSTOM })
+        },
       },
       React.createElement(Swatches, { colours: reader, onChange: pick }),
       React.createElement('span', { className: 'dsh-claude-palette-card-name' }, copy('paletteCustom')),
+      custom
+        ? React.createElement('button', {
+          type: 'button',
+          className: 'dsh-claude-palette-reset',
+          onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation()
+            write({ paletteColors: PALETTE_COLORING_BRAND })
+          },
+        }, copy('paletteUseBrand'))
+        : null,
     ),
-    custom
-      ? React.createElement('button', {
-        type: 'button',
-        className: 'dsh-claude-settings-button dsh-claude-palette-reset',
-        onClick: () => write({ paletteColors: PALETTE_COLORING_BRAND }),
-      }, copy('paletteUseBrand'))
-      : null,
   )
 }
 
