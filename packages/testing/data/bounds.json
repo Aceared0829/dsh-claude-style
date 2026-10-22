@@ -150,6 +150,11 @@
       "name": "streamColumnFootPx",
       "value": 16,
       "reason": "The foot the message column keeps under its last row, counting the wrapper the host puts around it: room for the composer that a scroller overflows into. The scenario's lag is read from that last row, so this foot comes off the longest stretch a slide carries before it is compared."
+    },
+    {
+      "name": "liveGroupGapPx",
+      "value": 120,
+      "reason": "How far behind its end the process body the skin shows may sit while the reasoning inside it streams. The catch-up starts at 40 px and the window grows by a line or two between two frames, so a followed body reads tens of pixels; a body nothing followed keeps the whole of its overflow, which is hundreds of pixels at this scenario's reasoning length."
     }
   ]
 }

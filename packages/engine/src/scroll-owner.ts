@@ -13,8 +13,6 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  * The sources, from the strongest claim to the weakest:
  *
  *   jump      the conversation navigator walking to a turn the reader picked
- *   fold      a fold's own position work: putting the position back after
- *             the skin's press on a group header
  *   composer  keeping a reader at the end while the composer card changes height
  *   follow    the follow's hand-back at a structural moment
  *   process   a capped process body's catch-up
@@ -46,14 +44,13 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
 
 export { SCROLL_EASE_LEAD_PX }
 
-export type ScrollSource ='jump' | 'fold' | 'composer' | 'follow' | 'process'
+export type ScrollSource ='jump' | 'composer' | 'follow' | 'process'
 
 /** Each source's rank; a higher rank's claim stands over a lower one's. */
 const SCROLL_SOURCE_RANK: Record<ScrollSource, number> = {
   process: 1,
   follow: 2,
   composer: 3,
-  fold: 5,
   jump: 6,
 }
 /** The sources that only follow the end: the reader holding a container stops them. */

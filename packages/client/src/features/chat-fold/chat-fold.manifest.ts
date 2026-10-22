@@ -3,7 +3,7 @@ import type { FeatureManifest } from '../../core/feature'
 export default {
   id: 'chatFold',
   order: 200,
-  contracts: ['chat.assistant-step-kind', 'chat.flow', 'chat.follow-threshold', 'chat.group-part', 'chat.group-part-reasoning', 'chat.phase', 'chat.process-answer', 'chat.reasoning-text', 'chat.scroller', 'chat.shimmer', 'chat.shimmer-attribute', 'chat.shimmer-legacy-attribute', 'chat.streaming-attribute', 'chat.think-row', 'chat.think-running', 'chat.tool-call-kind', 'chat.turn-attribute', 'chat.user-kind', 'chat.user-row', 'composer.composing', 'composer.echo', 'fold.expanded', 'process.activity', 'process.body', 'process.expanded-mode', 'process.group', 'process.header-label'],
+  contracts: ['chat.assistant-step-kind', 'chat.flow', 'chat.follow-threshold', 'chat.group-part', 'chat.group-part-reasoning', 'chat.phase', 'chat.process-answer', 'chat.reasoning-text', 'chat.scroller', 'chat.shimmer', 'chat.shimmer-attribute', 'chat.shimmer-legacy-attribute', 'chat.streaming-attribute', 'chat.think-row', 'chat.think-running', 'chat.tool-call-kind', 'chat.turn-attribute', 'chat.user-kind', 'chat.user-row', 'composer.composing', 'composer.echo', 'fold.expanded', 'process.activity', 'process.body', 'process.body-hidden', 'process.chevron', 'process.expanded-mode', 'process.group', 'process.header-label', 'process.icon'],
   pref: 'chatAnimations',
   yieldsTo: 'dsh-chat-ux',
   stylesheets: [

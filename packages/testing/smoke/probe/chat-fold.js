@@ -85,11 +85,29 @@
         await probe.settle()
         return summaryOf()
       }
+      // What the reader sees of a body: a box. The host folds with
+      // hidden="until-found", which draws no box while content-visibility
+      // keeps it hidden, so the attribute alone answers nothing.
+      var shown = function (body) {
+        var box = body.getBoundingClientRect()
+        return box.height > 0 && body.checkVisibility()
+      }
+      var lookOf = function (header) {
+        var chevron = header.querySelector('[data-step-process-chevron]')
+        var icon = header.querySelector('[data-step-process-icon]')
+        return {
+          expanded: header.getAttribute('aria-expanded'),
+          chevron: chevron === null ? null : getComputedStyle(chevron).opacity,
+          chevronTurn: chevron === null ? null : getComputedStyle(chevron).transform,
+          icon: icon === null ? null : getComputedStyle(icon).opacity,
+        }
+      }
       r.fold = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
-        groupOpen: !foldBody.hasAttribute('hidden'),
+        groupShown: shown(foldBody),
+        headerLook: lookOf(foldHeader),
         summary: await settledSummary(),
-        expandedUntouched: !foldExpandedBody.hasAttribute('hidden'),
+        expandedUntouched: shown(foldExpandedBody),
         clicks: Object.assign({}, window.__foldClicks),
       }
       // Another call arrives in the group: its figure rolls to the new count.
@@ -112,7 +130,7 @@
       const answeredBody = document.getElementById('debugAnsweredBody')
       const stoppedGroup = document.getElementById('debugStoppedGroup')
       const stoppedBody = document.getElementById('debugStoppedBody')
-      const foldedBy = (body) => body.hasAttribute('hidden')
+      const foldedBy = (body) => !shown(body)
       foldThink.setAttribute('data-state', 'ok')
       foldWords.removeAttribute('data-shimmer')
       foldWords.textContent = 'Worked'
@@ -120,7 +138,8 @@
       await probe.settle()
       r.fold.after = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
-        groupOpen: !foldBody.hasAttribute('hidden'),
+        groupShown: shown(foldBody),
+        headerLook: lookOf(foldHeader),
         summary: summaryOf(),
         clicks: Object.assign({}, window.__foldClicks),
       }
@@ -128,8 +147,8 @@
       // host left it, one whose turn was stopped is opened again after the host
       // folds it.
       r.fold.turnGroups = {
-        answeredOpen: !foldedBy(answeredBody),
-        stoppedOpen: !foldedBy(stoppedBody),
+        answeredShown: !foldedBy(answeredBody),
+        stoppedShown: !foldedBy(stoppedBody),
         stoppedGroupPresent: stoppedGroup.isConnected,
         answeredGroupPresent: answeredGroup.isConnected,
       }
@@ -141,7 +160,7 @@
       lateAnswer.setAttribute('data-chat-turn', '2')
       stoppedGroup.after(lateAnswer)
       await probe.settle()
-      r.fold.stoppedLateAnswer = { open: !foldedBy(stoppedBody) }
+      r.fold.stoppedLateAnswer = { shown: !foldedBy(stoppedBody) }
       // The reasoning's streamed window (reasoning-stream.ts, transitions.dev's
       // "Reasoning stream"): the window takes the text's own height up to the cap
       // reasoning may reach, and only at that cap does the text step up on the
@@ -220,10 +239,16 @@
       disclosure.click()
       await probe.settle()
       r.fold.press.reopened = disclosureBody() !== null
-      // The reader's own press in this phase: the module leaves it alone.
+      // The reader's own press in this phase: it reaches the host, and the group
+      // keeps standing. The mark the skin held came off in that press, so the
+      // host's own open state is what shows the body from here.
       foldHeader.click()
       await probe.settle()
-      r.fold.readerOpen = !foldBody.hasAttribute('hidden')
+      r.fold.readerOpen = { shown: shown(foldBody), look: lookOf(foldHeader), clicks: window.__foldClicks.group }
+      // The second press is the one that closes it.
+      foldHeader.click()
+      await probe.settle()
+      r.fold.readerClosed = { shown: shown(foldBody), look: lookOf(foldHeader) }
 
       // A message the reader sent, taller than the cap (message-fold.ts): the
       // skin clamps the bubble and softens its bottom edge, and the control it

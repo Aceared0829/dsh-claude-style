@@ -175,6 +175,15 @@ export const MESSAGE_ENTER_ATTR = 'data-dsh-claude-message-enter'
  */
 export const MESSAGE_FOLD_ATTR = 'data-dsh-claude-message-fold'
 /**
+ * On a process group whose body the skin shows while the host keeps its own
+ * disclosure folded (packages/client/src/features/chat-fold/process-fold.ts).
+ * The stylesheet lifts the host's searchable hidden state off the body, and the
+ * capped body's follow (features/chat-follow/process-follow.ts) reads the mark
+ * to keep that window at its end, since the host's own follow hangs on the state
+ * the skin never opens.
+ */
+export const PROCESS_SHOWN_ATTR = 'data-dsh-claude-process-shown'
+/**
  * On a node the skin owns purely for its own bookkeeping — the caret
  * motion's probe container and the caret it draws. The shared scheduler
  * ignores mutations against such a node (D40), so measuring or redrawing

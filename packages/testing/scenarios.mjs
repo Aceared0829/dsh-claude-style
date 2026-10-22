@@ -23,6 +23,7 @@ import { hostFoldMotionScenario } from './host-fold-motion.mjs'
 import { streamPaceScenario } from './stream-pace.mjs'
 import { motionScenario } from './motion.mjs'
 import { processSummaryScenario } from './process-summary.mjs'
+import { liveGroupFollowScenario } from './live-group-follow.mjs'
 import { fileMergeScenario } from './file-merge.mjs'
 import { reasoningStreamScenario } from './reasoning-stream.mjs'
 import { waitLineScenario } from './wait-line.mjs'
@@ -529,6 +530,8 @@ const SCENARIOS = {
   sidebarRail: sidebarRailScenario({ check }),
   /** The waiting line and the counted process headers (process-summary.mjs, D74). */
   processSummary: processSummaryScenario({ check }),
+  /** The running process group the skin shows while the host's disclosure stays closed: followed to its end, its edge fades the stylesheet's (live-group-follow.mjs). */
+  liveGroupFollow: liveGroupFollowScenario({ check }),
   /** The file-change rows of one file read as one row (file-merge.mjs). */
   fileMerge: fileMergeScenario({ check }),
   /** The reasoning's streamed window while the model thinks (reasoning-stream.mjs, D74). */

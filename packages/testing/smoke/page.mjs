@@ -303,7 +303,7 @@ function page(name, tier, cases, probe = PROBE) {
   var longReasoning = ''
   for (var long = 1; long <= 36; long += 1) longReasoning += '想得久一点第 ' + long + ' 行。' + (long < 36 ? '<br>' : '')
   var foldArea = name === 'chat-fold'
-    ? '<style>[data-step-process-body][hidden] { display: none; } #debugGroupHeader { display: flex; gap: 6px; padding: 0; max-width: 100%; } #debugThinkText, #debugGrowText { line-height: 24px; } #debugThinkBody, #debugGrowBody { max-height: 400px; overflow: hidden; }</style>' +
+    ? '<style>[data-step-process-body][hidden="until-found"] { content-visibility: hidden; } #debugGroupHeader { display: flex; gap: 6px; padding: 0; max-width: 100%; } #debugThinkText, #debugGrowText { line-height: 24px; } #debugThinkBody, #debugGrowBody { max-height: 400px; overflow: hidden; }</style>' +
       '<div data-variant="think" data-state="running" id="debugThink"><button type="button" id="debugThinkRow">Thinking</button>' +
         '<div id="debugThinkBody">' +
           '<div data-markdown-variant="compact" id="debugThinkText">' + foldReasoning + '</div>' +
@@ -315,7 +315,7 @@ function page(name, tier, cases, probe = PROBE) {
         '</div>' +
       '</div>' +
       '<div data-step-process id="debugGroup">' +
-        '<button type="button" data-process-activity id="debugGroupHeader"><span aria-hidden="true">icon</span><span data-shimmer id="debugGroupWords">Working · building</span></button>' +
+        '<button type="button" data-process-activity id="debugGroupHeader" aria-expanded="false"><span aria-hidden="true"><span data-step-process-icon>icon</span><span data-step-process-chevron>chevron</span></span><span data-shimmer id="debugGroupWords">Working · building</span></button>' +
         '<div data-step-process-body hidden="until-found" id="debugGroupBody"><div data-step-process-content id="debugGroupContent">' +
           '<div data-chat-flow-kind="assistant-step" data-chat-group-part="reasoning">thought</div>' +
           '<div data-chat-flow-kind="tool-call">call</div>' +
@@ -338,12 +338,12 @@ function page(name, tier, cases, probe = PROBE) {
       '</div>' +
       '<div data-chat-flow id="debugTurnFlow">' +
         '<div data-step-process id="debugAnsweredGroup" data-chat-turn="1">' +
-          '<button type="button" data-process-activity id="debugAnsweredHeader"><span>Worked</span></button>' +
-          '<div data-step-process-body id="debugAnsweredBody"><div data-step-process-content>answered work</div></div>' +
+          '<button type="button" data-process-activity id="debugAnsweredHeader" aria-expanded="false"><span>Worked</span></button>' +
+          '<div data-step-process-body hidden="until-found" id="debugAnsweredBody"><div data-step-process-content>answered work</div></div>' +
         '</div>' +
         '<div data-chat-flow-kind="assistant-step" data-turn-process-answer data-chat-turn="1">answer</div>' +
         '<div data-step-process id="debugStoppedGroup" data-chat-turn="2">' +
-          '<button type="button" data-process-activity id="debugStoppedHeader"><span>Stopped</span></button>' +
+          '<button type="button" data-process-activity id="debugStoppedHeader" aria-expanded="false"><span>Stopped</span></button>' +
           '<div data-step-process-body hidden="until-found" id="debugStoppedBody"><div data-step-process-content>stopped work</div></div>' +
         '</div>' +
       '</div>' +
@@ -358,10 +358,15 @@ function page(name, tier, cases, probe = PROBE) {
       '    else think.setAttribute("data-expanded", "");' +
       '  });' +
       '  var body = document.getElementById("debugGroupBody");' +
-      '  document.getElementById("debugGroupHeader").addEventListener("click", function () {' +
+      '  var groupHeader = document.getElementById("debugGroupHeader");' +
+      '  var flip = function (button, target) {' +
+      '    if (target.hasAttribute("hidden")) target.removeAttribute("hidden");' +
+      '    else target.setAttribute("hidden", "until-found");' +
+      '    button.setAttribute("aria-expanded", String(!target.hasAttribute("hidden")));' +
+      '  };' +
+      '  groupHeader.addEventListener("click", function () {' +
       '    window.__foldClicks.group += 1;' +
-      '    if (body.hasAttribute("hidden")) body.removeAttribute("hidden");' +
-      '    else body.setAttribute("hidden", "until-found");' +
+      '    flip(groupHeader, body);' +
       '  });' +
       '  var flow = document.getElementById("debugFlow");' +
       '  document.addEventListener("click", function (event) {' +
@@ -398,10 +403,10 @@ function page(name, tier, cases, probe = PROBE) {
       '  });' +
       '  var wireGroup = function (headerId, bodyId) {' +
       '    var groupBody = document.getElementById(bodyId);' +
-      '    document.getElementById(headerId).addEventListener("click", function () {' +
+      '    var header = document.getElementById(headerId);' +
+      '    header.addEventListener("click", function () {' +
       '      window.__foldClicks.group += 1;' +
-      '      if (groupBody.hasAttribute("hidden")) groupBody.removeAttribute("hidden");' +
-      '      else groupBody.setAttribute("hidden", "until-found");' +
+      '      flip(header, groupBody);' +
       '    });' +
       '  };' +
       '  wireGroup("debugAnsweredHeader", "debugAnsweredBody");' +

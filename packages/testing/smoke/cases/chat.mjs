@@ -131,7 +131,14 @@ export default {
     basicChecks(r)
     const fold = r.fold || {}
     check('a running thinking row and a running process group are opened',
-      fold.thinkOpen === true && fold.groupOpen === true, JSON.stringify(fold))
+      fold.thinkOpen === true && fold.groupShown === true, JSON.stringify(fold))
+    check("the running group stands open without the host's own disclosure being opened: its header still says folded, and the skin never pressed it",
+      fold.headerLook?.expanded === 'false' && (fold.clicks || {}).group === 0,
+      JSON.stringify({ look: fold.headerLook, clicks: fold.clicks }))
+    check('the header reads as an opened one while the skin shows the body: the chevron stands and turns up, the activity icon steps aside',
+      fold.headerLook?.chevron === '1' && fold.headerLook?.icon === '0' &&
+        /matrix\(-1, 0, 0, -1, 0, 0\)/.test(fold.headerLook?.chevronTurn ?? ''),
+      JSON.stringify(fold.headerLook))
     const summary = fold.summary || {}
     check('the group\'s header says what it holds in place of the host\'s words, and names itself with the sentence',
       summary.marked === true && summary.text === '1 thought, 1 tool call' && summary.form === 'full' &&
@@ -157,12 +164,18 @@ export default {
     const after = fold.after || {}
     check('the thinking row folds back when the reasoning stops', after.thinkOpen === false, JSON.stringify(after))
     check('the process group folds back when the section ends, and its summary stops sweeping',
-      after.groupOpen === false && (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
-    check('a group the host folds when its turn is stopped opens again, so a stopped turn keeps its work on the page',
-      fold.turnGroups?.answeredOpen === false && fold.turnGroups?.stoppedOpen === true, JSON.stringify(fold.turnGroups))
+      after.groupShown === false && after.headerLook?.expanded === 'false' &&
+        (after.summary || {}).running === false && (after.summary || {}).band === null, JSON.stringify(after))
+    check('a group the host folds when its turn is stopped stands again, so a stopped turn keeps its work on the page',
+      fold.turnGroups?.answeredShown === false && fold.turnGroups?.stoppedShown === true, JSON.stringify(fold.turnGroups))
     check('a stopped turn that later carries an answer row closes like any answered one',
-      fold.stoppedLateAnswer?.open === false, JSON.stringify(fold.stoppedLateAnswer))
-    check('a group the reader opened himself in that phase stays open', fold.readerOpen === true, JSON.stringify(fold.readerOpen))
+      fold.stoppedLateAnswer?.shown === false, JSON.stringify(fold.stoppedLateAnswer))
+    check("the reader's own press on the running group reaches the host, and the group keeps standing",
+      fold.readerOpen?.shown === true && fold.readerOpen?.look?.expanded === 'true' && fold.readerOpen?.clicks === 1,
+      JSON.stringify(fold.readerOpen))
+    check('the second press on it is the one that folds it',
+      fold.readerClosed?.shown === false && fold.readerClosed?.look?.expanded === 'false',
+      JSON.stringify(fold.readerClosed))
     const message = fold.message || {}
     const messageOpen = fold.messageOpen || {}
     const messageShort = fold.messageShort || {}

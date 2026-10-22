@@ -103,3 +103,72 @@ body[data-dsh-claude-style] .dsh-claude-sweep-glyphs.dsh-claude-process-summary-
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-process-summary-digit {
   animation: none;
 }
+
+/* ---------- chat fold: a process group whose body the skin shows ---------- */
+/* The host folds a group's body with the HTML searchable hidden state:
+   hidden="until-found" keeps the body in the document and renders it with
+   content-visibility: hidden (the host's useSearchableHidden), so the body is a
+   real scroll container the whole time and the stylesheet can show it without
+   opening the host's own disclosure (process-fold.ts). The cost is the header's
+   aria-expanded: it goes on saying folded while the body stands, because the
+   host writes that attribute from the state the skin does not own. */
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process][data-dsh-claude-process-shown] [data-step-process-body][hidden="until-found"] {
+  content-visibility: visible;
+}
+
+/* The header reads as the opened one while the mark stands: the chevron the
+   host draws for the folded direction turns up, the activity icon leaves the
+   same box to it, and the control keeps the room the host's own
+   [aria-expanded=true] title rules give an opened one. */
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process][data-dsh-claude-process-shown] [data-step-process-icon] {
+  opacity: 0;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process][data-dsh-claude-process-shown] [data-step-process-chevron] {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process][data-dsh-claude-process-shown] button[data-process-activity] {
+  padding-bottom: 8px;
+}
+
+/* The body's edge fades are the host's own (data-scroll-up and data-scroll-down
+   from useProcessScroll, and the mask of the same 24px bands), computed only
+   while the host's disclosure stands open: folded, its sync reads the body as
+   hidden and rests with no edges. So the bands are painted here, keyed on the
+   same mark: each scroll-driven animation turns one registered stop on over the
+   first pixel of travel from its edge, which is the host's own rule — the band
+   stands while that edge can be scrolled and leaves once it is reached. A body
+   with nothing to scroll has an inactive scroll timeline, which leaves both
+   stops at 0 and the mask hiding nothing. */
+@property --dsh-claude-process-fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --dsh-claude-process-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process][data-dsh-claude-process-shown] [data-step-process-body] {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--dsh-claude-process-fade-top), #000 calc(100% - var(--dsh-claude-process-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--dsh-claude-process-fade-top), #000 calc(100% - var(--dsh-claude-process-fade-bottom)), transparent 100%);
+  animation: dsh-claude-process-fade-in-top linear both, dsh-claude-process-fade-out-bottom linear both;
+  animation-timeline: scroll(self), scroll(self);
+  animation-range: 0 1px, calc(100% - 1px) 100%;
+}
+
+@keyframes dsh-claude-process-fade-in-top {
+  from { --dsh-claude-process-fade-top: 0px; }
+  to { --dsh-claude-process-fade-top: 24px; }
+}
+
+@keyframes dsh-claude-process-fade-out-bottom {
+  from { --dsh-claude-process-fade-bottom: 24px; }
+  to { --dsh-claude-process-fade-bottom: 0px; }
+}
+

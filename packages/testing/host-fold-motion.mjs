@@ -78,23 +78,35 @@ function watch(page) {
 }
 
 /**
- * Press the newest process group's header, as the host's own control takes a
- * press, and mark the frame it happened on.
+ * Press the newest process group's header twice, the way a reader closes a
+ * running group: the first press opens the host's own disclosure, which the
+ * skin's mark had left closed, and the group keeps standing; the second press
+ * is the one the host folds it on. The frame the second press landed on is the
+ * one marked.
  *
- * @returns what the header said before the press, and the frame the press
- *     landed on; null when there was no header.
+ * @returns what the header said before the opening press, what it said before
+ *     the closing one, and the frame the closing press landed on; null when
+ *     there was no header.
  */
-function pressGroup(page) {
-  return page.evaluate((marks) => {
+async function pressGroup(page) {
+  const before = await page.evaluate((marks) => {
     const groups = [...document.querySelectorAll(marks.group)]
     const group = groups[groups.length - 1]
     const header = group === undefined ? null : group.querySelector('[aria-controls]')
     if (!(header instanceof HTMLElement)) return null
     const expanded = header.getAttribute('aria-expanded')
+    header.click()
+    return expanded
+  }, HOST)
+  if (before === null) return null
+  return page.evaluate(({ marks, expanded }) => {
+    const groups = [...document.querySelectorAll(marks.group)]
+    const group = groups[groups.length - 1]
+    const header = group.querySelector('[aria-controls]')
     window.__hostFoldPress = window.__hostFoldTrace.length
     header.click()
     return { expanded, at: window.__hostFoldPress }
-  }, HOST)
+  }, { marks: HOST, expanded: before })
 }
 
 function hostFoldMotionScenario({ check }) {
@@ -125,7 +137,8 @@ function hostFoldMotionScenario({ check }) {
         const group = groups[groups.length - 1]
         if (scroller === null || column === null || group === undefined) return false
         const body = group.querySelector(marks.body)
-        if (body === null || body.hasAttribute('hidden')) return false
+        // The body the skin shows is drawn while the host still keeps it folded.
+        if (body === null || body.getBoundingClientRect().height === 0) return false
         if (group.querySelector(marks.reasoning) === null) return false
         return scroller.scrollHeight - scroller.clientHeight > scroller.clientHeight / 2
       }, HOST, { timeout: 30000 })
