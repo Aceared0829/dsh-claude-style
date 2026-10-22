@@ -62,6 +62,7 @@ const read = (page) => page.evaluate(() => {
     switching: body.hasAttribute('data-dsh-claude-surface-switching'),
     box: switchBox === null ? null : {
       place: root.getAttribute('data-dsh-claude-surface-place'),
+      parent: root.parentElement === document.body ? 'body' : (root.parentElement?.className ?? null),
       inBody: root.parentElement === body,
       fixed: getComputedStyle(root).position === 'fixed',
       x: Math.round(switchBox.x),
@@ -154,6 +155,15 @@ function dsBotScenario({ check }) {
       })
       await page.waitForTimeout(1000)
       notes.desktop = await read(page)
+      // The Chat side under the same strip: the theme's part marks are gone
+      // with the theme, so the caption-strip anchor is gone too — the switch
+      // must still stand, in ds-bot's own top row, or the reader is stuck.
+      await press(page, 'chat')
+      await settle(page, 'chat')
+      notes.desktopChat = await read(page)
+      await press(page, 'code')
+      await settle(page, 'code')
+      await page.waitForTimeout(500)
       // The sidebar narrowed until its column cannot hold the switch: a headless
       // runner's window manager swallows the host's Control+Alt chord, so the
       // narrow viewport is the reader's way there, and the host's own toggle is
@@ -194,6 +204,11 @@ function dsBotScenario({ check }) {
           themed(desktop) && band.place === 'band' && band.inBody && band.fixed &&
             band.right === band.columnRight - 12 && band.y >= 0 && band.y + band.height <= 40,
           JSON.stringify(band)),
+        check('桌面端在聊天一侧，切换留在 ds-bot 自己的顶行、没有被标题栏的测量丢掉',
+          notes.desktopChat.bot && !notes.desktopChat.theme && notes.desktopChat.switchShown &&
+            notes.desktopChat.box?.place === 'row' && notes.desktopChat.box?.parent === 'bt-side-top' &&
+            notes.desktopChat.box?.fixed === false,
+          JSON.stringify(notes.desktopChat.box)),
         check('侧栏收窄到放不下时切换离开屏幕，但仍在测量之中',
           rail.box !== null && rail.box.place === 'tucked' && rail.box.inBody && !rail.switchShown,
           JSON.stringify(rail.box)),

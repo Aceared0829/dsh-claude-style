@@ -249,7 +249,12 @@ export function install() {
       detach()
       return
     }
-    const band = desktopBand()
+    // The caption strip is the host's, and its placement measures the host's
+    // sidebar column through this theme's part marks. Those marks leave with
+    // the theme (D74), so beside ds-bot's Bot surface the strip has no column
+    // to sit against: there the switch stays in ds-bot's own top row, or a
+    // page booting on that side would lose the way back.
+    const band = mode === 'code' ? desktopBand() : null
     if (band !== null) placeInBand(band)
     else placeInRow(mode)
   }
