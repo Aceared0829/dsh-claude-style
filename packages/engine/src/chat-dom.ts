@@ -1,4 +1,4 @@
-import { CHAT_FLOW_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_KIND_ATTRIBUTE, FOLLOW_THRESHOLD_PX, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_KIND_ATTRIBUTE, SUBMISSION_ECHO_SELECTOR, USER_ROW_KIND } from '@dsh-claude-style/contracts/dom'
 
 /**
  * The chat area's DOM helpers: the column and the session's scroll container, the
@@ -40,22 +40,14 @@ export function conversationColumn() {
 }
 
 /**
- * Whether the reader is at the session's end right now, by the host's own line.
- * @param scroller - the session's scroll container.
- * @returns true within the host's own threshold of the end.
- */
-export function isAtBottom(scroller: Element) {
-  return scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop <= FOLLOW_THRESHOLD_PX
-}
-
-/**
  * Whether a pointer event landed on a container's own scrollbar strip.
  *
  * The one intent with no event of its own: a drag of the bar is a pointer
- * event, so the scroll owner (shared/scroll-owner.ts) tells the strip from the
- * content by the node the event was addressed to and the geometry the browser
- * leaves beside `clientWidth`. False on an overlay scrollbar, which takes no
- * room: there the pointer is over the content, and the content is not the bar.
+ * event, so the scroll owner (packages/engine/src/scroll-owner.ts) tells the
+ * strip from the content by the node the event was addressed to and the
+ * geometry the browser leaves beside `clientWidth`. False on an overlay
+ * scrollbar, which takes no room: there the pointer is over the content, and
+ * the content is not the bar.
  *
  * @param container - the scrolling element whose strip is asked about.
  * @param event - the pointer event.

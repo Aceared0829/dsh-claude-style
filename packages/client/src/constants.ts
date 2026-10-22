@@ -127,7 +127,7 @@ export const CHAT_FOLLOW_ATTR = 'data-dsh-claude-chat-follow'
 export const FOLLOW_HOLD_ATTR = 'data-dsh-claude-follow-hold'
 /**
  * On a container the reader has taken over with his own scrolling
- * (packages/client/src/shared/scroll-owner.ts), until he comes back to its end. The
+ * (packages/engine/src/scroll-owner.ts), until he comes back to its end. The
  * waiting line's pin (packages/client/src/features/chat-wait/chat-wait.css) reads it: a
  * pin stands only while the skin's own follow is the one moving the position,
  * never over content the reader scrolled back to.
@@ -180,7 +180,7 @@ export const MESSAGE_FOLD_ATTR = 'data-dsh-claude-message-fold'
 export const QUIET_ATTR = 'data-dsh-claude-quiet'
 /**
  * On a host element the stylesheet keys on, carrying the name of the part it
- * plays (packages/client/src/core/parts.ts). Every rule that used to match a
+ * plays (packages/engine/src/parts.ts). Every rule that used to match a
  * fragment of a hashed host class name reads this attribute instead, so a match
  * is exact, a host upgrade that drops the element leaves the part unresolved
  * rather than silently matching something else, and no other skin's class name
@@ -189,11 +189,12 @@ export const QUIET_ATTR = 'data-dsh-claude-quiet'
 export const PART_ATTR = 'data-dsh-claude-part'
 /**
  * On a host element, naming the parts its own subtree holds
- * (packages/client/src/core/parts.ts, core/parts-table.ts). A rule that used to ask
- * the browser whether an element contains another (`A:has(B)`) reads this
- * mark instead: the marking pass already walks the subtree, so the answer
- * costs one attribute read rather than a style pass over every candidate
- * (D9). The values are the relation names declared in the parts table.
+ * (packages/engine/src/parts.ts, packages/engine/src/parts-table.ts). A rule
+ * that used to ask the browser whether an element contains another
+ * (`A:has(B)`) reads this mark instead: the marking pass already walks the
+ * subtree, so the answer costs one attribute read rather than a style pass
+ * over every candidate (D9). The values are the relation names declared in
+ * the parts table.
  */
 export const HOLDS_ATTR = 'data-dsh-claude-holds'
 /**

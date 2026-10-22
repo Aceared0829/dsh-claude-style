@@ -66,6 +66,3 @@ export function createHostMenuPlacement(options: { trigger(): HTMLElement | null
 
   return { place, watch, unwatch }
 }
-
-/** The account card's placement (createHostMenuPlacement). */
-export type HostMenuPlacement = ReturnType<typeof createHostMenuPlacement>

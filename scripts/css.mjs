@@ -152,7 +152,7 @@ function checkHasPlacement(where, selector) {
  * Refuse a `:has()` that asks about a mark (D9). What the argument selects on is
  * what the skin already knows — a part, a host `data-*` mark, one of the skin's
  * own markers — so the pass answers it as `data-dsh-claude-holds`
- * (core/parts-table.ts) and the rule reads the answer. Two shapes stay: a
+ * (packages/engine/src/parts-table.ts) and the rule reads the answer. Two shapes stay: a
  * `:has()` over state the skin cannot mark (a pseudo-class, a class name), and
  * the document element's own entry into scope, where the whole gate compound
  * sits inside the `:has()` (D9) and nothing else can carry the rule.
@@ -162,7 +162,7 @@ function checkHasMarks(where, selector) {
     if (pseudo.value.toLowerCase() !== ':has') return
     if (compoundOf(pseudo).some((node) => node.type === 'tag' && node.value === DOCUMENT_TAG)) return
     pseudo.walkAttributes((attribute) => {
-      throw new Error(`build: ${where} has a :has() asking whether an element holds [${attribute.attribute}]; write the relation in packages/client/src/core/parts-table.ts and read ${HOLDS_ATTRIBUTE} instead`)
+      throw new Error(`build: ${where} has a :has() asking whether an element holds [${attribute.attribute}]; write the relation in packages/engine/src/parts-table.ts and read ${HOLDS_ATTRIBUTE} instead`)
     })
   })
 }
@@ -529,7 +529,7 @@ function checkAttributes(read, sources) {
  * `[data-dsh-claude-part~="x"]` is the whole of a host anchor now, so a
  * misspelt or retired name leaves a rule that matches nothing — the failure the
  * substring selectors hid, made loud. The table is data
- * (packages/client/src/core/parts-table.ts), so the build reads the same list the
+ * (packages/engine/src/parts-table.ts), so the build reads the same list the
  * browser half walks.
  *
  * @param parts - part name → where a selector first reads it.
@@ -548,7 +548,7 @@ function checkParts(parts) {
  * The part names and hold relations the marking pass answers from, read in Node
  * the way the browser half builds them: the tables are functions of the skin's
  * own attribute vocabulary, which this reads from the browser half's constants
- * (packages/client/src/core/parts.ts, D73).
+ * (packages/engine/src/parts.ts, D73).
  */
 function partsVocabulary() {
   const { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } = loadModule('packages/client/src/constants.ts')

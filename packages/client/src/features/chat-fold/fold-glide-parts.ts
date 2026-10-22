@@ -27,7 +27,7 @@ export const FOLD_ROLL_MS = motionMs('--dsh-claude-duration-move')
 export const FOLD_VISIBLE_SHARE = 0.9
 /** An intent older than this is no longer trustworthy (no layout change followed, or it came from elsewhere). */
 export const FOLD_INTENT_TTL_MS = 500
-export { DISCLOSURE_ROW_SELECTOR as FOLD_DISCLOSURE_SELECTOR, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_TOGGLE_SELECTOR } from '@dsh-claude-style/contracts/dom'
+export { FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_TOGGLE_SELECTOR } from '@dsh-claude-style/contracts/dom'
 /** Popup controls (menus, dialogs, lists): they open no folding body, so the whole module skips them. */
 export const FOLD_POPUP_SELECTOR = '[aria-haspopup]'
 /** How many frames to wait at most for React to take the collapse before the shutdown animation is withdrawn. */
@@ -158,9 +158,6 @@ export function foldProcessBody(control: Element) {
 
 /**
  * Whether the reader is at the session's end right now.
- *
- * This one walks up from the pressed control; shared/chat-dom.ts's isAtBottom
- * answers the same question from the scroller. Same test, different entrance.
  */
 export function foldControlAtBottom(control: Element) {
   const scroller = control.closest(CONVERSATION_SCROLL_SELECTOR)

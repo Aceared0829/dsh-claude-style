@@ -92,14 +92,6 @@ export function localClassName(token: string): string | null {
   return LOCAL_NAME.test(parts[1]) ? parts[1] : LOCAL_NAME.test(last) ? last : null
 }
 
-/** Whether `element` carries a host class whose local name is exactly `local`. */
-export function hasLocalClass(element: Element, local: string): boolean {
-  for (const token of element.classList) {
-    if (localClassName(token) === local) return true
-  }
-  return false
-}
-
 /**
  * Whether `element` is one of the skin's own nodes (D3). The skin spells its
  * classes with the `dsh-claude-` prefix as whole tokens, so compared whole and

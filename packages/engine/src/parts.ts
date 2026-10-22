@@ -7,13 +7,13 @@ import { subscribeMutations } from './bus'
  * The marking pass behind the skin's part vocabulary (D3) and the holds a
  * stylesheet reads as structure (D9).
  *
- * The tables in core/parts-table.ts say which host class names the skin reads
- * and what it calls each one; this module walks the page once, reads each host
- * class name's local part exactly, and writes the skin's own names for it onto
- * the element as `data-dsh-claude-part`. A stylesheet then matches one
- * attribute whole, so a match cannot take a neighbour that merely holds the
- * same fragment, a host rename leaves the rule quiet instead of wrong, and no
- * other plugin's class name can collide with these rules.
+ * The tables in packages/engine/src/parts-table.ts say which host class names
+ * the skin reads and what it calls each one; this module walks the page once,
+ * reads each host class name's local part exactly, and writes the skin's own
+ * names for it onto the element as `data-dsh-claude-part`. A stylesheet then
+ * matches one attribute whole, so a match cannot take a neighbour that merely
+ * holds the same fragment, a host rename leaves the rule quiet instead of
+ * wrong, and no other plugin's class name can collide with these rules.
  *
  * A region scopes a local name that means different things in different places
  * — the composer's `_row` is not the tool call's, the sidebar's `_title` is not
@@ -354,16 +354,6 @@ export function clearParts(root: ParentNode = document) {
   }
   for (const state of HOLD_STATES) state.held.clear()
   HOLD_COUNTS.clear()
-}
-
-/**
- * Mark one subtree with the parts its host class names carry. A reader outside
- * the walk — a feature that just stamped a menu card, or a unit test — calls
- * this directly.
- */
-export function markParts(root: Element) {
-  const { lookups, roots } = contextAt(root)
-  walk(root, lookups, roots)
 }
 
 /**

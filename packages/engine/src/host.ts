@@ -1,4 +1,4 @@
-import { CHAT_FLOW_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
@@ -229,11 +229,6 @@ export function findComposerSeat(scope: ParentNode = document) {
 /** The session scroller: the element the host hangs its own follow off (D40). */
 export const findConversationScroller = cacheFirst<HTMLElement>(CONVERSATION_SCROLL_SELECTOR)
 
-/** The chat columns on the page: the root every chat-area behaviour scopes to. */
-export function findChatFlows() {
-  return document.querySelectorAll<HTMLElement>(CHAT_FLOW_SELECTOR)
-}
-
 /** The shown conversation: the element carrying its session id, and the id itself. */
 const CONVERSATION_SESSION_ATTR = CONVERSATION_SESSION_ATTRIBUTE
 const CONVERSATION_SESSION = `[${CONVERSATION_SESSION_ATTR}]`
@@ -359,21 +354,6 @@ export function turnForSeq(outline: HostOutlineTurn[] | undefined, seq: number):
     if (found === null || entry.turn > found) found = entry.turn
   }
   return found
-}
-
-/**
- * The event seq a turn started at, off the same whole-log outline: what the
- * host's own jump pages history through when that turn is outside the loaded
- * window. An outline that does not hold the turn answers null.
- */
-export function outlineSeq(outline: HostOutlineTurn[] | undefined, turn: number): number | null {
-  if (!Array.isArray(outline)) return null
-  for (const entry of outline) {
-    if (entry === null || typeof entry !== 'object') continue
-    if (entry.turn !== turn || !Number.isSafeInteger(entry.seq)) continue
-    return entry.seq
-  }
-  return null
 }
 
 /**

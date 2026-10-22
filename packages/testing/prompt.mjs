@@ -68,4 +68,4 @@ async function waitForTurn(page, timeoutMs = 90000) {
   await page.waitForFunction((selector) => document.querySelectorAll(selector).length === 0, HOST.streaming, { timeout: timeoutMs })
 }
 
-export { sendPrompt, waitForTurn, HOST as PROMPT_HOST }
+export { sendPrompt, waitForTurn }

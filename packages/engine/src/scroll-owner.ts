@@ -8,7 +8,7 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
 /**
  * The chat area's scroll positions have one writer (D40): the conversation's
  * scroller and every capped process body are written here and nowhere else.
- * Features ask; this module decides, on the spring of shared/scroll-ease.ts.
+ * Features ask; this module decides, on the spring of packages/engine/src/scroll-ease.ts.
  *
  * The sources, from the strongest claim to the weakest:
  *
@@ -279,8 +279,8 @@ function noteIntent(event: Event) {
   // toward the end, since none of them can be sent by a follower.
   const towardEnd = !(event instanceof WheelEvent) || event.deltaY >= 0
   if (event.type !== 'touchmove') {
-    // The container is kept by shared/chat-dom.ts: a trackpad sends hundreds of
-    // these a second.
+    // The container is kept by packages/engine/src/chat-dom.ts: a trackpad sends
+    // hundreds of these a second.
     const scroller = conversationScroller()
     claimConversation()
     // Only once the content has grown a scrollbar: before that there is nothing to hold.
@@ -377,7 +377,7 @@ export function writeScroll(container: Element, value: number, source: ScrollSou
  * the ease running there.
  * @param destination - asked every frame: the position wanted now.
  * @param wanted - asked every frame; false ends the ease where it is.
- * @param lead - the longest stretch glided (shared/scroll-ease.ts).
+ * @param lead - the longest stretch glided (packages/engine/src/scroll-ease.ts).
  * @returns whether the request was carried out.
  */
 export function easeScrollFor(container: Element, source: ScrollSource, destination: (element: Element, end: number) => number, wanted: () => boolean, lead = SCROLL_EASE_LEAD_PX) {

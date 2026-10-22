@@ -39,8 +39,9 @@ export function createModelCatalog(options: { ctx: HostContext, schedule?: () =>
    * The current session id. The Session Controller dropped
    * `list.current` in dsh 0.2 (the main-view selection now comes from the
    * `uiSession` projection), so this MUST go through the shared
-   * currentSessionId() in core/host.ts — reading the legacy field directly
-   * resolves to null on current hosts and the picker never loads.
+   * currentSessionId() in packages/engine/src/host.ts — reading the legacy
+   * field directly resolves to null on current hosts and the picker never
+   * loads.
    */
   function currentModelSessionId() {
     const sessions = hostSessions(ctx)

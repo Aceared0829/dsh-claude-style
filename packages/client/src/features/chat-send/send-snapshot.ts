@@ -18,7 +18,7 @@ export const CHAT_SEND_LINK_ATTR = 'data-dsh-claude-send-link'
 // The mark put on the real row while the stand-in flies is constants.ts's
 // CHAT_FLYING_ATTR; the stylesheet hides it (send-flight.css). The composer
 // card, its scroll area and the echo bubble are the host's own attributes,
-// read from the one contract table (packages/client/src/shared/chat-dom.ts).
+// read from the one contract table (packages/engine/src/chat-dom.ts).
 
 /**
  * How many ancestors the stand-in's imitation chain may carry.

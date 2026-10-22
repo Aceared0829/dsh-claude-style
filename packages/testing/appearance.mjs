@@ -6,7 +6,7 @@
  * The importance walk (importance.mjs) is the lane's tour of every page state on
  * a scratch host, and before it audits a state it lands every animation and
  * reads here, with the skin's own sheet in place, every part in the vocabulary
- * the stylesheets may read (packages/client/src/core/parts-table.ts, listed in
+ * the stylesheets may read (packages/engine/src/parts-table.ts, listed in
  * appearance-parts.json). Each part gives the properties a sheet writes and a
  * machine cannot change: colours, borders, radii, shadows, placement and
  * overflow. The resolved family and size of the font are left out on purpose:

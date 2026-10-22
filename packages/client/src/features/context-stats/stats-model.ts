@@ -16,9 +16,6 @@ interface StatsRow {
   value: string
 }
 
-/** One projection's current whole value, or undefined while it is absent. */
-export type StatsValueReader = <Value>(key: string) => Value | undefined
-
 /**
  * The time and throughput rows, in both widths: the host's own 模型用时
  * and 工具调用用时 while the row is detailed, their sum under the skin's

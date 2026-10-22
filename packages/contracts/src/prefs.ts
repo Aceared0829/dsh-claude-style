@@ -17,7 +17,6 @@ import { CURRENCIES, CURRENCY_CNY } from './prices'
 export const BILLING_OFF = 'off'
 /** The billing choices, in the settings' order: the two official tables, or no billing at all. */
 export const BILLING_CHOICES = [BILLING_OFF, ...CURRENCIES] as const
-export type BillingChoice = typeof BILLING_CHOICES[number]
 
 /** Brand marks selectable from the settings page. `claude` is the default. */
 export const BRAND_CLAUDE = 'claude'

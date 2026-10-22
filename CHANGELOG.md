@@ -17,6 +17,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
 - 修复页面缩放切换后宿主的框架与浮层停在旧倍率：换挡时皮肤量出的页面尺寸、宿主框架的列宽与宿主浮层的空间都由偏好写入唤醒，面板从别处写入倍率时它们不动；现在这一次写入本身也会唤醒它们，换挡、回到 100% 与从 100% 离开都立即生效。
 
+### 其他变更
+
+- 删除十二个没有调用方的导出，把注释里三十二处指向引擎迁移前位置的路径改成现址，四条故障补丁按当前代码重记，构建里「滚动位置只由 scroll-owner 写入」那条检查按引擎所在的位置恢复生效，AGENTS.md 的四处陈述与实现一致，工作树的删除工具接受 .agents/worktrees/，插件的表现与断言不变。
+
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve renaming a session from its title: the pointer over the header title raises a plate and a tip naming the press, a click opens an editor in place, Enter writes the new name and Escape keeps the old one.
@@ -27,6 +31,10 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
 - Fix the host frame and the host's floating cards keeping the old factor after the page scale changes: the page's own size, the frame's columns and the space the host's cards are given were woken by a preference write alone, so a factor written from anywhere else left them as they were. The write itself now wakes them, so leaving 100%, switching between factors and coming back all take effect at once.
+
+### Chores
+
+- Remove twelve exported symbols with no caller, rewrite thirty-two comment references that still named the files' pre-migration paths, rebase four defect patches onto the current code, restore the build check that only the scroll owner writes a scroll position at its engine path, bring four statements in AGENTS.md in line with the implementation, and let the worktree remover accept .agents/worktrees/, with the plugin's behavior and assertions unchanged.
 
 ## [0.18.2] - 2026-10-21
 

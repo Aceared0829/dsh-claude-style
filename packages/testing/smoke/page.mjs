@@ -222,7 +222,8 @@ function page(name, tier, cases, probe = PROBE) {
         '<div data-chat-flow-key="b" style="height:600px">b</div>' +
       '</div></div></div>' +
       // The host renders its own button beside the frame two levels above the
-      // column, which is the shape handBackFollow in shared/scroll-owner.ts reads.
+      // column, which is the shape handBackFollow in
+      // packages/engine/src/scroll-owner.ts reads.
       '<div id="debugTail"><button type="button">Back to the end</button></div></div>' +
       '<div data-step-process><div data-step-process-body><div data-step-process-content style="height:400px">capped</div></div></div>' +
       '<div data-step-process data-group-expanded-mode="detailed"><div data-step-process-body><div data-step-process-content style="height:400px">expanded</div></div></div>'

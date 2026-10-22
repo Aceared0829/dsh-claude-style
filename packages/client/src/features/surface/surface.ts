@@ -59,10 +59,11 @@ function currentMode(): Mode {
 /**
  * ds-bot's own controls: the row and the account entry the switch stands beside
  * and presses, and the account menu's Agent item. Each is read once and kept
- * until the page's structure changes (core/host.ts's cacheFirstMatch), because
- * every one of them is absent while the Bot surface is down and the switch's
- * pass runs on every refresh (D9). Taken on the first install and reused, so a
- * page the switch never reaches pays nothing and a re-install adds no reader.
+ * until the page's structure changes (packages/engine/src/host.ts's
+ * cacheFirstMatch), because every one of them is absent while the Bot surface
+ * is down and the switch's pass runs on every refresh (D9). Taken on the first
+ * install and reused, so a page the switch never reaches pays nothing and a
+ * re-install adds no reader.
  */
 let seatReaders: {
   botTopRow: () => HTMLElement | null

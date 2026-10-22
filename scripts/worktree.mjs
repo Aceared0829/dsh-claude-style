@@ -3,16 +3,17 @@
  * worktree.mjs — take a scratch worktree off this repository without touching
  * the tree it points at.
  *
- * A scratch worktree under `.debug/` borrows the main tree's `node_modules` by
- * way of a directory link, so the checkout it runs in needs no install of its
- * own. `git worktree remove` deletes the worktree's files itself, and on Windows
- * it follows such a link: every file of the main tree's `packages/` and
- * `node_modules/` goes with it. This script unlinks the links at the worktree's
- * own top level first, then hands the directory to git, so what is deleted is
- * the worktree's files and the links, and nothing a link points at.
+ * A scratch worktree under `.debug/` or `.agents/worktrees/` borrows the main
+ * tree's `node_modules` by way of a directory link, so the checkout it runs in
+ * needs no install of its own. `git worktree remove` deletes the worktree's
+ * files itself, and on Windows it follows such a link: every file of the main
+ * tree's `packages/` and `node_modules/` goes with it. This script unlinks the
+ * links at the worktree's own top level first, then hands the directory to git,
+ * so what is deleted is the worktree's files and the links, and nothing a link
+ * points at.
  *
- * Only a worktree under `.debug/` is accepted, and only a linked one: the main
- * working tree is never a candidate.
+ * Only a worktree under `.debug/` or `.agents/worktrees/` is accepted, and only
+ * a linked one: the main working tree is never a candidate.
  *
  * Usage: node scripts/worktree.mjs remove <path> [--dry-run]
  */
@@ -31,15 +32,17 @@ if (action !== 'remove' || !target) {
 const dryRun = flags.includes('--dry-run')
 
 const worktree = path.resolve(ROOT, target)
-const debug = path.join(ROOT, '.debug') + path.sep
+/** The directories a scratch worktree may sit in; the main working tree is never a candidate. */
+const SCRATCH = [path.join(ROOT, '.debug'), path.join(ROOT, '.agents', 'worktrees')]
+  .map((dir) => dir.toLowerCase() + path.sep)
 
 // The listed worktrees are absolute paths with forward slashes, one per line.
 const listed = run('git', ['worktree', 'list', '--porcelain'])
   .split('\n')
   .filter((line) => line.startsWith('worktree '))
   .map((line) => path.resolve(line.slice('worktree '.length)).toLowerCase())
-if (!worktree.toLowerCase().startsWith(debug.toLowerCase())) {
-  console.error(`worktree: ${worktree} is outside .debug/; the main tree is never removed here`)
+if (!SCRATCH.some((dir) => worktree.toLowerCase().startsWith(dir))) {
+  console.error(`worktree: ${worktree} is outside .debug/ and .agents/worktrees/; the main tree is never removed here`)
   process.exit(1)
 }
 if (!listed.includes(worktree.toLowerCase())) {

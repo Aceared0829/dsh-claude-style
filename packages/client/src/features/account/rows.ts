@@ -14,7 +14,7 @@ import { copy } from './copy'
  * (account/host-menu.ts), `options.openBan()` what a press on the header
  * does and `options.banAvailable()` whether there is an easter egg to open;
  * the nickname and the picture come from the identity chain
- * (packages/client/src/core/host.ts).
+ * (packages/engine/src/host.ts).
  */
 export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(): void, banAvailable(): boolean, onChange?(): void }) {
   const hostMenu = options.hostMenu
@@ -134,7 +134,7 @@ export function createAccountRows(options: { hostMenu: HostAccountMenu, openBan(
 
   /**
    * Paint (or clear) the picture inside the avatar circle. The address comes
-   * from the identity chain (packages/client/src/core/host.ts): the account's own avatar,
+   * from the identity chain (packages/engine/src/host.ts): the account's own avatar,
    * then the HDSL launcher's (drawn as a cropped head), then nothing — and
    * the brand mark the stylesheet draws shows through. The account's avatar
    * is a real `<img>` layered over that

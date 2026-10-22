@@ -3,7 +3,7 @@ import { requestFrame } from './frame'
  * Walk a scroll container's position to where it is going instead of
  * writing it in one frame: the one scroll motion the skin draws.
  *
- * Its one reader is the scroll owner (shared/scroll-owner.ts, D40), which
+ * Its one reader is the scroll owner (packages/engine/src/scroll-owner.ts, D40), which
  * decides whose request the spring carries on each container; the build
  * fails when anything else imports this module.
  *

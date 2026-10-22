@@ -18,9 +18,9 @@ export interface PartsTableVocabulary {
  * stylesheet cannot match one whole, and a substring match takes whatever else
  * holds that fragment — `title` also names `titleRow` and `subtitle`, `row`
  * also names `grow` and `arrow`, `rail` also names `trailing`, and another
- * plugin's class name can hold it too. core/parts.ts walks these tables and
- * writes the part names onto the element, so every rule matches one attribute
- * whole.
+ * plugin's class name can hold it too. packages/engine/src/parts.ts walks these
+ * tables and writes the part names onto the element, so every rule matches
+ * one attribute whole.
  *
  * Each entry is one exact local name. A local name that means different things
  * in different places is read in the region it belongs to: the composer's
@@ -312,8 +312,9 @@ export function partNames(vocabulary: PartsTableVocabulary): string[] {
 /**
  * The structural relations a stylesheet reads as a hold: a rule naming an
  * element because of what its subtree contains (`A:has(B)`) reads
- * `data-dsh-claude-holds` instead, and core/parts.ts keeps that mark current
- * (D9). Each entry answers one question the walk already knows the answer to.
+ * `data-dsh-claude-holds` instead, and packages/engine/src/parts.ts keeps that
+ * mark current (D9). Each entry answers one question the walk already knows
+ * the answer to.
  *
  * `holder` names the element that takes the mark; `*` marks whichever ancestor
  * holds the node, which is what a rule styling an unnamed wrapper needs.

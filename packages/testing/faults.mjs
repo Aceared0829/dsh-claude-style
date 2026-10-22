@@ -265,7 +265,7 @@ function main() {
     console.error(`faults: the ${asked.suite} suite caught ${caught} faults by an assertion, below the ${floor} packages/testing/faults/expected.json records — a spec that used to turn red on a fault no longer does`)
     return 1
   }
-  if (caught > floor) console.log(`faults: ${caught} faults caught by an assertion, past the ${floor} on record — write "caught": ${caught} into packages/testing/faults/expected.json`)
+  if (caught > floor) console.log(`faults: ${caught} faults caught by an assertion, past the ${floor} on record — write "${asked.suite}": ${caught} into packages/testing/faults/expected.json`)
   const uncaught = appliedResults.filter((result) => !result.caught)
   if (uncaught.length > 0) {
     console.log(`faults: ${uncaught.length} fault(s) no assertion catches yet: ${uncaught.map((result) => result.id).join(', ')} — each is a spec the corpus still has to prove`)

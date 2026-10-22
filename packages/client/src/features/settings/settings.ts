@@ -318,7 +318,7 @@ export function ClaudeStyleBundleConfig(props: { view?: string }) {
 
 /**
  * The nav list the entry's cell stands in, resolved on demand and kept while
- * it stays the document's first match (core/host.ts). The query is a
+ * it stays the document's first match (packages/engine/src/host.ts). The query is a
  * whole-document walk — a part match plus a class substring — and the pass
  * asked for it every frame while the answer moves only when the host rebuilds
  * the dialog or opens the overlay the list lives in.

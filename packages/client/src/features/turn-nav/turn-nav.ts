@@ -366,7 +366,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /**
    * Walk the conversation from where it was to where the host just put it,
-   * through the scroll owner (shared/scroll-owner.ts, D40).
+   * through the scroll owner (packages/engine/src/scroll-owner.ts, D40).
    *
    * The host lands a loaded turn inside the press itself, writing the
    * position in one frame; that write is taken back before the frame paints

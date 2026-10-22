@@ -19,7 +19,7 @@ import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopSc
  * Together they leave the position 20 to 50 px off the end — exactly the
  * last two lines. Nothing here changes the host's own state: past
  * CATCH_UP_GAP_PX the catch-up asks the scroll owner to walk the body's
- * position to its end (shared/scroll-owner.ts, D40), so the text above the
+ * position to its end (packages/engine/src/scroll-owner.ts, D40), so the text above the
  * last line is pushed up smoothly rather than in a jump, and inside that
  * threshold it leaves the host's smooth scroll alone, which is the pleasant
  * one while it keeps up. The reader scrolling inside a body holds that body

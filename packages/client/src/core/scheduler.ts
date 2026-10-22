@@ -53,14 +53,6 @@ export interface Handles {
 
 export type HandleName = keyof Handles
 
-/** The two calls on `ui` that are no feature's: entry.ts and the scheduler put them there. */
-export interface UiCalls {
-  /** Ask for a pass on the next frame (installScheduler). */
-  schedule?: () => void
-  /** Switch one feature off for the rest of this generation (entry.ts). */
-  retire: (name: string) => void
-}
-
 /**
  * The whole registry, as entry.ts and the scheduler hold it: each installed
  * feature's handle under its handle name. A feature sees only its own part of

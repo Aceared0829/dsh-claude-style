@@ -4,7 +4,7 @@ import { SCROLL_KEYS } from './chat-dom'
 /**
  * Whether an event is the reader taking the scroll over.
  *
- * The scroll owner (shared/scroll-owner.ts) asks it for every intent event
+ * The scroll owner (packages/engine/src/scroll-owner.ts) asks it for every intent event
  * it hears. Two rules: a pointer or key inside the composer is the reader
  * typing, and of the keys only the ones that scroll the viewport count.
  *

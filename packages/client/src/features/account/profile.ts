@@ -54,7 +54,7 @@ export function createAccountProfile(ctx: HostContext, onChange: () => void) {
     accountName = name
     accountAvatar = avatar
     // The greeting, the account rows and the hold screen read one identity
-    // store (packages/client/src/core/host.ts); this feature supplies its account half.
+    // store (packages/engine/src/host.ts); this feature supplies its account half.
     setAccountIdentity(name, avatar)
     // Nothing in the DOM changed, so no mutation will schedule the pass that
     // paints the new name and picture: ask for one.

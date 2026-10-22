@@ -21,7 +21,7 @@ import type manifest from './chat-follow.manifest'
  *
  * The guard that watches for the moments that lose the host's follow is
  * below; the hand-back itself and every position write are the scroll
- * owner's (shared/scroll-owner.ts, D40); the catch-up inside a capped body is
+ * owner's (packages/engine/src/scroll-owner.ts, D40); the catch-up inside a capped body is
  * in process-follow.ts.
  */
 /** One tool call's row, and one flow block, in one selector: a new node either way. */
@@ -285,8 +285,9 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
    * pin would paint. The scroller is watched too, for its own height.
    */
   const slideSync = () => {
-    // The column is kept by shared/chat-dom.ts: asking the document for it on
-    // every frame of a stream forced a style pass over the whole page (D9).
+    // The column is kept by packages/engine/src/chat-dom.ts: asking the document
+    // for it on every frame of a stream forced a style pass over the whole page
+    // (D9).
     const column = conversationColumn()
     if (column === slideColumn) return
     if (stopSlideSize !== null) stopSlideSize()

@@ -1,16 +1,12 @@
 diff --git a/packages/host/src/routes.ts b/packages/host/src/routes.ts
-index 029f4dc..1a8442e 100644
 --- a/packages/host/src/routes.ts
 +++ b/packages/host/src/routes.ts
-@@ -69,11 +69,43 @@ const FONT_FILES = {
- const ASSETS_PATH = `${ROUTE_PREFIX}/assets/`
- /** How long a computed roll-up is served before a background refresh is kicked. */
- const USAGE_TTL_MS = 5 * 60 * 1000
--/** Session ids are the harness's own shape; anything else is refused before it reaches a path. */
--const SESSION_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/
+@@ -82,8 +82,39 @@ const USAGE_TTL_MS = 30 * 1000
  /** Largest deletion request body read; a real one carries one id. */
  const DELETE_BODY_MAX = 4096
  
+-/** Session ids are the harness's own shape; anything else is refused before it reaches a path. */
+-const SESSION_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/
 +/**
 + * The single directory name the harness stores one session id under: a code
 + * unit outside `A-Za-z0-9._-` becomes `~XXXX`, `.` and `..` included, so the
@@ -44,11 +40,10 @@ index 029f4dc..1a8442e 100644
 + * naming a path segment is not naming a session.
 + */
 +const SESSION_ID_RE = /^[A-Za-z0-9._\-:@]{1,200}$/
-+
+ 
  /**
   * Whether the host holds this session open right now.
-  *
-@@ -120,9 +152,9 @@ async function unarchiveSession(ctx: DshContext, sessionId: string) {
+@@ -131,9 +162,9 @@ async function unarchiveSession(ctx: DshContext, sessionId: string) {
   * sessions root's working-directory directories, and the id's entry in the
   * workspace registry's archive set.
   *
@@ -61,7 +56,7 @@ index 029f4dc..1a8442e 100644
   *
   * The archive set can name a session whose stored directory is already gone —
   * an earlier removal took the directory while the registry entry stayed, and
-@@ -156,6 +188,9 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
+@@ -167,6 +198,9 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
      sendJson(res, 400, { ok: false, error: 'invalid session id' })
      return
    }
@@ -71,7 +66,7 @@ index 029f4dc..1a8442e 100644
    if (sessionIsLive(ctx, sessionId)) {
      sendJson(res, 409, { ok: false, error: 'session is open' })
      return
-@@ -166,7 +201,7 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
+@@ -177,7 +211,7 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
    // fault and propagates to the route's 500 answer; a candidate that does not
    // exist is "not under this entry", and the scan moves past it.
    for (const entry of readdirSync(root)) {

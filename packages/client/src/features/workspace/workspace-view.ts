@@ -456,8 +456,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The sidebar re-renders its own way: when React replaces the container
     // that held the list, the old copy can stay in the document while a new
     // one is built elsewhere. Sweep every copy but the live one, scoped to the
-    // sidebar the list lives in (core/host.ts): the sweep runs every pass, and
-    // a whole-document query costs a walk of the conversation's rows too.
+    // sidebar the list lives in (packages/engine/src/host.ts): the sweep runs
+    // every pass, and a whole-document query costs a walk of the conversation's
+    // rows too.
     const sidebar = findSidebarRoot()
     removeStrayNodes(sidebar ?? document, '.dsh-claude-archive-list', [listHost])
     viewStamp.mark(host, view)

@@ -238,9 +238,9 @@ function checkTiming() {
  */
 export function checkScrollOwner(metafile) {
   for (const [file, input] of Object.entries(metafile.inputs)) {
-    if (file === 'packages/client/src/shared/scroll-owner.ts') continue
-    if (input.imports.some((item) => item.path === 'packages/client/src/shared/scroll-ease.ts')) {
-      throw new Error(`build: ${file} imports shared/scroll-ease.ts; positions go through shared/scroll-owner.ts (D40)`)
+    if (file === 'packages/engine/src/scroll-owner.ts') continue
+    if (input.imports.some((item) => item.path === 'packages/engine/src/scroll-ease.ts')) {
+      throw new Error(`build: ${file} imports packages/engine/src/scroll-ease.ts; positions go through packages/engine/src/scroll-owner.ts (D40)`)
     }
   }
 }

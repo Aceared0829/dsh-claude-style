@@ -102,12 +102,6 @@ export interface FeatureStylesheetGenerated {
   rank: number
 }
 
-/** A line of copy in the settings page's own copy file, before it moves to its feature (D72). */
-export interface SettingsCopyLine {
-  key: string
-  fallback: string
-}
-
 /**
  * The settings tabs, by id (packages/client/src/features/settings/settings-tab-*.ts).
  */
@@ -143,7 +137,7 @@ export interface FeatureSettingsRow {
   /**
    * The row acts on the Windows desktop window alone: on any other page it
    * keeps the stored choice on show, refuses input and says where it acts
-   * (core/desktop-band.ts).
+   * (packages/engine/src/desktop-band.ts).
    */
   windowsOnly?: boolean
   /**
