@@ -169,7 +169,6 @@ async function startTrace(page) {
         frame.height = Math.round(scroller.scrollHeight)
         frame.gap = Math.round(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop)
         frame.following = document.querySelector(host.followingTail) !== null
-        frame.hold = document.querySelector(host.hold) !== null
       }
       const ghost = document.querySelector(host.sendGhost)
       const rows = [...document.querySelectorAll(host.userRow)]

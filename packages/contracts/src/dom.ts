@@ -67,6 +67,15 @@ export const CONVERSATION_SCROLL_SELECTOR = '[data-conversation-scroll]'
 export const FOLLOWING_TAIL_ATTRIBUTE = 'data-chat-following-tail'
 /** The same contract in selector form. */
 export const FOLLOWING_TAIL_SELECTOR = '[data-chat-following-tail]'
+/**
+ * A row the host's own fold motion is closing or revealing right now: the row
+ * carries `data-chat-motion` with that value while its height and margin travel
+ * on the host's clock, and the column carries the bare attribute while a turn
+ * runs with the deferred collapse timing. Only the two moving values are read:
+ * they are the frames in which the host is writing the scroller itself.
+ */
+export const HOST_FOLD_MOTION_ATTRIBUTE = 'data-chat-motion'
+export const HOST_FOLD_MOTION_SELECTOR = `[${HOST_FOLD_MOTION_ATTRIBUTE}="collapse"], [${HOST_FOLD_MOTION_ATTRIBUTE}="reveal"]`
 /** How close to the end counts as reading the tail: the host's own threshold. */
 export const FOLLOW_THRESHOLD_PX = 25
 /**
@@ -184,22 +193,11 @@ export const TURN_RAIL_PITCH = 10
 export const TURN_RAIL_INSET = 6
 /** A process group's header control. */
 export const PROCESS_ACTIVITY_SELECTOR = 'button[data-process-activity]'
-/** A fold: the host's DisclosureRow, and every other control that opens and closes something. */
-export const DISCLOSURE_ROW_SELECTOR = '[data-disclosure-row]'
-/**
- * The header a newer host build wraps around a DisclosureRow's own row and its
- * accessory: the body then stands beside this wrapper. An older build writes
- * no wrapper and sets the body beside the row itself.
- */
-export const DISCLOSURE_HEADER_SELECTOR = '[data-disclosure-header]'
 /**
  * On a row the host lets the reader open and fold: present while it stands
  * open. A thinking row is folded when this is absent.
  */
 export const EXPANDED_ATTRIBUTE = 'data-expanded'
-export const FOLD_TOGGLE_SELECTOR = '[aria-expanded]'
-/** Controls whose opening is skipped whole: a turn's header and its trigger notice. */
-export const FOLD_SKIPPED_CONTROL_SELECTOR = '[data-turn-process], [data-turn-trigger]'
 
 /* ---------- the frame around the chat ---------- */
 

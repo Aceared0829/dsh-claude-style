@@ -1517,11 +1517,6 @@
       "prop": "z-index",
       "verdict": "transient state"
     },
-    "body[data-dsh-claude-style] [data-dsh-claude-rolling]>*{flex:none!}|flex": {
-      "selector": "body[data-dsh-claude-style] [data-dsh-claude-rolling]>*",
-      "prop": "flex",
-      "verdict": "transient state"
-    },
     "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text]{transform:none!;transition:none}|transform": {
       "selector": "body[data-dsh-claude-style][data-dsh-claude-motion=reduced] [data-dsh-claude-reason-window] [data-dsh-claude-reason-text]",
       "prop": "transform",

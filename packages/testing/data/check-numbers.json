@@ -17,17 +17,6 @@
         0
       ]
     },
-    "packages/testing/door-pin.mjs": {
-      "门滚动的每一帧状态行都钉着": [
-        0
-      ],
-      "从按下到门落定，状态行停在同一处，连半个像素也不动": [
-        0
-      ],
-      "控制台没有异常": [
-        0
-      ]
-    },
     "packages/testing/ds-bot.mjs": {
       "聊天一侧本主题的样式表、body 标记与界面元素全部离开": [
         0
@@ -94,6 +83,26 @@
       "只被读取的文件两行合一，行尾没有数字": [
         1,
         2
+      ],
+      "控制台没有异常": [
+        0
+      ]
+    },
+    "packages/testing/host-fold-motion.mjs": {
+      "宿主自己的折叠动效在这段输出里开着": [
+        0
+      ],
+      "读者合上运行中的过程组时，宿主真的滚动了这一行": [
+        0,
+        1,
+        20
+      ],
+      "组只收起一次，没有回弹": [
+        0,
+        1
+      ],
+      "宿主收起期间皮肤的流式位移不推消息列": [
+        0
       ],
       "控制台没有异常": [
         0
@@ -195,11 +204,6 @@
       ]
     },
     "packages/testing/reasoning-stream.mjs": {
-      "思考行自动收起时门真的滚动": [
-        0,
-        1,
-        20
-      ],
       "窗口跟着推理文本长高，长到推理能到的最大高度就停住": [
         0,
         1
@@ -586,15 +590,10 @@
         0,
         1
       ],
-      "a press on a folding row is intercepted and handed to the real element when the door lands": [
-        0,
+      "a press on a DisclosureRow reaches the host, and the folded body is gone in the same task": [
         1
       ],
-      "the wrapped row's door is handed back when it lands": [
-        0,
-        1
-      ],
-      "switching it off takes the mark and the fade, and lets the press land at once with nothing rolling": [
+      "switching it off takes the mark and the fade, and lets the press land at once": [
         1
       ],
       "the fade ships off: a streaming container gets no step highlights and no mark until the choice is turned on": [

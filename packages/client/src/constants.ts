@@ -129,15 +129,6 @@ export const PAGE_ZOOM_ATTR = 'data-dsh-claude-page-zoom'
  */
 export const CHAT_FOLLOW_ATTR = 'data-dsh-claude-chat-follow'
 /**
- * On the flow column while a door rolls
- * (packages/client/src/features/chat-follow/chat-follow.ts). A door's height
- * change reads to the host as a reader who left the tail, and it takes its own
- * data-chat-following-tail away (D3) — the gate the waiting line's pin waits
- * for (packages/client/src/features/chat-wait/chat-wait.css). This mark stands
- * for that gate until the fold hands the follow back.
- */
-export const FOLLOW_HOLD_ATTR = 'data-dsh-claude-follow-hold'
-/**
  * On a container the reader has taken over with his own scrolling
  * (packages/engine/src/scroll-owner.ts), until he comes back to its end. The
  * waiting line's pin (packages/client/src/features/chat-wait/chat-wait.css) reads it: a
@@ -209,12 +200,6 @@ export const PART_ATTR = 'data-dsh-claude-part'
  * the parts table.
  */
 export const HOLDS_ATTR = 'data-dsh-claude-holds'
-/**
- * On the element the fold glide is pressing right now (packages/client/src/features/chat-fold/
- * fold-glide.ts): while it stands, the elements inside lay out at their
- * natural height instead of being squeezed by flex (fold-motion.css).
- */
-export const CHAT_ROLLING_ATTR = 'data-dsh-claude-rolling'
 /** On an editable surface once the caret motion has taken it over (packages/client/src/features/caret/). */
 export const CARET_ATTR = 'data-dsh-claude-caret'
 export const CARET_LAYER_ATTR = 'data-dsh-claude-caret-layer'

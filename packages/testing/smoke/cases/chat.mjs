@@ -172,9 +172,10 @@ export default {
       message.marked === 'collapsed' && message.full > message.cap && message.capped === message.cap &&
         typeof message.mask === 'string' && message.mask.startsWith('linear-gradient'),
       JSON.stringify(message))
-    check('the control the skin draws under it names what pressing it does, and hands the whole message back',
-      message.toggle === 'Show the whole message' && messageOpen.marked === null &&
-        messageOpen.toggle === 'Show less' && messageOpen.capped > message.capped && messageOpen.mask === 'none',
+    check('the control the skin draws under it names what pressing it does, carries aria-expanded, and hands the whole message back',
+      message.toggle === 'Show the whole message' && message.expanded === 'false' && messageOpen.marked === null &&
+        messageOpen.toggle === 'Show less' && messageOpen.expanded === 'true' &&
+        messageOpen.capped > message.capped && messageOpen.mask === 'none',
       JSON.stringify({ message, open: messageOpen }))
     // The reasoning's streamed window: transitions.dev's "Reasoning stream",
     // adapted to live text — a window that grows with the reasoning up to the cap
@@ -222,30 +223,13 @@ export default {
       grewClosed.on === false && grewClosed.capped === false && offsetsOf(grewClosed) === 0 && grewClosed.mask === 'none' &&
         grewClosed.slotHeight === grow[grow.length - 1].slotHeight && grewClosed.bodyHeight === grow[grow.length - 1].bodyHeight,
       JSON.stringify({ grewClosed, during: grow[grow.length - 1] }))
-    const glide = fold.glide || {}
-    const glideAfter = glide.after || {}
-    check('a press on a folding row is intercepted and handed to the real element when the door lands',
-      glide.clicksDuringRoll === 0 && glideAfter.clicks === 1, JSON.stringify(glide))
-    check('the folding row carries the door over a clipped body',
-      glide.rolling === true && glide.clipped === true, JSON.stringify(glide))
-    check('when the door lands the body is gone and nothing is rolling',
-      glideAfter.bodyGone === true && glideAfter.rollingAnywhere === false, JSON.stringify(glideAfter))
-    const glideOpen = glide.open || {}
-    const glideOpenAfter = glide.openAfter || {}
-    check('the opening direction rolls the body the host inserts',
-      glideOpen.inserted === true && glideOpen.rolling === true, JSON.stringify(glideOpen))
-    check('when the door lands the inserted body stays and nothing rolls',
-      glideOpenAfter.present === true && glideOpenAfter.rolling === false, JSON.stringify(glideOpenAfter))
-    // A row the host wraps in a header: the body stands beside the wrapper, and
-    // the accessory beside the row is not the door's target.
-    const wrapped = fold.wrappedRolled || {}
-    check('a press on a row the host wraps in a header rolls that row\'s own body',
-      wrapped.rolling === true && wrapped.clipped === true && wrapped.accessoryRolled === false,
-      JSON.stringify(wrapped))
-    check('the wrapped row\'s door is handed back when it lands',
-      wrapped.clicksDuringRoll === 0 && wrapped.clicks === 1 &&
-        wrapped.bodyGone === true && wrapped.folded === true, JSON.stringify(wrapped))
-    // The switch covers the door and the entrance fade as well (D72/D74).
+    // A press reaches the host whole: the skin lets the click through, the host
+    // folds the row itself, and the body is gone by the end of that press (D71's
+    // motion is the host's own).
+    const press = fold.press || {}
+    check('a press on a DisclosureRow reaches the host, and the folded body is gone in the same task',
+      press.clicks === 1 && press.bodyGone === true && press.reopened === true, JSON.stringify(press))
+    // The switch covers the entrance fade as well (D72/D74).
     const animationsOff = fold.animationsOff || {}
     const wrappedEntrance = fold.entranceWrapped || {}
     const wrappedOff = animationsOff.wrappedEntrance || {}
@@ -253,9 +237,9 @@ export default {
       fold.entranceOn === '0.12s, 0.12s' &&
         wrappedEntrance.body === '0.12s, 0.12s' && wrappedEntrance.accessory === wrappedEntrance.page,
       JSON.stringify({ plain: fold.entranceOn, wrapped: wrappedEntrance }))
-    check('switching it off takes the mark and the fade, and lets the press land at once with nothing rolling',
+    check('switching it off takes the mark and the fade, and lets the press land at once',
       animationsOff.mark === false && animationsOff.entrance === '0s' && wrappedOff.body === '0s' &&
-        animationsOff.immediateClicks === 1 && animationsOff.rolling === false,
+        animationsOff.immediateClicks === 1,
       JSON.stringify(animationsOff))
     check('switching it back brings the fold mark back',
       (fold.animationsBack || {}).mark === true, JSON.stringify(fold.animationsBack))

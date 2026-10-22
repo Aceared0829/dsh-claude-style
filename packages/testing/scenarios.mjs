@@ -19,7 +19,7 @@ import { recordProbes } from './contract-probe.mjs'
 import { sendPrompt, waitForTurn } from './prompt.mjs'
 import { importanceScenario } from './importance.mjs'
 import { readerScrollScenario } from './reader-scroll.mjs'
-import { doorPinScenario } from './door-pin.mjs'
+import { hostFoldMotionScenario } from './host-fold-motion.mjs'
 import { streamPaceScenario } from './stream-pace.mjs'
 import { motionScenario } from './motion.mjs'
 import { processSummaryScenario } from './process-summary.mjs'
@@ -365,8 +365,8 @@ const SCENARIOS = {
    * only while the skin's follow moves the position (D40, D74).
    */
   readerScroll: readerScrollScenario({ check }),
-  /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.mjs, D40). */
-  doorPin: doorPinScenario({ check }),
+  /** The host's own fold motion over a group the reader closes at the tail: one close, no bounce, no slide under it (host-fold-motion.mjs, D71). */
+  hostFoldMotion: hostFoldMotionScenario({ check }),
   /** An answer arriving faster than a slide carries it: the composer stands still and the column stays on the pin (stream-pace.mjs, D71). */
   streamPace: streamPaceScenario({ check }),
   /** The transitions.dev surfaces where they move: greeting, panel, switch, tab, badge, menu (motion.mjs, D9). */

@@ -158,8 +158,8 @@ export function createProcessFold() {
       // press itself changes the layout.
       const wasAtBottom = scroller !== null
         && scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD_PX
-      // This press is ours: neither the fold glide nor the thinking row's side
-      // may read it as the reader's intent.
+      // This press is ours: neither the thinking row's guard nor the token
+      // reveal's may read it as the reader's intent.
       beginChatFoldToggle()
       try {
         header.click()

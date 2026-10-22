@@ -6,7 +6,6 @@ import { loadPrefs, refreshMotionAttribute, subscribePrefs } from './prefs'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FooterHandle } from '../features/account/account-footer'
 import type { BanHandle } from '../features/ban-screen/ban-screen'
-import type { ChatFoldHandle } from '../features/chat-fold/chat-fold'
 import type { ComposerHandle } from '../features/composer/composer'
 import type { ChatSendHandle } from '../features/chat-send/send-flight'
 import type { ModelHandle } from '../features/model/model-picker'
@@ -37,7 +36,7 @@ export interface Handles {
   search: FeatureHandle
   turnNav: FeatureHandle
   chatFollow: FeatureHandle
-  chatFold: ChatFoldHandle
+  chatFold: FeatureHandle
   chatWait: FeatureHandle
   chatReveal: FeatureHandle
   chatFiles: FeatureHandle

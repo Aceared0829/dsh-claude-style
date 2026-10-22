@@ -1,10 +1,7 @@
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
-import type { FoldPressReading } from './fold-toggle'
 import { composerComposing } from '../../shared/composer-caret'
-import { foldControlAt, foldControlAtBottom, foldExpandedBody } from './fold-glide-parts'
-import { inPagePixels } from '../../shared/page-zoom'
 import { EXPANDED_ATTRIBUTE, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /**
@@ -65,25 +62,6 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
   }
 
   /**
-   * What the glide reads when a press lands (fold-glide.ts), taken in the
-   * scan's read phase for the rows it is about to press (D40).
-   */
-  const readPress = (rows: Iterable<Element>): FoldPressReading | null => {
-    const heights = new Map<Element, number>()
-    let atBottom: boolean | null = null
-    for (const row of rows) {
-      if (phaseToPress(row) === null) continue
-      const pressed = controlOf(row)
-      const control = pressed === null ? null : foldControlAt(pressed)
-      if (control === null) continue
-      if (atBottom === null) atBottom = foldControlAtBottom(control)
-      const body = foldExpandedBody(control)
-      if (body !== null) heights.set(body, inPagePixels(body.getBoundingClientRect().height))
-    }
-    return atBottom === null ? null : { atBottom, heights }
-  }
-
-  /**
    * Bring these rows to what their current phase asks for.
    *
    * Which node is the control depends on how the host configures the
@@ -94,7 +72,7 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
    *
    * @param rows - this batch of rows; some may already be unattached.
    */
-  const syncRows = (rows: Iterable<Element>, reading: FoldPressReading | null = null) => {
+  const syncRows = (rows: Iterable<Element>) => {
     for (const row of rows) {
       const phase = phaseToPress(row)
       if (phase === null) continue
@@ -111,7 +89,7 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
       // be declared: it is not the reader asking. The token reveal's own fold
       // guard reads it in the same turn, or the automatic fold would silence
       // the text that just started streaming for 400 ms.
-      beginChatFoldToggle(reading)
+      beginChatFoldToggle()
       try {
         control.click()
       } finally {
@@ -163,19 +141,14 @@ export function createReasoningFold(onRows?: (rows: readonly Element[]) => void)
     if (touchedRows.size === known) return
     if (scanQueued) return
     scanQueued = true
-    // The scan folds each row open or shut in the write phase, with what the
-    // glide reads on a press taken in the read phase (D40).
-    let reading: FoldPressReading | null = null
+    // The scan folds each row open or shut in the write phase (D40).
     requestFrame({
-      read() {
-        reading = readPress(touchedRows)
-      },
       write() {
         scanQueued = false
         const rows = [...touchedRows]
         touchedRows.clear()
         onRows?.(rows)
-        syncRows(rows, reading)
+        syncRows(rows)
       },
     })
   }

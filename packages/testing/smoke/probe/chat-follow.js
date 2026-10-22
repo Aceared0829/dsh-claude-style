@@ -213,7 +213,6 @@
       r.chatFollow.slideDiag = {
         motion: document.body.getAttribute('data-dsh-claude-motion'),
         streamMark: document.querySelector('[data-streaming]') !== null,
-        rolling: document.querySelector('[data-dsh-claude-rolling]') !== null,
         followAttr: document.querySelector('[data-chat-following-tail]') !== null,
       }
       // A burst: one growth past the longest stretch a slide carries is slid

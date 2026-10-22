@@ -14,8 +14,7 @@ import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, sc
  *
  *   jump      the conversation navigator walking to a turn the reader picked
  *   fold      a fold's own position work: putting the position back after
- *             the skin's press on a group header, and handing the follow
- *             back once a door has rolled
+ *             the skin's press on a group header
  *   composer  keeping a reader at the end while the composer card changes height
  *   follow    the follow's hand-back at a structural moment
  *   process   a capped process body's catch-up
@@ -435,7 +434,7 @@ export function scrollPositionFor(container: Element) {
  * The looks in between are needed: the host often turns the follow off a
  * beat late, once its sampling window settles.
  *
- * @param source - follow for the follow's own hand-back, fold after a door.
+ * @param source - follow for the follow's own hand-back.
  * @param options - stillWanted is asked before every look (the reader can
  *     take over in between); onSettled runs once the round is over.
  */

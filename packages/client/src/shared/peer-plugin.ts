@@ -8,13 +8,13 @@ import type { PeerPlugin } from '../core/feature'
  * The other chat-behaviour plugin, when this page runs it.
  *
  * dsh-chat-ux implements the same chat-area interactions this skin ports
- * (D74): the same fold doors over the same clicks, the
+ * (D74): the same automatic folding of thinking rows and process groups, the
  * same two seat keys at the same priority, the same token fade, the same
  * drawn caret. Two implementations of one behaviour on one page do not
- * merge — the fold doors both intercept the click and replay it at each
- * other, and the second seat registration at one priority throws. So while
- * that plugin is on the page the ported features stand down whole, and the
- * settings page says who took them over.
+ * merge — the two folds press the same controls against each other, and the
+ * second seat registration at one priority throws. So while that plugin is on
+ * the page the ported features stand down whole, and the settings page says
+ * who took them over.
  *
  * Two signals, either one is enough:
  *
