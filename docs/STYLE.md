@@ -772,10 +772,11 @@ shows the wording swap as well as the paint.
 With the chat area's own follow on, the row is pinned while the conversation
 follows its tail, at the place that follow's glide comes to rest — the
 composer's own height, the fade band above it and the host's 16px transcript
-padding — the canvas painted behind it, since the transcript's tail would
-otherwise show through. The pin stands only while the host reports the tail (or
-the stream glide holds the position) and steps aside for the reader's own
-scrolling.
+padding — with the canvas carried on down to the composer's top, since the
+host's clip leaves a strip under the row where the line a stream slide brings
+up would otherwise show below the line. The pin stands only while the host
+reports the tail (or the stream glide holds the position) and steps aside for
+the reader's own scrolling.
 
 ## Home layouts · 首页版面
 

@@ -624,6 +624,14 @@ export default {
         pin.off?.follow === false && pin.off?.pinned === false &&
         pin.back?.follow === true && pin.back?.pinned === true,
       JSON.stringify(pin))
+    // 钉住的行把脚下的画布一直铺到输入框顶，宿主在行下沿留出的那条缝里
+    // 就不会露出滑动中的正文（chat-wait.css）。
+    check('状态行钉住时行下的画布铺到输入框顶，跟随关掉后这块画布随之退场',
+      pin.on?.mask?.position === 'absolute' && pin.on.mask.background === pin.on.mask.ink &&
+        Number.parseFloat(pin.on.mask.height) >= 17 &&
+        pin.off?.mask === null &&
+        pin.back?.mask?.position === 'absolute' && pin.back.mask.background === pin.back.mask.ink,
+      JSON.stringify(pin))
     const replaced = wait.replaced || {}
     check('replacing the host words transfers their hiding marker without hiding the third-party line',
       replaced.previousMarked === false && replaced.current?.wordsMarked === true && replaced.current?.wordsShown === false &&
