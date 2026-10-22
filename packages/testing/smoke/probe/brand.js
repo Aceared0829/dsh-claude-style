@@ -56,10 +56,10 @@
         }
       }
       r.customBrand = { images: read() }
-      window.__pushForm({ brandInk: 'text', brandAccent: '#1a7f5a', brandName: 'Acme' })
+      window.__pushForm({ brandInk: 'text', paletteColors: 'custom', customAccent: '#1a7f5a', brandName: 'Acme' })
       await sleep(150)
       r.customBrand.tinted = read()
-      window.__pushForm({ brandInk: 'original', brandAccent: '' })
+      window.__pushForm({ brandInk: 'original', paletteColors: 'brand', customAccent: '' })
       await sleep(150)
       r.customBrand.cleared = read()
       sidebar.remove()

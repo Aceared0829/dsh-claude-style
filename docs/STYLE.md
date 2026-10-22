@@ -4,10 +4,10 @@ Design tokens for `dsh-claude-style`, recreating the Claude Code Desktop aesthet
 
 ## Palette
 
-Every look is a **colour card**: an accent, a canvas per scheme and, when its
-prose links keep a family of their own, a link per scheme. The first card is the
-default look. A card's dark outlines are drawn either as a lit highlight or as a
-flat surface step, and its brand art and inline code take their colour from the
+Every look is a **colour card**: an accent, a canvas per scheme, an inline-code
+ink and, when its prose links keep a family of their own, a link per scheme. The
+first card is the default look. A card's dark outlines are drawn either as a lit
+highlight or as a flat surface step, and its brand art takes its colour from the
 ink or the accent (D30).
 
 The colour every token paints is a **tone** of one of those seeds: a lightness
@@ -15,6 +15,13 @@ step from the seed, an absolute chroma or a multiple of the seed's, an optional
 hue shift and, on translucent surfaces, an alpha. The build resolves the tones
 into plain colours, so the page ships literals and nothing derives at runtime.
 The ladder is shared by every card; a card states only its seeds and its traits.
+
+The reader authors a fourth card: four colours of their own, shown and edited in
+the settings page beside the two brands. Its palette is the same ladder written
+as relative colours (`oklch(from var(--dsh-claude-custom-accent) …)`), one block
+per brand and scheme, so the colours resolve in the page while the two brand
+cards keep their literals; the image-colour choice (`Default`, `Accent`, `Text
+colour`) repaints the brand art from the same table (D30).
 
 Rules:
 
@@ -43,10 +50,10 @@ colour that tone resolves to in both cards and both schemes; `—` is a token a
 card leaves unset.
 
 <!-- generated:tokens (packages/client/src/theme/tokens.json) -->
-| Card | Accent | Canvas light | Canvas dark | Link light | Link dark | Edges | Logo ink | Code ink |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| claude (default) | `#d97757` | `#fcfcfb` | `#141413` | `#184f95` | `#8ab4f8` | highlight | ink | accent |
-| deepseek | `#4d6bfe` | `#fafbff` | `#13161d` | `#3b56d9` | `#8fa4ff` | surface | accent | ink |
+| Card | Accent | Canvas light | Canvas dark | Link light | Link dark | Edges | Logo ink | Code light | Code dark |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| claude (default) | `#d97757` | `#fcfcfb` | `#141413` | `#184f95` | `#8ab4f8` | highlight | ink | `#943333` | `#e8a08a` |
+| deepseek | `#4d6bfe` | `#fafbff` | `#13161d` | `#3b56d9` | `#8fa4ff` | surface | accent | `#0f1115` | `#eef1f8` |
 
 | Tone | Seed | Light | Dark |
 | --- | --- | --- | --- |
@@ -92,7 +99,6 @@ card leaves unset.
 | `accent-tint` |  | `Δl 0 · C 0.028` | `Δl 0 · C 0.055` |
 | `ui-link` |  | `Δl -0.069 · C ×0.95` | `Δl +0.1 · C ×0.72` |
 | `ui-link-hover` |  | `Δl -0.143 · C ×0.9` | `Δl +0.19 · C ×0.7` |
-| `code-ink` |  | `Δl -0.211 · C ×1 · h -15` | `Δl +0.098 · C ×0.7 · h -1` |
 | `link` |  | `Δl 0 · C ×1` | `Δl 0 · C ×1` |
 | `link-underline` |  | `Δl 0 · C ×1 · α 0.6` | `Δl 0 · C ×1 · α 0.6` |
 
@@ -120,7 +126,7 @@ card leaves unset.
 | `--dsh-claude-hover-bg` | `hover-wash` | `rgba(4, 4, 4, 0.08)` | `rgba(255, 255, 253, 0.08)` | `rgba(3, 4, 6, 0.08)` | `rgba(251, 255, 255, 0.08)` | `var(--dsw-alias-interactive-bg-hover)` | hover wash |
 | `--dsh-claude-field-ring` | literal | `#2a78d6` | `#2a78d6` | `#2a78d6` | `#2a78d6` | `var(--dsw-alias-brand-primary)` | the ring around a field the reader is renaming in: the session title's own editor, drawn from the selection blue |
 | `--dsh-claude-inline-code-bg` | `code-wash` | `rgba(4, 4, 4, 0.05)` | `rgba(255, 255, 253, 0.05)` | `rgba(3, 4, 6, 0.05)` | `rgba(251, 255, 255, 0.05)` | `var(--dsw-alias-markdown-inline-code)` | inline code fill |
-| `--dsh-claude-inline-code-fg` | card `codeInk` | `#943333` | `#e8a08a` | `#121316` | `#f4f9ff` | `var(--dsw-alias-label-primary)` | inline code ink |
+| `--dsh-claude-inline-code-fg` | card `code` | `#943333` | `#e8a08a` | `#0f1115` | `#eef1f8` | `var(--dsw-alias-label-primary)` | inline code ink |
 | `--dsh-claude-link` | `link` | `#184f95` | `#8ab4f8` | `#3b56d9` | `#8fa4ff` | `var(--dsw-alias-link)` | markdown links |
 | `--dsh-claude-link-underline` | `link-underline` | `rgba(24, 79, 149, 0.6)` | `rgba(138, 180, 248, 0.6)` | `rgba(59, 86, 217, 0.6)` | `rgba(143, 164, 255, 0.6)` | `color-mix(in srgb, var(--dsw-alias-link) 60%, transparent)` | markdown link underline |
 | `--dsw-alias-markdown-code-block` | `code-block` | `#ffffff` | `#1c1c1b` | `#fefefe` | `#1b1e26` | host's own |  |

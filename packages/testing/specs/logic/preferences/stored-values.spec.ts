@@ -122,11 +122,14 @@ test('the brand name is trimmed and cut to its limit', () => {
   expect(clampPrefs({ brandName: false }).brandName).toBe('')
 })
 
-test('the custom accent keeps a #rrggbb colour, lower-cased, and reads anything else as unset', () => {
-  expect(clampPrefs({ brandAccent: '#1A7F5A' }).brandAccent).toBe('#1a7f5a')
-  expect(clampPrefs({ brandAccent: '#abc' }).brandAccent).toBe('')
-  expect(clampPrefs({ brandAccent: 'red' }).brandAccent).toBe('')
-  expect(clampPrefs({}).brandAccent).toBe('')
+test('a stored accent moves into the custom card, keeping its colour, and the card takes over', () => {
+  const migrated = clampPrefs({ brandAccent: '#1A7F5A' })
+  expect(migrated.customAccent).toBe('#1a7f5a')
+  expect(migrated.paletteColors).toBe('custom')
+  expect(migrated.brandAccent).toBe('')
+  expect(clampPrefs({ brandAccent: '#abc' }).customAccent).toBe('')
+  expect(clampPrefs({ brandAccent: 'red' }).customAccent).toBe('')
+  expect(clampPrefs({}).paletteColors).toBe('brand')
 })
 
 test('the custom images keep their own colours unless the text colour is chosen', () => {

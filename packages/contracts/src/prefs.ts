@@ -13,6 +13,11 @@ import { CURRENCIES, CURRENCY_CNY } from './prices'
 
 /* ---------- the value vocabulary ---------- */
 
+/** The four colours a reader can author: the accent, the light and dark canvases, and inline code. */
+export const PALETTE_COLORING_BRAND = 'brand'
+export const PALETTE_COLORING_CUSTOM = 'custom'
+export const PALETTE_COLORINGS = [PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM] as const
+
 /** The billing choice's off value: no figure is drawn and no settlement is priced. */
 export const BILLING_OFF = 'off'
 /** The billing choices, in the settings' order: the two official tables, or no billing at all. */
@@ -31,10 +36,11 @@ export const BRAND_DEEPSEEK = 'deepseek'
 export const BRAND_DEEPSEEK_LEGACY = 'off'
 export const BRANDS = [BRAND_CLAUDE, BRAND_DEEPSEEK] as const
 
-/** How the custom brand images are painted: in their own colours, or as a shape in the text colour. */
+/** How the brand art is painted: in its own colours, in the accent, or as a shape in the text colour. */
 export const BRAND_INK_ORIGINAL = 'original'
+export const BRAND_INK_ACCENT = 'accent'
 export const BRAND_INK_TEXT = 'text'
-export const BRAND_INKS = [BRAND_INK_ORIGINAL, BRAND_INK_TEXT] as const
+export const BRAND_INKS = [BRAND_INK_ORIGINAL, BRAND_INK_ACCENT, BRAND_INK_TEXT] as const
 /** Longest accepted brand name. */
 export const BRAND_NAME_MAX = 40
 
@@ -211,6 +217,13 @@ export const PREFS = {
   brandName: { type: 'text', default: '', max: BRAND_NAME_MAX },
   brandInk: { type: 'choice', values: BRAND_INKS, default: BRAND_INK_ORIGINAL },
   brandAccent: { type: 'color', default: '' },
+  /** Whether the page paints the brand's own colours or the reader's four. */
+  paletteColors: { type: 'choice', values: PALETTE_COLORINGS, default: PALETTE_COLORING_BRAND },
+  /** The reader's four colours, empty until picked; each falls back to the card's own. */
+  customAccent: { type: 'color', default: '' },
+  customCanvasLight: { type: 'color', default: '' },
+  customCanvasDark: { type: 'color', default: '' },
+  customCode: { type: 'color', default: '' },
   motion: { type: 'choice', values: MOTION_MODES, default: MOTION_SYSTEM },
   statusMotion: { type: 'choice', values: STATUS_MOTIONS, default: STATUS_MOTION_SWEEP },
   /** An earlier build stored the two words; `precise` is what the switch being on means. */
@@ -365,5 +378,12 @@ export function clampPrefs(value: unknown): Prefs {
   const section: Record<string, unknown> = value !== null && typeof value === 'object' ? value as Record<string, unknown> : {}
   const out: Record<string, unknown> = {}
   for (const [key, spec] of Object.entries(PREFS) as [PrefKey, PrefSpec][]) out[key] = clampPref(spec, section[key])
+  // A build before the colour cards stored one accent; it becomes the first of the reader's four
+  // colours, and that card is the one in force, so the page looks the way it did.
+  if (typeof out.brandAccent === 'string' && out.brandAccent !== '') {
+    if (out.customAccent === '') out.customAccent = out.brandAccent
+    out.paletteColors = PALETTE_COLORING_CUSTOM
+    out.brandAccent = ''
+  }
   return out as unknown as Prefs
 }
