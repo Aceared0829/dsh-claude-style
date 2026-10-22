@@ -31,13 +31,13 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
-import Ajv2020 from 'ajv/dist/2020.js'
 import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 import { featureSheet } from './feature-sheets.mjs'
 import { minifyCss } from './shared/minify-css.mjs'
 import { loadModule } from './shared/ts-module.mjs'
 import { ruleKey } from './shared/rule-key.mjs'
+import { TOKEN_SHEET, tokenSheet } from './theme-tokens.mjs'
 
 /** The selector root every skin rule hangs off. */
 const SCOPE_TAG = 'body'
@@ -53,12 +53,7 @@ const SCOPE = `${SCOPE_TAG}[${SCOPE_ATTRIBUTE}]`
 const SURFACE_SCOPE_ATTRIBUTE = 'data-dsh-claude-surface'
 /** The comment in a gated sheet below which every rule follows the composer preference. */
 const COMPOSER_GATE_MARKER = '@composer-gate'
-/** The token stylesheet's place in the sheet list: generated, never read from disk. */
-export const TOKEN_SHEET = 'theme/tokens.json'
-const TOKEN_SCHEMA = 'theme/tokens.schema.json'
-/** The region of docs/STYLE.md the token table is written into. */
-const TABLE_BEGIN = '<!-- generated:tokens (packages/client/src/theme/tokens.json) -->'
-const TABLE_END = '<!-- /generated:tokens -->'
+/** The region of docs/STYLE.md the motion table is written into. */
 const MOTION_BEGIN = '<!-- generated:motion (packages/client/src/theme/tokens.json) -->'
 const MOTION_END = '<!-- /generated:motion -->'
 const LAYER_BEGIN = '<!-- generated:layers (packages/client/src/theme/tokens.json) -->'
@@ -322,79 +317,6 @@ function processSheet(sheet, text, gates, names, read, parts, relations, keyfram
   return root.toString()
 }
 
-/* ---------- tokens ---------- */
-
-/**
- * Read and validate packages/client/src/theme/tokens.json: its declared shape, and each token
- * named once per group.
- */
-export function loadTokens(srcDir) {
-  const schema = JSON.parse(fs.readFileSync(path.join(srcDir, TOKEN_SCHEMA), 'utf8'))
-  const validate = new Ajv2020({ allErrors: true }).compile(schema)
-  const doc = JSON.parse(fs.readFileSync(path.join(srcDir, TOKEN_SHEET), 'utf8'))
-  if (!validate(doc)) throw new Error(`build: packages/client/src/${TOKEN_SHEET} ${validate.errors.map((error) => `${error.instancePath || '/'} ${error.message}`).join('; ')}`)
-  for (const group of ['typeface', 'apex', 'palette', 'motion', 'layer']) {
-    const seen = new Set()
-    for (const item of doc[group]) {
-      if (seen.has(item.token)) throw new Error(`build: packages/client/src/${TOKEN_SHEET} names ${item.token} twice in ${group}`)
-      seen.add(item.token)
-    }
-  }
-  return doc
-}
-
-/** One rule of the token sheet; a block with nothing in it is left out. */
-function tokenBlock(selector, declarations) {  if (declarations.length === 0) return ''
-  return `${selector} {\n${declarations.map(([token, value]) => `  ${token}: ${value};`).join('\n')}\n}\n`
-}
-
-/** The declarations a group holds for one choice: `pick` reads the value, undefined when the token has none there. */
-function declarationsOf(items, pick) {
-  return items.flatMap((item) => {
-    const value = pick(item)
-    return value === undefined ? [] : [[item.token, value]]
-  })
-}
-
-/**
- * The token stylesheet, in cascade order.
- *
- * Every block that writes a host token carries the Claude gate, so under
- * "follow the host" the host's own tokens stand (D30). The palette blocks name
- * `[data-ds-dark-theme]` for dark on purpose: the host's own dark block weighs
- * the same (0,1,1) as a bare `body[data-dsh-claude-style]`, so whichever sheet
- * the loader appended last would win; naming the attribute lifts these to
- * (0,2,1). The DeepSeek blocks add the brand attribute on top and only state
- * what differs from Claude's. The brand marks' addresses come first: every
- * choice paints with them. The motion and layer tokens are ungated blocks
- * beside them: the same durations, curves, distances and stacking levels under
- * every palette and typeface (D9).
- *
- * @param images - brand mark name → its address (data URI or route).
- */
-function tokenSheet(doc, gates, images) {
-  const dark = '[data-ds-dark-theme]'
-  const light = ':not([data-ds-dark-theme])'
-  const gate = ({ attribute }, value) => `[${attribute}="${value}"]`
-  const claude = `${SCOPE}${gate(gates.palette, gates.palette.claude)}`
-  const deepseek = `${claude}${gate(gates.brand, gates.brand.deepseek)}`
-  return [
-    `/* Generated from packages/client/src/${TOKEN_SHEET} by scripts/css.mjs; edit the JSON. */\n`,
-    tokenBlock(SCOPE, Object.entries(images).map(([name, url]) => [`--dsh-claude-image-${name}`, `url("${url}")`])),
-    tokenBlock(SCOPE, declarationsOf(doc.motion, (item) => item.value)),
-    tokenBlock(SCOPE, declarationsOf(doc.layer, (item) => item.value)),
-    tokenBlock(`${SCOPE}${gate(gates.typeface, gates.typeface.claude)}`, declarationsOf(doc.typeface, (item) => item.claude)),
-    tokenBlock(`${SCOPE}${gate(gates.typeface, gates.typeface.host)}`, declarationsOf(doc.typeface, (item) => item.host)),
-    tokenBlock(`${SCOPE}${dark}`, declarationsOf(doc.apex, (item) => item.dark)),
-    tokenBlock(`${SCOPE}${light}`, declarationsOf(doc.apex, (item) => item.light)),
-    tokenBlock(`${claude}${dark}`, declarationsOf(doc.palette, (item) => item.claude?.dark)),
-    tokenBlock(`${claude}${light}`, declarationsOf(doc.palette, (item) => item.claude?.light)),
-    tokenBlock(`${deepseek}${light}`, declarationsOf(doc.palette, (item) => item.deepseek?.light)),
-    tokenBlock(`${deepseek}${dark}`, declarationsOf(doc.palette, (item) => item.deepseek?.dark)),
-    tokenBlock(`${SCOPE}${gate(gates.palette, gates.palette.host)}`, declarationsOf(doc.palette, (item) => item.host)),
-  ].filter((block) => block !== '').join('\n')
-}
-
 /**
  * A token value as a Markdown table cell: a code span, with the backslash
  * escaped before the pipe, since a value's own `\` would otherwise escape the
@@ -402,26 +324,6 @@ function tokenSheet(doc, gates, images) {
  */
 function tableCell(value) {
   return '`' + value.replace(/\\/g, '\\\\').replace(/\|/g, '\\|') + '`'
-}
-
-/**
- * The palette as a Markdown table: each token's value in the four brand ×
- * theme cells (a DeepSeek cell shows the Claude value it keeps), its value
- * under the host palette (a host token keeps the host's own) and its use.
- */
-function tokenTable(doc) {
-  const cell = (value) => (value === undefined ? '—' : tableCell(value))
-  const rows = doc.palette.map((item) => {
-    const claudeLight = item.claude?.light
-    const claudeDark = item.claude?.dark
-    const host = item.host === undefined && item.token.startsWith('--dsw-') ? "host's own" : cell(item.host)
-    return `| \`${item.token}\` | ${cell(claudeLight)} | ${cell(item.deepseek?.light ?? claudeLight)} | ${cell(claudeDark)} | ${cell(item.deepseek?.dark ?? claudeDark)} | ${host} | ${item.use ?? ''} |`
-  })
-  return [
-    '| Token | Claude light | DeepSeek light | Claude dark | DeepSeek dark | Host alias | Use |',
-    '|---|---|---|---|---|---|---|',
-    ...rows,
-  ].join('\n')
 }
 
 /**
@@ -437,14 +339,6 @@ function writeRegion(stylePath, begin, end, table) {
   if (next === text) return false
   fs.writeFileSync(stylePath, next)
   return true
-}
-
-/**
- * Write the token table into its region of docs/STYLE.md.
- * @returns whether the file changed.
- */
-export function writeTokenTable(stylePath, doc) {
-  return writeRegion(stylePath, TABLE_BEGIN, TABLE_END, tokenTable(doc))
 }
 
 /** A group of one-value tokens as a Markdown table: the value and the role it plays. */

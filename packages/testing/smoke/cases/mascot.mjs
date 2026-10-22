@@ -51,8 +51,8 @@ export default {
     check('the brand stored as "off" reads as DeepSeek, and the light canvas turns sky white',
       deepy.brand === 'deepseek' && deepy.canvas === 'rgb(250, 251, 255)', JSON.stringify({ brand: deepy.brand, canvas: deepy.canvas }))
     check('the DeepSeek brand turns blue: DeepSeek\'s brand blue for the accent, a blue link, a blue-black dark canvas',
-      deepy.accent === '#4d6bfe' && deepy.link === '#3b56d9' && !!deepy.dark && deepy.dark.canvas === 'rgb(19, 22, 29)' &&
-        deepy.dark.accent === '#4d6bfe' && deepy.dark.raised === '#1b1f28',
+      deepy.accent === '#4d6bfe' && deepy.link === '#3e57e0' && !!deepy.dark && deepy.dark.canvas === 'rgb(19, 22, 29)' &&
+        deepy.dark.accent === '#4d6bfe' && deepy.dark.raised === '#1d2028',
       JSON.stringify({ accent: deepy.accent, link: deepy.link, dark: deepy.dark }))
     // The sheet is the vector the build produced, served from the assets route
     // under the name its own content gives it
