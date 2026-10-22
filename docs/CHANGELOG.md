@@ -24,6 +24,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 修复按住窗口框架上的文字拖动时变成划词的问题：侧栏与会话标题所在的头部不再产生选区，正文、输入框与草稿照旧可以选中。
 - 修复窗口标题栏里的会话标题与它下方那一行控件重叠：行顶原先插进标题自己的框里，标题框随窗口与字号变高时两行字就压在一起；行顶现在停在标题框下方一段固定的空白处，整行始终留在会话头部里。
+- 修复页面缩放不为 100% 时模态对话框比窗口宽：宿主设置面板与费用窗口都按视口单位声明尺寸，缩放再乘一次，右侧边缘连同关闭按钮一起被推出窗口，倍率越高越明显；这些窗口现在按页面的像素取宽度，以各自的设计宽度为上限、以窗口为下限，缩放倍率变化时同比例跟随。
+- 修复页面缩放不为 100% 时右栏面板比它自己的列宽：宿主按窗口像素写下面板宽度与拖拽手柄，缩放又把两者放大一次，面板因此盖住中间列，手柄也离面板可见边缘一截；现在两者按页面的像素重算，面板宽度以框架分给它的那一列为上限。
 - 修复页面缩放不为 100% 时搜索面板比它该在的位置低一截：面板顶部的空白读的是窗口高度的百分比，而面板画在页面自己的像素里；这条空白现在按皮肤量出的页面高度换算。
 - 修复页面缩放切换后宿主的框架与浮层停在旧倍率：换挡时皮肤量出的页面尺寸、宿主框架的列宽与宿主浮层的空间都由偏好写入唤醒，面板从别处写入倍率时它们不动；现在这一次写入本身也会唤醒它们，换挡、回到 100% 与从 100% 离开都立即生效。
 - 修复回复流式生成时在输入框里用输入法打字被打断：过程分组与思考行自己折叠时，原先在每次活动状态变化时替读者按一下标题，按下与抬起焦点都发生在输入法还没上屏的那一刻，浏览器于是把已敲的拼音丢掉、重新弹出候选框。这两处现在等到上屏之后再按，上屏那一刻补做一次折叠。
@@ -60,6 +62,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Fix a drag that starts on the window's own chrome turning into word selection: the sidebar and the conversation header take no selection, while the transcript, the fields and the draft still do.
 - Fix the conversation title in the window's caption row overlapping the row of controls below it: the row's top was tucked into the title's own box, so a taller window or type size pressed the two lines together. The row's top now stands a fixed gap below the title's box, keeping the row inside the conversation header.
+- Fix a modal dialog standing wider than the window at a page scale other than 100%: the host's settings panel and the cost meter's fee window state their size in viewport units, which the scale multiplies once more, so the right edge and the close control beside it are pushed out of the window and the higher the factor the further. These cards now take their width in the page's pixels, capped by their design width and floored by the window, and follow a change of factor at the same share.
+- Fix the right panel standing wider than the column the frame gives it at a page scale other than 100%: the host states the panel's width and the drag handle's place in the window's pixels, and the scale enlarges both once more, so the panel covers the centre and the handle leaves the panel's visible edge. Both are recomputed in the page's pixels here, with the width the frame gives that column as the panel's ceiling.
 - Fix the search panel standing lower than its place at a page scale other than 100%: the air above it was a percentage of the window's height while the panel is drawn in the page's pixels, and that gap now converts through the page height the skin measures.
 - Fix the host frame and the host's floating cards keeping the old factor after the page scale changes: the page's own size, the frame's columns and the space the host's cards are given were woken by a preference write alone, so a factor written from anywhere else left them as they were. The write itself now wakes them, so leaving 100%, switching between factors and coming back all take effect at once.
 - Fix input-method typing in the composer being cut short while an answer streams: when a process group or a thinking row folded itself, the skin pressed its header for the reader on every activity change, and the focus leaving and returning landed mid-composition, so the browser dropped the letters typed so far and opened the candidate window again. Both now wait for the composition to land, and settle once it has.
