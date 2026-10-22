@@ -14,8 +14,8 @@
       "reason": "The popover build and the teardown sweep the control's popover and nodes, and the cold start screen finds its mode strip inside the composer card."
     },
     "packages/client/src/features/model/model-picker.ts": {
-      "count": 4,
-      "reason": "Sweeps of the picker's own nodes when the feature is switched off, takes the page and tears down."
+      "count": 5,
+      "reason": "Sweeps of the picker's own nodes and of the seat box when the feature is switched off, takes the page and tears down."
     },
     "packages/client/src/features/account/account-footer.ts": {
       "count": 3,

@@ -5,7 +5,7 @@
    inside the seat keeps its own layout, and the seat root the picker hides is
    never matched — a display here would outrank the hide rule below. */
 body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > [data-dsh-claude-part~="host-root"] > [data-dsh-claude-part~="trigger"],
-body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > .dsh-claude-model-btn {
+body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"] [data-slot="conversation.input.model"] > .dsh-claude-model-seat {
   display: inline-flex;
   align-items: center;
   font-size: 13px;
@@ -15,41 +15,65 @@ body[data-dsh-claude-style] [data-composer-card][data-composer-variant="inline"]
   visibility: visible;
   opacity: 1;
 }
-/* The skin's own model trigger replaces the host's model seat (the host's
-   root is marked and hidden by syncModelControl). One button, one hover
-   background — the shipped seat stacks an icon + label + effort + chevron,
-   each with its own surface. */
+/* The skin's own seat replaces the host's model seat (the host's root is marked
+   and hidden by syncModelControl). One box holds the row's two texts — the
+   model's name and the effort level's — and the row lays it out as a single
+   item, so a level's name growing moves the box's left end and leaves its right
+   end, which both cards hang from, where it was (features/model/seat-box.ts).
+   The host's own seat is one button carrying the same two texts; two hit areas
+   cannot nest in one button, so the box is the container and each text is its
+   own button. */
 body[data-dsh-claude-style] [data-dsh-claude-model-host] {
   display: none;
 }
-body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn {
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   height: 28px;
-  max-width: 280px;
-  padding: 0 8px;
-  border: none !important;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
-  cursor: pointer;
-  box-sizing: border-box;
   min-width: 0;
+  /* The left end starts the row's rhythm; the right end lets the level's own
+     padding close the chip, so the meter's reserved gap (the cluster's margin,
+     features/composer/composer.ts) is the only space between the two. */
+  padding: 0 0 0 8px;
+  border-radius: 7px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+/* The name's own cap: the box stops growing with it, and a narrow row shortens
+   the name rather than the level beside it. */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-btn {
+  max-width: 280px;
+}
+/* One plate for the whole box, the way the host's seat paints one: the two texts
+   are two hit areas of one control, so the hover face belongs to the box. */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat:hover {
+  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
+}
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-btn,
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-effort-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  min-width: 0;
+  padding: 0;
+  border: none !important;
+  background: transparent;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* The text under the pointer takes the stronger ink; the plate is the box's. A
+   level that wears the accent ramp keeps it — the ramp is the level's own colour,
+   and the plate is what answers the pointer there. */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-btn:hover,
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-effort-btn:not([data-tint]):hover {
+  color: var(--dsw-alias-label-primary);
 }
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn-label.dsh-claude-model-btn-loading {
   color: var(--dsw-alias-label-caption, #a6a094) !important;
 }
-body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn:hover {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
-  color: var(--dsw-alias-label-primary);
-}
 
-/* Only the whole trigger gets the hover plate; its label/effort spans stay
-   transparent so no smaller inner background appears. */
+/* Only the buttons keep transparent innards; the box carries the plate. */
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn > * {
   background: transparent;
 }
@@ -59,10 +83,8 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   min-width: 0;
   overflow: hidden;
 }
-/* (The effort trigger's styles live in features/effort/effort-picker.css: the
-   trigger is body-mounted and JS-pinned beside the model trigger — it never
-   sits under the composer's `trailing` part, so the rules drafted for that seat
-   were dead and have been removed.) */
+/* (The effort level's own rules live in features/effort/effort-picker.css: the
+   level's button is the seat box's second text.) */
 
 /* The host's dock line — the context meter and the stats pills — laid over the
    toolbar row while the numbers live in the context popover. Both stay in their
@@ -115,7 +137,7 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-
   pointer-events: auto;
 }
 /* The meter holds the row's right end, inside the row's own 4px inset, after
-   the model and effort triggers: the trailing cluster keeps that room free
+   the seat box: the trailing cluster keeps that room free
    (--dsh-claude-meter-room, measured by the permissions pass). Centred by
    stretching over the dock's height, never by a transform — the meter's panel
    is position: fixed, and a transform here would anchor it to the meter. */
@@ -128,6 +150,12 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-
 }
 body[data-dsh-claude-style][data-dsh-claude-stats-position="context"] [data-dsh-claude-part~="composer-stack"]:not([data-composer-variant="hero"]) [data-composer-card] [data-dsh-claude-part~="row"] > [data-dsh-claude-part~="trailing"] {
   margin-right: var(--dsh-claude-meter-room, 0px);
+}
+/* The activity slot carries the stop button while a turn runs; between turns it
+   is an empty flex item, and its gap stood between the seat and the meter. Out
+   of the flow while nothing is in it, the seat ends where the room begins. */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] > [data-dsh-claude-part~="composer-activity"]:not([data-dsh-claude-holds~="composer-activity-filled"]) {
+  display: none;
 }
 /* A portrait mobile plugin reserves that same band with padding of its own: 38px
    on the line's left for the command button it floats over the row, and 78px on
@@ -163,7 +191,8 @@ body[data-dsh-claude-style] [data-composer-stat] {
 body[data-dsh-claude-style] [data-dsh-claude-context-meter],
 body[data-dsh-claude-style] [data-dsh-claude-context-meter] button,
 body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"] [data-composer-stats],
-body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row"] .dsh-claude-model-btn {
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row"] .dsh-claude-model-btn,
+body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row"] .dsh-claude-effort-btn {
   font-family: var(--dsw-font-family);
   font-size: 13px;
   font-weight: 500;

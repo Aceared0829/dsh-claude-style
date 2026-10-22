@@ -1,6 +1,7 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
 import { MODEL_EMPTY_LABEL, MODEL_FALLBACK_LABEL, MODEL_LOADING_LABEL, MODEL_MORE_LABEL, MODEL_OFFICIAL_GROUP, MODEL_TRIGGER_LABEL } from './copy-fallbacks'
 import { activeLocale } from '../../core/i18n'
+import { ensureSeatBox } from './seat-box'
 import { loadModelCopy } from './model-copy'
 import { readPrefs } from '../../core/prefs'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
@@ -22,8 +23,8 @@ import { copy } from './copy'
 export interface ModelHandle extends FeatureHandle {
   /** The scheduler's own dismiss route; the effort picker calls it with no reason. */
   close(reason?: CloseReason): void
-  /** The host slot the seat lives in. */
-  seat(): HTMLElement | null
+  /** The skin's seat box: the model's text and the effort level's share it (seat-box.ts). */
+  seatBox(): HTMLElement | null
   /** The skin's model trigger while it is in the document. */
   trigger(): HTMLButtonElement | null
   effort(): ReturnType<ModelCatalog['effort']>
@@ -54,6 +55,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * marked; a React swap re-marks it on the next pass.
    */
   let modelBtn: HTMLButtonElement | null = null
+  /** The box the model's text and the effort level's share inside the host slot (seat-box.ts). */
+  let seatBox: HTMLElement | null = null
   let modelPop: HTMLElement | null = null
   let modelSubPop: HTMLElement | null = null
   let modelBody: HTMLElement | null = null
@@ -199,8 +202,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function openModelPopover() {
     cancelCloseModel()
     // One card at a time: the second level is this same choice and stays,
-    // every other popover folds (the effort trigger sits beside this one, so
-    // leaving its card up would stack two panels over one corner).
+    // every other popover folds (the level's card hangs from the same box, so
+    // leaving it up would stack two panels over one corner).
     closeOtherPopovers('model')
     const dir = modelCatalog.directory()
     // load() is async — the host itself guards with .catch(() => {}); a bare
@@ -410,7 +413,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function positionModelPopovers() {
     trackPointerWhileOpen()
     if (!modelBtn || !modelPop) return
-    const pos = positionAnchoredPopover(modelBtn, modelPop, { side: 'above', gap: 6 })
+    // From the box, not the model's button: it is the row's one item and its
+    // right edge is what both cards hang from (seat-box.ts).
+    const pos = positionAnchoredPopover(seatBox ?? modelBtn, modelPop, { side: 'above', gap: 6 })
     if (modelSubPop && modelSubPop.getAttribute('data-open') === 'true') {
       const w2 = modelSubPop.offsetWidth
       const h2 = modelSubPop.offsetHeight
@@ -510,6 +515,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (let h = 0; h < allHosts.length; h++) {
       allHosts[h].removeAttribute('data-dsh-claude-model-host')
     }
+    removeStrayNodes(document, '.dsh-claude-model-seat', [])
+    seatBox = null
     removeStrayNodes(document, '.dsh-claude-model-btn', [])
     modelBtn = null
     removeStrayNodes(document, '.dsh-claude-model-popover', [])
@@ -547,11 +554,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // client HMR drops the old fiber's disposals, so a previous generation's
     // trigger and popovers are still in the DOM while this fresh scope starts
     // from null. Sweep the strays, or the seat renders twice.
+    removeStrayNodes(slot, '.dsh-claude-model-seat', [seatBox])
     removeStrayNodes(slot, '.dsh-claude-model-btn', [modelBtn])
     removeStrayNodes(document, 'body > .dsh-claude-model-popover', [modelPop, modelSubPop])
-    const hostRoot = slot.firstElementChild
+    // The host's own seat root, not the box the skin just appended: a swap can
+    // put React's node after ours.
+    const hostRoot = slot.querySelector(':scope > :not(.dsh-claude-model-seat)')
     if (hostRoot !== null) hostRoot.toggleAttribute('data-dsh-claude-model-host', true)
-    if (modelBtn === null || modelBtn.parentElement !== slot) {
+    seatBox = ensureSeatBox(slot, seatBox)
+    if (modelBtn === null || modelBtn.parentElement !== seatBox) {
       if (modelBtn !== null && modelBtn.parentElement !== null) modelBtn.parentElement.removeChild(modelBtn)
       modelBtn = document.createElement('button')
       modelBtn.type = 'button'
@@ -576,7 +587,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         if (open) closeModelPopovers()
         else openModelPopover()
       })
-      slot.appendChild(modelBtn)
+      // First in the box: the model's name, then the level's (the effort picker
+      // appends its own button into the same box).
+      seatBox.insertBefore(modelBtn, seatBox.firstChild)
     }
     ensureModelChrome()
 
@@ -645,12 +658,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     },
     /**
      * What the effort picker (a separate fragment that owns the level's
-     * trigger and card) reads from this one: the seat slot, the model
-     * trigger it sits beside, the effort descriptor and the commit call.
-     * `effort()` re-reads the catalog every call, so a level the host echoes
-     * back lands on the knob without either fragment pushing it.
+     * trigger and card) reads from this one: the seat box it appends its button
+     * to, the effort descriptor and the commit call. `effort()` re-reads the
+     * catalog every call, so a level the host echoes back lands on the knob
+     * without either fragment pushing it.
      */
-    seat() { return modelSlot },
+    seatBox() { return seatBox !== null && seatBox.isConnected ? seatBox : null },
     /** The skin's model trigger while it is in the document, else null. */
     trigger() { return modelBtn !== null && modelBtn.isConnected ? modelBtn : null },
     effort() { return modelCatalog.effort(modelCatalog.snapshot()) },
@@ -710,6 +723,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       dropModelControl()
       modelCatalog.resetWarm()
       modelSlot = null
+      seatBox = null
       unregisterPopover('model')
     }
   }

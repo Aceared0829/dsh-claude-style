@@ -37,7 +37,6 @@ export { CACHE_HIT_STOPS, CONTEXT_STOPS, RAMP_SPAN_HIGH, RAMP_SPAN_LOW, rampPosi
 export { textTokens } from './features/context-stats/text-tokens'
 export { effortSteps, effortTint, isRankedEffort, orderEffortIds } from './features/effort/ladder'
 export type { EffortLadder, EffortStep } from './features/effort/ladder'
-export { releaseEffortRoom, reserveEffortRoom } from './features/effort/room'
 export { HEAT_TIP_EDGE_ATTR, HEAT_TIP_SIDE_ATTR, HEAT_TIP_SIDE_BELOW, placeHeatTip } from './features/home/heat-tip'
 export { default as HOME_OVERVIEW_SHEET } from './features/home/home-overview.css?raw'
 export { HOME_REFRESH_FLOOR_MS, HOME_REFRESH_MS, homeRefreshDue } from './features/home/usage-refresh'

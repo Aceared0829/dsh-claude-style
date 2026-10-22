@@ -439,10 +439,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * The meter stays in the host's dock line, its native React parent: moving
    * it out crashed React's unmount (Node.removeChild). The stylesheet lays
    * the dock over the toolbar row and puts the meter at the row's right end,
-   * after the model and effort triggers; the trailing cluster keeps that
-   * room free through --dsh-claude-meter-room — the pill the reader sees,
-   * trigger and wrapper together, plus the cluster's own 8px gap. With the
-   * session's numbers asked onto a line of their own the dock keeps the
+   * after the seat box the model's name and the level share; the trailing
+   * cluster keeps that room free through --dsh-claude-meter-room — the pill the
+   * reader sees, trigger and wrapper together, plus the cluster's own 8px gap.
+   * With the session's numbers asked onto a line of their own the dock keeps the
    * host's placement, nothing overlays the row, and no room is measured.
    *
    * The meter is re-resolved only when the cached node left the tree, and
@@ -507,12 +507,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     roomHost = host
     if (room === '') host?.style.removeProperty('--dsh-claude-meter-room')
     else host!.style.setProperty('--dsh-claude-meter-room', room)
-    // The room moves the trailing cluster, and the effort trigger is pinned to
-    // the model trigger's box in a pass of its own (features/effort). Ask for
-    // that pass here: this write is an inline style, which the scheduler's
-    // observer does not watch, and a streaming (content-only) pass skips the
-    // pinning feature, so the pin would otherwise trail the controls it sits
-    // between until some later page-wide pass.
+    // The room moves the trailing cluster, and a card the reader has open hangs
+    // from the seat box inside it (features/model/seat-box.ts). Ask for a pass:
+    // this write is an inline style, which the scheduler's observer does not
+    // watch, and a streaming (content-only) pass skips the features that place
+    // their cards, so the card would otherwise trail the seat until some later
+    // page-wide pass.
     if (typeof ui.schedule === 'function') ui.schedule()
   }
 
