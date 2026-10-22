@@ -57,7 +57,7 @@ export default {
     check('the accent line names dsh-chat-ux',
       (settings.texts || []).some(text => text.includes('dsh-chat-ux')), JSON.stringify(settings.texts))
     check('the rows the other plugin does not own keep answering',
-      [['conversation', 'turnNav'], ['conversation', 'viewTabs'], ['motion', 'motion']]
+      [['main-window', 'turnNav'], ['main-window', 'viewTabs'], ['motion', 'motion']]
         .every(([tab, key]) => refusingIn(tab).includes(key) === false),
       JSON.stringify(Object.keys(ported).map(tab => `${tab} refusing=${refusingIn(tab).join(',')}`)))
     commonChecks(r)

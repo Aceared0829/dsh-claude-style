@@ -185,7 +185,7 @@ function motionScenario({ check }) {
       notes.reveal = await page.evaluate(() => window.__motionReveal ?? [])
       await openSkinSettings(page)
       notes.slide = await readTabSlide(page, 1)
-      // The composer tab carries switches of its own; the general tab has none.
+      // The main window tab carries switches of its own; the general tab has none.
       await readTabSlide(page, 2)
       notes.switch = await readSwitch(page)
       await page.keyboard.press('Escape')

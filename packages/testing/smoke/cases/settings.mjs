@@ -17,47 +17,55 @@ export default {
     const expected = {
       general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
       appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
-      composer: ['composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'permissionsControl'],
+      'main-window': ['turnNav', 'viewTabs', 'headerBand', 'composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'statsPosition', 'billingCurrency', 'permissionsControl'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
-      conversation: ['turnNav', 'statsPosition', 'billingCurrency', 'viewTabs', 'headerBand'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
     }
+    // The main window's two groups, the conversation side above the composer's,
+    // each under its label and carrying its own rows: what used to be the
+    // Conversation and Composer tabs, and the statistics rows with the
+    // composer's billing display.
+    const mainWindowGroups = [
+      { label: 'Conversation', rows: ['turnNav', 'viewTabs', 'headerBand'] },
+      { label: 'Composer', rows: ['composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'statsPosition', 'billingCurrency', 'permissionsControl'] },
+    ]
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window.
-    const expectedGrey = { conversation: ['headerBand'] }
+    const expectedGrey = { 'main-window': ['headerBand'] }
     const pages = settings.pages || {}
     for (const tab of Object.keys(expected)) {
       const page = pages[tab] || {}
-      check(`the ${tab} tab is selected in the six-tab strip and carries its rows, greying only the rows that wait for something`,
+      check(`the ${tab} tab is selected in the five-tab strip and carries its rows, greying only the rows that wait for something`,
         JSON.stringify(page.tabs) === JSON.stringify(Object.keys(expected)) && page.selected === tab &&
           JSON.stringify(page.rows) === JSON.stringify(expected[tab]) &&
           JSON.stringify(page.disabled || []) === JSON.stringify(expectedGrey[tab] || []) &&
           JSON.stringify(page.notes || []) === JSON.stringify(expectedGrey[tab] || []),
         JSON.stringify(page))
     }
+    const mainWindow = pages['main-window'] || {}
+    check('the main window page opens with the conversation group and continues with the composer\'s, each label above its own rows',
+      JSON.stringify(mainWindow.groups) === JSON.stringify(mainWindowGroups),
+      JSON.stringify(mainWindow.groups))
     const onWindows = settings.onWindows || {}
     check('on the Windows window the title-bar row takes input and carries no note',
-      JSON.stringify(onWindows.rows) === JSON.stringify(expected.conversation) &&
+      JSON.stringify(onWindows.rows) === JSON.stringify(expected['main-window']) &&
         JSON.stringify(onWindows.disabled) === '[]' && JSON.stringify(onWindows.notes) === '[]',
       JSON.stringify(onWindows))
     const off = settings.parentsOff || {}
-    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off',
+    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off, and the title-bar band for the window on every page',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&
-        !!off.composer && JSON.stringify(off.composer.disabled) === '["modelDescriptions","effortAccent","quickProviders","peakrate"]' &&
+        !!off.mainWindow && JSON.stringify(off.mainWindow.disabled) === '["headerBand","modelDescriptions","effortAccent","quickProviders","peakrate"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))
     const unmet = settings.requirementsOff || {}
-    check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' position grey out, the two switches and the position saying what they wait for; with the footer takeover off, so does the easter egg under it',
-      !!unmet.composer && JSON.stringify(unmet.composer.disabled) === '["modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","permissionsControl"]' &&
-        JSON.stringify(unmet.composer.notes) === '["modelPicker","permissionsControl"]' &&
-        !!unmet.conversation && JSON.stringify(unmet.conversation.disabled) === '["statsPosition","billingCurrency","headerBand"]' &&
-        JSON.stringify(unmet.conversation.notes) === '["statsPosition","billingCurrency","headerBand"]' &&
+    check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' figures grey out, the two switches and the statistics rows saying what they wait for; with the footer takeover off, so does the easter egg under it',
+      !!unmet.mainWindow && JSON.stringify(unmet.mainWindow.disabled) === '["headerBand","modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","statsPosition","billingCurrency","permissionsControl"]' &&
+        JSON.stringify(unmet.mainWindow.notes) === '["headerBand","modelPicker","statsPosition","billingCurrency","permissionsControl"]' &&
         !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
       JSON.stringify(unmet))
     const hero = settings.heroOnly || {}
-    check('with the restyle on the home page alone, the picker and the permission control take input and the statistics\' position still waits for a conversation',
-      !!hero.composer && JSON.stringify(hero.composer.disabled) === '[]' &&
-        !!hero.conversation && JSON.stringify(hero.conversation.disabled) === '["statsPosition","billingCurrency","headerBand"]',
+    check('with the restyle on the home page alone, the picker and the permission control take input, the statistics\' position still waits for a conversation and the title-bar band for the window',
+      !!hero.mainWindow && JSON.stringify(hero.mainWindow.disabled) === '["headerBand","statsPosition","billingCurrency"]',
       JSON.stringify(hero))
     const pageZoom = settings.pageZoom || {}
     const zoomed = pageZoom.zoomed || {}

@@ -95,17 +95,24 @@
         var tree = Section({})
         react.rendering = false
         react.states = null
-        var out = { tabs: [], selected: null, rows: [], disabled: [], notes: [], notice: null, link: null }
+        var out = { tabs: [], selected: null, rows: [], disabled: [], notes: [], groups: [], notice: null, link: null }
         walk(tree, function (node) {
           var props = node.props || {}
           if (props.role === 'tab') {
             out.tabs.push(props.key)
             if (props['aria-selected'] === 'true') out.selected = props.key
           }
+          // A group label opens one of the main window's groups as its heading.
+          if (props.role === 'heading') {
+            out.groups.push({ label: [].concat(props.children).filter(function (child) { return typeof child === 'string' }).join(''), rows: [] })
+          }
           if (typeof props.className === 'string' && /(^| )dsh-claude-settings-row( |$)/.test(props.className)) {
             var rowKey = props.key
             out.rows.push(rowKey)
             if (props['data-disabled'] === '') out.disabled.push(rowKey)
+            // A group's members follow its label in the tree, so the last
+            // label seen is the group the row stands in.
+            if (out.groups.length > 0) out.groups[out.groups.length - 1].rows.push(rowKey)
             walk(props.children, function (child) {
               if (((child.props || {}).className || '') === 'dsh-claude-settings-row-note' && out.notes.indexOf(rowKey) < 0) out.notes.push(rowKey)
             })
@@ -131,7 +138,7 @@
       }
       r.settings = { registered: typeof Section === 'function', pages: {} }
       if (r.settings.registered) {
-        var tabIds = ['general', 'appearance', 'composer', 'sidebar', 'conversation', 'motion']
+        var tabIds = ['general', 'appearance', 'main-window', 'sidebar', 'motion']
         for (var ti = 0; ti < tabIds.length; ti++) r.settings.pages[tabIds[ti]] = renderTab(tabIds[ti])
         r.settings.link = r.settings.pages.general.link
         // The heading's mark: the build inlines the asset into the token sheet
@@ -402,16 +409,16 @@
         await sleep(120)
         r.settings.ongoingStored = { ring: ringRunning, breathe: readRunning() }
         window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
-        r.settings.parentsOff = { appearance: renderTab('appearance'), composer: renderTab('composer'), sidebar: renderTab('sidebar') }
+        r.settings.parentsOff = { appearance: renderTab('appearance'), mainWindow: renderTab('main-window'), sidebar: renderTab('sidebar') }
         window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })
         // The rows that wait for another setting: the composer restyle off greys
         // the picker, its sub-rows, the permission control and the statistics'
-        // position; the footer takeover off greys the easter egg under it. Home
+        // figures; the footer takeover off greys the easter egg under it. Home
         // only still leaves the statistics without a conversation to stand in.
         window.__pushForm({ composerScope: 'off', collapseFooter: false })
-        r.settings.requirementsOff = { composer: renderTab('composer'), conversation: renderTab('conversation'), sidebar: renderTab('sidebar') }
+        r.settings.requirementsOff = { mainWindow: renderTab('main-window'), sidebar: renderTab('sidebar') }
         window.__pushForm({ composerScope: 'hero', collapseFooter: true })
-        r.settings.heroOnly = { composer: renderTab('composer'), conversation: renderTab('conversation') }
+        r.settings.heroOnly = { mainWindow: renderTab('main-window') }
         window.__pushForm({ composerScope: 'all' })
         // Page zoom reaches the document through the preference mirror and the
         // sheet draws the page at it, above and below the page's own size; the
@@ -435,7 +442,7 @@
         // On the Windows window the title-bar row takes input; everywhere else
         // it stays greyed with its note.
         document.documentElement.setAttribute('data-windows-titlebar', '')
-        r.settings.onWindows = renderTab('conversation')
+        r.settings.onWindows = renderTab('main-window')
         document.documentElement.removeAttribute('data-windows-titlebar')
       }
     })
