@@ -1,5 +1,5 @@
 import { FLOW_KIND_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
-import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
+import { observeMatches, observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { conversationScroller } from '@dsh-claude-style/engine/chat-dom'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 
@@ -11,6 +11,12 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
  * frame after, and only then may the row be skipped, standing at the height it
  * really has. A change of the column's width rewraps every row, so every mark
  * comes off, every row is laid out once at the new width, and the marks go back.
+ *
+ * A row under a `hidden` element (a folded process group's body, a folded
+ * turn's members) has no layout to remember, so it carries no mark: one marked
+ * there would open at the fallback height, and the fold glide would measure
+ * that height and roll the door to it. Every `hidden` flip takes the marks
+ * off the rows under it, and a row is marked only while it is rendered.
  */
 
 /** The mark a row carries once it has been laid out at its real size. */
@@ -38,19 +44,37 @@ export function install() {
     if (cancelFrame !== null || waiting.size === 0) return
     cancelFrame = requestFrame({
       write() {
-        const laidOut = waiting
+        const queued = waiting
         waiting = new Set()
+        /** The queued rows that were rendered, read before any mark is written. */
+        let laidOut: HTMLElement[] = []
         cancelFrame = requestFrame({
+          read() {
+            // A row under a hidden element waits for the flip that shows it.
+            laidOut = [...queued].filter(row => row.isConnected && row.checkVisibility())
+          },
           write() {
             cancelFrame = null
-            for (const row of laidOut) {
-              if (row.isConnected) row.setAttribute(LAID_OUT_ATTR, '')
-            }
+            for (const row of laidOut) row.setAttribute(LAID_OUT_ATTR, '')
             schedule()
           },
         })
       },
     })
+  }
+
+  /** A `hidden` flip: the rows at and under the element lose their marks and wait for a layout. */
+  const onHiddenFlip = (records: MutationRecord[]) => {
+    for (const record of records) {
+      const target = record.target
+      if (!(target instanceof HTMLElement)) continue
+      const under = target.matches(ROW_SELECTOR) ? [target, ...target.querySelectorAll<HTMLElement>(ROW_SELECTOR)] : target.querySelectorAll<HTMLElement>(ROW_SELECTOR)
+      for (const row of under) {
+        row.removeAttribute(LAID_OUT_ATTR)
+        waiting.add(row)
+      }
+    }
+    schedule()
   }
 
   /** Every row's mark comes off and every row waits for a layout of its own again. */
@@ -92,9 +116,11 @@ export function install() {
     schedule()
   }
 
+  const stopHidden = subscribeMutations(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] }, onHiddenFlip)
   collect()
 
   return () => {
+    stopHidden()
     if (stopWidth !== null) stopWidth()
     if (cancelFrame !== null) cancelFrame()
     for (const row of rows.all()) row.removeAttribute(LAID_OUT_ATTR)

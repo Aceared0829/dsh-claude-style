@@ -6,7 +6,9 @@
    it had when it was last laid out.
 
    A row is skipped only once it carries the laid-out mark (row-skip.ts), written the
-   frame after the one that laid it out at its real size. A row skipped before that would
+   frame after the one that laid it out at its real size; a row under a hidden element (a
+   folded group's body) is not laid out, and is marked only once it is shown. A row
+   skipped before that would
    stand at the fallback height until the reader neared it, and its real height would
    arrive under him: while the host follows the end it turns scroll anchoring off, and the
    page jumps by the difference on every such row. The fallback is never stood at; the
