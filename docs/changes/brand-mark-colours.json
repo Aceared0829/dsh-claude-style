@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "zh": "修复品牌标志的颜色只作用于上传图片的问题：该行由「图片颜色」改为「标志颜色」，内置品牌标志、上传的标志图与文字标志（含账号行头像里的那张）都按「强调色」或「文字色」上色，设置页的品牌区预览当场显示所选颜色，「强调色」一项按当前配色卡的颜色上色（#135）。",
-  "en": "Fix the brand mark's colour reaching only uploaded images: the row is now “Mark colours”, the built-in mark, an uploaded mark and wordmark — the account row's avatar included — all take the accent or the text colour, the settings page's brand area previews the chosen colour at once, and “Accent” follows the colour card in force (#135)."
-}

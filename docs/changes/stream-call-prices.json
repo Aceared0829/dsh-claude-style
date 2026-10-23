@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "改善流式回答的 token 估算：每次工具调用按该工具自己的价格计入，代替统一的固定值，读取类调用不再被高估、写入类调用不再被低估；每个模型的估算再按自身已结算的步骤在 0.9–1.1 之间自动微调倍率。",
-  "en": "Improve the streaming token estimate: a tool call now carries its own tool's price instead of one flat figure, so a read is no longer overpriced and a write no longer underpriced; each model's estimate is also scaled between 0.9 and 1.1 from its own settled steps."
-}

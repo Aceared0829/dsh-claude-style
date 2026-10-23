@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "improvements",
-  "order": 2,
-  "external": false,
-  "zh": "改善等待行加载点在动作之间的切换：旧动作的每颗点在自己静止的那一刻把位置交给新动作里配对的那颗，新的点从原地出发走进自己的轨迹，三颗变四颗时一颗分成两颗、四颗变三颗时两颗合成一颗，框里不再出现空白。",
-  "en": "Improve how the waiting line's loader dots change from one motion to the next: each dot hands its place to its partner in the new motion at its own still moment and that dot travels from there into its own path, one dot splitting in two going from three dots to four and two meeting in one going back, so the box never empties."
-}

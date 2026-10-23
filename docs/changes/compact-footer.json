@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "new",
-  "order": 0,
-  "external": true,
-  "zh": "对话统计新增紧凑底栏：费用、缓存命中率和上下文圆环共用工具栏，支持左侧、居中和右侧位置，空间不足时独立成行。",
-  "en": "Conversation statistics add a compact footer with cost, cache hit rate and the context meter, left/center/right alignment, and a separate line when toolbar space runs out."
-}

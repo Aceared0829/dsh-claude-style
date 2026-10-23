@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-23",
-  "external": false,
-  "zh": "修复显示缩放或页面缩放为小数倍时，像素螃蟹播放动画时身侧出现一条细竖线的问题（#130）。",
-  "en": "Fix a thin vertical line appearing beside the pixel crab while it plays at a fractional display or page zoom (#130)."
-}

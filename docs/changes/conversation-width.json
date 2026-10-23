@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "new",
-  "order": 0,
-  "external": true,
-  "zh": "主窗口设置的对话区新增「对话栏宽度」，按宿主宽度的 100%、75% 或 50% 绘制对话栏，输入框随对话栏同宽。",
-  "en": "Main window settings add Conversation width under Conversation, which draws the conversation column at 100%, 75% or 50% of the host's width with the composer following it."
-}

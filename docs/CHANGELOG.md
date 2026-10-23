@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.19.0] - 2026-10-23
 
-<h3 id="cn-unreleased">新增功能</h3>
+[中文](#cn-0.19.0) | [English](#en-0.19.0)
+
+<h3 id="cn-0.19.0">新增功能</h3>
 
 - 对话统计新增紧凑底栏：费用、缓存命中率和上下文圆环共用工具栏，支持左侧、居中和右侧位置，空间不足时独立成行。
 - 主窗口设置的输入区新增「底部间距」，对话页输入框与窗口底边的距离可选紧凑、默认和宽松。
@@ -36,7 +38,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 改善本地任务管理，按任务延续需要建立工单，并提供独立的会话临时目录及进程保护回收命令。
 
-<h3 id="en-unreleased">New Features</h3>
+<h3 id="en-0.19.0">New Features</h3>
 
 - Conversation statistics add a compact footer with cost, cache hit rate and the context meter, left/center/right alignment, and a separate line when toolbar space runs out.
 - Main window settings add Bottom gap under Composer, which sets the room between the conversation's composer and the bottom of the window to Compact, Default or Roomy.

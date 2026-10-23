@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-23",
-  "group": "chores",
-  "order": 0,
-  "external": false,
-  "zh": "改善本地任务管理，按任务延续需要建立工单，并提供独立的会话临时目录及进程保护回收命令。",
-  "en": "Improve local task management with work orders based on continuity needs and independent session scratch directories with process-aware collection."
-}
