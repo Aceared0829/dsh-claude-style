@@ -1,4 +1,4 @@
-import { MODEL_EFFORT_DEFAULT } from './copy-fallbacks'
+import { MODEL_EFFORT_DEFAULT } from './model-labels'
 import { currentSessionId, hostModelDirectories, hostSessions } from '@dsh-claude-style/engine/host'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelCatalogSnapshot, HostModelDirectory, HostModelEntry, HostModelGroup, HostModelReasoning } from '@dsh-claude-style/contracts/services'

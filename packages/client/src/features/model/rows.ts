@@ -1,8 +1,9 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
-import { MODEL_OFFICIAL_GROUP } from './copy-fallbacks'
+import { MODEL_OFFICIAL_GROUP } from './model-labels'
 import { readPrefs } from '../../core/prefs'
+import { localized } from '../../core/i18n'
 import { buildModelLabel, modelBrand } from './brand'
-import { modelDescription } from './copy-lookup'
+import { modelCopy, resolveModelCopy } from './model-copy'
 import { releaseTag } from './release-tag'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem } from '../../shared/popover'
@@ -26,6 +27,29 @@ export function byModelId(a: HostModelEntry, b: HostModelEntry) {
   const left = String(a.id)
   const right = String(b.id)
   return left < right ? -1 : left > right ? 1 : 0
+}
+
+/**
+ * The description line for one catalog model, in the shell's language, out of
+ * the copy document the host half serves (D5). Resolution descends family rule →
+ * tier rule → the catalog's own text; family rules are ordered and anchored, so
+ * one product line's rule never claims another's model, and a model the table
+ * has never seen answers with the catalog's own line: a name-only row beats an
+ * invented one.
+ *
+ * The identity a rule reads is the model's id and then the display name beside
+ * it (D79): a gateway's id is often an opaque alias while the name is the
+ * model's own. resolveModelCopy (model-copy.ts) owns that order. It lives here
+ * rather than beside the copy index because model-copy.ts is loaded by the
+ * build in a Node sandbox, and this resolver reads the page's locale.
+ *
+ * `ctx` is the caller's context, used only to read the shell's locale.
+ */
+function modelDescription(ctx: HostContext, groupId: unknown, model: HostModelEntry): string {
+  const pair = resolveModelCopy(modelCopy, groupId, model.id, model.name)
+  const text = localized(pair, ctx, modelCopy === null ? undefined : modelCopy.fallback)
+  if (text) return text
+  return typeof model.description === 'string' ? model.description : ''
 }
 
 export function createModelRows(options: {

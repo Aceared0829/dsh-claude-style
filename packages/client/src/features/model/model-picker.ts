@@ -1,5 +1,5 @@
-import { AUTO_POPOVER_ALL, SLOT_NODE_ATTR } from '../../constants'
-import { MODEL_EMPTY_LABEL, MODEL_FALLBACK_LABEL, MODEL_LOADING_LABEL, MODEL_MORE_LABEL, MODEL_OFFICIAL_GROUP, MODEL_TRIGGER_LABEL } from './copy-fallbacks'
+import { SLOT_NODE_ATTR } from '../../constants'
+import { MODEL_OFFICIAL_GROUP } from './model-labels'
 import { activeLocale } from '../../core/i18n'
 import { ensureSeatBox } from './seat-box'
 import { loadModelCopy } from './model-copy'
@@ -9,10 +9,9 @@ import { createModelCatalog } from './catalog'
 import { createModelSubMenu } from './sub-menu'
 import { byModelId, createModelRows } from './rows'
 import { releaseTag } from './release-tag'
-import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
-import { POPOVER_MARGIN, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
+import { removeStrayNodes, pressKeepsPopoverOpen } from '../../shared/popover'
 import { setSwappingText } from '../../shared/swapping-text'
-import { pageViewport } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelGroup } from '@dsh-claude-style/contracts/services'
 import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -20,6 +19,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './model-picker.manifest'
 import type { CatalogProvider, ModelCatalog } from './catalog'
 import { copy } from './copy'
+import { createModelCards } from './model-cards'
 
 /** What the effort picker and the settings page read off the model picker (ui.model). */
 export interface ModelHandle extends FeatureHandle {
@@ -50,31 +50,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * (`ctx.modelDirectories`), the same store the host's menu and the
    * /model command read — so the current selection, catalog and errors
    * stay in sync without scraping the DOM. The host's seat is hidden and
-   * marked; a React swap re-marks it on the next pass.
+   * marked; a React swap re-marks it on the next pass. The two cards'
+   * open, close, dwell and placement are the cards module's
+   * (features/model/model-cards.ts).
    */
   let modelBtn: HTMLButtonElement | null = null
   /** The box the model's text and the effort level's share inside the host slot (seat-box.ts). */
   let seatBox: HTMLElement | null = null
-  let modelPop: HTMLElement | null = null
-  let modelSubPop: HTMLElement | null = null
-  let modelBody: HTMLElement | null = null
-  let modelFooter: HTMLElement | null = null
-  /** Level 2's content: the search field and the list it filters (features/model/sub-menu.ts). */
-  let modelSub: ReturnType<typeof createModelSubMenu> | null = null
   /** The host slot the seat lives in; the effort picker anchors there too. */
   let modelSlot: HTMLElement | null = null
-  /**
-   * The picker is two cards wide, and the level-2 card only cancels a pending
-   * close once the pointer is ON it — so the grace has to cover the journey
-   * from a level-1 row, across the gap, onto the sub card. At the shared 100ms
-   * a slow traverse ran it out and both cards folded up mid-journey.
-   */
-  const MODEL_CLOSE_DELAY = 150
-  /** Pending fold of level 2 while the pointer is still crossing level 1. */
-  let subFoldTimer: ReturnType<typeof setTimeout> | null = null
-  const modelHoverIntent = createHoverIntent(openModelPopover, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY)
-  /** The More-models cell drills in on the same dwell/grace as the trigger. */
-  const modelSubHoverIntent = createHoverIntent(openModelSub, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY)
   let modelBodySig = ''
   /**
    * The catalog half of the picker (packages/client/src/features/model/catalog.ts):
@@ -85,159 +69,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       ctx,
       schedule() { if (ui.schedule) ui.schedule() }
   })
-  /**
-   * The row half of the picker (packages/client/src/features/model/rows.ts): the level-1
-   * and level-2 builders. `pickModel` is this closure's own commit function
-   * (a hoisted declaration); the rest is the second level's state.
-   */
-  const modelRows = createModelRows({
-      ctx,
-      pickModel,
-      subHoverIntent: modelSubHoverIntent,
-      isSubOpen() { return modelSubPop !== null && modelSubPop.getAttribute('data-open') === 'true' },
-      closeSub: closeModelPopovers,
-      openSub: openModelSub,
-      /**
-       * The peak rate meter is its own feature (packages/client/src/features/peakrate/):
-       * it answers with a badge for the row, and with nothing at all for a
-       * model whose provider bills on no clock.
-       */
-      rate(provider: string, modelId: string) {
-        const peakrate = ui.peakrate
-        if (peakrate === undefined) return null
-        return peakrate.badge(provider, modelId)
-      }
-  })
-
-  function cancelCloseModel() {
-    modelHoverIntent.cancel()
-    if (subFoldTimer !== null) {
-      clearTimeout(subFoldTimer)
-      subFoldTimer = null
-    }
-  }
-
-  /** Whether the hover preference covers this picker: the `all` scope alone. */
-  function modelHoverOn() {
-    return readPrefs().autoPopover === AUTO_POPOVER_ALL
-  }
-
-  function scheduleCloseModel() {
-    modelHoverIntent.scheduleClose()
-  }
-
-  /**
-   * Where the pointer last was, tracked only while a card is up. The two cards
-   * are separate boxes with a sliver of desktop between them, and a pointer
-   * crossing that sliver has not left the picker — without this the grace
-   * simply runs out mid-gap and both cards fold.
-   */
-  let pointer: { x: number, y: number } | null = null
-  let pointerBound = false
-  function trackPointer(event: MouseEvent) {
-    pointer = { x: event.clientX, y: event.clientY }
-  }
-  function trackPointerWhileOpen() {
-    const wanted = modelPop !== null && modelPop.getAttribute('data-open') === 'true'
-    if (wanted === pointerBound) return
-    if (!wanted) {
-      unbindPointerTracking()
-      return
-    }
-    pointerBound = true
-    document.addEventListener('mousemove', trackPointer, true)
-  }
-
-  /**
-   * Take the pointer watch off the document. The open card is the only thing
-   * that asks for it, so it goes with the card: a generation torn down while
-   * the card stands would otherwise leave this listener, and the closure
-   * behind it, on the document for the page's life.
-   */
-  function unbindPointerTracking() {
-    if (!pointerBound) return
-    document.removeEventListener('mousemove', trackPointer, true)
-    pointerBound = false
-    pointer = null
-  }
-
-  /** True while the tracked pointer sits within one card's box, with the same
-   *  8px band of desktop around it that covers the sliver of gap between the
-   *  two cards. */
-  function pointerInCardBox(card: HTMLElement | null) {
-    if (pointer === null || card === null) return false
-    if (card.getAttribute('data-open') !== 'true') return false
-    const box = card.getBoundingClientRect()
-    return pointer.x >= box.left - 8 && pointer.x <= box.right + 8 &&
-           pointer.y >= box.top - 8 && pointer.y <= box.bottom + 8
-  }
-
-  /** True while the pointer sits in either card, or in the gap between them. */
-  function pointerInPicker() {
-    return pointerInCardBox(modelPop) || pointerInCardBox(modelSubPop)
-  }
-
-  /** Close on leave, but treat the gap between the two cards as still inside. */
-  function closeModelIfAway() {
-    // A reader typing in the level-2 field is still using the card: the pointer
-    // leaving the box it sits in does not fold it out from under their hands.
-    // A press elsewhere and the Escape key are what close it then.
-    if (modelSub !== null && modelSub.focused()) return
-    if (pointerInPicker()) {
-      scheduleCloseModel()
-      return
-    }
-    closeModelPopovers()
-  }
-
-  function closeModelPopovers() {
-    cancelCloseModel()
-    if (modelSub !== null) modelSub.forget()
-    if (modelPop) setMenuPopoverOpen(modelPop, false, modelBtn)
-    if (modelSubPop) setMenuPopoverOpen(modelSubPop, false)
-  }
-
-  function openModelPopover() {
-    cancelCloseModel()
-    // One card at a time: the second level is this same choice and stays,
-    // every other popover folds (the level's card hangs from the same box, so
-    // leaving it up would stack two panels over one corner).
-    closeOtherPopovers('model')
-    const dir = modelCatalog.directory()
-    // load() is async — the host itself guards with .catch(() => {}); a bare
-    // try/catch cannot see its rejection.
-    if (dir && typeof dir.load === 'function') {
-      const pending = dir.load()
-      if (pending && typeof pending.catch === 'function') {
-        pending.catch(() => { /* the store's error surface covers a failure */ })
-      }
-    }
-    if (modelSubPop) setMenuPopoverOpen(modelSubPop, false)
-    // A card opening repaints from scratch: its countdowns were drawn at
-    // whatever minute it was last on screen, and a closed card is not part of
-    // any signature (rateSignature).
-    modelBodySig = ''
-    renderModelBody()
-    positionModelPopovers()
-    if (modelPop) setMenuPopoverOpen(modelPop, true, modelBtn)
-  }
-
-  function openModelSub(focusField?: boolean) {
-    cancelCloseModel()
-    // Open BEFORE placing: the placement pass reads the sub card only while
-    // it is marked open, so positioning first would skip it and leave the
-    // card at its previous position — every open has to place it fresh.
-    if (modelSubPop) setMenuPopoverOpen(modelSubPop, true)
-    if (modelSub !== null) {
-      modelSub.reset()
-      modelSub.render()
-      // A press on the More-models cell is a reader asking to look a model up:
-      // the field takes the focus. A card the hover opened leaves the focus
-      // where the reader had it, since they asked for nothing.
-      if (focusField === true) modelSub.focus()
-    }
-    positionModelPopovers()
-  }
 
   function pickModel(provider: string, modelId: string) {
     const dir = modelCatalog.directory()
@@ -247,7 +78,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // wrapper drops it.
     const pending = dir.select({ provider, model: modelId })
     if (pending && typeof pending.catch === 'function') pending.catch(() => {})
-    closeModelPopovers()
+    cards.closeAll()
   }
 
   /** Commit one reasoning level. The slider stays open for the next nudge. */
@@ -263,12 +94,69 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
+   * The cards half of the picker (features/model/model-cards.ts): the two
+   * popovers' open, close, dwell and placement. `onOpen` loads the catalog
+   * and repaints level 1 from scratch; `createSub` builds level 2's content
+   * when its card is first built.
+   */
+  const cards = createModelCards({
+    onOpen() {
+      const dir = modelCatalog.directory()
+      // load() is async — the host itself guards with .catch(() => {}); a bare
+      // try/catch cannot see its rejection.
+      if (dir && typeof dir.load === 'function') {
+        const pending = dir.load()
+        if (pending && typeof pending.catch === 'function') {
+          pending.catch(() => { /* the store's error surface covers a failure */ })
+        }
+      }
+      modelBodySig = ''
+      renderModelBody()
+    },
+    createSub() {
+      return createModelSubMenu({
+        rows: modelRows,
+        snapshot() { return modelCatalog.snapshot() },
+        current() { return modelCatalog.current(modelCatalog.snapshot()) },
+        signature: subSignature,
+      })
+    },
+    anchor() { return seatBox ?? modelBtn },
+    trigger() { return modelBtn },
+  })
+
+  /**
+   * The row half of the picker (packages/client/src/features/model/rows.ts): the level-1
+   * and level-2 builders. `pickModel` is this closure's own commit function
+   * (a hoisted declaration); the rest is the second level's state.
+   */
+  const modelRows = createModelRows({
+      ctx,
+      pickModel,
+      subHoverIntent: cards.subIntent,
+      isSubOpen: cards.subOpen,
+      closeSub: cards.closeAll,
+      openSub: cards.openSub,
+      /**
+       * The peak rate meter is its own feature (packages/client/src/features/peakrate/):
+       * it answers with a badge for the row, and with nothing at all for a
+       * model whose provider bills on no clock.
+       */
+      rate(provider: string, modelId: string) {
+        const peakrate = ui.peakrate
+        if (peakrate === undefined) return null
+        return peakrate.badge(provider, modelId)
+      }
+  })
+
+  /**
    * The footer holds the divider and the More-models row, and nothing else.
    * Rebuilt only when the row set changes — the divider exists to close the
    * list off from what follows it, so with no More-models row it is a stray
    * line and is not drawn either.
    */
   function layoutModelFooter(showMore: boolean) {
+    const modelFooter = cards.footer()
     if (!modelFooter) return
     const stale: ChildNode[] = []
     for (let child = modelFooter.firstChild; child !== null; child = child.nextSibling) stale.push(child)
@@ -292,8 +180,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function rateSignature() {
     const peakrate = ui.peakrate
     if (peakrate === undefined) return ''
-    const up = (modelPop !== null && modelPop.getAttribute('data-open') === 'true') ||
-      (modelSubPop !== null && modelSubPop.getAttribute('data-open') === 'true')
+    const up = cards.mainOpen() || cards.subOpen()
     return up ? `${peakrate.epoch()}/${Math.floor(Date.now() / 60000)}` : `${peakrate.epoch()}`
   }
 
@@ -313,6 +200,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Level 1: the provider sections, the divider, More models. */
   function renderModelBody() {
+    const modelBody = cards.body()
     if (!modelBody) return
     const snap = modelCatalog.snapshot()
     const status = snap ? snap.status : 'idle'
@@ -376,7 +264,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // both live in the footer, OUTSIDE the scroll area — the list above
       // scrolls under them while the row stays reachable. The effort slider
       // is not here any more: it has its own trigger and card.
-      if (modelFooter) {
+      if (cards.footer()) {
         // "More models" carries what level 1 does not. With every provider
         // already on screen the row would only open an empty card, so it goes
         // away with the last remaining provider.
@@ -408,102 +296,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return sig
   }
 
-  function positionModelPopovers() {
-    trackPointerWhileOpen()
-    if (!modelBtn || !modelPop) return
-    // From the box, not the model's button: it is the row's one item and its
-    // right edge is what both cards hang from (seat-box.ts).
-    const pos = positionAnchoredPopover(seatBox ?? modelBtn, modelPop, { side: 'above', gap: 6 })
-    if (modelSubPop && modelSubPop.getAttribute('data-open') === 'true') {
-      const w2 = modelSubPop.offsetWidth
-      const h2 = modelSubPop.offsetHeight
-      const h1 = modelPop.offsetHeight
-      // The window in the same pixels as the two cards' sizes and the
-      // position the first level just took (shared/page-zoom.ts).
-      const viewport = pageViewport()
-      // Beside the first level; flip to its left when the viewport is tight.
-      let x2 = pos.x + modelPop.offsetWidth + 2
-      if (x2 + w2 > viewport.width - POPOVER_MARGIN) x2 = Math.max(POPOVER_MARGIN, pos.x - 4 - w2)
-      // Bottom-aligned with the first level; a level 2 TALLER than level 1
-      // keeps its top instead, so it cannot push itself off the top edge.
-      let y2 = pos.y + Math.max(0, h1 - h2)
-      y2 = Math.max(POPOVER_MARGIN, Math.min(y2, viewport.height - h2 - POPOVER_MARGIN))
-      modelSubPop.style.left = `${x2}px`
-      modelSubPop.style.top = `${y2}px`
-    }
-  }
-
-  function ensureModelChrome() {
-    // Idempotence guard, not just a null check: the picker's own teardown
-    // sweep, or a hot-reload generation's stray sweep, can REMOVE the
-    // popover node while the closure still references it. With a null-only
-    // check the reference stays non-null-but-detached and is never rebuilt
-    // — the trigger then toggles a popover that is not in the document and
-    // the picker silently loses its click effect. The account footer's
-    // equivalent guard (footArea.contains) is the established pattern.
-    // Rebuilding also re-points the body/footer children and resets the
-    // render signatures so the next pass repaints into the fresh nodes.
-    if (modelPop === null || modelPop.parentElement === null) {
-      modelPop = document.createElement('div')
-      modelPop.className = 'dsh-claude-popover-card dsh-claude-model-popover'
-      setMenuPopoverOpen(modelPop, false)
-      modelBody = document.createElement('div')
-      modelBody.className = 'dsh-claude-popover-body'
-      modelPop.appendChild(modelBody)
-      modelFooter = document.createElement('div')
-      modelFooter.className = 'dsh-claude-model-footer'
-      modelPop.appendChild(modelFooter)
-      modelPop.addEventListener('mouseenter', cancelCloseModel)
-      // The second level belongs to its More-models cell: while it is open,
-      // the pointer landing anywhere else on the first level (a model row,
-      // bare card) folds it — the first level itself stays open, it is the
-      // hover-intent host. Delegated mouseover, not mouseenter: moving from
-      // the cell to a model row never crosses the popover's boundary, so a
-      // boundary event would never fire.
-      modelPop.addEventListener('mouseover', e => {
-        if (modelSubPop === null || modelSubPop.getAttribute('data-open') !== 'true') return
-        if (closestFrom(e.target, '.dsh-claude-model-cell')) return
-        // Delayed, not immediate: the sub card sits BESIDE level 1, so a
-        // pointer on its way from the cell to the sub crosses level 1's own
-        // rows — folding on the spot made that journey impossible at any
-        // speed. Folding now waits out the same grace, and stands down only
-        // when the pointer has meanwhile reached the sub card itself: the
-        // pointer still being on level 1 means it left the More-models cell,
-        // which is exactly when level 2 folds.
-        if (subFoldTimer !== null) clearTimeout(subFoldTimer)
-        subFoldTimer = setTimeout(() => {
-          subFoldTimer = null
-          if (pointerInCardBox(modelSubPop)) return
-          if (modelSubPop !== null) setMenuPopoverOpen(modelSubPop, false)
-        }, MODEL_CLOSE_DELAY)
-      })
-      modelPop.addEventListener('mouseleave', scheduleCloseModel)
-      document.body.appendChild(modelPop)
-      modelBodySig = ''
-    }
-    if (modelSubPop === null || modelSubPop.parentElement === null) {
-      modelSubPop = document.createElement('div')
-      modelSubPop.className = 'dsh-claude-popover-card dsh-claude-model-popover dsh-claude-model-popover-sub'
-      setMenuPopoverOpen(modelSubPop, false)
-      // The field is pinned above the list: the reader sees what they typed
-      // while they scroll the matches under it, the way level 1 keeps its
-      // footer still. Only the body scrolls (the sheet).
-      modelSub = createModelSubMenu({
-        rows: modelRows,
-        snapshot() { return modelCatalog.snapshot() },
-        current() { return modelCatalog.current(modelCatalog.snapshot()) },
-        signature: subSignature,
-      })
-      modelSubPop.appendChild(modelSub.head)
-      modelSubPop.appendChild(modelSub.body)
-      // The card holds the reader's typing, so a press anywhere inside it must
-      // not be read as a press outside: the scheduler's own `owns` covers it.
-      modelSubPop.addEventListener('mouseenter', cancelCloseModel)
-      modelSubPop.addEventListener('mouseleave', scheduleCloseModel)
-      document.body.appendChild(modelSubPop)
-    }
-  }
-
   /**
    * Hand the host's own model seat and menu back: unmark the seat, remove the
    * skin's trigger and popovers, drop the catalog subscription.
@@ -517,15 +309,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     seatBox = null
     removeStrayNodes(document, '.dsh-claude-model-btn', [])
     modelBtn = null
-    removeStrayNodes(document, '.dsh-claude-model-popover', [])
-    modelPop = null
-    modelSubPop = null
-    modelBody = null
-    modelFooter = null
-    modelSub = null
+    cards.dropNodes()
     modelBodySig = ''
-    unbindPointerTracking()
-    cancelCloseModel()
     modelCatalog.reset()
   }
 
@@ -554,7 +339,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // from null. Sweep the strays, or the seat renders twice.
     removeStrayNodes(slot, '.dsh-claude-model-seat', [seatBox])
     removeStrayNodes(slot, '.dsh-claude-model-btn', [modelBtn])
-    removeStrayNodes(document, 'body > .dsh-claude-model-popover', [modelPop, modelSubPop])
+    removeStrayNodes(document, 'body > .dsh-claude-model-popover', [cards.popover(), cards.subPopover()])
     // The host's own seat root, not the nodes the skin appended beside it: a
     // swap can put React's node after ours, and the effort level and the
     // context meter's ring stand in the same slot.
@@ -571,26 +356,26 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Same contract as the account trigger: hover under the "All" scope,
       // click-only otherwise.
       modelBtn.addEventListener('mouseenter', () => {
-        if (modelHoverOn()) modelHoverIntent.scheduleOpen()
+        if (cards.hoverOn()) cards.scheduleOpenMain()
       })
       modelBtn.addEventListener('mouseleave', () => {
-        if (modelHoverOn()) scheduleCloseModel()
+        if (cards.hoverOn()) cards.scheduleClose()
       })
       modelBtn.addEventListener('click', e => {
         e.stopPropagation()
         // Is the card up because the dwell opened it, with the pointer still
         // on this trigger? Then the press keeps it up
         // (shared/popover.ts::pressKeepsPopoverOpen) and the leave closes it.
-        const open = modelPop !== null && modelPop.getAttribute('data-open') === 'true'
-        if (pressKeepsPopoverOpen(modelHoverOn(), open)) return
-        if (open) closeModelPopovers()
-        else openModelPopover()
+        const open = cards.mainOpen()
+        if (pressKeepsPopoverOpen(cards.hoverOn(), open)) return
+        if (open) cards.closeAll()
+        else cards.openMain()
       })
       // First in the box: the model's name, then the level's (the effort picker
       // appends its own button into the same box).
       seatBox.insertBefore(modelBtn, seatBox.firstChild)
     }
-    ensureModelChrome()
+    cards.ensureChrome()
 
     const snap = modelCatalog.snapshot()
     const current = modelCatalog.current(snap)
@@ -635,19 +420,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     modelBtn.disabled = false
 
     renderModelBody()
-    if (modelSubPop && modelSubPop.getAttribute('data-open') === 'true') {
+    if (cards.subOpen()) {
+      const modelSub = cards.sub()
       if (modelSub !== null) modelSub.render()
-      positionModelPopovers()
-    } else if (modelPop && modelPop.getAttribute('data-open') === 'true') {
-      positionModelPopovers()
+      cards.position()
+    } else if (cards.mainOpen()) {
+      cards.position()
     }
   }
-
-
-  // The picker takes part in the shared popover rule (shared/popover.ts): one
-  // entry for BOTH levels, so opening the More-models card never folds the
-  // card that carries it.
-  registerPopover('model', closeModelPopovers)
 
   ui.model = {
     sync: syncModelControl,
@@ -661,11 +441,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      * composer fold both levels.
      */
     close(reason) {
+      const modelSub = cards.sub()
       if (reason === 'escape' && modelSub !== null && modelSub.hasQuery()) {
         modelSub.clearQuery()
         return
       }
-      closeModelPopovers()
+      cards.closeAll()
     },
     /**
      * What the effort picker (a separate fragment that owns the level's
@@ -689,8 +470,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     owns(target: Node) {
       if (!target) return false
       return (modelBtn !== null && modelBtn.contains(target)) ||
-             (modelPop !== null && modelPop.contains(target)) ||
-             (modelSubPop !== null && modelSubPop.contains(target))
+             (cards.popover() !== null && cards.popover()!.contains(target)) ||
+             (cards.subPopover() !== null && cards.subPopover()!.contains(target))
     },
     /**
      * A viewport change moves the trigger the open card is anchored to. A card
@@ -698,8 +479,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      * nothing.
      */
     reposition() {
-      if (modelPop === null || modelPop.getAttribute('data-open') !== 'true') return
-      positionModelPopovers()
+      if (!cards.mainOpen()) return
+      cards.position()
     },
     providers: modelCatalog.providers,
     onProviders: modelCatalog.onProviders,
@@ -709,7 +490,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      */
     onCopyChange() {
       modelBodySig = ''
-      if (modelSub !== null) modelSub.reset()
+      cards.sub()?.reset()
     },
     // Removes the skin's DOM too: a feature switched off mid-session (see
     // packages/client/src/entry.ts) keeps the stylesheet around it, so the seat has to be
@@ -719,7 +500,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       modelCatalog.resetWarm()
       modelSlot = null
       seatBox = null
-      unregisterPopover('model')
+      cards.dispose()
     }
   }
 

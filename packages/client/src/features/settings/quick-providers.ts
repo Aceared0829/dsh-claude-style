@@ -1,4 +1,4 @@
-import { MODEL_OFFICIAL_GROUP } from '../model/copy-fallbacks'
+import { MODEL_OFFICIAL_GROUP } from '../model/model-labels'
 import { readPrefs } from '../../core/prefs'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem, closeOtherPopovers, positionAnchoredPopover, registerPopover, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'

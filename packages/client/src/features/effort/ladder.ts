@@ -9,7 +9,7 @@
  * `xhigh, low, medium, none`, Raccoon and MiniMax send `high, none`.
  *
  * The slider reads its steps as a strength scale — the ends are named
- * `Faster` and `Smarter` (copy-fallbacks.ts) — so an inverted ladder puts the
+ * `Faster` and `Smarter` (model-labels.ts) — so an inverted ladder puts the
  * axis the wrong way round: the right end lands on the weakest level, and on a
  * ladder whose last entry is `none` the strongest position reads as thinking
  * switched off.

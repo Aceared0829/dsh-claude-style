@@ -1,12 +1,13 @@
 /**
- * Model picker copy.
+ * The model picker's and the effort ladder's fixed labels, and the route the
+ * copy document is served under.
  *
- * The copy itself is NOT here. It ships as `model-descriptions.json` beside
- * the bundle, and the browser half fetches it at runtime (the host half
- * serves it under MODEL_COPY_ROUTE), so the model table grows without a
- * rebuild and no copy enters the bundle. The language comes from the shell's
- * own `locale` service — one line per row, in the language the rest of the
- * UI is in — never two languages stacked.
+ * The description lines themselves are NOT here: they ship as
+ * `model-descriptions.json` beside the bundle, and the browser half fetches it
+ * at runtime (the host half serves it under MODEL_COPY_ROUTE), so the model
+ * table grows without a rebuild and no copy enters the bundle. The language
+ * comes from the shell's own `locale` service — one line per row, in the
+ * language the rest of the UI is in — never two languages stacked.
  *
  * The constants below are the neutral fallbacks painted before that document
  * arrives, and kept if it never does. They are English because a failed

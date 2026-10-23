@@ -1,4 +1,4 @@
-import { MODEL_COPY_FALLBACK_LOCALE, MODEL_COPY_ROUTE } from './copy-fallbacks'
+import { MODEL_COPY_FALLBACK_LOCALE, MODEL_COPY_ROUTE } from './model-labels'
 import { createHostResource } from '@dsh-claude-style/engine/resource'
 import { textOf } from '../../shared/format'
 import type { HostAnswer } from '@dsh-claude-style/engine/resource'
@@ -34,6 +34,11 @@ export interface ModelCopyIndex {
  * Both the model picker (packages/client/src/features/model/model-picker.ts) and the settings section
  * (packages/client/src/features/settings/settings.ts) consume this copy, so the state lives in the shared context.
  * where both zones can reach it.
+ *
+ * The build loads this module in a Node sandbox (peakrate/match.ts folds ids
+ * through normalizeModelId), so it must not value-import the page's runtime:
+ * core/i18n reaches core/prefs and with it engine/host's document, which is
+ * why the row-facing description line lives in rows.ts.
  */
 export let modelCopy: ModelCopyIndex | null = null
 
