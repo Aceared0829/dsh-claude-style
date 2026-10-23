@@ -306,6 +306,91 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
       JSON.stringify({ readIds, listings, value: answer.value && { read: answer.value.read, failed: answer.value.failed } }))
     fs.rmSync(home, { recursive: true, force: true })
   }
+
+  // One session the reader throws on must not void the whole pass: the record
+  // written for every other log is what makes the next pass cheap, and without
+  // it every request folds the whole corpus again (#126).
+  console.log('\nhost half — a log the reader throws on leaves the rest of the record written')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-usage-broken')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    for (const id of ['ok-a', 'bad-b', 'ok-c']) {
+      fs.mkdirSync(path.join(cwd, id), { recursive: true })
+      fs.writeFileSync(path.join(cwd, id, 'session.v4.jsonl.zstd'), 'x')
+    }
+    const events = {
+      'ok-a': [settlement(at(0, 9), 1)],
+      'bad-b': [settlement(at(0, 10), 1)],
+      'ok-c': [settlement(at(0, 11), 1)],
+    }
+    const broken = { 'bad-b': 'SESSION_QUERY_PERSISTENCE_FAILED' }
+    const first = await settledUsage(fakeHost(mod, { fenced: true, home, events, broken }))
+    const recordPath = path.join(home, 'dsh-claude-style', 'usage.json')
+    const record = fs.existsSync(recordPath) ? JSON.parse(fs.readFileSync(recordPath, 'utf8')) : null
+    check('a log the reader throws on is left out and the rest of the record still lands',
+      first.value?.read === 2 && first.value?.failed === 1 && first.value?.totals?.input === 20 &&
+        record?.sessions?.['ok-a']?.size !== undefined && record?.sessions?.['ok-c']?.size !== undefined &&
+        record?.sessions?.['bad-b'] === undefined,
+      JSON.stringify({ value: first.value && { read: first.value.read, failed: first.value.failed, totals: first.value.totals }, sessions: record === null ? null : Object.keys(record.sessions ?? {}) }))
+    const retryReads = []
+    const retried = await settledUsage(fakeHost(mod, { fenced: true, home, events, reads: retryReads, broken }))
+    check('the next pass retries only the log it could not read',
+      same(retryReads, ['bad-b']) && retried.value?.read === 0 && retried.value?.failed === 1,
+      JSON.stringify({ retryReads, value: retried.value && { read: retried.value.read, failed: retried.value.failed } }))
+    fs.rmSync(home, { recursive: true, force: true })
+  }
+
+  // A pass that outlasts the base period must not run back to back: a large
+  // history makes every pass a full one until the record exists, and a pass
+  // longer than the period would otherwise leave no idle stretch at all (#126).
+  console.log('\nhost half — a pass that outlasts the period is not folded back to back')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-usage-slow')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    fs.mkdirSync(path.join(cwd, 'slow-1'), { recursive: true })
+    const logFile = path.join(cwd, 'slow-1', 'session.v4.jsonl.zstd')
+    fs.writeFileSync(logFile, 'x')
+    const reads = []
+    const passMs = 60_000
+    // A controlled clock: the read itself takes a minute, which is longer than
+    // the period a finished pass is served for.
+    const realNow = Date.now
+    let clock = realNow()
+    Date.now = () => clock
+    try {
+      const host = fakeHost(mod, {
+        fenced: true,
+        home,
+        events: { 'slow-1': [settlement(at(0, 15), 1)] },
+        reads,
+        onRead: () => { clock += passMs },
+      })
+      const first = await settledUsage(host)
+      const firstReads = reads.length
+      clock += 1_000
+      const immediate = JSON.parse((await request(host, USAGE, 'GET', '', browser)).body)
+      clock += 30_000
+      const insideBase = JSON.parse((await request(host, USAGE, 'GET', '', browser)).body)
+      check('a pass that took a minute is not folded again within its own length',
+        first.value?.read === 1 && reads.length === firstReads &&
+          immediate.computing === false && immediate.value?.computedAt === first.value?.computedAt &&
+          insideBase.computing === false && insideBase.value?.computedAt === first.value?.computedAt,
+        JSON.stringify({ reads: reads.length, firstReads, firstAt: first.value?.computedAt, immediateAt: immediate.value?.computedAt, insideBaseAt: insideBase.value?.computedAt }))
+      // Twice the pass's length is where the next one may start; its log has
+      // changed, so it is folded rather than answered from the record.
+      clock += 90_000
+      fs.writeFileSync(logFile, 'xx')
+      const later = await settledUsage(host)
+      check('twice its own length later, the next pass runs',
+        reads.length === firstReads + 1 && later.value?.read === 1 && later.value?.computedAt > first.value?.computedAt,
+        JSON.stringify({ reads: reads.length, value: later.value && { read: later.value.read, computedAt: later.value.computedAt } }))
+    } finally {
+      Date.now = realNow
+    }
+    fs.rmSync(home, { recursive: true, force: true })
+  }
 }
 
 export { hostUsage }

@@ -23,6 +23,8 @@ export interface UsageSummary {
   unavailable?: boolean
   /** How many session logs this pass folded afresh, against the ones the cache answered. */
   read?: number
+  /** How many session logs this pass could not read: they keep no fingerprint and are retried next pass. */
+  failed?: number
   computedAt: number
   days: Record<string, unknown>[]
   models: Record<string, unknown>[]

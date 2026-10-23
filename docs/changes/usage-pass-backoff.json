@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复宿主进程在会话历史较大时持续满核：用量折叠改为逐个会话隔离读取失败，一次读取失败不再作废整轮并让记录无法落盘；单轮耗时超过刷新周期时，下一轮等到本轮耗时两倍之后开始，不再背靠背重跑。",
+  "en": "Fix the host process pegging a core on a large session history: the usage roll-up isolates a log it cannot read, so one failed read no longer voids the pass and leaves the record unwritten, and a pass that outlasts the refresh period waits twice its own length before the next one starts."
+}

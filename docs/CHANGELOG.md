@@ -13,6 +13,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复宿主进程在会话历史较大时持续满核：用量折叠改为逐个会话隔离读取失败，一次读取失败不再作废整轮并让记录无法落盘；单轮耗时超过刷新周期时，下一轮等到本轮耗时两倍之后开始，不再背靠背重跑。
 - 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
 - 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
 - 修复封号彩蛋没有铺满整个窗口、右侧与底部露出下层页面的问题：整页重新占满窗口。
@@ -28,6 +29,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the host process pegging a core on a large session history: the usage roll-up isolates a log it cannot read, so one failed read no longer voids the pass and leaves the record unwritten, and a pass that outlasts the refresh period waits twice its own length before the next one starts.
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
 - Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes.
 - Fix the account-hold easter egg stopping short of the window, with the host page showing along its right and bottom edges: the page fills the window again.

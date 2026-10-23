@@ -27,13 +27,14 @@ import { hostUsage } from './host-half-usage.mjs'
  *   carries the host's three shapes: the per-id read, the point observation
  *   (each read is pushed onto `reads`, each lease release onto `releases`) and
  *   the batch reader (a corpus listing per call, its size pushed onto
- *   `listCalls`); `stored` is the snapshot list the fake `sessionPersistence`
- *   answers (each listing is pushed onto `lists`); `registry` is the fake
- *   `workspaceRegistry` service object itself, whose `unarchived` list records
- *   every call.
+ *   `listCalls`); `broken` maps a session id to the error code its read throws,
+ *   and `onRead` runs for each read as it happens; `stored` is the snapshot list
+ *   the fake `sessionPersistence` answers (each listing is pushed onto `lists`);
+ *   `registry` is the fake `workspaceRegistry` service object itself, whose
+ *   `unarchived` list records every call.
  */
 function fakeHost(mod, options = {}) {
-  const { fenced, home, live = [], events, launch, stored, reads, releases, lists, listCalls, registry, tails, queryShapes } = options
+  const { fenced, home, live = [], events, launch, stored, reads, releases, lists, listCalls, registry, tails, queryShapes, broken, onRead } = options
   const shapes = queryShapes ?? ['readSession', 'observeSession', 'readTitleSnapshots']
   const routes = {}
   const settings = { configure: () => () => {} }
@@ -91,6 +92,11 @@ function fakeHost(mod, options = {}) {
         // same complete event array the real service hands back.
         const log = (id) => {
           if (reads !== undefined) reads.push(id)
+          // A log the backend cannot hand back, as the real service fails one:
+          // the code is the taxonomy the host half is expected to survive.
+          const code = broken?.[id]
+          if (code !== undefined) throw Object.assign(new Error(`failed to observe session "${id}"`), { code })
+          if (onRead !== undefined) onRead(id)
           return events[id] ?? []
         }
         // An id the real backend does not know is refused, and resolving one it

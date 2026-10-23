@@ -69,16 +69,6 @@ const FONT_FILES = {
  * gets it decompressed, so the package carries the sheets once, small.
  */
 const ASSETS_PATH = `${ROUTE_PREFIX}/assets/`
-/**
- * How long a computed roll-up is served before a background refresh is kicked.
- *
- * The pass reads only the logs whose size or modification time changed
- * (usage.ts), so a refresh on an idle home walks the session root and stats each
- * log while folding nothing. The window is short because the panel draws the
- * numbers it reads here: a reader who has just sent a message should not wait
- * out a cache window to see it.
- */
-const USAGE_TTL_MS = 30 * 1000
 /** Largest deletion request body read; a real one carries one id. */
 const DELETE_BODY_MAX = 4096
 
@@ -433,17 +423,12 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         // aggregate over the user's session history, which is why it runs the
         // same fence as the username route. It answers with whatever is already
         // known: a cold pass reports `computing` and the browser half keeps its
-        // skeleton up while it polls.
+        // skeleton up while it polls. The service owns when a pass is due, so
+        // asking faster than its period starts nothing.
         if (methodRefused(req, res, ['GET', 'HEAD'])) return
         if (fenceRefused(ctx, req, res)) return
-        let snapshot = usage.snapshot()
-        const stale = snapshot.value === null
-          || snapshot.computing === true
-          || Date.now() - (snapshot.value?.computedAt ?? 0) > USAGE_TTL_MS
-        if (stale) {
-          void usage.refresh()
-          snapshot = usage.snapshot()
-        }
+        void usage.refresh()
+        const snapshot = usage.snapshot()
         sendJson(res, 200, {
           ok: true,
           value: snapshot.value,

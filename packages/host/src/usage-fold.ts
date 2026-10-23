@@ -199,8 +199,18 @@ export function foldSession(events: UsageEvent[]): FoldedSession {
 
 /** The newest generation of a session directory's log, with its fingerprint. */
 function newestLog(dir: string): { path: string, size: number, mtimeMs: number } | null {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch (error) {
+    // A session directory removed between the root listing and this read is a
+    // session deleted mid-pass: it has no log to fold, and every other one
+    // still does (D12).
+    if ((error as { code?: string }).code === 'ENOENT') return null
+    throw error
+  }
   let best: { name: string, version: number, compressed: boolean } | null = null
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  for (const entry of entries) {
     if (!entry.isFile()) continue
     const match = SESSION_LOG.exec(entry.name)
     if (match === null) continue
@@ -213,7 +223,10 @@ function newestLog(dir: string): { path: string, size: number, mtimeMs: number }
   }
   if (best === null) return null
   const path = join(dir, best.name)
-  const stat = statSync(path)
+  const stat = statSync(path, { throwIfNoEntry: false })
+  // The log itself removed between that listing and this stat is the same
+  // deletion the directory read above tolerates.
+  if (stat === undefined) return null
   return { path, size: stat.size, mtimeMs: stat.mtimeMs }
 }
 
@@ -226,7 +239,16 @@ export function listSessionLogs(root: string): SessionLog[] {
   if (!existsSync(root)) return out
   for (const project of readdirSync(root, { withFileTypes: true })) {
     if (!project.isDirectory()) continue
-    for (const session of readdirSync(join(root, project.name), { withFileTypes: true })) {
+    let sessions
+    try {
+      sessions = readdirSync(join(root, project.name), { withFileTypes: true })
+    } catch (error) {
+      // A workspace directory removed since the root listing went with its
+      // sessions: the pass walks the ones that are left.
+      if ((error as { code?: string }).code === 'ENOENT') continue
+      throw error
+    }
+    for (const session of sessions) {
       if (!session.isDirectory()) continue
       const log = newestLog(join(root, project.name, session.name))
       if (log === null) continue

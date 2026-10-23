@@ -44,6 +44,33 @@ import type { UsageSummary } from './usage-summary.js'
 const LEDGER_SOURCE = 'cost-meter'
 /** The `source` field of an answer our own fold over the session logs produced. */
 const LOCAL_SOURCE = 'local'
+/**
+ * How long a finished pass is good for: the panel draws the numbers it reads
+ * here, so a reader who has just sent a message should not wait out a cache
+ * window to see it.
+ */
+const USAGE_TTL_MS = 30 * 1000
+/** How much longer than its own length a slow pass keeps the next one off. */
+const SLOW_PASS_FACTOR = 2
+
+/**
+ * The least stretch a pass that took `durationMs` leaves before the next one
+ * may start.
+ *
+ * A pass that outlasts `USAGE_TTL_MS` would otherwise be stale the moment it
+ * ended, and every request would start the next one with no idle stretch
+ * between them: on a large history that is one core pegged folding the whole
+ * corpus back to back. A pass's own length is the cheapest measure of what the
+ * next one will cost, so twice that is the wait after it.
+ */
+function recheckDelay(durationMs: number): number {
+  return Math.max(USAGE_TTL_MS, durationMs * SLOW_PASS_FACTOR)
+}
+
+/** One failure's message, for the warning a pass leaves. */
+function messageOf(error: unknown): string {
+  return String((error as { message?: string } | null)?.message ?? error)
+}
 
 /** The hour histogram of a merged day map: its days' histograms, slot by slot. */
 function hoursOf(days: ReadonlyMap<string, DayBuckets>): number[] {
@@ -92,6 +119,8 @@ export function createUsage(ctx: DshContext) {
 
   let state: UsageState | null = null
   let pending: Promise<UsageSummary | null> | null = null
+  /** When the finished value may be folded again, on the host's clock. */
+  let nextAt = 0
   let disposed = false
 
   /** Fold every session whose log changed since the record was written. */
@@ -100,6 +129,7 @@ export function createUsage(ctx: DshContext) {
     const sessions = new Map<string, RecordSession>()
     let read = 0
     let failed = 0
+    let firstFailure: string | null = null
     for (const log of logs) {
       const stored = record.sessions.get(log.id)
       const fingerprint = stored?.fingerprint
@@ -111,7 +141,20 @@ export function createUsage(ctx: DshContext) {
       // Each changed log is read by id. That read resolves the session through
       // the host's listing-free observation, so a pass costs one `stat`
       // per log read and never walks the stored corpus.
-      const events = await readEvents<UsageEvent>(ctx, PACKAGE_NAME, log.id, 'the usage roll-up')
+      let events: UsageEvent[] | null
+      try {
+        events = await readEvents<UsageEvent>(ctx, PACKAGE_NAME, log.id, 'the usage roll-up')
+      } catch (error) {
+        // One log the host cannot read must not void the pass: the fingerprints
+        // landed for every other session are what make the next pass cheap, and
+        // a pass that aborts here leaves the record unbuilt, so the corpus is
+        // folded in full on every request (D12: the catch keeps one session's
+        // failure from the rest).
+        failed += 1
+        firstFailure = firstFailure ?? `${log.id}: ${messageOf(error)}`
+        if (stored !== undefined) sessions.set(log.id, stored)
+        continue
+      }
       if (events === null) {
         // The reader refused (no `sessionQuery` service, or a log it cannot
         // parse). Leave the entry as it stands, so the next pass retries this log
@@ -122,6 +165,9 @@ export function createUsage(ctx: DshContext) {
       }
       sessions.set(log.id, { fingerprint: { size: log.size, mtimeMs: log.mtimeMs }, days: foldSession(events).days })
       read += 1
+    }
+    if (firstFailure !== null) {
+      ctx.logger?.warn?.(`${PACKAGE_NAME}: ${failed} session log(s) left out of the usage roll-up; the rest are recorded (first: ${firstFailure})`)
     }
     // A session whose log is gone keeps the days the record holds for it: they
     // are the only account of those days left, and no fold can bring them back.
@@ -176,22 +222,38 @@ export function createUsage(ctx: DshContext) {
     return await computeLocal(logs, ledgerDays) as UsageSummary
   }
 
+  /**
+   * Start a pass unless one is running or the finished one is still inside its
+   * stretch.
+   *
+   * The stretch is the pass's own length when that outlasts the base period
+   * (recheckDelay), so a large history cannot fold back to back; a request from
+   * a page that polls faster than the period changes nothing.
+   */
   function refresh(): Promise<UsageSummary | null> {
     if (disposed) return Promise.resolve(null)
     if (pending !== null) return pending
+    if (state !== null && Date.now() < nextAt) return Promise.resolve(state.value)
     state = state === null ? { value: null, computing: true } : { ...state, computing: true }
+    const startedAt = Date.now()
+    /** End the pass, and hold the next one off by what this one cost. */
+    const finish = () => {
+      pending = null
+      const finishedAt = Date.now()
+      nextAt = finishedAt + recheckDelay(finishedAt - startedAt)
+    }
     pending = compute((partial: UsageSummary) => {
       if (!disposed) state = { value: partial, computing: true }
     }).then(
       (value): UsageSummary | null => {
-        pending = null
+        finish()
         if (disposed) return value
         state = { value, computing: false }
         return value
       },
       (error): UsageSummary | null => {
-        pending = null
-        if (!disposed) state = { value: state?.value ?? null, computing: false, error: String((error as { message?: string } | null)?.message ?? error) }
+        finish()
+        if (!disposed) state = { value: state?.value ?? null, computing: false, error: messageOf(error) }
         return null
       },
     )
