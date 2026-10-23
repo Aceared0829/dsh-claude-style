@@ -169,9 +169,10 @@ async function strayEdges(t, sheets) {
   for (const [side, at, x, y] of inside) {
     const offset = (y * drawn.width + x) * 4
     const off = Math.max(...[0, 1, 2].map((channel) => Math.abs(drawn.data[offset + channel] - behind.data[offset + channel])))
-    if (off > TOLERANCE) strays.push(`${side} cell ${at} off by ${off}`)
+    if (off > TOLERANCE) strays.push(`${side} cell ${at} off by ${off} (drawn ${drawn.data[offset]},${drawn.data[offset + 1]},${drawn.data[offset + 2]} behind ${behind.data[offset]},${behind.data[offset + 1]},${behind.data[offset + 2]})`)
   }
-  return { sampled: inside.length, strays, corner: `${(sprite.view.left * sprite.dpr).toFixed(2)}, ${(sprite.view.top * sprite.dpr).toFixed(2)}` }
+  const geometry = `dpr ${sprite.dpr}, cell ${cell.toFixed(3)}css/${device.toFixed(3)}dev, view ${sprite.view.left.toFixed(2)},${sprite.view.top.toFixed(2)} ${sprite.view.width.toFixed(2)}x${sprite.view.height.toFixed(2)}, strip ${sprite.strip.left.toFixed(2)},${sprite.strip.top.toFixed(2)}, frame ${frameX},${frameY} ${columns}x${rows}, phase ${((sprite.view.left - sprite.strip.left) / cell).toFixed(3)},${((sprite.view.top - sprite.strip.top) / cell).toFixed(3)}`
+  return { sampled: inside.length, strays, corner: `${(sprite.view.left * sprite.dpr).toFixed(2)}, ${(sprite.view.top * sprite.dpr).toFixed(2)}`, geometry }
 }
 
 export default spec({ page: 'crab-states', densities: [1.25] }, ({ test }) => {
@@ -188,10 +189,10 @@ export default spec({ page: 'crab-states', densities: [1.25] }, ({ test }) => {
           conversation.style.paddingTop = `${room + shift}px`
         }, [CONVERSATION_ID, shift, ROOM_ABOVE])
         await t.page.waitForTimeout(60)
-        const { sampled, strays, corner } = await strayEdges(t, sheets)
+        const { sampled, strays, corner, geometry } = await strayEdges(t, sheets)
         t.expectThat.equal(sampled > 0, true, `the still frame leaves some of its edge cells empty (${sampled} pixels sampled)`)
         t.expectThat.equal(strays.length, 0,
-          `with the window's corner at device pixel ${corner}, its empty edge cells show the page behind the crab${strays.length === 0 ? '' : `: ${strays.slice(0, 4).join('; ')}`}`)
+          `with the window's corner at device pixel ${corner}, its empty edge cells show the page behind the crab [${geometry}]${strays.length === 0 ? '' : `: ${strays.slice(0, 4).join('; ')}`}`)
       }
     })
   }
