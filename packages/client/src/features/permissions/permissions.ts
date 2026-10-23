@@ -1,269 +1,43 @@
 import { COMPOSER_CARD_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { AUTO_POPOVER_ALL, PERMISSIONS_ATTR } from '../../constants'
-import { PERMISSION_ACCESS_NAMESPACE, PERMISSION_CHINESE_LABELS, PERMISSION_CURRENT_LABELS, PERMISSION_HOST_LABEL_KEYS, PERMISSION_HOST_LABEL_LOCALE, PERMISSION_ORDER, PERMISSION_PRESETS, PERMISSION_SEGMENTS, PERMISSION_SHIPPED_PRESETS } from './permission-copy'
-import { currentPreset, currentSession, findAccessTrigger, hostLocale, hostRemote, hostRemotePermissionPresets } from '@dsh-claude-style/engine/host'
-import { activeLocale } from '../../core/i18n'
-import { readPrefs } from '../../core/prefs'
+import { PERMISSIONS_ATTR } from '../../constants'
+import { currentPreset, currentSession, findAccessTrigger } from '@dsh-claude-style/engine/host'
 import { buildElement, closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { SEGMENTS_CLASS, SEGMENT_CLASS } from '../../shared/segment-control'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, buildPopoverItem, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
+import { removeStrayNodes } from '../../shared/popover'
 import { createSlidingPill } from '../../shared/sliding-pill'
-import type { HostContext, HostFiber } from '@dsh-claude-style/engine/host'
-import type { HostPermissionCatalogAnswer, HostPermissionOption } from '@dsh-claude-style/contracts/services'
+import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureUi } from '../../core/feature'
 import type manifest from './permissions.manifest'
 import { copy } from './copy'
 import { createStrayScan } from './stray-nodes'
+import { createPermissionCatalog } from './permission-catalog'
+import { createPermissionCard } from './permission-tier-card'
 
+/**
+ * The permission control in the composer's access slot: the segment group the
+ * classic hero draws and, everywhere else, the trigger with the tier card
+ * (permission-tier-card.ts) — both fed by the host's permission catalog
+ * (permission-catalog.ts). The pass keeps the control mounted where the host
+ * puts its own access button and mirrors the running preset onto it; a pick
+ * goes through the host's `/permission` command, so no shipped menu and no
+ * risk-confirmation dialog sit between the pick and the write.
+ */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let segments: HTMLElement | null = null
   /** The segment group's sliding highlight (packages/client/src/shared/sliding-pill.ts). */
   const segmentPill = createSlidingPill('[data-active]')
-  let permContainer: HTMLElement | null = null
-  let permBtn: HTMLButtonElement | null = null
-  let permLabel: HTMLElement | null = null
-  let permPopover: HTMLElement | null = null
-  let permHoverIntent: ReturnType<typeof createHoverIntent> | null = null
-  /** The pick path the rows call back into; the rows are rebuilt, the path is not. */
-  let permPick: ((preset: string) => void) | null = null
-  /** Where the tier list hangs off its trigger: above it, left-aligned with it. */
-  const PERM_POPOVER_PLACEMENT = { side: 'above-left', gap: 6, important: true } as const
-
-  /**
-   * The host's permission catalog: every preset this deployment offers, in
-   * the host's order, or null before the first read settles. It is the
-   * authority on what is switchable — a third-party plugin's preset rides
-   * in it — while PERMISSION_PRESETS decides how a known one reads.
-   */
-  let catalogOptions: HostPermissionOption[] | null = null
-  /**
-   * The preset a new session starts in (the catalog's `defaultPreset`: the
-   * configured default, or the one the host infers). The cold start screen
-   * has no session to read a preset from, so its segments show this one.
-   * null until a catalog read settled.
-   */
-  let defaultPreset: string | null = null
   /** Whether the last pass drew the segments on the cold start screen. */
   let coldStartShown = false
-  /** The first catalog failure; thrown on the next sync to retire the feature. */
-  let autoPresetError: Error | null = null
-  let catalogFiber: HostFiber | null = null
-  let catalogChangedDisposer: (() => void) | null = null
-  /** What the popover and the segment group currently render, so a change rebuilds them. */
-  let renderedRows = ''
-  let renderedRowsFor: HTMLElement | null = null
+  /** The segment signature the pass last rendered, so a change rebuilds the group. */
   let renderedSegments = ''
 
-  /** The catalog's entry for one preset, or null. */
-  function catalogOption(preset: string): HostPermissionOption | null {
-    if (catalogOptions === null) return null
-    for (let i = 0; i < catalogOptions.length; i++) {
-      const option = catalogOptions[i]
-      if (option !== null && typeof option === 'object' && option.value === preset) return option
-    }
-    return null
-  }
+  const catalog = createPermissionCatalog(ctx, () => ui.schedule!())
+  const card = createPermissionCard(catalog)
 
   /**
-   * Whether the host offers a preset. Until the first read settles the
-   * shipped built-ins stand in, which is what the control drew before the
-   * catalog existed; a preset the catalog does not carry is not drawn at
-   * all, so a deployment that configures fewer presets gets fewer rows
-   * rather than dead ones.
-   */
-  function presetOffered(preset: string) {
-    if (catalogOptions === null) return PERMISSION_SHIPPED_PRESETS.includes(preset)
-    return catalogOption(preset) !== null
-  }
-
-  /** Whether the interface language reads the host's own tier dictionary (D43). */
-  function readsHostTierNames() {
-    return activeLocale(ctx).startsWith(PERMISSION_HOST_LABEL_LOCALE)
-  }
-
-  /**
-   * The host's own name for a tier, or '' when the skin's table answers. Claude
-   * names the tiers in English and a Chinese interface shows the host's original
-   * Chinese names instead. A host that mounts no locale service, and one that
-   * never registers the namespace — whose translate seat then answers with the
-   * key itself — both leave the skin's table in charge, and so does an entry the
-   * host never translated (its `auto.label` is the English name in every
-   * language).
-   */
-  function hostPresetLabel(preset: string): string {
-    const key = PERMISSION_HOST_LABEL_KEYS[preset]
-    if (key === undefined || !readsHostTierNames()) return ''
-    const locale = hostLocale(ctx)
-    if (typeof locale?.bind !== 'function') return ''
-    const text: string = locale.bind(PERMISSION_ACCESS_NAMESPACE)(key)
-    if (typeof text !== 'string' || text === '' || text === key) return ''
-    const known = PERMISSION_PRESETS[preset]
-    return known !== undefined && known.label === text ? '' : text
-  }
-
-  /** The name a preset reads as: the host's own Chinese name first, then the skin's table, then the host's catalog. */
-  function presetLabel(preset: string): string {
-    const hostName = hostPresetLabel(preset)
-    if (hostName !== '') return hostName
-    const known = PERMISSION_PRESETS[preset]
-    if (known !== undefined) {
-      // A Chinese interface takes the skin's own Chinese name where it carries
-      // one (PERMISSION_CHINESE_LABELS); the English name is for every other
-      // language, and for a tier the host translates itself.
-      const chinese = readsHostTierNames() ? PERMISSION_CHINESE_LABELS[preset] : undefined
-      return chinese === undefined ? known.label : chinese
-    }
-    const option = catalogOption(preset)
-    if (option !== null && typeof option.name === 'string' && option.name !== '') return option.name
-    const current = PERMISSION_CURRENT_LABELS[preset]
-    return current === undefined ? preset : current
-  }
-
-  /** The name the control reads before a session's preset is known: the tier the host starts a session in. */
-  function restingLabel(): string {
-    return presetLabel('workspace-write')
-  }
-
-  /** The one line under that name, from the same two sources. */
-  function presetDesc(preset: string): string {
-    const known = PERMISSION_PRESETS[preset]
-    if (known !== undefined) return known.desc
-    const option = catalogOption(preset)
-    return option !== null && typeof option.description === 'string' ? option.description : ''
-  }
-
-  /** Every preset the control offers, in the order its rows list them. */
-  function offeredPresets() {
-    let i
-    if (catalogOptions === null) return PERMISSION_SHIPPED_PRESETS.slice()
-    const offered: string[] = []
-    for (i = 0; i < catalogOptions.length; i++) {
-      const option = catalogOptions[i]
-      if (option === null || typeof option !== 'object') continue
-      if (typeof option.value !== 'string' || option.value === '') continue
-      if (!offered.includes(option.value)) offered.push(option.value)
-    }
-    // The skin's order for the presets it knows; anything else the host
-    // offers follows in the host's own order.
-    const ordered = []
-    for (i = 0; i < PERMISSION_ORDER.length; i++) {
-      if (offered.includes(PERMISSION_ORDER[i])) ordered.push(PERMISSION_ORDER[i])
-    }
-    for (i = 0; i < offered.length; i++) {
-      if (!ordered.includes(offered[i])) ordered.push(offered[i])
-    }
-    return ordered
-  }
-
-  /** The segments to draw: each slot bound to the first of its presets the host offers. */
-  function resolvedSegments() {
-    const out = []
-    for (let i = 0; i < PERMISSION_SEGMENTS.length; i++) {
-      const slot = PERMISSION_SEGMENTS[i]
-      for (let j = 0; j < slot.presets.length; j++) {
-        if (!presetOffered(slot.presets[j])) continue
-        out.push({ label: slot.label, preset: slot.presets[j] })
-        break
-      }
-    }
-    return out
-  }
-
-  /**
-   * Read the host's permission catalog into `catalogOptions`, and which
-   * preset a new session starts in into `defaultPreset`. The shipped
-   * picker builds its rows from the same catalog, so it is the authority on
-   * what is switchable — including presets a third-party plugin registered.
-   * A rejected read retries like the account profile's reads (the client
-   * connection may still be coming up at install); once the retries are
-   * exhausted the failure is remembered and thrown on the next sync, which
-   * retires this feature and hands the shipped access button back (D12).
-   */
-  const AUTO_PRESET_RETRY_MS = [1000, 5000]
-  let autoPresetRetries = 0
-  let autoPresetRead = 0
-  let autoPresetRetry: ReturnType<typeof setTimeout> | null = null
-
-  /** Invalidate the read in flight and drop any retry still waiting. */
-  function dropAutoPresetRead() {
-    autoPresetRead++
-    if (autoPresetRetry !== null) {
-      clearTimeout(autoPresetRetry)
-      autoPresetRetry = null
-    }
-  }
-
-  function probeAutoPreset() {
-    const namespace = hostRemotePermissionPresets(ctx)
-    if (typeof namespace?.catalog !== 'function') {
-      if (typeof ctx.inject !== 'function') {
-        autoPresetError = new Error('permission: the host exposes no remote.permissionPresets catalog')
-        ui.schedule!()
-      }
-      return
-    }
-    dropAutoPresetRead()
-    const read = autoPresetRead
-    namespace.catalog().then((result: HostPermissionCatalogAnswer) => {
-      if (read !== autoPresetRead) return
-      if (result === null || typeof result !== 'object' || result.ok !== true ||
-          result.value === null || typeof result.value !== 'object' ||
-          !Array.isArray(result.value.options) || typeof result.value.defaultPreset !== 'string') {
-        autoPresetError = new Error('permission: unexpected permissionPresets catalog shape')
-        ui.schedule!()
-        return
-      }
-      autoPresetRetries = 0
-      autoPresetError = null
-      // The whole option list is kept, not just whether one preset is in
-      // it: the rows and the segments are built from what the host serves.
-      catalogOptions = result.value.options.slice()
-      defaultPreset = result.value.defaultPreset
-      ui.schedule!()
-    }, () => {
-      if (read !== autoPresetRead) return
-      if (autoPresetRetries >= AUTO_PRESET_RETRY_MS.length) {
-        autoPresetError = new Error(`permission: the permissionPresets catalog read failed ${AUTO_PRESET_RETRY_MS.length + 1} times`)
-        ui.schedule!()
-        return
-      }
-      autoPresetRetry = setTimeout(() => {
-        autoPresetRetry = null
-        probeAutoPreset()
-      }, AUTO_PRESET_RETRY_MS[autoPresetRetries++])
-    })
-  }
-
-  /**
-   * The namespace may register after this plugin (the host registers each
-   * remote namespace as its package loads), so wait for it the way the
-   * account row waits for remote.account; a host without inject gets one
-   * read now. The catalog-changed event re-reads when the auto-review
-   * integration is registered or dropped while the page stays open.
-   */
-  function startAutoPresetProbe() {
-    if (typeof ctx.inject === 'function') {
-      catalogFiber = ctx.inject(['remote.permissionPresets'], scope => {
-        scope.effect(() => {
-          probeAutoPreset()
-          return () => {}
-        }, 'dsh-claude-style: permission catalog')
-      })
-    } else {
-      probeAutoPreset()
-    }
-    const remoteRoot = hostRemote(ctx)
-    if (typeof remoteRoot?.$on === 'function') {
-      catalogChangedDisposer = remoteRoot.$on('permission-presets/catalog-changed', () => {
-        probeAutoPreset()
-      })
-    }
-  }
-
-  /**
-   * Build the segment group from the resolved slots. `specs` is what
-   * resolvedSegments() returned, so a slot the host cannot serve is simply
-   * absent instead of drawn dead.
+   * Build the segment group from the resolved slots. `specs` is what the
+   * catalog's resolvedSegments() returned, so a slot the host cannot serve is
+   * simply absent instead of drawn dead.
    */
   function buildSegments(onPick: (preset: string | null) => void, specs: { label: string, preset: string }[]) {
     const group = buildElement('div', SEGMENTS_CLASS)
@@ -286,219 +60,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       onPick(item.getAttribute('data-preset'))
     })
     return group
-  }
-
-  let permDocPointerListener: ((e: PointerEvent) => void) | null = null
-  let permResizeListener: (() => void) | null = null
-
-  /** Whether the hover preference covers this picker: the `all` scope alone. */
-  function permHoverOn() {
-    return readPrefs().autoPopover === AUTO_POPOVER_ALL
-  }
-
-  /**
-   * Whether this press leaves the tier card alone
-   * (shared/popover.ts::pressKeepsPopoverOpen): the dwell opened it, the
-   * pointer is on the trigger, so the press is not a second decision.
-   */
-  function pressKeepsPermOpen() {
-    return pressKeepsPopoverOpen(permHoverOn(), permBtn !== null && permBtn.getAttribute('data-open') === 'true')
-  }
-
-  /** Every dismiss route (item pick, outside pointer, resize/scroll, Escape) closes the menu through this one path. */
-  function closePermMenu() {
-    if (permBtn === null || permPopover === null) return
-    permBtn.removeAttribute('data-open')
-    permBtn.setAttribute('aria-expanded', 'false')
-    setMenuPopoverOpen(permPopover, false)
-  }
-
-  /**
-   * One popover row for one preset: its name and the line under it from the
-   * sources the trigger reads as well, and the active check. No glyph: the
-   * tiers read as one list, and a preset's own `icon` — which the host ignores
-   * natively — is left out so the rows stay consistent with each other.
-   */
-  function buildPermRow(preset: string) {
-    const built = buildPopoverItem({ role: 'menuitemradio', lines: 2, check: true })
-    const item = built.row
-    item.setAttribute('data-preset', preset)
-    built.text.textContent = presetLabel(preset)
-    // Two lines and a check were asked for, so both slots are there.
-    built.desc!.textContent = presetDesc(preset)
-    built.check!.textContent = '✓'
-    built.check!.hidden = true
-
-    item.addEventListener('click', e => {
-      e.stopPropagation()
-      closePermMenu()
-      if (permPick !== null) permPick(preset)
-    })
-
-    return item
-  }
-
-  /**
-   * Rebuild the popover's rows when the set of offered presets or any row's
-   * name changes. Rows come from the host's catalog, so a preset a plugin
-   * registers while the page stays open appears without a reload, and one it
-   * withdraws disappears; the names carry the interface language, so a
-   * language switch repaints the rows here. An unchanged signature leaves the
-   * DOM alone (the pass runs on every mutation).
-   *
-   * The rendered signature is kept WITH the element it was rendered into: a
-   * new popover starts empty (the hero view takes the old one out of the
-   * tree), so a signature that merely matches the previous one must not
-   * skip filling this one.
-   */
-  function syncPermRows() {
-    if (permPopover === null) return
-    const wanted = offeredPresets()
-    const signature = wanted.map(preset => `${preset}=${presetLabel(preset)}`).join('|')
-    if (signature === renderedRows && renderedRowsFor === permPopover) return
-    renderedRows = signature
-    renderedRowsFor = permPopover
-    while (permPopover.firstChild !== null) permPopover.removeChild(permPopover.firstChild)
-    for (let i = 0; i < wanted.length; i++) permPopover.appendChild(buildPermRow(wanted[i]))
-  }
-
-  registerPopover('permission', closePermMenu)
-
-  /** Put an open tier card back over its trigger; every other place leaves it where it was. */
-  function placeOpenPermCard() {
-    if (permBtn === null || permPopover === null) return
-    if (permBtn.getAttribute('data-open') !== 'true') return
-    positionAnchoredPopover(permBtn, permPopover, PERM_POPOVER_PLACEMENT)
-  }
-
-  function buildPermTriggerAndPopover(onPick: (preset: string) => void) {
-    permPick = onPick
-    const container = buildElement('div', 'dsh-claude-perm-container')
-
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'dsh-claude-perm-btn'
-    btn.setAttribute('aria-haspopup', 'menu')
-    btn.setAttribute('aria-expanded', 'false')
-
-    const label = buildElement('span', 'dsh-claude-perm-label', restingLabel())
-
-    btn.appendChild(label)
-
-    const popover = buildElement('div', 'dsh-claude-popover-card dsh-claude-perm-popover')
-    setMenuPopoverOpen(popover, false)
-
-    function openPerm() {
-      // A trigger the page cannot act through (the cold start screen) never
-      // opens its card: the press belongs to the workspace pick under it.
-      if (btn.disabled) return
-      if (permHoverIntent) permHoverIntent.cancel()
-      closeOtherPopovers('permission')
-      positionAnchoredPopover(btn, popover, PERM_POPOVER_PLACEMENT)
-      btn.setAttribute('data-open', 'true')
-      btn.setAttribute('aria-expanded', 'true')
-      setMenuPopoverOpen(popover, true)
-    }
-
-    permHoverIntent = createHoverIntent(openPerm, closePermMenu, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
-
-    // The listeners read the intent in force when they fire: a rebuild replaces it.
-    btn.addEventListener('mouseenter', () => {
-      if (permHoverOn()) permHoverIntent!.scheduleOpen()
-    })
-    btn.addEventListener('mouseleave', () => {
-      if (permHoverOn()) permHoverIntent!.scheduleClose()
-    })
-    popover.addEventListener('mouseenter', () => {
-      permHoverIntent!.cancel()
-    })
-    popover.addEventListener('mouseleave', () => {
-      permHoverIntent!.scheduleClose()
-    })
-
-    btn.addEventListener('click', e => {
-      e.stopPropagation()
-      if (btn.getAttribute('data-open') === 'true') {
-        // A press on the card the dwell just opened leaves it up: the reader's
-        // hand is already on the trigger, and it is the leave that closes.
-        if (pressKeepsPermOpen()) return
-        closePermMenu()
-      } else {
-        openPerm()
-      }
-    })
-
-    if (!permDocPointerListener) {
-      permDocPointerListener = e => {
-        if (permPopover && permBtn && permPopover.getAttribute('data-open') === 'true') {
-          // A SECOND button of the mouse must not fold the card either: the
-          // pointer never left the trigger, so this is not the reader's way out.
-          if (permBtn.contains(e.target as Node)) {
-            if (!pressKeepsPermOpen()) closePermMenu()
-            return
-          }
-          if (!permPopover.contains(e.target as Node)) closePermMenu()
-        }
-      }
-      document.addEventListener('pointerdown', permDocPointerListener)
-    }
-
-    if (!permResizeListener) {
-      permResizeListener = () => {
-        if (permPopover && permBtn && permPopover.getAttribute('data-open') === 'true') closePermMenu()
-      }
-      window.addEventListener('resize', permResizeListener)
-      window.addEventListener('scroll', permResizeListener, true)
-    }
-
-    container.appendChild(btn)
-    // One popover per generation: a rebuild whose container a host
-    // re-render dropped strands the previous popover in the document, so
-    // installing this one sweeps every popover already there.
-    removeStrayNodes(document, '.dsh-claude-perm-popover', [])
-    document.body.appendChild(popover)
-
-    return {
-      container,
-      btn,
-      label,
-      popover
-    }
-  }
-
-  /**
-   * Mirror the running preset onto the trigger and its rows. `inert` marks the
-   * cold start screen, which has no session to switch: the trigger reads the
-   * preset a new session starts in and takes no input, so a press falls through
-   * to the workspace pick the card itself performs.
-   */
-  function updatePermState(preset: string | null, inert: boolean) {
-    if (!permLabel || !permPopover) return
-    if (permBtn !== null && permBtn.disabled !== inert) permBtn.disabled = inert
-    if (inert && permPopover.getAttribute('data-open') === 'true') closePermMenu()
-    // The rows follow the host's catalog: one it does not serve is not
-    // drawn at all, and one it starts serving appears.
-    syncPermRows()
-    // The running preset reads under the name the interface language gives
-    // it; a value no preset carries (the host's `custom`) reads as the host's
-    // own word for it rather than as the machine value.
-    const matchedLabel = preset === null ? restingLabel() : presetLabel(preset)
-    // Same-value guards: this runs on every pass, and an identical write still
-    // lands — a replaced text node, a written attribute — a mutation that
-    // schedules the next pass, so the page never went idle.
-    if (permLabel.textContent !== matchedLabel) permLabel.textContent = matchedLabel
-
-    const items = permPopover.querySelectorAll('[data-preset]')
-    for (let j = 0; j < items.length; j++) {
-      const it = items[j]
-      const isCurrent = it.getAttribute('data-preset') === preset
-      const check = it.querySelector<HTMLElement>('.dsh-claude-popover-check')
-      if (check) check.toggleAttribute('hidden', !isCurrent)
-      it.toggleAttribute('data-active', isCurrent)
-      // One preset out of the list is current: the row says so itself, so the
-      // check mark is not the only thing carrying the choice.
-      setAttributeIfChanged(it, 'aria-checked', String(isCurrent))
-    }
   }
 
   /**
@@ -538,10 +99,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Request the switch for every row, gated presets included: the host's
-   * `/permission` command performs the switch itself, so no shipped menu
-   * and no risk-confirmation dialog sit between the pick and the write.
-   * A same-value pick writes nothing.
+   * Request the switch for every row, gated presets included. A same-value
+   * pick writes nothing.
    */
   function pick(preset: string | null) {
     const session = currentSession(ctx)
@@ -558,18 +117,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const isHero = ui.composer?.isHero() ?? false
     const composerOn = ui.composer?.isActive() ?? false
 
-    const { containers: existingPermContainers, segments: existingSegments, popover: strayPopover } = strayScan.existing(permContainer, segments)
+    const { containers: existingPermContainers, segments: existingSegments, popover: strayPopover } = strayScan.existing(card.container(), segments)
 
     if (!composerOn) {
       for (const stray of existingPermContainers) stray.remove()
-      if (permPopover && permPopover.parentElement) {
-        permPopover.parentElement.removeChild(permPopover)
-      }
-      permContainer = null
-      permBtn = null
-      permLabel = null
-      permPopover = null
-
+      card.clear()
       for (const stray of existingSegments) stray.remove()
       segments = null
       segmentPill.sync(null)
@@ -592,12 +144,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       : trigger === null ? null : trigger.parentElement
     // The default can change in Settings without a catalog event, so each
     // return to the cold start screen reads it again.
-    if (coldStart && !coldStartShown && catalogOptions !== null) probeAutoPreset()
+    if (coldStart && !coldStartShown && catalog.hasCatalog()) catalog.probe()
     coldStartShown = coldStart
     if (host === null) return
     strayScan.settle()
 
-    const preset = coldStart ? defaultPreset : session === null ? null : currentPreset(session)
+    const preset = coldStart ? catalog.coldStartPreset() : session === null ? null : currentPreset(session)
     // The segment group is the classic hero's own shape. The studio hero draws
     // its composer in the conversation's single-line form, where this control is
     // the conversation's trigger and card; the composer pass reads the home
@@ -608,19 +160,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       for (let i = 0; i < existingPermContainers.length; i++) {
         existingPermContainers[i].remove()
       }
-      if (permPopover && permPopover.parentElement) {
-        permPopover.parentElement.removeChild(permPopover)
-      }
-      permContainer = null
-      permBtn = null
-      permLabel = null
-      permPopover = null
+      card.clear()
 
       // The slots follow the host's catalog: the deployment's own auto tier
       // takes the Auto slot when it is offered, and a slot with no offered
       // preset is not drawn. Rebuild when the binding changed; the shipped
       // group is reused otherwise, so a pass leaves the DOM alone.
-      const segmentSpecs = resolvedSegments()
+      const segmentSpecs = catalog.resolvedSegments()
       const segmentSignature = segmentSpecs.map(spec => `${spec.label}=${spec.preset}`).join('|')
       if (existingSegments.length > 1) {
         for (let s = 1; s < existingSegments.length; s++) existingSegments[s].remove()
@@ -653,28 +199,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
       if (existingPermContainers.length > 0) {
         const adopted = existingPermContainers[0]
-        permContainer = adopted
         for (let p = 1; p < existingPermContainers.length; p++) {
           existingPermContainers[p].remove()
         }
         if (adopted.parentElement !== host) {
           host.insertBefore(adopted, host.firstChild)
         }
-        permBtn = adopted.querySelector<HTMLButtonElement>('.dsh-claude-perm-btn')
-        permLabel = adopted.querySelector<HTMLElement>('.dsh-claude-perm-label')
-        // The container can be adopted from a generation whose disposals a
-        // client reload dropped; its popover is still in the document, and
-        // without it updatePermState would early-return forever.
-        if (permPopover === null) permPopover = strayPopover
+        card.adopt(
+          adopted,
+          adopted.querySelector<HTMLButtonElement>('.dsh-claude-perm-btn'),
+          adopted.querySelector<HTMLElement>('.dsh-claude-perm-label'),
+          strayPopover,
+        )
       } else {
-        const res = buildPermTriggerAndPopover(pick)
-        permContainer = res.container
-        permBtn = res.btn
-        permLabel = res.label
-        permPopover = res.popover
-        host.insertBefore(permContainer, host.firstChild)
+        const res = card.build(pick)
+        host.insertBefore(res.container, host.firstChild)
       }
-      updatePermState(preset, coldStart)
+      card.update(preset, coldStart)
     }
   }
 
@@ -688,62 +229,42 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (segments !== null && segments.isConnected) segmentPill.measure(segments)
     },
     sync() {
-      if (autoPresetError !== null) throw autoPresetError
+      if (catalog.error() !== null) throw catalog.error()
       if (submitError !== null) throw submitError
       syncSegments()
       // The tier card is fixed under its trigger and nothing else places it
       // again: a column that moved under an open card (the sidebar opening, the
       // window narrowing) would otherwise leave it hanging where the trigger
       // used to be.
-      placeOpenPermCard()
+      card.placeOpen()
     },
     /**
      * Esc and composer focus close the menu. There is deliberately no
      * 'outside' route — the menu runs its own document pointerdown
-     * listener (see buildPermTriggerAndPopover).
+     * listener (permission-tier-card.ts).
      */
     close() {
-      closePermMenu()
+      card.close()
     },
     /** A viewport or composer-card change moves the anchor: place the open card in the same frame. */
     reposition() {
-      placeOpenPermCard()
+      card.placeOpen()
     },
   }
 
   // The composer restyle hides the host's access button only while this
   // says its replacement is installed.
   document.body.setAttribute(PERMISSIONS_ATTR, '')
-  startAutoPresetProbe()
+  catalog.start()
 
   return () => {
-    unregisterPopover('permission')
-    if (permHoverIntent) permHoverIntent.cancel()
-    dropAutoPresetRead()
-    if (catalogFiber !== null && typeof catalogFiber.dispose === 'function') {
-      catalogFiber.dispose()
-      catalogFiber = null
-    }
-    if (catalogChangedDisposer !== null) {
-      catalogChangedDisposer()
-      catalogChangedDisposer = null
-    }
-    if (permDocPointerListener) {
-      document.removeEventListener('pointerdown', permDocPointerListener)
-      permDocPointerListener = null
-    }
-    if (permResizeListener) {
-      window.removeEventListener('resize', permResizeListener)
-      window.removeEventListener('scroll', permResizeListener, true)
-      permResizeListener = null
-    }
+    card.dispose()
+    catalog.dispose()
     segmentPill.release()
+    // One sweep for every node the feature draws: the segment groups and the
+    // tier card's trigger container and popover (permission-tier-card.ts).
     removeStrayNodes(document, `.${SEGMENTS_CLASS}[data-composer-segments], .dsh-claude-perm-container, .dsh-claude-perm-popover`, [])
     segments = null
-    permPopover = null
-    permBtn = null
-    permLabel = null
-    permContainer = null
     document.body.removeAttribute(PERMISSIONS_ATTR)
   }
 }
