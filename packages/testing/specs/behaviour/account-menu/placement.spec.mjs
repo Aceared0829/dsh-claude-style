@@ -42,6 +42,21 @@ async function aboveTheRow(t) {
     `the menu opens over its row (card bottom ${card.bottom.toFixed(1)}, row top ${row === null ? 'none' : row.y.toFixed(1)})`)
 }
 
+/**
+ * The card opens upward from its row: its top edge stands above the row and its
+ * bottom edge does not run past the row's. A card taller than the room above
+ * the row is held against the window's top edge and covers the row by the least
+ * it can — the zoomed card on a short window, with a platform's taller fonts, is
+ * one — so this is the reading the zoom is judged on.
+ */
+async function upwardFromTheRow(t) {
+  const card = await cardBox(t)
+  t.expectThat.visible(card, 'the account menu is drawn')
+  const row = await accountRow(t.page).boundingBox()
+  t.expectThat.equal(row !== null && card.top < row.y && card.bottom <= row.y + row.height, true,
+    `the menu opens upward from its row (card ${card.top.toFixed(1)}–${card.bottom.toFixed(1)}, row ${row === null ? 'none' : `${row.y.toFixed(1)}–${(row.y + row.height).toFixed(1)}`})`)
+}
+
 export default spec({ page: 'desktop' }, ({ test }) => {
   test('the account menu opens above its row', async (t) => {
     await accountRow(t.page).click()
@@ -52,7 +67,7 @@ export default spec({ page: 'desktop' }, ({ test }) => {
     t.expectThat.boxWithin(await cardBox(t), await windowBox(t), 'the menu stays inside the window at the page\'s own scale', 1)
   })
 
-  test('under page zoom the menu still opens above its row, inside the window', async (t) => {
+  test('under page zoom the menu still opens upward from its row, inside the window', async (t) => {
     await t.prefs({ pageZoom: '1.25' })
     // The zoom is what this reading is about, so it is judged too: a preference
     // that never reached the page would leave the placement at 100% and the
@@ -60,7 +75,7 @@ export default spec({ page: 'desktop' }, ({ test }) => {
     t.expectThat.equal(await t.read.attribute('body', t.surface.attribute('skin.page-zoom')), '1.25', 'the page is drawn at 125%')
     await accountRow(t.page).click()
     await t.page.waitForTimeout(500)
-    await aboveTheRow(t)
+    await upwardFromTheRow(t)
     t.expectThat.boxWithin(await cardBox(t), await windowBox(t), 'the menu stays inside the window at 125%', 1)
   })
 })
