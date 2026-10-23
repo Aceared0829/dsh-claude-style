@@ -171,14 +171,13 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
    * the line can hold the segment's width with a dash. A route the table does
    * not price is not pending: it answers null and the segment goes.
    */
-  function costOfReading(usage: HostTokenUsageProjection | null, grown: number, currency: Currency): { cost: number | null, pending: boolean } {
+  function costOfReading(usage: HostTokenUsageProjection | null, grown: number, currency: Currency, selection: ModelSelection | undefined): { cost: number | null, pending: boolean } {
     const answered = cost.value()
     if (answered === null) return { cost: null, pending: true }
     if (usage === null) return { cost: null, pending: false }
     // The host names the route the last settlement was billed at; the
     // selection projection is the fallback for a session that has not settled
     // yet, and it is not always served.
-    const selection = faceValue<ModelSelection>('modelSelection')
     const model = answered.model ?? selection?.lastUsed?.model ?? selection?.next?.model
     const document = priceDocument()
     if (document === null) return { cost: null, pending: true }
@@ -194,15 +193,19 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
   function readReading(): StatsReading {
     const stats = faceValue<HostSessionStatsProjection>('sessionStats') ?? null
     const raw = faceValue<HostTokenUsageProjection>('tokenUsage') ?? null
+    // The route the estimate's own multiplier is bound to: the model the last
+    // settlement was billed at, or the one the picker holds before the first.
+    const selection = faceValue<ModelSelection>('modelSelection')
+    const model = selection?.lastUsed?.model ?? selection?.next?.model ?? null
     let usage: HostTokenUsageProjection | null = raw
     let grown = 0
     if (raw !== null) {
-      estimate.settle(raw.outputTokens)
-      grown = estimate.tokens()
+      estimate.settle(raw.outputTokens, model)
+      grown = estimate.tokens(model)
       if (grown > 0) usage = { ...raw, outputTokens: Math.round(raw.outputTokens + grown) }
     }
     const billing = currency()
-    const priced = billing === null ? { cost: null, pending: false } : costOfReading(usage, grown, billing)
+    const priced = billing === null ? { cost: null, pending: false } : costOfReading(usage, grown, billing, selection)
     return { stats, usage, cost: priced.cost, billing: billing !== null, costPending: priced.pending }
   }
 

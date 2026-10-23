@@ -1,13 +1,13 @@
 /**
  * While an answer streams, the written-back figure under the composer grows
  * with the text on the page, at each character's rough token share; a tool
- * call's arguments never reach the page, so each call row adds a constant
- * once. When the step settles, the host's own total takes over and nothing it
- * covers is counted again.
+ * call's arguments never reach the page, so each call row adds its tool's own
+ * price once. When the step settles, the host's own total takes over and
+ * nothing it covers is counted again.
  *
  * @capability context-stats
  * @features context-stats
- * @risk While the model streams, the token figure under the composer stands still, jumps by the whole answer twice when the step settles, or counts a sidebar preview or a re-rendered tool call as new output.
+ * @risk While the model streams, the token figure under the composer stands still, jumps by the whole answer twice when the step settles, prices a write like a read, keeps its own model's error after its settlements showed it, or counts a sidebar preview or a re-rendered tool call as new output.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
 import { seatStatsSession } from '../../fixtures/stats-session.mjs'
@@ -60,14 +60,19 @@ async function stream(t, text, { inside = true, id = 'stream' } = {}) {
   await t.settle()
 }
 
-/** A tool call row of the host's, mounted in the conversation. */
-async function callRow(t, id) {
-  await t.page.evaluate(([scroller, call, key]) => {
+/** A tool call row of the host's, mounted in the conversation and naming `tool` when given. */
+async function callRow(t, id, tool = null) {
+  await t.page.evaluate(([scroller, call, toolAttribute, key, toolName]) => {
     const row = document.createElement('div')
     row.setAttribute(call, key)
     row.id = key
+    if (toolName !== null) {
+      const view = document.createElement('span')
+      view.setAttribute(toolAttribute, toolName)
+      row.append(view)
+    }
     document.querySelector(scroller).append(row)
-  }, [t.host('chat.scroller'), t.host.attribute('chat.call'), id])
+  }, [t.host('chat.scroller'), t.host.attribute('chat.call'), t.host('chat.call-tool-attribute'), id, tool])
   await t.settle()
 }
 
@@ -93,14 +98,41 @@ export default spec({ page: 'stats-inline' }, ({ test }) => {
     t.expectThat.equal(await writtenBack(t), 120, 'the figure is the host\'s settled total')
   })
 
-  test('a tool call row counts one constant, once, however often the host re-renders it', async (t) => {
+  test('a step the figure overshot writes the next one lower', async (t) => {
+    await seatSession(t)
+    const settled = await writtenBack(t)
+    await stream(t, '你好世界'.repeat(50))
+    const first = (await writtenBack(t)) - settled
+    // The host settles forty tokens for that step, well under what the figure added.
+    await t.page.evaluate(() => window.__pushStats('tokenUsage', { outputTokens: 140 }))
+    await t.settle()
+    await stream(t, '你好世界'.repeat(50), { id: 'second' })
+    const second = (await writtenBack(t)) - 140
+    t.expectThat.equal(first > 40, true, `the first stream added its share (${first})`)
+    t.expectThat.equal(second < first, true, `the lowered multiplier writes the second stream lower (${second} against ${first})`)
+  })
+
+  test('a call row counts its tool\'s own price, a write several times a read', async (t) => {
+    await seatSession(t)
+    const settled = await writtenBack(t)
+    await callRow(t, 'call-read', 'read')
+    await stream(t, 'e')
+    const read = (await writtenBack(t)) - settled
+    await callRow(t, 'call-write', 'write')
+    await stream(t, 'f')
+    const write = (await writtenBack(t)) - settled - read
+    t.expectThat.equal(read > 0 && read < 120, true, `a read adds its own price (added ${read})`)
+    t.expectThat.equal(write > 400, true, `a write adds several times a read (added ${write})`)
+  })
+
+  test('a call row counts once, however often the host re-renders it', async (t) => {
     await seatSession(t)
     await stream(t, 'abcd')
     const before = await writtenBack(t)
-    await callRow(t, 'call-1')
+    await callRow(t, 'call-1', 'write')
     await stream(t, 'e')
     const withCall = await writtenBack(t)
-    t.expectThat.equal(withCall - before >= 150, true, `the call adds its constant (added ${withCall - before})`)
+    t.expectThat.equal(withCall - before >= 400, true, `the call adds its tool's price (added ${withCall - before})`)
     await t.page.evaluate(() => {
       const row = document.getElementById('call-1')
       const parent = row.parentElement

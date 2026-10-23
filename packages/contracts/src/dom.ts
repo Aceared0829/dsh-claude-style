@@ -38,6 +38,13 @@ export const TURN_PROCESS_MEMBER_ATTRIBUTE = 'data-turn-process-member'
  * have to arrive as a new flow block of its own.
  */
 export const CHAT_CALL_SELECTOR = '[data-chat-call-id]'
+/**
+ * The tool a call row runs, on the tool view the host renders inside that row.
+ * Its name is what the statistics' estimate prices the call's own output by.
+ */
+export const CHAT_CALL_TOOL_SELECTOR = '[data-tool]'
+/** The same contract as an attribute name: the tool a call row runs. */
+export const CHAT_CALL_TOOL_ATTRIBUTE = 'data-tool'
 /** One thinking row; its phase is its data-state attribute. */
 export const THINK_ROW_SELECTOR = '[data-variant="think"]'
 /**

@@ -1,6 +1,8 @@
-import { CHAT_CALL_SELECTOR, CONVERSATION_SCROLL_SELECTOR, STREAMING_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_CALL_SELECTOR, CHAT_CALL_TOOL_ATTRIBUTE, CHAT_CALL_TOOL_SELECTOR, CONVERSATION_SCROLL_SELECTOR, STREAMING_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { findConversationScroller } from '@dsh-claude-style/engine/host'
+import { callTokens } from './call-tokens'
+import { estimateScale, recordSettlement } from './estimate-scale'
 import { textTokens } from './text-tokens'
 
 /**
@@ -15,25 +17,19 @@ import { textTokens } from './text-tokens'
  *
  * The page's text is thinner than what the provider bills: a tool call's
  * arguments are not on the page as text at all, and the renderer drops the
- * markers it parses. So each call row of the step counts `CALL_TOKENS` beside
- * the text, whose own share is priced by shape (text-tokens.ts), and the figure
- * is corrected as soon as the step's usage lands, so only the written-back side
- * rides on them: a request's prompt is fixed while it streams. The counts are
- * read off the structure bus, not per frame, and the readings stay on the
- * interval above.
- */
-/**
- * What one call adds, wherever the page has put its arguments behind.
+ * markers it parses. So each call row of the step counts its tool's own price
+ * beside the text, whose own share is priced by shape (text-tokens.ts), and the
+ * figure is corrected as soon as the step's usage lands, so only the written-back
+ * side rides on them: a request's prompt is fixed while it streams. The counts
+ * are read off the structure bus, not per frame, and the readings stay on the
+ * interval below.
  *
- * The host settles a step's usage with the calls' arguments in it, and those
- * arguments are not on the page as text; a step that only calls tools streams
- * no text at all, so its written-back figure would stand still until the
- * settlement. A call's row arrives as the call starts, which is when its
- * arguments go by, so one count per row is the moment the figure can move.
- * The figure is a mean over calls and the set is wide: `read` and `grep` are
- * worth a few dozen, `write` and `send_message` thousands.
+ * Both prices were fitted to one provider's tokenizer, so each model's own
+ * settlements also carry a multiplier between 0.9 and 1.1 that the figure is
+ * written at (estimate-scale.ts). The tokens the readings grow by are kept
+ * unscaled, which is what lets a settlement compare the fitted estimate with
+ * the host's number rather than with a corrected one.
  */
-const CALL_TOKENS = 170
 /** How old the last reading may be before the streamed text is read again, in milliseconds. */
 const SCAN_MS = 100
 
@@ -74,6 +70,30 @@ export function createStreamEstimate() {
   /** The structure bus, and the token that marks the batches gathered under it. */
   let watching: (() => void) | null = null
   let watchingToken = 0
+  /**
+   * The ratios each model's own settlements have shown, by model id, with the
+   * multiplier they put the estimate at. The learning outlives a session
+   * switch: it is a fact about the route's tokenizer, not about the
+   * conversation on screen. The multiplier is kept beside the ratios so a
+   * reading answers it without walking them again.
+   */
+  const ratios = new Map<string, readonly number[]>()
+  const scales = new Map<string, number>()
+
+  /** The multiplier this model's estimate is written at (estimate-scale.ts). */
+  function scaleOf(model: string | null) {
+    return scales.get(model ?? '') ?? 1
+  }
+
+  /** Learn from one settlement: the model's ratio list, and the multiplier it writes. */
+  function learn(model: string | null, estimated: number, settled: number) {
+    const key = model ?? ''
+    const previous = ratios.get(key) ?? []
+    const samples = recordSettlement(previous, estimated, settled)
+    if (samples === previous) return
+    ratios.set(key, samples)
+    scales.set(key, estimateScale(samples))
+  }
 
   /** The conversation column a node stands in, or null when it stands in none. */
   function conversationOf(node: Element | null): Element | null {
@@ -144,22 +164,29 @@ export function createStreamEstimate() {
    * then. Asking costs the streaming mark and the nodes a batch brought, while
    * a full reading walks every container's text.
    *
+   * The figure is written at the multiplier the model's own settlements have
+   * earned (estimate-scale.ts); the tokens the readings grow by stay unscaled,
+   * so a settlement compares the fitted estimate with the host's number and
+   * never with a corrected one.
+   *
+   * @param model - the model answering, or null while the page names none.
    * @param now - the frame's time, so the interval is read off the pipeline's
    *   own clock.
    */
-  function tokens(now = performance.now()) {
+  function tokens(model: string | null, now = performance.now()) {
+    const scale = scaleOf(model)
     if (clock === 0) clock = now
     // A reading between the two due ones answers the structure batches alone,
     // and only when one brought a call row: the conversation seat is resolved
     // when a reading is due or a row is waiting, never per frame, and a batch
     // of streamed text leaves nothing waiting.
     if (now - readAt < SCAN_MS) {
-      if (readBatches === batches) return grown
+      if (readBatches === batches) return grown * scale
       if (batchRows.length === 0 && batchNodes.length === 0) {
         readBatches = batches
-        return grown
+        return grown * scale
       }
-      return readCalls(findConversationScroller())
+      return readCalls(findConversationScroller()) * scale
     }
     readAt = now
     const scroller = findConversationScroller()
@@ -181,7 +208,18 @@ export function createStreamEstimate() {
       seen.set(container, counts)
     }
     for (const container of seen.keys()) if (!live.has(container)) seen.delete(container)
-    return readCalls(scroller)
+    return readCalls(scroller) * scale
+  }
+
+  /**
+   * The tool a call row runs, or null while the page has not named it.
+   *
+   * The host's tool view carries the name, and a row met before that view is
+   * mounted is priced as an unknown call rather than not at all.
+   */
+  function toolOf(row: Element) {
+    const view = row.querySelector(CHAT_CALL_TOOL_SELECTOR)
+    return view === null ? null : view.getAttribute(CHAT_CALL_TOOL_ATTRIBUTE)
   }
 
   /**
@@ -193,6 +231,10 @@ export function createStreamEstimate() {
    * the one the batch met from its first row on, so everything the batch brings
    * in that step counts; a row the session has already accounted for stays
    * accounted for, a row the host re-renders in place being still the same row.
+   *
+   * Each row counts its tool's own price (call-tokens.ts), read off the row at
+   * this moment: a step that only calls a tool has no text to price, and a mean
+   * over every tool would price a `read` like a `write`.
    *
    * Before this session's first settlement the page's rows are history, and
    * none of them is a call of a step that ran here: they are held without
@@ -211,14 +253,15 @@ export function createStreamEstimate() {
     for (let index = 0; index < rows.length; index += 2) {
       const row = rows[index] as Element
       if (!row.isConnected || holds.has(row)) continue
+      const price = callTokens(toolOf(row))
       if (streaming) {
         // The step that streams owns the rows its column has just taken in.
         if (conversationOf(row) !== scroller) continue
-        grown += CALL_TOKENS
+        grown += price
         holds.add(row)
       } else {
         holds.add(row)
-        if (settled !== null) grown += CALL_TOKENS
+        if (settled !== null) grown += price
       }
     }
     return grown
@@ -247,9 +290,20 @@ export function createStreamEstimate() {
      * stay so, a row the host re-renders in place being still the same row; the
      * ones the page has dropped go, and a settlement makes the next reading due
      * whatever the clock says.
+     *
+     * The step's settled tokens are also the reading the model's multiplier
+     * learns from: the figure had added `grown` for it, the host settled the
+     * difference, and the two give one ratio (estimate-scale.ts). A total that
+     * fell, and the first total after the page opened, are no reading: the page
+     * may have missed part of the step.
+     *
+     * @param outputTokens - the session's settled output total.
+     * @param model - the model that answered the step, or null while the page
+     *   names none.
      */
-    settle(outputTokens: number) {
+    settle(outputTokens: number, model: string | null) {
       if (settled === outputTokens) return
+      if (settled !== null && outputTokens > settled) learn(model, grown, outputTokens - settled)
       settled = outputTokens
       readAt = clock
       grown = 0
