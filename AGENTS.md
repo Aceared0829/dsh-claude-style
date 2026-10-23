@@ -68,11 +68,15 @@ Read D3 before adding a host selector. After adding a substring selector, compar
 
 Comments carry only what a reader needs to keep the code correct: why the code has this shape, the host contract it depends on, the ordering that matters, what breaks if it changes. One to three lines is the norm. Never restate the code, narrate the change, or record measurements or release history. A direction with reasoning behind it lives in `docs/adr/`; cite the file's number (`D9`) and let the comment carry only what the code needs. Visual rules cite `docs/STYLE.md`.
 
-### Work Orders
+### Work Orders and Temporary Files
 
-A work order is one task under `.debug/work/<id>/`: `work.md` carries the goal, screenshots, acceptance criteria and a JSON block, while `refs/`, `shots/` and `tmp/` hold its evidence and scratch files. `npm run work -- new <slug> --title "…"` starts one; `list`, `start`, `verify`, `review`, `check`, `close` and `gc` are the other commands, and `npm run lint` runs the work-order check.
+Small changes with a clear scope that can finish in the current session, read-only checks and one-off experiments proceed without a work order. Create no temporary directory when the task produces no intermediate files. Changed line counts, file counts and the presence of temporary files do not determine whether a work order is needed.
 
-Every temporary file belongs in the open order's `tmp/`. `npm run work -- gc` removes orphaned orders and loose `.debug` temporary files. Measurements live in the order only: before review each one names where it survives — a token, a spec, a comment, an ADR, or `none`. Durable documents never name a work-order id, and `close` deletes the directory after the change file or ADR has taken what survives. A behavior change still adds `docs/changes/`; a direction change still adds an ADR. The work order is not a substitute for either.
+Automatically create or reuse a work order when the user explicitly requests one or the task needs cross-session recovery, handoff between people or agents, or sustained collection of acceptance evidence. Run `npm run work -- new <slug> --title "…"` when that need becomes clear, without asking for confirmation. A work order lives under `.debug/work/<id>/`: `work.md` holds its goal, acceptance criteria, measurements and handoff, while `refs/`, `shots/` and `tmp/` hold the material that travels with the task. `close` deletes the directory after verification and after each measurement names its durable home or `none`.
+
+One-off scripts, screenshots and logs use an independent directory created by `npm run tmp -- new <label>`. It prints an absolute path under `.debug/tmp/`; `--pid <owner-pid>` names a persistent owner when the command runs through npm. `npm run tmp -- path <id|path>` refreshes activity and ownership, and `close <id|path>` removes a finished session. `npm run tmp -- run <label> -- <command> [args]` passes the path as `DSH_TMP_DIR`, protects the command while it runs, removes its directory on success and retains failure evidence. Temporary sessions require no work metadata or review steps.
+
+`npm run tmp -- gc` previews inactive directories whose owner has exited and whose last activity is at least 24 hours old; `--yes` removes them. Active owners and filesystem links are protected. `npm run work -- gc` includes the same temporary-session collection beside orphaned work orders and loose legacy files. `npm run lint` checks both work orders and temporary ownership records. Build, test, screenshot and cache tools keep their own output directories and retention rules; running them does not create a work order. Durable documents never name a work-order or temporary-session instance. A behavior change still adds `docs/changes/`; a direction change still adds an ADR.
 
 ### Model Copy
 
@@ -112,7 +116,8 @@ Each script states its own purpose at the top of the script; the table below is 
 | `npm run coverage` | which layer guards which feature (D77), as an observation |
 | `npm test` | the logic and mechanism specs on their own, as the cloud job runs them: Vitest in browser mode on the local Chrome or Edge |
 | `npm run verify` | the one entry a test run goes through |
-| `npm run work` | one local work order per task, deleted when the task lands |
+| `npm run work` | keep task context for continuation, handoff and sustained review |
+| `npm run tmp` | manage session scratch files without a work order |
 
 <!-- commands:end -->
 

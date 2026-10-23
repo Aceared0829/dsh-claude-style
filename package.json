@@ -27,6 +27,7 @@
     "test": "vitest run",
     "verify": "node scripts/verify.mjs",
     "work": "node scripts/work.mjs",
+    "tmp": "node scripts/temporary.mjs",
     "prepublishOnly": "npm run build"
   },
   "exports": {

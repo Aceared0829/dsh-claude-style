@@ -21,6 +21,7 @@ This theme aims to faithfully replicate the Claude Code Desktop experience; chan
 
 ## Code changes
 
+- Small edits and one-off investigations can use the independent temporary-file commands; tasks that need continuity use a work order. The criteria and commands are in [AGENTS.md](AGENTS.md#work-orders-and-temporary-files).
 - Continuous integration answers every branch push with the fast tier — lint, the document, feature and changelog checks, the build, the logic and mechanism specs, the smoke and the behaviour specs on Linux and Windows — so pushing your own commit to a branch is how the cloud judges it before a pull request exists. A pull request, a push to master or a manual run adds the end-to-end lane and the host-alpha contract warning. Locally, start only the narrowest run that answers the question in hand, in the background, and compare the tree hash it prints with the tree you have: `node scripts/verify.mjs --help` names every tier and what each one walks.
 - `lib/` is generated — never edit it by hand. Change `packages/client/src/` (or the host half in `packages/host/src/`), run `npm install` once for the dev dependencies, then `npm run build`: it type-checks the TypeScript sources, bundles them with esbuild and checks the result.
 - Code submitted to the Sodium rendering engine (`packages/client/src/features/sodium/`, `packages/engine/src/sheet-rewrite.ts`) is licensed under the PolyForm Shield License 1.0.0; the rest of the repository stays MIT.

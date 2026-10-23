@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * work.mjs — one local work order per task, deleted when the task lands.
+ * work.mjs — keep task context for continuation, handoff and sustained review.
  *
  * A work order is a directory under `.debug/work/`: `work.md` carries the goal,
  * acceptance criteria, measurements and a JSON block, while `refs/`, `shots/`
@@ -16,6 +16,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import Ajv2020 from 'ajv/dist/2020.js'
+import { createTemporaryFiles, removeDebugDirectory } from './shared/temporary-files.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DEBUG = path.join(ROOT, '.debug')
@@ -525,7 +526,7 @@ function commandClose(args) {
   }
   const target = path.resolve(order.dir)
   if (path.dirname(target) !== path.resolve(WORK)) throw new Error(`work: refusing to delete ${target}`)
-  fs.rmSync(target, { recursive: true, force: true })
+  removeDebugDirectory(ROOT, WORK, target)
   syncIndex()
   console.log(`work: closed ${order.meta.id}`)
   if (order.meta.change !== null) console.log(`  change: ${order.meta.change}`)
@@ -582,7 +583,7 @@ function commandGc(args) {
     }
     if (dry) console.log(`work: would remove ${relative(dir)}`)
     else {
-      fs.rmSync(dir, { recursive: true, force: true })
+      removeDebugDirectory(ROOT, WORK, dir)
       removed.push(relative(dir))
     }
   }
@@ -599,12 +600,16 @@ function commandGc(args) {
       }
     }
   }
+  for (const directory of createTemporaryFiles(ROOT).collect(!dry)) {
+    console.log(`work: ${dry ? 'would remove' : 'removed'} ${relative(directory)}`)
+    if (!dry) removed.push(relative(directory))
+  }
   if (dry) console.log(`work: dry run; ${fs.existsSync(WORK) ? (dirSize(WORK) / 1024 / 1024).toFixed(1) : '0.0'} MB under .debug/work; pass --yes to remove`)
   else console.log(`work: removed ${removed.length} item(s); ${(dirSize(WORK) / 1024 / 1024).toFixed(1)} MB under .debug/work`)
 }
 
 function help() {
-  console.log(`work: local work orders under .debug/work
+  console.log(`work: task continuity under .debug/work; independent scratch: npm run tmp
 
   new <slug> --title "…" [--owner …] [--paths a,b] [--specs a,b] [--gate bare|quick|feature|full|e2e]
       [--gate-args a,b] [--depends a,b] [--no-behavior] [--direction] [--change path] [--adr path]
@@ -614,7 +619,7 @@ function help() {
   review <id> [--reviewer …]
   check [--quiet]
   close <id> [--force]
-  gc [--yes]
+  gc [--yes]                     also collect expired .debug/tmp sessions
 
 A work order is deleted by close; measurements live in its work.md until then.`)
 }

@@ -22,6 +22,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { filesUnder } from './shared/file-walk.mjs'
 import { checkWorkOrders } from './work.mjs'
+import { createTemporaryFiles } from './shared/temporary-files.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DECISIONS = path.join(ROOT, 'docs', 'adr')
@@ -514,9 +515,10 @@ if (lookups === 0) problems.push('lint: no whole-document lookup was counted —
 
 // Work orders live under .debug/work: their facts are transient, so this reads
 // the local tree only and passes in CI, where the directory is absent.
-const workOrders = checkWorkOrders()
-problems.push(...workOrders.problems)
-for (const warning of workOrders.warnings) console.warn(`lint: ${warning}`)
+for (const result of [checkWorkOrders(), createTemporaryFiles(ROOT).check()]) {
+  problems.push(...result.problems)
+  for (const warning of result.warnings) console.warn(`lint: ${warning}`)
+}
 
 if (problems.length > 0) {
   for (const problem of problems) console.error(`lint: ${problem}`)
