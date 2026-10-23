@@ -6,7 +6,7 @@
     { "name": "medium", "width": 900, "height": 900, "why": "between 760px and 1000px: the sidebar and the conversation side by side, at their narrowest" },
     { "name": "wide", "width": 1280, "height": 800, "why": "past every breakpoint: the layout most readers see" }
   ],
-  "densities": [1, 2],
+  "densities": [1, 1.25, 2],
   "platforms": ["ubuntu-latest", "windows-latest", "macos-latest"],
   "host": "latest"
 }

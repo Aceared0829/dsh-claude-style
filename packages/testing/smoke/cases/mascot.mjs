@@ -18,9 +18,10 @@ export default {
     check('compaction, the celebration when it ends, and the error shake over it',
       is(crab.compacting, 'compacting', 'stack') && is(crab.celebrating, 'happy', 'stack') && is(crab.failed, 'error', 'stack'),
       JSON.stringify({ compacting: crab.compacting, celebrating: crab.celebrating, failed: crab.failed }))
-    // The error sheet's still frame is its fifth: column 4 of 26-cell-wide frames at 2px a cell.
+    // The error sheet's still frame is its fifth: column 4 of 26-cell-wide frames,
+    // each with a one-cell margin around it, at 2px a cell.
     check('reduced motion holds the error sheet\'s still frame',
-      crab.stillAttr === 'reduced' && !!crab.still && crab.still.before === '-208px 0px' && crab.still.after === '-208px 0px',
+      crab.stillAttr === 'reduced' && !!crab.still && crab.still.before === '-226px -2px' && crab.still.after === '-226px -2px',
       JSON.stringify(crab.still))
     check('it idles after work, sleeps after a quiet minute, and a pointer move wakes it',
       is(crab.afterWork, 'idle', 'stack') && is(crab.asleep, 'sleeping', 'stack') && is(crab.woken, 'waking', 'stack'),

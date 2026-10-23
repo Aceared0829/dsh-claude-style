@@ -25,6 +25,10 @@
  * color, each row's runs extended downwards into rectangles. The PNGs are
  * inputs of the build and never reach `lib/`.
  *
+ * The crab's sheets ship as PNG, laid out again with CRAB_GUTTER of
+ * transparency around every frame: drawn at a fractional device scale, the
+ * window around a frame takes in a sliver of the cell beside it.
+ *
  * The manifest is also the gate: a file under `packages/assets/src/` that no table or
  * token claims fails the build, so an image added for one run cannot ship
  * unused. `packages/assets/src/fonts/` stands outside that gate: buildFonts copies the
@@ -171,7 +175,7 @@ function colorAt(data, at) {
  * @param gutter - the transparent margin in logical pixels.
  * @returns `{ data, width, height }` of the laid-out pixels.
  */
-function layoutCells(image, box, scale, gutter) {
+export function layoutCells(image, box, scale, gutter) {
   const innerWidth = box[2] * scale
   const innerHeight = box[3] * scale
   const margin = gutter * scale
@@ -254,7 +258,8 @@ export function vectorizeSheet(image, box, scale, gutter) {
  *
  * @param options.assetsDir - the directory the images live in.
  * @param options.generated - assets the build produced rather than read:
- *     path under the directory → text (a mascot's vector, in place of its source PNG).
+ *     path under the directory → text (Deepy's vector, in place of its source
+ *     PNG) or bytes (a crab sheet laid out with its gutter, under its own path).
  * @param options.replaced - paths under assets/ whose generated asset takes
  *     their place: the file is an input of the build and does not ship.
  * @param options.sourceOnly - paths under assets/ that do not ship.
@@ -294,7 +299,10 @@ export function planAssets({ assetsDir, generated = new Map(), replaced = new Se
     if (sourceOnly.has(file) || replaced.has(file) || generated.has(file)) continue
     add(file, fs.readFileSync(path.join(root, file)))
   }
-  for (const [file, text] of generated) add(file, Buffer.from(text, 'utf8'), text)
+  for (const [file, content] of generated) {
+    if (Buffer.isBuffer(content)) add(file, content)
+    else add(file, Buffer.from(content, 'utf8'), content)
+  }
   return { entries, routed: [...entries.values()].filter((entry) => !entry.inline) }
 }
 

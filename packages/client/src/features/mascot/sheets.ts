@@ -72,6 +72,14 @@ export const DEEPY_SHEETS: Record<string, { frames: number, box: number[], still
  * Code's laptop routine, whole) are the crab's own idle extras.
  */
 export const CRAB_FRAME_MS = 80
+/**
+ * The transparent margin, in cells, the build lays around every frame of the
+ * crab's sheets (gutterCrabSheets in scripts/build.mjs). The art is drawn
+ * edge to edge, and at a fractional device scale the window around a frame
+ * takes in a sliver of the cell beside it: the neighbouring frame's claw, read
+ * on the page as a one-device-pixel line down the crab's left side.
+ */
+export const CRAB_GUTTER = 1
 export const CRAB_SHEETS: Record<string, { frames: number, box: number[], still: number }> = {
   'idle': { frames: 24, box: [24, 20, 24, 16], still: 0 },
   'idle-look': { frames: 31, box: [24, 20, 24, 16], still: 0 },

@@ -1,4 +1,4 @@
-import { CRAB_FRAME_MS, CRAB_SHEETS } from './sheets'
+import { CRAB_FRAME_MS, CRAB_GUTTER, CRAB_SHEETS } from './sheets'
 import { createMascotPlayer } from './mascot-player'
 import { CRAB_SHEET_URLS } from 'virtual:dsh-claude-style/generated'
 import type { HostContext } from '@dsh-claude-style/engine/host'
@@ -27,6 +27,7 @@ export function createMascotCrab(ctx: HostContext, ui: FeatureUi<typeof manifest
     name: 'crab',
     sheets: CRAB_SHEETS,
     frameMs: CRAB_FRAME_MS,
+    gutter: CRAB_GUTTER,
     extras: ['idle-look', 'idle-wave', 'idle-laptop'],
     createSheets() {
       return {

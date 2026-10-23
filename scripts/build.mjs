@@ -51,7 +51,7 @@ import { brotliCompressSync } from 'node:zlib'
 import esbuild from 'esbuild'
 import { PNG } from 'pngjs'
 import { buildHostHalf } from './build-host.mjs'
-import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, planAssets, routeText, vectorizeSheet, writeAssets } from '../packages/assets/assets.mjs'
+import { buildFonts, checkClaimed, checkSheetPixels, checkSheets, layoutCells, planAssets, routeText, vectorizeSheet, writeAssets } from '../packages/assets/assets.mjs'
 import { openBuildCache } from './build-cache.mjs'
 import { checkContracts, checkCycles, checkDependencies, checkListed, checkManifests, checkMotionSources, checkScrollOwner, checkTypes } from './build-checks.mjs'
 import { chunkFiles, chunkModules, ownModuleIds, splitChunks } from './chunks.mjs'
@@ -239,7 +239,7 @@ const CONSTANTS = (() => {
       typeface: { attribute: TYPEFACE_ATTR, claude: TYPEFACE_CLAUDE, host: TYPEFACE_HOST },
       brand: { attribute: BRAND_ATTR, deepseek: BRAND_DEEPSEEK },
     },
-    ...pick(sheets, sheetsFile, ['CRAB_SHEETS', 'DEEPY_SHEETS', 'DEEPY_SCALE', 'DEEPY_GUTTER']),
+    ...pick(sheets, sheetsFile, ['CRAB_SHEETS', 'CRAB_GUTTER', 'DEEPY_SHEETS', 'DEEPY_SCALE', 'DEEPY_GUTTER']),
     featureSheets: pick(constants, constantsFile, FEATURE_SHEET_CONSTANTS),
   }
 })()
@@ -338,6 +338,36 @@ function vectorizeDeepySheets(cache) {
   return { generated, replaced }
 }
 
+/**
+ * The crab's sheets laid out again with CRAB_GUTTER of transparency around
+ * every frame, the colour sheet and the ink mask alike, under their own paths.
+ * A sheet is cached under its bytes, its table entry, the gutter and the code of
+ * packages/assets/assets.mjs.
+ *
+ * @param cache - the build cache (scripts/build-cache.mjs).
+ * @returns the laid-out sheets, keyed by their path under packages/assets/src/.
+ */
+function gutterCrabSheets(cache) {
+  const dir = path.join(ASSETS, 'mascot', 'crab')
+  const code = fs.readFileSync(ASSETS_MODULE)
+  const generated = new Map()
+  for (const [name, sheet] of Object.entries(CONSTANTS.CRAB_SHEETS)) {
+    for (const file of [`${name}.png`, `${name}-ink.png`]) {
+      const png = fs.readFileSync(path.join(dir, file))
+      const shape = JSON.stringify({ sheet, gutter: CONSTANTS.CRAB_GUTTER })
+      generated.set(`mascot/crab/${file}`, cache.get('crab-gutter', [code, png, shape], () => {
+        const image = PNG.sync.read(png)
+        checkSheetPixels('CRAB_SHEETS', name, image, sheet, 1)
+        const laid = layoutCells(image, sheet.box, 1, CONSTANTS.CRAB_GUTTER)
+        const out = new PNG({ width: laid.width, height: laid.height })
+        laid.data.copy(out.data)
+        return PNG.sync.write(out)
+      }))
+    }
+  }
+  return generated
+}
+
 async function main() {
   checkTypes()
   const manifests = readManifests()
@@ -356,7 +386,8 @@ async function main() {
   // build must leave lib/ as it was.
   const cache = openBuildCache(CACHE_DIR)
   const deepy = vectorizeDeepySheets(cache)
-  const plan = planAssets({ assetsDir: ASSETS, generated: deepy.generated, replaced: deepy.replaced })
+  const builtSheets = new Map([...deepy.generated, ...gutterCrabSheets(cache)])
+  const plan = planAssets({ assetsDir: ASSETS, generated: builtSheets, replaced: deepy.replaced })
   const claimed = new Set()
   const images = {}
   for (const file of BRAND_MARKS) {
