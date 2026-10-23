@@ -198,7 +198,8 @@ const SCENARIOS = {
         const permLabel = read('.dsh-claude-perm-label')
         const model = read('.dsh-claude-model-btn')
         const modelLabel = read('.dsh-claude-model-btn-label')
-        const meter = read('[data-dsh-claude-context-meter]')
+        // The skin's own ring in the row; the host's meter stays in its dock unpainted.
+        const meter = read('[data-dsh-claude-meter-ring]')
         const card = read('[data-composer-card]')
         const row = read('[data-dsh-claude-part~="row"]')
         return {
@@ -220,8 +221,9 @@ const SCENARIOS = {
         }
       })
       const inside = (inner, outer) => inner === null || outer === null || (inner.left >= outer.left && inner.right <= outer.right)
-      const fits = (state) => inside(state.perm, state.card) && inside(state.model, state.card) && inside(state.meter, state.card) &&
-        inside(state.effort, state.card) && (state.effort === null || state.meter.left >= state.effort.right)
+      const apart = (one, other) => one === null || other === null || one.right <= other.left || other.right <= one.left
+      const fits = (state) => state.meter !== null && inside(state.perm, state.card) && inside(state.model, state.card) && inside(state.meter, state.card) &&
+        inside(state.effort, state.card) && apart(state.meter, state.model) && apart(state.meter, state.effort)
       const narrow = await read()
       await page.setViewportSize({ width: 330, height: 844 })
       await new Promise(resolve => setTimeout(resolve, 500))
