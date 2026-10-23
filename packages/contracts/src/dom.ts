@@ -75,6 +75,12 @@ export const SHIMMER_LEGACY_ATTRIBUTE = 'data-text-shimmer'
 export const SHIMMER_SELECTOR = `[${SHIMMER_ATTRIBUTE}], [${SHIMMER_LEGACY_ATTRIBUTE}]`
 /** The chat column's scroller; the host hangs its own follow off it. */
 export const CONVERSATION_SCROLL_SELECTOR = '[data-conversation-scroll]'
+/** The conversation body: the scroller and the width handles stand under it, and the two widths below are declared on it. */
+export const CONVERSATION_CONTENT_SELECTOR = '[data-conversation-content]'
+/** The conversation column's width, from the reader's handles or the host's own share of the window. */
+export const CHAT_CONTENT_WIDTH_PROPERTY = '--dsh-chat-content-width'
+/** The composer card's widest: the column's width plus the card's own margin. */
+export const COMPOSER_CARD_MAX_WIDTH_PROPERTY = '--dsh-composer-card-max-width'
 /** Present while the host's follow is on; its absence is how the follow reads as off. */
 export const FOLLOWING_TAIL_ATTRIBUTE = 'data-chat-following-tail'
 /** The same contract in selector form. */

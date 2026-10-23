@@ -1,4 +1,4 @@
-import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
+import { COMPOSER_GAP_COMPACT, COMPOSER_GAP_ROOMY, COMPOSER_GAP_THEME, COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -12,6 +12,7 @@ export default {
     { file: 'card.css', rank: 80, gate: true },
     { file: 'inline.css', rank: 90, gate: true },
     { file: 'inline-bar.css', rank: 100, gate: true },
+    { file: 'bottom-gap.css', rank: 101, gate: true },
   ],
   settingsRows: [{
     tab: 'composer',
@@ -19,6 +20,25 @@ export default {
     pref: 'composerScope',
     title: 'composerTitle',
     choiceLabels: { off: 'scopeOff', hero: 'scopeHero', conversation: 'scopeConversation', all: 'scopeAll' },
+  }, {
+    tab: 'composer',
+    // Right under the restyle it depends on, before the picker rows (rank 30).
+    rank: 11,
+    pref: 'composerBottomGap',
+    parent: 'composerScope',
+    title: 'composerBottomGapTitle',
+    desc: 'composerBottomGapDesc',
+    choiceLabels: {
+      [COMPOSER_GAP_COMPACT]: 'gapCompact',
+      [COMPOSER_GAP_THEME]: 'gapTheme',
+      [COMPOSER_GAP_ROOMY]: 'gapRoomy',
+    },
+    // The gap sits under the conversation's composer, which only these two scopes restyle.
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: 'conversationComposerNote',
+    },
   }],
   cases: ['composer', 'sync-fault', 'hero', 'late-forms']
 } satisfies FeatureManifest

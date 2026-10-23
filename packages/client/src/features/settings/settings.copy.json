@@ -81,6 +81,7 @@
   "chatUxManaged": { "zh": "该选项由插件 dsh-chat-ux 管理", "en": "Managed by dsh-chat-ux" },
   "windowsOnlyNote": { "zh": "只在 Windows 桌面端的窗口里生效。", "en": "Takes effect in the Windows desktop window only." },
   "motionStillNote": { "zh": "动画设为「减弱」时这一项不生效，卡片只显示定格画面。", "en": "No effect while Animation is Reduced; the cards show stills." },
+  "conversationComposerNote": { "zh": "只在「重绘对话框」覆盖对话页时生效。", "en": "Takes effect only while Composer restyle covers the conversation." },
   "experimental": { "zh": "实验性", "en": "Experimental" },
   "unavailable": { "zh": "ERROR : 设置存储服务异常，改动不会被保存。", "en": "The settings store is unavailable, so changes will not be saved." },
   "title": { "zh": "Claude Style", "en": "Claude Style" },
