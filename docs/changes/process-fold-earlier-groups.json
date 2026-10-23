@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复模型在一轮中分多步输出时，前面几段思考与工具调用的过程组不再自动收起的问题：新的过程组出现后，同一轮里之前的过程组随即收起，只展开最新的一组。",
-  "en": "Fix earlier process groups staying open when the model works in several steps within one turn: once a new process group appears, the earlier groups of that turn fold, and only the newest one stays open."
-}

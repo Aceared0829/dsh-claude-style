@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复统计显示在上下文浮层时，每轮回答结束的那一刻输入卡片向上跳一下的问题：宿主重新绘制的上下文计量环在出现的同一刻即被收起，输入卡片保持原位。",
-  "en": "Fix the composer card jumping up for a moment as each answer finishes while the statistics live in the context popover: the host's redrawn context meter is put away the moment it appears, and the card stays where it stands."
-}
