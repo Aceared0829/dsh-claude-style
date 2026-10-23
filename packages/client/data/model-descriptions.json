@@ -161,6 +161,28 @@
       }
     },
     {
+      "match": "gpt.*astra",
+      "note": "Astra, Sol and Luna are GPT-6's model lines, so each reads its own line copy whatever the version (`gpt-6.1-sol`, `gpt-astra-latest`) and whatever the suffix (`-pro`, `-fast`, `:batch`). OpenAI calls Astra its most intelligent model; that superlative is only true of the current generation, so the copy names the work it is built for.",
+      "text": {
+        "zh": "面向计算机操作、编程、网络安全与科学研究中最艰深的问题。",
+        "en": "For the hardest problems in computer use, coding, cybersecurity and science."
+      }
+    },
+    {
+      "match": "gpt.*sol",
+      "text": {
+        "zh": "面向日常工作，擅长写作、编程与分析。",
+        "en": "For everyday work: writing, coding and analysis."
+      }
+    },
+    {
+      "match": "gpt.*luna",
+      "text": {
+        "zh": "响应快、成本低，适合高频与可重复的任务。",
+        "en": "Optimized for fast responses and high-volume, repeatable work."
+      }
+    },
+    {
       "match": "gpt[._-]?5[._-]?4(?!\\d)",
       "note": "Anchored to the 5.4 generation: native computer use is that model's claim, so a later GPT-5 reads the rule below.",
       "text": {
@@ -192,7 +214,15 @@
     { "match": "gpt", "text": { "zh": "支持文本与图像输入，覆盖多种语言。", "en": "Text and image input across many languages." } },
 
     {
-      "match": "gemini.*(pro|ultra|Argon)",
+      "match": "gemini.*argon",
+      "note": "Argon is a Gemini model line of its own, outside the Pro and Ultra tiers, so it sits above the Pro rule. The copy is the line's official positioning and carries no version.",
+      "text": {
+        "zh": "面向真实软件工程、企业知识工作与网络安全防御的前沿模型，擅长长程复杂任务。",
+        "en": "A frontier model for real-world software engineering, enterprise knowledge work and cyber defense, built for long-horizon workflows."
+      }
+    },
+    {
+      "match": "gemini.*(pro|ultra)",
       "text": {
         "zh": "面向复杂任务、深度推理与多模态理解。",
         "en": "For complex tasks, deep reasoning and multimodal understanding."

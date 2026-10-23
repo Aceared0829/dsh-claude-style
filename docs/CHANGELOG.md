@@ -18,6 +18,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 跟进 Claude 桌面版的浅色与深色画布：浅色画布改为 #FFFFFF、侧栏 #FAFAFA，深色画布改为 #191919、侧栏 #1F1F1F，整套色阶随新的画布种子一起更新。
 - 跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FAFAFA。
 - 改善流式回答的 token 估算：每次工具调用按该工具自己的价格计入，代替统一的固定值，读取类调用不再被高估、写入类调用不再被低估；每个模型的估算再按自身已结算的步骤在 0.9–1.1 之间自动微调倍率。
+- 改善模型选择器里 Gemini 4 Argon 与 GPT-6 Astra、Sol、Luna 的描述：每条产品线显示自己的官方定位。
 
 ### 问题修复
 
@@ -41,6 +42,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Follow Claude desktop's light and dark canvases: the light canvas is #FFFFFF with a #FAFAFA sidebar, the dark canvas #191919 with a #1F1F1F sidebar, and the whole ladder follows the new canvas seeds.
 - Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FAFAFA.
 - Improve the streaming token estimate: a tool call now carries its own tool's price instead of one flat figure, so a read is no longer overpriced and a write no longer underpriced; each model's estimate is also scaled between 0.9 and 1.1 from its own settled steps.
+- Improve the model picker's descriptions for Gemini 4 Argon and GPT-6 Astra, Sol and Luna: each model line shows its own official positioning.
 
 ### Bug Fixes
 
