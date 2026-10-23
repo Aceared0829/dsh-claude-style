@@ -18,6 +18,8 @@
 
 Main window settings offer a saved composer maximum width (480–1600 px) and bottom gap (0–80 px), each with its own reset. The composer shrinks to fit narrower windows.
 
+Conversation statistics in Main window settings offer a compact footer with cost, cache hit rate and the context meter. Choose left, center or right alignment; figures use a separate line when space runs out. Full statistics remain in the context popover.
+
 ## Preview
 
 The settings page switches between the two palettes; light and dark follow the system.
@@ -50,7 +52,7 @@ The settings page switches between the two palettes; light and dark follow the s
   </tr>
 </table>
 
-> Sky-blue canvas `#F7FAFF`, blue-black `#13161D`, DeepSeek blue `#4D6BFE`; Deepy the pixel whale stands on the composer, in eight states:
+> White canvas `#FFFFFF` with a `#FAFAFA` sidebar, blue-black `#13161D`, DeepSeek blue `#4D6BFE`; Deepy the pixel whale stands on the composer, in eight states:
 
 <table>
   <tr>

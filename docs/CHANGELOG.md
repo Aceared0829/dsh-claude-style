@@ -8,31 +8,39 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">新增功能</h3>
 
+- 对话统计新增紧凑底栏：费用、缓存命中率和上下文圆环共用工具栏，支持左侧、居中和右侧位置，空间不足时独立成行。
 - 主窗口设置新增输入框最大宽度（480–1600 px）与底部间距（0–80 px），支持保存和分别恢复默认，较窄的窗口自动收缩输入框。
+- 新增侧栏悬停展开：侧栏收起时，鼠标停在侧栏按钮上，侧栏就浮在页面上方展开，主窗口宽度不变；鼠标移开或选中会话后自动收起，点击按钮仍是固定展开，可在设置页「侧栏 → 悬停展开侧栏」关闭；Windows 桌面端与 web 生效（#108）。
 
 ### 体验优化
 
 - 跟进 Claude 桌面版的浅色与深色画布：浅色画布改为 #FFFFFF、侧栏 #FAFAFA，深色画布改为 #191919、侧栏 #1F1F1F，整套色阶随新的画布种子一起更新。
+- 跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FAFAFA。
 
 ### 问题修复
 
 - 修复在首页切换其他插件放在输入框里的页签后整块输入区消失的问题：只有会话自身的视图页签切到非对话视图时，输入区才会收起（#131）。
 - 修复显示缩放或页面缩放为小数倍时，像素螃蟹播放动画时身侧出现一条细竖线的问题（#130）。
+- 修复 DeepSeek 配色下用户消息气泡显示为宿主淡灰色的问题：气泡改用该颜色卡的淡蓝色 #ECF0FF，与主题一致（#134）。
 - 修复设置了页面缩放后窄窗口布局仍按未缩放的窗口宽度切换的问题：首页统计格、封禁页与输入行上下文计量环旁的数字改按页面自身的宽度收窄（#129）。
 - 修复设置页「外观 → 配色」的颜色卡只能选中自定义卡的问题：Claude 与 DeepSeek 卡现在也能点选，各自换上该卡的配色而不改动通用页的品牌标志，选中的卡上给出「恢复跟随品牌」，把配色交回当前品牌（#128）。
 
 <h3 id="en-unreleased">New Features</h3>
 
+- Conversation statistics add a compact footer with cost, cache hit rate and the context meter, left/center/right alignment, and a separate line when toolbar space runs out.
 - Main window settings add a saved composer maximum width (480–1600 px) and bottom gap (0–80 px), with separate resets and automatic shrinking in narrower windows.
+- Add opening the sidebar on hover: while the sidebar is collapsed, resting the pointer on its toggle opens it over the page and the main window keeps its width; it closes when the pointer leaves or a session is picked, a click on the toggle still keeps it open, and Settings → Sidebar → Open the sidebar on hover turns it off; it works on the Windows desktop app and the web (#108).
 
 ### Improvements
 
 - Follow Claude desktop's light and dark canvases: the light canvas is #FFFFFF with a #FAFAFA sidebar, the dark canvas #191919 with a #1F1F1F sidebar, and the whole ladder follows the new canvas seeds.
+- Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FAFAFA.
 
 ### Bug Fixes
 
 - Fix the whole input area vanishing on the home page after picking a tab in another plugin's menu inside the composer: the input area stands down only when the conversation's own view tabs leave the chat (#131).
 - Fix a thin vertical line appearing beside the pixel crab while it plays at a fractional display or page zoom (#130).
+- Fix the user message bubble showing the host's light grey under the DeepSeek palette: the bubble takes that colour card's light blue #ECF0FF instead (#134).
 - Fix the narrow-window layouts switching on the unzoomed window width under page zoom: the home page's stat cells, the ban screen and the number beside the composer row's context ring now narrow with the page's own width (#129).
 - Fix the colour cards under Appearance → Colours accepting only the custom card: the Claude and DeepSeek cards can now be picked too, each painting its own palette while the theme style's brand mark stays, and a picked card offers “Follow the brand again” to hand the colours back (#128).
 

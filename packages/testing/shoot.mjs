@@ -58,7 +58,7 @@ const DEMO_TITLE = 'Markdown rendering tour'
  */
 const CANVAS = {
   claude: { light: 'rgb(255, 255, 255)', dark: 'rgb(25, 25, 25)' },
-  deepseek: { light: 'rgb(247, 250, 255)', dark: 'rgb(19, 22, 29)' },
+  deepseek: { light: 'rgb(255, 255, 255)', dark: 'rgb(19, 22, 29)' },
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

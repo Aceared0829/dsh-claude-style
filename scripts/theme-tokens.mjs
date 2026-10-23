@@ -85,6 +85,7 @@ function tokenValue(spec, card, scheme, tones) {
   if (spec.card === 'logoInk') return card.logoInk === 'ink' ? tones.get('ink') : card.accent
   if (spec.card === 'code') return card.code[scheme]
   if (spec.card === 'sidebar') return card.sidebar?.[scheme]
+  if (spec.card === 'bubble') return card.bubble?.[scheme]
   throw new Error('build: a palette token names no colour source')
 }
 
@@ -231,6 +232,9 @@ function customPaletteBlocks(doc, gates) {
         else if (spec.card === 'code') value = 'var(--dsh-claude-custom-code)'
         // The reader's canvas carries its own sidebar step, like the cards'.
         else if (spec.card === 'sidebar') value = 'var(--dsh-tone-sidebar)'
+        // The bubble follows the reader's canvas too; a card with flat contours
+        // reads its own dark rung.
+        else if (spec.card === 'bubble') value = `var(--dsh-tone-${card.edges === 'surface' && scheme === 'dark' ? 'bubble-flat' : 'bubble'})`
         else throw new Error('build: a palette token names no colour source')
         declarations.push([spec.token, value])
       }
@@ -346,6 +350,8 @@ function tokenTable(doc) {
     tableCell(card.canvas.dark),
     cell(card.sidebar?.light),
     cell(card.sidebar?.dark),
+    cell(card.bubble?.light),
+    cell(card.bubble?.dark),
     cell(card.link?.light),
     cell(card.link?.dark),
     card.edges,
@@ -366,8 +372,8 @@ function tokenTable(doc) {
   })
   const tokenHeader = ['Token', 'Tone', ...schemeHeader, 'Host alias', 'Use']
   return [
-    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Sidebar light', 'Sidebar dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code light', 'Code dark']),
-    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
+    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Sidebar light', 'Sidebar dark', 'Bubble light', 'Bubble dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code light', 'Code dark']),
+    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
     ...cardRows,
     '',
     row(['Tone', 'Seed', 'Light', 'Dark']),

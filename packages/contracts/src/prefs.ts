@@ -130,7 +130,9 @@ export const CHAT_ANIMATIONS_OFF = 'off'
 /** Where the session's numbers show: in the context popover the meter opens, or on a line of their own under the input card. */
 export const STATS_POSITION_INLINE = 'inline'
 export const STATS_POSITION_CONTEXT = 'context'
-export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT] as const
+export const STATS_POSITION_FOOTER = 'footer'
+export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER] as const
+export const STATS_FOOTER_ALIGNS = ['left', 'center', 'right'] as const
 
 /**
  * The language the account-hold easter egg (features/ban-screen/) is written
@@ -264,12 +266,15 @@ export const PREFS = {
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },
   permissionsControl: { type: 'boolean', default: true },
   statsPosition: { type: 'choice', values: STATS_POSITIONS, default: STATS_POSITION_CONTEXT },
+  statsFooterAlign: { type: 'choice', values: STATS_FOOTER_ALIGNS, default: 'center' },
   /** Which official price table the session's cost follows, or off for no figure at all. */
   billingCurrency: { type: 'choice', values: BILLING_CHOICES, default: CURRENCY_CNY },
   workspaceView: { type: 'boolean', default: true },
   dockCards: { type: 'boolean', default: true },
   sidebarSearch: { type: 'boolean', default: true },
   searchStyle: { type: 'choice', values: SEARCH_STYLES, default: SEARCH_STYLE_OVERLAY },
+  /** Whether resting the pointer on the collapsed sidebar's toggle opens the sidebar over the page. */
+  sidebarPeek: { type: 'boolean', default: true },
   sidebarLayout: { type: 'choice', values: SIDEBAR_LAYOUTS, default: SIDEBAR_LAYOUT_RELAXED },
   ongoingIndicator: { type: 'choice', values: ONGOING_INDICATORS, default: ONGOING_INDICATOR_BREATHE },
   turnNav: { type: 'boolean', default: true },
@@ -299,6 +304,7 @@ export const LIVE_PREFS = [
   'banLocale',
   'workspaceView',
   'sidebarSearch',
+  'sidebarPeek',
   'turnNav',
   'viewTabs',
   'headerBand',

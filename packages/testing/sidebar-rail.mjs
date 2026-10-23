@@ -170,4 +170,4 @@ function sidebarRailScenario({ check }) {
   }
 }
 
-export { sidebarRailScenario }
+export { sidebarRailScenario, collapseRail }

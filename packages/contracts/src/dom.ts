@@ -335,6 +335,21 @@ export const RIGHTBAR_PANEL_SELECTOR = '[data-sidebar-right-panel]'
 export const RIGHTBAR_HANDLE_SELECTOR = '[data-side="rightbar"]'
 /** The sidebar's drag handle; the host places it at the sidebar's own width. */
 export const SIDEBAR_HANDLE_SELECTOR = '[data-side="sidebar"]'
+/**
+ * The frame's collapse marker: the host writes it on the frame while the
+ * sidebar is closed and takes it away while the sidebar stands open, whatever
+ * opened it (the toggle, its shortcut, a search that asks for the wide list).
+ */
+export const SIDEBAR_COLLAPSED_ATTRIBUTE = 'data-sidebar-collapsed'
+/** The frame's mark while it gives the right panel no track at all. */
+export const RIGHTBAR_COLLAPSED_ATTRIBUTE = 'data-rightbar-collapsed'
+/**
+ * The narrowest frame on which the host keeps an open right panel beside an
+ * open sidebar: its column solver drops the right track once the frame is
+ * narrower than the sidebar's default width (280), the centre's minimum (400)
+ * and the right track's own minimum (300) together.
+ */
+export const SIDEBAR_BESIDE_RIGHTBAR_MIN_PX = 980
 
 /* ---------- the conversation header's own row ---------- */
 
@@ -382,6 +397,12 @@ export const WINDOWS_TITLEBAR_ATTRIBUTE = 'data-windows-titlebar'
 export const WINDOWS_MENU_SELECTOR = '[data-windows-menu]'
 export const PLATFORM_ATTRIBUTE = 'data-platform'
 export const FULLSCREEN_ATTRIBUTE = 'data-fullscreen'
+/**
+ * Where the Windows caption row's content starts after the shell's own
+ * controls: the host declares it on the document element only while the frame
+ * carries the collapse marker, and the native menu is placed from it.
+ */
+export const WINDOWS_MENU_START_PROPERTY = '--dsh-windows-menu-start'
 /** The host's declared caption-strip height, as a custom property on the document element. */
 export const FRAME_TOP_CLEARANCE_PROPERTY = '--dsh-frame-top-clearance'
 /** The skin center's stamp on the document element: another skin owns the page (D74). */
