@@ -183,7 +183,11 @@ export function createProcessFold() {
     }
   }
 
-  /** Settle every group already on the page once, right after install. */
+  /**
+   * Settle every group already on the page once, in the next frame: the first
+   * scan presses group headers, and a session switch mounts whole flows in one
+   * task, so the press waits until that task has painted.
+   */
   const syncEveryGroup = () => {
     syncGroups(document.querySelectorAll(PROCESS_GROUP_SELECTOR))
   }
@@ -261,7 +265,7 @@ export function createProcessFold() {
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)
   document.addEventListener('compositionend', onCompositionEnd, true)
-  syncEveryGroup()
+  requestFrame({ write() { syncEveryGroup() } })
 
   return () => {
     stopMutations()

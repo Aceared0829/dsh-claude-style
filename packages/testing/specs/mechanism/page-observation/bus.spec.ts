@@ -282,6 +282,32 @@ test('a match added inside a quiet container is registered too', async () => {
   expect(matches.all()).toEqual([added])
 })
 
+test('a batch a session switch mounts is dispatched after the task that made it', async () => {
+  const root = host()
+  const batches: number[] = []
+  cleanups.push(subscribeMutations(root, { childList: true, subtree: true }, records => batches.push(records.length)))
+  const mounted = document.createElement('section')
+  for (let index = 0; index < 300; index += 1) mounted.append(document.createElement('div'))
+  root.append(mounted)
+  // The observer's callback is a microtask of the task that mounted the flow;
+  // this batch is over the weight the bus scans in place.
+  await Promise.resolve()
+  expect(batches).toHaveLength(0)
+  await settle()
+  expect(batches).toHaveLength(1)
+})
+
+test('a small batch keeps the task it was made in', async () => {
+  const root = host()
+  const batches: MutationRecord[][] = []
+  cleanups.push(subscribeMutations(root, { childList: true, subtree: true }, records => batches.push(records)))
+  root.append(document.createElement('div'))
+  // Dispatched inside the observer's own callback, before the browser paints:
+  // the fold's pressed height and the send flight read this.
+  await Promise.resolve()
+  expect(batches).toHaveLength(1)
+})
+
 test('a registry listener hears the change in the batch that made it, before the next frame', async () => {
   const root = host()
   let heard = 0

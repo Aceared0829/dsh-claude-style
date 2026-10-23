@@ -9,9 +9,14 @@ import { skin } from './skin'
  * target with the union of their options, and each callback batch is routed
  * back: a subscription receives exactly the records its own options select,
  * in the order the subscriptions were made — the order separate observers
- * made in that order would have been called in. The observer is attached only
- * while a subscription exists, so the head is watched only while someone asks
- * (the other chat plugin's sheet, D9's foreign sheets).
+ * made in that order would have been called in. A batch small enough to scan
+ * in place is dispatched inside the observer's callback, before the browser
+ * paints, which the fold's pressed height and the send flight read; a batch a
+ * session switch mounts moves to the next task and runs in 8 ms slices, so
+ * the scan no longer stands between the change and the paint. The
+ * observer is attached only while a subscription exists, so the head is
+ * watched only while someone asks (the other chat plugin's sheet, D9's
+ * foreign sheets).
  *
  * Sizes: one ResizeObserver for every element, and a second, `afterHost`,
  * made anew each time a subscription joins it. Resize callbacks run in the
@@ -91,7 +96,76 @@ function selects(subscription: MutationSubscription, record: MutationRecord) {
   return options.skipQuiet !== true || !isQuietRecord(record)
 }
 
+/**
+ * A batch's weight, as its records and a bounded share of the subtree each
+ * addition brings: a session switch mounts a whole flow in one task, and
+ * scanning it before the paint is what froze the switch. The bound keeps the
+ * reading cheap — a carrier's own children are counted, not its descendants.
+ */
+const SYNC_BATCH_WEIGHT = 100
+/** How long one deferred slice may run before the rest waits for the next task. */
+const DISPATCH_BUDGET_MS = 8
+
+/** One batch waiting for its deferred turn; `cursor` is the subscription it stopped before. */
+interface DeferredBatch {
+  records: MutationRecord[]
+  audience: MutationSubscription[]
+  cursor: number
+}
+
+const deferredBatches: DeferredBatch[] = []
+let dispatchTimer: ReturnType<typeof setTimeout> | null = null
+
+/** The cost a batch is read as (see SYNC_BATCH_WEIGHT). */
+function batchWeight(records: MutationRecord[]) {
+  let weight = 0
+  for (const record of records) {
+    weight += 1
+    for (const node of record.addedNodes) {
+      if (node instanceof Element) weight += 1 + Math.min(node.childElementCount, 128)
+    }
+  }
+  return weight
+}
+
+/** Give the deferred batches their next slice, once the task that made them has painted. */
+function scheduleDispatch() {
+  if (dispatchTimer !== null || deferredBatches.length === 0) return
+  dispatchTimer = setTimeout(dispatchSlices, 0)
+}
+
+/** Run deferred callbacks until the slice's budget is spent, then wait for the next task. */
+function dispatchSlices() {
+  dispatchTimer = null
+  const started = performance.now()
+  while (deferredBatches.length > 0) {
+    const batch = deferredBatches[0]
+    while (batch.cursor < batch.audience.length) {
+      const subscription = batch.audience[batch.cursor++]
+      // A subscription removed before its turn hears nothing more.
+      if (!mutationSubscriptionSet.has(subscription)) continue
+      const selected = batch.records.filter(record => selects(subscription, record))
+      if (selected.length === 0) continue
+      // One subscriber's error must neither stop the others nor vanish (D12).
+      try { subscription.callback(selected) } catch (error) { reportError(error) }
+      if (performance.now() - started >= DISPATCH_BUDGET_MS) {
+        scheduleDispatch()
+        return
+      }
+    }
+    deferredBatches.shift()
+  }
+}
+
 function routeRecords(records: MutationRecord[], audience: MutationSubscription[] = mutationSubscriptions.slice()) {
+  // A batch a session switch mounts is scanned after the paint: its callbacks
+  // are idempotent passes, and nothing the reader is looking at in that frame
+  // is drawn by them.
+  if (batchWeight(records) > SYNC_BATCH_WEIGHT) {
+    deferredBatches.push({ records, audience, cursor: 0 })
+    scheduleDispatch()
+    return
+  }
   for (const subscription of audience) {
     // A subscription an earlier callback in this batch removed hears nothing more.
     if (!mutationSubscriptionSet.has(subscription)) continue
@@ -108,6 +182,13 @@ function refreshMutationObserver(joining?: MutationSubscription) {
   mutationObserver?.disconnect()
   if (mutationSubscriptions.length === 0) {
     mutationObserver = null
+    // Nothing is left to hear the queued batches: drop them rather than scan a
+    // page no feature is watching any more.
+    deferredBatches.length = 0
+    if (dispatchTimer !== null) {
+      clearTimeout(dispatchTimer)
+      dispatchTimer = null
+    }
   } else {
     if (mutationObserver === null) mutationObserver = new MutationObserver(records => routeRecords(records))
     const merged = new Map<Node, MutationObserverInit>()
@@ -232,6 +313,11 @@ function registryFor(selector: string): MatchRegistry {
       if (record.removedNodes.length > 0) changed = true
     }
     const added = [...batch]
+    // The position of every addition in the batch: an ancestor the batch has
+    // already walked reaches this node on that walk, so the node is not walked
+    // again. The check climbs the tree instead of asking `contains()` of every
+    // earlier addition, which made a mount of n nodes cost n²/2 walks.
+    const addedAt = new Map<Element, number>(added.map((node, index): [Element, number] => [node, index]))
     // The element the addition went into, asked the same way as the node.
     let placedIn: Element | null = null
     for (const record of records) {
@@ -240,10 +326,15 @@ function registryFor(selector: string): MatchRegistry {
     }
     for (let at = 0; at < added.length; at += 1) {
       const node = added[at]
-      // Only an addition the batch already walked carries this one; a carrier
-      // that arrives later is walked after, and reaching this node twice costs
-      // one set insert.
-      if (added.some((other, index) => index < at && other.contains(node))) continue
+      let carried = false
+      for (let parent = node.parentElement; parent !== null; parent = parent.parentElement) {
+        const earlier = addedAt.get(parent)
+        if (earlier !== undefined && earlier < at) {
+          carried = true
+          break
+        }
+      }
+      if (carried) continue
       // A node the page has not attached yet is asked of itself: it may already
       // be the card it will stand in.
       if (!node.isConnected && (node.matches(selector) || placedIn?.matches(selector) === true)) {

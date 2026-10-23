@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善长会话之间切换的卡顿：观察总线上一次挂载的大批次改为绘制后按 8 毫秒分片派发，新增节点的祖先去重从逐个 contains 改为沿树向上查找，过程组首次折叠同步延后一拍。
+
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve switching between long sessions: a large mutation batch is dispatched after paint in 8 ms slices, added-node dedup walks up the tree instead of a contains check per earlier node, and the process groups' first fold sync waits one frame.
+
 ## [0.18.4] - 2026-10-23
 
 [中文](#cn-0.18.4) | [English](#en-0.18.4)
