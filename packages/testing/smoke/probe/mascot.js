@@ -45,6 +45,7 @@
         canvas: bodyStyle.backgroundColor,
         accent: bodyStyle.getPropertyValue('--dsw-alias-brand-primary').trim(),
         link: bodyStyle.getPropertyValue('--dsw-alias-link').trim(),
+        bubble: bodyStyle.getPropertyValue('--dsw-specific-bubble').trim(),
       }
       // The dark palette, read with the host's dark marker set for a moment.
       document.body.setAttribute('data-ds-dark-theme', '')
@@ -53,6 +54,7 @@
         canvas: darkStyle.backgroundColor,
         accent: darkStyle.getPropertyValue('--dsw-alias-brand-primary').trim(),
         raised: darkStyle.getPropertyValue('--dsh-claude-raised').trim(),
+        bubble: darkStyle.getPropertyValue('--dsw-specific-bubble').trim(),
       }
       document.body.removeAttribute('data-ds-dark-theme')
       var deepyHero = document.createElement('div')

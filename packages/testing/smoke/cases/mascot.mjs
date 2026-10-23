@@ -49,12 +49,15 @@ export default {
     basicChecks(r)
     const deepy = r.states || {}
     const is = (state, animation, place) => !!state && state.animation === animation && state.place === place && state.ready === true
-    check('the brand stored as "off" reads as DeepSeek, and the light canvas turns sky white',
-      deepy.brand === 'deepseek' && deepy.canvas === 'rgb(250, 251, 255)', JSON.stringify({ brand: deepy.brand, canvas: deepy.canvas }))
+    check('the brand stored as "off" reads as DeepSeek, and the light canvas turns white',
+      deepy.brand === 'deepseek' && deepy.canvas === 'rgb(255, 255, 255)', JSON.stringify({ brand: deepy.brand, canvas: deepy.canvas }))
     check('the DeepSeek brand turns blue: DeepSeek\'s brand blue for the accent, a blue link, a blue-black dark canvas',
       deepy.accent === '#4d6bfe' && deepy.link === '#3e57e0' && !!deepy.dark && deepy.dark.canvas === 'rgb(19, 22, 29)' &&
         deepy.dark.accent === '#4d6bfe' && deepy.dark.raised === '#1d2028',
       JSON.stringify({ accent: deepy.accent, link: deepy.link, dark: deepy.dark }))
+    check('the conversation bubble takes the DeepSeek card\'s light blue rather than the host\'s grey, and its dark plate in the dark scheme',
+      deepy.bubble === '#ecf0ff' && deepy.dark.bubble === '#262b36',
+      JSON.stringify({ light: deepy.bubble, dark: deepy.dark.bubble }))
     // The sheet is the vector the build produced, served from the assets route
     // under the name its own content gives it
     const served = (value) => /^url\("https?:\/\/[^"]*\/dsh-claude-style\/assets\/[0-9a-f]{12}\.svg"\)$/.test(value || '')

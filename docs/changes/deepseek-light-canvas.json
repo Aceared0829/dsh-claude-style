@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "at": "2026-10-23",
+  "external": false,
+  "zh": "跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FFFAFA。",
+  "en": "Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FFFAFA."
+}

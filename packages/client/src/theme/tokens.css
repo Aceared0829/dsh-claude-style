@@ -15,7 +15,7 @@ html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-
 }
 
 html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-palette-card="deepseek"]:not([data-ds-dark-theme])) {
-  background-color: #fafbff;
+  background-color: #ffffff;
 }
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme]):not([data-we-wallpaper]) #root {
   background-color: var(--dsh-claude-canvas);

@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-23",
+  "external": false,
+  "zh": "修复 DeepSeek 配色下用户消息气泡显示为宿主淡灰色的问题：气泡改用该颜色卡的淡蓝色 #ECF0FF，与主题一致（#134）。",
+  "en": "Fix the user message bubble showing the host's light grey under the DeepSeek palette: the bubble takes that colour card's light blue #ECF0FF instead (#134)."
+}
