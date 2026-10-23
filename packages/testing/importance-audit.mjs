@@ -65,19 +65,19 @@ const READABLE_PSEUDO = new Set(['::before', '::after', '::marker', '::placehold
  * happened to catch the element called the weight removable and the next run,
  * which did not, called it unmatched. Each entry is a contract, not a
  * convenience: the skin's own marks that go on and come off within one
- * animation (`inline.css`'s active-composer controls, the send flight, the
- * wait badge's leave, the reveal of a panel, the reasoning window whose
- * markdown variant the walk's turn sometimes carries), a
+ * animation (`fold-motion.css`'s rolling door, `inline.css`'s active-composer
+ * controls, the send flight, the wait badge's leave, the reveal of a panel, the
+ * reasoning window whose markdown variant the walk's turn sometimes carries), a
  * state a pointer holds (a dragged effort knob, a file row swapping its
  * operation), and the host's own mark for a theme transition. The hover walk
  * still covers the rules whose own trigger it can point at.
  */
 const TRANSIENT_SELECTORS = [
-  '[data-dsh-claude-composer-active]',
+  '[data-dsh-claude-rolling]', '[data-dsh-claude-composer-active]',
   '[data-dsh-claude-revealing]', '[data-dsh-claude-page-enter]', '[data-dsh-claude-page-leave]',
   '[data-dsh-claude-search-closing]', '[data-dsh-claude-turn-nav-landed]',
   '[data-dsh-claude-send-ghost]', '[data-dsh-claude-send-flight]', '[data-dsh-claude-send-link]',
-  '[data-dsh-claude-follow-tail]',
+  '[data-dsh-claude-follow-tail]', '[data-dsh-claude-follow-hold]',
   '[data-dsh-claude-reader-hold]', '[data-dsh-claude-summary-running]', '[data-dsh-claude-wait-badge-leaving]',
   '[data-dsh-claude-file-merge]', '[data-dsh-claude-chat-reveal]', '[data-dsh-claude-roll]',
   '[data-dsh-claude-dragging]', '[data-dsh-claude-swapping]',

@@ -13,16 +13,10 @@
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms) }) }
   /** One frame, through the rAF the stand-in did not wrap, so asking for it is no pass of the skin's. */
   function frame() { return new Promise(function (done) { window.__nativeRaf(function () { done() }) }) }
-  /**
-   * Whether every finite animation on the page has landed; an endless one is
-   * the page's own life. A scroll-driven animation is that life too: its clock
-   * is a scroll position, so it has no time of its own to run out — the fold's
-   * edge fades hang on the body's own scroll offset that way.
-   */
+  /** Whether every finite animation on the page has landed; an endless one is the page's own life. */
   function landed() {
     return document.getAnimations().every(function (animation) {
       if (animation.playState !== 'running' && animation.playState !== 'pending') return true
-      if (!(animation.timeline instanceof DocumentTimeline)) return true
       var timing = animation.effect === null ? null : animation.effect.getComputedTiming()
       return timing !== null && timing.iterations === Infinity
     })

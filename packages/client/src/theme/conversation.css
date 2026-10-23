@@ -14,7 +14,7 @@
                                  whether the cap hides part of it, and a row the browser
                                  has skipped answers that question with no layout at all.
      the answer of a process     the answer is what the reader came for, and it keeps its
-     group                       own layout while the group above it is folded away.
+     group                       own layout while the group above it is a door away.
      a row hiding something      the host folds a turn's process members with
                                  hidden="until-found", and draws them no box: a skipped
                                  row would stand at the fallback's size, so a folded group

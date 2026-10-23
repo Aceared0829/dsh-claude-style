@@ -1,5 +1,20 @@
+diff --git a/packages/client/src/features/effort/control.ts b/packages/client/src/features/effort/control.ts
+index 77ee16a..c679e62 100644
+--- a/packages/client/src/features/effort/control.ts
++++ b/packages/client/src/features/effort/control.ts
+@@ -165,8 +165,8 @@ export function createEffortControl(opts: {
+     const list: EffortStep[] = []
+     let index = -1
+     if (effort !== null) {
+-      /* The adapter promises a display order, not a strength order, and the
+-         slider reads its steps as a strength scale (ladder.ts). */
++      /* The host records the levels as a strength scale; an adapter that hands
++         them over unordered is put right here (ladder.ts). */
+       const declared = effort.reasoning.efforts
+       const order = orderEffortIds([
+         ...effort.reasoning.defaultEffort === undefined ? [undefined] : [],
 diff --git a/packages/client/src/features/effort/ladder.ts b/packages/client/src/features/effort/ladder.ts
-index 54a2c8d..2ce995e 100644
+index 497a7a1..2d2b265 100644
 --- a/packages/client/src/features/effort/ladder.ts
 +++ b/packages/client/src/features/effort/ladder.ts
 @@ -2,23 +2,21 @@
@@ -38,7 +53,7 @@ index 54a2c8d..2ce995e 100644
   */
  
  /**
-@@ -64,27 +62,26 @@ export interface EffortLadder {
+@@ -52,25 +50,24 @@ export function isRankedEffort(id: string): boolean {
  /**
   * Order one model's levels by strength.
   *
@@ -76,5 +91,3 @@ index 54a2c8d..2ce995e 100644
 -  return [...defaults, ...ranked, ...unranked]
 +  return [...ids.filter(id => id === undefined), ...levels]
  }
- 
- /**

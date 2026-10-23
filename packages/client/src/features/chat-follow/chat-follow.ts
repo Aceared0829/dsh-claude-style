@@ -1,9 +1,9 @@
-import { CHAT_FOLLOW_ATTR, READER_HOLD_ATTR } from '../../constants'
+import { CHAT_FOLLOW_ATTR, FOLLOW_HOLD_ATTR, READER_HOLD_ATTR } from '../../constants'
 import { observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { motionReduced } from '../../core/prefs'
 import { createChatProcessFollow } from './process-follow'
-import { CHAT_CALL_SELECTOR, CHAT_RUNNING_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_BLOCK_SELECTOR, FOLLOWING_TAIL_ATTRIBUTE, FOLLOWING_TAIL_SELECTOR, HOST_FOLD_MOTION_ATTRIBUTE, HOST_FOLD_MOTION_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, SHIMMER_SELECTOR, STREAMING_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_CALL_SELECTOR, CHAT_RUNNING_SELECTOR, CONVERSATION_SCROLL_SELECTOR, FLOW_BLOCK_SELECTOR, FOLLOWING_TAIL_ATTRIBUTE, FOLLOWING_TAIL_SELECTOR, ROW_PHASE_ATTRIBUTE, RUNNING_STATE, SHIMMER_SELECTOR, STREAMING_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { conversationColumn, conversationScroller, findFollowTailButton } from '@dsh-claude-style/engine/chat-dom'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { motionEase, motionEaseAt, motionMs } from '../../shared/motion'
@@ -38,6 +38,9 @@ export const FOLLOW_MIN_INTERVAL_MS = 200
  * inserted tool row count as work in progress too.
  */
 export const FOLLOW_ACTIVITY_GRACE_MS = 2000
+/** A fold glide in flight is waited out; after this many waits the round is dropped. */
+export const FOLLOW_FOLD_WAIT_MS = 150
+export const FOLLOW_FOLD_WAIT_ATTEMPTS = 4
 /** The host's own back-to-end button, marked for the stylesheet that places it. */
 export const FOLLOW_TAIL_ATTR = 'data-dsh-claude-follow-tail'
 /** How far above the composer's top edge that button floats. */
@@ -105,11 +108,13 @@ function placeFollowTail(stamp: ReturnType<typeof createStamp<HTMLElement>>, car
  * host's pin pushed up instead of letting it jump in one frame (D71). Every
  * position write goes through the scroll owner (D40).
  *
- * @param submissionHeld - whether the reader's own message is still taking its
- *     place (see the composer's slide stand-down).
+ * @param options.foldBusy - whether a fold glide is animating a height right now.
+ * @param options.submissionHeld - whether the reader's own message is still
+ *     taking its place (see the composer's slide stand-down).
  * @returns teardown: the subscriptions go away.
  */
-export function createChatFollowGuard(submissionHeld: () => boolean) {
+export function createChatFollowGuard(options: { foldBusy: () => boolean, submissionHeld: () => boolean }) {
+  const { foldBusy, submissionHeld } = options
   const leaveOwner = joinScrollOwner()
   /** When the last hand-back really landed, for the throttle. */
   let lastEnsureAt = 0
@@ -120,6 +125,8 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
   let stopped = false
   /** Cancels the frame a seen moment waits on. */
   let cancelScan: (() => void) | null = null
+  /** The wait a fold glide put the hand-back on, so the teardown can drop it. */
+  let foldWaitTimer: number | null = null
   /** This batch of mutations held a structural moment / the follow being turned off. */
   let structureSeen = false
   let guardSeen = false
@@ -156,6 +163,8 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
   let scrollerHeight = 0
   /** The slide running now: the column's, the pinned row's counter-slide, the distance both started from, and the glide they run on. */
   let slide: { column: Animation, row: Animation | null, from: number, duration: number } | null = null
+  /** The column the hold mark (FOLLOW_HOLD_ATTR) is on, or null while no door holds it. */
+  let heldColumn: HTMLElement | null = null
 
   /**
    * Whether content is arriving right now: the mark the host writes while it
@@ -182,10 +191,7 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
     if (submissionHeld()) return false
     if (!streaming()) return false
     if (readerAway()) return false
-    // The host is folding a row itself: its own motion writes the scroller in
-    // those frames, and a slide would move the column under the same content
-    // (D71).
-    if (column.querySelector(HOST_FOLD_MOTION_SELECTOR) !== null) return false
+    if (foldBusy()) return false
     // The host's own mark that it follows the end, an attribute read: without
     // it this frame's growth was not pinned, and sliding would move content
     // that never went up.
@@ -245,6 +251,27 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
     slide = running
   }
 
+  /** Take the hold mark off the column carrying it. */
+  const releaseHold = () => {
+    if (heldColumn === null) return
+    heldColumn.removeAttribute(FOLLOW_HOLD_ATTR)
+    heldColumn = null
+  }
+
+  /**
+   * Put the hold mark on the column while a door rolls. A door's height change
+   * reads to the host as a reader who left the tail, so the host takes
+   * data-chat-following-tail away; the waiting line's pin waits for that
+   * attribute (features/chat-wait/chat-wait.css), and this mark keeps the pin
+   * standing until the fold hands the follow back (holdCheck).
+   */
+  const markHold = (column: HTMLElement) => {
+    if (heldColumn === column) return
+    releaseHold()
+    column.setAttribute(FOLLOW_HOLD_ATTR, '')
+    heldColumn = column
+  }
+
   /**
    * Watch the flow column the slide reads growth from; a session switch
    * replaces it.
@@ -276,6 +303,20 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
     stopSlideSize = observeSize(scroller === null ? [column] : [column, scroller], onSlideResize, { afterHost: true })
   }
 
+  /**
+   * Keep the door's hold mark on the column while a door rolls: the door takes
+   * the host's follow away until the fold hands it back (fold-glide-parts.ts),
+   * and the tail is still followed, so the pin's mark stands through the door.
+   */
+  const holdCheck = () => {
+    if (foldBusy() && !readerAway()) {
+      slideSync()
+      if (slideColumn !== null) markHold(slideColumn)
+      return
+    }
+    releaseHold()
+  }
+
   /** The size reading's own block size. */
   const blockSize = (entry: ResizeObserverEntry) => {
     const size = entry.borderBoxSize
@@ -305,11 +346,7 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
       // watched here (slideSync re-subscribes when it changes).
       if (delta > 0) grew = delta
     }
-    // The host started moving a row itself: a slide still carrying a distance
-    // would move the column under the same content (D71). Its mark arrives with
-    // the collapse's own first batch, which is also when the column shrinks and
-    // this runs.
-    if (column !== null && column.querySelector(HOST_FOLD_MOTION_SELECTOR) !== null) stopSlide()
+    holdCheck()
     // Only a column that already overflowed had its end pinned by the whole
     // growth; a first screen filling up moves nothing above it.
     if (column === null || grew === 0 || before < scrollerHeight) return
@@ -317,15 +354,27 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
   }
 
   /**
-   * Hand this round's follow back. Two gates have to open: the position and
-   * the reader's intent.
+   * Hand this round's follow back. Three gates have to open: the position,
+   * the reader's intent and a fold glide in flight.
+   * @param attempt - how many times this round has been put off by a fold glide.
    */
-  const ensure = () => {
+  const ensure = (attempt?: number) => {
     if (stopped || readerAway()) return
     const scroller = conversationScroller()
     if (scroller === null) return
     // More than a screen off the end is the reader reading higher up, not a follow that fell one step behind.
     if (scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop > scroller.clientHeight) return
+    // A fold glide is moving the height, and the position is its business until it lands.
+    if (foldBusy()) {
+      const tries = typeof attempt === 'number' ? attempt : 0
+      if (tries >= FOLLOW_FOLD_WAIT_ATTEMPTS) return
+      if (foldWaitTimer !== null) window.clearTimeout(foldWaitTimer)
+      foldWaitTimer = window.setTimeout(() => {
+        foldWaitTimer = null
+        ensure(tries + 1)
+      }, FOLLOW_FOLD_WAIT_MS)
+      return
+    }
     const now = performance.now()
     if (now - lastEnsureAt < FOLLOW_MIN_INTERVAL_MS) return
     lastEnsureAt = now
@@ -343,7 +392,7 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
     // The guard side needs the extra "work in progress" test: the attribute
     // going away can also be a session switch or history being restored.
     if (!structure && !(guarded && running())) return
-    ensure()
+    ensure(0)
   }
 
   const queue = () => {
@@ -375,13 +424,6 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
           if (record.target instanceof Element && record.target.hasAttribute(READER_HOLD_ATTR)) stopSlide()
           continue
         }
-        // The host began moving a row itself: from this frame on the scroller is
-        // the host's, and a slide still carrying a distance would move the same
-        // content twice (D71).
-        if (record.attributeName === HOST_FOLD_MOTION_ATTRIBUTE) {
-          if (record.target instanceof Element && record.target.matches(HOST_FOLD_MOTION_SELECTOR)) stopSlide()
-          continue
-        }
         // The follow went from present to absent: the host just turned it off.
         if (record.attributeName === FOLLOWING_TAIL_ATTRIBUTE) {
           if (record.target instanceof Element && !record.target.hasAttribute(FOLLOWING_TAIL_ATTRIBUTE)) guardSeen = true
@@ -404,33 +446,40 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
       }
     }
     if (structureSeen || guardSeen) queue()
-    // Content arriving is when a session switch shows up as a new column:
-    // a character-data change, or a node added or removed anywhere, is enough
-    // to ask. Attribute batches (a streaming mark flipping) are skipped, which
-    // keeps the common idle case down to a boolean per batch.
+    // Content arriving is when a session switch shows up as a new column and a
+    // door's hold mark is due: a character-data change, or a node added or
+    // removed anywhere, is enough to ask. Attribute batches (a streaming mark
+    // flipping) are skipped, which keeps the common idle case down to a
+    // boolean per batch.
     const contentArrived = records.some(record => record.type === 'characterData' || record.addedNodes.length > 0 || record.removedNodes.length > 0)
-    if (contentArrived) slideSync()
+    if (contentArrived) {
+      slideSync()
+      holdCheck()
+    }
   }
 
   const stopMutations = subscribeMutations(document.body, {
     subtree: true,
     childList: true,
     characterData: true,
-    attributeFilter: [ROW_PHASE_ATTRIBUTE, FOLLOWING_TAIL_ATTRIBUTE, READER_HOLD_ATTR, HOST_FOLD_MOTION_ATTRIBUTE],
+    attributeFilter: [ROW_PHASE_ATTRIBUTE, FOLLOWING_TAIL_ATTRIBUTE, READER_HOLD_ATTR],
     attributeOldValue: true,
   }, onRecords)
 
   return () => {
-    // First: a queued pass would otherwise hand the position back after the
-    // feature is off, pressing the host's own back-to-end button.
+    // First: a queued pass or a waiting retry would otherwise hand the position
+    // back after the feature is off, pressing the host's own back-to-end button.
     stopped = true
     if (cancelScan !== null) cancelScan()
     cancelScan = null
     scanQueued = false
+    if (foldWaitTimer !== null) window.clearTimeout(foldWaitTimer)
+    foldWaitTimer = null
     stopMutations()
     if (stopSlideSize !== null) stopSlideSize()
     stopSlideSize = null
     stopSlide()
+    releaseHold()
     slideColumn = null
     leaveOwner()
   }
@@ -444,7 +493,8 @@ export function createChatFollowGuard(submissionHeld: () => boolean) {
  * manifest); this teardown hands the chat area back whole.
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
-  const stopGuard = createChatFollowGuard(
+  const stopGuard = createChatFollowGuard({
+    foldBusy: () => ui.chatFold !== undefined && ui.chatFold !== null && ui.chatFold.isBusy(),
     /**
      * Whether the reader's own message is still taking its place. The send
      * feature owns that moment — its flight and the row growing where it lands
@@ -453,8 +503,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      * chunk has not arrived, its switch is off, or another plugin owns the
      * entrance.
      */
-    () => (ui.chatSend === undefined ? submissionHolds() : ui.chatSend.isEntering()),
-  )
+    submissionHeld: () => (ui.chatSend === undefined ? submissionHolds() : ui.chatSend.isEntering()),
+  })
   const stopProcess = createChatProcessFollow()
   const tailStamp = createStamp<HTMLElement>(FOLLOW_TAIL_ATTR)
   const cards = observeComposerCards()

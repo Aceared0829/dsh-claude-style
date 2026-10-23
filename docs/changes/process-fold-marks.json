@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 0,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "改善运行中的过程组：由皮肤直接在组根上标记、由样式显示，不再替读者按下宿主标题；输入框的焦点、选区与滚动位置在流式输出期间不再被这一按移动，读者在运行中按一次标题时组保持显示，再按一次才收起。",
-  "en": "Improve the running process group: the skin marks the group and the stylesheet shows it, instead of pressing the host's header for the reader; the press no longer moves the composer's focus or selection, or the scroll position, during a stream, and a reader's first press on a running group keeps it standing until the second press folds it."
-}

@@ -53,6 +53,10 @@
       "count": 1,
       "reason": "The hold screen's own node, swept once when the screen is installed."
     },
+    "packages/client/src/features/chat-fold/process-fold.ts": {
+      "count": 1,
+      "reason": "The process groups already on the page, settled once right after install."
+    },
     "packages/client/src/features/chat-fold/reasoning-fold.ts": {
       "count": 1,
       "reason": "The thinking rows already on the page, settled once right after install."

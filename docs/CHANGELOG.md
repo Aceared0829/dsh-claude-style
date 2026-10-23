@@ -8,7 +8,6 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">体验优化</h3>
 
-- 改善运行中的过程组：由皮肤直接在组根上标记、由样式显示，不再替读者按下宿主标题；输入框的焦点、选区与滚动位置在流式输出期间不再被这一按移动，读者在运行中按一次标题时组保持显示，再按一次才收起。
 - 改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。
 
 ### 问题修复
@@ -18,13 +17,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
 - 修复封号彩蛋没有铺满整个窗口、右侧与底部露出下层页面的问题：整页重新占满窗口。
 
-### 移除
-
-- 移除读者展开、合上折叠行与过程组时的卷帘门过渡：展开保留淡入，合上交给宿主自己的折叠动效，宿主没开启时即时合上；思考行在推理结束时的自动合上不再有过渡，读者在折叠控件上的点击直接到达宿主。
-
 <h3 id="en-unreleased">Improvements</h3>
 
-- Improve the running process group: the skin marks the group and the stylesheet shows it, instead of pressing the host's header for the reader; the press no longer moves the composer's focus or selection, or the scroll position, during a stream, and a reader's first press on a running group keeps it standing until the second press folds it.
 - Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group.
 
 ### Bug Fixes
@@ -33,10 +27,6 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.
 - Fix the Appearance tab's brand mark ignoring the image colour choice: the mark and the wordmark now show in the chosen Accent or Text colour, legible against the plate in both themes.
 - Fix the account-hold easter egg stopping short of the window, with the host page showing along its right and bottom edges: the page fills the window again.
-
-### Removals
-
-- Remove the door transition from a reader's opening and closing a folding row or process group: opening keeps its fade-in, closing is the host's own fold motion, and the host's instant fold where it is off; the thinking row's automatic fold at the end of the reasoning no longer animates, and a press on a folding control reaches the host directly.
 
 ## [0.18.3] - 2026-10-22
 

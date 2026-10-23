@@ -24,13 +24,17 @@
    keeps its place in the document.
 
    Under that mark the gates say whose scroll this is: the host's own attribute
-   for "the tail is being followed" — the stream slide writes no position, so
-   the host keeps it on through a run — and the reader's takeover
-   (READER_HOLD_ATTR, packages/engine/src/scroll-owner.ts), carried on the
-   conversation scroller the pin's whole context sits under, for "the reader is
+   and the stream glide's hold mark (FOLLOW_HOLD_ATTR,
+   features/chat-follow/chat-follow.ts) for "the tail is being followed" — the
+   mark is what a position held short of the end and a rolling door need,
+   because both make the host take its attribute away mid-turn — and the
+   reader's takeover (READER_HOLD_ATTR,
+   packages/engine/src/scroll-owner.ts), carried on the conversation scroller
+   the pin's whole context sits under, for "the reader is
    the one scrolling", which drops the pin even where the host still reports its
    follow. */
-body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running] {
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running],
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running] {
   position: sticky;
   bottom: calc(var(--dsh-composer-height, 0px) + var(--dsh-composer-fade-h, 40px) + 16px + 1px);
   z-index: 1;
@@ -48,7 +52,8 @@ body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scro
    strip is the same canvas at rest and covers the line the stream slide is
    bringing up while it runs; the fade band under the strip lies outside the
    host's clip, so the mask only reaches it if that clip ever goes away. */
-body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running]::after {
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-chat-following-tail] [data-chat-running]::after,
+body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scroll]:not([data-dsh-claude-reader-hold]) [data-dsh-claude-follow-hold] [data-chat-running]::after {
   content: "";
   position: absolute;
   top: 100%;

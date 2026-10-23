@@ -1,7 +1,6 @@
 import { observeMatches, observeSize, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { PROCESS_BODY_SELECTOR, PROCESS_CONTENT_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
-import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor, writeScroll } from '@dsh-claude-style/engine/scroll-owner'
-import { PROCESS_SHOWN_ATTR } from '../../constants'
+import { easeScrollToEndFor, joinScrollOwner, readerHolds, releaseReader, stopScrollFor } from '@dsh-claude-style/engine/scroll-owner'
 
 /**
  * The capped process group's follow: inside it, thinking and tool output do
@@ -9,16 +8,7 @@ import { PROCESS_SHOWN_ATTR } from '../../constants'
  *
  * The standard and compact tiers cap one process group's body (a max
  * height with its own scrollbar), and the host follows that body with a
- * native smooth scroll. That follow hangs on the host's own disclosure: its
- * size observation is bound, and the body is taken to its end, only while the
- * group stands open there. The skin shows a running group's body by a mark
- * without opening that disclosure (features/chat-fold/process-fold.ts), so the
- * body starts at its top and would stay there while the content grows — this
- * module is the one that keeps it at its end. It reads a body as followable
- * while the host has it open or the mark shows it, lands a body at its end when
- * the mark first appears, and catches up afterwards.
- *
- * Two things make the host's own follow miss while content streams:
+ * native smooth scroll. Two things make it miss while content streams:
  *
  *   travel  a native smooth scroll eases out as it nears its target, and
  *           the content grows at a steady rate instead — a thinking section
@@ -59,22 +49,13 @@ export function createChatProcessFollow() {
   const bodies = observeMatches(PROCESS_BODY_SELECTOR)
   /** The bodies watched, each with the content layer it currently has and what stops watching the two. */
   const watched = new Map<Element, { content: Element | null, stopBody: () => void, stopContent: (() => void) | null }>()
-  /** The bodies the skin's mark shows now, so a mark arriving is told from one already there. */
-  const markedNow = new WeakSet<Element>()
-  /** The bodies whose first showing still has to land at their end. */
-  const startAtEnd = new WeakSet<Element>()
   /** Set by the teardown, so an ease in flight stops with the feature. */
   let stopped = false
 
-  /** Whether the skin's mark shows this body while the host keeps its own disclosure folded. */
-  const marked = (body: Element) => body.closest(`[${PROCESS_SHOWN_ATTR}]`) !== null
-  /** Whether the reader can see this body: the host has it open, or the skin's mark shows it. */
-  const inViewNow = (body: Element) => !body.hasAttribute('hidden') || marked(body)
-
   /** Whether this body is ours to follow at all. */
   const followable = (body: Element) => {
-    // Folded away by both the host and the skin, it is not visible.
-    if (!inViewNow(body)) return false
+    // Folded away, it is not visible.
+    if (body.hasAttribute('hidden')) return false
     // Detailed and fully expanded do not cap the body: there is no inner scrollbar to follow.
     if (body.closest('[' + PROCESS_EXPANDED_MODE_ATTRIBUTE + ']') !== null) return false
     // With nothing to scroll there is nothing to do.
@@ -88,12 +69,6 @@ export function createChatProcessFollow() {
   const catchUp = (body: Element) => {
     if (readerHolds(body)) return
     if (!followable(body)) return
-    // The host lands a group it opens at its end; a body the mark shows has
-    // never been opened there, so its first showing takes it to the end.
-    if (startAtEnd.delete(body)) {
-      writeScroll(body, body.scrollHeight, 'process')
-      return
-    }
     if (gapOf(body) <= CATCH_UP_GAP_PX) return
     // Written outright, the catch-up lands as a jump of forty-odd pixels
     // several times a second while text streams, which reads as the
@@ -115,8 +90,8 @@ export function createChatProcessFollow() {
   }
 
   /**
-   * Session switches, groups coming and going, a content layer being
-   * remounted, and the skin's mark arriving or going all have to be followed.
+   * Session switches, groups coming and going, and a content layer being
+   * remounted all have to be followed.
    *
    * The content layer is resolved again on every sync rather than once:
    * the body is capped, so content growth does not change its own size —
@@ -126,15 +101,6 @@ export function createChatProcessFollow() {
   const sync = () => {
     const present = new Set(bodies.all())
     for (const body of present) {
-      // The host opens a group and places the body itself; a body the mark has
-      // just shown was never opened anywhere, so its first showing lands at its
-      // end, where the running work is.
-      if (!marked(body)) markedNow.delete(body)
-      else if (!markedNow.has(body)) {
-        markedNow.add(body)
-        startAtEnd.add(body)
-        catchUp(body)
-      }
       const content = body.querySelector(PROCESS_CONTENT_SELECTOR)
       let entry = watched.get(body)
       if (entry === undefined) {
@@ -149,13 +115,11 @@ export function createChatProcessFollow() {
     }
     for (const [body, entry] of [...watched]) {
       if (present.has(body)) {
-        // A body that was folded out of view should not carry the last hold over.
-        if (!inViewNow(body)) releaseReader(body)
+        // A body that was folded and is open again should not carry the last hold over.
+        if (body.hasAttribute('hidden')) releaseReader(body)
         continue
       }
       watched.delete(body)
-      markedNow.delete(body)
-      startAtEnd.delete(body)
       releaseReader(body)
       entry.stopBody()
       if (entry.stopContent !== null) entry.stopContent()
@@ -167,19 +131,12 @@ export function createChatProcessFollow() {
 
   /**
    * The bodies that have to be followed, and the moment to look for them: a
-   * batch that touches one, brings one, takes one away, or puts the skin's mark
-   * on its group. Sized changes are the subscriptions' own business (onResize),
-   * so no timer is left running over a page that holds no process group at all
-   * (D40).
+   * batch that touches one, brings one, or takes one away. Sized changes are
+   * the subscriptions' own business (onResize), so no timer is left running
+   * over a page that holds no process group at all (D40).
    */
-  const stopWatch = subscribeMutations(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: [PROCESS_SHOWN_ATTR] }, records => {
+  const stopWatch = subscribeMutations(document.body, { childList: true, subtree: true }, records => {
     for (const record of records) {
-      // The mark arriving is what shows a folded body: the wait that changes
-      // which bodies are in view is the same sync as a new body's arrival.
-      if (record.type === 'attributes') {
-        sync()
-        return
-      }
       const target = record.target instanceof Element ? record.target : record.target.parentElement
       if (target !== null && target.closest(PROCESS_BODY_SELECTOR) !== null) {
         sync()

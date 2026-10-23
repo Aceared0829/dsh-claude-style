@@ -1,8 +1,7 @@
 /**
  * The automatic folding (packages/client/src/features/chat-fold/): a running thinking
  * row and a running process group are opened at install, both fold back when their
- * section ends, the reader's own presses reach the host whole, and an inserted
- * body fades in.
+ * section ends, and the reader’s own presses roll a door instead of snapping a body.
  */
 (function () {
   var probe = window.__dshSmokeProbe
@@ -85,29 +84,11 @@
         await probe.settle()
         return summaryOf()
       }
-      // What the reader sees of a body: a box. The host folds with
-      // hidden="until-found", which draws no box while content-visibility
-      // keeps it hidden, so the attribute alone answers nothing.
-      var shown = function (body) {
-        var box = body.getBoundingClientRect()
-        return box.height > 0 && body.checkVisibility()
-      }
-      var lookOf = function (header) {
-        var chevron = header.querySelector('[data-step-process-chevron]')
-        var icon = header.querySelector('[data-step-process-icon]')
-        return {
-          expanded: header.getAttribute('aria-expanded'),
-          chevron: chevron === null ? null : getComputedStyle(chevron).opacity,
-          chevronTurn: chevron === null ? null : getComputedStyle(chevron).transform,
-          icon: icon === null ? null : getComputedStyle(icon).opacity,
-        }
-      }
       r.fold = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
-        groupShown: shown(foldBody),
-        headerLook: lookOf(foldHeader),
+        groupOpen: !foldBody.hasAttribute('hidden'),
         summary: await settledSummary(),
-        expandedUntouched: shown(foldExpandedBody),
+        expandedUntouched: !foldExpandedBody.hasAttribute('hidden'),
         clicks: Object.assign({}, window.__foldClicks),
       }
       // Another call arrives in the group: its figure rolls to the new count.
@@ -130,7 +111,7 @@
       const answeredBody = document.getElementById('debugAnsweredBody')
       const stoppedGroup = document.getElementById('debugStoppedGroup')
       const stoppedBody = document.getElementById('debugStoppedBody')
-      const foldedBy = (body) => !shown(body)
+      const foldedBy = (body) => body.hasAttribute('hidden')
       foldThink.setAttribute('data-state', 'ok')
       foldWords.removeAttribute('data-shimmer')
       foldWords.textContent = 'Worked'
@@ -138,8 +119,7 @@
       await probe.settle()
       r.fold.after = {
         thinkOpen: foldThink.hasAttribute('data-expanded'),
-        groupShown: shown(foldBody),
-        headerLook: lookOf(foldHeader),
+        groupOpen: !foldBody.hasAttribute('hidden'),
         summary: summaryOf(),
         clicks: Object.assign({}, window.__foldClicks),
       }
@@ -147,8 +127,8 @@
       // host left it, one whose turn was stopped is opened again after the host
       // folds it.
       r.fold.turnGroups = {
-        answeredShown: !foldedBy(answeredBody),
-        stoppedShown: !foldedBy(stoppedBody),
+        answeredOpen: !foldedBy(answeredBody),
+        stoppedOpen: !foldedBy(stoppedBody),
         stoppedGroupPresent: stoppedGroup.isConnected,
         answeredGroupPresent: answeredGroup.isConnected,
       }
@@ -160,7 +140,7 @@
       lateAnswer.setAttribute('data-chat-turn', '2')
       stoppedGroup.after(lateAnswer)
       await probe.settle()
-      r.fold.stoppedLateAnswer = { shown: !foldedBy(stoppedBody) }
+      r.fold.stoppedLateAnswer = { open: !foldedBy(stoppedBody) }
       // The reasoning's streamed window (reasoning-stream.ts, transitions.dev's
       // "Reasoning stream"): the window takes the text's own height up to the cap
       // reasoning may reach, and only at that cap does the text step up on the
@@ -224,31 +204,55 @@
       document.getElementById('debugThinkRow').click()
       await probe.settle()
       r.fold.reasonOpen = windowOf(growBody, growText)
-      // The reader's own press: the host's own handler hears it in the same task
-      // and folds the body, which is gone by the end of the press. The entrance
-      // fade above is the only transition the skin puts on a folding body.
+      // The fold glide on the reader's own press: the click is intercepted, the
+      // real element is pressed with the door marked, and the click is handed back
+      // afterwards so the host collapses it.
       var disclosure = document.getElementById('debugDisclosure')
       var disclosureBody = function () { return document.getElementById('debugDisclosureBody') }
       var disclosureBefore = window.__disclosureClicks
-      disclosure.click()
-      r.fold.press = {
-        clicks: window.__disclosureClicks - disclosureBefore,
-        bodyGone: disclosureBody() === null,
+      // One door, every frame from the press until the page settles: what the
+      // frames that carried the door showed, and how the last one stands.
+      var doorOf = function (bodyOf, clicksSince) {
+        return function () {
+          var body = bodyOf()
+          return {
+            present: body !== null,
+            rolling: body !== null && body.hasAttribute('data-dsh-claude-rolling'),
+            clipped: body !== null && body.style.overflow === 'hidden',
+            rollingAnywhere: document.querySelector('[data-dsh-claude-rolling]') !== null,
+            clicks: clicksSince(),
+          }
+        }
       }
-      // The opening direction, for the entrance the press brings back.
+      var rollOf = function (frames) {
+        var during = frames.filter(function (frame) { return frame.rolling })
+        return {
+          rolling: during.length > 0,
+          clipped: during.length > 0 && during.every(function (frame) { return frame.clipped }),
+          clicksDuringRoll: during.length === 0 ? null : Math.max.apply(null, during.map(function (frame) { return frame.clicks })),
+          inserted: frames.some(function (frame) { return frame.present }),
+          last: frames[frames.length - 1],
+        }
+      }
+      var disclosureDoor = doorOf(disclosureBody, function () { return window.__disclosureClicks - disclosureBefore })
       disclosure.click()
-      await probe.settle()
-      r.fold.press.reopened = disclosureBody() !== null
-      // The reader's own press in this phase: it reaches the host, and the group
-      // keeps standing. The mark the skin held came off in that press, so the
-      // host's own open state is what shows the body from here.
+      var closing = rollOf(await probe.watch(disclosureDoor))
+      r.fold.glide = {
+        rolling: closing.rolling,
+        clipped: closing.clipped,
+        clicksDuringRoll: closing.clicksDuringRoll,
+        after: { bodyGone: !closing.last.present, rollingAnywhere: closing.last.rollingAnywhere, clicks: closing.last.clicks },
+      }
+      // The opening direction: the press is remembered as an intent, the host
+      // inserts the body, and the door rolls it open.
+      disclosure.click()
+      var opening = rollOf(await probe.watch(disclosureDoor))
+      r.fold.glide.open = { inserted: opening.inserted, rolling: opening.rolling }
+      r.fold.glide.openAfter = { present: opening.last.present, rolling: opening.last.rolling }
+      // The reader's own press in this phase: the module leaves it alone.
       foldHeader.click()
       await probe.settle()
-      r.fold.readerOpen = { shown: shown(foldBody), look: lookOf(foldHeader), clicks: window.__foldClicks.group }
-      // The second press is the one that closes it.
-      foldHeader.click()
-      await probe.settle()
-      r.fold.readerClosed = { shown: shown(foldBody), look: lookOf(foldHeader) }
+      r.fold.readerOpen = !foldBody.hasAttribute('hidden')
 
       // A message the reader sent, taller than the cap (message-fold.ts): the
       // skin clamps the bubble and softens its bottom edge, and the control it
@@ -281,7 +285,6 @@
           cap: Math.round(parseFloat(style.getPropertyValue('--dsh-claude-message-fold-cap')) || 0),
           mask: style.maskImage,
           toggle: toggle === null ? null : toggle.textContent,
-          expanded: toggle === null ? null : toggle.getAttribute('aria-expanded'),
         }
       }
       r.fold.messageShort = messageOf()
@@ -294,9 +297,31 @@
       r.fold.messageOpen = messageOf()
       foldedColumn.remove()
       await probe.settle()
-      // The switch covers the entrance fade as well as the automatic folding:
-      // off, a press reaches the host's own handler in the same turn and an
-      // inserted body carries no transition (fold-motion.css rides
+      // A row the host wraps in a header: the door has to step out of that
+      // wrapper for its body, and the accessory beside the row is not it.
+      var wrappedRow = document.getElementById('debugWrappedRow')
+      var wrappedAccessory = document.getElementById('debugWrappedAccessory')
+      var wrappedBody = function () { return document.getElementById('debugWrappedBody') }
+      var wrappedBefore = window.__wrappedClicks
+      var wrappedDoor = doorOf(wrappedBody, function () { return window.__wrappedClicks - wrappedBefore })
+      var accessoryRolled = false
+      wrappedRow.click()
+      var rolled = rollOf(await probe.watch(function () {
+        if (wrappedAccessory.hasAttribute('data-dsh-claude-rolling')) accessoryRolled = true
+        return wrappedDoor()
+      }))
+      r.fold.wrappedRolled = {
+        rolling: rolled.rolling,
+        clipped: rolled.clipped,
+        accessoryRolled: accessoryRolled,
+        clicksDuringRoll: rolled.clicksDuringRoll,
+        bodyGone: !rolled.last.present,
+        folded: wrappedRow.getAttribute('aria-expanded') === 'false',
+        clicks: rolled.last.clicks,
+      }
+      // The switch covers the door and the entrance fade as well as the automatic
+      // folding: off, a press reaches the host's own handler in the same turn and
+      // an inserted body carries no transition (fold-motion.css rides
       // data-dsh-claude-chat-fold).
       var foldFlow = document.getElementById('debugFlow')
       var entranceOf = function () {
@@ -355,6 +380,7 @@
         entrance: entranceOf(),
         wrappedEntrance: wrappedEntranceOf(),
         immediateClicks: offImmediate,
+        rolling: document.querySelector('[data-dsh-claude-rolling]') !== null,
       }
       window.__pushForm({ chatAnimations: true })
       await probe.settle()

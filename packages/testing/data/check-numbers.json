@@ -17,6 +17,17 @@
         0
       ]
     },
+    "packages/testing/door-pin.mjs": {
+      "门滚动的每一帧状态行都钉着": [
+        0
+      ],
+      "从按下到门落定，状态行停在同一处，连半个像素也不动": [
+        0
+      ],
+      "控制台没有异常": [
+        0
+      ]
+    },
     "packages/testing/ds-bot.mjs": {
       "聊天一侧本主题的样式表、body 标记与界面元素全部离开": [
         0
@@ -88,26 +99,6 @@
         0
       ]
     },
-    "packages/testing/host-fold-motion.mjs": {
-      "宿主自己的折叠动效在这段输出里开着": [
-        0
-      ],
-      "读者合上运行中的过程组时，宿主真的滚动了这一行": [
-        0,
-        1,
-        20
-      ],
-      "组只收起一次，没有回弹": [
-        0,
-        1
-      ],
-      "宿主收起期间皮肤的流式位移不推消息列": [
-        0
-      ],
-      "控制台没有异常": [
-        0
-      ]
-    },
     "packages/testing/importance.mjs": {
       "每个页面形态都审过": [
         12
@@ -122,29 +113,6 @@
         0
       ],
       "与参照样式表画出的页面一致": [
-        0
-      ]
-    },
-    "packages/testing/live-group-follow.mjs": {
-      "蒙皮的标记显示着运行中的过程组：宿主的折叠状态仍为合上，body 照旧带 hidden=\"until-found\"，却画出了盒子": [
-        0,
-        20
-      ],
-      "限高窗口在流式输出期间跟到末尾": [
-        0,
-        1,
-        20
-      ],
-      "样式显示期间宿主自己的上下渐隐标记不出现：两条边由样式表画": [
-        0
-      ],
-      "样式表画的渐隐走宿主自己打开时的那条规则：能滚的那条边一条 24px 的带，到头就没有": [
-        0
-      ],
-      "读者按下标题后，宿主自己的跟随把窗口带到末尾：上边能滚、下边到底": [
-        0
-      ],
-      "控制台没有异常": [
         0
       ]
     },
@@ -227,6 +195,11 @@
       ]
     },
     "packages/testing/reasoning-stream.mjs": {
+      "思考行自动收起时门真的滚动": [
+        0,
+        1,
+        20
+      ],
       "窗口跟着推理文本长高，长到推理能到的最大高度就停住": [
         0,
         1
@@ -291,7 +264,7 @@
       "再窄一些时控件仍留在卡片里，输入区也不再横向滚动": [
         0
       ],
-      "控制台没有异常 (line 245)": [
+      "控制台没有异常 (line 244)": [
         0
       ],
       "收起时那枚按钮不占位置，宿主自己的打开按钮在": [
@@ -304,7 +277,7 @@
       "按下它面板收起，宿主的打开按钮回到原处": [
         0
       ],
-      "控制台没有异常 (line 298)": [
+      "控制台没有异常 (line 297)": [
         0
       ],
       "工具调用单独成行": [
@@ -316,7 +289,7 @@
       "过程组收住了整轮": [
         1
       ],
-      "控制台没有异常 (line 313)": [
+      "控制台没有异常 (line 312)": [
         0
       ],
       "逐帧采样真的在跑": [
@@ -344,7 +317,7 @@
         0,
         10
       ],
-      "控制台没有异常 (line 360)": [
+      "控制台没有异常 (line 359)": [
         0
       ],
       "替身起飞后离开页面": [
@@ -365,32 +338,32 @@
       "Windows 标题栏标记下，替身里的祖先链不画伪元素": [
         0
       ],
-      "控制台没有异常 (line 432)": [
+      "控制台没有异常 (line 431)": [
         0
       ],
       "满屏的对话里也读到了飞行": [
         1,
         5
       ],
-      "替身落地时不低于它替换的那一行 (line 466)": [
+      "替身落地时不低于它替换的那一行 (line 465)": [
         0
       ],
       "落定后那一行带着字": [
         0
       ],
-      "控制台没有异常 (line 468)": [
+      "控制台没有异常 (line 467)": [
         0
       ],
       "没有页面形态的条目已逐条列出": [
         0
       ],
-      "控制台没有异常 (line 523)": [
+      "控制台没有异常 (line 522)": [
         0
       ],
       "脚本回答已渲染": [
         0
       ],
-      "控制台没有异常 (line 566)": [
+      "控制台没有异常 (line 563)": [
         0
       ]
     },
@@ -590,14 +563,8 @@
       "the drawn caret is placed with a transform": [
         0
       ],
-      "the running group stands open without the host's own disclosure being opened: its header still says folded, and the skin never pressed it": [
-        0
-      ],
       "a tier that does not cap its body is never pressed": [
         0
-      ],
-      "the reader's own press on the running group reaches the host, and the group keeps standing": [
-        1
       ],
       "a reasoning shorter than the cap stands in a window exactly as tall as the text, with nothing faded": [
         0,
@@ -625,10 +592,15 @@
         0,
         1
       ],
-      "a press on a DisclosureRow reaches the host, and the folded body is gone in the same task": [
+      "a press on a folding row is intercepted and handed to the real element when the door lands": [
+        0,
         1
       ],
-      "switching it off takes the mark and the fade, and lets the press land at once": [
+      "the wrapped row's door is handed back when it lands": [
+        0,
+        1
+      ],
+      "switching it off takes the mark and the fade, and lets the press land at once with nothing rolling": [
         1
       ],
       "the fade ships off: a streaming container gets no step highlights and no mark until the choice is turned on": [

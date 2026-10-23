@@ -91,7 +91,7 @@ test('a source ranked below the running ease is refused, an equal or higher one 
   setMotion(MOTION_FULL)
   const scroller = scrollBox(CONVERSATION_SCROLL_SELECTOR)
   expect(easeScrollFor(scroller, 'jump', () => 600, wanted)).toBe(true)
-  expect(writeScroll(scroller, 0, 'composer')).toBe(false)
+  expect(writeScroll(scroller, 0, 'fold')).toBe(false)
   expect(easeScrollToEndFor(scroller, 'follow', wanted)).toBe(false)
   expect(writeScroll(scroller, 300, 'jump')).toBe(true)
   expect(scroller.scrollTop).toBe(300)

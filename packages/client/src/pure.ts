@@ -21,6 +21,7 @@ export { chatFileOperation, chatFileOperationTitle, chatFileReadCard, chatFileRe
 export type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './features/chat-files/file-row-model'
 export { byDocumentOrder, createFileMerge, mergeViews, rowCarrier } from './features/chat-files/file-row-merge'
 export type { FileMergeRow } from './features/chat-files/file-row-merge'
+export { foldExpandedBody } from './features/chat-fold/fold-glide-parts'
 export { countProcessItems, summaryForm, summaryParts, summarySeparator, summaryText } from './features/chat-fold/process-summary'
 export {
   CHAT_DRAFT_HANDOFF_AT, CHAT_FLIGHT_MS, CHAT_LANDING_MS, CHAT_MAX_TEXT_LAYERS, CHAT_MORPH_END, CHAT_RISE_DAMPING, CHAT_RISE_OMEGA, CHAT_SHAPE_SAMPLES,

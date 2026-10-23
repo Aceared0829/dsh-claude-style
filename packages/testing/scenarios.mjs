@@ -19,11 +19,10 @@ import { recordProbes } from './contract-probe.mjs'
 import { sendPrompt, waitForTurn } from './prompt.mjs'
 import { importanceScenario } from './importance.mjs'
 import { readerScrollScenario } from './reader-scroll.mjs'
-import { hostFoldMotionScenario } from './host-fold-motion.mjs'
+import { doorPinScenario } from './door-pin.mjs'
 import { streamPaceScenario } from './stream-pace.mjs'
 import { motionScenario } from './motion.mjs'
 import { processSummaryScenario } from './process-summary.mjs'
-import { liveGroupFollowScenario } from './live-group-follow.mjs'
 import { fileMergeScenario } from './file-merge.mjs'
 import { reasoningStreamScenario } from './reasoning-stream.mjs'
 import { waitLineScenario } from './wait-line.mjs'
@@ -366,8 +365,8 @@ const SCENARIOS = {
    * only while the skin's follow moves the position (D40, D74).
    */
   readerScroll: readerScrollScenario({ check }),
-  /** The host's own fold motion over a group the reader closes at the tail: one close, no bounce, no slide under it (host-fold-motion.mjs, D71). */
-  hostFoldMotion: hostFoldMotionScenario({ check }),
+  /** A door rolling at the tail mid-stream leaves the status line pinned where it stood (door-pin.mjs, D40). */
+  doorPin: doorPinScenario({ check }),
   /** An answer arriving faster than a slide carries it: the composer stands still and the column stays on the pin (stream-pace.mjs, D71). */
   streamPace: streamPaceScenario({ check }),
   /** The transitions.dev surfaces where they move: greeting, panel, switch, tab, badge, menu (motion.mjs, D9). */
@@ -530,8 +529,6 @@ const SCENARIOS = {
   sidebarRail: sidebarRailScenario({ check }),
   /** The waiting line and the counted process headers (process-summary.mjs, D74). */
   processSummary: processSummaryScenario({ check }),
-  /** The running process group the skin shows while the host's disclosure stays closed: followed to its end, its edge fades the stylesheet's (live-group-follow.mjs). */
-  liveGroupFollow: liveGroupFollowScenario({ check }),
   /** The file-change rows of one file read as one row (file-merge.mjs). */
   fileMerge: fileMergeScenario({ check }),
   /** The reasoning's streamed window while the model thinks (reasoning-stream.mjs, D74). */

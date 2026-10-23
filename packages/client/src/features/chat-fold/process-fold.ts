@@ -1,39 +1,29 @@
-import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
-import { isChatFoldToggle } from './fold-toggle'
-import { PROCESS_SHOWN_ATTR } from '../../constants'
-import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, STREAMING_ATTRIBUTE, TURN_PROCESS_ANSWER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
+import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
+import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '../../shared/composer-caret'
+import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, STREAMING_ATTRIBUTE, TURN_PROCESS_ANSWER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 
 /**
- * A running process group stands open, and folds back once the piece of work
- * ends (the final answer is due) — without the skin ever opening the host's own
- * disclosure.
+ * A running process group opens by default and folds back once the piece of
+ * work ends (the final answer is due).
  *
  * The host gathers a turn's adjacent process content — reasoning, tool calls,
- * commands, file writes — into one process group, folded by its own inline
- * control. In the compact and standard tiers the body starts folded, so the
- * reader has to open it to see what the model is doing. That fold is searchable:
- * the body stays in the document, carrying hidden="until-found", which the HTML
- * rules render as content-visibility: hidden, and an author rule can lift. This
- * module therefore writes a mark on the group root and the stylesheet shows the
- * body while it stands; the host's disclosure, and the aria-expanded it names
- * the header with, are left exactly as they are. Nothing here presses a control,
- * so nothing has to hand the composer back its focus and selection, or the
- * scroller back its position.
- *
- * The cost, accepted with the shape: a screen reader announces the header as
- * folded while the body stands, and the first press on a running group opens the
- * host's own disclosure — the group stays shown and the mark comes off — so the
- * second press is the one that folds it.
- *
- * The detailed and fully-expanded tiers do not cap the body (it is open
- * throughout), and this module leaves them alone entirely — the test is the
- * group root's data-group-expanded-mode.
+ * commands, file writes — into one process group, opened and closed by its own
+ * inline control. In the compact and standard tiers the body starts folded,
+ * so the reader has to open it to see what the model is doing. The detailed
+ * and fully-expanded tiers do not cap the body (it is open throughout), and
+ * this module leaves them alone entirely — the test is the group root's
+ * data-group-expanded-mode.
  *
  * A group's phase is read off the shimmer in its header: the host attaches
  * data-shimmer (older hosts write data-text-shimmer) only while the process
- * section is still running. Command cards inside the group use the shimmer too,
- * so the phase is only ever asked of the header.
+ * section is still running. Whether the body is open is its own
+ * hidden attribute — the host hides searchably, setting hidden="until-found"
+ * when folded and removing it entirely when open. Both are semantic
+ * attributes. Command cards inside the group use the shimmer too, so the
+ * phase is only ever asked of the header.
  *
  * The group still belongs to the reader: a reader who touched a group in a
  * phase keeps it for that phase. The hand-over is per phase — folding a group
@@ -42,7 +32,7 @@ import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, PROCESS_ACTIVITY_SELECTOR, PRO
  *
  * A turn folds only when its answer takes the group's place. A turn the reader
  * stopped has no answer row, and the host folds its group itself at the end: the
- * mark stays on, so the work up to the stop remains on the page.
+ * skin opens it again, so the work up to the stop stays on the page.
  */
 /** The piece of work is over and the final answer is due. */
 const PROCESS_CLOSED = 'closed'
@@ -53,15 +43,15 @@ const ANSWER_ROW_SELECTOR = `[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`
  * Watch every process group on the page and bring each to what its phase
  * asks for.
  *
- * @returns teardown: the observer, the listeners and every mark go away.
+ * @returns teardown: the observer and the two listeners go away.
  */
 export function createProcessFold() {
-  /** Every process group on the page, resolved once and kept current by the bus (D40). */
-  const groups = observeMatches(PROCESS_GROUP_SELECTOR)
   /** The phase a group was in when the reader last touched it. */
   const touchedIn = new WeakMap<Element, string>()
   /** The groups whose turn has shown an answer row at some point. */
   const answeredGroups = new WeakSet<Element>()
+  /** The state a group's body stood in when it was last pressed, so a press that changed nothing is not retried. */
+  const attemptedIn = new WeakMap<Element, string>()
   /** Whether a scan is already queued. */
   let scanQueued = false
   /** The groups this batch of mutations touched. */
@@ -115,53 +105,101 @@ export function createProcessFold() {
     for (const group of groups) {
       // A frame sits between collecting and settling, and the group may be gone by then.
       if (!group.isConnected) continue
-      // The detailed and fully-expanded tiers show the body whole; a mark there
-      // would only fight the look the host gives them.
-      if (group.hasAttribute(PROCESS_EXPANDED_MODE_ATTRIBUTE)) {
-        group.removeAttribute(PROCESS_SHOWN_ATTR)
-        continue
-      }
+      // The detailed and fully-expanded tiers do not cap the body, and the
+      // host keeps the header in the DOM there (wrapped in a hidden shell), so
+      // pressing it would only flip the host's own open state with nothing for
+      // the reader to see.
+      if (group.hasAttribute(PROCESS_EXPANDED_MODE_ATTRIBUTE)) continue
       const header = group.querySelector(PROCESS_ACTIVITY_SELECTOR)
       const body = group.querySelector(PROCESS_BODY_SELECTOR)
       if (!(header instanceof HTMLElement) || body === null) continue
       const phase = header.querySelector(SHIMMER_SELECTOR) === null ? PROCESS_CLOSED : RUNNING_STATE
-      // A closed group folds away only when its turn's answer takes its place: a
-      // stopped turn never gets one, and its work is all the page has below it.
+      const closed = phase === PROCESS_CLOSED
+      // The reader has decided this group's state in this phase: leave it.
+      if (touchedIn.get(group) === phase) continue
+      // A closed group folds only when the turn's answer takes its place. A
+      // stopped turn never gets one, and the host folds the group itself at the
+      // end; this is the press that opens it again, so the work stays on screen.
       const flow = group.closest(CHAT_FLOW_SELECTOR)
-      const shown = phase === RUNNING_STATE || (flow !== null && !showsAnswer(group, flow))
-      // The reader has decided this group's state in this phase: the host's own
-      // disclosure is what the group follows from here.
-      const wanted = shown && touchedIn.get(group) !== phase
-      if (wanted === group.hasAttribute(PROCESS_SHOWN_ATTR)) continue
-      if (wanted) group.setAttribute(PROCESS_SHOWN_ATTR, '')
-      else group.removeAttribute(PROCESS_SHOWN_ATTR)
+      const desiredHidden = closed && (flow === null || showsAnswer(group, flow))
+      if (body.hasAttribute('hidden') === desiredHidden) continue
+      // A group the reader folded by hand stays folded.
+      if (!desiredHidden && touchedIn.has(group)) continue
+      // A press that changed nothing will not change anything next time either.
+      // Both sides name the state the body stands in, so the host's own fold
+      // later in the turn is a state this module has not pressed from.
+      const standing = `${phase}:${body.hasAttribute('hidden') ? 'shut' : 'open'}`
+      if (attemptedIn.get(group) === standing) continue
+      // The reader is part-way through an input-method composition. The press
+      // below takes the focus off the editor and hands it back, and a focus or
+      // selection moved under an uncommitted composition makes the browser drop
+      // the letters typed so far: the pinyin reverts to its raw keys and the
+      // candidate window opens again. Left unrecorded, so the group is settled
+      // once the composition has landed (compositionend below).
+      if (composerComposing()) continue
+      // The host's header onClick focuses the control, which is meant for a
+      // real press. A programmatic one must not take the focus away from the
+      // reader, or the browser draws a focus ring on the header that just
+      // opened, as if someone had pressed Tab.
+      const previousFocus = document.activeElement
+      // The composer's selection is the reader's caret, and the restore below
+      // is a bare focus: it would take the caret back to the start of the draft.
+      // The range travels across the focus instead (shared/composer-caret.ts).
+      const composerCaret = captureComposerCaret()
+      // The same focus() also scrolls the header into view, and that scroll
+      // looks to the host exactly like the reader scrolling: its follow is
+      // suspended for a 500 ms sampling window, in which a resize follows
+      // nothing, and by the time it settles the content has grown past the
+      // line — the follow switches off with the reader never having touched
+      // the keyboard. So the position is put back after the press.
+      const scroller = header.closest<HTMLElement>(CONVERSATION_SCROLL_SELECTOR)
+      const scrollTop = scroller === null ? null : scroller.scrollTop
+      // Whether the reader was at the bottom is read before the press: the
+      // press itself changes the layout.
+      const wasAtBottom = scroller !== null
+        && scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= FOLLOW_THRESHOLD_PX
+      // This press is ours: neither the fold glide nor the thinking row's side
+      // may read it as the reader's intent.
+      beginChatFoldToggle()
+      try {
+        header.click()
+      } finally {
+        endChatFoldToggle()
+      }
+      // A press that landed is forgotten: a fold the host makes later from the
+      // same state is a new moment and gets its own press. One that changed
+      // nothing is recorded against the state it was made from, so it is never
+      // repeated.
+      if (body.hasAttribute('hidden') === desiredHidden) attemptedIn.delete(group)
+      else attemptedIn.set(group, standing)
+      // The position goes back, but not to a place short of the end for a
+      // reader who was at the end: that write is a scroll too, and the host
+      // would read it as the reader moving and switch its follow off. At the
+      // bottom it is pinned there.
+      if (scroller !== null && scrollTop !== null && scroller.scrollTop !== scrollTop) {
+        writeScroll(scroller, wasAtBottom ? scroller.scrollHeight : scrollTop, 'fold')
+      }
+      // With the reader already on the header this puts the focus back where
+      // it was and changes nothing.
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) focusKeepingComposerCaret(previousFocus, composerCaret)
+      if (document.activeElement === header) header.blur()
     }
   }
 
   /** Settle every group already on the page once, right after install. */
   const syncEveryGroup = () => {
-    syncGroups(groups.all())
+    syncGroups(document.querySelectorAll(PROCESS_GROUP_SELECTOR))
   }
 
   /** Record that the reader, and not this module, just decided a group's state. */
   const rememberReaderTouched = (event: Event) => {
-    // A thinking row inside the group is folded by the reasoning's own module;
-    // that press bubbles here and is not the reader deciding this group.
     if (isChatFoldToggle()) return
     const target = event.target
     if (!(target instanceof Element)) return
-    // The header control is the one press that decides the group: the host flips
-    // its own disclosure there. A press anywhere else in the body opens a card or
-    // follows a link and leaves the group standing.
-    const header = target.closest(PROCESS_ACTIVITY_SELECTOR)
-    if (!(header instanceof HTMLElement)) return
-    const group = header.closest(PROCESS_GROUP_SELECTOR)
+    const group = target.closest(PROCESS_GROUP_SELECTOR)
     if (group === null) return
-    // The mark comes off in the same task as the press: the host redraws the
-    // header with the direction of its own state, and the stylesheet must no
-    // longer be holding the opened look over it.
-    group.removeAttribute(PROCESS_SHOWN_ATTR)
-    touchedIn.set(group, header.querySelector(SHIMMER_SELECTOR) !== null ? RUNNING_STATE : PROCESS_CLOSED)
+    const header = group.querySelector(PROCESS_ACTIVITY_SELECTOR)
+    touchedIn.set(group, header !== null && header.querySelector(SHIMMER_SELECTOR) !== null ? RUNNING_STATE : PROCESS_CLOSED)
   }
 
   // Streaming changes the DOM far faster than this needs to run, so one scan
@@ -192,7 +230,7 @@ export function createProcessFold() {
     if (touchedGroups.size === known) return
     if (scanQueued) return
     scanQueued = true
-    // The scan reads each one's phase and writes the mark: write phase (D40).
+    // The scan reads each one's state and folds it open or shut: write phase (D40).
     requestFrame({
       write() {
         scanQueued = false
@@ -202,25 +240,31 @@ export function createProcessFold() {
       },
     })
   }
-
+  /**
+   * Settle everything once a composition has landed: a scan that ran while one
+   * was in flight left its groups alone (syncGroups), and the streaming may
+   * have stopped before another batch arrived to ask again.
+   */
+  const onCompositionEnd = () => {
+    requestFrame({ write() { syncEveryGroup() } })
+  }
   const stopMutations = subscribeMutations(document.body, {
     subtree: true,
     childList: true,
     attributes: true,
-    // A tier switch adds or removes the group root's expand-mode attribute, and
-    // the host folding a stopped turn's body changes the hidden attribute; both
-    // batches have to be scanned again.
+    // The group root's expand-mode attribute is in range too: switching tiers
+    // adds or removes it, and that batch has to be scanned again.
     attributeFilter: [SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, 'hidden', PROCESS_EXPANDED_MODE_ATTRIBUTE, STREAMING_ATTRIBUTE],
   }, onRecords)
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)
+  document.addEventListener('compositionend', onCompositionEnd, true)
   syncEveryGroup()
 
   return () => {
     stopMutations()
     document.removeEventListener('click', rememberReaderTouched, true)
     document.removeEventListener('keydown', rememberReaderTouched, true)
-    for (const group of groups.all()) group.removeAttribute(PROCESS_SHOWN_ATTR)
-    groups.release()
+    document.removeEventListener('compositionend', onCompositionEnd, true)
   }
 }

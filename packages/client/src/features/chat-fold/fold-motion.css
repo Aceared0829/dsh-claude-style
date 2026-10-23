@@ -1,4 +1,4 @@
-/* ---------- chat fold: a body's entrance ---------- */
+/* ---------- chat fold: a body's entrance, and the door while it rolls ---------- */
 /* The host's DisclosureRow unmounts a body whole when it closes ({open &&
    children}, ui-primitives' DisclosureRow.tsx), so the frame it is inserted on is
    the only chance to attach a transition: @starting-style gives it a start value
@@ -65,6 +65,19 @@ body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-chat-flow] :is([dat
    this one rule covers both it and the explicit "reduced". */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] [data-chat-flow] :is([data-disclosure-row], [data-disclosure-header]) ~ *:not([data-turn-process-member] *, [data-turn-trigger] *):is([data-disclosure-row] ~ *, [data-disclosure-header] ~ * *) {
   transition: none;
+}
+
+/* While the door rolls (fold-glide.ts hangs the mark), every card inside is laid
+   out at its natural height rather than squeezed: a body is often a flex column,
+   and with the height pressed the flex would shrink away the card that can shrink
+   (a code card's automatic minimum height is 0) first, so a run_code body of
+   "code card plus output card" would roll in two stages. Marked, each card takes
+   its own height and only the frame clips. The mark goes away with the door and
+   the layout returns to the host's own — at the end point the two arrangements
+   agree to the pixel. !important because nothing may change it during those
+   200 ms. */
+body[data-dsh-claude-style] [data-dsh-claude-rolling] > * {
+  flex: none !important;
 }
 
 /* ---------- chat fold: the reasoning's streamed window ---------- */

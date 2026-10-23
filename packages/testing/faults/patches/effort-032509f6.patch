@@ -1,0 +1,17 @@
+diff --git a/packages/client/src/features/effort/room.ts b/packages/client/src/features/effort/room.ts
+--- a/packages/client/src/features/effort/room.ts
++++ b/packages/client/src/features/effort/room.ts
+@@ -28,6 +28,13 @@ export const EFFORT_ROW_SELECTOR = '[data-dsh-claude-part~="row"]'
+ export function reserveEffortRoom(modelBtn: HTMLElement, need: number): DOMRect {
+   if (modelBtn.style.maxWidth !== '') modelBtn.style.maxWidth = ''
+   if (modelBtn.style.marginRight !== `${need}px`) modelBtn.style.marginRight = `${need}px`
++  const row = modelBtn.closest(EFFORT_ROW_SELECTOR)
++  if (row !== null && row.scrollWidth > row.clientWidth) {
++    const over = row.scrollWidth - row.clientWidth
++    // The overflow and the cap are both lengths the page reads, while the box
++    // the trigger is drawn in comes back in the window's pixels.
++    modelBtn.style.maxWidth = `${Math.max(0, Math.round(modelBtn.offsetWidth - over))}px`
++  }
+   return modelBtn.getBoundingClientRect()
+ }
+ 
