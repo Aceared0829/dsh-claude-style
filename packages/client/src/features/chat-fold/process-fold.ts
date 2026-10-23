@@ -30,9 +30,11 @@ import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, 
  * while its process still runs means he does not want to watch it right now,
  * and folding it back when the section ends would mean nothing.
  *
- * A turn folds only when its answer takes the group's place. A turn the reader
- * stopped has no answer row, and the host folds its group itself at the end: the
- * skin opens it again, so the work up to the stop stays on the page.
+ * A closed group folds once something takes its place: a later process group
+ * of the same turn, or the turn's answer. Only the turn's newest group stays
+ * open while the model works. A turn the reader stopped has no answer row, and
+ * the host folds its groups itself at the end: the skin opens the last one
+ * again, so the work up to the stop stays on the page.
  */
 /** The piece of work is over and the final answer is due. */
 const PROCESS_CLOSED = 'closed'
@@ -99,6 +101,21 @@ export function createProcessFold() {
       }
       return turns.has(turn)
     }
+    /** Each turn's last process group, per flow, read once for this scan. */
+    const lastGroups = new Map<Element, Map<string, Element>>()
+    /** Whether a later process group of the same turn stands below this one. */
+    const followedInTurn = (group: Element, flow: Element) => {
+      const turn = group.getAttribute(CHAT_TURN_ATTRIBUTE)
+      if (turn === null) return false
+      let last = lastGroups.get(flow)
+      if (last === undefined) {
+        last = new Map()
+        // Document order: the turn's last group is the one written last.
+        for (const each of flow.querySelectorAll(PROCESS_GROUP_SELECTOR)) last.set(each.getAttribute(CHAT_TURN_ATTRIBUTE) ?? '', each)
+        lastGroups.set(flow, last)
+      }
+      return last.get(turn) !== group
+    }
     for (const group of groups) {
       // A frame sits between collecting and settling, and the group may be gone by then.
       if (!group.isConnected) continue
@@ -114,11 +131,12 @@ export function createProcessFold() {
       const closed = phase === PROCESS_CLOSED
       // The reader has decided this group's state in this phase: leave it.
       if (touchedIn.get(group) === phase) continue
-      // A closed group folds only when the turn's answer takes its place. A
-      // stopped turn never gets one, and the host folds the group itself at the
-      // end; this is the press that opens it again, so the work stays on screen.
+      // A closed group folds once a later group of its turn or the turn's answer
+      // takes its place. The last group of a stopped turn has neither, and the
+      // host folds it itself at the end; this is the press that opens it again,
+      // so the work stays on screen.
       const flow = group.closest(CHAT_FLOW_SELECTOR)
-      const desiredHidden = closed && (flow === null || showsAnswer(group, flow))
+      const desiredHidden = closed && (flow === null || followedInTurn(group, flow) || showsAnswer(group, flow))
       if (body.hasAttribute('hidden') === desiredHidden) continue
       // A group the reader folded by hand stays folded.
       if (!desiredHidden && touchedIn.has(group)) continue
@@ -224,8 +242,15 @@ export function createProcessFold() {
       if (group !== null) touchedGroups.add(group)
       for (const node of record.addedNodes) {
         if (!(node instanceof HTMLElement)) continue
-        if (node.matches(PROCESS_GROUP_SELECTOR)) touchedGroups.add(node)
-        for (const found of node.querySelectorAll(PROCESS_GROUP_SELECTOR)) touchedGroups.add(found)
+        // A new group takes the place of the ones before it in its turn. A group
+        // already queued came in with its turn, so a whole session mounting at
+        // once walks each turn one time.
+        const added = node.matches(PROCESS_GROUP_SELECTOR) ? [node] : node.querySelectorAll(PROCESS_GROUP_SELECTOR)
+        for (const found of added) {
+          if (touchedGroups.has(found)) continue
+          touchedGroups.add(found)
+          settleTurnOf(found)
+        }
         // The answer row the group waits for: its arrival is when the fold is due.
         const answer = node.matches(ANSWER_ROW_SELECTOR) ? node : node.querySelector(ANSWER_ROW_SELECTOR)
         if (answer !== null) settleTurnOf(answer)

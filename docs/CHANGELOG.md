@@ -10,9 +10,17 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 改善长会话之间切换的卡顿：观察总线上一次挂载的大批次改为绘制后按 8 毫秒分片派发，新增节点的祖先去重从逐个 contains 改为沿树向上查找，过程组首次折叠同步延后一拍。
 
+### 问题修复
+
+- 修复模型在一轮中分多步输出时，前面几段思考与工具调用的过程组不再自动收起的问题：新的过程组出现后，同一轮里之前的过程组随即收起，只展开最新的一组。
+
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve switching between long sessions: a large mutation batch is dispatched after paint in 8 ms slices, added-node dedup walks up the tree instead of a contains check per earlier node, and the process groups' first fold sync waits one frame.
+
+### Bug Fixes
+
+- Fix earlier process groups staying open when the model works in several steps within one turn: once a new process group appears, the earlier groups of that turn fold, and only the newest one stays open.
 
 ## [0.18.4] - 2026-10-23
 
