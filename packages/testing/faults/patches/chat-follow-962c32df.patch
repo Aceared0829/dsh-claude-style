@@ -1,5 +1,5 @@
 diff --git a/packages/client/src/core/scheduler.ts b/packages/client/src/core/scheduler.ts
-index f5cd438..d17257a 100644
+index db00a7c3..7adaf4fd 100644
 --- a/packages/client/src/core/scheduler.ts
 +++ b/packages/client/src/core/scheduler.ts
 @@ -8,6 +8,7 @@ import type { FooterHandle } from '../features/account/account-footer'
@@ -7,10 +7,10 @@ index f5cd438..d17257a 100644
  import type { ChatFoldHandle } from '../features/chat-fold/chat-fold'
  import type { ComposerHandle } from '../features/composer/composer'
 +import type { ChatSendHandle } from '../features/chat-send/send-flight'
+ import type { MeterRingHandle } from '../features/context-stats/meter-ring'
  import type { ModelHandle } from '../features/model/model-picker'
  import type { PeakRateHandle } from '../features/peakrate/peakrate'
- import type { QuickProvidersHandle } from '../features/settings/quick-providers'
-@@ -40,7 +41,7 @@ export interface Handles {
+@@ -42,7 +43,7 @@ export interface Handles {
    chatWait: FeatureHandle
    chatReveal: FeatureHandle
    chatFiles: FeatureHandle
@@ -20,7 +20,7 @@ index f5cd438..d17257a 100644
    viewTabs: FeatureHandle
    headerBand: FeatureHandle
 diff --git a/packages/client/src/features/chat-follow/chat-follow.manifest.ts b/packages/client/src/features/chat-follow/chat-follow.manifest.ts
-index 4c3b591..1926064 100644
+index 4c3b5913..19260649 100644
 --- a/packages/client/src/features/chat-follow/chat-follow.manifest.ts
 +++ b/packages/client/src/features/chat-follow/chat-follow.manifest.ts
 @@ -3,7 +3,9 @@ import type { FeatureManifest } from '../../core/feature'
@@ -35,7 +35,7 @@ index 4c3b591..1926064 100644
    pref: 'chatAnimations',
    yieldsTo: 'dsh-chat-ux',
 diff --git a/packages/client/src/features/chat-follow/chat-follow.ts b/packages/client/src/features/chat-follow/chat-follow.ts
-index e94beb4..761a3f7 100644
+index 0b599c78..47a01f46 100644
 --- a/packages/client/src/features/chat-follow/chat-follow.ts
 +++ b/packages/client/src/features/chat-follow/chat-follow.ts
 @@ -6,7 +6,7 @@ import { createChatProcessFollow } from './process-follow'
@@ -152,7 +152,7 @@ index e94beb4..761a3f7 100644
      columnSlide.onfinish = () => {
        if (slide === running) slide = null
      }
-@@ -321,9 +340,10 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
+@@ -322,9 +341,10 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
        before = slideHeight
        const delta = box - slideHeight
        slideHeight = box
@@ -166,7 +166,7 @@ index e94beb4..761a3f7 100644
      }
      holdCheck()
      // Only a column that already overflowed had its end pinned by the whole
-@@ -471,8 +491,18 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
+@@ -473,8 +493,18 @@ export function createChatFollowGuard(foldBusy: () => boolean) {
   * manifest); this teardown hands the chat area back whole.
   */
  export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
@@ -188,7 +188,7 @@ index e94beb4..761a3f7 100644
    const tailStamp = createStamp<HTMLElement>(FOLLOW_TAIL_ATTR)
    const cards = observeComposerCards()
 diff --git a/packages/client/src/features/chat-send/send-flight.ts b/packages/client/src/features/chat-send/send-flight.ts
-index 02095dc..ed6bd7a 100644
+index 02095dc4..ed6bd7a6 100644
 --- a/packages/client/src/features/chat-send/send-flight.ts
 +++ b/packages/client/src/features/chat-send/send-flight.ts
 @@ -12,6 +12,7 @@ import { CHAT_USER_ROW_SELECTOR, userBubble } from '@dsh-claude-style/engine/cha
@@ -240,7 +240,7 @@ index 02095dc..ed6bd7a 100644
      unwatchRows()
      origin = null
 diff --git a/packages/client/src/features/chat-send/send-grow.ts b/packages/client/src/features/chat-send/send-grow.ts
-index e9aa64c..5df3519 100644
+index e9aa64c3..5df35192 100644
 --- a/packages/client/src/features/chat-send/send-grow.ts
 +++ b/packages/client/src/features/chat-send/send-grow.ts
 @@ -20,7 +20,10 @@ import { SUBMISSION_ECHO_SELECTOR } from '@dsh-claude-style/contracts/dom'
@@ -321,68 +321,8 @@ index e9aa64c..5df3519 100644
 +  const entering = () => hidden !== null || marked !== null
 +  return { stop, entering }
  }
-diff --git a/packages/client/src/shared/motion.ts b/packages/client/src/shared/motion.ts
-index 827da5e..318da09 100644
---- a/packages/client/src/shared/motion.ts
-+++ b/packages/client/src/shared/motion.ts
-@@ -34,3 +34,55 @@ export function motionEase(token: string): string {
-   }
-   return value
- }
-+
-+/** The curves already parsed, by token: a curve is read at most once per token. */
-+const CURVES = new Map<string, readonly [number, number, number, number]>()
-+
-+/** A cubic-bezier token's four control points, in the form the CSS function takes them. */
-+function curveOf(token: string): readonly [number, number, number, number] {
-+  const held = CURVES.get(token)
-+  if (held !== undefined) return held
-+  const value = motionEase(token)
-+  const match = /^cubic-bezier\(([^)]+)\)$/.exec(value)
-+  const parts = match === null ? [] : match[1].split(',').map(part => Number(part.trim()))
-+  const [x1, y1, x2, y2] = parts
-+  if (parts.length !== 4 || x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined
-+    || ![x1, y1, x2, y2].every(Number.isFinite)) {
-+    throw new Error(`shared/motion: ${token} is "${value}", which has no control points to evaluate`)
-+  }
-+  const points = [x1, y1, x2, y2] as const
-+  CURVES.set(token, points)
-+  return points
-+}
-+
-+/** One coordinate of a cubic bezier whose ends are 0 and 1. */
-+function bezierAt(t: number, first: number, second: number) {
-+  const rest = 1 - t
-+  return 3 * rest * rest * t * first + 3 * rest * t * t * second + t * t * t
-+}
-+
-+/**
-+ * How far along a cubic-bezier token's own curve a linear progress stands: the
-+ * value the browser paints for an animation whose easing is that token.
-+ *
-+ * `x(t) = progress` is solved on the curve and the answer is `y(t)`. Bisection
-+ * assumes x rises with t, which is what the curves this table carries do; the
-+ * two sides have to agree, or a slide restarted from this reading would start
-+ * where the frame before it did not stand.
-+ *
-+ * @param token - the curve's token name.
-+ * @param progress - the linear share of the animation's duration, 0 to 1.
-+ */
-+export function motionEaseAt(token: string, progress: number): number {
-+  const [x1, y1, x2, y2] = curveOf(token)
-+  let low = 0
-+  let high = 1
-+  // 24 halvings put the answer within a ten-millionth, past what a pixel of
-+  // any of these travels can show, at a fixed cost.
-+  for (let step = 0; step < 24; step += 1) {
-+    const middle = (low + high) / 2
-+    if (bezierAt(middle, x1, x2) < progress) low = middle
-+    else high = middle
-+  }
-+  return bezierAt((low + high) / 2, y1, y2)
-+}
 diff --git a/packages/engine/src/scroll-ease.ts b/packages/engine/src/scroll-ease.ts
-index f1fb251..8a9de21 100644
+index 056308d1..1dc94ad4 100644
 --- a/packages/engine/src/scroll-ease.ts
 +++ b/packages/engine/src/scroll-ease.ts
 @@ -56,9 +56,8 @@ const SCROLL_EASE_MAX_SPEED_PX_S = 2400
