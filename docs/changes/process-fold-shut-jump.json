@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复收起过程组时，标题下方的内容先跳动一下、再被平滑推上来的问题：收起改为一段连续的动画，标题与组体之间的间距随组体一起收起。",
+  "en": "Fix the content under a process group jumping once and then sliding up when the group is folded: the fold is one continuous motion, and the gap under the header closes with the body."
+}

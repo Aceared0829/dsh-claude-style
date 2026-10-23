@@ -103,3 +103,17 @@ body[data-dsh-claude-style] .dsh-claude-sweep-glyphs.dsh-claude-process-summary-
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-process-summary-digit {
   animation: none;
 }
+
+/* ---------- chat fold: the gap under an open group's header ---------- */
+/* The host puts the gap between an open header and its body in the header's own
+   bottom padding, which goes the moment the header reads closed, before the body
+   has moved. As the body's top margin it leaves with the body: the host's own
+   roll takes height and top margin down together, and the fold glide's door
+   stops at the header's height with nothing left to drop afterwards. */
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process] button[data-process-activity][aria-expanded="true"] {
+  padding-bottom: 0;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-chat-fold] [data-step-process] > [data-step-process-body]:not([hidden]) {
+  margin-top: 8px;
+}

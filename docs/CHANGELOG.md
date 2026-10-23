@@ -14,6 +14,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 修复账户菜单在页面缩放或窗口较矮时上方放不下、翻到账户行下方并盖住账户行的问题：上下都放不下的菜单留在空间更大的一侧，贴着窗口边缘展开。
 - 修复「工作步骤收起时机」设为「下次有新消息时」后，最新一轮结束时过程组不再自动折叠的问题：回答出现后，这一轮的过程组照常收起。
+- 修复收起过程组时，标题下方的内容先跳动一下、再被平滑推上来的问题：收起改为一段连续的动画，标题与组体之间的间距随组体一起收起。
 - 修复在对话里滚动时画面经常跳到别处的问题：离屏的对话行只在按真实尺寸排过一次版之后才跳过排版，滚动时不再按估算高度突然改变位置。
 - 修复页面缩放不为 100% 时侧边栏的内容越出它自己那一列、在列的右缘被截断的问题：侧边栏内容与拖拽手柄改为与侧边栏列同宽。
 - 修复宿主进程在会话历史较大时持续满核：用量折叠改为逐个会话隔离读取失败，一次读取失败不再作废整轮并让记录无法落盘；单轮耗时超过刷新周期时，下一轮等到本轮耗时两倍之后开始，不再背靠背重跑。
@@ -29,6 +30,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Fix the account menu flipping below the account row and covering it when the page zoom or a short window leaves too little room above: a menu that fits on neither side stays on the roomier one, held against the window's edge.
 - Fix process groups no longer folding at the end of the latest turn when When to Collapse Work Details is set to On next message: once the answer is in, the turn's process groups fold as usual.
+- Fix the content under a process group jumping once and then sliding up when the group is folded: the fold is one continuous motion, and the gap under the header closes with the body.
 - Fix the conversation jumping elsewhere while the reader scrolls: an off-screen row is skipped only after it has been laid out at its real size, so no row takes its height under the reader.
 - Fix the sidebar's content overflowing its own column and being cut off at the column's right edge when the page zoom is not 100%: the sidebar's content and its drag handle now take the column's width.
 - Fix the host process pegging a core on a large session history: the usage roll-up isolates a log it cannot read, so one failed read no longer voids the pass and leaves the record unwritten, and a pass that outlasts the refresh period waits twice its own length before the next one starts.

@@ -1,9 +1,9 @@
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
-import { motionReduced } from '../../core/prefs'
+import { motionReduced, systemPrefersReducedMotion } from '../../core/prefs'
 import { FOLD_INTENT_TTL_MS, FOLD_POPUP_SELECTOR, FOLD_ROLL_MS, FOLD_SKIPPED_CONTROL_SELECTOR, FOLD_VISIBLE_SHARE, foldBeginHeightClip, foldConfirmCollapsed, foldControlAt, foldControlAtBottom, foldExpandedBody, foldHoldThroughStalls, foldProcessBody, foldSettleAfter, foldVisibleReach, foldWatchReader, markChatFoldBusy } from './fold-glide-parts'
 import type { FoldWatch } from './fold-glide-parts'
 import { beginChatFoldToggle, chatFoldPressReading, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
-import { CHAT_FLOW_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, CHAT_MOTION_SCOPE_SELECTOR, PROCESS_GROUP_SELECTOR, THINK_ROW_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { joinScrollOwner } from '@dsh-claude-style/engine/scroll-owner'
 import { motionEase } from '../../shared/motion'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
@@ -309,6 +309,10 @@ export function installChatFoldGlide() {
       return
     }
     if (reduceMotion()) return
+    // Inside its motion scope the host rolls a group's body shut on its own
+    // clock, from the body's full height: a door pressed first would spring back
+    // open when that roll starts.
+    if (groupBody !== null && groupBody.closest(CHAT_MOTION_SCOPE_SELECTOR) !== null && !systemPrefersReducedMotion()) return
     // The closing direction: intercept the click, let the element roll up, and
     // hand the click back when it is done.
     event.stopPropagation()
@@ -321,10 +325,11 @@ export function installChatFoldGlide() {
     rollShut({
       target: groupRoot !== null ? groupRoot : body,
       // A group root stops at the header's own stretch: once the body is
-      // folded away, that is what the root's height comes to.
+      // folded away, that is what the root's height comes to. The body's top
+      // margin leaves with it (fold.css).
       floor: groupRoot === null
         ? 0
-        : Math.max(0, inPageBox(groupRoot.getBoundingClientRect()).height - inPageBox(body.getBoundingClientRect()).height),
+        : Math.max(0, inPageBox(groupRoot.getBoundingClientRect()).height - inPageBox(body.getBoundingClientRect()).height - parseFloat(getComputedStyle(body).marginTop)),
       collapsed,
       control,
       own: isChatFoldToggle(),

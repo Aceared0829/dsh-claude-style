@@ -149,7 +149,7 @@ export function clearPrefsAttributes() {
 }
 
 /** Whether the operating system asks for reduced motion right now. */
-function systemPrefersReducedMotion() {
+export function systemPrefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 

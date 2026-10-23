@@ -123,6 +123,13 @@ export const PROCESS_BODY_SELECTOR = '[data-step-process-body]'
 export const PROCESS_CONTENT_SELECTOR = '[data-step-process-content]'
 /** On a process group's root while this tier does not cap the body (detailed, fully expanded). */
 export const PROCESS_EXPANDED_MODE_ATTRIBUTE = 'data-group-expanded-mode'
+/**
+ * On the chat column while the host animates its own folds: under the
+ * next-input collapse timing, while a turn runs and shortly after. Inside it the
+ * host fades and rolls a process group's body shut itself, unless the system
+ * asks for reduced motion.
+ */
+export const CHAT_MOTION_SCOPE_SELECTOR = '[data-chat-motion]'
 /** On every chat row: the turn the row belongs to. */
 export const CHAT_TURN_ATTRIBUTE = 'data-chat-turn'
 /** On a settled user row; the submission hold keys on its arrival. */
