@@ -1,10 +1,10 @@
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { QUIET_ATTR } from '../../constants'
-import { conversationSessionId, findConversationSession } from '@dsh-claude-style/engine/host'
+import { conversationSessionId, findConversationSession, findForeground } from '@dsh-claude-style/engine/host'
 import { motionReduced } from '../../core/prefs'
 import { createTurnNavHost } from './turn-nav-host'
 import type { TurnItem } from './turn-nav-host'
-import { CHAT_TURN_ATTRIBUTE, FOREGROUND_SELECTOR, PEER_SHEET_SELECTOR, TURN_RAIL_CURRENT_SELECTOR, TURN_RAIL_MARK_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_TURN_ATTRIBUTE, PEER_SHEET_SELECTOR, TURN_RAIL_CURRENT_SELECTOR, TURN_RAIL_MARK_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { buildElement, closestFrom } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CLOSE_DELAY, closeOtherPopovers, createHoverIntent, registerPopover, unregisterPopover } from '../../shared/popover'
 import { inPageBox } from '../../shared/page-zoom'
@@ -474,7 +474,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // dsh-plugin-msg-nav answers the same keys with its own jump; two jumps
     // from one key fight over the view, so the keys stay with it.
     if (document.head.querySelector(MSG_NAV_STYLE_SELECTOR) !== null) return
-    if (holdsDraft(event.target) || document.querySelector(FOREGROUND_SELECTOR) !== null) return
+    if (holdsDraft(event.target) || findForeground() !== null) return
     const found = host.findRail()
     const sessionId = conversationSessionId(findConversationSession())
     if (found === null || sessionId === null || !host.railShown(found)) return
