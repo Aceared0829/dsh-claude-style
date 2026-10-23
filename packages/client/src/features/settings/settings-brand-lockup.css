@@ -108,8 +108,9 @@ body[data-dsh-claude-style] .dsh-claude-brand-seat:disabled {
 /* The art: the brand's own or the reader's picture, at the cap height or the
    width its own proportions give it. A shape carries the ink and no picture:
    the drawing is the mask and the ink fills it, the same pair the sidebar
-   paints (theme/sidebar.css). The ink is the brand's, so the DeepSeek word
-   stays its blue (--dsh-claude-logo-ink). */
+   paints (theme/sidebar.css). The ink is --dsh-claude-logo-ink, so the
+   DeepSeek whale and word stand in the colour the image-colour choice names —
+   its blue by default — exactly as they do in the sidebar. */
 body[data-dsh-claude-style] .dsh-claude-brand-art {
   display: block;
   flex: none;

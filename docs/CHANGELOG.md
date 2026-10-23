@@ -15,6 +15,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 跟进 Claude 桌面版的浅色与深色画布：浅色画布改为 #FFFFFF、侧栏 #FAFAFA，深色画布改为 #191919、侧栏 #1F1F1F，整套色阶随新的画布种子一起更新。
 - 跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FAFAFA。
+- 改善流式回答的 token 估算：每次工具调用按该工具自己的价格计入，代替统一的固定值，读取类调用不再被高估、写入类调用不再被低估；每个模型的估算再按自身已结算的步骤在 0.9–1.1 之间自动微调倍率。
 
 ### 问题修复
 
@@ -23,6 +24,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复 DeepSeek 配色下用户消息气泡显示为宿主淡灰色的问题：气泡改用该颜色卡的淡蓝色 #ECF0FF，与主题一致（#134）。
 - 修复设置了页面缩放后窄窗口布局仍按未缩放的窗口宽度切换的问题：首页统计格、封禁页与输入行上下文计量环旁的数字改按页面自身的宽度收窄（#129）。
 - 修复设置页「外观 → 配色」的颜色卡只能选中自定义卡的问题：Claude 与 DeepSeek 卡现在也能点选，各自换上该卡的配色而不改动通用页的品牌标志，选中的卡上给出「恢复跟随品牌」，把配色交回当前品牌（#128）。
+- 修复品牌标志的颜色只作用于上传图片的问题：该行由「图片颜色」改为「标志颜色」，内置品牌标志、上传的标志图与文字标志（含账号行头像里的那张）都按「强调色」或「文字色」上色，设置页的品牌区预览当场显示所选颜色，「强调色」一项按当前配色卡的颜色上色（#135）。
 
 <h3 id="en-unreleased">New Features</h3>
 
@@ -33,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Follow Claude desktop's light and dark canvases: the light canvas is #FFFFFF with a #FAFAFA sidebar, the dark canvas #191919 with a #1F1F1F sidebar, and the whole ladder follows the new canvas seeds.
 - Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FAFAFA.
+- Improve the streaming token estimate: a tool call now carries its own tool's price instead of one flat figure, so a read is no longer overpriced and a write no longer underpriced; each model's estimate is also scaled between 0.9 and 1.1 from its own settled steps.
 
 ### Bug Fixes
 
@@ -41,6 +44,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the user message bubble showing the host's light grey under the DeepSeek palette: the bubble takes that colour card's light blue #ECF0FF instead (#134).
 - Fix the narrow-window layouts switching on the unzoomed window width under page zoom: the home page's stat cells, the ban screen and the number beside the composer row's context ring now narrow with the page's own width (#129).
 - Fix the colour cards under Appearance → Colours accepting only the custom card: the Claude and DeepSeek cards can now be picked too, each painting its own palette while the theme style's brand mark stays, and a picked card offers “Follow the brand again” to hand the colours back (#128).
+- Fix the brand mark's colour reaching only uploaded images: the row is now “Mark colours”, the built-in mark, an uploaded mark and wordmark — the account row's avatar included — all take the accent or the text colour, the settings page's brand area previews the chosen colour at once, and “Accent” follows the colour card in force (#135).
 
 ## [0.18.5] - 2026-10-23
 

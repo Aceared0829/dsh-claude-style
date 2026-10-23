@@ -2,8 +2,8 @@
  * The custom-brand case (D30): the host half's status names a mark and a 4:1
  * wordmark, and the page paints them over the brand's own art — the sidebar's
  * mark and wordmark, the hero's mark and the account row's fallback picture —
- * then inks them in the text colour and takes a custom accent once the
- * preferences ask for it, and hands the accent back when it is cleared.
+ * then inks them in the colour the image-colour choice names, and hands the
+ * accent back when it is cleared.
  */
 (function () {
   var probe = window.__dshSmokeProbe
@@ -51,14 +51,27 @@
           word: { image: wordArt.backgroundImage, width: wordArt.width, height: wordArt.height },
           hero: { image: heroArt.backgroundImage, width: heroArt.width },
           avatar: avatar === null ? null : getComputedStyle(avatar).backgroundImage,
+          avatarFill: avatar === null ? null : getComputedStyle(avatar, '::before').backgroundColor,
           accent: body.getPropertyValue('--dsw-alias-brand-primary').trim(),
           accentInk: body.getPropertyValue('--dsw-alias-label-primary-foreground').trim(),
         }
       }
       r.customBrand = { images: read() }
+      // The accent the page paints, resolved the way the browser resolves the
+      // token the images are filled with.
+      var swatch = document.createElement('span')
+      swatch.style.color = 'var(--dsw-alias-brand-primary)'
+      document.body.appendChild(swatch)
+      r.customBrand.accentRgb = getComputedStyle(swatch).color
+      swatch.remove()
       window.__pushForm({ brandInk: 'text', paletteColors: 'custom', customAccent: '#1a7f5a', brandName: 'Acme' })
       await sleep(150)
       r.customBrand.tinted = read()
+      // The accent choice with the page following a brand's own colour card:
+      // the tint has to resolve there too, where no custom accent is stored.
+      window.__pushForm({ brandInk: 'accent', paletteColors: 'brand', customAccent: '' })
+      await sleep(150)
+      r.customBrand.accented = read()
       window.__pushForm({ brandInk: 'original', paletteColors: 'brand', customAccent: '' })
       await sleep(150)
       r.customBrand.cleared = read()

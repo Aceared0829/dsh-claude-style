@@ -1,4 +1,4 @@
-import { BRAND_INK_ACCENT, BRAND_INK_ATTR, BRAND_INK_TEXT, CUSTOM_ACCENT_TINT_ATTR, CUSTOM_MARK_ATTR, CUSTOM_PALETTE_ATTR, CUSTOM_TINT_ATTR, CUSTOM_WORD_ATTR, CUSTOM_WORD_IMAGE, CUSTOM_WORD_TEXT, PALETTE_COLORING_CUSTOM } from '../../constants'
+import { BRAND_INK_ACCENT, BRAND_INK_ATTR, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, CUSTOM_MARK_ATTR, CUSTOM_PALETTE_ATTR, CUSTOM_TINT_ATTR, CUSTOM_WORD_ATTR, CUSTOM_WORD_IMAGE, CUSTOM_WORD_TEXT, PALETTE_COLORING_CUSTOM } from '../../constants'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { loadBrandImages, readBrandImages, resetBrandImages, subscribeBrandImages } from '../../shared/custom-brand'
 import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
@@ -9,7 +9,10 @@ import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
  * Each part is written onto <body> only while the reader has supplied it — an
  * attribute the stylesheets switch on (brand.css, and the account avatar's rule
  * in account-footer.css) and the value as a custom property — so a reader who
- * supplied nothing gets the brand's own art and colours untouched.
+ * supplied nothing gets the brand's own art and colours untouched. The one part
+ * that stands without an image is the image-colour choice: it names the ink the
+ * brand's own art is drawn in, so it writes --dsh-claude-logo-ink under either
+ * brand (`accent` and `text` in the settings' row).
  *
  * The four colours are seeds: the token sheet turns them into the whole palette
  * at runtime (scripts/theme-tokens.mjs), which is why they are written as
@@ -28,13 +31,13 @@ const ACCENT_INK_PROPERTY = '--dsh-claude-custom-accent-ink'
 const CANVAS_LIGHT_PROPERTY = '--dsh-claude-custom-canvas-light'
 const CANVAS_DARK_PROPERTY = '--dsh-claude-custom-canvas-dark'
 const CODE_PROPERTY = '--dsh-claude-custom-code'
-/** The brand art's ink while the image-colour choice names the accent or the text colour. */
+/** The ink the brand's own art and the reader's pictures take while the image-colour choice names the accent or the text colour. */
 const LOGO_INK_PROPERTY = '--dsh-claude-logo-ink'
 const PROPERTIES = [
   MARK_PROPERTY, WORD_PROPERTY, WORD_RATIO_PROPERTY, NAME_PROPERTY,
   ACCENT_PROPERTY, ACCENT_INK_PROPERTY, CANVAS_LIGHT_PROPERTY, CANVAS_DARK_PROPERTY, CODE_PROPERTY, LOGO_INK_PROPERTY,
 ]
-const ATTRIBUTES = [CUSTOM_MARK_ATTR, CUSTOM_WORD_ATTR, CUSTOM_TINT_ATTR, CUSTOM_ACCENT_TINT_ATTR, CUSTOM_PALETTE_ATTR, BRAND_INK_ATTR]
+const ATTRIBUTES = [CUSTOM_MARK_ATTR, CUSTOM_WORD_ATTR, CUSTOM_TINT_ATTR, CUSTOM_PALETTE_ATTR, BRAND_INK_ATTR]
 
 /** The two inks text on an accent fill can take: the dark and the light canvas (docs/STYLE.md). */
 const INK_DARK = '#191919'
@@ -89,8 +92,7 @@ export function install() {
     property(WORD_RATIO_PROPERTY, wordmark === null ? null : String(wordmark.ratio))
     property(NAME_PROPERTY, wordmark === null && prefs.brandName !== '' ? cssString(prefs.brandName) : null)
     const images = mark !== null || wordmark !== null
-    attribute(CUSTOM_TINT_ATTR, prefs.brandInk === BRAND_INK_TEXT && images ? '' : null)
-    attribute(CUSTOM_ACCENT_TINT_ATTR, prefs.brandInk === BRAND_INK_ACCENT && images ? '' : null)
+    attribute(CUSTOM_TINT_ATTR, prefs.brandInk !== BRAND_INK_ORIGINAL && images ? '' : null)
     attribute(BRAND_INK_ATTR, prefs.brandInk === BRAND_INK_ACCENT ? BRAND_INK_ACCENT : prefs.brandInk === BRAND_INK_TEXT ? BRAND_INK_TEXT : null)
     attribute(CUSTOM_PALETTE_ATTR, custom ? '' : null)
     property(ACCENT_PROPERTY, custom ? accent : null)

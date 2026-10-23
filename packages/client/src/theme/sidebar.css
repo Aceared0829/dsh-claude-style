@@ -47,7 +47,8 @@ body[data-dsh-claude-style][data-dsh-claude-brand="claude"] [data-dsh-claude-par
   mask: var(--dsh-claude-mask-claude-word);
 }
 
-/* DeepSeek: the host's own whale and wordmark in DeepSeek's brand blue. The
+/* DeepSeek: the host's own whale and wordmark in DeepSeek's brand blue, or in
+   the ink the image-colour choice names (features/brand/brand.ts). The
    expanded brand is a button on most platforms and a plain row on macOS, and the
    collapsed rail's whale sits in the sidebar toggle, so the art is inked where it
    sits. */

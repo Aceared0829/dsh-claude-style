@@ -48,10 +48,10 @@ body[data-dsh-claude-style][data-dsh-claude-brand="deepseek"] .dsh-claude-accoun
   background-image: var(--dsh-claude-image-deepseek-mark);
 }
 /* The reader's own mark takes that place under either brand (D30). Tinted, it
-   is a shape in the label colour on a layer of its own: a mask on the avatar
-   itself would cut the account photo layered over it to the mark's outline,
-   and the photo and skin rules below hide that layer whenever a picture
-   stands. */
+   is a shape in the ink the image-colour choice names on a layer of its own: a
+   mask on the avatar itself would cut the account photo layered over it to the
+   mark's outline, and the photo and skin rules below hide that layer whenever a
+   picture stands. */
 body[data-dsh-claude-style][data-dsh-claude-custom-mark] .dsh-claude-account-avatar {
   background-image: var(--dsh-claude-custom-mark);
 }
@@ -63,7 +63,7 @@ body[data-dsh-claude-style][data-dsh-claude-custom-mark][data-dsh-claude-custom-
   content: "";
   position: absolute;
   inset: 0;
-  background: currentColor;
+  background: var(--dsh-claude-logo-ink);
   -webkit-mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
   mask: var(--dsh-claude-custom-mark) center / contain no-repeat;
 }

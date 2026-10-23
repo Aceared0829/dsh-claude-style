@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { BRAND_IMAGE_MAX_BYTES, BRAND_IMAGE_TYPES } from '@dsh-claude-style/contracts/brand'
 import type { BrandImageKind } from '@dsh-claude-style/contracts/brand'
-import { BRAND_CLAUDE, BRAND_INK_TEXT, BRAND_NAME_MAX } from '../../constants'
+import { BRAND_CLAUDE, BRAND_INK_ORIGINAL, BRAND_NAME_MAX } from '../../constants'
 import { loadBrandImages, readBrandImages, removeBrandImage, subscribeBrandImages, uploadBrandImage } from '../../shared/custom-brand'
 import type { BrandImage } from '../../shared/custom-brand'
 import type { Prefs } from '../../constants'
@@ -14,8 +14,8 @@ import { copy } from './copy'
  * chosen and whatever the reader has supplied. The seats write the same
  * preferences and the same host routes the rows they replace wrote, so a
  * reader's name and images carry over untouched: `brandName` for the typed
- * name, the image routes for the mark and the wordmark, `brandInk` for how
- * the images are inked.
+ * name, the image routes for the mark and the wordmark, `brandInk` for the ink
+ * the brand's own art and the images take.
  *
  * The lockup is drawn here rather than moved from the sidebar: the sidebar's
  * identity is the host's own markup, painted by the theme's attribute
@@ -162,20 +162,18 @@ function ImageButton(props: { seat: Seat }) {
 /**
  * One seat's art: the reader's picture when there is one, the brand's own art
  * otherwise. A shape is a mask over the brand's ink, which is how the sidebar
- * draws both brands' words and Claude's mark; DeepSeek's whale is its own
- * picture in its brand blue. The reader's picture in its own colours is a
- * picture too, and wears the brand ink only when 「文字色」 masks it.
+ * paints every seat — DeepSeek's whale and word alike take the ink the
+ * image-colour choice names (theme/sidebar.css), so a whale drawn as a picture
+ * would show a colour the sidebar never puts there. The reader's picture in its
+ * own colours is a picture too, and wears that ink once the choice names one.
  */
-function SeatArt(props: { kind: 'mark' | 'word', image: BrandImage | null, claude: boolean, tinted: boolean }) {
+function SeatArt(props: { kind: 'mark' | 'word', image: BrandImage | null, claude: boolean, inked: boolean }) {
   const art = BRAND_ART[props.claude ? 'claude' : 'deepseek']
   const own = props.image
   const image = own === null ? (props.kind === 'mark' ? art.mark : art.word) : `url("${own.url}")`
   const ratio = own === null ? (props.kind === 'mark' ? art.markRatio : art.wordRatio) : own.ratio
   const height = own === null && props.kind === 'word' ? art.wordHeight : 1
-  // The brand's own art: Claude's mark and word are shapes, DeepSeek's whale a
-  // picture and its word a shape with no ink of its own (theme/sidebar.css).
-  const brandShape = props.claude || props.kind === 'word' ? 'mask' : 'picture'
-  const shape = own === null ? brandShape : props.tinted ? 'mask' : 'picture'
+  const shape = own === null || props.inked ? 'mask' : 'picture'
   return React.createElement('span', {
     className: `dsh-claude-brand-art dsh-claude-brand-art-${props.kind}`,
     'data-shape': shape,
@@ -226,7 +224,7 @@ export function BrandLockup(props: { prefs: Prefs, write: SettingsView['write'],
   const [draft, setDraft] = React.useState(props.prefs.brandName)
   const timer = React.useRef<number | null>(null)
   const claude = props.prefs.brand === BRAND_CLAUDE
-  const tinted = props.prefs.brandInk === BRAND_INK_TEXT
+  const inked = props.prefs.brandInk !== BRAND_INK_ORIGINAL
   const busy = mark.busy || word.busy
 
   React.useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current) }, [])
@@ -289,7 +287,7 @@ export function BrandLockup(props: { prefs: Prefs, write: SettingsView['write'],
           'aria-label': mark.image === null ? copy('brandMarkUpload') : copy('brandMarkReplace'),
           onClick: mark.open,
         },
-        SeatArt({ kind: 'mark', image: mark.image, claude, tinted }),
+        SeatArt({ kind: 'mark', image: mark.image, claude, inked }),
         Plate({ icon: 'upload', className: 'dsh-claude-brand-seat-plate' }),
       ),
       remove(mark, 'dsh-claude-brand-clear-mark'),
@@ -310,7 +308,7 @@ export function BrandLockup(props: { prefs: Prefs, write: SettingsView['write'],
           },
           mode === 'name'
             ? React.createElement('span', { className: 'dsh-claude-brand-typed' }, props.prefs.brandName)
-            : SeatArt({ kind: 'word', image: word.image, claude, tinted }),
+            : SeatArt({ kind: 'word', image: word.image, claude, inked }),
           Plate({ icon: mode === 'image' ? 'upload' : 'pencil', className: 'dsh-claude-brand-seat-plate' }),
         ),
       editing ? null : ImageButton({ seat: word }),
