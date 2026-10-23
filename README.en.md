@@ -16,8 +16,6 @@
 
 </div>
 
-Main window settings offer a saved composer maximum width (480–1600 px) and bottom gap (0–80 px), each with its own reset. The composer shrinks to fit narrower windows.
-
 Conversation statistics in Main window settings offer a compact footer with cost, cache hit rate and the context meter. Choose left, center or right alignment; figures use a separate line when space runs out. Full statistics remain in the context popover.
 
 ## Preview

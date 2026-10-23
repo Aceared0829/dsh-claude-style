@@ -30,7 +30,7 @@ export default {
     requires: {
       pref: 'composerScope',
       values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'statsComposerRequired',
+      note: 'conversationComposerNote',
     },
   }, {
     tab: 'composer',
@@ -54,7 +54,7 @@ export default {
     requires: {
       pref: 'composerScope',
       values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'statsComposerRequired',
+      note: 'conversationComposerNote',
     },
   }],
   cases: ['context-stats', 'stats-compact', 'stats-inline']

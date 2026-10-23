@@ -121,6 +121,10 @@ export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
  */
 export const ONGOING_INDICATOR_ATTR = 'data-dsh-claude-ongoing-indicator'
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
+/** The room under the conversation's composer (features/composer/bottom-gap.css); the host's own writes no attribute. */
+export const COMPOSER_GAP_ATTR = 'data-dsh-claude-composer-gap'
+/** The factor the conversation column draws at (features/conversation-width/); the full width writes no attribute. */
+export const CONVERSATION_WIDTH_ATTR = 'data-dsh-claude-conversation-width'
 /**
  * Present while the effort trigger takes a colour from the rung in force
  * (features/effort/effort-picker.css): the switch-off rung keeps the resting

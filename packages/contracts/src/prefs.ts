@@ -134,6 +134,18 @@ export const STATS_POSITION_FOOTER = 'footer'
 export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER] as const
 export const STATS_FOOTER_ALIGNS = ['left', 'center', 'right'] as const
 
+/** How wide the conversation column draws, as a factor of the width the host gives it. */
+export const CONVERSATION_WIDTH_FULL = '1'
+export const CONVERSATION_WIDTH_THREE_QUARTERS = '0.75'
+export const CONVERSATION_WIDTH_HALF = '0.5'
+export const CONVERSATION_WIDTHS = [CONVERSATION_WIDTH_FULL, CONVERSATION_WIDTH_THREE_QUARTERS, CONVERSATION_WIDTH_HALF] as const
+
+/** The room under the conversation's composer: the host's own, or one of the skin's two. */
+export const COMPOSER_GAP_COMPACT = 'compact'
+export const COMPOSER_GAP_THEME = 'theme'
+export const COMPOSER_GAP_ROOMY = 'roomy'
+export const COMPOSER_GAPS = [COMPOSER_GAP_COMPACT, COMPOSER_GAP_THEME, COMPOSER_GAP_ROOMY] as const
+
 /**
  * The language the account-hold easter egg (features/ban-screen/) is written
  * in, or `off` for none. It is its own preference rather than "follow the
@@ -258,9 +270,8 @@ export const PREFS = {
   homeRipple: { type: 'boolean', default: false },
   palette: { type: 'choice', values: PALETTES, default: PALETTE_CLAUDE },
   typeface: { type: 'choice', values: TYPEFACES, default: TYPEFACE_CLAUDE },
-  /** Empty dimensions keep the host's layout. Width is the card's maximum in px. */
-  composerWidth: { type: 'text', default: '', max: 8 },
-  composerBottomGap: { type: 'text', default: '', max: 8 },
+  conversationWidth: { type: 'choice', values: CONVERSATION_WIDTHS, default: CONVERSATION_WIDTH_FULL },
+  composerBottomGap: { type: 'choice', values: COMPOSER_GAPS, default: COMPOSER_GAP_THEME },
   /** The mascot on the composer; the resolved one rides the document. */
   mascot: { type: 'choice', values: MASCOTS, default: MASCOT_BRAND },
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },
@@ -318,6 +329,7 @@ export const LIVE_PREFS = [
   'modelPicker',
   'collapseFooter',
   'composerScope',
+  'conversationWidth',
 ] as const satisfies readonly PrefKey[]
 
 /** A preference a feature switch follows live. */

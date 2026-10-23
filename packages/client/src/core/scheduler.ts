@@ -49,6 +49,7 @@ export interface Handles {
   viewTabs: FeatureHandle
   headerBand: FeatureHandle
   rightbarFit: FeatureHandle
+  conversationWidth: FeatureHandle
   rowSkip: FeatureHandle
   sessionTitle: FeatureHandle
   settingsNav: FeatureHandle
