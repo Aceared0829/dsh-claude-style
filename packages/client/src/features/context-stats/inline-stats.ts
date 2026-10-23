@@ -1,10 +1,12 @@
-import { QUIET_ATTR } from '../../constants'
+import { QUIET_ATTR, STATS_POSITION_FOOTER } from '../../constants'
+import { readPrefs } from '../../core/prefs'
 import { buildElement, writeTextInPlace } from '@dsh-claude-style/engine/dom'
 import { findComposerCard, findComposerStats } from '@dsh-claude-style/engine/host'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { formatCompactTokens } from '../../shared/format'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createStatsCount } from './stats-count'
+import { createFooterLayout, findStatsDock } from './footer-layout'
 import { CACHE_HIT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { sessionStatsCacheHit, sessionStatsGrouped, sessionStatsSpeed } from './stats-format'
 import { formatMoneyMicro, CURRENCY_CNY, CURRENCY_SYMBOL } from '@dsh-claude-style/contracts/prices'
@@ -137,6 +139,8 @@ function templateParts(chat: HostText, key: string, names: string[]) {
  * @returns { render, refit, clear, root }.
  */
 export function createInlineStats(read: () => StatsReading, chatText: () => HostText | null, meter: () => HTMLElement | null, currency: () => Currency | null) {
+  const footer = createFooterLayout()
+  let footerPosition = false
   let line: Line | null = null
   /** The twin a fit measures on, built on the first fit that asks. */
   let probe: Line | null = null
@@ -247,7 +251,11 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
   function place(root: HTMLElement) {
     const row = findComposerStats()
     if (row === null || row.parentElement === null) return false
-    if (root.parentElement !== row.parentElement) row.parentElement.insertBefore(root, row)
+    const dock = readPrefs().statsPosition === STATS_POSITION_FOOTER ? findStatsDock() : null
+    if (dock !== null) {
+      if (root.parentElement !== dock) dock.insertBefore(root, dock.firstChild)
+    } else if (root.parentElement !== row.parentElement) row.parentElement.insertBefore(root, row)
+    footer.sync(root)
     return true
   }
 
@@ -275,6 +283,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
   }
 
   function clear() {
+    footer.clear()
     cancelRefit?.()
     cancelRefit = null
     count.reset()
@@ -313,12 +322,13 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     const merged = at >= 4
     if (!hasCounts && !hasSpeed && !hasTokens) return
 
-    show(shown.counts, hasCounts && at < 2)
-    show(shown.speed, hasSpeed)
+    const footerMode = readPrefs().statsPosition === STATS_POSITION_FOOTER
+    show(shown.counts, !footerMode && hasCounts && at < 2)
+    show(shown.speed, !footerMode && hasSpeed)
     // The prompt tokens ride where the speed is; without a speed the room the
     // speed would have taken is theirs.
-    show(shown.input, hasInput && !merged)
-    show(shown.output, hasOutput && !merged)
+    show(shown.input, !footerMode && hasInput && !merged)
+    show(shown.output, !footerMode && hasOutput && !merged)
     // The cost stands beside the written-back figure until the ladder needs
     // its room for the total. It stands whenever the line has tokens and the
     // reader keeps billing on, with a placeholder only while the figure is
@@ -326,7 +336,7 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     // not fold and unfold around it. A route the price table cannot price has
     // nothing to wait for, and the segment goes.
     show(shown.cost, billing && hasTokens && (cost !== null || costPending) && at < 3)
-    show(shown.total, hasTokens && merged)
+    show(shown.total, !footerMode && hasTokens && merged)
     show(shown.cache, hasCache)
     shown.cell.cacheHead.hidden = at >= 1
 
@@ -466,6 +476,15 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     const chat = chatText()
     const goal = count.goal()
     if (card === null || chat === null || goal === null) return level
+    if (footerPosition) {
+      setLevel(0)
+      const displayed = count.current()
+      writeLine(shown, 0, chat, displayed.stats, displayed.usage, displayed.cost, displayed.billing, displayed.costPending, currency())
+      fitted = true
+      fittedShape = lineShape(goal, chat)
+      footer.sync(shown.root)
+      return level
+    }
     const available = width ?? card.clientWidth
     if (available <= 0) return level
     if (!force && fitted && available === fittedWidth) return level
@@ -498,6 +517,12 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
    * words to another can change the room the line needs.
    */
   function render() {
+    const nextFooter = readPrefs().statsPosition === STATS_POSITION_FOOTER
+    if (footerPosition !== nextFooter) {
+      footerPosition = nextFooter
+      fitted = false
+      level = 0
+    }
     const chat = chatText()
     if (chat === null) {
       clear()

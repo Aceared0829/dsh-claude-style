@@ -8,6 +8,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="cn-unreleased">新增功能</h3>
 
+- 对话统计新增紧凑底栏：费用、缓存命中率和上下文圆环共用工具栏，支持左侧、居中和右侧位置，空间不足时独立成行。
 - 新增侧栏悬停展开：侧栏收起时，鼠标停在侧栏按钮上，侧栏就浮在页面上方展开，主窗口宽度不变；鼠标移开或选中会话后自动收起，点击按钮仍是固定展开，可在设置页「侧栏 → 悬停展开侧栏」关闭；Windows 桌面端与 web 生效（#108）。
 
 ### 体验优化
@@ -25,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 <h3 id="en-unreleased">New Features</h3>
 
+- Conversation statistics add a compact footer with cost, cache hit rate and the context meter, left/center/right alignment, and a separate line when toolbar space runs out.
 - Add opening the sidebar on hover: while the sidebar is collapsed, resting the pointer on its toggle opens it over the page and the main window keeps its width; it closes when the pointer leaves or a session is picked, a click on the toggle still keeps it open, and Settings → Sidebar → Open the sidebar on hover turns it off; it works on the Windows desktop app and the web (#108).
 
 ### Improvements

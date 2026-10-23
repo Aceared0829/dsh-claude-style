@@ -2,7 +2,7 @@ import { conversationSessionId, findConversationSession, hostSessions } from '@d
 import { hostChatSeat } from '../../core/i18n'
 import { prefsFromForm, readPrefs } from '../../core/prefs'
 import { peerPresent } from '../../shared/peer-plugin'
-import { BILLING_OFF, STATS_POSITION_INLINE } from '../../constants'
+import { BILLING_OFF, STATS_POSITION_FOOTER, STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
@@ -259,7 +259,8 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
    */
   function renderNumbers() {
     readingMemo = null
-    if (readPrefs().statsPosition === STATS_POSITION_INLINE) inline.render()
+    const position = readPrefs().statsPosition
+    if (position === STATS_POSITION_INLINE || position === STATS_POSITION_FOOTER) inline.render()
     else inline.clear()
     block.render()
   }
