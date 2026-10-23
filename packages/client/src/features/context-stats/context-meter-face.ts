@@ -10,9 +10,9 @@ import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
  * the reference image — 2.2 / (2 × 5.5 + 2.2) = 16.7 %, the 4.5 / 27 the image
  * carries at twice the size. The three bands break at 70 % (blue below, the
  * reference image's #257DE0) and 90 % (gold from 70, the second image's
- * #FBB315, and red from 90, the continuous band's own end); the stylesheet
- * also darkens the number's ink on a light canvas, where the measured gold
- * would not carry a 12 px reading.
+ * #FBB315, and red from 90, #DC3C3D); the stylesheet also darkens the number's
+ * ink on a light canvas, where the measured gold would not carry a 12 px
+ * reading.
  */
 
 /** The ring's viewBox, and the radius every face draws on. */
