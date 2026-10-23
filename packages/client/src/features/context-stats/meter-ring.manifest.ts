@@ -14,7 +14,7 @@ export default {
   pref: 'statsPosition',
   prefValues: [STATS_POSITION_CONTEXT],
   reads: ['model'],
-  contracts: [],
+  contracts: ['composer.dialog-trigger'],
   stylesheets: [{ file: 'meter-ring.css', rank: 105 }],
   cases: [],
 } satisfies FeatureManifest

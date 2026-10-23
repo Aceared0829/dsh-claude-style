@@ -1,10 +1,12 @@
 import { SLOT_NODE_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
+import { DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { observeMatches } from '@dsh-claude-style/engine/bus'
 import { findModelSlot } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
 import { removeStrayNodes } from '../../shared/popover'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
-import { contextTrigger, findContextMeter, meterOccupancy } from './stats-panel'
+import { contextTrigger, findContextMeter, markContextMeter, meterOccupancy } from './stats-panel'
 import { paintContextPie, readPieColours } from './context-meter-pie'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -183,13 +185,34 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       return
     }
     ensureRing(place.slot, place.seat)
-    // The host's meter keeps the host's place and stops painting: its trigger
-    // is the panel's, the reading is the ring's.
+    hideHostMeter()
+    paintRing()
+  }
+
+  /**
+   * The host's meter keeps the host's place and stops painting: its trigger is
+   * the panel's, the reading is the ring's. It is marked the way the context
+   * statistics mark it, since the hiding rule reads both marks.
+   */
+  function hideHostMeter() {
     const meter = findContextMeter()
     if (hiddenMeter !== null && hiddenMeter !== meter) hiddenMeter.removeAttribute(METER_HIDDEN_ATTR)
     hiddenMeter = meter
-    if (meter !== null) meter.setAttribute(METER_HIDDEN_ATTR, '')
-    paintRing()
+    if (meter === null) return
+    markContextMeter(meter)
+    meter.setAttribute(METER_HIDDEN_ATTR, '')
+  }
+
+  // The host renders its meter anew at moments of its own (a turn ending), and
+  // the new node would paint in the dock for the frame before the next pass,
+  // pushing the card up by its height: it is hidden in the batch that brought it.
+  const triggers = observeMatches<HTMLElement>(DIALOG_TRIGGER_SELECTOR, () => {
+    if (ring !== null) hideHostMeter()
+  })
+
+  function teardown() {
+    triggers.release()
+    dropRing()
   }
 
   // A generation whose teardown a client reload dropped leaves its ring in the
@@ -214,8 +237,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       answered = percent
       paintRing()
     },
-    teardown: dropRing,
+    teardown,
   }
 
-  return dropRing
+  return teardown
 }

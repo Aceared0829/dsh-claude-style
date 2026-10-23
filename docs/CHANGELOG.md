@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复统计显示在上下文浮层时，每轮回答结束的那一刻输入卡片向上跳一下的问题：宿主重新绘制的上下文计量环在出现的同一刻即被收起，输入卡片保持原位。
 - 修复模型在一轮中分多步输出时，前面几段思考与工具调用的过程组不再自动收起的问题：新的过程组出现后，同一轮里之前的过程组随即收起，只展开最新的一组。
 
 <h3 id="en-unreleased">Improvements</h3>
@@ -20,6 +21,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the composer card jumping up for a moment as each answer finishes while the statistics live in the context popover: the host's redrawn context meter is put away the moment it appears, and the card stays where it stands.
 - Fix earlier process groups staying open when the model works in several steps within one turn: once a new process group appears, the earlier groups of that turn fold, and only the newest one stays open.
 
 ## [0.18.4] - 2026-10-23
