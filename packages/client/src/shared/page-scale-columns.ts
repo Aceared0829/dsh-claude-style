@@ -11,6 +11,11 @@
  * the page's left edge. Dividing each written length by the scale once draws the
  * frame at the width it was measured at.
  *
+ * The sidebar's width is written twice more, from the same number: as the
+ * sidebar's own box width, and as its drag handle's `left`. Both are divided
+ * with the column, or the sidebar's content stands wider than the column that
+ * clips it and the handle leaves the column's edge.
+ *
  * A written list holding anything but a length is left alone: `1fr`, `minmax`
  * and `fit-content` are resolved against the track the page gives them, and only
  * a length the host measured doubles. A zero track needs no such guard: it
@@ -19,7 +24,7 @@
  */
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
-import { ROOT_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { ROOT_SLOT_SELECTOR, SIDEBAR_HANDLE_SELECTOR, SIDEBAR_ROOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { subscribePrefs } from '../core/prefs'
 
 /** One length in the host's written column list, and the bracket group a length
@@ -80,13 +85,35 @@ export function inPageColumns(written: string, scale: number) {
   return inPage.join(' ')
 }
 
+/**
+ * One pixel length the host wrote, in the page's pixels.
+ *
+ * @returns the length to write instead, or null when the page is at its own
+ *     scale or the value is not a pixel length.
+ */
+export function inPageLength(written: string, scale: number) {
+  const trimmed = written.trim()
+  if (!(scale > 0) || scale === 1 || !LENGTH.test(trimmed)) return null
+  return trackInPage(trimmed, scale)
+}
+
 /** What this rule needs from the skin it serves (D73). */
 export interface FrameColumnsVocabulary {
   /** The scale the page is drawn at right now: 1 while the page is not scaled. */
   scale(): number
 }
 
-/** One write this rule made: the frame, the number the host wrote, and the number it drew. */
+/** The one inline declaration of a host box this rule carries, and how it is read into the page's pixels. */
+interface Declaration {
+  property: string
+  inPage(written: string, scale: number): string | null
+}
+
+const FRAME_COLUMNS: Declaration = { property: 'grid-template-columns', inPage: inPageColumns }
+const SIDEBAR_WIDTH: Declaration = { property: 'width', inPage: inPageLength }
+const SIDEBAR_HANDLE_LEFT: Declaration = { property: 'left', inPage: inPageLength }
+
+/** One write this rule made: the number the host wrote, and the number it drew. */
 interface Carry {
   /** The value the host itself wrote, which this rule has already read. */
   from: string
@@ -104,80 +131,90 @@ interface Carry {
 const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
 
 /**
- * What each frame's last carry left, kept on the frame itself.
+ * What each box's last carry left, kept on the box itself.
  *
  * The skin's rules can stand on the page twice — a hot reload mounts the new
  * module before the old one is torn down — and a record kept in the module would
  * be one per copy: the copy that was not the writer reads the other's number as
- * the host's measurement, and divides the columns again on every pass until
- * almost nothing is left. The frame is what both copies share, so the record is
- * kept there, under a name no host and no stylesheet writes.
+ * the host's measurement, and divides it again on every pass until almost
+ * nothing is left. The box is what both copies share, so the record is kept
+ * there, under a name no host and no stylesheet writes.
  */
 const CARRY_ATTRIBUTE = 'data-dsh-claude-frame-columns'
 
-function seenOn(frame: HTMLElement): Carry | null {
-  const raw = frame.getAttribute(CARRY_ATTRIBUTE)
+function seenOn(box: HTMLElement): Carry | null {
+  const raw = box.getAttribute(CARRY_ATTRIBUTE)
   if (raw === null) return null
   const [scale, from, to] = raw.split('\u0000')
   if (scale === undefined || from === undefined || to === undefined) return null
   return { from, to, scale: Number(scale) }
 }
 
-function markOn(frame: HTMLElement, carry: Carry) {
-  frame.setAttribute(CARRY_ATTRIBUTE, `${carry.scale}\u0000${carry.from}\u0000${carry.to}`)
+function markOn(box: HTMLElement, carry: Carry) {
+  box.setAttribute(CARRY_ATTRIBUTE, `${carry.scale}\u0000${carry.from}\u0000${carry.to}`)
 }
 
-function forgetOn(frame: HTMLElement) {
-  frame.removeAttribute(CARRY_ATTRIBUTE)
+function forgetOn(box: HTMLElement) {
+  box.removeAttribute(CARRY_ATTRIBUTE)
 }
 
 /**
- * Lay the host frame's columns out in the page's own pixels.
+ * Lay the host frame's columns, the sidebar's own width and the sidebar
+ * handle's place out in the page's own pixels.
  *
- * @returns settle: read the frame again, for a host write or a scale that
- *     changed under it; stop: give every frame back.
+ * @returns settle: read every box again, for a host write or a scale that
+ *     changed under it; stop: give every box back.
  */
 export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
-  const carry = (frame: HTMLElement) => {
-    const value = frame.style.getPropertyValue('grid-template-columns')
-    if (value === '') return
-    const seen = seenOn(frame)
+  const carry = (box: HTMLElement, declaration: Declaration) => {
+    const { property } = declaration
+    const value = box.style.getPropertyValue(property)
+    const seen = seenOn(box)
+    if (value === '') {
+      // The host took its declaration away — the sidebar drops its width once it
+      // is collapsed — so the next number it writes is a fresh one, even when it
+      // is the number this record holds.
+      if (seen !== null) forgetOn(box)
+      return
+    }
     const scale = vocabulary.scale()
     // A second pass reads this rule's own number back as the host's write; it is
     // the one kept from the last read, and dividing it again would shrink the
-    // columns on every pass. A different scale is a different answer, though: the
+    // box on every pass. A different scale is a different answer, though: the
     // held number is the host's own, and it is carried again from there.
     if (seen !== null && value === seen.to && seen.scale !== scale) {
-      const converted = inPageColumns(seen.from, scale)
+      const converted = declaration.inPage(seen.from, scale)
       if (converted === null) {
-        forgetOn(frame)
-        frame.style.setProperty('grid-template-columns', seen.from)
+        forgetOn(box)
+        box.style.setProperty(property, seen.from)
         return
       }
-      markOn(frame, { from: seen.from, to: converted, scale })
-      frame.style.setProperty('grid-template-columns', converted)
+      markOn(box, { from: seen.from, to: converted, scale })
+      box.style.setProperty(property, converted)
       return
     }
     if (seen !== null && (value === seen.from || value === seen.to)) return
-    const inPage = inPageColumns(value, scale)
+    const inPage = declaration.inPage(value, scale)
     if (inPage === null) {
-      // The page is at its own scale again, or the write holds a track this rule
+      // The page is at its own scale again, or the write holds a value this rule
       // does not read: the host's own numbers are the ones that stand.
       if (seen !== null) {
-        forgetOn(frame)
-        frame.style.setProperty('grid-template-columns', seen.from)
+        forgetOn(box)
+        box.style.setProperty(property, seen.from)
       }
       return
     }
-    markOn(frame, { from: value, to: inPage, scale })
-    frame.style.setProperty('grid-template-columns', inPage)
+    markOn(box, { from: value, to: inPage, scale })
+    box.style.setProperty(property, inPage)
   }
 
-  /** The frames being heard, each with the subscription that hears its own write. */
-  const heard = new Map<HTMLElement, () => void>()
-  // The frame is remounted with the shell: the bus's registry follows it (D40),
-  // and the host's own write lands on the frame, which this hears.
+  /** The boxes being heard, each with its declaration and the subscription that hears the host's write. */
+  const heard = new Map<HTMLElement, { declaration: Declaration, off: () => void }>()
+  // Each box is remounted with the shell: the bus's registry follows it (D40),
+  // and the host's own write lands on the box, which this hears.
   const seats = observeMatches<HTMLElement>(FRAME_SELECTOR, () => sync())
+  const sidebars = observeMatches<HTMLElement>(SIDEBAR_ROOT_SELECTOR, () => sync())
+  const handles = observeMatches<HTMLElement>(SIDEBAR_HANDLE_SELECTOR, () => sync())
   // The root slot is read through the engine's kept match (D40), never walked.
   const rootSlot = cacheFirstMatch<HTMLElement>(ROOT_SLOT_SELECTOR)
 
@@ -190,21 +227,28 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
     return child instanceof HTMLElement ? [child] : []
   }
 
-  /** Hear every frame the page draws, and drop the ones that left. */
+  /** Every box the page draws, with the declaration this rule carries on it. */
+  const standing = (): [HTMLElement, Declaration][] => [
+    ...framesInShell().map((frame): [HTMLElement, Declaration] => [frame, FRAME_COLUMNS]),
+    ...sidebars.all().map((sidebar): [HTMLElement, Declaration] => [sidebar, SIDEBAR_WIDTH]),
+    ...handles.all().map((handle): [HTMLElement, Declaration] => [handle, SIDEBAR_HANDLE_LEFT]),
+  ]
+
+  /** Hear every box the page draws, and drop the ones that left. */
   const sync = () => {
     const present = new Set<HTMLElement>()
-    for (const frame of framesInShell()) {
-      present.add(frame)
-      if (!heard.has(frame)) {
-        heard.set(frame, subscribeMutations(frame, { attributes: true, attributeFilter: ['style'] }, () => carry(frame)))
+    for (const [box, declaration] of standing()) {
+      present.add(box)
+      if (!heard.has(box)) {
+        heard.set(box, { declaration, off: subscribeMutations(box, { attributes: true, attributeFilter: ['style'] }, () => carry(box, declaration)) })
       }
-      carry(frame)
+      carry(box, declaration)
     }
-    for (const [frame, off] of [...heard]) {
-      if (present.has(frame)) continue
-      heard.delete(frame)
+    for (const [box, { off }] of [...heard]) {
+      if (present.has(box)) continue
+      heard.delete(box)
       off()
-      forgetOn(frame)
+      forgetOn(box)
     }
   }
 
@@ -215,12 +259,14 @@ export function installFrameColumns(vocabulary: FrameColumnsVocabulary) {
     settle: sync,
     stop() {
       seats.release()
+      sidebars.release()
+      handles.release()
       offPrefs()
-      for (const [frame, off] of heard) {
+      for (const [box, { declaration, off }] of heard) {
         off()
-        const seen = seenOn(frame)
-        if (seen !== null) frame.style.setProperty('grid-template-columns', seen.from)
-        forgetOn(frame)
+        const seen = seenOn(box)
+        if (seen !== null) box.style.setProperty(declaration.property, seen.from)
+        forgetOn(box)
       }
       heard.clear()
     },

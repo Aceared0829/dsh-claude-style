@@ -5,20 +5,25 @@
  * the window, the last column stands outside the frame, and a sidebar dragged to
  * a width is drawn that factor wider. A column narrowed to nothing is carried
  * like any other — it stands at zero in both spaces, and the `1fr` beside it
- * takes the rest of the page's own width.
+ * takes the rest of the page's own width. The sidebar's own box and its drag
+ * handle carry the sidebar column's width a second and a third time, and are
+ * carried with it.
  *
  * @capability page-scale
  * @features shared
- * @risk At a page scale other than 100% the frame's three columns add up to a factor more than the window, the sidebar is drawn a factor wider and shows cut off, and a second copy of the rule on the page divides the first one's numbers again.
+ * @risk At a page scale other than 100% the frame's three columns add up to a factor more than the window, the sidebar is drawn a factor wider and shows cut off, its content stands wider than its column and is clipped at the column's edge, its drag handle leaves that edge, and a second copy of the rule on the page divides the first one's numbers again.
  */
 import { afterEach, expect, test } from 'vitest'
-import { inPageColumns, installFrameColumns } from '@dsh-claude-style/client/pure'
+import { SIDEBAR_HANDLE_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { inPageColumns, inPageLength, installFrameColumns } from '@dsh-claude-style/client/pure'
+import { attach } from '../../fixtures/host-markup'
 import { surfaceAttribute } from '../../fixtures/surface'
 import { after, drawnAt, drawnScale, resetPage, settle } from './drawn-page'
 
 /** The frame's part mark: the attribute a skin writes its parts under, and the name the frame answers to. */
 const PART_ATTRIBUTE = surfaceAttribute('skin.part')
 const FRAME_PART = 'layout-frame'
+const SIDEBAR_ROOT_PART = 'sidebar-root'
 /** The record this rule keeps on a frame it carried, read from the surface table. */
 const CARRY_ATTRIBUTE = surfaceAttribute('skin.frame-columns')
 
@@ -31,6 +36,22 @@ function hostFrame(columns: string) {
   frame.style.cssText = `display:grid;grid-template-columns:${columns}`
   document.body.append(frame)
   return frame
+}
+
+/** The sidebar's own box inside its slot, at the width the host wrote. */
+function hostSidebar(width: string) {
+  const sidebar = document.createElement('div')
+  sidebar.setAttribute(PART_ATTRIBUTE, SIDEBAR_ROOT_PART)
+  sidebar.style.width = width
+  attach(document.body, SIDEBAR_SLOT_SELECTOR).append(sidebar)
+  return sidebar
+}
+
+/** The sidebar's drag handle, at the place the host wrote. */
+function hostHandle(left: string) {
+  const handle = attach(document.body, SIDEBAR_HANDLE_SELECTOR)
+  handle.style.left = left
+  return handle
 }
 
 /** Install the rule and register its teardown. */
@@ -142,4 +163,70 @@ test('the teardown hands the host its own numbers back', async () => {
   await settle()
   expect(columnsOf(frame)).toBe('280px 500px 400px')
   expect(frame.hasAttribute(CARRY_ATTRIBUTE)).toBe(false)
+})
+
+test('one pixel length is divided by the page\'s scale, and anything else is left to the host', () => {
+  expect(inPageLength('280px', 1.25)).toBe('224px')
+  expect(inPageLength('280px', 0.8)).toBe('350px')
+  expect(inPageLength('280px', 1)).toBe(null)
+  expect(inPageLength('100%', 1.25)).toBe(null)
+  expect(inPageLength('', 1.25)).toBe(null)
+})
+
+test('the sidebar\'s own box and its handle stand at the width of the column they belong to', async () => {
+  drawnAt(1.25)
+  const frame = hostFrame('280px minmax(0px, 1fr) minmax(0px, 0px)')
+  const sidebar = hostSidebar('280px')
+  const handle = hostHandle('280px')
+  installed()
+  await settle()
+  expect(columnsOf(frame)).toBe('224px minmax(0px, 1fr) minmax(0px, 0px)')
+  expect(sidebar.style.width).toBe('224px')
+  expect(handle.style.left).toBe('224px')
+})
+
+test('the host dragging the sidebar moves its box and its handle with the column', async () => {
+  drawnAt(1.25)
+  const sidebar = hostSidebar('280px')
+  const handle = hostHandle('280px')
+  installed()
+  await settle()
+  sidebar.style.width = '320px'
+  handle.style.left = '320px'
+  await settle()
+  expect(sidebar.style.width).toBe('256px')
+  expect(handle.style.left).toBe('256px')
+  await settle()
+  expect(sidebar.style.width).toBe('256px')
+  expect(handle.style.left).toBe('256px')
+})
+
+test('a sidebar collapsed and opened again at the same width is carried again', async () => {
+  drawnAt(1.25)
+  const sidebar = hostSidebar('280px')
+  installed()
+  await settle()
+  expect(sidebar.style.width).toBe('224px')
+  // The collapsed rail drops the width; reopening writes the host's own number
+  // again, which is the one the record held before the collapse.
+  sidebar.style.removeProperty('width')
+  await settle()
+  sidebar.style.width = '280px'
+  await settle()
+  expect(sidebar.style.width).toBe('224px')
+})
+
+test('the teardown hands the sidebar and its handle their own numbers back', async () => {
+  drawnAt(1.25)
+  const sidebar = hostSidebar('280px')
+  const handle = hostHandle('280px')
+  const rule = installFrameColumns({ scale: drawnScale })
+  await settle()
+  expect(sidebar.style.width).toBe('224px')
+  rule.stop()
+  await settle()
+  expect(sidebar.style.width).toBe('280px')
+  expect(handle.style.left).toBe('280px')
+  expect(sidebar.hasAttribute(CARRY_ATTRIBUTE)).toBe(false)
+  expect(handle.hasAttribute(CARRY_ATTRIBUTE)).toBe(false)
 })

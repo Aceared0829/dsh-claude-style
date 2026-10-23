@@ -321,6 +321,8 @@ export const RIGHTBAR_TOGGLE_SELECTOR = '[data-sidebar-right-open] [data-sidebar
 export const RIGHTBAR_PANEL_SELECTOR = '[data-sidebar-right-panel]'
 /** The right column's drag handle; the host places it from the viewport's own width. */
 export const RIGHTBAR_HANDLE_SELECTOR = '[data-side="rightbar"]'
+/** The sidebar's drag handle; the host places it at the sidebar's own width. */
+export const SIDEBAR_HANDLE_SELECTOR = '[data-side="sidebar"]'
 
 /* ---------- the conversation header's own row ---------- */
 

@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复页面缩放不为 100% 时侧边栏的内容越出它自己那一列、在列的右缘被截断的问题：侧边栏内容与拖拽手柄改为与侧边栏列同宽。",
+  "en": "Fix the sidebar's content overflowing its own column and being cut off at the column's right edge when the page zoom is not 100%: the sidebar's content and its drag handle now take the column's width."
+}
