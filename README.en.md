@@ -16,6 +16,8 @@
 
 </div>
 
+Conversation statistics in Main window settings offer a compact footer with cost, cache hit rate and the context meter. Choose left, center or right alignment; figures use a separate line when space runs out. Full statistics remain in the context popover.
+
 ## Preview
 
 The settings page switches between the two palettes; light and dark follow the system.
