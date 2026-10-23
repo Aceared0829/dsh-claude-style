@@ -194,6 +194,13 @@ export function createPermissionCard(catalog: Pick<PermissionCatalog, 'restingLa
     // installing this one sweeps every popover already there.
     removeStrayNodes(document, '.dsh-claude-perm-popover', [])
     document.body.appendChild(popover)
+    // The nodes are the card's own from here on: the pass reaches them through
+    // container(), update() writes them, and the next pass reuses them instead
+    // of building a second trigger (the adopt path records them the same way).
+    permContainer = container
+    permBtn = btn
+    permLabel = label
+    permPopover = popover
 
     return {
       container,
