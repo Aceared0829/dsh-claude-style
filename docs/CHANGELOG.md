@@ -9,6 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。
+- 改善模型选择器里的模型描述：描述只写模型擅长什么或官方宣传语，去掉上下文长度、激活参数、生成速度与价格，中英文两版写同样的内容。
 
 ### 问题修复
 
@@ -25,6 +26,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group.
+- Improve the model descriptions in the model picker: each one says what the model is good at or carries the vendor's own tagline, drops context length, active parameters, generation speed and price, and reads the same in Chinese and English.
 
 ### Bug Fixes
 

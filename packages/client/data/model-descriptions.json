@@ -122,7 +122,7 @@
       "match": "claude.*mythos",
       "note": "Mythos is Fable's unrestricted sibling — Anthropic's own words: Fable is the same underlying model with cybersecurity and biology safeguards added. Access to Mythos is limited to vetted organizations, so its copy leads with the audience rather than the capability.",
       "text": {
-        "zh": "面向网络安全与生物学研究的可靠模型。",
+        "zh": "面向网络安全与生物学研究，仅向经过审核的机构开放。",
         "en": "Built for cybersecurity and biology research, with access limited to vetted organizations."
       }
     },
@@ -131,14 +131,14 @@
       "note": "Family copy stays version-agnostic, so it carries no superlatives: 'strongest' is only true of the current generation and would mislabel an older Opus. Superlatives belong in a rule anchored to the version. It also carries no tier prefix of ours — '旗舰档：' is our positioning, not the model's own line.",
       "text": {
         "zh": "面向复杂编程与 AI 智能体的混合推理模型。",
-        "en": "A hybrid reasoning model built for serious coding and AI agents."
+        "en": "A hybrid reasoning model built for complex coding and AI agents."
       }
     },
     {
       "match": "claude.*sonnet",
       "text": {
-        "zh": "面向实时智能体与高吞吐的混合推理模型。",
-        "en": "Hybrid reasoning for real-time agents and high-volume work."
+        "zh": "面向实时智能体与高吞吐场景的混合推理模型。",
+        "en": "A hybrid reasoning model for real-time agents and high-volume work."
       }
     },
     {
@@ -150,7 +150,7 @@
     },
     {
       "match": "claude",
-      "text": { "zh": "Anthropic Claude 模型。", "en": "Anthropic Claude model." }
+      "text": { "zh": "擅长编程、写作与复杂分析。", "en": "Strong at coding, writing and complex analysis." }
     },
 
     {
@@ -162,10 +162,10 @@
     },
     {
       "match": "gpt[._-]?5[._-]?4(?!\\d)",
-      "note": "Anchored to the 5.4 generation: the context size and the computer use are that model's, so a later GPT-5 reads the rule below.",
+      "note": "Anchored to the 5.4 generation: native computer use is that model's claim, so a later GPT-5 reads the rule below.",
       "text": {
-        "zh": "面向编程与专业工作的长上下文模型。",
-        "en": "For coding and professional work, with a 1.05M-token context and native computer use."
+        "zh": "面向编程与专业工作，原生支持计算机操作。",
+        "en": "For coding and professional work, with native computer use."
       }
     },
     {
@@ -178,18 +178,18 @@
     {
       "match": "(^|[/-])o[1-9](-|$)",
       "text": {
-        "zh": "作答前深入思考，从 o1 到 o3 与 o4-mini。",
-        "en": "Trained to think more deeply before responding, from o1 through o3 and o4-mini."
+        "zh": "作答前先深入思考，擅长多步推理。",
+        "en": "Trained to think before answering, strong at multi-step reasoning."
       }
     },
     {
       "match": "gpt-oss|oss-\\d",
       "text": {
-        "zh": "OpenAI 开发的开放权重推理模型。",
-        "en": "Open-weight reasoning models, Apache 2.0, in 120B and 20B sizes, customizable and self-hostable."
+        "zh": "OpenAI 的开放权重推理模型，Apache 2.0 许可，分 120B 与 20B 两种规模，可自托管。",
+        "en": "OpenAI's open-weight reasoning models under Apache 2.0, in 120B and 20B sizes, self-hostable."
       }
     },
-    { "match": "gpt", "text": { "zh": "支持文本与图像输入、多语言。", "en": "Text and image input, multilingual." } },
+    { "match": "gpt", "text": { "zh": "支持文本与图像输入，覆盖多种语言。", "en": "Text and image input across many languages." } },
 
     {
       "match": "gemini.*(pro|ultra|Argon)",
@@ -224,34 +224,34 @@
     },
 
     {
-      "match": "glm[._-]?5[._-]?3.*flashx",
-      "note": "Anchored to the 5.3 generation: the throughput figure is that tier's, so a later GLM Flash X reads the generic Flash rule below.",
+      "match": "glm.*flashx",
+      "note": "The Flash X tier of every generation, above the Flash rules because its id contains `flash`.",
       "text": {
-        "zh": "GLM 5.3 flash的高吞吐版本。",
-        "en": "A high-throughput variant running at 200 tokens/s."
+        "zh": "Flash 档的高吞吐版本，适合高频任务。",
+        "en": "The high-throughput variant of the Flash tier, for high-frequency work."
       }
     },
     {
       "match": "glm[._-]?5[._-]?3.*flash",
-      "note": "Anchored to the 5.3 generation's Flash tier; a later GLM Flash reads the generic Flash rule below.",
+      "note": "Anchored to the 5.3 generation's Flash tier: 'first' and the parameter count are its own, so a later GLM Flash reads the generic Flash rule below.",
       "text": {
-        "zh": "GLM-5系列的首个原生多模态模型。",
-        "en": "Natively multimodal, with 320B/18B MoE, 1M context and MIT licensing at $0.045 per task."
+        "zh": "该系列首个原生多模态模型，320B 总参数，MIT 许可开放权重。",
+        "en": "The series' first natively multimodal model: 320B parameters, open weights under MIT."
       }
     },
     {
       "match": "glm[._-]?5[._-]?3(?!\\d)",
       "note": "Anchored to the 5.3 generation: the superlative is true of it alone, and the line's own rule below carries none.",
       "text": {
-        "zh": "最强开放权重编程模型之一，拓展智能上界的可及边界。",
-        "en": "For coding and long-horizon autonomy: 1M context, 128K output, and post-training alone makes it the most capable open-weight coding model."
+        "zh": "最强的开放权重编程模型之一，擅长长时间自主任务。",
+        "en": "One of the most capable open-weight coding models, built for long-horizon autonomy."
       }
     },
     {
       "match": "glm.*flash",
       "text": {
-        "zh": "更快更省的多模态推理，兼顾长上下文与日常编程。",
-        "en": "Fast, low-cost multimodal inference with long context and everyday coding."
+        "zh": "更快更省的多模态推理，兼顾日常编程。",
+        "en": "Fast, low-cost multimodal inference that handles everyday coding."
       }
     },
     {
@@ -274,16 +274,16 @@
       "match": "kimi.*(cod(e|ing)|k2[._-]?7).*highspeed",
       "note": "The coding line's high-speed tier, above the coding rule because its own id contains `coding`.",
       "text": {
-        "zh": "面向长程编程的开放权重智能体模型高速版。",
-        "en": "A high-speed variant at about 180 tokens/s, 5–6x the regular tier, for 2x the price."
+        "zh": "长程编程智能体模型的高速版本，开放权重。",
+        "en": "The high-speed tier of the open-weight agentic coding model, for long-horizon work."
       }
     },
     {
       "match": "kimi.*(cod(e|ing)|k2[._-]?7)",
       "note": "The coding line whatever the suffix spells: `kimi-for-coding` and `kimi-k2.7-code` both read it, and the high-speed tier above is claimed first.",
       "text": {
-        "zh": "面向长程编程的开放权重智能体模型。",
-        "en": "An open-weight agentic coding model for long-horizon work, 1T/32B with 256K context."
+        "zh": "面向长程编程的开放权重智能体模型，1T 总参数。",
+        "en": "An open-weight agentic coding model for long-horizon work, with 1T parameters."
       }
     },
     {
@@ -296,10 +296,10 @@
 
     {
       "match": "qwen[._-]?3[._-]?8.*max",
-      "note": "Anchored to the 3.8 generation: the parameter count and the context are that model's, so a later Qwen Max falls to the line rule below.",
+      "note": "Anchored to the 3.8 generation: the parameter count is that model's, so a later Qwen Max falls to the line rule below.",
       "text": {
-        "zh": "面向编程与办公，2.4 万亿参数 MoE，1M 上下文、思考模式与内置工具。",
-        "en": "A 2.4T-parameter MoE for coding and office work, with 1M context, thinking mode and built-in tools."
+        "zh": "面向编程与办公的 2.4 万亿参数 MoE，支持思考模式与内置工具。",
+        "en": "A 2.4T-parameter MoE for coding and office work, with thinking mode and built-in tools."
       }
     },
     {
@@ -312,8 +312,8 @@
     {
       "match": "qwen.*(flash|turbo)",
       "text": {
-        "zh": "响应快、成本低，工具调用与长上下文支持完整。",
-        "en": "Fast and cheap, with full tool calling and long-context support."
+        "zh": "响应快、成本低，工具调用支持完整。",
+        "en": "Fast and cheap, with full tool calling."
       }
     },
     {
@@ -327,8 +327,8 @@
       "match": "qwen.*a\\d+b",
       "note": "MoE ids spell out total and active parameters (`2.4t-a95b`, `235b-a22b`); the active count must win over the size rule below, which would otherwise read the trailing `95b` as a small dense model.",
       "text": {
-        "zh": "总参大、激活参数少，单位成本低于同规模稠密模型。",
-        "en": "Many total parameters but few active, so it costs less than a dense model of the same size."
+        "zh": "MoE 架构，单位成本低于同规模稠密模型。",
+        "en": "A mixture-of-experts model that costs less to serve than a dense model of its size."
       }
     },
     {
@@ -346,18 +346,18 @@
 
     {
       "match": "step[._-]?5(?!\\d)",
-      "note": "Anchored to the 5 line: the input modes and the context are its own, and the trailing-digit guard keeps a size suffix (`95b`) from reading it.",
+      "note": "Anchored to the 5 line: the input modes are its own, and the trailing-digit guard keeps a size suffix (`95b`) from reading it.",
       "text": {
-        "zh": "面向编程与专业知识工作，原生图文视频输入，1M 上下文。",
-        "en": "For programming and professional knowledge work, with native text, image and video input and a 1M-token context."
+        "zh": "面向编程与专业知识工作，原生支持文本、图像与视频输入。",
+        "en": "For coding and professional knowledge work, with native text, image and video input."
       }
     },
     {
       "match": "step[._-]?3[._-]?7.*flash",
-      "note": "Anchored to 3.7: the parameter counts and the token rate are that tier's, so another Step Flash falls to the line rule below.",
+      "note": "Anchored to 3.7: the parameter count is that tier's, so another Step Flash falls to the line rule below.",
       "text": {
-        "zh": "面向智能体与代码任务，198B/11B 稀疏 MoE，图像与视频理解，256K 上下文，最高 400 tokens/s。",
-        "en": "For agentic and coding tasks: 198B/11B sparse MoE with image and video understanding, 256K context, up to 400 tokens/s."
+        "zh": "面向智能体与代码任务的 198B 稀疏 MoE，支持图像与视频理解。",
+        "en": "A 198B sparse MoE for agentic and coding tasks, with image and video understanding."
       }
     },
     { "match": "step", "text": { "zh": "覆盖文本推理、多模态与语音，经官方开放平台提供。", "en": "Reasoning, multimodal understanding and voice, served through the official open platform." } },
@@ -366,15 +366,15 @@
       "match": "minimax.*m3|(^|[^a-z0-9])m3($|-)",
       "note": "The M3 line's own claims; the catalog's `minimax-m3-1m` is the same line at a longer context.",
       "text": {
-        "zh": "首个集前沿编程、1M 上下文与原生多模态于一身的开放权重模型。",
-        "en": "The first open-weight model combining frontier coding, 1M context and native multimodality."
+        "zh": "兼具前沿编程能力与原生多模态的开放权重模型。",
+        "en": "An open-weight model combining frontier coding with native multimodality."
       }
     },
     {
       "match": "minimax|(^|[^a-z0-9])m2[-.]?\\d",
       "text": {
-        "zh": "主打智能体推理、工具调用、编程与多模态输入，面向长上下文任务。",
-        "en": "Agentic reasoning, tool use, coding and multimodal input for long-context work."
+        "zh": "主打智能体推理、工具调用、编程与多模态输入。",
+        "en": "Agentic reasoning, tool use, coding and multimodal input."
       }
     },
 
@@ -384,14 +384,6 @@
       "text": {
         "zh": "小而快、原生多模态推理，驱动 Meta AI。",
         "en": "Small and fast by design, natively multimodal, powering Meta AI."
-      }
-    },
-    {
-      "match": "celeris[._-]?1(-|$)",
-      "note": "Anchored to Celeris-1: the numbers are that model's, so a future Celeris reads the line rule below.",
-      "text": {
-        "zh": "生成速度 1,664 tokens/s，超过 Mercury 2 的 5 倍，MMLU-Pro 75.9%。",
-        "en": "Generates 1,664 tokens/s, over 5x Mercury 2, at 75.9% MMLU-Pro."
       }
     },
     {
@@ -405,29 +397,29 @@
     {
       "match": "mercury-?\\d|inception",
       "text": {
-        "zh": "面向代码生成，H100 上超 1,000 tokens/s，速度最高为同类模型的 10 倍。",
-        "en": "Built for code, over 1,000 tokens/s on H100, up to 10x faster than speed-optimized LLMs."
+        "zh": "扩散架构，面向代码生成，以极快的生成速度见长。",
+        "en": "Diffusion-based and built for code, with very fast generation."
       }
     },
     {
       "match": "apodex",
       "text": {
-        "zh": "面向复杂专业工作、金融与科研，1.1 mini 为 35B、可本地部署。",
-        "en": "For complex professional work, finance and science; the 35B 1.1 mini runs locally."
+        "zh": "面向复杂专业工作、金融与科研。",
+        "en": "For complex professional work, finance and science."
       }
     },
     {
       "match": "motif",
       "text": {
-        "zh": "MIT 许可，314B 总参 / 13.2B 激活，256K 上下文。",
-        "en": "MIT-licensed, 314B total / 13.2B active, 256K context."
+        "zh": "MIT 许可的开放权重 MoE 模型。",
+        "en": "An MIT-licensed open-weight MoE model."
       }
     },
     {
       "match": "grok[._-]?4(?!\\d)",
       "note": "Anchored to the Grok 4 line, so every 4.x build reads the same sentence and another line falls to the rule below.",
       "text": {
-        "zh": "全球最智能的模型之一，支持原生工具使用以及实时搜索功能。",
+        "zh": "全球最智能的模型之一，原生支持工具调用与实时搜索。",
         "en": "One of the most intelligent models in the world, with native tool use and real-time search."
       }
     },
@@ -442,15 +434,15 @@
       "match": "doubao.*2[._-]?1(?!\\d)|seed[._-]?2[._-]?1(?!\\d)",
       "note": "Anchored to Seed 2.1: the tiers it names are that generation's, so another Seed reads the vendor rule below.",
       "text": {
-        "zh": "分 Pro 与 Turbo 两档的新一代生产力智能体，以通用任务与代码见长。",
-        "en": "Pro and Turbo tiers of a next-generation productivity agent, strong at general agentic and coding tasks."
+        "zh": "分 Pro 与 Turbo 两档的生产力智能体模型，擅长通用任务与代码。",
+        "en": "A productivity agent model in Pro and Turbo tiers, strong at general agentic and coding tasks."
       }
     },
     {
       "match": "doubao|seed-?\\d|volc",
       "text": {
-        "zh": "经 50+ 内部业务场景验证，每日千亿级 token 用量打磨，支持多模态。",
-        "en": "Validated across 50+ internal scenarios and hundreds of billions of daily tokens, with multimodal support."
+        "zh": "覆盖对话、编程与多模态，经大规模线上业务验证。",
+        "en": "Chat, coding and multimodal work, proven across large-scale production use."
       }
     },
     {
@@ -478,14 +470,14 @@
     },
     {
       "match": "codestral",
-      "text": { "zh": "面向补全、FIM 与生成，128K 上下文。", "en": "Built for completion, FIM and generation, with 128K context." }
+      "text": { "zh": "面向代码补全、FIM 与生成。", "en": "Built for code completion, FIM and generation." }
     },
     {
       "match": "mistral.*large[._-]?3(?!\\d)",
-      "note": "Anchored to Large 3: the licence and the parameter counts are that model's, so another Mistral reads the line rule below.",
+      "note": "Anchored to Large 3: the licence and the parameter count are that model's, so another Mistral reads the line rule below.",
       "text": {
-        "zh": "Apache 2.0 开放权重多模态模型，细粒度 MoE，675B 总参 / 41B 激活，256K 上下文。",
-        "en": "Apache-2.0 open-weight multimodal MoE with 675B total / 41B active parameters and 256K context."
+        "zh": "Apache 2.0 许可的开放权重多模态 MoE，675B 总参数。",
+        "en": "An Apache 2.0 open-weight multimodal MoE with 675B parameters."
       }
     },
     {
@@ -499,29 +491,29 @@
     {
       "match": "north",
       "text": {
-        "zh": "整合大模型、搜索与自动化成一个企业级安全工作空间。",
+        "zh": "把大模型、搜索与自动化整合进同一个企业级安全工作空间。",
         "en": "LLMs, search and automation combined into one secure enterprise workspace."
       }
     },
     {
       "match": "command-?[ar]|cohere",
       "text": {
-        "zh": "面向工具调用、RAG 与多语言，Command A 为 111B/256K。",
-        "en": "For tool use, RAG and multilingual work; Command A is 111B with 256K context."
+        "zh": "面向工具调用、RAG 与多语言任务。",
+        "en": "For tool use, RAG and multilingual work."
       }
     },
     {
       "match": "phi-?\\d",
-      "text": { "zh": "面向边缘与本地部署，Phi-4 以 14B 专注推理、数学与代码。", "en": "For edge and local use; Phi-4 (14B) targets reasoning, math and code." }
+      "text": { "zh": "面向边缘与本地部署的小模型，擅长推理、数学与代码。", "en": "Small models for edge and local use, strong at reasoning, math and code." }
     },
     {
       "match": "(^|[^a-z0-9])nova(-|$)",
       "note": "Every mention of the line reads the same boundary as the lockup rule: unanchored, this rule gives `sensenova-6.8-flash-lite` Amazon Nova's description.",
-      "text": { "zh": "Micro/Lite/Pro/Premier 四档，支持文本、图像与视频输入。", "en": "Micro, Lite, Pro and Premier tiers taking text, image and video." }
+      "text": { "zh": "亚马逊的多模态模型，支持文本、图像与视频输入。", "en": "Amazon's multimodal models, taking text, image and video input." }
     },
     {
       "match": "sonar|perplexity",
-      "text": { "zh": "结合实时网络信息与引用的搜索 API，从轻量 Sonar 到多步深研 Sonar Pro。", "en": "Search APIs answering with fresh web data and citations, from light Sonar to deep-research Sonar Pro." }
+      "text": { "zh": "结合实时网络信息作答并附上引用来源，覆盖轻量问答到多步深度研究。", "en": "Search APIs answering with fresh web data and citations, from quick answers to multi-step deep research." }
     }
   ],
   "tiers": [
@@ -543,8 +535,8 @@
       "match": "a\\d+b",
       "note": "MoE active-parameter suffix (`a95b`, `a23b`); tried before the dense rule so the active count is not mistaken for a total.",
       "text": {
-        "zh": "总参大、激活参数少，单位成本低于同规模稠密模型。",
-        "en": "Many total parameters but few active, so it costs less than a dense model of the same size."
+        "zh": "MoE 架构，单位成本低于同规模稠密模型。",
+        "en": "A mixture-of-experts model that costs less to serve than a dense model of its size."
       }
     },
     {
