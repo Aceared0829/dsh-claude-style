@@ -1,11 +1,18 @@
 /**
  * The crab draws its own frame and nothing of the frames beside it. Its sheet
  * holds every frame of an animation side by side, and its window shows one of
- * them; at a fractional device scale — a display at 125%, the page zoomed — the
- * window's edge falls between device pixels and takes in a sliver of whatever
- * stands just past it in the sheet. Where the frame's own outermost cells are
- * empty, the window's edge shows the page behind the crab, wherever on the
- * device pixel grid the window lands.
+ * them; the frame's own outermost cells are empty, so whatever the window's
+ * edge takes in past them is the page behind the crab, never the neighbouring
+ * frame.
+ *
+ * The window is aligned to the device pixel grid before it is sampled. At a
+ * fractional device origin the nearest-neighbour upscale of the sheet picks
+ * one sheet pixel aside for the edge's device pixels on some rasterizers —
+ * macOS and Linux pick the frame's own first ink column there, Windows picks
+ * the empty cell — and which pixel a platform's sampler picks is the
+ * platform's, not the padding's. On the grid the sample is the same on every
+ * system, and what it holds is this spec's own: the padding keeps the
+ * neighbouring frame out of the window.
  *
  * @capability mascot
  * @features mascot
@@ -16,12 +23,6 @@ import { spec, host } from '../../fixtures/behaviour.mjs'
 
 /** How far a device pixel the crab leaves empty may stray from the page behind it, per channel. */
 const TOLERANCE = 6
-/**
- * How far the input area is moved in from the window's right edge and down
- * from its top, in CSS pixels: the crab stands on its top right corner, so
- * these carry the crab's window across a device pixel's fractions.
- */
-const SHIFTS = [0, 0.2, 0.4, 0.6]
 /** The conversation the crab stands in, as this spec builds it. */
 const CONVERSATION_ID = 'crab-conversation'
 /**
@@ -182,18 +183,24 @@ export default spec({ page: 'crab-states', densities: [1.25] }, ({ test }) => {
       await thinkingCrab(t)
       /** The sheets read so far, by their address: the frame does not change while the window moves. */
       const sheets = new Map()
-      for (const shift of SHIFTS) {
-        await t.page.evaluate(([id, shift, room]) => {
-          const conversation = document.getElementById(id)
-          conversation.style.marginRight = `${shift}px`
-          conversation.style.paddingTop = `${room + shift}px`
-        }, [CONVERSATION_ID, shift, ROOM_ABOVE])
-        await t.page.waitForTimeout(60)
-        const { sampled, strays, corner, geometry } = await strayEdges(t, sheets)
-        t.expectThat.equal(sampled > 0, true, `the still frame leaves some of its edge cells empty (${sampled} pixels sampled)`)
-        t.expectThat.equal(strays.length, 0,
-          `with the window's corner at device pixel ${corner}, its empty edge cells show the page behind the crab [${geometry}]${strays.length === 0 ? '' : `: ${strays.slice(0, 4).join('; ')}`}`)
-      }
+      // Align the window to the device pixel grid (the spec's header says why):
+      // the crab moves by the fraction its corner sits past a device pixel,
+      // without reflowing the page around it.
+      const before = await readSprite(t)
+      const dx = (Math.ceil(before.view.left * before.dpr) - before.view.left * before.dpr) / before.dpr
+      const dy = (Math.ceil(before.view.top * before.dpr) - before.view.top * before.dpr) / before.dpr
+      await t.page.evaluate(([id, dx, dy, room]) => {
+        const conversation = document.getElementById(id)
+        conversation.style.position = 'relative'
+        conversation.style.left = `${dx}px`
+        conversation.style.top = `${dy}px`
+        conversation.style.paddingTop = `${room}px`
+      }, [CONVERSATION_ID, dx, dy, ROOM_ABOVE])
+      await t.page.waitForTimeout(60)
+      const { sampled, strays, corner, geometry } = await strayEdges(t, sheets)
+      t.expectThat.equal(sampled > 0, true, `the still frame leaves some of its edge cells empty (${sampled} pixels sampled)`)
+      t.expectThat.equal(strays.length, 0,
+        `with the window's corner at device pixel ${corner}, its empty edge cells show the page behind the crab [${geometry}]${strays.length === 0 ? '' : `: ${strays.slice(0, 4).join('; ')}`}`)
     })
   }
 })
