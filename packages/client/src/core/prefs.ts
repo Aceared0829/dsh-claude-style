@@ -1,4 +1,4 @@
-import { BRAND_ATTR, BRAND_DEEPSEEK, COMPOSER_ATTR, COMPOSER_GAP_ATTR, COMPOSER_GAP_THEME, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, EFFORT_ACCENT_ATTR, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, ONGOING_INDICATOR_ATTR, PAGE_ZOOM_ATTR, PAGE_ZOOM_SYSTEM, PACKAGE_NAME, PALETTE_ATTR, PALETTE_CARD_ATTR, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM, PREF_DEFAULTS, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, STATUS_MOTION_ATTR, TYPEFACE_ATTR } from '../constants'
+import { BRAND_ATTR, BRAND_DEEPSEEK, COMPOSER_ATTR, COMPOSER_GAP_ATTR, COMPOSER_GAP_THEME, CONTEXT_DISPLAY_ATTR, CONTEXT_NUMBERS_ATTR, DOCK_LOOK_ATTR, DOCK_LOOK_CARD, DOCK_LOOK_FLUSH, EFFORT_ACCENT_ATTR, FOOTER_ATTR, MASCOT_ATTR, MASCOT_BRAND, MASCOT_CRAB, MASCOT_DEEPY, MOTION_ATTR, MOTION_FULL, MOTION_REDUCED, ONGOING_INDICATOR_ATTR, PAGE_ZOOM_ATTR, PAGE_ZOOM_SYSTEM, PACKAGE_NAME, PALETTE_ATTR, PALETTE_CARD_ATTR, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM, PREF_DEFAULTS, SEARCH_STYLE_ATTR, SETTINGS_ENTRY_FALLBACK, SIDEBAR_LAYOUT_ATTR, STATS_POSITION_ATTR, STATUS_MOTION_ATTR, TYPEFACE_ATTR } from '../constants'
 import type { PrefKey, Prefs } from '../constants'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import { clampPrefs, PREFS } from '@dsh-claude-style/contracts/prefs'
@@ -121,6 +121,8 @@ const MIRRORS = [
   { key: 'sidebarLayout', attr: SIDEBAR_LAYOUT_ATTR, value: (prefs: Prefs) => prefs.sidebarLayout },
   { key: 'ongoingIndicator', attr: ONGOING_INDICATOR_ATTR, value: (prefs: Prefs) => prefs.ongoingIndicator },
   { key: 'statsPosition', attr: STATS_POSITION_ATTR, value: (prefs: Prefs) => prefs.statsPosition },
+  { key: 'contextDisplay', attr: CONTEXT_DISPLAY_ATTR, value: (prefs: Prefs) => prefs.contextDisplay },
+  { key: 'contextNumbers', attr: CONTEXT_NUMBERS_ATTR, value: (prefs: Prefs) => prefs.contextNumbers ? 'on' : 'off' },
   { key: 'composerBottomGap', attr: COMPOSER_GAP_ATTR, value: (prefs: Prefs) => prefs.composerBottomGap === COMPOSER_GAP_THEME ? false : prefs.composerBottomGap },
   { key: 'effortAccent', attr: EFFORT_ACCENT_ATTR, value: (prefs: Prefs) => prefs.effortAccent },
   { key: 'statusMotion', attr: STATUS_MOTION_ATTR, value: (prefs: Prefs) => prefs.statusMotion },

@@ -1,4 +1,4 @@
-import { SLOT_NODE_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
+import { CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_BAND, SLOT_NODE_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { findModelSlot } from '@dsh-claude-style/engine/host'
@@ -7,7 +7,8 @@ import { removeStrayNodes } from '../../shared/popover'
 import { setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { contextTrigger, findContextMeter, markContextMeter, meterOccupancy } from './stats-panel'
-import { paintContextPie, readPieColours } from './context-meter-pie'
+import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
+import { METER_RING_RADIUS, METER_RING_SIZE, ringDash, writeContextBand } from './context-meter-face'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -27,9 +28,9 @@ import type manifest from './meter-ring.manifest'
  *
  * The reading is the host's projection of the session's context pressure. A
  * host that serves none is read off its own ring's text, which is still in the
- * document behind the paint. The ring's look is the meter's: the occupancy as a
- * ring, or as a pie in the colour band the reading fell on, and the number
- * beside it (context-meter-pie.ts, stats-ramp.ts).
+ * document behind the paint. The ring's look is the face the reader picked
+ * (context-meter-face.ts): the pie in the continuous band, dsh's thin ring in
+ * that band, or the measured ring in three bands, with the number beside it.
  */
 
 /** The mark on the ring's root, which the ring's own rules and the specs read. */
@@ -39,13 +40,6 @@ export const METER_RING_ATTR = 'data-dsh-claude-meter-ring'
  * stylesheet drops the host's node out of the row without moving it.
  */
 export const METER_HIDDEN_ATTR = 'data-dsh-claude-meter-hidden'
-
-/** The ring the row draws: the 14px viewBox and 2px stroke the host's own ring uses. */
-const RING_SIZE = 14
-const RING_RADIUS = 5.5
-/** The arc's whole length, and the two-decimal form its dash array is written in. */
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
-const ROUNDING = 100
 
 /** What the context statistics read off the ring (ui.meterRing). */
 export interface MeterRingHandle extends FeatureHandle {
@@ -96,7 +90,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       button.type = 'button'
       button.setAttribute('aria-haspopup', 'dialog')
       button.setAttribute('aria-expanded', 'false')
-      button.innerHTML = `<svg viewBox="0 0 ${RING_SIZE} ${RING_SIZE}" width="${RING_SIZE}" height="${RING_SIZE}" aria-hidden="true"><circle class="dsh-claude-meter-ring-track" cx="${RING_SIZE / 2}" cy="${RING_SIZE / 2}" r="${RING_RADIUS}"></circle><circle class="dsh-claude-meter-ring-fill" cx="${RING_SIZE / 2}" cy="${RING_SIZE / 2}" r="${RING_RADIUS}" transform="rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})"></circle></svg><span class="dsh-claude-meter-ring-value"></span>`
+      button.innerHTML = `<svg viewBox="0 0 ${METER_RING_SIZE} ${METER_RING_SIZE}" width="${METER_RING_SIZE}" height="${METER_RING_SIZE}" aria-hidden="true"><circle class="dsh-claude-meter-ring-track" cx="${METER_RING_SIZE / 2}" cy="${METER_RING_SIZE / 2}" r="${METER_RING_RADIUS}"></circle><circle class="dsh-claude-meter-ring-fill" cx="${METER_RING_SIZE / 2}" cy="${METER_RING_SIZE / 2}" r="${METER_RING_RADIUS}" transform="rotate(-90 ${METER_RING_SIZE / 2} ${METER_RING_SIZE / 2})"></circle></svg><span class="dsh-claude-meter-ring-value"></span>`
       root.appendChild(button)
       ring = root
       ringButton = button
@@ -117,27 +111,25 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (ringValue.textContent !== text) ringValue.textContent = text
     // The arc the host draws for the same reading: the dash covers the share
     // taken and the gap the rest of the ring.
-    const whole = Math.round(RING_CIRCUMFERENCE * ROUNDING) / ROUNDING
-    const taken = percent === null ? 0 : Math.round(RING_CIRCUMFERENCE * percent) / ROUNDING
-    ringFill.setAttribute('stroke-dasharray', `${taken} ${whole}`)
+    ringFill.setAttribute('stroke-dasharray', ringDash(percent))
     ringFill.toggleAttribute('data-empty', percent === null || percent <= 0)
   }
 
-  /** Read the colours the ring's own words take: their band, mixed by the browser (stats-ramp.ts). */
+  /** Read the colours the pie's own words take: their band, mixed by the browser (stats-ramp.ts). A drawn ring takes its colour from the stylesheet, so only the pie is read. */
   function readColours() {
-    colours = ring === null ? null : readPieColours(ring)
+    colours = ring === null || readPrefs().contextDisplay !== CONTEXT_DISPLAY_PIE ? null : readPieColours(ring)
     return colours
   }
 
   /**
-   * Paint the reading: the number and the plate in the band the occupancy fell
-   * on, and the host's trigger's own words for a screen reader, so the control
-   * the reader finds is named the same as the one it stands for.
+   * Paint the reading on the face the reader picked, with the host's trigger's
+   * own words for a screen reader, so the control the reader finds is named the
+   * same as the one it stands for.
    */
   function paintRing() {
     if (ring === null) return
     const percent = reading()
-    const moved = writeRamp(ring, 'context', percent === null ? null : rampPosition(percent, CONTEXT_STOPS))
+    const display = readPrefs().contextDisplay
     const trigger = contextTrigger()
     if (ringButton !== null) {
       const label = trigger === null ? null : trigger.getAttribute('aria-label')
@@ -145,9 +137,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     mirrorExpanded()
     drawReading(percent)
-    // A band that moved carries a new colour: the plate's image is drawn from
-    // the colours read for it, and only a moved band needs a new reading.
-    paintContextPie(ring, percent, moved || colours === null ? readColours() : colours)
+    if (display === CONTEXT_DISPLAY_PIE) {
+      writeContextBand(ring, null)
+      const moved = writeRamp(ring, 'context', percent === null ? null : rampPosition(percent, CONTEXT_STOPS))
+      // A band that moved carries a new colour: the plate's image is drawn from
+      // the colours read for it, and only a moved band needs a new reading.
+      paintContextPie(ring, percent, moved || colours === null ? readColours() : colours)
+      return
+    }
+    // The drawn ring: no plate, and the colour rule the reader picked — the
+    // continuous band, or the three bands with their floor at 70 and 90.
+    releaseContextPie(ring)
+    if (display === CONTEXT_DISPLAY_RING_BAND) {
+      writeRamp(ring, 'context', null)
+      writeContextBand(ring, percent)
+    } else {
+      writeContextBand(ring, null)
+      writeRamp(ring, 'context', percent === null ? null : rampPosition(percent, CONTEXT_STOPS))
+    }
   }
 
   /** Say on the ring whether the host's panel is open, as the host's trigger says it. */

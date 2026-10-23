@@ -2,7 +2,7 @@ import { conversationSessionId, findConversationSession, hostSessions } from '@d
 import { hostChatSeat } from '../../core/i18n'
 import { prefsFromForm, readPrefs } from '../../core/prefs'
 import { peerPresent } from '../../shared/peer-plugin'
-import { BILLING_OFF, STATS_POSITION_FOOTER, STATS_POSITION_INLINE } from '../../constants'
+import { BILLING_OFF, CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_BAND, STATS_POSITION_FOOTER, STATS_POSITION_INLINE } from '../../constants'
 import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
@@ -11,6 +11,7 @@ import { createSessionCost, loadPrices, priceDocument, priceGeneration } from '.
 import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, markContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
+import { writeContextBand } from './context-meter-face'
 import { priceFor, priceTierAt } from '@dsh-claude-style/contracts/prices'
 import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
@@ -345,16 +346,26 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
       ?? (meter === null ? null : meterOccupancy(meter))
     if (skinRing !== null && ringRoot !== null) skinRing.setReading(occupancy)
     else if (meter !== null) {
-      const rampMoved = writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
-      // The pie is dsh-chat-ux's own reading of the same meter: while that
-      // plugin draws it, the host's ring is left to that plugin's draw
-      // (docs/THIRD_PARTY_NOTICES.md).
-      if (peerPresent('dsh-chat-ux')) paintContextPie(meter, null, null)
-      else {
-        // The read phase's colours hold until this pass moves the band they
-        // come from; only then are they read again, after the write (D40).
-        const stale = rampMoved || pieColours === null || pieColours.trigger !== meter.querySelector('button')
-        paintContextPie(meter, occupancy, stale ? readPieColours(meter) : pieColours)
+      const display = readPrefs().contextDisplay
+      if (display === CONTEXT_DISPLAY_RING_BAND) {
+        // The measured face keeps the host's circle and takes the three bands.
+        writeRamp(meter, 'context', null)
+        writeContextBand(meter, occupancy)
+        releaseContextPie(meter)
+      } else {
+        writeContextBand(meter, null)
+        const rampMoved = writeRamp(meter, 'context', occupancy === null ? null : rampPosition(occupancy, CONTEXT_STOPS))
+        // The pie is dsh-chat-ux's own reading of the same meter: while that
+        // plugin draws it, the host's ring is left to that plugin's draw
+        // (docs/THIRD_PARTY_NOTICES.md). The drawn ring keeps the host's circle
+        // in the continuous band instead of a pie.
+        if (display !== CONTEXT_DISPLAY_PIE || peerPresent('dsh-chat-ux')) releaseContextPie(meter)
+        else {
+          // The read phase's colours hold until this pass moves the band they
+          // come from; only then are they read again, after the write (D40).
+          const stale = rampMoved || pieColours === null || pieColours.trigger !== meter.querySelector('button')
+          paintContextPie(meter, occupancy, stale ? readPieColours(meter) : pieColours)
+        }
       }
     }
     pieColours = null
@@ -385,9 +396,11 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
     measure() {
       const meter = findContextMeter()
       // The ring the skin draws reads its own colours (meter-ring.ts): only a
-      // meter that keeps its place is read here.
+      // meter that keeps its place, drawn as a pie, is read here.
       const skinRing = ring()
-      pieColours = skinRing?.root() != null || meter === null || peerPresent('dsh-chat-ux') ? null : readPieColours(meter)
+      pieColours = skinRing?.root() != null || meter === null || peerPresent('dsh-chat-ux') || readPrefs().contextDisplay !== CONTEXT_DISPLAY_PIE
+        ? null
+        : readPieColours(meter)
     },
     /** One pass: keep the numbers current on whichever surface the position names. */
     sync() {
@@ -428,6 +441,7 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
       const meter = findContextMeter()
       if (meter !== null) {
         writeRamp(meter, 'context', null)
+        writeContextBand(meter, null)
         // The host's ring comes back with the stylesheet the pie replaced.
         releaseContextPie(meter)
       }

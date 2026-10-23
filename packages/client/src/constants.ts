@@ -120,6 +120,14 @@ export const SIDEBAR_LAYOUT_ATTR = 'data-dsh-claude-sidebar-layout'
  */
 export const ONGOING_INDICATOR_ATTR = 'data-dsh-claude-ongoing-indicator'
 export const STATS_POSITION_ATTR = 'data-dsh-claude-stats-position'
+/**
+ * The face the context meter is drawn with (features/context-stats/
+ * context-meter-face.ts): the pie, dsh's own ring on the continuous band, or
+ * the measured ring on three bands. The value is `contextDisplay` itself.
+ */
+export const CONTEXT_DISPLAY_ATTR = 'data-dsh-claude-context-display'
+/** Whether the percentage stands beside that face, as `on` or `off` (features/context-stats/meter-ring.css). */
+export const CONTEXT_NUMBERS_ATTR = 'data-dsh-claude-context-numbers'
 /** The room under the conversation's composer (features/composer/bottom-gap.css); the host's own writes no attribute. */
 export const COMPOSER_GAP_ATTR = 'data-dsh-claude-composer-gap'
 /** The factor the conversation column draws at (features/conversation-width/); the full width writes no attribute. */

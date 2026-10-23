@@ -398,6 +398,17 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-ramp
 body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-ramp="context"] circle[stroke-dasharray] {
   stroke: color-mix(in oklch, var(--dsh-claude-ramp-from), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from)) var(--dsh-claude-ramp-position, 0%));
 }
+/* The three-band face on the host's own meter, while the skin's ring does not
+   stand in its place: the graphic keeps the measured colour and the number
+   takes the band's ink (features/context-stats/context-meter-face.ts; the band
+   map lives in context-stats/meter-ring.css and the values in
+   composer/vars.css). */
+body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-context-band] button > span {
+  color: var(--dsh-claude-band-ink);
+}
+body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-context-band] circle[stroke-dasharray] {
+  stroke: var(--dsh-claude-band-graphic);
+}
 
 /* ---------- the meter's pie ---------- */
 /* The reading drawn as a pie (features/context-stats/context-meter-pie.ts): the

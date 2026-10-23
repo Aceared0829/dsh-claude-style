@@ -6,16 +6,18 @@
  * with no paint: the press on the ring is handed to the host's trigger, and the
  * host's panel opens over the ring. The ring says the same reading the host's
  * meter says, in the colour band that reading fell on, and reads it as a pie;
- * on a phone-width card it keeps the arc and gives up the number.
+ * the reader may keep the drawn ring in that continuous band instead, or take
+ * the measured ring in three bands, and may hide the number beside either face.
+ * On a phone-width card it keeps the arc and gives up the number.
  *
  * @capability context-stats
  * @features context-stats
- * @risk The ring the skin draws disagrees with the host's own reading, or names itself differently to a screen reader, or opens the host's panel somewhere the reader cannot see it.
+ * @risk The ring the skin draws disagrees with the host's own reading, or names itself differently to a screen reader, or opens the host's panel somewhere the reader cannot see it, or ignores the face and the number the reader picked.
  */
 import { spec } from '../../fixtures/behaviour.mjs'
 
 /** The ring, its button, the host's meter and the host's own trigger, as the page holds them. */
-const readRing = (t) => t.page.evaluate(([ringSelector, meterAttr, rampAttr, rampSpanAttr, pieAttr]) => {
+const readRing = (t) => t.page.evaluate(([ringSelector, meterAttr, rampAttr, rampSpanAttr, pieAttr, bandAttr]) => {
   const ring = document.querySelector(ringSelector)
   const meter = document.querySelector(`[${meterAttr}]`)
   if (ring === null) return null
@@ -33,6 +35,7 @@ const readRing = (t) => t.page.evaluate(([ringSelector, meterAttr, rampAttr, ram
     meterDisplay: meter === null ? null : getComputedStyle(meter).display,
     ramped: ring.getAttribute(rampAttr),
     span: ring.getAttribute(rampSpanAttr),
+    band: ring.getAttribute(bandAttr),
     pie: ring.hasAttribute(pieAttr),
     svg: ring.querySelector('svg'),
     svgVisibility: ring.querySelector('svg') === null ? null : getComputedStyle(ring.querySelector('svg')).visibility,
@@ -47,6 +50,7 @@ const readRing = (t) => t.page.evaluate(([ringSelector, meterAttr, rampAttr, ram
   t.surface.attribute('stats.ramp'),
   t.surface.attribute('stats.ramp-span'),
   t.surface.attribute('stats.meter-pie'),
+  t.surface.attribute('stats.context-band'),
 ])
 
 export default spec({ page: 'context-stats', bands: ['phone', 'wide'] }, ({ test }) => {
@@ -71,6 +75,49 @@ export default spec({ page: 'context-stats', bands: ['phone', 'wide'] }, ({ test
     t.expectThat.equal(reading.image !== null && reading.image.includes('data:image/svg+xml'), true, 'the plate is the image the feature drew')
     t.expectThat.equal(reading.tone !== null && reading.image !== null && reading.image.includes(`fill="${reading.tone}"`), true,
       `the plate is painted in the reading's own colour (${reading.tone})`)
+  })
+
+  test('the reader can keep the drawn ring in the continuous band instead of the pie', async (t) => {
+    await t.prefs({ contextDisplay: 'ring-ramp' })
+    const reading = await readRing(t)
+    t.expectThat.equal(reading.pie, false, 'the ring carries no pie mark')
+    t.expectThat.equal(reading.image, null, 'no plate image is painted')
+    t.expectThat.equal(reading.svgVisibility, 'visible', `the ring's own circle stands (${reading.svgVisibility})`)
+    t.expectThat.equal(reading.ramped, 'context', `the ring takes the occupancy's continuous band (${reading.ramped})`)
+    t.expectThat.equal(reading.span !== null && reading.span !== '', true, `the band names its segment (${reading.span})`)
+  })
+
+  test('the measured face takes the band its reading fell in, and the number follows the switch', async (t) => {
+    await t.prefs({ contextDisplay: 'ring-band', contextNumbers: false })
+    const reading = await readRing(t)
+    t.expectThat.equal(reading.band, 'yellow', `84 % falls in the yellow band (${reading.band})`)
+    t.expectThat.equal(reading.ramped, null, 'the continuous band is taken off')
+    const paint = await t.page.evaluate((ringSelector) => {
+      const ring = document.querySelector(ringSelector)
+      const arc = ring?.querySelector('circle[stroke-dasharray]') ?? null
+      const track = ring === null || ring === undefined
+        ? null
+        : [...ring.querySelectorAll('circle')].find((circle) => !circle.hasAttribute('stroke-dasharray')) ?? null
+      const value = ring?.querySelector('button > span') ?? null
+      return {
+        stroke: arc === null ? null : getComputedStyle(arc).stroke,
+        track: track === null ? null : getComputedStyle(track).stroke,
+        width: arc === null ? null : getComputedStyle(arc).strokeWidth,
+        ink: value === null ? null : getComputedStyle(value).color,
+        shown: value !== null && value.getClientRects().length > 0,
+      }
+    }, t.surface('stats.meter-ring'))
+    t.expectThat.equal(paint.stroke !== null && paint.stroke !== paint.track, true,
+      `the arc takes the band's colour, apart from the plate (${paint.stroke} against ${paint.track})`)
+    t.expectThat.equal(paint.ink !== null && paint.ink !== paint.track, true, `the number takes the band's ink (${paint.ink})`)
+    t.expectThat.equal(paint.width, '2.2px', `the measured face keeps its heavier stroke (${paint.width})`)
+    t.expectThat.equal(paint.shown, false, 'the number is given up while the switch is off')
+    await t.prefs({ contextNumbers: true })
+    // A phone-width card gives the number up whatever the switch says (the
+    // card's own room rule, meter-ring.css).
+    const narrow = await t.page.evaluate(() => innerWidth <= 480)
+    t.expectThat.equal((await readRing(t)).valueShown, !narrow,
+      narrow ? 'the phone-width card keeps the number away' : 'the number comes back with the switch')
   })
 
   test('a press on the ring opens the host\'s panel, and the pointer leaving the ring closes it', async (t) => {

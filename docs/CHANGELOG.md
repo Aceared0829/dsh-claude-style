@@ -10,6 +10,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - 对话统计新增紧凑底栏：费用、缓存命中率和上下文圆环共用工具栏，支持左侧、居中和右侧位置，空间不足时独立成行。
 - 主窗口设置的输入区新增「底部间距」，对话页输入框与窗口底边的距离可选紧凑、默认和宽松。
+- 主窗口设置的输入区新增「上下文外显样式」与「上下文外显数字」：上下文占用可在饼图、dsh 圆环配绿到红、量取附图的圆环配蓝黄红三色之间选择，数字开关决定表盘旁是否显示百分比。
 - 主窗口设置的对话区新增「对话栏宽度」，按宿主宽度的 100%、75% 或 50% 绘制对话栏，输入框随对话栏同宽。
 - 新增侧栏悬停展开：侧栏收起时，鼠标停在侧栏按钮上，侧栏就浮在页面上方展开，主窗口宽度不变；鼠标移开或选中会话后自动收起，点击按钮仍是固定展开，可在设置页「侧栏 → 悬停展开侧栏」关闭；Windows 桌面端与 web 生效（#108）。
 
@@ -34,6 +35,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 - Conversation statistics add a compact footer with cost, cache hit rate and the context meter, left/center/right alignment, and a separate line when toolbar space runs out.
 - Main window settings add Bottom gap under Composer, which sets the room between the conversation's composer and the bottom of the window to Compact, Default or Roomy.
+- Main window settings add Context display and Context display number under Composer: the context share draws as the pie, dsh's ring on the green-to-red band, or the measured ring on three bands, and the switch shows or hides the percentage beside it.
 - Main window settings add Conversation width under Conversation, which draws the conversation column at 100%, 75% or 50% of the host's width with the composer following it.
 - Add opening the sidebar on hover: while the sidebar is collapsed, resting the pointer on its toggle opens it over the page and the main window keeps its width; it closes when the pointer leaves or a session is picked, a click on the toggle still keeps it open, and Settings → Sidebar → Open the sidebar on hover turns it off; it works on the Windows desktop app and the web (#108).
 

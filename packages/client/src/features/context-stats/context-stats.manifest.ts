@@ -15,6 +15,31 @@ export default {
   stylesheets: [{ file: 'footer-layout.css', rank: 106, gate: true }],
   settingsRows: [{
     tab: 'composer',
+    // The meter's face and its number stand ahead of the figures' own rows:
+    // the face is what the reader looks at, the figures what they read.
+    rank: 43,
+    pref: 'contextDisplay',
+    title: 'contextDisplayTitle',
+    desc: 'contextDisplayDesc',
+    control: 'context-display',
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: 'conversationComposerNote',
+    },
+  }, {
+    tab: 'composer',
+    rank: 44,
+    pref: 'contextNumbers',
+    title: 'contextNumbersTitle',
+    desc: 'contextNumbersDesc',
+    requires: {
+      pref: 'composerScope',
+      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+      note: 'conversationComposerNote',
+    },
+  }, {
+    tab: 'composer',
     // The two figures' rows stand with the composer's other billing display,
     // under the group's peak-rate row (peakrate.manifest.ts, rank 45).
     rank: 46,

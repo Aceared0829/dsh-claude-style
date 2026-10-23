@@ -7,7 +7,7 @@
    the row shell, the switches, the brand editor and the tab strip are the
    other. */
 
-body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker) {
+body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker, .dsh-claude-context-display) {
   align-self: stretch;
 }
 
@@ -22,13 +22,13 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-bra
    starburst, DeepSeek's whale in brand blue — inlined as CSS data URIs, so they
    read in full colour on either theme: a new brand is one option in
    settings-tab-general.ts and one [data-brand] rule here. */
-body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker) {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker, .dsh-claude-context-display) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card) {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card) {
   appearance: none;
   margin: 0;
   display: flex;
@@ -47,16 +47,16 @@ body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card,
   transition: border-color var(--dsh-claude-timing-feedback);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card):hover {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card):hover {
   border-color: var(--dsw-alias-border-l2);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card):focus-visible {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card):focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
   outline-offset: 1px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card)[data-active] {
+body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card)[data-active] {
   border-color: var(--dsw-alias-brand-primary, #d97757);
 }
 
@@ -457,6 +457,86 @@ body[data-dsh-claude-style] .dsh-claude-ongoing-sample-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* A context-display card holds a row of readings drawn the way the composer
+   draws them — the pie's plate, or the ring's track and arc — and no text at
+   all: the three faces are told apart by their drawings (the row's description
+   names them in card order), and the third card samples one reading in each of
+   its three bands (40 %, 80 %, 95 %). The card's accessible name is the face's. */
+body[data-dsh-claude-style] .dsh-claude-context-display-card {
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  padding: 16px 12px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-display-samples {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* The reading's ink: the continuous band's mixed colour, or the three bands'
+   own value mapped by the stylesheets (features/composer/inline-bar.css,
+   features/context-stats/meter-ring.css). The fallback keeps the samples
+   readable where the composer restyle is off and the band's variables are
+   absent. */
+body[data-dsh-claude-style] .dsh-claude-context-sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: var(--dsh-claude-sample-ink);
+  --dsh-claude-sample-ink: color-mix(in oklch, var(--dsh-claude-ramp-from, var(--dsh-claude-tone-green)), var(--dsh-claude-ramp-to, var(--dsh-claude-ramp-from, var(--dsh-claude-tone-green))) var(--dsh-claude-ramp-position, 0%));
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-sample[data-dsh-claude-context-band] {
+  --dsh-claude-sample-ink: var(--dsh-claude-band-graphic);
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-sample-face {
+  display: inline-flex;
+  flex: none;
+  width: 26px;
+  height: 26px;
+}
+
+/* The plate the meter's own pie builder returns (features/context-stats/
+   context-meter-pie.ts): an image written onto the face, held to its box. */
+body[data-dsh-claude-style] .dsh-claude-context-sample-pie {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-sample-face > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-sample-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--dsw-alias-label-tertiary) 26%, transparent);
+  stroke-width: 2px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-context-sample-arc {
+  fill: none;
+  stroke: var(--dsh-claude-sample-ink);
+  stroke-width: 2px;
+  stroke-linecap: round;
+}
+
+/* The measured face's heavier stroke: 2.2 px on the 5.5 px radius is the
+   4.5 px / 27 px the reference image carries (the work order's measurement). */
+body[data-dsh-claude-style] .dsh-claude-context-sample[data-face="ring-band"] .dsh-claude-context-sample-track,
+body[data-dsh-claude-style] .dsh-claude-context-sample[data-face="ring-band"] .dsh-claude-context-sample-arc {
+  stroke-width: 2.2px;
 }
 
 /* ---------- The cards while the animation choice is reduced (D40) ---------- */

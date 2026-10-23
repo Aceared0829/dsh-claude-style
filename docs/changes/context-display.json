@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-23",
+  "group": "new",
+  "order": 0,
+  "external": true,
+  "zh": "主窗口设置的输入区新增「上下文外显样式」与「上下文外显数字」：上下文占用可在饼图、dsh 圆环配绿到红、量取附图的圆环配蓝黄红三色之间选择，数字开关决定表盘旁是否显示百分比。",
+  "en": "Main window settings add Context display and Context display number under Composer: the context share draws as the pie, dsh's ring on the green-to-red band, or the measured ring on three bands, and the switch shows or hides the percentage beside it."
+}

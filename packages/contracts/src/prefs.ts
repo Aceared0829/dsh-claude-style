@@ -134,6 +134,16 @@ export const STATS_POSITION_FOOTER = 'footer'
 export const STATS_POSITIONS = [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER] as const
 export const STATS_FOOTER_ALIGNS = ['left', 'center', 'right'] as const
 
+/**
+ * How the composer draws the context meter's reading: the pie the skin has
+ * painted, dsh's own thin ring on the continuous green-to-red band, or the
+ * heavier ring measured from the reference image on three bands.
+ */
+export const CONTEXT_DISPLAY_PIE = 'pie'
+export const CONTEXT_DISPLAY_RING_RAMP = 'ring-ramp'
+export const CONTEXT_DISPLAY_RING_BAND = 'ring-band'
+export const CONTEXT_DISPLAYS = [CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_RAMP, CONTEXT_DISPLAY_RING_BAND] as const
+
 /** How wide the conversation column draws, as a factor of the width the host gives it. */
 export const CONVERSATION_WIDTH_FULL = '1'
 export const CONVERSATION_WIDTH_THREE_QUARTERS = '0.75'
@@ -277,6 +287,10 @@ export const PREFS = {
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },
   permissionsControl: { type: 'boolean', default: true },
   statsPosition: { type: 'choice', values: STATS_POSITIONS, default: STATS_POSITION_CONTEXT },
+  /** The face the context meter is drawn with (CONTEXT_DISPLAYS). */
+  contextDisplay: { type: 'choice', values: CONTEXT_DISPLAYS, default: CONTEXT_DISPLAY_PIE },
+  /** Whether the percentage stands beside that face. */
+  contextNumbers: { type: 'boolean', default: true },
   statsFooterAlign: { type: 'choice', values: STATS_FOOTER_ALIGNS, default: 'center' },
   /** Which official price table the session's cost follows, or off for no figure at all. */
   billingCurrency: { type: 'choice', values: BILLING_CHOICES, default: CURRENCY_CNY },
