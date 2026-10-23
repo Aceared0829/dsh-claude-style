@@ -464,9 +464,8 @@ export default {
         near(spot(orbitFrames[25], 1), spot(orbitFrames[10], 3), 0.6) && near(spot(orbitFrames[25], 3), spot(orbitFrames[10], 1), 0.6) &&
         near(spot(orbitFrames[25], 0), spot(orbitFrames[10], 0), 0.05) && dwells && closes && bow >= 1,
       JSON.stringify({ readings: orbitFrames.length, shape, bow: Number(bow.toFixed(2)), closes, dwells }))
-    // 轮换：一个动作站满 10 秒才换，换的是另一条轨道（不会换到自己）；换的那一下是交接，
-    // 旧的那条各自淡出到 0、等最后一颗走完新的那条才进场、各自淡入到 1；
-    // 旧的淡出期间没有哪条在场，这几帧不算换。
+    // 轮换：一个动作站满 10 秒才换，换的是另一条轨道（不会换到自己）；交接一开始新的那条
+    // 就在场，所以从那一帧算换。
     const rotation = (wait.rotation || []).filter((frame) => frame !== null && frame.loader !== null && frame.loader.motion !== null)
     const seen = rotation.map((frame) => ({ at: frame.at, motion: String(frame.loader.motion), loader: frame.loader }))
     const starts = seen.length === 0 ? [] : [0]
@@ -481,20 +480,38 @@ export default {
         gaps.every((one) => one >= bound('loaderRotateGapMinMs') && one <= bound('loaderRotateGapMaxMs')) &&
         rotated.every((one) => one === true),
       JSON.stringify({ changes: changes.length, gaps: gaps.map((one) => Math.round(one)), motions: starts.map((at) => motionOf(at)) }))
-    const laneTail = (frame, name) => ((laneOf(frame.loader, name).opacity || [])[0])
-    // The hand-over is read on the frames between the first change and the next:
-    // the lane that stood before it fades out and the one it names fades in.
+    // 交接读第一次换到第二次换之间的那些帧，从换之前的最后一帧起：旧轨道的每颗球在自己
+    // 静止的那一刻把位置交给新轨道里配对的那颗，新的那颗从原地出发走进自己的轨迹。所以框里
+    // 每一帧都有三到四颗球，每颗刚露面的球都站在上一帧某颗球的位置上，交接完只剩新的那条。
+    const laneShows = (frame, name, test) => {
+      const opacity = laneOf(frame.loader, name).opacity || []
+      return opacity.length > 0 && opacity.every(test)
+    }
+    const shown = (lane, dot) => (lane.opacity || [])[dot] > 0.5
+    const inView = (frame) => (frame.loader.lanes || []).flatMap((lane) => (lane.spots || []).filter((_, dot) => shown(lane, dot)))
     const before = changes.length === 0 ? null : seen[changes[0] - 1]
     const comeLane = changes.length === 0 ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => name === `is-${motionOf(changes[0])}`) ?? null
-    const goneLane = before === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneTail(before, name) > 0.9) ?? null
-    const settled = changes.length < 2 || goneLane === null || comeLane === null ? null
-      : seen.slice(changes[0], changes[1]).find((frame) => laneTail(frame, goneLane) < 0.1 && laneTail(frame, comeLane) > 0.9) ?? null
-    const crowded = (wait.rotation || []).filter((frame) => frame !== null && frame.loader !== null)
-      .filter((frame) => (frame.loader.lanes || []).filter((lane) => (lane.opacity || []).some((one) => one > 0.05)).length > 1)
-    check('换轨道是一次交接：旧的那条各自淡出、新的那条各自淡入，没有一颗球是被搬过去的，框里也从不同时画两条',
+    const goneLane = before === null ? null : ['is-bounce', 'is-line', 'is-orbit'].find((name) => laneShows(before, name, (one) => one > 0.9)) ?? null
+    const handing = changes.length < 2 ? [] : seen.slice(changes[0] - 1, changes[1])
+    const settled = goneLane === null || comeLane === null ? null
+      : handing.find((frame) => laneShows(frame, goneLane, (one) => one < 0.1) && laneShows(frame, comeLane, (one) => one > 0.9)) ?? null
+    const counts = handing.map((frame) => inView(frame).length)
+    const jumps = []
+    for (let at = 1; at < handing.length; at += 1) {
+      const earlier = inView(handing[at - 1])
+      const lanesBefore = handing[at - 1].loader.lanes || []
+      ;(handing[at].loader.lanes || []).forEach((lane, which) => {
+        (lane.spots || []).forEach((spot, dot) => {
+          if (!shown(lane, dot) || shown(lanesBefore[which] || {}, dot)) return
+          const gap = Math.min(...earlier.map((one) => Math.hypot(one[0] - spot[0], one[1] - spot[1])))
+          if (!(gap <= bound('loaderHandOverStepPx'))) jumps.push({ lane: lane.name, dot, gap: Number(gap.toFixed(2)) })
+        })
+      })
+    }
+    check('换轨道是一次形变：每颗新出现的球都从旧轨道某颗球所在的位置出发，框里每一帧都有三到四颗球，交接完只剩新的那条',
       goneLane !== null && comeLane !== null && goneLane !== comeLane && settled !== null && String(settled.motion).includes(comeLane) &&
-        crowded.length === 0,
-      JSON.stringify({ gone: goneLane, come: comeLane, settled: settled === null ? null : settled.motion, crowded: crowded.length }))
+        counts.length > 0 && counts.every((one) => one >= 3 && one <= 4) && jumps.length === 0,
+      JSON.stringify({ gone: goneLane, come: comeLane, settled: settled === null ? null : settled.motion, fewest: Math.min(...counts), most: Math.max(...counts), jumps }))
     check('the DeepSeek brand keeps the host\'s whale tail, stands the skin\'s dots down and waits on the host\'s own word',
       wait.deepseek?.loader?.shown === false && wait.deepseek?.whaleShown === true && wait.deepseek?.word === 'Deep diving',
       JSON.stringify(wait.deepseek))

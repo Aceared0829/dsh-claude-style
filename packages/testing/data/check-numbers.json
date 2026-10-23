@@ -713,8 +713,10 @@
       "加载点每 10 秒换一条轨道，换的不会是正站着的那一条": [
         2
       ],
-      "换轨道是一次交接：旧的那条各自淡出、新的那条各自淡入，没有一颗球是被搬过去的，框里也从不同时画两条": [
-        0
+      "换轨道是一次形变：每颗新出现的球都从旧轨道某颗球所在的位置出发，框里每一帧都有三到四颗球，交接完只剩新的那条": [
+        0,
+        3,
+        4
       ],
       "the old wording leaves upward with a blur: the leave pose is set, its opacity falls and its glyphs blur": [
         0,

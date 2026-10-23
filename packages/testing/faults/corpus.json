@@ -142,13 +142,6 @@
       "defect": "undoes: 写下的设置值在宿主答复之前不再被文档盖回"
     },
     {
-      "id": "chat-wait-20858422",
-      "from": "history 20858422",
-      "apply": "reverse",
-      "patch": "patches/chat-wait-20858422.patch",
-      "defect": "undoes: 加载点换动作先出后进，直线往返改走简谐运动"
-    },
-    {
       "id": "settings-8d70b272",
       "from": "history 8d70b272",
       "apply": "reverse",

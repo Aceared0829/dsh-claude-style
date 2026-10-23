@@ -100,14 +100,15 @@
           clock: clock.hidden ? null : clock.textContent,
           badge: badge.hidden ? null : badge.textContent,
           // The loader the Claude brand leads the line with, and the host's own
-          // whale tail it stands in for: two lanes of three dots in the accent in
+          // whale tail it stands in for: three lanes of dots in the accent in
           // force, one lane for each motion, of which the lane in play is drawn
-          // and the other waits out of the page
+          // and the others wait out of the page
           // (features/chat-wait/wait-loader.ts). A change between the motions
-          // fades one lane's dots out and the other's in, each on its own moment,
+          // hands each dot of one lane to a dot of the other at its own moment,
           // so both lanes are read whole — their opacities, the poses their
-          // motions stand them at, and their own starts — and the animation
-          // beside them is the one the lane in play runs.
+          // motions stand them at, where each dot stands in the loader's own
+          // pixels, and their own starts — and the animation beside them is the
+          // one the lane in play runs.
           loader: (function () {
             var lanes = Array.from(loader.children).map(function (lane) {
               var laneDots = Array.from(lane.children)
@@ -115,6 +116,11 @@
                 name: lane.className,
                 opacity: laneDots.map(function (one) { return Number(getComputedStyle(one).opacity) }),
                 translate: laneDots.map(function (one) { return getComputedStyle(one).translate }),
+                spots: laneDots.map(function (one) {
+                  var moved = getComputedStyle(one).translate
+                  var by = moved === 'none' ? [] : moved.split(' ').map(parseFloat)
+                  return [one.offsetLeft + one.offsetWidth / 2 + (by[0] || 0), one.offsetTop + one.offsetHeight + (by[1] || 0)]
+                }),
                 scale: laneDots.map(function (one) { return getComputedStyle(one).scale }),
                 delays: laneDots.map(function (one) { return getComputedStyle(one).animationDelay }),
                 animation: laneDots.length === 0 ? null : getComputedStyle(laneDots[0]).animationName,
@@ -257,8 +263,8 @@
       // product's own (D77: a duration that is the behaviour), so every frame is
       // recorded with its moment until two changes have landed: the stretch one
       // motion stood and the hand-over between two of them are both read off it.
-      // While the lane leaving fades out no lane is in play yet, so a change is
-      // counted when the next lane comes into play.
+      // The lane arriving comes into play the moment a hand-over begins, so a
+      // change is counted then.
       var watchRotation = function () {
         return probe.until(function () {
           var reading = lineOf()

@@ -98,13 +98,18 @@
     },
     {
       "name": "loaderRotateGapMinMs",
-      "value": 9300,
-      "reason": "The least stretch between two changes of the waiting line's loader motion. The rotation is a fixed 10s, but a change is read when the arriving lane comes into play, which is after the lane leaving has faded out; that fade starts at the leaving motion's next turning point, so it is as long as 0.625s (the walking lane's own leg) on one change and near nothing on the next. 10s less that leg, less a frame of sampling, is the floor."
+      "value": 9900,
+      "reason": "The least stretch between two changes of the waiting line's loader motion. The rotation is a fixed 10s and a change is read the moment the arriving lane comes into play, which is when the hand-over begins; 10s less the frames of sampling on either end is the floor."
     },
     {
       "name": "loaderRotateGapMaxMs",
       "value": 11500,
-      "reason": "The most the same stretch may come to: the fixed 10s plus the same 0.625s leg the arriving lane's fade can add on one change and not the next, and room for a change landing between two frames of the probe's own reading."
+      "reason": "The most the same stretch may come to: the fixed 10s, room for the rotation's timer firing late on a loaded machine, and room for a change landing between two frames of the probe's own reading."
+    },
+    {
+      "name": "loaderHandOverStepPx",
+      "value": 1.5,
+      "reason": "How far a loader dot coming into view during a hand-over may stand from the nearest dot drawn the frame before. It takes the place of its partner at the frame that partner stands still, so the distance is what the partner drifts in one frame of the probe's reading around its still moment: under half a pixel at 50ms a frame for the slowest of the three motions' still moments."
     },
     {
       "name": "remoteSettingsFollowTimeoutMs",

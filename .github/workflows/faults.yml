@@ -29,7 +29,7 @@ permissions:
 jobs:
   faults:
     runs-on: ubuntu-latest
-    # 32 faults, each a spec run and, where the browser half is reached, a build.
+    # 33 faults, each a spec run and, where the browser half is reached, a build.
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7

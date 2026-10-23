@@ -121,12 +121,11 @@ body[data-dsh-claude-style][data-dsh-claude-brand="claude"] .dsh-claude-chat-wai
 }
 
 /* The loader carries every motion at once, one lane each, so a change between
-   them is a hand-over rather than a redraw: the lane the turn is leaving fades
-   its dots out where its own motion has them, and once the last of them has gone
-   the lane it is going to fades its dots in where that motion carries them, so
-   the box never draws two motions at once (features/chat-wait/wait-loader.ts).
-   A lane out of play is taken out of the page, which is what lets the lane
-   coming back start its motion from the top. */
+   them is a hand-over rather than a redraw: each dot of the lane leaving gives
+   its place, at its own still moment, to the dot it is paired with in the lane
+   arriving, which travels from there into its own path
+   (features/chat-wait/wait-loader.ts). A lane out of play is taken out of the
+   page, which is what lets the lane coming back start its motion from the top. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane {
   position: absolute;
   inset: 0;
@@ -164,8 +163,8 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-dot {
 }
 
 /* The lane in play draws its dots, and the one on its way out keeps drawing them
-   until its own fades have taken them; the hand-over's fades sit above these
-   declarations and carry each dot between the two. */
+   until each has been handed over; the hand-over's own animations sit above
+   these declarations and decide the frame each dot comes in or goes out. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-active .dsh-claude-chat-wait-dot,
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-leaving .dsh-claude-chat-wait-dot {
   opacity: 1;
@@ -365,17 +364,19 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line .dsh-claude-chat-
   animation-delay: calc(-11 * var(--dsh-claude-period-dot-line) / 12);
 }
 
-/* What a hand-over needs to know about a lane's own motion, read by
+/* What the hand-over needs to know about a lane's own motion, read by
    features/chat-wait/wait-loader.ts: the shares of its keyframes at which a dot
-   of it arrives and leaves, and how long one of its fades takes as a share of
-   the motion's own turn. The bounce's dot arrives at the top of its hop and
-   leaves off the floor the instant it rebounds; the walk's arrives at the middle
-   of its line, and leaves at the end it turns at — a share each, since it
-   crosses the middle and turns at an end twice a turn. Which curve each fade
-   runs on is the browser half's, read from the token sheet (D9). */
+   of it fades in as the loader opens and how long that fade takes as a share of
+   the motion's own turn, and the shares at which a dot stands still at its own
+   size, which are the moments a change hands it to the next motion. The
+   bounce's dot fades in at the top of its hop and is handed over there; the
+   walk's fades in at the middle of its line and is handed over at the end it
+   turns at — a share each, since it crosses the middle and turns at an end twice
+   a turn. Which curve the opening fade runs on is the browser half's, read from
+   the token sheet (D9). */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-bounce {
   --dsh-claude-dot-arrives: 1;
-  --dsh-claude-dot-leaves: 0 1;
+  --dsh-claude-dot-leaves: 1;
   --dsh-claude-dot-fade: 0.5;
 }
 
@@ -385,13 +386,13 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-line {
   --dsh-claude-dot-fade: 0.25;
 }
 
-/* The swapping lane declares where it arrives — the top of its own turn, which is
-   the pose every dot of it already stands on — so a lane coming into play fades
-   its dots in where they are, over an eighth of its turn, and one going out fades
-   them where they stand: nothing inside the turn itself fades, the dots only swap
-   corners. */
+/* The swapping lane fades in at the top of its own turn, the pose every dot of it
+   already stands on, over an eighth of its turn. Its dots are handed over in the
+   middle of the four stretches where none of the four is moving: after each run
+   and before the next pair sets off. */
 body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-orbit {
   --dsh-claude-dot-arrives: 0;
+  --dsh-claude-dot-leaves: 0.2083 0.4583 0.7083 0.9583;
   --dsh-claude-dot-fade: 0.125;
 }
 
@@ -401,7 +402,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait-lane.is-orbit {
    that still cycles would strobe instead of settling — pausing it holds each
    dot at its own phase: the bouncing wave frozen at three heights, the walk at
    its three places. wait-loader.ts lays a change down at once under that
-   choice, so no fade of its own is ever on the dots. */
+   choice, so no hand-over animation of its own is ever on the dots. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] .dsh-claude-chat-wait-lane .dsh-claude-chat-wait-dot {
   animation-play-state: paused;
 }
