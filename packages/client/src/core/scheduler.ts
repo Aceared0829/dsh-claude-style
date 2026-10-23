@@ -37,6 +37,7 @@ export interface Handles {
   ban: BanHandle
   workspace: FeatureHandle
   search: FeatureHandle
+  sidebarPeek: FeatureHandle
   turnNav: FeatureHandle
   chatFollow: FeatureHandle
   chatFold: ChatFoldHandle

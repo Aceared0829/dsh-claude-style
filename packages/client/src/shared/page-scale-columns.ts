@@ -128,7 +128,7 @@ interface Carry {
  * table reads; a shell whose class names the table has not been taught leaves
  * it unmarked, and the frame is then the root slot's own child (D3).
  */
-const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
+export const FRAME_SELECTOR = '[data-dsh-claude-part~="layout-frame"]'
 
 /**
  * What each box's last carry left, kept on the box itself.

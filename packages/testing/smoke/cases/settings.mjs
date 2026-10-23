@@ -18,7 +18,7 @@ export default {
       general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
       appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
       'main-window': ['turnNav', 'viewTabs', 'headerBand', 'composerScope', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'statsPosition', 'billingCurrency', 'permissionsControl'],
-      sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'dockCards', 'sidebarLayout'],
+      sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'sidebarPeek', 'dockCards', 'sidebarLayout'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
     }
     // The main window's two groups, the conversation side above the composer's,

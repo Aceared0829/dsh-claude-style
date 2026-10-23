@@ -267,6 +267,8 @@ export const PREFS = {
   dockCards: { type: 'boolean', default: true },
   sidebarSearch: { type: 'boolean', default: true },
   searchStyle: { type: 'choice', values: SEARCH_STYLES, default: SEARCH_STYLE_OVERLAY },
+  /** Whether resting the pointer on the collapsed sidebar's toggle opens the sidebar over the page. */
+  sidebarPeek: { type: 'boolean', default: true },
   sidebarLayout: { type: 'choice', values: SIDEBAR_LAYOUTS, default: SIDEBAR_LAYOUT_RELAXED },
   ongoingIndicator: { type: 'choice', values: ONGOING_INDICATORS, default: ONGOING_INDICATOR_BREATHE },
   turnNav: { type: 'boolean', default: true },
@@ -296,6 +298,7 @@ export const LIVE_PREFS = [
   'banLocale',
   'workspaceView',
   'sidebarSearch',
+  'sidebarPeek',
   'turnNav',
   'viewTabs',
   'headerBand',
