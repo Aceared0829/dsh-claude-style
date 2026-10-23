@@ -9,7 +9,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="cn-unreleased">体验优化</h3>
 
 - 跟进 Claude 桌面版的浅色与深色画布：浅色画布改为 #FFFFFF、侧栏 #FAFAFA，深色画布改为 #191919、侧栏 #1F1F1F，整套色阶随新的画布种子一起更新。
-- 跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FFFAFA。
+- 跟进 DeepSeek 配色的浅色背景：画布改为 #FFFFFF，侧栏改为 #FAFAFA。
 
 ### 问题修复
 
@@ -22,7 +22,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 <h3 id="en-unreleased">Improvements</h3>
 
 - Follow Claude desktop's light and dark canvases: the light canvas is #FFFFFF with a #FAFAFA sidebar, the dark canvas #191919 with a #1F1F1F sidebar, and the whole ladder follows the new canvas seeds.
-- Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FFFAFA.
+- Follow DeepSeek's light background: the canvas is #FFFFFF and the sidebar #FAFAFA.
 
 ### Bug Fixes
 

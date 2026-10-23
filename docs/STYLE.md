@@ -31,7 +31,7 @@ Rules:
 
 - Never pure black. The Claude card's light canvas is the desktop's `#FFFFFF`
   with a `#FAFAFA` sidebar; its dark canvas is `#191919` with a `#1F1F1F`
-  sidebar. The DeepSeek card's light canvas is white with a `#FFFAFA` sidebar.
+  sidebar. The DeepSeek card's light canvas is white with a `#FAFAFA` sidebar.
   The reader's own message plate is the card's `bubble` fill: Claude's neutral
   plate, DeepSeek's light blue `#ECF0FF`; the custom card derives it from its
   own canvas, so a conversation bubble reads as the card that painted it.
@@ -59,7 +59,7 @@ card leaves unset.
 | Card | Accent | Canvas light | Canvas dark | Sidebar light | Sidebar dark | Bubble light | Bubble dark | Link light | Link dark | Edges | Logo ink | Code light | Code dark |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | claude (default) | `#d97757` | `#ffffff` | `#191919` | `#fafafa` | `#1f1f1f` | `#f4f2f3` | `rgba(255, 255, 255, 0.06)` | `#184f95` | `#8ab4f8` | highlight | ink | `#943333` | `#e8a08a` |
-| deepseek | `#4d6bfe` | `#ffffff` | `#13161d` | `#fffafa` | `#13161d` | `#ecf0ff` | `#262b36` | `#3b56d9` | `#8fa4ff` | surface | accent | `#0f1115` | `#eef1f8` |
+| deepseek | `#4d6bfe` | `#ffffff` | `#13161d` | `#fafafa` | `#13161d` | `#ecf0ff` | `#262b36` | `#3b56d9` | `#8fa4ff` | surface | accent | `#0f1115` | `#eef1f8` |
 
 | Tone | Seed | Light | Dark |
 | --- | --- | --- | --- |
@@ -152,10 +152,10 @@ card leaves unset.
 | `--dsw-alias-shadow-lv2` | literal | `0 4px 18px rgba(20, 20, 19, 0.10), 0 1px 3px rgba(20, 20, 19, 0.05)` | `0 4px 16px rgba(0, 0, 0, 0.30), 0 1px 3px rgba(0, 0, 0, 0.14)` | `0 4px 18px rgba(20, 20, 19, 0.10), 0 1px 3px rgba(20, 20, 19, 0.05)` | `0 4px 16px rgba(0, 0, 0, 0.30), 0 1px 3px rgba(0, 0, 0, 0.14)` | host's own |  |
 | `--dsw-specific-input-major` | `inset` | `#ffffff` | `#141414` | `#ffffff` | `#0e1117` | host's own |  |
 | `--dsw-specific-selector` | `selector` | `#fefefe` | `#323232` | `#fefefe` | `#2b2f37` | host's own |  |
-| `--dsw-specific-sidebar-fill` | card `sidebar` | `#fafafa` | `#1f1f1f` | `#fffafa` | `#13161d` | host's own |  |
+| `--dsw-specific-sidebar-fill` | card `sidebar` | `#fafafa` | `#1f1f1f` | `#fafafa` | `#13161d` | host's own |  |
 | `--dsw-alias-brand-primary-new-colorprimary-new-color` | `accent` | `#d97757` | `#d97757` | `#4d6bfe` | `#4d6bfe` | host's own |  |
 | `--dsh-claude-canvas` | `canvas` | `#ffffff` | `#191919` | `#ffffff` | `#13161d` | `var(--dsw-alias-bg-base)` | the page canvas, the search box |
-| `--dsh-claude-sidebar-canvas` | card `sidebar` | `#fafafa` | `#1f1f1f` | `#fffafa` | `#13161d` | `var(--dsw-specific-sidebar-fill)` | the sidebar |
+| `--dsh-claude-sidebar-canvas` | card `sidebar` | `#fafafa` | `#1f1f1f` | `#fafafa` | `#13161d` | `var(--dsw-specific-sidebar-fill)` | the sidebar |
 | `--dsh-claude-raised` | `card` | — | `#232323` | — | `#1d2028` | `var(--dsw-alias-bg-overlay)` | popovers and menus raised above the dark canvas |
 | `--dsh-claude-card` | `card` | `#ffffff` | `#232323` | `#ffffff` | `#1d2028` | `var(--dsw-alias-bg-overlay)` | cards on the canvas in light and raised in dark: the account popover, the search palette |
 | `--dsh-claude-inverse-fill` | `ink` | `#161616` | `#fdfdfd` | `#161616` | `#f4f9ff` | `var(--dsw-alias-interactive-bg-hover)` | the model picker's group label fill: an inverted chip under Claude, a hover-plate chip under the host |
