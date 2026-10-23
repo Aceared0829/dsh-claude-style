@@ -1,8 +1,7 @@
 import { subscribeMutations } from './bus'
 
 /**
- * page-scale.ts — the host's floating layer in a page the skin draws at a scale
- * (D43, D81).
+ * The host's floating layer in a page the skin draws at a scale (D43, D81).
  *
  * The skin draws the page at the reader's own scale by putting `zoom` on the
  * body (packages/client/src/theme/chrome.css, docs/STYLE.md). A box laid out

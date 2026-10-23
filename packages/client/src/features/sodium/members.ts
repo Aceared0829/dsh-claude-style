@@ -1,5 +1,5 @@
 import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, CHAT_RUNNING_SELECTOR, FLOW_BLOCK_SELECTOR, FLOW_KIND_ATTRIBUTE, PENDING_STEERING_SELECTOR, SUBMISSION_ECHO_SELECTOR, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND } from '@dsh-claude-style/contracts/dom'
-import { keepFlowChildMark } from '@dsh-claude-style/engine/flow-items'
+import { keepFlowChildMark } from './flow-items'
 import type { SelectorRewrite } from '@dsh-claude-style/engine/sheet-rewrite'
 import { firstShape, selectorShape } from './selector-shape'
 
@@ -36,7 +36,7 @@ export interface SodiumAdapter extends SelectorRewrite {
   maintain(captured: ReadonlyMap<string, readonly string[]>): () => void
 }
 
-/** The mark the rewritten flow rules read (engine/src/flow-items.ts). */
+/** The mark the rewritten flow rules read (flow-items.ts). */
 const FLOW_CHILD_ATTR = 'data-dsh-claude-flow-child'
 
 /*

@@ -1,11 +1,11 @@
 import { readTurnActivity } from '@dsh-claude-style/engine/host'
 import { BRAND_DEEPSEEK } from '../constants'
 import { activityPhrase } from './activity-phrase'
-import { callDescription } from './call-description'
+import { callArgsOf, callString } from './call-args'
 import { fileToolCall } from './file-tool'
 import type { CopyParams } from '../core/i18n'
 import type { FileToolOperation } from './file-tool'
-import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } from '@dsh-claude-style/contracts/services'
+import type { HostAssistantStep, HostChatBlock, HostChatSnapshot, HostRunningCall, HostTurn } from '@dsh-claude-style/contracts/services'
 
 /**
  * What an open turn is doing now, in words (D74): the states the waiting line
@@ -17,7 +17,7 @@ import type { HostAssistantStep, HostChatSnapshot, HostRunningCall, HostTurn } f
  * copy. Three states are not copy, and the `precise` choice decides whether the
  * line reads them at all: the file a call in flight works on
  * (shared/file-tool), which fills the copy's `{file}` slot, the description a
- * command call declares for itself (shared/call-description), and the clause
+ * command call declares for itself (callDescription below), and the clause
  * the model's own reasoning says it is on (shared/activity-phrase). The last
  * two are the model's text as it wrote it and carry no copy key. The simple
  * choice reads none of them: every state is its bare copy.
@@ -96,6 +96,26 @@ export function activityWords(snapshot: HostChatSnapshot | null, turn: HostTurn 
   if (newest === 'tool-call') return ACTIVITY_TOOL_CALL
   if (newest === null) return null
   return ACTIVITY_WRITING
+}
+
+/**
+ * The words a call in flight declares for itself: the host's shell tools
+ * (pwsh, bash) take a required `description` argument — what the command does,
+ * in the model's own words — and the host's own tool row shows it beside the
+ * tool's title. The waiting line carries it the way it carries a reasoning
+ * clause (shared/activity-phrase): the first line as the model wrote it,
+ * whole, so the row's own width decides how much of it shows. Only a started
+ * call is read: a preparing one's argument JSON is cut off mid-stream
+ * (shared/file-tool).
+ */
+export function callDescription(block: HostChatBlock): string | null {
+  if (block.phase !== 'start') return null
+  const args = callArgsOf(block.argsRaw ?? '')
+  const description = args === null ? undefined : callString(args, ['description'])
+  if (description === undefined) return null
+  const line = description.split('\n', 1)[0].replace(/\s+/g, ' ').trim()
+  if (line === '') return null
+  return line.charAt(0).toUpperCase() + line.slice(1)
 }
 
 /** What a call in flight says: the file it works on, or the words it declares for itself. */

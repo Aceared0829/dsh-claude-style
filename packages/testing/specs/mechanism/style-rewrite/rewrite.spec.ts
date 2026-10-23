@@ -14,9 +14,8 @@
  */
 import { afterEach, expect, test } from 'vitest'
 import { CHAT_FLOW_SLOT_SELECTOR, CHAT_GROUP_PART_ATTRIBUTE, CHAT_GROUP_PART_RESPONSE, CHAT_NODE_SELECTOR, CHAT_RUNNING_SELECTOR, FLOW_BLOCK_SELECTOR, FLOW_KIND_ATTRIBUTE, PENDING_STEERING_SELECTOR, SUBMISSION_ECHO_SELECTOR, TURN_PROCESS_ANSWER_ATTRIBUTE, TURN_PROCESS_ROW_KIND } from '@dsh-claude-style/contracts/dom'
-import { keepFlowChildMark } from '@dsh-claude-style/engine/flow-items'
 import { applyRewrite, planRewrite, restoreRewrite } from '@dsh-claude-style/engine/sheet-rewrite'
-import { SODIUM_MEMBERS } from '@dsh-claude-style/client/pure'
+import { SODIUM_MEMBERS, keepFlowChildMark } from '@dsh-claude-style/client/pure'
 import { hostElement } from '../../fixtures/host-markup'
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))

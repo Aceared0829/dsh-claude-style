@@ -1,8 +1,7 @@
 import { subscribeMutations } from './bus'
 import { skin } from './skin'
-import { CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { SUBMISSION_ROW_SELECTOR, conversationScroller, findFollowTailButton, isScrollbarStrip } from './chat-dom'
-import { isReaderScrollIntent } from './reader-intent'
+import { COMPOSER_SELECTOR, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_BODY_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { SCROLL_KEYS, SUBMISSION_ROW_SELECTOR, conversationScroller, findFollowTailButton, isScrollbarStrip } from './chat-dom'
 import { SCROLL_EASE_LEAD_PX, easeScroll, isScrollEasing, scrollEasePosition, scrollEnd, stopScrollEase } from './scroll-ease'
 
 /**
@@ -85,6 +84,18 @@ const FOLLOW_LOOK_INTERVAL_MS = 100
  */
 const INTENT_TYPES = ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown', 'beforematch']
 const MOVING_INTENT_TYPES = new Set(['wheel', 'touchstart', 'pointerdown', 'keydown'])
+
+/**
+ * Whether an event is the reader taking the scroll over, asked for every intent
+ * event the owner hears. Two rules: a pointer or key inside the composer is the
+ * reader typing, and of the keys only the ones that scroll the viewport count.
+ */
+function isReaderScrollIntent(event: Event) {
+  const target = event.target
+  if (target instanceof Element && target.closest(COMPOSER_SELECTOR) !== null) return false
+  if (event.type !== 'keydown') return true
+  return event instanceof KeyboardEvent && SCROLL_KEYS.has(event.key)
+}
 
 /**
  * The source of the ease running on each container; stale once the spring has let go of it.
