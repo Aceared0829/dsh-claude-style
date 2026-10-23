@@ -1,0 +1,30 @@
+/* @composer-gate */
+/* Only the containing dock moves; every host node retains its React parent. */
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-part~="composer-stack"] {
+  position: relative;
+}
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock] {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock="overlay"] {
+  position: absolute;
+  left: var(--dsh-claude-footer-left);
+  bottom: var(--dsh-claude-footer-bottom);
+  height: var(--dsh-claude-footer-height);
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-line],
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock] > [data-dsh-claude-context-meter] {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  flex: none;
+}
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] .dsh-claude-inline-stats {
+  gap: 26px;
+}
