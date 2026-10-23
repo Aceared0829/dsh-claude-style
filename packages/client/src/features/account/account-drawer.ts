@@ -229,12 +229,11 @@ export function createAccountDrawer(options: {
     /** The settings row, the anchor the mirrored footer entries insert before. */
     settingsAnchor: () => settingsItem,
     isOpen: isPopoverOpen,
-    open: openPopover,
     close: closePopover,
+    /** Take the pending close off (the takeover's teardown hands the footer back). */
+    cancelClose: cancelClosePopover,
     /** Leave what stands open standing (the hold screen's opening). */
     holdOpen() { popoverOpenedByClick = true },
-    cancelClose: cancelClosePopover,
-    scheduleClose: scheduleClosePopover,
     /** Place the open popover over its trigger, for the rail and the reposition route. */
     placeOpen: positionAccountPopover,
     /** Build or reuse the trigger and popover; the pass calls this on the synthetic path. */

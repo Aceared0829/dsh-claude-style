@@ -17,8 +17,6 @@ export interface PermissionCatalog {
   start(): void
   /** Read the catalog now (the cold start screen re-reads on every return). */
   probe(): void
-  /** Invalidate the read in flight and drop any retry still waiting. */
-  dropRead(): void
   /** Release the inject fiber and the change-event subscription. */
   dispose(): void
   /** The first catalog failure, for the feature's sync to throw (D12). */
@@ -273,7 +271,6 @@ export function createPermissionCatalog(ctx: HostContext, schedule: () => void):
   return {
     start: startAutoPresetProbe,
     probe: probeAutoPreset,
-    dropRead: dropAutoPresetRead,
     dispose() {
       dropAutoPresetRead()
       if (catalogFiber !== null && typeof catalogFiber.dispose === 'function') {

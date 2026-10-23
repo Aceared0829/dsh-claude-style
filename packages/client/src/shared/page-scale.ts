@@ -43,7 +43,7 @@ const WIDTH_MARKS = [
 /**
  * Carry the host's floating layer in a page the skin draws at a scale, and put
  * the page's own size where a stylesheet can cap a card with it
- * (engine/src/page-scale.ts, D81).
+ * (engine/src/scaled-layer.ts, D81).
  *
  * The skin's own cards are excluded from the carried layer: they are placed in
  * the page's own pixels at the write, so they carry no double scale. The

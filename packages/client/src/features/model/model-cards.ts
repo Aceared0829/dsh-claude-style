@@ -199,8 +199,9 @@ export function createModelCards(options: {
     // — the trigger then toggles a popover that is not in the document and
     // the picker silently loses its click effect. The account footer's
     // equivalent guard (footArea.contains) is the established pattern.
-    // Rebuilding also re-points the body/footer children and resets the
-    // render signatures so the next pass repaints into the fresh nodes.
+    // Rebuilding also re-points the body and footer children; the render
+    // signature is dropped by the open that follows (options.onOpen), so the
+    // fresh nodes are painted before the card can be seen.
     if (modelPop === null || modelPop.parentElement === null) {
       modelPop = document.createElement('div')
       modelPop.className = 'dsh-claude-popover-card dsh-claude-model-popover'
@@ -272,7 +273,6 @@ export function createModelCards(options: {
     hoverOn,
     scheduleOpenMain: () => modelHoverIntent.scheduleOpen(),
     scheduleClose: scheduleCloseModel,
-    cancelClose: cancelCloseModel,
     /** The More-models cell drills in on the same dwell/grace as the trigger. */
     subIntent: createHoverIntent(openModelSub, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY),
     openMain: openModelPopover,

@@ -367,7 +367,7 @@ export function apply(ctx: HostContext) {
       })
     }
     // With the sheet: the page is drawn at the reader's own scale from here on,
-    // and the host's floating cards are carried under it (engine/src/page-scale.ts).
+    // and the host's floating cards are carried under it (engine/src/scaled-layer.ts).
     if (stopScale === null) stopScale = installPageScale()
     for (const feature of FEATURES) {
       if (failed.has(feature.id) || installed.some(entry => entry.id === feature.id)) continue

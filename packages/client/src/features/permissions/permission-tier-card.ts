@@ -276,7 +276,7 @@ export function createPermissionCard(catalog: Pick<PermissionCatalog, 'restingLa
     close: closePermMenu,
     /** Put an open tier card back over its trigger. */
     placeOpen: placeOpenPermCard,
-    /** Take the listeners and the registry entry down; the teardown sweep of the nodes is the pass's (permissions.ts). */
+    /** Take the listeners and the registry entry down; the node sweep is the feature's teardown's (permissions.ts). */
     dispose() {
       unregisterPopover('permission')
       if (permHoverIntent) permHoverIntent.cancel()

@@ -12,7 +12,7 @@ const FLOW_ROW_SHIFT = 0.03
 const FLOW_JITTER = 0.05
 
 /**
- * The dot matrix the reasoning-effort slider (effort/control.ts) shows on
+ * The dot matrix the reasoning-effort slider (effort/slider.ts) shows on
  * its top rung.
  *
  * The grid is solved in whole device pixels, and three layers ride each block:

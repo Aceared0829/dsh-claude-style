@@ -86,7 +86,7 @@ body[data-dsh-claude-style] .dsh-claude-chat-wait {
 }
 
 /* How much of the wording shows is the row's own width and nothing else: the
-   words are carried whole (shared/activity-phrase, shared/call-description,
+   words are carried whole (shared/activity-phrase, shared/turn-activity,
    shared/file-tool), so the box has to be the row. The host's content span is a
    flex item of a column row and takes its own content's width, which lets a
    long clause run past the row instead of giving way; bounded here, the label

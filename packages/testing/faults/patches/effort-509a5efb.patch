@@ -23,7 +23,7 @@ index 54a2c8d4..2ce995ec 100644
 - * puts the axis the wrong way round: the right end lands on the weakest
 - * level, and on a ladder whose last entry is `none` the strongest position
 - * reads as thinking switched off.
-+ * `Faster` and `Smarter` (copy-fallbacks.ts) — so an inverted ladder puts the
++ * `Faster` and `Smarter` (model-labels.ts) — so an inverted ladder puts the
 + * axis the wrong way round: the right end lands on the weakest level, and on a
 + * ladder whose last entry is `none` the strongest position reads as thinking
 + * switched off.
