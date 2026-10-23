@@ -13,6 +13,7 @@ import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
 import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
+import { createComposerDimensions } from './dimensions'
 
 /** What other features read off the composer's reading (ui.composer). */
 export interface ComposerHandle extends FeatureHandle {
@@ -50,6 +51,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let heroCard: HTMLElement | null = null
   /** The idle hint's own words, and the synthetic placeholder that carries them. */
   const cards = observeComposerCards()
+  const dimensions = createComposerDimensions()
   const placeholders = observeComposerPlaceholders()
   const placeholderCopy = createPlaceholderCopy(cards, placeholders)
   /**
@@ -303,6 +305,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const found = cards.all()
     heroCard = hero && found.length > 0 ? found[0] : null
     syncVariant(found)
+    dimensions.sync(found, readPrefs(), active)
     document.body.toggleAttribute(COMPOSER_ATTR, active)
     syncMobilePortrait(found)
     syncAttachments(found)
@@ -379,6 +382,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     active = false
     heroCard = null
     stopWindowBlur()
+    dimensions.clear()
     placeholderCopy.dispose()
     cards.release()
     placeholders.release()

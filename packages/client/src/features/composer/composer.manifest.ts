@@ -12,6 +12,7 @@ export default {
     { file: 'card.css', rank: 80, gate: true },
     { file: 'inline.css', rank: 90, gate: true },
     { file: 'inline-bar.css', rank: 100, gate: true },
+    { file: 'dimensions-settings.css', rank: 101 },
   ],
   settingsRows: [{
     tab: 'composer',
@@ -19,6 +20,22 @@ export default {
     pref: 'composerScope',
     title: 'composerTitle',
     choiceLabels: { off: 'scopeOff', hero: 'scopeHero', conversation: 'scopeConversation', all: 'scopeAll' },
+  }, {
+    tab: 'composer',
+    rank: 50,
+    pref: 'composerWidth',
+    parent: 'composerScope',
+    title: 'composerWidthTitle',
+    desc: 'composerWidthDesc',
+    control: 'width',
+  }, {
+    tab: 'composer',
+    rank: 51,
+    pref: 'composerBottomGap',
+    parent: 'composerScope',
+    title: 'composerBottomGapTitle',
+    desc: 'composerBottomGapDesc',
+    control: 'bottom-gap',
   }],
   cases: ['composer', 'sync-fault', 'hero', 'late-forms']
 } satisfies FeatureManifest

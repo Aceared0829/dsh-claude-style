@@ -1,0 +1,30 @@
+body[data-dsh-claude-style] .dsh-claude-composer-dimension {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+body[data-dsh-claude-style] .dsh-claude-composer-dimension input {
+  width: clamp(90px, 18vw, 180px);
+  accent-color: var(--dsw-alias-label-primary);
+}
+body[data-dsh-claude-style] .dsh-claude-composer-dimension output {
+  min-width: 58px;
+  font-variant-numeric: tabular-nums;
+}
+body[data-dsh-claude-style] .dsh-claude-composer-dimension button {
+  padding: 4px 10px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+body[data-dsh-claude-style] .dsh-claude-composer-dimension button:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+body[data-dsh-claude-style] .dsh-claude-composer-dimension button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

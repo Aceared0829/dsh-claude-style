@@ -256,6 +256,9 @@ export const PREFS = {
   homeRipple: { type: 'boolean', default: false },
   palette: { type: 'choice', values: PALETTES, default: PALETTE_CLAUDE },
   typeface: { type: 'choice', values: TYPEFACES, default: TYPEFACE_CLAUDE },
+  /** Empty dimensions keep the host's layout. Width is the card's maximum in px. */
+  composerWidth: { type: 'text', default: '', max: 8 },
+  composerBottomGap: { type: 'text', default: '', max: 8 },
   /** The mascot on the composer; the resolved one rides the document. */
   mascot: { type: 'choice', values: MASCOTS, default: MASCOT_BRAND },
   mascotScope: { type: 'choice', values: MASCOT_SCOPES, default: MASCOT_SCOPE_ALL },

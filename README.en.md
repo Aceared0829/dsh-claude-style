@@ -16,6 +16,8 @@
 
 </div>
 
+Main window settings offer a saved composer maximum width (480–1600 px) and bottom gap (0–80 px), each with its own reset. The composer shrinks to fit narrower windows.
+
 ## Preview
 
 The settings page switches between the two palettes; light and dark follow the system.

@@ -6,7 +6,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">体验优化</h3>
+<h3 id="cn-unreleased">新增功能</h3>
+
+- 主窗口设置新增输入框最大宽度（480–1600 px）与底部间距（0–80 px），支持保存和分别恢复默认，较窄的窗口自动收缩输入框。
+
+### 体验优化
 
 - 跟进 Claude 桌面版的浅色与深色画布：浅色画布改为 #FFFFFF、侧栏 #FAFAFA，深色画布改为 #191919、侧栏 #1F1F1F，整套色阶随新的画布种子一起更新。
 
@@ -17,7 +21,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复设置了页面缩放后窄窗口布局仍按未缩放的窗口宽度切换的问题：首页统计格、封禁页与输入行上下文计量环旁的数字改按页面自身的宽度收窄（#129）。
 - 修复设置页「外观 → 配色」的颜色卡只能选中自定义卡的问题：Claude 与 DeepSeek 卡现在也能点选，各自换上该卡的配色而不改动通用页的品牌标志，选中的卡上给出「恢复跟随品牌」，把配色交回当前品牌（#128）。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-unreleased">New Features</h3>
+
+- Main window settings add a saved composer maximum width (480–1600 px) and bottom gap (0–80 px), with separate resets and automatic shrinking in narrower windows.
+
+### Improvements
 
 - Follow Claude desktop's light and dark canvases: the light canvas is #FFFFFF with a #FAFAFA sidebar, the dark canvas #191919 with a #1F1F1F sidebar, and the whole ladder follows the new canvas seeds.
 

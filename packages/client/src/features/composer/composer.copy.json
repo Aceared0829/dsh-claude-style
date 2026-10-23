@@ -5,5 +5,11 @@
   "scopeConversation": { "zh": "仅对话", "en": "Conversation only" },
   "scopeAll": { "zh": "全部", "en": "All" },
   "heroHint": { "zh": "描述任务或提出问题", "en": "How can I help you today?" },
-  "defaultHint": { "zh": "输入 / 以使用命令", "en": "Type / for commands" }
+  "defaultHint": { "zh": "输入 / 以使用命令", "en": "Type / for commands" },
+  "composerWidthTitle": { "zh": "输入框宽度", "en": "Composer width" },
+  "composerWidthDesc": { "zh": "480–1600 px；恢复默认后使用主题宽度，窗口较窄时自动收缩。", "en": "480–1600 px; reset uses the theme width. Shrinks to fit narrower windows." },
+  "composerBottomGapTitle": { "zh": "底部间距", "en": "Bottom gap" },
+  "composerBottomGapDesc": { "zh": "0–80 px，输入区整体与底边的距离；恢复默认后使用主题间距。", "en": "0–80 px below the whole composer; reset uses the theme spacing." },
+  "dimensionsDefault": { "zh": "默认", "en": "Default" },
+  "dimensionsReset": { "zh": "恢复默认", "en": "Reset" }
 }
