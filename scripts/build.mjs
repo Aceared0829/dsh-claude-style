@@ -124,8 +124,6 @@ const THEME_SHEETS = [
   { file: 'shared/sliding-pill.css', rank: 40 },
   { file: 'shared/masked.css', rank: 45 },
   { file: 'theme/chrome.css', rank: 50 },
-  // The conversation's rows: what stands off screen is not laid out.
-  { file: 'theme/conversation.css', rank: 55 },
   { file: 'theme/hero.css', rank: 70 },
   { file: 'theme/sidebar.css', rank: 110 },
   { file: 'theme/third-party.css', rank: 300 },

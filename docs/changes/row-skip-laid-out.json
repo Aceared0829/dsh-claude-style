@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-22",
+  "external": false,
+  "zh": "修复在对话里滚动时画面经常跳到别处的问题：离屏的对话行只在按真实尺寸排过一次版之后才跳过排版，滚动时不再按估算高度突然改变位置。",
+  "en": "Fix the conversation jumping elsewhere while the reader scrolls: an off-screen row is skipped only after it has been laid out at its real size, so no row takes its height under the reader."
+}

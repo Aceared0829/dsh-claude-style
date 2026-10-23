@@ -1,6 +1,6 @@
 /**
  * The hold that keeps a row the host has folded out of the off-screen rule
- * (theme/conversation.css): a row that hides a cell inside itself carries the
+ * (features/row-skip/row-skip.css): a row that hides a cell inside itself carries the
  * mark, and the row the host draws in its place does not.
  *
  * @capability part-marking
