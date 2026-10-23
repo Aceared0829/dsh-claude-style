@@ -5,7 +5,9 @@
  * Parallel sessions share this working tree, and each of them reaching for a
  * runner of its own is what made the machine run the same build and the same
  * browser several times over. This file is the only place the gates are
- * started; a session asks it and reads its answer.
+ * started; a session asks it and reads its answer. Development asks it for
+ * nothing: a change is carried by the build, and the gates are run together
+ * before a release (D77).
  *
  *   one entry  the checks, the build, the logic and mechanism specs, the
  *              smoke, the behaviour specs and the end-to-end lane, from one
@@ -18,13 +20,16 @@
  *   serial     `.debug/verify.lock/` holds one run at a time. A request that
  *              arrives during a run waits for it rather than starting a second
  *              browser, and asks for its own key again when the lock is free.
+ *              Every gate carries the cloud step's own deadline; a gate past
+ *              it has hung, and is taken down with its browsers so the lock
+ *              goes free.
  *   reuse      a run records its verdict under the hash of the tree it read and
  *              the gates it ran. A later request for the same pair reads that
  *              record instead of starting anything, and says it did.
  *   honest     the build output the browser gates read is hashed when the build
- *              gate ends and again when the run ends: a rebuild behind
- *              `npm run dev` takes no lock, so it can swap the page under the
- *              gates, and a run that saw two different outputs files no verdict.
+ *              gate ends and again when the run ends: a build outside the run
+ *              takes no lock, so it can swap the page under the gates, and a
+ *              run that saw two different outputs files no verdict.
  *
  * A verdict in the cache is one a run produced. A request whose gates were
  * never run — another tier, a narrower selection, one file changed — is another
@@ -95,17 +100,17 @@ const UNIT_SOURCES = ['packages/client/src', 'packages/contracts/src', 'packages
  * every test.
  */
 function unitGate(iteration) {
-  if (!iteration) return { id: 'unit', script: VITEST, args: ['run'] }
+  if (!iteration) return { id: 'unit', minutes: 15, script: VITEST, args: ['run'] }
   const changed = changedPaths(...UNIT_SOURCES)
-  if (changed.length === 0) return { id: 'unit', script: VITEST, args: ['run'] }
-  return { id: 'unit', script: VITEST, args: ['related', ...changed] }
+  if (changed.length === 0) return { id: 'unit', minutes: 15, script: VITEST, args: ['run'] }
+  return { id: 'unit', minutes: 15, script: VITEST, args: ['related', ...changed] }
 }
 
 /**
  * The bytes of the build output the browser gates read, or null before the
- * build has written any. The rebuilds behind `npm run dev` go straight through
- * the lock on purpose, so this is what tells a run whether the page it drove is
- * still the page its build produced.
+ * build has written any. A build outside the run takes no lock, so this is
+ * what tells a run whether the page it drove is still the page its build
+ * produced.
  */
 function libHash() {
   const digest = crypto.createHash('sha256')
@@ -167,7 +172,7 @@ function parseRequest() {
   const noLane = args.includes('--no-e2e')
   const named = cases.length + features.length + scenarios.length > 0
   // The two ways to spend minutes are named and never inherited: a bare request
-  // is the stretch before a push, and each of these is asked for by name.
+  // is the quick answer about a change, and each of these is asked for by name.
   if (full && named) bad('--full walks the whole smoke and the lane\'s every scenario; drop the names')
   if (askLane && noLane) bad('--e2e and --no-e2e say opposite things; keep one')
   if (args.includes('--quick') && (full || askLane || scenarios.length > 0)) {
@@ -212,26 +217,27 @@ function gatesFor(request) {
   const gates = [
     // The cloud's fast tier starts with the checks that need no build, so the
     // same set answers here and a document mistake fails in seconds.
-    { id: 'lint', script: 'scripts/lint.mjs', args: [] },
-    { id: 'docs', script: 'scripts/decisions-index.mjs', args: ['--check'] },
-    { id: 'changelog', script: 'scripts/changelog.mjs', args: ['--check'] },
-    { id: 'agents', script: 'scripts/agents-commands.mjs', args: ['--check'] },
-    { id: 'numbers', script: 'packages/testing/check-numbers.mjs', args: ['--check'] },
+    { id: 'lint', minutes: 5, script: 'scripts/lint.mjs', args: [] },
+    { id: 'docs', minutes: 5, script: 'scripts/decisions-index.mjs', args: ['--check'] },
+    { id: 'changelog', minutes: 5, script: 'scripts/changelog.mjs', args: ['--check'] },
+    { id: 'agents', minutes: 5, script: 'scripts/agents-commands.mjs', args: ['--check'] },
+    { id: 'numbers', minutes: 5, script: 'packages/testing/check-numbers.mjs', args: ['--check'] },
     // The rule that the appearance snapshot only moves with what draws or reads
     // the pages (D77), and the records that only shrink, against HEAD.
-    { id: 'scope', script: 'scripts/ci-scope.mjs', args: ['--appearance', '--ledgers', '--tree'] },
-    { id: 'build', script: 'scripts/build.mjs', args: [] },
+    { id: 'scope', minutes: 5, script: 'scripts/ci-scope.mjs', args: ['--appearance', '--ledgers', '--tree'] },
+    { id: 'build', minutes: 15, script: 'scripts/build.mjs', args: [] },
     unitGate(request.iteration),
   ]
-  if (request.smoke !== null) gates.push({ id: 'smoke', script: 'packages/testing/smoke.mjs', args: request.smoke })
+  if (request.smoke !== null) gates.push({ id: 'smoke', minutes: 30, script: 'packages/testing/smoke.mjs', args: request.smoke })
   // The behaviour specs ride with the smoke: they read the same build and the
   // same stand-in host. A request naming smoke cases alone names no spec.
   if (request.smoke !== null && !(request.cases.length > 0 && request.features.length === 0)) {
-    gates.push({ id: 'behaviour', script: 'packages/testing/behaviour.mjs', args: request.features.length > 0 ? ['--feature', request.features.join(',')] : [] })
+    gates.push({ id: 'behaviour', minutes: 15, script: 'packages/testing/behaviour.mjs', args: request.features.length > 0 ? ['--feature', request.features.join(',')] : [] })
   }
   if (request.e2e) {
     gates.push({
       id: 'e2e',
+      minutes: 40,
       script: 'packages/testing/e2e.mjs',
       args: request.scenarios.length > 0 ? ['--scenario', request.scenarios.join(',')] : [],
     })
@@ -271,15 +277,50 @@ function cached(key) {
   return record.format === FORMAT ? record : null
 }
 
-/** Run one gate with its output on this terminal, and answer with its exit code. */
+/** The exit code a gate that outran its deadline answers with. */
+const TIMED_OUT_EXIT = 124
+
+/** What one gate's exit code says, as the run's lines print it. */
+function gateWord(code) {
+  if (code === 0) return 'ok'
+  if (code === UNJUDGED_EXIT) return 'gave no verdict'
+  if (code === TIMED_OUT_EXIT) return 'timed out'
+  return `exit ${code}`
+}
+
+/**
+ * Take a gate down with every process under it: a lane's browsers are its
+ * grandchildren, and a hung one left behind keeps the lock this run holds.
+ */
+function killTree(child) {
+  if (process.platform === 'win32') {
+    execFileSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' })
+    return
+  }
+  child.kill('SIGKILL')
+}
+
+/**
+ * Run one gate with its output on this terminal, and answer with its exit code.
+ * A gate past its deadline — the cloud step's own `timeout-minutes` — is a gate
+ * that hung: it is taken down and answers TIMED_OUT_EXIT, so the run ends and
+ * the lock goes free.
+ */
 function runGate(gate) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [gate.script, ...gate.args], { cwd: ROOT, stdio: 'inherit' })
     running.add(child)
+    let timedOut = false
+    const deadline = setTimeout(() => {
+      timedOut = true
+      say(`verify: ${gate.id} passed its ${gate.minutes} min deadline; taking it down`)
+      killTree(child)
+    }, gate.minutes * 60_000)
     child.on('error', reject)
     child.on('close', (code) => {
+      clearTimeout(deadline)
       running.delete(child)
-      resolve(code ?? 1)
+      resolve(timedOut ? TIMED_OUT_EXIT : code ?? 1)
     })
   })
 }
@@ -296,7 +337,7 @@ async function runStage(stage) {
     const at = Date.now()
     const code = await runGate(gate)
     const ms = Date.now() - at
-    say(`verify: ${gate.id} ${code === 0 ? 'ok' : code === UNJUDGED_EXIT ? 'gave no verdict' : `exit ${code}`} (${seconds(ms)})`)
+    say(`verify: ${gate.id} ${gateWord(code)} (${seconds(ms)})`)
     return { id: gate.id, code, ms }
   }))
 }
@@ -349,7 +390,7 @@ async function runAll(request, tree, key) {
 
 /** What this request's answer was, and where it came from. */
 function report(record, source) {
-  const gates = record.gates.map((gate) => `${gate.id} ${gate.code === 0 ? 'ok' : gate.code === UNJUDGED_EXIT ? 'gave no verdict' : `exit ${gate.code}`}`).join(', ')
+  const gates = record.gates.map((gate) => `${gate.id} ${gateWord(gate.code)}`).join(', ')
   if (source === 'cache') {
     say(`verify: reused — the same tree and the same gates ${record.exitCode === 0 ? 'passed' : 'failed'} at ${record.at} (run ${record.runId}, ${seconds(record.ms)}); --force re-runs them`)
     say(`verify: ${record.exitCode === 0 ? 'PASS' : 'FAIL'} — ${gates}`)

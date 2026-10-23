@@ -64,7 +64,6 @@ import { MODEL_COPY, validateModelCopy } from './model-copy.mjs'
 import { PEAKRATE_CATALOG, validatePeakCatalog } from './peakrate-catalog.mjs'
 import { PRICES_FILE, validatePrices } from './prices.mjs'
 import { readManifests } from './shared/read-manifests.mjs'
-import { withLock } from './shared/verify-lock.mjs'
 import { loadModule } from './shared/ts-module.mjs'
 import { chunkModulesModule, featuresModule, generatedModule, settingsControlsModule } from './virtual-modules.mjs'
 
@@ -578,4 +577,6 @@ async function main() {
   }
 }
 
-await withLock('build', 'build', main)
+// A build never waits on the test lock (D77): a run that a build swaps the page
+// under says so itself (scripts/verify.mjs, "honest") and files no verdict.
+await main()

@@ -1,15 +1,13 @@
 /**
  * verify-lock.mjs — the one run at a time a shared working tree allows (D77).
  *
- * Two sessions on one tree otherwise build and drive browsers on top of each
- * other's output: a build rewrites `lib/`, and a lane reading `lib/` sees the
- * page change under it. Every entry that writes `lib/` or drives a browser
- * through it takes this lock — `scripts/build.mjs`, the smoke, the end-to-end
- * lane and the live probes — and `npm run verify` owns the run that starts the
- * gates, so a gate it starts inherits `DSH_CLAUDE_STYLE_LOCK_HELD` and takes
- * nothing. A rebuild the watcher behind `npm run dev` starts takes nothing
- * either: it happens while the reader is looking at the page, and waiting
- * minutes for a test run would freeze the loop it exists to serve.
+ * Two sessions on one tree otherwise drive browsers on top of each other's
+ * runs. Every entry that drives a browser through `lib/` takes this lock — the
+ * smoke, the end-to-end lane and the live probes — and `npm run verify` owns
+ * the run that starts the gates, so a gate it starts inherits
+ * `DSH_CLAUDE_STYLE_LOCK_HELD` and takes nothing. A build takes nothing: it is
+ * the loop development runs on and never waits minutes for a test run (D77),
+ * and a run whose page a build swapped files no verdict (scripts/verify.mjs).
  *
  * The lock is a directory and `owner.json` names the process holding it, so a
  * run killed outright reads as gone and its lock is taken over: either its pid
@@ -28,12 +26,12 @@ const DEV = 'DSH_CLAUDE_STYLE_DEV'
 /** A lock whose owner file cannot be read is given this long before it is read as a run that died taking it. */
 const OWNER_GRACE_MS = 60_000
 /**
- * How long one run may hold the lock. The end-to-end lane is the longest thing
- * here and stays well inside this; a holder older than this is a dead run whose
- * pid the platform reused, which is the one state the liveness check reads as
- * alive forever.
+ * How long one run may hold the lock: past the sum of its stages' deadlines
+ * (scripts/verify.mjs takes a gate down at its own), so a holder older than this
+ * is a dead run whose pid the platform reused, which is the one state the
+ * liveness check reads as alive forever.
  */
-const MAX_HOLD_MS = 3 * 60 * 60 * 1000
+const MAX_HOLD_MS = 90 * 60 * 1000
 /** How often a waiting request looks at the lock again. */
 const WAIT_POLL_MS = 2_000
 /** How often a waiting request says it is still waiting. */

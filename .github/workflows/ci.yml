@@ -1,9 +1,14 @@
 name: CI
 
-# The whole matrix is judged on a push to master, a pull request, a merge-queue
-# entry and a manual run. A branch is judged through its pull request or the
-# queue, so a branch push of its own is not read here, and `branches` keeps every
-# other push out, tag pushes with them: the release workflow owns tags.
+# A push to master is judged by the checks, the build and the spec lane alone:
+# development carries no page gate (D77), so a push answers in minutes and waits
+# on nothing. The whole matrix — the smoke, the behaviour specs on three systems
+# and the end-to-end lane — is judged on a pull request, a merge-queue entry and
+# a manual run, and the manual run is the one a release takes before its tag; the
+# release workflow runs the gates once more before it publishes. A branch is
+# judged through its pull request or the queue, so a branch push of its own is
+# not read here, and `branches` keeps every other push out, tag pushes with
+# them: the release workflow owns tags.
 #
 # One concurrency group per event and commit, so a series of pushes each finish
 # with a verdict instead of cancelling one another, and a pull request does not
@@ -162,10 +167,12 @@ jobs:
       # The entry is called directly: the selection `changed` printed carries a
       # flag, and npm would read a flag of its own rather than pass it on.
       - run: node packages/testing/smoke.mjs ${{ needs.changed.outputs.smoke }}
+        if: github.event_name != 'push'
         timeout-minutes: 30
       # The behaviour specs read the same build on the same stand-in host (D77);
       # a failure leaves its trace, screenshot and evidence for the artifact.
       - run: npm run behaviour
+        if: github.event_name != 'push'
         timeout-minutes: 15
       - uses: actions/upload-artifact@v7
         if: failure()
@@ -178,7 +185,7 @@ jobs:
   # directories, drive-letter paths and file times there.
   smoke-windows:
     needs: [changed, checks]
-    if: needs.changed.outputs.code == 'true'
+    if: needs.changed.outputs.code == 'true' && github.event_name != 'push'
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -214,7 +221,7 @@ jobs:
   # that fits on the other two can still overflow.
   behaviour-macos:
     needs: [changed, checks]
-    if: needs.changed.outputs.code == 'true'
+    if: needs.changed.outputs.code == 'true' && github.event_name != 'push'
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -245,7 +252,7 @@ jobs:
   # scripted model service, driven through a real conversation (D77).
   e2e:
     needs: [changed, checks]
-    if: needs.changed.outputs.code == 'true' && (github.event_name != 'push' || github.ref == 'refs/heads/master')
+    if: needs.changed.outputs.code == 'true' && github.event_name != 'push'
     strategy:
       # One shard's failure is evidence about that shard; the others finish and
       # report their own.
