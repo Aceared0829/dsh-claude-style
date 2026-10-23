@@ -1,18 +1,19 @@
 /**
  * The crab draws its own frame and nothing of the frames beside it. Its sheet
  * holds every frame of an animation side by side, and its window shows one of
- * them; the frame's own outermost cells are empty, so whatever the window's
- * edge takes in past them is the page behind the crab, never the neighbouring
- * frame.
+ * them; the frame's own outermost cells are empty, so the window's edge shows
+ * the page behind the crab, never the neighbouring frame.
  *
- * The window is aligned to the device pixel grid before it is sampled. At a
- * fractional device origin the nearest-neighbour upscale of the sheet picks
- * one sheet pixel aside for the edge's device pixels on some rasterizers —
- * macOS and Linux pick the frame's own first ink column there, Windows picks
- * the empty cell — and which pixel a platform's sampler picks is the
- * platform's, not the padding's. On the grid the sample is the same on every
- * system, and what it holds is this spec's own: the padding keeps the
- * neighbouring frame out of the window.
+ * The edge's device pixels are read with one allowance. The sheet is
+ * upscaled by the device scale (a fractional multiple here), and which sheet
+ * pixel a device pixel's nearest sample takes depends on where in the sheet
+ * its centre falls: past the half of a sheet pixel, one rasterizer takes the
+ * next sheet pixel and another keeps the previous one (macOS and Linux have
+ * drawn the frame's own first ink column where Windows drew the empty cell
+ * beside it). A stray is therefore held against the frame's own first ink
+ * column, composited over the page behind it: a match is the sampler's
+ * half-pixel, not the padding; anything else — the neighbouring frame's
+ * content, above all — is the defect this spec exists for.
  *
  * @capability mascot
  * @features mascot
@@ -121,7 +122,7 @@ async function shoot(t, clip, hidden) {
 /**
  * The device pixels along the window's edges that sit inside one of the
  * frame's empty outermost cells, and those of them that differ from the page
- * behind the crab.
+ * behind the crab beyond the sampler's half-pixel.
  */
 async function strayEdges(t, sheets) {
   const sprite = await readSprite(t)
@@ -143,6 +144,32 @@ async function strayEdges(t, sheets) {
   }
   const drawn = await shoot(t, clip, false)
   const behind = await shoot(t, clip, true)
+  // The colour one sheet cell paints over a page colour: the body's ink under
+  // the mask's alpha, the two alphas multiplied.
+  const painted = (x, y, base) => {
+    const at = (sheet, x, y) => (y * sheet.width + x) * 4
+    const alpha = (body.data[at(body, x, y) + 3] / 255) * (ink.data[at(ink, x, y) + 3] / 255)
+    if (alpha === 0) return null
+    return [0, 1, 2].map(channel => body.data[at(body, x, y) + channel] * alpha + base[channel] * (1 - alpha))
+  }
+  /**
+   * The colours the sampler's half-pixel may legitimately put in this edge
+   * pixel: the frame's own first ink column beside the empty cell, at the row
+   * itself and the one either side (the sample's row is as fractional as its
+   * column).
+   */
+  const allowed = (side, at, base) => {
+    const colours = []
+    for (let row = at - 1; row <= at + 1; row++) {
+      const place = side === 'left' ? [frameX + 1, frameY + row]
+        : side === 'right' ? [frameX + columns - 2, frameY + row]
+        : side === 'top' ? [frameX + at, frameY + 1]
+        : [frameX + at, frameY + rows - 2]
+      const colour = painted(place[0], place[1], base)
+      if (colour !== null) colours.push(colour)
+    }
+    return colours
+  }
   // The first two device pixels on each side, starting from the one the
   // window's edge cuts through: the sliver lands there, and a cell is wider
   // than two device pixels at every scale here, so both stand on the frame's
@@ -169,8 +196,15 @@ async function strayEdges(t, sheets) {
   const strays = []
   for (const [side, at, x, y] of inside) {
     const offset = (y * drawn.width + x) * 4
-    const off = Math.max(...[0, 1, 2].map((channel) => Math.abs(drawn.data[offset + channel] - behind.data[offset + channel])))
-    if (off > TOLERANCE) strays.push(`${side} cell ${at} off by ${off} (drawn ${drawn.data[offset]},${drawn.data[offset + 1]},${drawn.data[offset + 2]} behind ${behind.data[offset]},${behind.data[offset + 1]},${behind.data[offset + 2]})`)
+    const drawnRgb = [drawn.data[offset], drawn.data[offset + 1], drawn.data[offset + 2]]
+    const behindRgb = [behind.data[offset], behind.data[offset + 1], behind.data[offset + 2]]
+    const off = Math.max(...[0, 1, 2].map((channel) => Math.abs(drawnRgb[channel] - behindRgb[channel])))
+    if (off <= TOLERANCE) continue
+    // The sampler's half-pixel may show the frame's own first ink column here
+    // (the spec's header says why); the neighbouring frame never may.
+    const near = (colours) => colours.some((colour) => Math.max(...[0, 1, 2].map((channel) => Math.abs(drawnRgb[channel] - colour[channel]))) <= TOLERANCE)
+    if (near(allowed(side, at, behindRgb))) continue
+    strays.push(`${side} cell ${at} off by ${off} (drawn ${drawnRgb.join(',')} behind ${behindRgb.join(',')})`)
   }
   const geometry = `dpr ${sprite.dpr}, cell ${cell.toFixed(3)}css/${device.toFixed(3)}dev, view ${sprite.view.left.toFixed(2)},${sprite.view.top.toFixed(2)} ${sprite.view.width.toFixed(2)}x${sprite.view.height.toFixed(2)}, strip ${sprite.strip.left.toFixed(2)},${sprite.strip.top.toFixed(2)}, frame ${frameX},${frameY} ${columns}x${rows}, phase ${((sprite.view.left - sprite.strip.left) / cell).toFixed(3)},${((sprite.view.top - sprite.strip.top) / cell).toFixed(3)}`
   return { sampled: inside.length, strays, corner: `${(sprite.view.left * sprite.dpr).toFixed(2)}, ${(sprite.view.top * sprite.dpr).toFixed(2)}`, geometry }
@@ -183,19 +217,10 @@ export default spec({ page: 'crab-states', densities: [1.25] }, ({ test }) => {
       await thinkingCrab(t)
       /** The sheets read so far, by their address: the frame does not change while the window moves. */
       const sheets = new Map()
-      // Align the window to the device pixel grid (the spec's header says why):
-      // the crab moves by the fraction its corner sits past a device pixel,
-      // without reflowing the page around it.
-      const before = await readSprite(t)
-      const dx = (Math.ceil(before.view.left * before.dpr) - before.view.left * before.dpr) / before.dpr
-      const dy = (Math.ceil(before.view.top * before.dpr) - before.view.top * before.dpr) / before.dpr
-      await t.page.evaluate(([id, dx, dy, room]) => {
-        const conversation = document.getElementById(id)
-        conversation.style.position = 'relative'
-        conversation.style.left = `${dx}px`
-        conversation.style.top = `${dy}px`
-        conversation.style.paddingTop = `${room}px`
-      }, [CONVERSATION_ID, dx, dy, ROOM_ABOVE])
+      // The room above keeps the scroller's overflow from clipping the crab.
+      await t.page.evaluate(([id, room]) => {
+        document.getElementById(id).style.paddingTop = `${room}px`
+      }, [CONVERSATION_ID, ROOM_ABOVE])
       await t.page.waitForTimeout(60)
       const { sampled, strays, corner, geometry } = await strayEdges(t, sheets)
       t.expectThat.equal(sampled > 0, true, `the still frame leaves some of its edge cells empty (${sampled} pixels sampled)`)
