@@ -5,21 +5,33 @@
       "count": 1,
       "reason": "The hero row's open pickers, read in the refresh pass. Their openness is the host's `aria-expanded` on nodes that stay mounted, and the bus's registry follows node additions alone, so it cannot serve this site: it would keep serving a trigger that has closed (eight smoke checks said so). The answer this site needs is invalidated by an attribute change, which is either a reader of its own or the row the pass already holds."
     },
-    "packages/client/src/features/search/search.ts": {
+    "packages/client/src/features/search/search-host-takeover.ts": {
       "count": 1,
       "reason": "The host search box's clear button, read when the search box takes focus."
     },
     "packages/client/src/features/permissions/permissions.ts": {
-      "count": 3,
-      "reason": "The popover build and the teardown sweep the control's popover and nodes, and the cold start screen finds its mode strip inside the composer card."
+      "count": 2,
+      "reason": "The cold start screen finds its mode strip inside the composer card, and the teardown sweeps the segment groups and the tier card's nodes in one call."
+    },
+    "packages/client/src/features/permissions/permission-tier-card.ts": {
+      "count": 1,
+      "reason": "The tier card's popover is swept when one is built."
     },
     "packages/client/src/features/model/model-picker.ts": {
-      "count": 5,
-      "reason": "Sweeps of the picker's own nodes and of the seat box when the feature is switched off, takes the page and tears down."
+      "count": 4,
+      "reason": "Sweeps of the picker's seat and trigger when the feature is switched off, takes the page and tears down, and the level-1 sweep the pass runs on the slot."
+    },
+    "packages/client/src/features/model/model-cards.ts": {
+      "count": 1,
+      "reason": "The two cards' own sweep when they are dropped or torn down."
     },
     "packages/client/src/features/account/account-footer.ts": {
-      "count": 3,
-      "reason": "The footer's own sweeps at teardown, and the sweep for a copy a client reload stranded."
+      "count": 2,
+      "reason": "The takeover's teardown sweeps the rows it injected and the marks it put on the host's entries."
+    },
+    "packages/client/src/features/account/account-drawer.ts": {
+      "count": 1,
+      "reason": "The self-built trigger and popover, swept when the drawer is dropped."
     },
     "packages/client/src/features/composer/composer.ts": {
       "count": 2,
