@@ -513,16 +513,14 @@ body[data-dsh-claude-style] .dsh-claude-ban-action-chevron {
   color: var(--dsh-ban-muted);
 }
 
-/* Narrow windows: drop the fixed left inset so the column keeps its measure
+/* Narrow pages: drop the fixed left inset so the column keeps its measure
    instead of being squeezed against the right edge. */
-@media (max-width: 1000px) {
-  body[data-dsh-claude-style] .dsh-claude-ban-column {
-    width: auto;
-    padding: 72px 32px 80px;
-  }
+body[data-dsh-claude-style][data-dsh-claude-page-under-1000] .dsh-claude-ban-column {
+  width: auto;
+  padding: 72px 32px 80px;
+}
 
-  body[data-dsh-claude-style] .dsh-claude-ban-toast {
-    right: 24px;
-    max-width: calc(100% - 48px);
-  }
+body[data-dsh-claude-style][data-dsh-claude-page-under-1000] .dsh-claude-ban-toast {
+  right: 24px;
+  max-width: calc(100% - 48px);
 }

@@ -453,14 +453,21 @@ for (const entry of JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'test
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(entry.since))) problems.push(`packages/testing/data/quarantine.json: "${entry.id}" carries no date it entered`)
 }
 
+// A width media query reads the window unzoomed, so a page drawn at a zoom
+// would keep the layout of a window its own width is not: the stylesheets read
+// the page's width marks instead (packages/client/src/shared/page-scale.ts).
+for (const match of clientText.matchAll(/@media[^{]*\((?:max|min)-width:\s*\d+px\)/g)) {
+  problems.push(`packages/client/src/: "${match[0]}" reads the window unzoomed — read the page's width mark (data-dsh-claude-page-under-<width>, shared/page-scale.ts) instead`)
+}
+
 // The release matrix's viewport bands (packages/testing/data/matrix.json) stand on
-// both sides of every viewport breakpoint the stylesheets declare, so no layout
+// both sides of every page width breakpoint the stylesheets read, so no layout
 // the skin draws goes unwalked.
 const bands = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages', 'testing', 'data', 'matrix.json'), 'utf8')).bands
 let breakpoints = 0
-for (const match of clientText.matchAll(/@media[^{]*\((?:max|min)-width:\s*(\d+)px\)/g)) {
+for (const match of new Set(clientText.match(/data-dsh-claude-page-under-\d+/g) ?? [])) {
   breakpoints += 1
-  const edge = Number(match[1])
+  const edge = Number(match.slice(match.lastIndexOf('-') + 1))
   if (!bands.some((band) => band.width <= edge) || !bands.some((band) => band.width > edge)) {
     problems.push(`packages/testing/data/matrix.json: no band stands on each side of the ${edge}px breakpoint the stylesheets declare`)
   }

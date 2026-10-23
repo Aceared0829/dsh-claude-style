@@ -1,7 +1,7 @@
 import { installScaledLayer } from '@dsh-claude-style/engine/page-scale'
 import { installFrameColumns } from './page-scale-columns'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
-import { PAGE_ZOOM_ATTR } from '../constants'
+import { PAGE_UNDER_1000_ATTR, PAGE_UNDER_480_ATTR, PAGE_UNDER_760_ATTR, PAGE_ZOOM_ATTR } from '../constants'
 import { subscribePrefs } from '../core/prefs'
 import { pageViewport, pageZoomFactor } from './page-zoom'
 
@@ -30,6 +30,17 @@ export const PAGE_HEIGHT = '--dsh-claude-page-height'
 export const PAGE_WIDTH = '--dsh-claude-page-width'
 
 /**
+ * The page's width breakpoints, each as the mark a stylesheet reads in place of
+ * `@media (max-width: …)`: the mark stands while the page's own width is at or
+ * under its width, which is the query's own reading on a page drawn at 1.
+ */
+const WIDTH_MARKS = [
+  { attr: PAGE_UNDER_1000_ATTR, width: 1000 },
+  { attr: PAGE_UNDER_760_ATTR, width: 760 },
+  { attr: PAGE_UNDER_480_ATTR, width: 480 },
+] as const
+
+/**
  * Carry the host's floating layer in a page the skin draws at a scale, and put
  * the page's own size where a stylesheet can cap a card with it
  * (engine/src/page-scale.ts, D81).
@@ -43,8 +54,14 @@ export const PAGE_WIDTH = '--dsh-claude-page-width'
  */
 export function installPageScale() {
   const body = document.body
-  /** Write the page's own size, or take it away while the page is not scaled. */
+  /**
+   * Write the page's width marks, and its own size, which is taken away while
+   * the page is not scaled. The marks are written at every scale: they stand
+   * in for the media queries the stylesheets no longer carry.
+   */
   const measure = () => {
+    const width = pageViewport().width
+    for (const mark of WIDTH_MARKS) body.toggleAttribute(mark.attr, width <= mark.width)
     if (pageZoomFactor() === 1) {
       body.style.removeProperty(PAGE_HEIGHT)
       body.style.removeProperty(PAGE_WIDTH)
@@ -79,9 +96,14 @@ export function installPageScale() {
   // body, so a page that sets it from a stylesheet, a script or another session
   // must wake the rule the same way a preference change does.
   const stopScaleWatch = subscribeMutations(body, { attributes: true, attributeFilter: [PAGE_ZOOM_ATTR] }, settle)
+  // The window's own size moves the readings too. A resize is dispatched ahead
+  // of the frame's style and layout, so the marks hold in the frame it lands in.
+  window.addEventListener('resize', measure)
   settle()
   return () => {
+    window.removeEventListener('resize', measure)
     stopScaleWatch()
+    for (const mark of WIDTH_MARKS) body.removeAttribute(mark.attr)
     offPrefs()
     body.style.removeProperty(PAGE_HEIGHT)
     body.style.removeProperty(PAGE_WIDTH)

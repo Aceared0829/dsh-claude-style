@@ -116,6 +116,15 @@ export const EFFORT_ACCENT_ATTR = 'data-dsh-claude-effort-accent'
  * reads it back (shared/page-zoom.ts).
  */
 export const PAGE_ZOOM_ATTR = 'data-dsh-claude-page-zoom'
+/**
+ * Present while the page's own width — the window's over the page zoom — is at
+ * or under the width each one names (shared/page-scale.ts). A stylesheet reads
+ * these where it would write a width media query: the query reads the window
+ * unzoomed, so a zoomed page would keep its wide layout in a narrow page.
+ */
+export const PAGE_UNDER_1000_ATTR = 'data-dsh-claude-page-under-1000'
+export const PAGE_UNDER_760_ATTR = 'data-dsh-claude-page-under-760'
+export const PAGE_UNDER_480_ATTR = 'data-dsh-claude-page-under-480'
 
 
 /**

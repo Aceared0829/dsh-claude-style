@@ -75,8 +75,6 @@ body[data-dsh-claude-style] [data-dsh-claude-context-meter][data-dsh-claude-mete
 
 /* A phone-width row is narrower than the reading's own room: the ring keeps the
    arc that carries the occupancy and gives up the number beside it. */
-@media (max-width: 480px) {
-  body[data-dsh-claude-style] [data-dsh-claude-meter-ring] > button > span {
-    display: none;
-  }
+body[data-dsh-claude-style][data-dsh-claude-page-under-480] [data-dsh-claude-meter-ring] > button > span {
+  display: none;
 }

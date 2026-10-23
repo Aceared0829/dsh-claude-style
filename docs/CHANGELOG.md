@@ -4,6 +4,20 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 修复在首页切换其他插件放在输入框里的页签后整块输入区消失的问题：只有会话自身的视图页签切到非对话视图时，输入区才会收起（#131）。
+- 修复显示缩放或页面缩放为小数倍时，像素螃蟹播放动画时身侧出现一条细竖线的问题（#130）。
+- 修复设置了页面缩放后窄窗口布局仍按未缩放的窗口宽度切换的问题：首页统计格、封禁页与输入行上下文计量环旁的数字改按页面自身的宽度收窄（#129）。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- Fix the whole input area vanishing on the home page after picking a tab in another plugin's menu inside the composer: the input area stands down only when the conversation's own view tabs leave the chat (#131).
+- Fix a thin vertical line appearing beside the pixel crab while it plays at a fractional display or page zoom (#130).
+- Fix the narrow-window layouts switching on the unzoomed window width under page zoom: the home page's stat cells, the ban screen and the number beside the composer row's context ring now narrow with the page's own width (#129).
+
 ## [0.18.5] - 2026-10-23
 
 [中文](#cn-0.18.5) | [English](#en-0.18.5)

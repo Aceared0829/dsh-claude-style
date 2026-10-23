@@ -17,7 +17,7 @@ body[data-dsh-claude-style] [data-conversation-scroll] nav[data-dsh-claude-turn-
    centred in the band between the conversation's top and the composer, at
    most the band less 64px — and at most ten turns. */
 body[data-dsh-claude-style] .dsh-claude-turn-rail {
-  --dsh-claude-turn-rail-band: calc(var(--dsh-conversation-viewport-height, 100dvh) - var(--dsh-composer-height, 152px));
+  --dsh-claude-turn-rail-band: calc(var(--dsh-conversation-viewport-height, var(--dsh-claude-page-height, 100dvh)) - var(--dsh-composer-height, 152px));
   position: absolute;
   top: calc(var(--dsh-claude-turn-rail-band) / 2);
   right: 12px;

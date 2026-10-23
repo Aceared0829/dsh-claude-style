@@ -446,8 +446,6 @@ body[data-dsh-claude-style] .dsh-claude-context-stats-skeleton-value {
    features/context-stats/meter-ring.css. The trailing cluster's own shrink is
    not a phone rule: it carries the model name's compression at every width
    (inline.css). */
-@media (max-width: 480px) {
-  body[data-dsh-claude-style] [data-dsh-claude-context-meter] button > span {
-    display: none;
-  }
+body[data-dsh-claude-style][data-dsh-claude-page-under-480] [data-dsh-claude-context-meter] button > span {
+  display: none;
 }

@@ -143,10 +143,8 @@ body[data-dsh-claude-style] .dsh-claude-home-heat[data-skeleton] .dsh-claude-hom
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 5%, transparent);
 }
 
-/* A narrow window stacks the stat cells rather than squeezing three of them;
+/* A narrow page stacks the stat cells rather than squeezing three of them;
    the heat grid follows the panel on its own. */
-@media (max-width: 760px) {
-  body[data-dsh-claude-style] .dsh-claude-home-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+body[data-dsh-claude-style][data-dsh-claude-page-under-760] .dsh-claude-home-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
