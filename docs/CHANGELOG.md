@@ -4,9 +4,11 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
-[中文](#cn-unreleased) | [English](#en-unreleased)
+## [0.18.4] - 2026-10-23
 
-<h3 id="cn-unreleased">体验优化</h3>
+[中文](#cn-0.18.4) | [English](#en-0.18.4)
+
+<h3 id="cn-0.18.4">体验优化</h3>
 
 - 改善设置页的标签条：把「输入区」与「对话」两个标签页合并为「主窗口」，一页内上「对话区」、下「输入区」两组各带组标签，对话统计信息位置与计费币种两行归入输入区。
 - 改善模型选择器里的模型描述：描述只写模型擅长什么或官方宣传语，去掉上下文长度、激活参数、生成速度与价格，中英文两版写同样的内容。
@@ -23,7 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复设置页外观标签的品牌标志不随「图片颜色」上色的问题：标志与文字标志按所选的「强调色」或「文字色」显示，两种主题下都与所在的底色分得开。
 - 修复封号彩蛋没有铺满整个窗口、右侧与底部露出下层页面的问题：整页重新占满窗口。
 
-<h3 id="en-unreleased">Improvements</h3>
+<h3 id="en-0.18.4">Improvements</h3>
 
 - Improve the settings page's tab strip: Composer and Conversation become one Main window tab, its page split into a Conversation group above and a Composer group below, each under its own label, with Conversation statistics position and Billing currency standing in the Composer group.
 - Improve the model descriptions in the model picker: each one says what the model is good at or carries the vendor's own tagline, drops context length, active parameters, generation speed and price, and reads the same in Chinese and English.

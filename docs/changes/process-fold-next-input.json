@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复「工作步骤收起时机」设为「下次有新消息时」后，最新一轮结束时过程组不再自动折叠的问题：回答出现后，这一轮的过程组照常收起。",
-  "en": "Fix process groups no longer folding at the end of the latest turn when When to Collapse Work Details is set to On next message: once the answer is in, the turn's process groups fold as usual."
-}

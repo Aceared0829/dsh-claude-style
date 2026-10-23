@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 1,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "改善模型选择器里的模型描述：描述只写模型擅长什么或官方宣传语，去掉上下文长度、激活参数、生成速度与价格，中英文两版写同样的内容。",
-  "en": "Improve the model descriptions in the model picker: each one says what the model is good at or carries the vendor's own tagline, drops context length, active parameters, generation speed and price, and reads the same in Chinese and English."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 15,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复封号彩蛋没有铺满整个窗口、右侧与底部露出下层页面的问题：整页重新占满窗口。",
-  "en": "Fix the account-hold easter egg stopping short of the window, with the host page showing along its right and bottom edges: the page fills the window again."
-}

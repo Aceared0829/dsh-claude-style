@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "at": "2026-10-22",
-  "external": false,
-  "zh": "修复账户菜单在页面缩放或窗口较矮时上方放不下、翻到账户行下方并盖住账户行的问题：上下都放不下的菜单留在空间更大的一侧，贴着窗口边缘展开。",
-  "en": "Fix the account menu flipping below the account row and covering it when the page zoom or a short window leaves too little room above: a menu that fits on neither side stays on the roomier one, held against the window's edge."
-}
