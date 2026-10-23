@@ -21,8 +21,8 @@ body[data-dsh-claude-style] .dsh-claude-session-title-tip {
   z-index: var(--dsh-claude-layer-float);
   padding: 4px 9px;
   border-radius: 7px;
-  background: var(--dsw-alias-label-primary, #141413);
-  color: var(--dsw-alias-bg-base, #fcfcfb);
+  background: var(--dsw-alias-label-primary, #161616);
+  color: var(--dsw-alias-bg-base, #ffffff);
   font-family: var(--dsw-font-family);
   font-size: 12px;
   font-weight: 500;
@@ -47,8 +47,8 @@ body[data-dsh-claude-style] .dsh-claude-session-title {
   padding: 3px 1px;
   border: 1px solid var(--dsh-claude-field-ring, #2a78d6);
   border-radius: 4px;
-  background: var(--dsw-alias-bg-base, #FCFCFB);
-  color: var(--dsw-alias-label-primary, #141413);
+  background: var(--dsw-alias-bg-base, #FFFFFF);
+  color: var(--dsw-alias-label-primary, #161616);
   font-family: var(--dsw-font-family);
   font-size: 14px;
   font-weight: 500;

@@ -84,6 +84,7 @@ function tokenValue(spec, card, scheme, tones) {
   if (spec.tone !== undefined) return tones.get(tokenTone(spec, card))
   if (spec.card === 'logoInk') return card.logoInk === 'ink' ? tones.get('ink') : card.accent
   if (spec.card === 'code') return card.code[scheme]
+  if (spec.card === 'sidebar') return card.sidebar?.[scheme]
   throw new Error('build: a palette token names no colour source')
 }
 
@@ -220,12 +221,16 @@ function customPaletteBlocks(doc, gates) {
       }
       for (const spec of doc.palette.tokens) {
         if (spec.schemes !== undefined && !spec.schemes.includes(scheme)) continue
+        // The brand art's ink belongs to the brand, not to the colour card: its
+        // own block states it under the brand attribute.
+        if (spec.card === 'logoInk') continue
         let value
         if (spec.tone !== undefined) value = `var(--dsh-tone-${card.edges === 'surface' && spec.flat !== undefined && scheme === 'dark' ? spec.flat : spec.tone})`
         else if (spec.literal !== undefined) value = spec.literal[scheme]
         else if (spec.alias !== undefined) value = `var(${spec.alias})`
         else if (spec.card === 'code') value = 'var(--dsh-claude-custom-code)'
-        else if (spec.card === 'logoInk') value = card.logoInk === 'accent' ? 'var(--dsh-claude-custom-accent)' : 'var(--dsh-tone-ink)'
+        // The reader's canvas carries its own sidebar step, like the cards'.
+        else if (spec.card === 'sidebar') value = 'var(--dsh-tone-sidebar)'
         else throw new Error('build: a palette token names no colour source')
         declarations.push([spec.token, value])
       }
@@ -247,10 +252,12 @@ function customPaletteBlocks(doc, gates) {
  * the same (0,1,1) as a bare `body[data-dsh-claude-style]`, so whichever sheet
  * the loader appended last would win; naming the attribute lifts these to
  * (0,2,1). The first card is the default look; every later card states only the
- * tokens that differ from it, under its own brand attribute. The brand marks'
- * addresses come first: every choice paints with them. The motion and layer
- * tokens are ungated blocks beside them: the same durations, curves, distances
- * and stacking levels under every card and typeface (D9).
+ * tokens that differ from it, under its own colour-card attribute. The brand
+ * art's ink stays under the brand attribute, so a picked card paints the
+ * palette while the mark above it keeps its own. The brand marks' addresses
+ * come first: every choice paints with them. The motion and layer tokens are
+ * ungated blocks beside them: the same durations, curves, distances and
+ * stacking levels under every card and typeface (D9).
  *
  * @param images - brand mark name → its address (data URI or route).
  */
@@ -258,20 +265,32 @@ export function tokenSheet(doc, gates, images) {
   const dark = '[data-ds-dark-theme]'
   const light = ':not([data-ds-dark-theme])'
   const gate = gateOf
-  const gated = (brand) => `${SCOPE}${gate(gates.palette, gates.palette.claude)}${brand === undefined ? '' : gate(gates.brand, brand)}`
+  const palette = `${SCOPE}${gate(gates.palette, gates.palette.claude)}`
+  const gated = (card) => `${palette}${card === undefined ? '' : gate(gates.paletteCard, card)}`
   const typeface = (value) => `${SCOPE}${gate(gates.typeface, value)}`
   const values = resolvePalette(doc)
   const [first, ...rest] = doc.palette.cards
+  // The brand art's ink is the brand's own: it stays outside the colour-card
+  // blocks, under the brand attribute, whichever card paints the palette.
+  const paletteTokens = (map) => declarationsOf(doc, map).filter(([token]) => token !== '--dsh-claude-logo-ink')
+  const schemeOf = (scheme) => scheme === 'dark' ? dark : light
   const blocks = []
   for (const scheme of SCHEMES) {
-    blocks.push(tokenBlock(`${gated(undefined)}${scheme === 'dark' ? dark : light}`, declarationsOf(doc, values.get(first.id).get(scheme))))
+    blocks.push(tokenBlock(`${gated(undefined)}${schemeOf(scheme)}`, paletteTokens(values.get(first.id).get(scheme))))
   }
   for (const card of rest) {
     for (const scheme of SCHEMES) {
       const mine = values.get(card.id).get(scheme)
       const base = values.get(first.id).get(scheme)
       const changed = new Map([...mine].filter(([token, value]) => base.get(token) !== value))
-      blocks.push(tokenBlock(`${gated(card.id)}${scheme === 'dark' ? dark : light}`, declarationsOf(doc, changed)))
+      blocks.push(tokenBlock(`${gated(card.id)}${schemeOf(scheme)}`, paletteTokens(changed)))
+    }
+  }
+  for (const card of doc.palette.cards) {
+    for (const scheme of SCHEMES) {
+      blocks.push(tokenBlock(`${palette}${gate(gates.brand, card.id)}${schemeOf(scheme)}`, [
+        ['--dsh-claude-logo-ink', values.get(card.id).get(scheme).get('--dsh-claude-logo-ink')],
+      ]))
     }
   }
   return [
@@ -325,6 +344,8 @@ function tokenTable(doc) {
     tableCell(card.accent),
     tableCell(card.canvas.light),
     tableCell(card.canvas.dark),
+    cell(card.sidebar?.light),
+    cell(card.sidebar?.dark),
     cell(card.link?.light),
     cell(card.link?.dark),
     card.edges,
@@ -345,8 +366,8 @@ function tokenTable(doc) {
   })
   const tokenHeader = ['Token', 'Tone', ...schemeHeader, 'Host alias', 'Use']
   return [
-    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code light', 'Code dark']),
-    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
+    row(['Card', 'Accent', 'Canvas light', 'Canvas dark', 'Sidebar light', 'Sidebar dark', 'Link light', 'Link dark', 'Edges', 'Logo ink', 'Code light', 'Code dark']),
+    row(['---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---', '---']),
     ...cardRows,
     '',
     row(['Tone', 'Seed', 'Light', 'Dark']),

@@ -21,7 +21,7 @@ const MARK = surface.attribute('composer.transcript')
 const PART = surface.attribute('skin.part')
 
 /** The canvas the seat paints its bar with, in the Claude palette. */
-const CANVAS = 'rgb(252, 252, 251)'
+const CANVAS = 'rgb(255, 255, 255)'
 
 /**
  * The host's shape around a composer: a phase root, its scroll body, the view

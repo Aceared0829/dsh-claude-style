@@ -172,7 +172,7 @@ body[data-dsh-claude-style] [data-composer-card] [data-dsh-claude-part~="row-che
 /* Reference layout: two-tier integrated tray. The top card is a pure white
    rounded card with drop shadow (z-index: 2). The bottom tray is a seamless
    equal-width tray (z-index: 1) attached directly to the bottom of the card,
-   with transparent background (inheriting the canvas tone #fcfcfb),
+   with transparent background (inheriting the canvas tone #ffffff),
    left/right/bottom border, and 18px rounded bottom corners.
 
    The tray belongs to the CLASSIC home layout: the studio layout

@@ -228,17 +228,20 @@ const CONSTANTS = (() => {
     if (module[name] === undefined) throw new Error(`build: ${file} exports no ${name}`)
     return [name, module[name]]
   }))
-  const { BRAND_ATTR, BRAND_DEEPSEEK, COMPOSER_ATTR, PALETTE_ATTR, PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_ATTR, TYPEFACE_CLAUDE, TYPEFACE_HOST } = pick(constants, constantsFile, ['BRAND_ATTR', 'BRAND_DEEPSEEK', 'COMPOSER_ATTR', 'PALETTE_ATTR', 'PALETTE_CLAUDE', 'PALETTE_HOST', 'TYPEFACE_ATTR', 'TYPEFACE_CLAUDE', 'TYPEFACE_HOST'])
+  const { BRAND_ATTR, BRAND_DEEPSEEK, BRANDS, COMPOSER_ATTR, PALETTE_ATTR, PALETTE_CARD_ATTR, PALETTE_CLAUDE, PALETTE_HOST, TYPEFACE_ATTR, TYPEFACE_CLAUDE, TYPEFACE_HOST } = pick(constants, constantsFile, ['BRAND_ATTR', 'BRAND_DEEPSEEK', 'BRANDS', 'COMPOSER_ATTR', 'PALETTE_ATTR', 'PALETTE_CARD_ATTR', 'PALETTE_CLAUDE', 'PALETTE_HOST', 'TYPEFACE_ATTR', 'TYPEFACE_CLAUDE', 'TYPEFACE_HOST'])
   return {
     // The gate attributes scripts/css.mjs checks, stamps and writes the token
     // blocks under: who paints the colours and who sets the type (D30), the
-    // composer preference (D9) and the DeepSeek brand's own blocks (D30).
+    // composer preference (D9), the colour card (D30) and the brand's own
+    // blocks (D30).
     gates: {
       composer: COMPOSER_ATTR,
       palette: { attribute: PALETTE_ATTR, claude: PALETTE_CLAUDE, host: PALETTE_HOST },
+      paletteCard: { attribute: PALETTE_CARD_ATTR },
       typeface: { attribute: TYPEFACE_ATTR, claude: TYPEFACE_CLAUDE, host: TYPEFACE_HOST },
       brand: { attribute: BRAND_ATTR, deepseek: BRAND_DEEPSEEK },
     },
+    brands: BRANDS,
     ...pick(sheets, sheetsFile, ['CRAB_SHEETS', 'CRAB_GUTTER', 'DEEPY_SHEETS', 'DEEPY_SCALE', 'DEEPY_GUTTER']),
     featureSheets: pick(constants, constantsFile, FEATURE_SHEET_CONSTANTS),
   }
@@ -422,6 +425,13 @@ async function main() {
   checkClaimed(plan, claimed)
 
   const tokenDoc = loadTokens(SRC)
+  // The colour-card preference stores a card id and the brand vocabulary
+  // declares the values it accepts, so a card without its brand would be
+  // unpickable and a brand without its card would have nothing to paint.
+  const cards = new Set(tokenDoc.palette.cards.map((card) => card.id))
+  if (cards.size !== CONSTANTS.brands.length || !CONSTANTS.brands.every((id) => cards.has(id))) {
+    throw new Error(`build: the palette cards (${[...cards].join(', ')}) and the brand vocabulary (${CONSTANTS.brands.join(', ')}) disagree`)
+  }
   const css = buildStylesheet({ sheets, srcDir: SRC, sources, tokenDoc, gates: CONSTANTS.gates, images, featureConstants: CONSTANTS.featureSheets })
   if (writeTokenTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md token table from packages/client/src/theme/tokens.json')
   if (writeMotionTable(STYLE_GUIDE, tokenDoc)) console.log('built docs/STYLE.md motion table from packages/client/src/theme/tokens.json')

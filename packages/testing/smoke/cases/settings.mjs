@@ -51,6 +51,30 @@ export default {
       JSON.stringify(onWindows.rows) === JSON.stringify(expected['main-window']) &&
         JSON.stringify(onWindows.disabled) === '[]' && JSON.stringify(onWindows.notes) === '[]',
       JSON.stringify(onWindows))
+    const palette = settings.paletteCards || {}
+    const paletteCard = (state, id) => (state.cards || []).find((card) => (card.brand || 'custom') === id) || {}
+    const followingCards = palette.following || {}
+    const pinnedCards = palette.pinned || {}
+    const customCards = palette.custom || {}
+    check('the three colour cards are all buttons: the card the page paints is pressed, the others stand ready, and the trio carries the brand cards and the reader\'s own',
+      [followingCards, pinnedCards, customCards].every((state) => (state.cards || []).length === 3 &&
+        state.cards.every((card) => card.role === 'button' && card.pressed === (card.active ? 'true' : 'false') &&
+          typeof card.label === 'string' && card.label.length > 0)),
+      JSON.stringify(palette))
+    check('following the brand presses the brand\'s card with no reset to offer; a picked card paints its own colours while the mark stays, and offers the way back',
+      followingCards.mark?.join() === 'DeepSeek' &&
+        paletteCard(followingCards, 'deepseek').pressed === 'true' && paletteCard(followingCards, 'claude').pressed === 'false' &&
+        paletteCard(followingCards, 'deepseek').reset === null &&
+        pinnedCards.mark?.join() === 'DeepSeek' &&
+        paletteCard(pinnedCards, 'claude').pressed === 'true' && paletteCard(pinnedCards, 'deepseek').pressed === 'false' &&
+        typeof paletteCard(pinnedCards, 'claude').reset === 'string' && paletteCard(pinnedCards, 'claude').reset.length > 0,
+      JSON.stringify({ following: followingCards, pinned: pinnedCards }))
+    check('the reader\'s own card presses itself, keeps the brand\'s tokens under it, and carries the same reset',
+      customCards.mark?.join() === 'DeepSeek' &&
+        paletteCard(customCards, 'custom').pressed === 'true' &&
+        paletteCard(customCards, 'claude').pressed === 'false' && paletteCard(customCards, 'deepseek').pressed === 'false' &&
+        typeof paletteCard(customCards, 'custom').reset === 'string' && paletteCard(customCards, 'custom').reset.length > 0,
+      JSON.stringify(customCards))
     const off = settings.parentsOff || {}
     check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off, and the title-bar band for the window on every page',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&

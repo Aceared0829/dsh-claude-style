@@ -42,7 +42,7 @@ body[data-dsh-claude-style][data-dsh-claude-chat-follow] [data-conversation-scro
      would show through it. The canvas it already stands on paints the band, the
      way the composer seat paints its own: at rest the two are the same colour
      and nothing changes. */
-  background: var(--dsh-claude-canvas, var(--dsw-alias-bg-base, #FCFCFB));
+  background: var(--dsh-claude-canvas, var(--dsw-alias-bg-base, #FFFFFF));
 }
 
 /* The host clips the transcript 16px below the flow's last row, and the pin

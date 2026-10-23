@@ -54,8 +54,8 @@ OUT_DIR = os.path.join(ROOT, 'packages', 'assets', 'src', 'icons', 'combine')
 COMBINE_SRC = os.path.join(ROOT, 'packages', 'assets', 'src', 'icons')
 
 # Canvas colours the contrast check is run against (packages/client/src/theme/tokens.css).
-LIGHT_CANVAS = '#fcfcfb'
-DARK_CANVAS = '#141413'
+LIGHT_CANVAS = '#ffffff'
+DARK_CANVAS = '#191919'
 # WCAG contrast below this and the brand colour is not legible on that canvas, so
 # the mono layer (currentColor) is used there instead of a tint.
 MIN_CONTRAST = 3.0

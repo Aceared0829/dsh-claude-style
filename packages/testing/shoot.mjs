@@ -57,7 +57,7 @@ const DEMO_TITLE = 'Markdown rendering tour'
  * sit under `:not([data-ds-dark-theme])`, and the DeepSeek brand rewrites both.
  */
 const CANVAS = {
-  claude: { light: 'rgb(252, 252, 251)', dark: 'rgb(20, 20, 19)' },
+  claude: { light: 'rgb(255, 255, 255)', dark: 'rgb(25, 25, 25)' },
   deepseek: { light: 'rgb(247, 250, 255)', dark: 'rgb(19, 22, 29)' },
 }
 

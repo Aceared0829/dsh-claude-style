@@ -2,17 +2,17 @@ import { same, check, basicChecks, commonChecks } from './_shared.mjs'
 
 /** The shell surfaces a wallpaper plugin shows through, and what the Claude palette paints them */
 const CLAUDE_SHELL = ['body', 'sidebar', 'conversation']
-const CLAUDE_FILLS = [['body', 'rgb(252, 252, 251)'], ['sidebar', 'rgb(251, 251, 249)'], ['conversation', 'rgb(252, 252, 251)']]
+const CLAUDE_FILLS = [['body', 'rgb(255, 255, 255)'], ['sidebar', 'rgb(250, 250, 250)'], ['conversation', 'rgb(255, 255, 255)']]
 
 export default {
-  // The skin's own Claude palette: the ivory and warm-black canvases, the clay
+  // The skin's own Claude palette: the white and near-black canvases, the clay
   // accent and the raised card fill, read from the live custom properties.
   brand(r) {
     basicChecks(r)
     const palette = r.claudePalette || {}
-    check('the Claude brand keeps its ivory and warm-black canvases and the clay accent',
-      palette.canvas === 'rgb(252, 252, 251)' && palette.accent === '#d97757' && !!palette.dark &&
-        palette.dark.canvas === 'rgb(20, 20, 19)' && palette.dark.accent === '#d97757' && palette.dark.raised === '#1e1e1d',
+    check('the Claude brand keeps its white and near-black canvases and the clay accent',
+      palette.canvas === 'rgb(255, 255, 255)' && palette.accent === '#d97757' && !!palette.dark &&
+        palette.dark.canvas === 'rgb(25, 25, 25)' && palette.dark.accent === '#d97757' && palette.dark.raised === '#232323',
       JSON.stringify(palette))
     commonChecks(r)
   },
@@ -348,7 +348,7 @@ export default {
       JSON.stringify(wall))
     const claude = hp.claude || {}
     check('back on Claude the skin\'s palette and faces return',
-      claude.base === '#fcfcfb' && claude.body === 'rgb(252, 252, 251)' && claude.account === 'rgb(252, 252, 251)' &&
+      claude.base === '#ffffff' && claude.body === 'rgb(255, 255, 255)' && claude.account === 'rgb(255, 255, 255)' &&
         claude.popover === 'rgb(255, 255, 255)' && /Anthropic Serif Web Text/.test(claude.heading || ''),
       JSON.stringify(claude))
     // A wallpaper under the Claude palette. The shell canvases stand down
@@ -359,15 +359,15 @@ export default {
     const wallClaude = hp.claudeWallpaper || {}
     check('with the Claude palette and a wallpaper up the shell stands down under one mask',
       CLAUDE_SHELL.every((key) => wallClaude[key] === 'rgba(0, 0, 0, 0)') && wallClaude.sidebarFill === 'transparent' &&
-        wallClaude.maskPosition === 'fixed' && /^color\(srgb 0\.98\d* 0\.98\d* 0\.98\d* \/ 0\.86\)$/.test(wallClaude.mask || '') &&
-        wallClaude.html === 'rgb(252, 252, 251)',
+        wallClaude.maskPosition === 'fixed' && /^color\(srgb 1 1 1 \/ 0\.86\)$/.test(wallClaude.mask || '') &&
+        wallClaude.html === 'rgb(255, 255, 255)',
       JSON.stringify(wallClaude))
     check('and the base canvas and the skin\'s own faces keep their fill',
-      wallClaude.base === '#fcfcfb' && wallClaude.popover === claude.popover && wallClaude.account === claude.account &&
+      wallClaude.base === '#ffffff' && wallClaude.popover === claude.popover && wallClaude.account === claude.account &&
         wallClaude.search === claude.search,
       JSON.stringify({ wallpaper: wallClaude, claude }))
     check('with the wallpaper gone the skin\'s own fills are back and the mask is lifted',
-      CLAUDE_FILLS.every(([key, value]) => claude[key] === value) && claude.sidebarFill === '#fbfbf9' &&
+      CLAUDE_FILLS.every(([key, value]) => claude[key] === value) && claude.sidebarFill === '#fafafa' &&
         claude.mask === 'rgba(0, 0, 0, 0)',
       JSON.stringify(claude))
     commonChecks(r)

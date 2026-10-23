@@ -45,7 +45,7 @@ body[data-dsh-claude-style] .dsh-claude-search-trigger {
   gap: 8px;
   border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
   border-radius: 8px;
-  background: var(--dsh-claude-canvas, #fcfcfb);
+  background: var(--dsh-claude-canvas, #ffffff);
   color: var(--dsw-alias-label-tertiary, #8f8d84);
   font-family: var(--dsw-font-family);
   font-size: 14px;

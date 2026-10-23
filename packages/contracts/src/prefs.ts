@@ -13,11 +13,6 @@ import { CURRENCIES, CURRENCY_CNY } from './prices'
 
 /* ---------- the value vocabulary ---------- */
 
-/** The four colours a reader can author: the accent, the light and dark canvases, and inline code. */
-export const PALETTE_COLORING_BRAND = 'brand'
-export const PALETTE_COLORING_CUSTOM = 'custom'
-export const PALETTE_COLORINGS = [PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM] as const
-
 /** The billing choice's off value: no figure is drawn and no settlement is priced. */
 export const BILLING_OFF = 'off'
 /** The billing choices, in the settings' order: the two official tables, or no billing at all. */
@@ -35,6 +30,15 @@ export const BRAND_DEEPSEEK = 'deepseek'
 /** What earlier builds stored for the DeepSeek choice, when it was labelled "Off". */
 export const BRAND_DEEPSEEK_LEGACY = 'off'
 export const BRANDS = [BRAND_CLAUDE, BRAND_DEEPSEEK] as const
+
+/**
+ * Which colours the page paints: one brand's own card, `brand` for whichever
+ * brand the theme style chooses, or the reader's four. A card id stands on its
+ * own, so the colour card and the brand mark are chosen apart.
+ */
+export const PALETTE_COLORING_BRAND = 'brand'
+export const PALETTE_COLORING_CUSTOM = 'custom'
+export const PALETTE_COLORINGS = [PALETTE_COLORING_BRAND, ...BRANDS, PALETTE_COLORING_CUSTOM] as const
 
 /** How the brand art is painted: in its own colours, in the accent, or as a shape in the text colour. */
 export const BRAND_INK_ORIGINAL = 'original'
@@ -217,7 +221,7 @@ export const PREFS = {
   brandName: { type: 'text', default: '', max: BRAND_NAME_MAX },
   brandInk: { type: 'choice', values: BRAND_INKS, default: BRAND_INK_ORIGINAL },
   brandAccent: { type: 'color', default: '' },
-  /** Whether the page paints the brand's own colours or the reader's four. */
+  /** One brand's card, `brand` to follow the theme style, or the reader's four. */
   paletteColors: { type: 'choice', values: PALETTE_COLORINGS, default: PALETTE_COLORING_BRAND },
   /** The reader's four colours, empty until picked; each falls back to the card's own. */
   customAccent: { type: 'color', default: '' },

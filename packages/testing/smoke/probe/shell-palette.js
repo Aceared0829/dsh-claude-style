@@ -408,6 +408,87 @@
         window.__pushForm({ ongoingIndicator: 'breathe' })
         await sleep(120)
         r.settings.ongoingStored = { ring: ringRunning, breathe: readRunning() }
+        // The colour cards: all three are buttons, the card the page paints is
+        // pressed, and a picked card hands the colours back through its reset.
+        // The brand mark is read beside the card, because a picked card paints
+        // its own colours without moving the mark.
+        r.settings.paletteCards = await (async function () {
+          var treeOf = function (states) {
+            var react = window.__react
+            react.rendering = true
+            react.states = states
+            var tree = Section({})
+            react.rendering = false
+            react.states = null
+            return tree
+          }
+          var read = function () {
+            var tree = treeOf({ general: 'appearance' })
+            // The colour row is the appearance tab's only labelled group, so the
+            // cards are its button children; their labels are what the reader sees.
+            var group = null
+            walk(tree, function (node) {
+              var props = node.props || {}
+              if (group === null && props.role === 'group' && typeof props['aria-label'] === 'string') group = props
+            })
+            var cards = []
+            var readCard = function (node) {
+              if (Array.isArray(node)) { node.forEach(readCard); return }
+              if (node === null || typeof node !== 'object') return
+              var props = node.props || {}
+              if (props.role === 'button') {
+                var reset = null
+                var kids = [].concat(props.children || [])
+                for (var ki = 0; ki < kids.length; ki++) {
+                  var kid = kids[ki]
+                  if (kid !== null && typeof kid === 'object' && (kid.props || {}).type === 'button') {
+                    reset = [].concat(kid.props.children || []).join('')
+                  }
+                }
+                cards.push({
+                  label: props['aria-label'],
+                  brand: props['data-brand'] || null,
+                  role: props.role,
+                  pressed: props['aria-pressed'],
+                  active: props['data-active'] === '',
+                  reset: reset,
+                })
+                return
+              }
+              readCard(props.children)
+            }
+            if (group !== null) readCard(group.children)
+            return cards
+          }
+          var mark = function () {
+            var tree = treeOf(null)
+            // The general tab's theme style is its only group: the pressed card
+            // names the brand whose mark the page paints.
+            var group = null
+            walk(tree, function (node) {
+              var props = node.props || {}
+              if (group === null && props.role === 'group') group = props
+            })
+            var pressed = []
+            walk(group === null ? [] : group.children, function (node) {
+              var props = node.props || {}
+              if (props['aria-pressed'] === 'true' && typeof props['aria-label'] === 'string') pressed.push(props['aria-label'])
+            })
+            return pressed
+          }
+          window.__pushForm({ brand: 'deepseek', paletteColors: 'brand' })
+          await sleep(120)
+          var following = { cards: read(), mark: mark() }
+          window.__pushForm({ paletteColors: 'claude' })
+          await sleep(120)
+          var pinned = { cards: read(), mark: mark() }
+          window.__pushForm({ paletteColors: 'custom' })
+          await sleep(120)
+          var custom = { cards: read(), mark: mark() }
+          window.__pushForm({ brand: 'claude', paletteColors: 'brand' })
+          await sleep(120)
+          return { following: following, pinned: pinned, custom: custom }
+        })()
         window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
         r.settings.parentsOff = { appearance: renderTab('appearance'), mainWindow: renderTab('main-window'), sidebar: renderTab('sidebar') }
         window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })

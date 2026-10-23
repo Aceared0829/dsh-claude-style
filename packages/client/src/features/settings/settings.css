@@ -1,6 +1,6 @@
 /* ---------- Settings dialog: modal panel background ---------- */
 /* In light mode, the host dialog defaults to var(--dsw-alias-bg-layer-2);
-   align the dialog card with the main canvas (#fcfcfb). */
+   align the dialog card with the main canvas (#ffffff). */
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) :is([data-dsh-claude-part~="settings-area"] [data-dsh-claude-part~="panel"], [data-dsh-claude-part~="settings-area"] [role="dialog"], [data-dsh-claude-part~="overlay"] > [data-dsh-claude-part~="panel"]) {
   background: var(--dsw-alias-bg-base);
 }

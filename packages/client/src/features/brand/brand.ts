@@ -37,7 +37,7 @@ const PROPERTIES = [
 const ATTRIBUTES = [CUSTOM_MARK_ATTR, CUSTOM_WORD_ATTR, CUSTOM_TINT_ATTR, CUSTOM_ACCENT_TINT_ATTR, CUSTOM_PALETTE_ATTR, BRAND_INK_ATTR]
 
 /** The two inks text on an accent fill can take: the dark and the light canvas (docs/STYLE.md). */
-const INK_DARK = '#141413'
+const INK_DARK = '#191919'
 const INK_LIGHT = '#faf9f5'
 
 /** A CSS string literal holding the text, for `content: var(...)`; a line break reads as a space. */

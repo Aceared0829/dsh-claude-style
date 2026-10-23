@@ -130,6 +130,9 @@ test('a stored accent moves into the custom card, keeping its colour, and the ca
   expect(clampPrefs({ brandAccent: '#abc' }).customAccent).toBe('')
   expect(clampPrefs({ brandAccent: 'red' }).customAccent).toBe('')
   expect(clampPrefs({}).paletteColors).toBe('brand')
+  expect(clampPrefs({ paletteColors: 'claude' }).paletteColors).toBe('claude')
+  expect(clampPrefs({ paletteColors: 'deepseek' }).paletteColors).toBe('deepseek')
+  expect(clampPrefs({ paletteColors: 'pink' }).paletteColors).toBe('brand')
 })
 
 test('the custom images keep their own colours unless the text colour is chosen', () => {

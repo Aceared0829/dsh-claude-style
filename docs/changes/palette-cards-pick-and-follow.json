@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-23",
+  "external": false,
+  "zh": "修复设置页「外观 → 配色」的颜色卡只能选中自定义卡的问题：Claude 与 DeepSeek 卡现在也能点选，各自换上该卡的配色而不改动通用页的品牌标志，选中的卡上给出「恢复跟随品牌」，把配色交回当前品牌（#128）。",
+  "en": "Fix the colour cards under Appearance → Colours accepting only the custom card: the Claude and DeepSeek cards can now be picked too, each painting its own palette while the theme style's brand mark stays, and a picked card offers “Follow the brand again” to hand the colours back (#128)."
+}

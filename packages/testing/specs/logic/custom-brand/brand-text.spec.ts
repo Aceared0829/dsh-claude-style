@@ -11,7 +11,7 @@ import { expect, test } from 'vitest'
 import fc from 'fast-check'
 import { accentInk, cssString } from '@dsh-claude-style/client/pure'
 
-const INK_DARK = '#141413'
+const INK_DARK = '#191919'
 const INK_LIGHT = '#faf9f5'
 
 test('the brand name becomes a CSS string that keeps quotes and backslashes and reads a line break as a space', () => {

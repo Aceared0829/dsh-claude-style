@@ -33,7 +33,7 @@ The settings page switches between the two palettes; light and dark follow the s
   </tr>
 </table>
 
-> Studio home above, Markdown conversation below; light on the left, dark on the right. Ivory canvas `#FCFCFB`, warm black `#141413`, ember orange `#D97757` for every action, and Claude Code's pixel crab on the composer.
+> Studio home above, Markdown conversation below; light on the left, dark on the right. White canvas `#FFFFFF` with a `#FAFAFA` sidebar, near-black `#191919` with a `#1F1F1F` sidebar, ember orange `#D97757` for every action, and Claude Code's pixel crab on the composer.
 
 ### DeepSeek
 

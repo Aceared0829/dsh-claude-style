@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { BRAND_INK_ACCENT, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM } from '../../constants'
+import { BRAND_INK_ACCENT, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRANDS, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM } from '../../constants'
 import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
 import { BrandLockup } from './settings-brand-lockup'
 import type { SegmentOption, SettingsRow, SettingsView } from './settings-controls'
@@ -26,6 +26,13 @@ const COLOURS = [
 
 type Card = (typeof PALETTE_CARDS)[number]
 type ColourField = (typeof COLOURS)[number]['field']
+
+/** The brand cards in the settings page's brand order, each with the id the preference stores. */
+const BRAND_CARDS = BRANDS.map((id) => {
+  const card = PALETTE_CARDS.find((entry) => entry.id === id)
+  if (card === undefined) throw new Error(`settings: the palette carries no ${id} card`)
+  return { id, card }
+})
 
 /** The name a card goes by, in the settings page's own language. */
 function cardName(card: Card) {
@@ -122,35 +129,64 @@ function Swatches(props: { colours: string[], onChange?: (field: ColourField, va
 }
 
 /**
- * The three cards: the two brands, whose colours the page already paints, and
- * the reader's own. The card the page paints wears the selected border; a brand
- * card cannot be picked, so it wears it only while its brand is the page's.
+ * The three cards: the two brands' colour sets and the reader's own. Every card
+ * can be picked: a brand card pins that card's colours whatever the theme style
+ * says, and the card the page paints wears the selected border. Each picked
+ * card offers "follow the brand again", which hands the colours back to the
+ * brand the theme style chooses; the reader's four stay stored.
  */
 function PaletteCards(props: { prefs: Prefs, write: SettingsView['write'] }) {
   const { prefs, write } = props
   const brand = PALETTE_CARDS.find((entry) => entry.id === prefs.brand) ?? PALETTE_CARDS[0]
+  const following = prefs.paletteColors === PALETTE_COLORING_BRAND
   const custom = prefs.paletteColors === PALETTE_COLORING_CUSTOM
+  const painted = following ? brand.id : prefs.paletteColors
   const reader = COLOURS.map((colour) => {
     const stored = prefs[colour.field]
     return stored === '' ? colour.pick(brand) : stored
   })
   const pick = (field: ColourField, value: string) => write({ paletteColors: PALETTE_COLORING_CUSTOM, [field]: value })
+  const select = (colouring: Prefs['paletteColors']) => write({ paletteColors: colouring })
+  const follow = () => write({ paletteColors: PALETTE_COLORING_BRAND })
+  // Enter and Space on a card itself pick it; the reset and the colour wells
+  // inside the card handle their own keys.
+  const keyPick = (event: React.KeyboardEvent<HTMLDivElement>, run: () => void) => {
+    if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return
+    event.preventDefault()
+    run()
+  }
+  const reset = (shown: boolean) => shown
+    ? React.createElement('button', {
+      type: 'button',
+      className: 'dsh-claude-palette-reset',
+      onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation()
+        follow()
+      },
+    }, copy('paletteUseBrand'))
+    : null
   return React.createElement(
     'div',
     { className: 'dsh-claude-palette-cards', role: 'group', 'aria-label': copy('paletteCardsTitle') },
-    PALETTE_CARDS.map((card) => {
-      const selected = !custom && card.id === brand.id
+    BRAND_CARDS.map(({ id, card }) => {
+      const selected = !custom && id === painted
       return React.createElement(
         'div',
         {
-          key: card.id,
+          key: id,
           className: 'dsh-claude-palette-card',
-          'data-brand': card.id,
+          role: 'button',
+          tabIndex: 0,
+          'data-brand': id,
           'data-active': selected ? '' : undefined,
-          'aria-current': selected ? 'true' : undefined,
+          'aria-pressed': selected ? 'true' : 'false',
+          'aria-label': cardName(card),
+          onClick: () => { if (!selected) select(id) },
+          onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => keyPick(event, () => { if (!selected) select(id) }),
         },
         React.createElement(Swatches, { colours: COLOURS.map((colour) => colour.pick(card)) }),
         React.createElement('span', { className: 'dsh-claude-palette-card-name' }, cardName(card)),
+        reset(selected && !following),
       )
     }),
     React.createElement(
@@ -162,25 +198,12 @@ function PaletteCards(props: { prefs: Prefs, write: SettingsView['write'] }) {
         'data-active': custom ? '' : undefined,
         'aria-pressed': custom ? 'true' : 'false',
         'aria-label': copy('paletteCustom'),
-        onClick: () => { if (!custom) write({ paletteColors: PALETTE_COLORING_CUSTOM }) },
-        onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return
-          event.preventDefault()
-          if (!custom) write({ paletteColors: PALETTE_COLORING_CUSTOM })
-        },
+        onClick: () => { if (!custom) select(PALETTE_COLORING_CUSTOM) },
+        onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => keyPick(event, () => { if (!custom) select(PALETTE_COLORING_CUSTOM) }),
       },
       React.createElement(Swatches, { colours: reader, onChange: pick }),
       React.createElement('span', { className: 'dsh-claude-palette-card-name' }, copy('paletteCustom')),
-      custom
-        ? React.createElement('button', {
-          type: 'button',
-          className: 'dsh-claude-palette-reset',
-          onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
-            event.stopPropagation()
-            write({ paletteColors: PALETTE_COLORING_BRAND })
-          },
-        }, copy('paletteUseBrand'))
-        : null,
+      reset(custom),
     ),
   )
 }

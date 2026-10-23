@@ -92,6 +92,13 @@ export const STATUS_MOTION_ATTR = 'data-dsh-claude-status-motion'
 
 /** The document attributes the choices below resolve onto; the values themselves are in the table (contracts/prefs.ts). */
 export const PALETTE_ATTR = 'data-dsh-claude-palette'
+/**
+ * The colour card the page paints, resolved from `paletteColors` (D30): one of
+ * the palette card ids. Following the brand and the reader's four both resolve
+ * to the brand's card, so those tokens stand and the custom blocks layer over
+ * them; a picked card stands on its own whatever the brand mark is.
+ */
+export const PALETTE_CARD_ATTR = 'data-dsh-claude-palette-card'
 export const TYPEFACE_ATTR = 'data-dsh-claude-typeface'
 export const MASCOT_ATTR = 'data-dsh-claude-mascot'
 export const SEARCH_STYLE_ATTR = 'data-dsh-claude-search-style'

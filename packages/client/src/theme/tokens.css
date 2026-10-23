@@ -8,13 +8,13 @@ body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-
 }
 
 /* The document element sits above the body and cannot read its tokens, so each
-   palette states its canvas here. It stays painted under a wallpaper: the
+   colour card states its canvas here. It stays painted under a wallpaper: the
    layer sits above this canvas and below the shell. */
-html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme])) {
-  background-color: #fcfcfb;
+html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-palette-card="claude"]:not([data-ds-dark-theme])) {
+  background-color: #ffffff;
 }
 
-html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-brand="deepseek"]:not([data-ds-dark-theme])) {
+html:has(body[data-dsh-claude-style][data-dsh-claude-palette="claude"][data-dsh-claude-palette-card="deepseek"]:not([data-ds-dark-theme])) {
   background-color: #fafbff;
 }
 body[data-dsh-claude-style][data-dsh-claude-palette="claude"]:not([data-ds-dark-theme]):not([data-we-wallpaper]) #root {
