@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-23",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "修复输入框里的上下文计量环在面板已经打开时仍向读屏软件报告「已收起」的问题：计量环的展开状态与宿主面板同时变化。",
+  "en": "Fix the composer's context ring telling a screen reader it is collapsed while its panel is already open: the ring's expanded state now changes together with the host's panel."
+}

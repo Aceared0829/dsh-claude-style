@@ -24,6 +24,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复在首页切换其他插件放在输入框里的页签后整块输入区消失的问题：只有会话自身的视图页签切到非对话视图时，输入区才会收起（#131）。
 - 修复显示缩放或页面缩放为小数倍时，像素螃蟹播放动画时身侧出现一条细竖线的问题（#130）。
 - 修复 DeepSeek 配色下用户消息气泡显示为宿主淡灰色的问题：气泡改用该颜色卡的淡蓝色 #ECF0FF，与主题一致（#134）。
+- 修复输入框里的上下文计量环在面板已经打开时仍向读屏软件报告「已收起」的问题：计量环的展开状态与宿主面板同时变化。
 - 修复设置了页面缩放后窄窗口布局仍按未缩放的窗口宽度切换的问题：首页统计格、封禁页与输入行上下文计量环旁的数字改按页面自身的宽度收窄（#129）。
 - 修复设置页「外观 → 配色」的颜色卡只能选中自定义卡的问题：Claude 与 DeepSeek 卡现在也能点选，各自换上该卡的配色而不改动通用页的品牌标志，选中的卡上给出「恢复跟随品牌」，把配色交回当前品牌（#128）。
 - 修复品牌标志的颜色只作用于上传图片的问题：该行由「图片颜色」改为「标志颜色」，内置品牌标志、上传的标志图与文字标志（含账号行头像里的那张）都按「强调色」或「文字色」上色，设置页的品牌区预览当场显示所选颜色，「强调色」一项按当前配色卡的颜色上色（#135）。
@@ -46,6 +47,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the whole input area vanishing on the home page after picking a tab in another plugin's menu inside the composer: the input area stands down only when the conversation's own view tabs leave the chat (#131).
 - Fix a thin vertical line appearing beside the pixel crab while it plays at a fractional display or page zoom (#130).
 - Fix the user message bubble showing the host's light grey under the DeepSeek palette: the bubble takes that colour card's light blue #ECF0FF instead (#134).
+- Fix the composer's context ring telling a screen reader it is collapsed while its panel is already open: the ring's expanded state now changes together with the host's panel.
 - Fix the narrow-window layouts switching on the unzoomed window width under page zoom: the home page's stat cells, the ban screen and the number beside the composer row's context ring now narrow with the page's own width (#129).
 - Fix the colour cards under Appearance → Colours accepting only the custom card: the Claude and DeepSeek cards can now be picked too, each painting its own palette while the theme style's brand mark stays, and a picked card offers “Follow the brand again” to hand the colours back (#128).
 - Fix the brand mark's colour reaching only uploaded images: the row is now “Mark colours”, the built-in mark, an uploaded mark and wordmark — the account row's avatar included — all take the accent or the text colour, the settings page's brand area previews the chosen colour at once, and “Accent” follows the colour card in force (#135).

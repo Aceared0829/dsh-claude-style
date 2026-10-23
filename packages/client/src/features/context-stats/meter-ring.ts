@@ -1,6 +1,6 @@
 import { SLOT_NODE_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import { observeMatches } from '@dsh-claude-style/engine/bus'
+import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { findModelSlot } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
 import { removeStrayNodes } from '../../shared/popover'
@@ -67,6 +67,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let ringFill: SVGCircleElement | null = null
   /** The host's meter the hidden mark stands on right now, or null. */
   let hiddenMeter: HTMLElement | null = null
+  /** The watch on that meter's open state, or null while no meter is hidden. */
+  let stopExpandedWatch: (() => void) | null = null
   /** The occupancy the context statistics answered, or null while their projection says nothing. */
   let answered: number | null = null
   /** The percentage the ring was last drawn for, so an unmoved reading writes nothing. */
@@ -140,13 +142,30 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (ringButton !== null) {
       const label = trigger === null ? null : trigger.getAttribute('aria-label')
       if (label !== null) setAttributeIfChanged(ringButton, 'aria-label', label)
-      const expanded = trigger !== null && trigger.getAttribute('aria-expanded') === 'true' ? 'true' : 'false'
-      if (ringButton.getAttribute('aria-expanded') !== expanded) ringButton.setAttribute('aria-expanded', expanded)
     }
+    mirrorExpanded()
     drawReading(percent)
     // A band that moved carries a new colour: the plate's image is drawn from
     // the colours read for it, and only a moved band needs a new reading.
     paintContextPie(ring, percent, moved || colours === null ? readColours() : colours)
+  }
+
+  /** Say on the ring whether the host's panel is open, as the host's trigger says it. */
+  function mirrorExpanded() {
+    if (ringButton === null) return
+    const trigger = contextTrigger()
+    setAttributeIfChanged(ringButton, 'aria-expanded', trigger !== null && trigger.getAttribute('aria-expanded') === 'true' ? 'true' : 'false')
+  }
+
+  /**
+   * Follow the hidden meter's open state as the host writes it. The host shows
+   * its panel in the batch its trigger flips in, and the skin places it in that
+   * same batch (stats-binding.ts), so a ring that waited for the next pass
+   * would say "closed" over a panel the reader already sees.
+   */
+  function watchExpanded(meter: HTMLElement | null) {
+    if (stopExpandedWatch !== null) stopExpandedWatch()
+    stopExpandedWatch = meter === null ? null : subscribeMutations(meter, { subtree: true, attributeFilter: ['aria-expanded'] }, mirrorExpanded)
   }
 
   /** Take the ring down and hand the host's meter back. */
@@ -161,6 +180,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     answered = null
     if (hiddenMeter !== null) hiddenMeter.removeAttribute(METER_HIDDEN_ATTR)
     hiddenMeter = null
+    watchExpanded(null)
   }
 
   /**
@@ -196,7 +216,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function hideHostMeter() {
     const meter = findContextMeter()
-    if (hiddenMeter !== null && hiddenMeter !== meter) hiddenMeter.removeAttribute(METER_HIDDEN_ATTR)
+    if (hiddenMeter !== meter) {
+      if (hiddenMeter !== null) hiddenMeter.removeAttribute(METER_HIDDEN_ATTR)
+      watchExpanded(meter)
+    }
     hiddenMeter = meter
     if (meter === null) return
     markContextMeter(meter)
