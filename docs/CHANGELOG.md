@@ -12,6 +12,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### 问题修复
 
+- 修复账户菜单在页面缩放或窗口较矮时上方放不下、翻到账户行下方并盖住账户行的问题：上下都放不下的菜单留在空间更大的一侧，贴着窗口边缘展开。
 - 修复页面缩放不为 100% 时侧边栏的内容越出它自己那一列、在列的右缘被截断的问题：侧边栏内容与拖拽手柄改为与侧边栏列同宽。
 - 修复宿主进程在会话历史较大时持续满核：用量折叠改为逐个会话隔离读取失败，一次读取失败不再作废整轮并让记录无法落盘；单轮耗时超过刷新周期时，下一轮等到本轮耗时两倍之后开始，不再背靠背重跑。
 - 修复重绘模型选择器与座位上的模型名缺少「1017」发布标签的问题：官方渠道的 deepseek-flash 行在名字后面带上这个标签，座位上的当前模型名旁边也带着它。
@@ -24,6 +25,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ### Bug Fixes
 
+- Fix the account menu flipping below the account row and covering it when the page zoom or a short window leaves too little room above: a menu that fits on neither side stays on the roomier one, held against the window's edge.
 - Fix the sidebar's content overflowing its own column and being cut off at the column's right edge when the page zoom is not 100%: the sidebar's content and its drag handle now take the column's width.
 - Fix the host process pegging a core on a large session history: the usage roll-up isolates a log it cannot read, so one failed read no longer voids the pass and leaves the record unwritten, and a pass that outlasts the refresh period waits twice its own length before the next one starts.
 - Fix the redrawn model picker and the seat's model name missing the "1017" release tag on the official Flash model: the deepseek-flash row carries it after the name, and so does the seat's current model name.

@@ -73,16 +73,26 @@ export function resolveAnchoredPosition(rect: DOMRect, width: number, height: nu
     const y = Math.min(Math.max(margin, rect.bottom - height), Math.max(margin, viewport.height - height - margin))
     return { x, y }
   }
-  if (opts.side === 'above-left') {
-    const left = Math.max(margin, Math.min(rect.left, viewport.width - width - margin))
-    let top = rect.top - (opts.gap || 0) - height
-    if (top < margin) top = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, viewport.height - height - margin))
-    return { x: left, y: top }
-  }
-  const x = Math.max(margin, Math.min(rect.right - width, viewport.width - width - margin))
-  let y = rect.top - (opts.gap || 0) - height
-  if (y < margin) y = Math.min(rect.bottom + (opts.gap || 0), Math.max(margin, viewport.height - height - margin))
-  return { x, y }
+  const y = topOverTrigger(rect, height, opts.gap || 0, margin, viewport.height)
+  if (opts.side === 'above-left') return { x: Math.max(margin, Math.min(rect.left, viewport.width - width - margin)), y }
+  return { x: Math.max(margin, Math.min(rect.right - width, viewport.width - width - margin)), y }
+}
+
+/**
+ * The top of a card that opens over its trigger: above it while it fits there,
+ * below it while it fits there instead, and otherwise held against the window's
+ * edge on the side with more room. A card that fits neither way covers the
+ * trigger by the least it can; flipping it below a trigger at the window's
+ * bottom would pin it to that edge, straight over the row it opened from.
+ */
+function topOverTrigger(rect: DOMRect, height: number, gap: number, margin: number, viewportHeight: number) {
+  const above = rect.top - gap - height
+  if (above >= margin) return above
+  const below = rect.bottom + gap
+  if (below + height <= viewportHeight - margin) return below
+  const roomAbove = rect.top - gap - margin
+  const roomBelow = viewportHeight - margin - below
+  return roomAbove >= roomBelow ? margin : Math.max(margin, viewportHeight - height - margin)
 }
 
 /**
