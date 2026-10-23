@@ -1,6 +1,5 @@
 import { ACCOUNT_ARMED_ATTR, AUTO_POPOVER_OFF } from '../../constants'
-import { findFootArea, findSidebarRoot } from '@dsh-claude-style/engine/host'
-import { getUsername } from '../../shared/identity'
+import { findFootArea } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
 import { createFooterMirror } from './footer-mirror'
 import { createHostAccountMenu } from './host-menu'
@@ -9,7 +8,8 @@ import { createAccountProfile } from './profile'
 import { createAccountRows } from './rows'
 import { createAccountSurface } from './surface'
 import type { AccountSurfaceMode } from './surface'
-import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, positionAnchoredPopover, pressKeepsPopoverOpen, registerPopover, removeStrayNodes, unregisterPopover } from '../../shared/popover'
+import { createAccountDrawer } from './account-drawer'
+import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, pressKeepsPopoverOpen, registerPopover, unregisterPopover } from '../../shared/popover'
 import { inPageBox } from '../../shared/page-zoom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -28,10 +28,11 @@ export interface FooterHandle extends FeatureHandle {
  * One row model, two mount points (account/surface.ts): on a host that has
  * an account row (Desktop 0.1.7+) that row is the entry and our container is
  * injected into the host's own account menu; on a host without one (Web)
- * the skin self-builds the trigger and the popover and the popover's
- * body is the container. The rows themselves — the account header with the
- * hold-screen easter egg, the plugin footer entries (account/footer-mirror.ts)
- * and, on the self-built path only, the settings row — are shared.
+ * the skin self-builds the trigger and the popover (account/account-drawer.ts)
+ * and the popover's body is the container. The rows themselves — the account
+ * header with the hold-screen easter egg, the plugin footer entries
+ * (account/footer-mirror.ts) and, on the self-built path only, the settings
+ * row — are shared.
  *
  * The host's row is only marked, never copied or moved, so it keeps its own
  * labels, keyboard order and toggle. Our rows fold the host menu with an
@@ -47,11 +48,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const profile = createAccountProfile(ctx, () => {
     if (typeof ui.schedule === 'function') ui.schedule()
   })
-  let accountBtn: HTMLElement | null = null
-  let accountPopover: HTMLElement | null = null
-  let popoverBody: HTMLElement | null = null
-  let settingsItem: HTMLElement | null = null
-  const popoverHoverIntent = createHoverIntent(openPopover, closePopover, POPOVER_OPEN_DELAY, POPOVER_CLOSE_DELAY)
   // The host path's hover intent. The host owns its menu and unmounts it on
   // close, so this drives the host's trigger and dismisses the menu with the
   // Escape the host's own Menu handles.
@@ -63,97 +59,20 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * unattached (the same reason session-stats keeps a binding token).
    */
   const hostRowBindingToken = {}
-  // Whether the popover is up because it was CLICKED (rather than hovered).
-  // Clicking the account row opens the ban-screen easter egg and leaves the
-  // pointer inside the popover, so without this the row's own mouseleave
-  // would tear the popover down behind the overlay; a click-opened popover
-  // instead stays until the pointer leaves the whole footer.
-  let popoverOpenedByClick = false
-
-  function isPopoverOpen() {
-    return !!(accountPopover && accountPopover.getAttribute('data-open') === 'true')
-  }
-
-  function openPopover() {
-    if (!accountPopover || !accountBtn) return
-    cancelClosePopover()
-    closeOtherPopovers('account')
-    // Mirrors are frozen while the popover is open (footer-mirror.sync
-    // bails), so reconcile them here — before the reveal — to show fresh
-    // content/order and bind click targets for the upcoming interaction.
-    // Opening must not fail because of a mirror sync; a failing one is reported.
-    try {
-      const footArea = findFootArea()
-      if (footArea) mirror.sync(footArea)
-    } catch (error) { reportError(error) }
-    // Resolve the rail anchor before the reveal so the panel never paints at
-    // its stale coordinates for a frame.
-    positionAccountPopover()
-    accountPopover.setAttribute('data-open', 'true')
-    accountBtn.setAttribute('data-open', 'true')
-    accountBtn.setAttribute('aria-expanded', 'true')
-  }
-
-  function closePopover() {
-    if (!accountPopover || !accountBtn) return
-    cancelClosePopover()
-    popoverOpenedByClick = false
-    accountPopover.setAttribute('data-open', 'false')
-    accountBtn.setAttribute('data-open', 'false')
-    accountBtn.setAttribute('aria-expanded', 'false')
-  }
-
-  function togglePopover() {
-    if (!accountPopover) return
-    if (isPopoverOpen()) {
-      closePopover()
-    } else {
-      // The pointer stays on the trigger after a click, and the popover
-      // hangs below it, so the trigger's mouseleave must not close what the
-      // click just opened — otherwise the panel is unreachable with a mouse.
-      popoverOpenedByClick = true
-      openPopover()
-    }
-  }
-
-  function cancelClosePopover() {
-    popoverHoverIntent.cancel()
-  }
-
-  function scheduleClosePopover() {
-    popoverHoverIntent.scheduleClose()
-  }
 
   /**
-   * Anchor the account popover to its trigger while the sidebar is a rail.
-   *
-   * In the rail the popover is `position: fixed` (features/account/account-footer.css): the sidebar
-   * column clips its overflow, so an absolutely positioned panel would be cut
-   * off at the 56px rail edge and never seen. Its coordinates therefore have
-   * to be resolved here — the same contract the model picker's popovers use.
-   * The declarations are written `important` because the stylesheet anchors
-   * the wide-sidebar popover with `!important` as well, and an author
-   * `!important` beats a plain inline declaration.
-   *
-   * With the sidebar wide the CSS anchor is the right one, so the inline
-   * overrides are dropped again and the footer rule takes over.
+   * Whether this press must leave the account surface open
+   * (shared/popover.ts::pressKeepsPopoverOpen). Which surface is up decides
+   * what "open" is: the host owns its menu and unmounts it on close, the
+   * self-built drawer says so on its own node. The account scope is the one
+   * scope that keeps hover when the preference is `account` rather than `all`.
    */
-  function positionAccountPopover() {
-    if (!accountPopover || !accountBtn) return
-    if (!inRail(accountBtn)) {
-      accountPopover.style.removeProperty('left')
-      accountPopover.style.removeProperty('top')
-      return
-    }
-    positionAnchoredPopover(accountBtn, accountPopover, { side: 'right', important: true })
+  function pressKeepsAccountOpen() {
+    const open = surface.mode() === 'host' ? hostMenu.findMenu() !== null : drawer.isOpen()
+    return pressKeepsPopoverOpen(readPrefs().autoPopover !== AUTO_POPOVER_OFF, open)
   }
 
-  /** The sidebar collapsed into its rail, where a card opens beside the row. */
-  function inRail(element: Element) {
-    return element.closest('[data-dsh-claude-part~="sidebar-collapsed"]') !== null
-  }
-
-  const hostMenu = createHostAccountMenu({ close: closePopover })
+  const hostMenu = createHostAccountMenu({ close: () => drawer.close() })
   // The host's own card, placed where the host meant it (features/account/
   // menu-placement.ts): its placement is the same at every page scale, and the
   // host writes its own over the skin's on later frames.
@@ -169,7 +88,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       // Leave the surface up: the overlay is a full-window surface, so what
       // is behind it does not matter, and the footer is left as the user
       // had it once the screen is dismissed.
-      popoverOpenedByClick = true
+      drawer.holdOpen()
       if (ui.ban) ui.ban.open()
     },
     // The handle is there exactly while the easter egg is installed: its
@@ -178,149 +97,43 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       return ui.ban !== undefined
     },
   })
+  /**
+   * The self-built trigger and popover (features/account/account-drawer.ts),
+   * standing on a host that has no account row of its own.
+   */
+  const drawer = createAccountDrawer({
+    rows,
+    beforeOpen() {
+      // Mirrors are frozen while the popover is open (footer-mirror.sync
+      // bails), so reconcile them before the reveal, to show fresh
+      // content/order and bind click targets for the upcoming interaction.
+      // Opening must not fail because of a mirror sync; a failing one is reported.
+      try {
+        const footArea = findFootArea()
+        if (footArea) mirror.sync(footArea)
+      } catch (error) { reportError(error) }
+    },
+    banOpen() { return ui.ban?.isOpen() === true },
+    keepsOpen: pressKeepsAccountOpen,
+  })
   const surface = createAccountSurface({
     hostTrigger: hostMenu.trigger,
     findMenu: hostMenu.findMenu,
     menuViewport: hostMenu.menuViewport,
     buildContainer: rows.buildHostContainer,
-    syntheticContainer() { return popoverBody },
+    syntheticContainer() { return drawer.body() },
     onMode: onSurfaceMode,
     onMenu: onHostMenuChanged
   })
   const mirror = createFooterMirror({
     body() { return surface.container() },
-    anchor() { return settingsItem },
-    isOpen() { return surface.mode() === 'synthetic' && isPopoverOpen() },
+    anchor() { return drawer.settingsAnchor() },
+    isOpen() { return surface.mode() === 'synthetic' && drawer.isOpen() },
     close: closeSurface
   })
   // The account area takes part in the shared popover rule (shared/popover.ts):
   // ONE entry for both surfaces, since a given host has only one of them.
   registerPopover('account', closeAccountSurfaces)
-
-  /**
-   * Whether this press must leave the account surface open
-   * (shared/popover.ts::pressKeepsPopoverOpen). Which surface is up decides
-   * what "open" is: the host owns its menu and unmounts it on close, the
-   * self-built drawer says so on its own node. The account scope is the one
-   * scope that keeps hover when the preference is `account` rather than `all`.
-   */
-  function pressKeepsAccountOpen() {
-    const open = surface.mode() === 'host' ? hostMenu.findMenu() !== null : isPopoverOpen()
-    return pressKeepsPopoverOpen(readPrefs().autoPopover !== AUTO_POPOVER_OFF, open)
-  }
-
-  /** The entry row's width, as last written to the stylesheet. */
-  let accountWidth = 0
-  /** The self-built drawer's distance from the footer's edges, as last written. */
-  let accountInsetLeft = -1
-  let accountInsetRight = -1
-
-  /**
-   * Build (or reuse) the self-built trigger and popover and return the
-   * popover body. Idempotent against a torn-down-less reload: client HMR
-   * drops the old fiber's disposals instead of running them, so a previous
-   * generation's button and popover are still in the DOM and this fresh
-   * scope knows nothing of them. Sweep the strays before deciding whether to
-   * build — otherwise the row renders twice (and the orphan keeps a stale
-   * name).
-   */
-  function ensureSynthetic(footArea: Element) {
-    const username = getUsername()
-    removeStrayNodes(footArea, '.dsh-claude-account-btn', [accountBtn])
-    // The popover is the skin's own card and lives in the footer's own subtree
-    // (below, on the self-built path), so the sweep for a copy a client reload
-    // stranded is scoped to the sidebar: it runs every pass, and a
-    // whole-document query walks the conversation's rows too.
-    removeStrayNodes(findSidebarRoot() ?? document, '.dsh-claude-account-popover', [accountPopover])
-
-    if (accountBtn === null || !footArea.contains(accountBtn)) {
-      if (accountBtn && accountBtn.parentElement) accountBtn.parentElement.removeChild(accountBtn)
-      accountBtn = document.createElement('div')
-      accountBtn.className = 'dsh-claude-account-btn'
-      accountBtn.setAttribute('role', 'button')
-      accountBtn.setAttribute('tabindex', '0')
-      accountBtn.setAttribute('aria-haspopup', 'menu')
-      accountBtn.setAttribute('aria-expanded', 'false')
-      accountBtn.innerHTML =
-        '<span class="dsh-claude-account-avatar"></span>' +
-        '<span class="dsh-claude-account-label">' +
-          '<span class="dsh-claude-account-user"></span>' +
-        '</span>' +
-        '<span class="dsh-claude-account-chevron"></span>'
-
-      // Hover is the default way in; the "Open popovers on hover"
-      // preference turns it off, leaving the click handler below as the only
-      // way in (and the only way out, so a click-opened popover does not
-      // vanish when the pointer leaves). The account row is the one popover
-      // the `account` scope keeps on hover.
-      accountBtn.addEventListener('mouseenter', () => {
-        if (readPrefs().autoPopover !== AUTO_POPOVER_OFF) popoverHoverIntent.scheduleOpen()
-      })
-      accountBtn.addEventListener('mouseleave', () => {
-        if (readPrefs().autoPopover !== AUTO_POPOVER_OFF && !popoverOpenedByClick) scheduleClosePopover()
-      })
-      accountBtn.addEventListener('click', e => {
-        e.stopPropagation()
-        if (pressKeepsAccountOpen()) return
-        togglePopover()
-      })
-      footArea.appendChild(accountBtn)
-    }
-    // The name and the picture are user- and host-supplied (a preference, the
-    // OS user, the account profile), so they are written as text and as an
-    // image source, never spliced into markup — and synced on every pass, so a
-    // profile that lands after the row was built still shows up.
-    const userEl = accountBtn.querySelector('.dsh-claude-account-user')
-    if (userEl && userEl.textContent !== username) userEl.textContent = username
-    rows.syncAvatar(accountBtn.querySelector('.dsh-claude-account-avatar'))
-
-    if (accountPopover === null || !footArea.contains(accountPopover)) {
-      if (accountPopover && accountPopover.parentElement) accountPopover.parentElement.removeChild(accountPopover)
-      accountPopover = document.createElement('div')
-      accountPopover.id = 'dsh-claude-account-popover'
-      accountPopover.className = 'dsh-claude-popover-card dsh-claude-account-popover'
-      accountPopover.setAttribute('data-open', 'false')
-
-      accountPopover.addEventListener('mouseenter', () => {
-        cancelClosePopover()
-      })
-      accountPopover.addEventListener('mouseleave', () => {
-        // The hold screen takes the window, so its opening "leaves" the
-        // card without the pointer moving; that leave must not fold the
-        // drawer behind the page (openBan leaves the footer as it was).
-        if (ui.ban?.isOpen() === true) return
-        scheduleClosePopover()
-      })
-
-      accountPopover.appendChild(rows.buildHeader(username))
-
-      popoverBody = document.createElement('div')
-      popoverBody.className = 'dsh-claude-account-popover-body'
-      accountPopover.appendChild(popoverBody)
-
-      settingsItem = null
-      footArea.appendChild(accountPopover)
-    }
-
-    // Built together with the popover above.
-    const body = popoverBody!
-    if (settingsItem === null || !body.contains(settingsItem)) {
-      settingsItem = rows.buildSettingsItem()
-      body.appendChild(settingsItem)
-    }
-    rows.syncSettingsItem(settingsItem)
-    return body
-  }
-
-  /** Remove the self-built trigger and popover (the host path's shape). */
-  function dropSynthetic() {
-    cancelClosePopover()
-    removeStrayNodes(document, '.dsh-claude-account-btn, .dsh-claude-account-popover', [])
-    accountBtn = null
-    accountPopover = null
-    popoverBody = null
-    settingsItem = null
-  }
 
   /**
    * Close the active surface after one of OUR rows was picked. The host's
@@ -342,7 +155,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       }
       return
     }
-    closePopover()
+    drawer.close()
   }
 
   /**
@@ -353,7 +166,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function closeAccountSurfaces() {
     if (surface.mode() === 'host') closeSurface()
-    else closePopover()
+    else drawer.close()
   }
 
   /**
@@ -512,8 +325,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   function onSurfaceMode(mode: AccountSurfaceMode) {
     // The host's account row is the entry on that host, so the self-built
     // trigger and popover have no job there.
-    if (mode === 'host') dropSynthetic()
+    if (mode === 'host') drawer.drop()
   }
+
+  /** The entry row's width, as last written to the stylesheet. */
+  let accountWidth = 0
+  /** The self-built drawer's distance from the footer's edges, as last written. */
+  let accountInsetLeft = -1
+  let accountInsetRight = -1
 
   /**
    * Hand the sidebar footer back to the host.
@@ -525,7 +344,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * renders exactly as shipped.
    */
   function dropAccountFooter(footArea: Element | null) {
-    cancelClosePopover()
+    drawer.cancelClose()
     hostHoverIntent.cancel()
     // The drive that presses the host's own settings row stops with the footer
     // it was reaching through.
@@ -541,7 +360,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       document.body.style.removeProperty('--dsh-claude-account-inset-left')
       document.body.style.removeProperty('--dsh-claude-account-inset-right')
     }
-    dropSynthetic()
+    drawer.drop()
     // The menu marker goes with the takeover: an open host menu must not
     // keep the skin's card styling after the footer is handed back.
     surface.clearMenu()
@@ -574,7 +393,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (footArea === null) return
     if (readPrefs().collapseFooter) mirror.measure(footArea)
     const synthetic = surface.mode() === 'synthetic'
-    const row = synthetic ? accountBtn : hostMenu.trigger()
+    const row = synthetic ? drawer.btn() : hostMenu.trigger()
     if (row === null) return
     rowBoxes = { row, rowRect: inPageBox(row.getBoundingClientRect()), footRect: synthetic ? inPageBox(footArea.getBoundingClientRect()) : null }
   }
@@ -625,9 +444,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     surface.sync()
     if (surface.mode() === 'host') {
-      dropSynthetic()
+      drawer.drop()
     } else {
-      ensureSynthetic(footArea)
+      drawer.ensure(footArea)
     }
 
     // The host's own account row is the entry on the host path: mark it so
@@ -639,7 +458,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // shape both cards have to match, so its box is measured here and handed
     // to the stylesheet. The hover preference is bound on the host's row in
     // the same pass, since the host renders that row itself.
-    const entryRow = surface.mode() === 'host' ? hostTrigger : accountBtn
+    const entryRow = surface.mode() === 'host' ? hostTrigger : drawer.btn()
     syncAccountRowBox(entryRow, footArea)
     if (hostTrigger !== null) bindHostRowHover(hostTrigger)
 
@@ -649,13 +468,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // opened once. Only the mirroring needs a container to write into.
     mirror.sync(footArea)
 
-    const root = surface.mode() === 'host' ? surface.container() : accountPopover
+    const root = surface.mode() === 'host' ? surface.container() : drawer.popover()
     if (root === null) return
     rows.syncHeader(root, hostTrigger)
     // The rail toggle (and any reflow) moves the anchor without a window
     // resize or a page scroll, so an open drawer re-resolves its position at
     // the end of its own pass.
-    if (isPopoverOpen()) positionAccountPopover()
+    if (drawer.isOpen()) drawer.placeOpen()
   }
 
   ui.footer = {
@@ -674,18 +493,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
      * dismissal.
      */
     close(reason?: CloseReason) {
-      if (reason === 'outside' && !isPopoverOpen()) return
-      closePopover()
+      if (reason === 'outside' && !drawer.isOpen()) return
+      drawer.close()
     },
     openSettings: hostMenu.openSettings,
     owns(target: Node) {
       if (!target) return false
-      if (accountBtn !== null && accountBtn.contains(target)) return true
-      if (accountPopover !== null && accountPopover.contains(target)) return true
+      if (drawer.btn() !== null && drawer.btn()!.contains(target)) return true
+      if (drawer.popover() !== null && drawer.popover()!.contains(target)) return true
       const container = surface.container()
       return container !== null && container.contains(target)
     },
-    isOpen() { return isPopoverOpen() },
+    isOpen() { return drawer.isOpen() },
     /** Re-anchor an open drawer after a viewport change; a closed one has
      * nothing to place. */
     reposition() {
@@ -694,8 +513,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         if (menu !== null) menuPlacement.place(menu)
         return
       }
-      if (!isPopoverOpen()) return
-      positionAccountPopover()
+      if (!drawer.isOpen()) return
+      drawer.placeOpen()
     }
   }
   return () => {
