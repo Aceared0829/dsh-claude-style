@@ -88,10 +88,10 @@ function streamPaceScenario({ check }) {
       }
       growth.sort((left, right) => left - right)
       const median = growth.length === 0 ? 0 : growth[Math.floor(growth.length / 2)]
-      // The answer arrives as one flush: one frame carries all of it, and every
+      // The answer arrives as one flush: one frame carries all of it, and any
       // other growing frame carries the tail of a render the host had already
-      // begun. Anything less means the service was not paced to a burst.
-      const burst = growth.length >= 2 ? growth[growth.length - 1] : null
+      // begun. A host that renders the flush inside one frame grows only once.
+      const burst = growth.length === 0 ? null : growth[growth.length - 1]
       // Only frames the transcript overflowed in: a column shorter than the
       // scroller rides its own end even untorn.
       const overflowing = (frame) => frame.height - frame.gap - frame.top < frame.height
