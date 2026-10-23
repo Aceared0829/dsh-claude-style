@@ -136,7 +136,6 @@
       // group it belongs to closes like any answered one.
       const lateAnswer = document.createElement('div')
       lateAnswer.setAttribute('data-chat-flow-kind', 'assistant-step')
-      lateAnswer.setAttribute('data-turn-process-answer', '')
       lateAnswer.setAttribute('data-chat-turn', '2')
       stoppedGroup.after(lateAnswer)
       await probe.settle()

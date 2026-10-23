@@ -29,6 +29,11 @@ export const CHAT_FLOW_SLOT_SELECTOR = '[data-slot="conversation.chat.flow"]'
 /** The answer a turn's process group closes on. */
 export const TURN_PROCESS_ANSWER_ATTRIBUTE = 'data-turn-process-answer'
 /**
+ * On every row of a turn's process: all of a running turn's rows, and once the
+ * turn ends, every row but its answer, whether or not the turn stands folded.
+ */
+export const TURN_PROCESS_MEMBER_ATTRIBUTE = 'data-turn-process-member'
+/**
  * One tool call's row. It lives inside the assistant block, so it does not
  * have to arrive as a new flow block of its own.
  */

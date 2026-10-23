@@ -341,10 +341,13 @@ function page(name, tier, cases, probe = PROBE) {
           '<button type="button" data-process-activity id="debugAnsweredHeader"><span>Worked</span></button>' +
           '<div data-step-process-body id="debugAnsweredBody"><div data-step-process-content>answered work</div></div>' +
         '</div>' +
-        '<div data-chat-flow-kind="assistant-step" data-turn-process-answer data-chat-turn="1">answer</div>' +
+        // The answer of an ended turn under either collapse timing: out of the
+        // turn's process, and without the answer mark, which the host writes
+        // only while the turn stands folded.
+        '<div data-chat-flow-kind="assistant-step" data-chat-turn="1">answer</div>' +
         '<div data-step-process id="debugStoppedGroup" data-chat-turn="2">' +
           '<button type="button" data-process-activity id="debugStoppedHeader"><span>Stopped</span></button>' +
-          '<div data-step-process-body hidden="until-found" id="debugStoppedBody"><div data-step-process-content>stopped work</div></div>' +
+          '<div data-step-process-body hidden="until-found" id="debugStoppedBody"><div data-step-process-content><div data-chat-flow-kind="assistant-step" data-turn-process-member data-chat-turn="2">stopped work</div></div></div>' +
         '</div>' +
       '</div>' +
       '<script>' +

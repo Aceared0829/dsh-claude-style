@@ -3,7 +3,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { beginChatFoldToggle, endChatFoldToggle, isChatFoldToggle } from './fold-toggle'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
 import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '../../shared/composer-caret'
-import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, STREAMING_ATTRIBUTE, TURN_PROCESS_ANSWER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, FOLLOW_THRESHOLD_PX, PROCESS_ACTIVITY_SELECTOR, PROCESS_BODY_SELECTOR, PROCESS_EXPANDED_MODE_ATTRIBUTE, PROCESS_GROUP_SELECTOR, RUNNING_STATE, SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, SHIMMER_SELECTOR, STREAMING_ATTRIBUTE, ASSISTANT_STEP_KIND, FLOW_KIND_ATTRIBUTE, TURN_PROCESS_MEMBER_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 
 /**
  * A running process group opens by default and folds back once the piece of
@@ -36,8 +36,14 @@ import { CHAT_FLOW_SELECTOR, CHAT_TURN_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, 
  */
 /** The piece of work is over and the final answer is due. */
 const PROCESS_CLOSED = 'closed'
-/** The answer row a turn ends with; a stopped turn never gets one. */
-const ANSWER_ROW_SELECTOR = `[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`
+/**
+ * The answer row a turn ends with: the host counts every row of a running turn
+ * into its process, and once the turn ends, every row but the answer. A stopped
+ * turn never gets one. The answer mark the host writes is no help here: it is
+ * there only while the turn stands folded, and under the next-input collapse
+ * timing the latest turn stays open after it ends.
+ */
+const ANSWER_ROW_SELECTOR = `[${FLOW_KIND_ATTRIBUTE}="${ASSISTANT_STEP_KIND}"]:not([${TURN_PROCESS_MEMBER_ATTRIBUTE}])`
 
 /**
  * Watch every process group on the page and bring each to what its phase
@@ -48,8 +54,6 @@ const ANSWER_ROW_SELECTOR = `[${TURN_PROCESS_ANSWER_ATTRIBUTE}]`
 export function createProcessFold() {
   /** The phase a group was in when the reader last touched it. */
   const touchedIn = new WeakMap<Element, string>()
-  /** The groups whose turn has shown an answer row at some point. */
-  const answeredGroups = new WeakSet<Element>()
   /** The state a group's body stood in when it was last pressed, so a press that changed nothing is not retried. */
   const attemptedIn = new WeakMap<Element, string>()
   /** Whether a scan is already queued. */
@@ -83,10 +87,7 @@ export function createProcessFold() {
      *
      * A stopped turn gets none, and folding its process away leaves the page
      * with nothing below it: the reader was watching that work, and the stop is
-     * what ended it, not an answer taking its place. The host takes the mark off
-     * the answer row while the turn's own control is open, so a group whose
-     * turn was once seen with one keeps folding: the memory lives on the group,
-     * which outlives the mark.
+     * what ended it, not an answer taking its place.
      */
     const showsAnswer = (group: Element, flow: Element) => {
       const turn = group.getAttribute(CHAT_TURN_ATTRIBUTE)
@@ -96,11 +97,7 @@ export function createProcessFold() {
         turns = new Set([...flow.querySelectorAll(ANSWER_ROW_SELECTOR)].map(row => row.getAttribute(CHAT_TURN_ATTRIBUTE) ?? ''))
         answered.set(flow, turns)
       }
-      if (turns.has(turn)) {
-        answeredGroups.add(group)
-        return true
-      }
-      return answeredGroups.has(group)
+      return turns.has(turn)
     }
     for (const group of groups) {
       // A frame sits between collecting and settling, and the group may be gone by then.
@@ -212,6 +209,11 @@ export function createProcessFold() {
         if (record.target instanceof Element && !record.target.hasAttribute(STREAMING_ATTRIBUTE)) settleTurnOf(record.target)
         continue
       }
+      if (record.type === 'attributes' && record.attributeName === TURN_PROCESS_MEMBER_ATTRIBUTE) {
+        // The turn ended and its answer left the process: the fold is due.
+        if (record.target instanceof Element && record.target.matches(ANSWER_ROW_SELECTOR)) settleTurnOf(record.target)
+        continue
+      }
       const target = record.target
       const element = target instanceof Element ? target : target.parentElement
       const group = element?.closest(PROCESS_GROUP_SELECTOR) ?? null
@@ -254,7 +256,7 @@ export function createProcessFold() {
     attributes: true,
     // The group root's expand-mode attribute is in range too: switching tiers
     // adds or removes it, and that batch has to be scanned again.
-    attributeFilter: [SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, 'hidden', PROCESS_EXPANDED_MODE_ATTRIBUTE, STREAMING_ATTRIBUTE],
+    attributeFilter: [SHIMMER_ATTRIBUTE, SHIMMER_LEGACY_ATTRIBUTE, 'hidden', PROCESS_EXPANDED_MODE_ATTRIBUTE, STREAMING_ATTRIBUTE, TURN_PROCESS_MEMBER_ATTRIBUTE],
   }, onRecords)
   document.addEventListener('click', rememberReaderTouched, true)
   document.addEventListener('keydown', rememberReaderTouched, true)
