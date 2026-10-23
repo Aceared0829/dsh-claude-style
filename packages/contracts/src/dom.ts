@@ -364,6 +364,12 @@ export const HEADER_CORNER_SELECTOR = '[data-dsh-claude-part~="header-corner"]'
 export const CONVERSATION_HEADER_SELECTOR = '[data-dsh-claude-part~="conversation-header"]'
 /** The view-tab strip inside the header, whose box the band placement keeps clear of. */
 export const VIEW_TABS_STRIP_SELECTOR = '[data-dsh-claude-part~="view-tabs"]'
+/**
+ * The conversation's own view tablist, which the host marks: a tablist a
+ * plugin renders in the composer's toolbar or a popover sits inside the same
+ * conversation root and is no view switch.
+ */
+export const CONVERSATION_TABS_SELECTOR = '[data-conversation-tabs]'
 
 /* ---------- the document, the shell and the browser API ---------- */
 

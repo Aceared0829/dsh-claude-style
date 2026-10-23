@@ -1,5 +1,5 @@
 import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, TRANSCRIPT_ATTR } from '../../constants'
-import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, MOBILE_PORTRAIT_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_INPUT_SELECTOR, CONVERSATION_TABS_SELECTOR, MOBILE_PORTRAIT_SELECTOR, PHASE_ATTRIBUTE } from '@dsh-claude-style/contracts/dom'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { conversationColumn } from '@dsh-claude-style/engine/chat-dom'
 import { COMPOSER_STACK, closestComposerCard, findAccessTrigger, findComposerPlaceholder, findComposerSeat, findConversationScroller, findHeroRoot, observeComposerCards, observeComposerPlaceholders } from '@dsh-claude-style/engine/host'
@@ -247,12 +247,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * root rather than <body>, so a tab switch invalidates the conversation's
    * subtree alone (D9).
    *
-   * Scope: the conversation tablist lives in the panel header, which is
-   * the root's first child — any other tablist (the trajectory detail
-   * panel, say) renders later inside the ledger. The chat view registers
-   * at order 0, so it is always the tablist's FIRST tab; reading that
-   * tab's aria-selected is locale-independent. No tab bar at all (hero /
-   * single view) means the chat surface is all there is.
+   * Scope: the conversation's view tablist is the one the host marks. Any
+   * other tablist in the root — the trajectory detail panel, a plugin's
+   * popover in the composer's toolbar — switches no view, and on the hero
+   * page it would be the only tablist there is. The chat view registers at
+   * order 0, so it is always the tablist's FIRST tab; reading that tab's
+   * aria-selected is locale-independent. No tab bar at all (hero / single
+   * view) means the chat surface is all there is.
    *
    * The second mark says the transcript is mounted. The host grants the
    * seat's pin, the bar behind the card and the view area's content-sized
@@ -265,7 +266,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   function syncRootMarks() {
     const root = closestFrom(findComposerSeat(), `[${PHASE_ATTRIBUTE}]`)
-    const list = root === null ? null : root.querySelector('[role="tablist"]')
+    const list = root === null ? null : root.querySelector(CONVERSATION_TABS_SELECTOR)
     const first = list === null ? null : list.querySelector('[role="tab"]')
     const chatActive = first === null || first.getAttribute('aria-selected') === 'true'
     chatHidden = active && !chatActive

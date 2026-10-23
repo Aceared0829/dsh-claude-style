@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 0,
+  "at": "2026-10-23",
+  "external": false,
+  "zh": "修复在首页切换其他插件放在输入框里的页签后整块输入区消失的问题：只有会话自身的视图页签切到非对话视图时，输入区才会收起（#131）。",
+  "en": "Fix the whole input area vanishing on the home page after picking a tab in another plugin's menu inside the composer: the input area stands down only when the conversation's own view tabs leave the chat (#131)."
+}
