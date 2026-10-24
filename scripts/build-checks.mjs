@@ -1,27 +1,21 @@
 /**
  * build-checks.mjs — the build's refusals that are not about the stylesheets
  * (those are in scripts/css.mjs): the type check, the import graph, the
- * scroll owner's monopoly, every source reaching the bundle, the manifests
- * against the preference table, and the host contract and timing tables
+ * scroll owner's monopoly, every source reaching the bundle, every feature
+ * directory against its manifest, and the host contract and timing tables
  * (D36, D40, D72, D3).
  */
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { loadModule, loadModuleEsm } from './shared/ts-module.mjs'
+import { loadModule } from './shared/ts-module.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'packages', 'client', 'src')
-/**
- * The preference table both halves share (packages/contracts/src/prefs.ts, D73):
- * the host half's Config is derived from it and every feature manifest's `pref`
- * has to name a key of it.
- */
-const { PREFS } = await loadModuleEsm('packages/contracts/src/prefs.ts')
 
 /** The page states and check kinds packages/contracts/src/table.ts records (D3, D77). */
 const PROBE_STATES = new Set(['any', 'hero', 'sending', 'streaming', 'conversation', 'menu', 'dark'])
-const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'global', 'value', 'rail-geometry', 'none'])
+const PROBE_KINDS = new Set(['selector', 'attribute', 'property', 'computed', 'global', 'value', 'rail-geometry', 'none'])
 
 /**
  * Refuse a source file that does not ship: a stylesheet no manifest and no
@@ -68,9 +62,9 @@ export function checkDependencies() {
 
 /**
  * Hold the manifests to the rest of the repository: every feature directory
- * carries at least one manifest, and a `pref` names a key of the shared
- * preference table (packages/contracts/src/prefs.ts, D73), the table the
- * settings form serves.
+ * carries at least one manifest. A `pref` names a key of the shared preference
+ * table, which the reader of the manifests itself refuses
+ * (scripts/shared/read-manifests.mjs).
  *
  * @param manifests - the feature manifests (scripts/shared/read-manifests.mjs).
  */
@@ -78,11 +72,6 @@ export function checkManifests(manifests) {
   const covered = new Set(manifests.map((manifest) => manifest.dir))
   for (const dir of fs.readdirSync(path.join(SRC, 'features'), { withFileTypes: true })) {
     if (dir.isDirectory() && !covered.has(dir.name)) throw new Error(`build: packages/client/src/features/${dir.name}/ has no manifest`)
-  }
-  for (const manifest of manifests) {
-    if (manifest.pref !== undefined && !(manifest.pref in PREFS)) {
-      throw new Error(`build: packages/client/src/${manifest.file} names pref "${manifest.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
-    }
   }
 }
 
@@ -159,6 +148,21 @@ export function checkContracts(manifests) {
     if (!PROBE_STATES.has(probe.state)) throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" has probe state "${probe.state}"`)
     if (!PROBE_KINDS.has(probe.kind)) throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" has probe kind "${probe.kind}"`)
     if (probe.within !== undefined && !listed.has(probe.within)) throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" is checked within "${probe.within}", which the table does not list`)
+    // A computed reading names the property it reads and the snapshot key it
+    // compares, so a host value cannot enter the table with nothing to read it
+    // against or a probe with no property at all.
+    if (probe.kind === 'computed' && (typeof probe.property !== 'string' || probe.property === '')) {
+      throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" is a computed probe with no property`)
+    }
+    if (probe.kind === 'computed' && probe.within === undefined) {
+      throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" is a computed probe naming no entry to read`)
+    }
+    if (probe.kind === 'computed' && (typeof probe.record !== 'string' || probe.record === '')) {
+      throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" is a computed probe with no snapshot record`)
+    }
+    if (probe.parent === true && probe.within === undefined) {
+      throw new Error(`build: packages/contracts/src/table.ts entry "${entry.id}" reads its parent and names no entry to read it from`)
+    }
   }
   const values = new Set(table.map((entry) => entry.value))
   // A bare attribute name is what the table lists for a value-less mark.
