@@ -2,34 +2,6 @@
 
 All notable changes to `dsh-claude-style` are documented here, newest first.
 
-## [Unreleased]
-
-[中文](#cn-unreleased) | [English](#en-unreleased)
-
-<h3 id="cn-unreleased">体验优化</h3>
-
-- 改善紧凑底栏的间距：各数字之间改为与独立成行时一致，底栏整体收窄。
-- 改善紧凑底栏：工具栏上只显示费用、Token 总量与缓存命中百分比，费用取四位有效数字与四位小数中较短的写法，Token 按 123tok、1.1ktok、15.1Mtok、1.2Btok 显示，缓存命中不再带「缓存命中」四字。
-- 改善紧凑底栏中上下文环的位置：它现在站在「收进上下文」所在的位置，即输入行内模型选择器之后，不再随数字浮到工具栏上。
-
-### 问题修复
-
-- 修复主窗口设置中输入区的上下文外显样式与数字夹在模型选择器各项之间的问题：它们现在与统计信息位置、底栏统计位置和计费币种排成一块。
-- 修复页面缩放为 1.25 或 1.5 倍时整页可以滚过内容末尾、露出一段空白的问题：缩放后的页面按窗口自身的尺寸绘制，窗口的边缘就是页面的边缘。
-- 修复启用壁纸引擎后，用量面板热力图的日期提示、会话标题的提示以及品牌图片的清除按钮在透明画布上丢掉文字与记号的问题：这些反色底上的字与记号改用宿主自己的表面色。
-
-<h3 id="en-unreleased">Improvements</h3>
-
-- Improve the compact footer's spacing: its figures stand apart exactly as they do on their own line, narrowing the footer.
-- Improve the compact footer: the toolbar shows the cost, one session token total and the cache-hit percentage — the cost in the shorter of four significant digits and four decimals, the total as 123tok, 1.1ktok, 15.1Mtok or 1.2Btok, and the cache hit without its label.
-- Improve where the compact footer draws the context ring: it stands where the Inside the context popover position draws it, after the model picker inside the composer row, instead of riding the toolbar with the figures.
-
-### Bug Fixes
-
-- Fix Context display and Context display number sitting among the model picker's rows in Main window settings: they now stand in one block with Conversation statistics position, Footer alignment and Billing currency.
-- Fix the page scrolling past the end of its content into an empty band at a page zoom of 1.25 or 1.5: the scaled page now draws at the window's own size, so the window's edge is the page's edge.
-- Fix the usage panel's day tip, the session title's tip and the brand picture's remove mark losing their ink over a wallpaper's cleared canvas: the words and marks on those inverted plates now take the host's own raised-surface tone.
-
 ## [0.19.0] - 2026-10-23
 
 [中文](#cn-0.19.0) | [English](#en-0.19.0)

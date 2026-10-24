@@ -28,7 +28,7 @@ const END = '<!-- commands:end -->'
  */
 const OVERRIDES = {
   test: 'the logic and mechanism specs on their own, as the cloud job runs them: Vitest in browser mode on the local Chrome or Edge',
-  'changelog:check': 'fail when the committed `[Unreleased]` section differs from `docs/changes/`; the cloud job runs this',
+  'changelog:check': 'fail when a `docs/changes/` fragment does not validate or `docs/CHANGELOG.md` holds an `[Unreleased]` section; the cloud job runs this',
   'docs:check': 'fail when the committed ADR index differs from the ADR files; the cloud job runs this',
   agents: 'write this table into AGENTS.md from `package.json` and each script\'s own header',
   'agents:check': 'fail when AGENTS.md\'s command table differs from `package.json`; the cloud job runs this',

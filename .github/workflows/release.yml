@@ -66,6 +66,13 @@ jobs:
             exit 1
           fi
           echo "version=${version}" >> "$GITHUB_OUTPUT"
+      # The GitHub Release shows this version's section, and the changelog gate
+      # reads the same file: a tag cut without one fails here, before the dev
+      # build goes out, rather than after `latest` sits on npm with nothing to say.
+      - name: Check the version has its CHANGELOG section
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: node scripts/changelog.mjs --notes "${VERSION}" > /dev/null
       - run: npm ci
       # A rerun carries on from where the last attempt stopped: npm refuses a
       # version twice, the dev build of this tag is not published again, and a
