@@ -53,7 +53,7 @@
       r.states.dark = {
         canvas: darkStyle.backgroundColor,
         accent: darkStyle.getPropertyValue('--dsw-alias-brand-primary').trim(),
-        raised: darkStyle.getPropertyValue('--dsh-claude-raised').trim(),
+        card: darkStyle.getPropertyValue('--dsh-claude-card').trim(),
         bubble: darkStyle.getPropertyValue('--dsw-specific-bubble').trim(),
       }
       document.body.removeAttribute('data-ds-dark-theme')

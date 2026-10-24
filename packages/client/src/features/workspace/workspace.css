@@ -65,7 +65,7 @@ body[data-dsh-claude-style] .dsh-claude-ws-segment {
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback);
 }
 body[data-dsh-claude-style] .dsh-claude-ws-segment:hover {
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
 }
 /* ---------- workspace view: the skin's own archived list ---------- */
 /* 已归档 is the skin's list (packages/client/src/features/workspace/workspace-view.ts), flat on purpose:
@@ -113,20 +113,20 @@ body[data-dsh-claude-style] .dsh-claude-archive-row {
   /* The host's 进行中 rows rest in the secondary ink and darken under the pointer;
      the archived list reads the same way, so an archived conversation does not
      sit there looking selected. */
-  color: var(--dsw-alias-label-secondary, #787672) !important;
+  color: var(--dsw-alias-label-secondary, #70686a) !important;
   font-family: var(--dsw-font-family) !important;
   font-size: 13px !important;
   font-weight: 400 !important;
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback) !important;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-archive-row {
-  color: var(--dsh-claude-session-ink) !important;
+  color: var(--dsw-alias-label-tertiary) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-row:is(:hover, :focus-visible) {
-  color: var(--dsw-alias-label-primary, #141413) !important;
+  color: var(--dsw-alias-label-primary, #161616) !important;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-archive-row:is(:hover, :focus-visible) {
-  color: var(--dsh-claude-ink-strong) !important;
+  color: var(--dsw-alias-label-primary) !important;
 }
 /* The leading slot the host's rows carry (a 6px circle centred in 14px), so the
    two lists start their titles at the same x. */
@@ -138,7 +138,7 @@ body[data-dsh-claude-style] .dsh-claude-archive-row::before {
   margin: 0 4px !important;
   border-radius: 50% !important;
   corner-shape: round !important;
-  border: 1px solid var(--dsw-alias-label-caption, #a6a094) !important;
+  border: 1px solid var(--dsw-alias-label-caption, #b2acad) !important;
   box-sizing: border-box !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-row:hover {
@@ -153,7 +153,7 @@ body[data-dsh-claude-style] .dsh-claude-archive-title {
 }
 body[data-dsh-claude-style] .dsh-claude-archive-time {
   flex: none !important;
-  color: var(--dsw-alias-label-caption, #a6a094) !important;
+  color: var(--dsw-alias-label-caption, #b2acad) !important;
   font-size: 11px !important;
 }
 /* Hover swaps the trailing time for the two row actions, the way the host's
@@ -189,13 +189,13 @@ body[data-dsh-claude-style] .dsh-claude-archive-restore {
   border: none !important;
   border-radius: 5px !important;
   background: transparent !important;
-  color: var(--dsw-alias-label-caption, #a6a094) !important;
+  color: var(--dsw-alias-label-caption, #b2acad) !important;
   cursor: pointer !important;
   transition: background-color var(--dsh-claude-timing-feedback), color var(--dsh-claude-timing-feedback) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-restore:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
-  color: var(--dsw-alias-label-primary, #141413) !important;
+  color: var(--dsw-alias-label-primary, #161616) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-archive-delete:hover {
   background: rgba(192, 57, 43, 0.12) !important;
@@ -203,7 +203,7 @@ body[data-dsh-claude-style] .dsh-claude-archive-delete:hover {
 }
 body[data-dsh-claude-style] .dsh-claude-archive-status {
   padding: 8px;
-  color: var(--dsw-alias-label-caption, #a6a094);
+  color: var(--dsw-alias-label-caption, #b2acad);
   font-family: var(--dsw-font-family);
   font-size: 12px;
 }

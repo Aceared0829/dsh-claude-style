@@ -404,7 +404,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="composer-stack"]:not([data-c
   /* Claude's stop control is a bare ink circle with a filled square inside; the
      plate is hover only, and the glyph is the interface ink — not the accent. */
   background: transparent;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   /* The host ships this border with `!important`; only this one has to beat it. */
   border: none !important;
 }

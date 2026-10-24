@@ -652,7 +652,7 @@ body[data-dsh-claude-style] .dsh-claude-palette-hint[data-show] {
 }
 
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-palette-hint {
-  background: var(--dsh-claude-raised);
+  background: var(--dsh-claude-card);
 }
 
 body[data-dsh-claude-style] .dsh-claude-palette-swatch-input {

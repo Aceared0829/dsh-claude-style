@@ -65,13 +65,13 @@ card leaves unset.
 | --- | --- | --- | --- |
 | `canvas` |  | `Δl 0` | `Δl 0` |
 | `surface-1` |  | `Δl 0` | `Δl +0.036` |
-| `surface-2` |  | `Δl -0.004` | `Δl +0.065` |
+| `surface-2` |  | `Δl 0` | `Δl +0.065` |
 | `surface-3` |  | `Δl +0.002` | `Δl +0.104` |
 | `overlay` |  | `Δl +0.01 · C 0` | `Δl +0.065` |
 | `code-block` |  | `Δl +0.01 · C 0` | `Δl +0.036` |
 | `inset` |  | `Δl +0.01 · C 0` | `Δl -0.024` |
 | `card` |  | `Δl 0` | `Δl +0.044` |
-| `table-head` |  | `Δl -0.037` | `Δl +0.065` |
+| `table-head` |  | `Δl -0.034` | `Δl +0.065` |
 | `hover-plate` |  | `Δl -0.034` | `Δl +0.104` |
 | `selector` |  | `Δl -0.004` | `Δl +0.104` |
 | `chip` |  | `Δl -0.019` | `Δl 0` |
@@ -80,9 +80,6 @@ card leaves unset.
 | `ink-2` |  | `Δl -0.474 · ΔC +0.01` | `Δl +0.571 · ΔC +0.009` |
 | `ink-3` |  | `Δl -0.365 · ΔC +0.011` | `Δl +0.458 · ΔC +0.012` |
 | `ink-4` |  | `Δl -0.251 · ΔC +0.007` | `Δl +0.336 · ΔC +0.01` |
-| `ink-strong` |  | — | `Δl +0.77 · ΔC +0.003` |
-| `session-ink` |  | — | `Δl +0.455 · ΔC +0.009` |
-| `ripple-ink` |  | `Δl -0.358 · ΔC +0.007` | `Δl +0.451 · ΔC +0.014` |
 | `bubble` |  | `Δl -0.037 · ΔC +0.002` | `Δl +0.09 · α 0.06` |
 | `bubble-flat` |  | — | `Δl +0.088 · ΔC +0.006` |
 | `border-1` |  | `Δl -0.067` | `Δl +0.026 · α 0.09` |
@@ -112,7 +109,7 @@ card leaves unset.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `--dsw-alias-bg-base` | `canvas` | `#ffffff` | `#191919` | `#ffffff` | `#13161d` | host's own |  |
 | `--dsw-alias-bg-layer-1` | `surface-1` | `#ffffff` | `#212121` | `#ffffff` | `#1b1e26` | host's own |  |
-| `--dsw-alias-bg-layer-2` | `surface-2` | `#fefefe` | `#282828` | `#fefefe` | `#22252d` | host's own |  |
+| `--dsw-alias-bg-layer-2` | `surface-2` | `#ffffff` | `#282828` | `#ffffff` | `#22252d` | host's own |  |
 | `--dsw-alias-bg-layer-3` | `surface-3` | `#ffffff` | `#323232` | `#ffffff` | `#2b2f37` | host's own |  |
 | `--dsw-alias-bg-overlay` | `overlay` | `#ffffff` | `#282828` | `#ffffff` | `#22252d` | host's own |  |
 | `--dsw-alias-border-l1` | `border-1` / `border-1-flat` | `#e9e9e9` | `rgba(255, 255, 255, 0.09)` | — | `#23262e` | host's own | the standard edge: card and panel outlines, dividers, field outlines |
@@ -156,14 +153,12 @@ card leaves unset.
 | `--dsw-alias-brand-primary-new-colorprimary-new-color` | `accent` | `#d97757` | `#d97757` | `#4d6bfe` | `#4d6bfe` | host's own |  |
 | `--dsh-claude-canvas` | `canvas` | `#ffffff` | `#191919` | `#ffffff` | `#13161d` | `var(--dsw-alias-bg-base)` | the page canvas, the search box |
 | `--dsh-claude-sidebar-canvas` | card `sidebar` | `#fafafa` | `#1f1f1f` | `#fafafa` | `#13161d` | `var(--dsw-specific-sidebar-fill)` | the sidebar |
-| `--dsh-claude-raised` | `card` | — | `#232323` | — | `#1d2028` | `var(--dsw-alias-bg-overlay)` | popovers and menus raised above the dark canvas |
 | `--dsh-claude-card` | `card` | `#ffffff` | `#232323` | `#ffffff` | `#1d2028` | `var(--dsw-alias-bg-overlay)` | cards on the canvas in light and raised in dark: the account popover, the search palette |
 | `--dsh-claude-inverse-fill` | `ink` | `#161616` | `#fdfdfd` | `#161616` | `#f4f9ff` | `var(--dsw-alias-interactive-bg-hover)` | the model picker's group label fill: an inverted chip under Claude, a hover-plate chip under the host |
 | `--dsh-claude-inverse-ink` | `inverse-ink` | `#ffffff` | `#171717` | `#ffffff` | `#11141a` | `var(--dsw-alias-label-primary)` | the model picker's group label ink |
-| `--dsh-claude-ink-strong` | `ink-strong` | — | `#fbf9f9` | — | `#f0f5ff` | `var(--dsw-alias-label-primary)` | active row ink |
-| `--dsh-claude-session-ink` | `session-ink` | — | `#9a9294` | — | `#8a91a0` | `var(--dsw-alias-label-secondary)` | session title at rest |
-| `--dsh-claude-table-head` | `table-head` | `#f3f3f3` | `#282828` | `#f3f3f3` | `#22252d` | `var(--dsw-alias-bg-layer-2)` | table header row |
-| `--dsh-claude-ripple-ink` | `ripple-ink` | `#918b8c` | `#9b9093` | `#918b8c` | `#888fa2` | `var(--dsw-alias-label-secondary, #8a8a85)` | the new-conversation page's glyph field, and the wake a ripple leaves in it |
+| `--dsh-claude-table-head` | `table-head` | `#f4f4f4` | `#282828` | `#f4f4f4` | `#22252d` | `var(--dsw-alias-bg-layer-2)` | table header row |
+| `--dsh-claude-ripple-ink` | `ink-3` | `#91888a` | `#9c9395` | `#91888a` | `#8a92a3` | `var(--dsw-alias-label-secondary, #8a8a85)` | the new-conversation page's glyph field, and the wake a ripple leaves in it |
+| `--dsh-claude-data-ink` | literal | `#3b6ecf` | `#3b6ecf` | `#3b6ecf` | `#3b6ecf` | `var(--dsw-alias-link, #3b6ecf)` | the home page's data blue: the deepest step of the model chart's ramp and the ink the heat grid's levels are mixed from |
 | `--dsh-claude-ripple-wave` | literal | `#3b6ef0` | `#7fa6ff` | `#3b6ef0` | `#7fa6ff` | `var(--dsw-alias-link, #3b6ef0)` | the front of a ripple in the new-conversation page's glyph field |
 | `--dsh-claude-scrollbar` | `scrollbar` | `rgba(213, 213, 213, 0.9)` | `rgba(62, 62, 62, 0.9)` | `rgba(213, 213, 213, 0.9)` | `rgba(55, 59, 64, 0.9)` | `var(--dsw-alias-border-l2)` | scrollbar thumb |
 | `--dsh-claude-scrollbar-hover` | `scrollbar-hover` | `rgba(138, 138, 138, 0.8)` | `rgba(113, 113, 113, 0.9)` | `rgba(138, 138, 138, 0.8)` | `rgba(105, 109, 115, 0.9)` | `var(--dsw-alias-label-caption)` | scrollbar thumb under the pointer |

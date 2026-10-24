@@ -83,7 +83,7 @@ body[data-dsh-claude-style] .dsh-claude-crab-strip::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--dsw-alias-label-tertiary, #8f8a7e);
+  background: var(--dsw-alias-label-tertiary, #91888a);
   -webkit-mask: var(--dsh-claude-crab-ink, none) no-repeat 0 0 / 100% 100%;
   mask: var(--dsh-claude-crab-ink, none) no-repeat 0 0 / 100% 100%;
   image-rendering: pixelated;

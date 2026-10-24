@@ -19,7 +19,7 @@
    instead plays the shared dsh-claude-dropdown-in entrance (shared/motion.css, D9). */
 body[data-dsh-claude-style] .dsh-claude-popover-card {
   background: var(--dsw-alias-bg-overlay, #ffffff);
-  border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border: 1px solid var(--dsw-alias-border-l1, #e9e9e9);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(20, 20, 19, 0.12), 0 2px 6px rgba(20, 20, 19, 0.08);
   padding: 6px;
@@ -54,7 +54,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-card[data-open="true"] {
   scale: 1;
 }
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-popover-card {
-  background: var(--dsh-claude-raised);
+  background: var(--dsh-claude-card);
   /* The edge is the dark border ladder's highlight (tokens.json), so the card
      keeps the border it always had; only the drop under it deepens. */
   border-color: var(--dsw-alias-border-l1);
@@ -64,7 +64,7 @@ body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-popover-card {
    (features/account, features/hero-menu) take the same raised dark card; the
    `!important`s outrank the host menu's own rules. */
 body[data-dsh-claude-style][data-ds-dark-theme] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) {
-  background: var(--dsh-claude-raised) !important;
+  background: var(--dsh-claude-card) !important;
   border-color: var(--dsw-alias-border-l1) !important;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.45) !important;
 }
@@ -84,7 +84,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-body {
 }
 /* A line in place of rows: loading, or nothing to list. */
 body[data-dsh-claude-style] .dsh-claude-popover-status {
-  color: var(--dsw-alias-label-tertiary, #8f8d84) !important;
+  color: var(--dsw-alias-label-tertiary, #91888a) !important;
   font-size: 12px !important;
   line-height: 20px !important;
   padding: 4px 8px !important;
@@ -102,7 +102,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-status {
    beside this. */
 body[data-dsh-claude-style] :is(.dsh-claude-popover-card, [data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [role="separator"] {
   height: 0;
-  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedede));
   background: transparent;
 }
 
@@ -114,7 +114,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-item {
   border-radius: 6px;
   border: none !important;
   background: transparent;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-size: 13px;
   font-weight: 400;
   display: flex;
@@ -129,7 +129,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-item {
 }
 body[data-dsh-claude-style] .dsh-claude-popover-item:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08)) !important;
-  color: var(--dsw-alias-label-primary, #141413) !important;
+  color: var(--dsw-alias-label-primary, #161616) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-popover-item-icon {
   display: inline-flex;
@@ -138,7 +138,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-item-icon {
   width: 16px;
   height: 16px;
   flex: none;
-  color: var(--dsw-alias-label-secondary, #787672);
+  color: var(--dsw-alias-label-secondary, #70686a);
 }
 body[data-dsh-claude-style] .dsh-claude-popover-item-icon svg {
   width: 16px;
@@ -169,7 +169,7 @@ body[data-dsh-claude-style] .dsh-claude-popover-item-col .dsh-claude-popover-ite
 body[data-dsh-claude-style] .dsh-claude-popover-item-desc {
   font-size: 11px;
   line-height: 14px;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -191,13 +191,13 @@ body[data-dsh-claude-style] .dsh-claude-popover-item-badge {
   padding: 0 5px !important;
   border-radius: 8px !important;
   background: var(--dsw-alias-interactive-bg-hover, rgba(0, 0, 0, 0.08)) !important;
-  color: var(--dsw-alias-label-secondary, #787672) !important;
+  color: var(--dsw-alias-label-secondary, #70686a) !important;
 }
 /* A provider the catalog no longer offers: its stored row stays checked but is
    muted, so it reads as "this used to be picked" and can be unchecked away. */
 body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-stale .dsh-claude-popover-item-text,
 body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-stale .dsh-claude-popover-item-badge {
-  color: var(--dsw-alias-label-tertiary, #8f8d84) !important;
+  color: var(--dsw-alias-label-tertiary, #91888a) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-popover-item.dsh-claude-popover-item-stale .dsh-claude-popover-item-badge {
   background: transparent !important;

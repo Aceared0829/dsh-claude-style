@@ -49,7 +49,7 @@ body[data-dsh-claude-style] .dsh-claude-session-title {
   padding: 3px 1px;
   border: 1px solid var(--dsh-claude-field-ring, #2a78d6);
   border-radius: 4px;
-  background: var(--dsw-alias-bg-base, #FFFFFF);
+  background: var(--dsw-alias-bg-base, #ffffff);
   color: var(--dsw-alias-label-primary, #161616);
   font-family: var(--dsw-font-family);
   font-size: 14px;

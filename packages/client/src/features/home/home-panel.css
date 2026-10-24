@@ -85,13 +85,13 @@ body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~="
   box-sizing: border-box;
   height: 28px;
   padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 12%, transparent);
   border-radius: 8px;
   background: transparent;
 }
 
 body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~="hero-workspace-row"] :is(button, [role="button"]):hover:not(:disabled) {
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 5%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 5%, transparent);
 }
 
 body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > [data-slot="conversation.composer.bar"] > * {
@@ -111,7 +111,7 @@ body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~="
   font-size: 20px;
   font-weight: 500;
   line-height: 26px;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
 }
 
 body[data-dsh-claude-style] [data-dsh-claude-home-hero] [data-dsh-claude-part~="hero-headline"] {
@@ -150,7 +150,7 @@ body[data-dsh-claude-style] .dsh-claude-home-panel {
   border-radius: 12px;
   /* Claude Code's panel is a flat warm-gray wash with no outline: a whisper of
      the label tone over the card tone, which flips with the theme on its own. */
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 4%, var(--dsw-alias-bg-layer-2, #fbfbf9));
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 4%, var(--dsw-alias-bg-layer-2, #ffffff));
   overflow: auto;
   /* Claude Code fades its dashboard into the context row when the window cuts
      it short. The mask's transparent 32px foot hangs below the box at rest, so
@@ -198,7 +198,7 @@ body[data-dsh-claude-style] .dsh-claude-home-models-more {
   margin: 0;
   border: 0;
   background: transparent;
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-family: inherit;
   font-size: 12px;
   line-height: 18px;
@@ -215,16 +215,16 @@ body[data-dsh-claude-style] .dsh-claude-home-range {
 
 body[data-dsh-claude-style] .dsh-claude-home-tab:hover:not([data-active]),
 body[data-dsh-claude-style] .dsh-claude-home-range:hover:not([data-active]) {
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 5%, transparent);
-  color: var(--dsw-alias-label-primary, #141413);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 5%, transparent);
+  color: var(--dsw-alias-label-primary, #161616);
 }
 
 /* The active pill is a gray chip one step below the panel's own wash — Claude's
    Overview reads as gray ground under black text, not a lifted white card. */
 body[data-dsh-claude-style] .dsh-claude-home-tab[data-active],
 body[data-dsh-claude-style] .dsh-claude-home-range[data-active] {
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 10%, var(--dsw-alias-bg-layer-2, #fbfbf9));
-  color: var(--dsw-alias-label-primary, #141413);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 10%, var(--dsw-alias-bg-layer-2, #ffffff));
+  color: var(--dsw-alias-label-primary, #161616);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-panel-side {

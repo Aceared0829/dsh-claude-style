@@ -21,7 +21,7 @@ body[data-dsh-claude-style] .dsh-claude-home-chart-tick {
   left: calc(-1 * var(--dsh-home-axis));
   width: calc(var(--dsh-home-axis) - 6px);
   transform: translateY(50%);
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 11px;
   line-height: 14px;
   text-align: right;
@@ -62,48 +62,50 @@ body[data-dsh-claude-style] .dsh-claude-home-chart-axis {
 body[data-dsh-claude-style] .dsh-claude-home-chart-label {
   flex: 1 1 0;
   min-width: 0;
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 11px;
   line-height: 14px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* The ramp: the biggest spender is the deepest data blue, and the walk down ends
-   in the warm grey that stands for every model past the list. */
+/* The ramp: the biggest spender is the darkest data blue, and the walk down fades
+   toward the card's own fill, ending in the warm grey that stands for every model
+   past the list. Every step is the one data ink at its own opacity, so the chart
+   and the heat grid read off one colour and either card's fill shows through. */
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="0"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="0"] {
-  background: #2f5fc4;
+  background: var(--dsh-claude-data-ink);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="1"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="1"] {
-  background: #3b6ecf;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 80%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="2"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="2"] {
-  background: #5b88da;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 66%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="3"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="3"] {
-  background: #7ea3e4;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 54%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="4"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="4"] {
-  background: #a3bfec;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 44%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="5"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="5"] {
-  background: #c3d5f3;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 34%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="6"],
 body[data-dsh-claude-style] .dsh-claude-home-model-swatch[data-rank="6"] {
-  background: #dbe5f8;
+  background: color-mix(in srgb, var(--dsh-claude-data-ink) 24%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg[data-rank="7"],
@@ -135,7 +137,7 @@ body[data-dsh-claude-style] .dsh-claude-home-model-name {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-size: 13px;
   line-height: 18px;
   white-space: nowrap;
@@ -146,7 +148,7 @@ body[data-dsh-claude-style] .dsh-claude-home-model-name {
    split floats right against the fixed share column so the numbers line up. */
 body[data-dsh-claude-style] .dsh-claude-home-model-split {
   margin-left: auto;
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 12px;
   line-height: 18px;
   white-space: nowrap;
@@ -156,7 +158,7 @@ body[data-dsh-claude-style] .dsh-claude-home-model-split {
 body[data-dsh-claude-style] .dsh-claude-home-model-share {
   flex: none;
   width: 48px;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-size: 12px;
   line-height: 18px;
   text-align: right;
@@ -170,12 +172,12 @@ body[data-dsh-claude-style] .dsh-claude-home-models-more {
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-models-more:hover {
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-models-empty {
   padding: 18px 0;
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 12px;
   line-height: 16px;
   text-align: center;
@@ -193,5 +195,5 @@ body[data-dsh-claude-style] .dsh-claude-home-models[data-skeleton] .dsh-claude-h
   width: 100%;
   height: 8px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 9%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 9%, transparent);
 }

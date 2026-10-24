@@ -132,7 +132,7 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav-row {
   border-radius: 6px;
   background: transparent;
   box-shadow: none;
-  color: var(--dsw-alias-label-secondary, #787672);
+  color: var(--dsw-alias-label-secondary, #70686a);
   font-family: var(--dsw-font-family);
   font-size: 13px;
   font-weight: 400;
@@ -143,14 +143,14 @@ body[data-dsh-claude-style] .dsh-claude-turn-nav-row {
 }
 body[data-dsh-claude-style] .dsh-claude-turn-nav-row:hover {
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
 }
 body[data-dsh-claude-style] .dsh-claude-turn-nav-row:focus-visible {
   outline: 1px solid var(--dsw-focus-ring-color, var(--dsw-alias-brand-primary, #D97757)) !important;
   outline-offset: -1px !important;
 }
 body[data-dsh-claude-style] .dsh-claude-turn-nav-row[data-current] {
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-weight: 500;
 }
 body[data-dsh-claude-style] .dsh-claude-turn-nav-text {

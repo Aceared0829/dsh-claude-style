@@ -76,7 +76,7 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   color: var(--dsw-alias-label-primary);
 }
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-btn-label.dsh-claude-model-btn-loading {
-  color: var(--dsw-alias-label-caption, #a6a094) !important;
+  color: var(--dsw-alias-label-caption, #b2acad) !important;
 }
 
 /* Only the buttons keep transparent innards; the box carries the plate. The

@@ -23,13 +23,13 @@ body[data-dsh-claude-style] .dsh-claude-rightbar-close {
   border: none;
   border-radius: 7px;
   background: transparent;
-  color: var(--dsw-alias-label-secondary, #6e6a60);
+  color: var(--dsw-alias-label-secondary, #70686a);
   cursor: pointer;
   -webkit-app-region: no-drag;
 }
 body[data-dsh-claude-style] .dsh-claude-rightbar-close:hover,
 body[data-dsh-claude-style] .dsh-claude-rightbar-close:focus-visible {
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
 }
 

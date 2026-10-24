@@ -24,7 +24,7 @@
       r.claudePalette.dark = {
         canvas: claudeDark.backgroundColor,
         accent: claudeDark.getPropertyValue('--dsw-alias-brand-primary').trim(),
-        raised: claudeDark.getPropertyValue('--dsh-claude-raised').trim(),
+        card: claudeDark.getPropertyValue('--dsh-claude-card').trim(),
       }
       document.body.removeAttribute('data-ds-dark-theme')
     })

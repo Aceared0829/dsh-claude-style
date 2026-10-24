@@ -31,7 +31,7 @@ body[data-dsh-claude-style] .dsh-claude-perm-btn {
   font-size: 13px;
   font-weight: 500;
   background: transparent;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   cursor: pointer;
   user-select: none;
   transition: background-color var(--dsh-claude-timing-feedback);

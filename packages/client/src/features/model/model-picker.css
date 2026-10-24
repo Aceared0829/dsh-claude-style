@@ -84,10 +84,10 @@ body[data-dsh-claude-style] .dsh-claude-model-search {
 body[data-dsh-claude-style] .dsh-claude-model-search-field {
   position: relative;
   height: 28px;
-  border: 1px solid var(--dsw-alias-border-l1, #e8e6dc);
+  border: 1px solid var(--dsw-alias-border-l1, #e9e9e9);
   border-radius: 8px;
   background: var(--dsw-specific-input-major, #ffffff);
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-family: var(--dsw-font-family);
   font-size: 13px;
   line-height: 20px;
@@ -141,7 +141,7 @@ body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field
   opacity: 1;
 }
 body[data-dsh-claude-style] .dsh-claude-model-search-placeholder {
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
+  color: var(--dsw-alias-label-tertiary, #91888a);
 }
 body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field-filled] .dsh-claude-model-search-placeholder {
   opacity: 0;
@@ -181,7 +181,7 @@ body[data-dsh-claude-style] .dsh-claude-model-search-clear {
   border: 0;
   border-radius: 5px;
   background: transparent;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   cursor: pointer;
   /* Gone from the paint and from the tab order while the field is empty: an
      invisible control a reader can still reach is one they can press by
@@ -201,7 +201,7 @@ body[data-dsh-claude-style] .dsh-claude-model-search-field[data-dsh-claude-field
   transition: opacity var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard), visibility 0s;
 }
 body[data-dsh-claude-style] .dsh-claude-model-search-clear:hover {
-  color: var(--dsw-alias-label-secondary, #6f6a62);
+  color: var(--dsw-alias-label-secondary, #70686a);
   background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.06));
 }
 body[data-dsh-claude-style] .dsh-claude-model-search-clear svg {
@@ -240,7 +240,7 @@ body[data-dsh-claude-style] .dsh-claude-model-group-row {
 }
 
 body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-model-group-row {
-  background: var(--dsh-claude-raised);
+  background: var(--dsh-claude-card);
 }
 
 body[data-dsh-claude-style] .dsh-claude-model-group {
@@ -270,7 +270,7 @@ body[data-dsh-claude-style] .dsh-claude-model-cell {
   border: none !important;
   border-radius: 6px;
   background: transparent;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
@@ -395,7 +395,7 @@ body[data-dsh-claude-style] .dsh-claude-model-combine-alt {
 body[data-dsh-claude-style] .dsh-claude-model-desc {
   font-size: 11px;
   line-height: 14px;
-  color: var(--dsw-alias-label-tertiary, #8f8d84);
+  color: var(--dsw-alias-label-tertiary, #91888a);
 }
 /* The divider that closes the model list carries the shared separator's role, so
    its line comes from shared/popover.css with every other separator in a card;
@@ -404,7 +404,7 @@ body[data-dsh-claude-style] .dsh-claude-model-desc {
    It is a border on a zero-height box so the line belongs to the layout. */
 body[data-dsh-claude-style] .dsh-claude-model-rule::after {
   height: 0;
-  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedcd2));
+  border-top: 0.5px solid var(--dsh-claude-divider, var(--dsw-alias-border-l2, #dedede));
 }
 body[data-dsh-claude-style] .dsh-claude-model-divider {
   margin: 2px 4px;
@@ -430,7 +430,7 @@ body[data-dsh-claude-style] .dsh-claude-model-rule-name {
   flex: none !important;
   font-size: 11px !important;
   line-height: 14px !important;
-  color: var(--dsw-alias-label-caption, #a6a094) !important;
+  color: var(--dsw-alias-label-caption, #b2acad) !important;
   letter-spacing: 0.02em !important;
 }
 /* The provider is this menu's only grouping label, and caption is the host's
@@ -438,7 +438,7 @@ body[data-dsh-claude-style] .dsh-claude-model-rule-name {
    the 4.5:1 an 11px label needs. Secondary is the tier that carries a name; the
    fallback is the value that clears the threshold when the token is absent. */
 body[data-dsh-claude-style]:not([data-ds-dark-theme]) .dsh-claude-model-rule-name {
-  color: var(--dsw-alias-label-secondary, #6f6a62) !important;
+  color: var(--dsw-alias-label-secondary, #70686a) !important;
 }
 body[data-dsh-claude-style] .dsh-claude-model-cell-label {
   flex: 1;
@@ -448,5 +448,5 @@ body[data-dsh-claude-style] .dsh-claude-model-cell-chevron {
   flex: none;
   display: inline-flex;
   align-items: center;
-  color: var(--dsw-alias-label-caption, #a6a094);
+  color: var(--dsw-alias-label-caption, #b2acad);
 }

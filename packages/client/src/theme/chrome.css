@@ -8,9 +8,9 @@
    while this ramp resolves per palette through --dsw-alias-bg-base itself. */
 body[data-dsh-claude-style] {
   --dsh-claude-fade-stops:
-    var(--dsw-alias-bg-base, #FFFFFF) 0%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FFFFFF) 82%, transparent) 32%,
-    color-mix(in srgb, var(--dsw-alias-bg-base, #FFFFFF) 40%, transparent) 68%,
+    var(--dsw-alias-bg-base, #ffffff) 0%,
+    color-mix(in srgb, var(--dsw-alias-bg-base, #ffffff) 82%, transparent) 32%,
+    color-mix(in srgb, var(--dsw-alias-bg-base, #ffffff) 40%, transparent) 68%,
     transparent 100%;
 }
 

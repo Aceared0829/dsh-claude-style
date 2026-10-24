@@ -6,13 +6,13 @@ const CLAUDE_FILLS = [['body', 'rgb(255, 255, 255)'], ['sidebar', 'rgb(250, 250,
 
 export default {
   // The skin's own Claude palette: the white and near-black canvases, the clay
-  // accent and the raised card fill, read from the live custom properties.
+  // accent and the card fill, read from the live custom properties.
   brand(r) {
     basicChecks(r)
     const palette = r.claudePalette || {}
     check('the Claude brand keeps its white and near-black canvases and the clay accent',
       palette.canvas === 'rgb(255, 255, 255)' && palette.accent === '#d97757' && !!palette.dark &&
-        palette.dark.canvas === 'rgb(25, 25, 25)' && palette.dark.accent === '#d97757' && palette.dark.raised === '#232323',
+        palette.dark.canvas === 'rgb(25, 25, 25)' && palette.dark.accent === '#d97757' && palette.dark.card === '#232323',
       JSON.stringify(palette))
     commonChecks(r)
   },

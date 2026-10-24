@@ -17,11 +17,11 @@ body[data-dsh-claude-style] .dsh-claude-home-stat {
   min-width: 0;
   padding: 5px 8px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 15%, var(--dsw-alias-bg-layer-2, #fbfbf9));
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 15%, var(--dsw-alias-bg-layer-2, #ffffff));
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-stat-label {
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
@@ -30,7 +30,7 @@ body[data-dsh-claude-style] .dsh-claude-home-stat-label {
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-stat-value {
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   /* Claude's tile keeps the figure barely above its own label: 13px bold, which
      is also what lets a long model id such as deepseek-v4.1-flash sit on one
      line instead of being cut off. */
@@ -67,16 +67,17 @@ body[data-dsh-claude-style] .dsh-claude-home-heat {
 /* Claude Code's heat grid is a blue data ramp, not the brand ember: the empty
    cell stays the neutral base tone, and each level mixes in the data blue by
    its share of the ramp (constants.ts's HOME_HEAT_RAMP; the build writes one
-   rule per level, scripts/feature-sheets.mjs). */
+   rule per level, scripts/feature-sheets.mjs). The model chart beside it reads
+   the same ink, so both charts tell one story about which model earned a day. */
 body[data-dsh-claude-style] .dsh-claude-home-heat {
-  --dsh-claude-heat-ink: #3b6ecf;
+  --dsh-claude-heat-ink: var(--dsh-claude-data-ink);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-heat-cell {
   position: relative;
   aspect-ratio: 1;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 11%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 11%, transparent);
 }
 
 /* Claude Code's day tip: a solid pill in the label ink over the cell, the day
@@ -94,8 +95,8 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip]:hover::after {
   transform: translateX(-50%);
   padding: 5px 10px;
   border-radius: 8px;
-  background: var(--dsw-alias-label-primary, #141413);
-  color: var(--dsw-alias-bg-layer-3, #fcfcfb);
+  background: var(--dsw-alias-label-primary, #161616);
+  color: var(--dsw-alias-bg-layer-3, #ffffff);
   font-size: 13px;
   font-weight: 500;
   line-height: 18px;
@@ -125,7 +126,7 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-side="belo
 
 /* The one-liner under the grid: a plain caption, no emphasis of its own. */
 body[data-dsh-claude-style] .dsh-claude-home-fun {
-  color: var(--dsw-alias-label-tertiary, #8f8a7e);
+  color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 12px;
   line-height: 16px;
 }
@@ -138,11 +139,11 @@ body[data-dsh-claude-style] .dsh-claude-home-stat[data-skeleton] .dsh-claude-hom
   height: 13px;
   margin: 2px 0;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 9%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 9%, transparent);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-heat[data-skeleton] .dsh-claude-home-heat-cell {
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 5%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 5%, transparent);
 }
 
 /* A narrow page stacks the stat cells rather than squeezing three of them;

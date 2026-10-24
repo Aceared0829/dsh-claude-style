@@ -39,7 +39,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-label {
   flex: none;
   font-size: 13px;
   line-height: 16px;
-  color: var(--dsw-alias-label-secondary, #6e6a60);
+  color: var(--dsw-alias-label-secondary, #70686a);
 }
 /* The level's name trails the label instead of sitting at the far edge: the
    control reads as one phrase, `Reasoning effort High`, the way the ends below
@@ -55,7 +55,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-value {
   white-space: nowrap;
   font-size: 13px;
   line-height: 16px;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   transition: color var(--dsh-claude-timing-feedback);
   animation: dsh-claude-swap-in var(--dsh-claude-duration-swap) var(--dsh-claude-swap-ease);
 }
@@ -77,7 +77,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-value-ghost {
   pointer-events: none;
   font-size: 13px;
   line-height: 16px;
-  color: var(--dsw-alias-label-primary, #141413);
+  color: var(--dsw-alias-label-primary, #161616);
   opacity: 0;
   animation: dsh-claude-swap-out var(--dsh-claude-duration-swap) var(--dsh-claude-swap-ease) forwards;
 }
@@ -90,7 +90,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-ends {
   gap: 8px;
   font-size: 11px;
   line-height: 14px;
-  color: var(--dsw-alias-label-caption, #a6a094);
+  color: var(--dsw-alias-label-caption, #b2acad);
 }
 body[data-dsh-claude-style] .dsh-claude-effort-track {
   position: relative;
@@ -139,7 +139,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-fill {
      knob"). The left cap still matches the groove's corner. */
   border-radius: 8px 0 0 8px;
   corner-shape: round;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 26%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 26%, transparent);
   transition: width var(--dsh-claude-duration-move) var(--dsh-claude-ease-glide), opacity var(--dsh-claude-duration-move) var(--dsh-claude-ease-standard);
   pointer-events: none;
 }
@@ -161,7 +161,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-tick {
   transform: translateX(-50%);
   border-radius: 50%;
   corner-shape: round;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #141413) 26%, transparent);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 26%, transparent);
 }
 /* The top rung's dot matrix: a grid of violet blocks floating on the bare track
    (the 1px gaps ARE the grid lines). Three layers ride every block: its own
@@ -363,7 +363,7 @@ body[data-dsh-claude-style] .dsh-claude-effort[data-empty] .dsh-claude-effort-tr
   opacity: 0.55 !important;
 }
 body[data-dsh-claude-style] .dsh-claude-effort[data-empty] .dsh-claude-effort-value {
-  color: var(--dsw-alias-label-caption, #a6a094) !important;
+  color: var(--dsw-alias-label-caption, #b2acad) !important;
 }
 
 /* ---------- reasoning-effort level ---------- */
