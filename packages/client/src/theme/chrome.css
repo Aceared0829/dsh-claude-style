@@ -131,7 +131,16 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="rightbar-column"] [data-dsh-
    of the attribute. "Follow the system" writes no attribute, so the page keeps
    the size the system and the host give it. The skin's geometry reads the
    factor back through shared/page-zoom.ts: it measures the viewport's pixels
-   while these rules scale the space a `left` or a `top` is read in. */
+   while these rules scale the space a `left` or a `top` is read in.
+
+   At a factor other than one the body also wears the window's own size, in the
+   page's pixels (shared/page-scale.ts, D81), and the page takes no scroll of
+   its own. A height chain that ends in a viewport unit or in a number measured
+   against the window — the host's own layers and another plugin's among them —
+   is a length `zoom` draws once more, and the document stood a factor past the
+   window with an empty band under the shell; the body at the window's size
+   keeps the shell at the window's edge, and every part of it scrolls inside
+   its own box. */
 body[data-dsh-claude-style][data-dsh-claude-page-zoom="0.8"] {
   zoom: 0.8;
 }
@@ -146,6 +155,12 @@ body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.25"] {
 
 body[data-dsh-claude-style][data-dsh-claude-page-zoom="1.5"] {
   zoom: 1.5;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-page-zoom]:not([data-dsh-claude-page-zoom="1"]) {
+  width: var(--dsh-claude-page-width, 100%);
+  height: var(--dsh-claude-page-height, 100%);
+  overflow: hidden;
 }
 
 /* The host caps its own dialogs against the window's viewport units, which a

@@ -13,6 +13,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### 问题修复
 
 - 修复主窗口设置中输入区的上下文外显样式与数字夹在模型选择器各项之间的问题：它们现在与统计信息位置、底栏统计位置和计费币种排成一块。
+- 修复页面缩放为 1.25 或 1.5 倍时整页可以滚过内容末尾、露出一段空白的问题：缩放后的页面按窗口自身的尺寸绘制，窗口的边缘就是页面的边缘。
+- 修复启用壁纸引擎后，用量面板热力图的日期提示、会话标题的提示以及品牌图片的清除按钮在透明画布上丢掉文字与记号的问题：这些反色底上的字与记号改用宿主自己的表面色。
 
 <h3 id="en-unreleased">Improvements</h3>
 
@@ -21,6 +23,8 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 ### Bug Fixes
 
 - Fix Context display and Context display number sitting among the model picker's rows in Main window settings: they now stand in one block with Conversation statistics position, Footer alignment and Billing currency.
+- Fix the page scrolling past the end of its content into an empty band at a page zoom of 1.25 or 1.5: the scaled page now draws at the window's own size, so the window's edge is the page's edge.
+- Fix the usage panel's day tip, the session title's tip and the brand picture's remove mark losing their ink over a wallpaper's cleared canvas: the words and marks on those inverted plates now take the host's own raised-surface tone.
 
 ## [0.19.0] - 2026-10-23
 
