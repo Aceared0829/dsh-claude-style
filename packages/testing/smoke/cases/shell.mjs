@@ -14,6 +14,11 @@ export default {
       palette.canvas === 'rgb(255, 255, 255)' && palette.accent === '#d97757' && !!palette.dark &&
         palette.dark.canvas === 'rgb(25, 25, 25)' && palette.dark.accent === '#d97757' && palette.dark.card === '#232323',
       JSON.stringify(palette))
+    const deepseek = r.deepseekPalette || {}
+    check('the DeepSeek brand paints a pale blue-white light shell and keeps its blue-black dark shell',
+      deepseek.canvas === 'rgb(251, 252, 255)' && deepseek.accent === '#4d6bfe' && !!deepseek.dark &&
+        deepseek.dark.canvas === 'rgb(19, 22, 29)' && deepseek.dark.accent === '#4d6bfe',
+      JSON.stringify(deepseek))
     commonChecks(r)
   },
   // The custom brand over the Claude brand (D30): both images painted where the

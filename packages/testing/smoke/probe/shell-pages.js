@@ -27,6 +27,24 @@
         card: claudeDark.getPropertyValue('--dsh-claude-card').trim(),
       }
       document.body.removeAttribute('data-ds-dark-theme')
+      // The DeepSeek card's light shell derives from its pale blue-white canvas;
+      // its dark card keeps the blue-black steps it already had.
+      window.__pushForm({ paletteColors: 'deepseek' })
+      await sleep(250)
+      var dsLight = getComputedStyle(document.body)
+      r.deepseekPalette = {
+        canvas: dsLight.backgroundColor,
+        accent: dsLight.getPropertyValue('--dsw-alias-brand-primary').trim(),
+      }
+      document.body.setAttribute('data-ds-dark-theme', '')
+      var dsDark = getComputedStyle(document.body)
+      r.deepseekPalette.dark = {
+        canvas: dsDark.backgroundColor,
+        accent: dsDark.getPropertyValue('--dsw-alias-brand-primary').trim(),
+      }
+      document.body.removeAttribute('data-ds-dark-theme')
+      window.__pushForm({ paletteColors: 'brand' })
+      await sleep(150)
     })
     await probe.onlyFor(['hero'], async function () {
       // The classic hero's welcome is drawn on arrival and holds between
