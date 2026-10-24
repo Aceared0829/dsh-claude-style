@@ -317,38 +317,6 @@ export const PREFS = {
 /** One preference's key. */
 export type PrefKey = keyof typeof PREFS
 
-/**
- * The preferences a feature switch follows live (D72): flipping one installs or
- * tears down the feature that names it, without a reload. A preference outside
- * this list is read by its feature at the moment it acts.
- */
-export const LIVE_PREFS = [
-  'homeRipple',
-  'permissionsControl',
-  'statsPosition',
-  'banLocale',
-  'workspaceView',
-  'sidebarSearch',
-  'sidebarPeek',
-  'turnNav',
-  'viewTabs',
-  'headerBand',
-  'chatAnimations',
-  'chatWait',
-  'chatSend',
-  'chatReveal',
-  'peakrate',
-  'caretMotion',
-  'mascot',
-  'modelPicker',
-  'collapseFooter',
-  'composerScope',
-  'conversationWidth',
-] as const satisfies readonly PrefKey[]
-
-/** A preference a feature switch follows live. */
-export type LivePref = typeof LIVE_PREFS[number]
-
 /** One preference's value type, from its declaration. */
 type SpecValue<S> =
   S extends { readonly type: 'boolean' } ? boolean :

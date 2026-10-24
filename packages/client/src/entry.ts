@@ -1,5 +1,4 @@
-import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, LIVE_PREFS, PACKAGE_NAME, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
-import type { LivePref } from './constants'
+import { ACCOUNT_MENU_ATTR, HANDOFF_ATTR, HERO_MENU_ATTR, HOLDS_ATTR, PACKAGE_NAME, PART_ATTR, QUIET_ATTR, READER_HOLD_ATTR } from './constants'
 import { installParts } from '@dsh-claude-style/engine/parts'
 import { installPageScale } from './shared/page-scale'
 import { adoptSkin } from '@dsh-claude-style/engine/skin'
@@ -37,26 +36,19 @@ adoptSkin({
 // (shared/peer-plugin.ts) covers the sheets that arrive later.
 parkForeignSheets()
 
-/** A feature its preference switches on and off live (a key of LIVE_PREFS, packages/contracts/src/prefs.ts). */
-type SwitchedFeature = Feature & { pref: LivePref }
-
-const LIVE_PREF_KEYS: ReadonlySet<string> = new Set(LIVE_PREFS)
-
-const isSwitched = (feature: Feature): feature is SwitchedFeature => feature.pref !== undefined && LIVE_PREF_KEYS.has(feature.pref)
-
 /**
- * Whether a feature comes and goes during the generation: its preference is
- * a live switch, or it yields to a plugin that can arrive or leave.
+ * Whether a feature comes and goes during the generation: its preference is a
+ * switch, or it yields to a plugin that can arrive or leave.
  */
-const isLive = (feature: Feature) => isSwitched(feature) || feature.yieldsTo !== undefined
+const isLive = (feature: Feature) => feature.pref !== undefined || feature.yieldsTo !== undefined
 
 /**
- * Whether a live feature is wanted now: a boolean switch is on unless stored
- * as `false`, a choice switch runs under the values its manifest names
- * (`prefValues`), and no plugin it yields to is on the page.
+ * Whether a live feature is wanted now: its preference is on, and no plugin it
+ * yields to is on the page. A boolean switch is on unless stored as `false`;
+ * a choice switch runs under the values its manifest names (`prefValues`).
  */
 function isWanted(feature: Feature) {
-  if (isSwitched(feature)) {
+  if (feature.pref !== undefined) {
     const value = readPrefs()[feature.pref]
     const on = feature.prefValues === undefined
       ? value !== false
@@ -335,11 +327,10 @@ export function apply(ctx: HostContext) {
    * failing stays retired (D12).
    *
    * FEATURES is the registry the build generates from the manifests (D72),
-   * in install order; the scheduler's pass order is the same order. A live
-   * feature follows its switch and the plugins it yields to; the rest
-   * install once. A deferred feature installs when its chunk arrives, after
-   * this pass and the scheduler (D72). A `pref` outside LIVE_PREFS
-   * is read by the feature itself.
+   * in install order; the scheduler's pass order is the same order. A feature
+   * with a `pref` follows that switch and the plugins it yields to; a feature
+   * that only reads preferences installs once. A deferred feature installs
+   * when its chunk arrives, after this pass and the scheduler (D72).
    */
   function own() {
     // The value is the build id (scripts/build.mjs): the stylesheet keys on

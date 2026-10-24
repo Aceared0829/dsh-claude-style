@@ -94,11 +94,23 @@ function checkManifests(manifests) {
       if (!fs.existsSync(path.join(FEATURES, manifest.dir, sheet.file))) fail(manifest, `names the stylesheet ${sheet.file}, which packages/client/src/features/${manifest.dir}/ does not hold`)
       if (sheet.scope !== undefined && sheet.scope !== 'surface') fail(manifest, `gives ${sheet.file} the scope "${sheet.scope}"; the one scope a sheet can name is "surface"`)
     }
-    if (manifest.prefValues !== undefined) {
-      if (manifest.pref === undefined) fail(manifest, 'names "prefValues" without a "pref"')
-      if (!Array.isArray(manifest.prefValues) || manifest.prefValues.length === 0 || manifest.prefValues.some((value) => typeof value !== 'string' || value === '')) {
-        fail(manifest, 'needs "prefValues": a non-empty list of the preference values the feature runs under')
+    if (manifest.pref !== undefined) {
+      if (typeof manifest.pref !== 'string' || !(manifest.pref in PREFS)) fail(manifest, `names "pref" "${manifest.pref}", which packages/contracts/src/prefs.ts PREFS does not carry`)
+      const spec = PREFS[manifest.pref]
+      if (manifest.prefValues !== undefined) {
+        if (!Array.isArray(manifest.prefValues) || manifest.prefValues.length === 0 || manifest.prefValues.some((value) => typeof value !== 'string' || value === '')) {
+          fail(manifest, 'needs "prefValues": a non-empty list of the preference values the feature runs under')
+        }
+        if (spec.type === 'boolean') fail(manifest, `gives the boolean preference "${manifest.pref}" "prefValues"; a boolean switch is on unless stored as false`)
+        if (spec.type !== 'choice') fail(manifest, `gives "${manifest.pref}" "prefValues", and only a choice preference carries values to name`)
+        for (const value of manifest.prefValues) {
+          if (!spec.values.includes(value)) fail(manifest, `runs under "${value}", which the choice preference "${manifest.pref}" does not carry`)
+        }
+      } else if (spec.type === 'choice') {
+        fail(manifest, `names the choice preference "${manifest.pref}" without "prefValues": a choice switch names the values it runs under`)
       }
+    } else if (manifest.prefValues !== undefined) {
+      fail(manifest, 'names "prefValues" without a "pref"')
     }
     if (manifest.settingsRows !== undefined) {
       if (!Array.isArray(manifest.settingsRows) || manifest.settingsRows.length === 0) fail(manifest, 'needs "settingsRows": a non-empty list of the rows this feature owns')

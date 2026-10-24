@@ -16,20 +16,23 @@ import type { HandleName, Handles, Ui } from './scheduler'
  */
 export type FeatureManifest = FeatureIdentity & FeatureFields & FeatureSwitch
 
-/** Exactly one of `pref` and `ungated` (D72). */
+/** Exactly one of `pref` and `ungated` (D76). */
 export type FeatureSwitch =
   | {
-      /** The preference that decides whether the reader gets the feature. */
+      /**
+       * The preference that decides whether the reader gets the feature, live:
+       * a flip installs or tears it down without a reload (D76).
+       */
       pref: keyof Prefs
       /**
-       * The preference values the feature runs under, for a choice switch
-       * (`chatAnimations`): a value outside the list runs its teardown. A
-       * boolean switch leaves this out and is on unless stored as `false`.
+       * The preference values the feature runs under, for a choice switch: a
+       * value outside the list runs its teardown. A boolean switch leaves this
+       * out and is on unless stored as `false`.
        */
       prefValues?: string[]
       ungated?: never
     }
-  | { /** Why the feature has no switch. */ ungated: string, pref?: never }
+  | { /** Why the feature has no switch, for a feature that reads preferences while installed itself. */ ungated: string, pref?: never }
 
 /**
  * The install name — the failure report, the teardown and `retire()` use it —
