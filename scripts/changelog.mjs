@@ -1,21 +1,24 @@
 #!/usr/bin/env node
 /**
- * changelog.mjs — assemble docs/CHANGELOG.md's [Unreleased] section from docs/changes/ (D48).
+ * changelog.mjs — keep a released version's section in docs/CHANGELOG.md and print the pending one from docs/changes/ (D48).
  *
  * A change adds one small JSON file under docs/changes/ and never edits the
  * CHANGELOG: the file carries its group, where it sits in that group, whether it
  * moves an external contract, the date it landed and the entry in both
- * languages. This script turns the pending files into the section the reader
- * sees, so the section cannot drift from what the changes actually are. At
- * release the same assembly becomes the version's section and the files are
- * cleared.
+ * languages. The pending changes stay in that directory rather than in the
+ * file: two branches that each add a file touch nothing in common, so merging
+ * them cannot conflict on the CHANGELOG. `--release` turns them into the
+ * version's section above the older ones and clears the directory; until then
+ * the default prints the section the release would write, and writes nothing.
  *
  * Usage: node scripts/changelog.mjs [--check | --release <version> [--date <YYYY-MM-DD>] | --notes <version>]
- *        --check writes nothing and fails when the committed section differs.
+ *        --check writes nothing and fails when a fragment does not validate or
+ *        docs/CHANGELOG.md holds an [Unreleased] section.
  *        --release turns the pending changes into the version's section, puts it
  *        above the older ones, and clears docs/changes/.
  *        --notes prints a released version's section without its heading: the
  *        body of that version's GitHub Release.
+ *        No flag prints the pending section on stdout and writes nothing.
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -79,8 +82,8 @@ function body(fragments) {
   return lines
 }
 
-/** The whole [Unreleased] section: its heading, the language line, the groups, and the blank line after it. */
-function section(fragments) {
+/** The pending section as the reader would see it under the next version: its heading, the language line and the groups. */
+function pendingSection(fragments) {
   if (fragments.length === 0) return '## [Unreleased]\n\n'
   return `${['## [Unreleased]', '', '[中文](#cn-unreleased) | [English](#en-unreleased)', ...body(fragments)].join('\n')}\n\n`
 }
@@ -91,32 +94,22 @@ function releaseSection(fragments, version, date) {
   return `${lines.join('\n').split('cn-unreleased').join(`cn-${version}`).split('en-unreleased').join(`en-${version}`)}\n\n`
 }
 
-/** Split docs/CHANGELOG.md into its head and its [Unreleased] section and everything after it. */
-function split(changelog) {
-  const start = changelog.indexOf('## [Unreleased]')
-  if (start === -1) throw new Error('changelog: docs/CHANGELOG.md has no "## [Unreleased]" section')
-  const next = changelog.indexOf('\n## [', start)
-  return { start, body: changelog.slice(start, next === -1 ? changelog.length : next + 1), rest: changelog.slice(next === -1 ? changelog.length : next + 1) }
-}
-
 const fragments = readFragments()
 const changelog = fs.readFileSync(FILE, 'utf8')
-const { start, body: currentSection, rest } = split(changelog)
-const built = section(fragments)
 
 if (process.argv.includes('--notes')) {
   const version = process.argv[process.argv.indexOf('--notes') + 1]
   const heading = `## [${version}] - `
-  const at = changelog.indexOf(`\n${heading}`)
-  if (version === undefined || at === -1) throw new Error(`changelog: docs/CHANGELOG.md has no "${heading}" section`)
+  const at = version === undefined ? -1 : changelog.indexOf(`\n${heading}`)
+  if (at === -1) throw new Error(`changelog: docs/CHANGELOG.md has no "${heading}" section`)
   const from = changelog.indexOf('\n', at + 1) + 1
   const next = changelog.indexOf('\n## [', from)
   process.stdout.write(`${changelog.slice(from, next === -1 ? changelog.length : next).trim()}\n`)
 } else if (process.argv.includes('--check')) {
-  if (currentSection !== built) {
-    throw new Error('changelog: docs/CHANGELOG.md\'s [Unreleased] section is not what docs/changes/ says; run `npm run changelog`')
+  if (/^## \[Unreleased\]/m.test(changelog)) {
+    throw new Error('changelog: docs/CHANGELOG.md holds an [Unreleased] section; a pending change lives in docs/changes/ and `--release` writes it, so take the section out')
   }
-  console.log(`changelog: ${fragments.length} pending changes, up to date`)
+  console.log(`changelog: ${fragments.length} pending changes, none written into docs/CHANGELOG.md`)
 } else if (process.argv.includes('--release')) {
   const version = process.argv[process.argv.indexOf('--release') + 1]
   if (version === undefined || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('changelog: --release needs a version like 0.12.0')
@@ -124,10 +117,14 @@ if (process.argv.includes('--notes')) {
   const date = dateAt === -1 ? new Date().toISOString().slice(0, 10) : process.argv[dateAt + 1]
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('changelog: --date needs a date like 2026-10-06')
   if (fragments.length === 0) throw new Error('changelog: docs/changes/ holds nothing to release')
-  fs.writeFileSync(FILE, changelog.slice(0, start) + section([]) + releaseSection(fragments, version, date) + rest)
+  // The new section goes above the newest one, which is the first heading the
+  // file's preamble is followed by; a file with none has nowhere to put it.
+  const at = changelog.search(/^## \[/m)
+  if (at === -1) throw new Error('changelog: docs/CHANGELOG.md has no version section to put the release above')
+  fs.writeFileSync(FILE, `${changelog.slice(0, at)}${releaseSection(fragments, version, date)}${changelog.slice(at)}`)
   for (const fragment of fragments) fs.rmSync(path.join(CHANGES, fragment.name))
   console.log(`changelog: released ${fragments.length} changes as ${version} on ${date}; docs/changes/ is clear`)
 } else {
-  fs.writeFileSync(FILE, changelog.slice(0, start) + built + rest)
-  console.log(`changelog: assembled ${fragments.length} pending changes into the [Unreleased] section`)
+  process.stdout.write(pendingSection(fragments))
+  console.error(`changelog: ${fragments.length} pending changes, printed and not written; \`--release <version>\` writes them`)
 }
