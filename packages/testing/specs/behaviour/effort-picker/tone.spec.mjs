@@ -103,12 +103,29 @@ export default spec({ page: 'effort' }, ({ test }) => {
     const preview = await painted(t, t.surface('effort.value-preview'))
     t.expectThat.equal([value, preview].every(colour => colour === trigger), true, `the card's level name takes the trigger's rung colour (${[trigger, value, preview].join(', ')})`)
 
-    const before = trigger
+    const channels = colour => colour.match(/[\d.]+/g).slice(0, 3).map(Number)
+    const hue = (rgb) => {
+      const [r, g, b] = rgb.map(value => value / 255)
+      const max = Math.max(r, g, b)
+      const delta = max - Math.min(r, g, b)
+      if (delta === 0) return 0
+      const raw = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4
+      return (raw * 60 + 360) % 360
+    }
     await t.page.evaluate(() => document.body.style.setProperty('--dsw-alias-brand-primary', '#00ff00'))
-    await t.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
-    const green = await painted(t, t.surface('effort.trigger'))
-    const [r, g, b] = green.match(/[\d.]+/g).slice(0, 3).map(Number)
-    t.expectThat.equal(green !== before && g > r + 30 && g > b + 30, true, `the rung follows the accent hue (${before} → ${green})`)
+    await pick(t, 0)
+    const lowGreen = channels(await painted(t, t.surface('effort.trigger')))
+    t.expectThat.equal(lowGreen[1] > lowGreen[0] + 30 && lowGreen[1] > lowGreen[2] + 30, true, `the weak rung keeps the accent's green hue (${lowGreen.join(', ')})`)
+    await pick(t, 0.97)
+    const highGreen = channels(await painted(t, t.surface('effort.trigger')))
+    t.expectThat.equal(hue(highGreen) < hue(lowGreen) - 8 && hue(highGreen) > 45, true, `an accent below 180° leans toward 0° without losing its hue (${hue(lowGreen).toFixed(0)}° → ${hue(highGreen).toFixed(0)}°)`)
+
+    await t.page.evaluate(() => document.body.style.setProperty('--dsw-alias-brand-primary', '#0066ff'))
+    await pick(t, 0)
+    const lowBlue = channels(await painted(t, t.surface('effort.trigger')))
+    await pick(t, 0.97)
+    const highBlue = channels(await painted(t, t.surface('effort.trigger')))
+    t.expectThat.equal(hue(highBlue) > hue(lowBlue) + 8 && hue(highBlue) < 320, true, `an accent above 180° leans toward 359° without losing its hue (${hue(lowBlue).toFixed(0)}° → ${hue(highBlue).toFixed(0)}°)`)
     await t.page.evaluate(() => document.body.style.removeProperty('--dsw-alias-brand-primary'))
     await t.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
   })

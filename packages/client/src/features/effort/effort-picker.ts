@@ -65,6 +65,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     return typeof ui.model?.seatBox === 'function' ? ui.model.seatBox() : null
   }
 
+  /** This level's own part of that box, the plate its pointer answers. */
+  function effortSeat() {
+    const part = typeof ui.model?.seatPart === 'function' ? ui.model.seatPart('effort') : null
+    return part ?? seatBox()
+  }
+
   /** Whether the level's card stands open right now. */
   function cardOpen() {
     return effortPop !== null && effortPop.getAttribute('data-open') === 'true'
@@ -208,7 +214,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Re-point the level's button and the slider at the seat in force (every pass). */
   function syncEffortControl() {
-    const box = seatBox()
+    const box = effortSeat()
     // No box to sit in: the level comes down (see hideEffortTrigger).
     if (box === null) {
       hideEffortTrigger()

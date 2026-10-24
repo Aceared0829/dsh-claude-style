@@ -69,6 +69,18 @@ export default spec({ page: 'effort' }, ({ test }) => {
     t.expectThat.visible(await t.read.box(t.surface('effort.card')), 'the card stays open for a release inside it')
   })
 
+  test('a click with one pixel of movement keeps the knob glide', async (t) => {
+    const { track, knob, y } = await openSlider(t, 4)
+    await t.page.mouse.move(stopX(track, knob, 0), y)
+    await t.page.mouse.down()
+    await t.page.mouse.move(stopX(track, knob, 0) + 1, y)
+    await nextFrames(t.page)
+    const transition = await t.page.evaluate(selector => getComputedStyle(document.querySelector(selector)).transitionProperty, t.surface('effort.knob'))
+    t.expectThat.equal(transition.includes('translate'), true, `a click's incidental movement leaves the knob easing (${transition})`)
+    await t.page.mouse.up()
+    await t.settle()
+  })
+
   test('the finished name settles without a second entrance', async (t) => {
     const { track, knob, y } = await openSlider(t, 4)
     const preview = t.surface('effort.value-preview')

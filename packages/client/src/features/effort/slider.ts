@@ -280,6 +280,13 @@ export function createEffortControl(opts: {
    * monotone, so the knob could jump backwards.
    */
   const DETENT = 0.8
+  /**
+   * How far the pointer must travel before a press becomes a drag. A click
+   * often brings one or two pixels of movement; treating that as a drag would
+   * switch the knob's transition off before the press glide has played, and
+   * the knob would teleport to the pointer instead of easing to it.
+   */
+  const DRAG_THRESHOLD_PX = 3
 
   /**
    * The detent transfer: raw pointer travel → knob travel. Within one
@@ -476,6 +483,7 @@ export function createEffortControl(opts: {
        note: setting it here would suppress the very transition that makes
        this read as travel. */
     pressed = true
+    downX = e.clientX
     liveTravel = dampTravel(x)
     const delta = liveTravel - positionFor(selected)
     moveDirection = Math.abs(delta) < 0.5 ? 0 : Math.sign(delta)
@@ -494,6 +502,8 @@ export function createEffortControl(opts: {
   let cancelPendingFrame: (() => void) | null = null
   let moveQueued = false
   let pendingX = 0
+  /** Where the press landed, so a click's incidental movement is not a drag. */
+  let downX = 0
 
   function applyPending() {
     if (!pressed) return
@@ -506,16 +516,18 @@ export function createEffortControl(opts: {
     const delta = travel - liveTravel
     if (Math.abs(delta) > 0.1) moveDirection = Math.sign(delta)
     liveTravel = travel
-    place(travel, false)
+    // Until the press has actually become a drag, the knob keeps the press
+    // glide's transition: a click's one-pixel move must not snap it.
+    place(travel, !dragging)
     live = nearest(x)
     paintValue()
   }
 
   function onPointerMove(e: PointerEvent) {
     if (!pressed) return
-    if (!dragging) {
-      // The pointer is moving: the gesture is a drag now, so the knob must
-      // follow it without easing.
+    if (!dragging && Math.abs(inPagePixels(e.clientX - downX)) >= DRAG_THRESHOLD_PX) {
+      // The pointer has left the click's tolerance: the knob must follow it
+      // without easing.
       dragging = true
       root.setAttribute('data-dragging', '')
     }

@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-24",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "修复点按推理滑块切换档位时，指针的轻微抖动被误判为拖动，导致滑块瞬移并跳过动画的问题：指针需先离开点按位置一小段距离，才进入拖动状态。",
+  "en": "Fix the reasoning slider teleporting and skipping its animation on a click whose pointer moved by a pixel or two: the press now becomes a drag only after the pointer leaves the click's small tolerance."
+}

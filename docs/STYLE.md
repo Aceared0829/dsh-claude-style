@@ -222,8 +222,11 @@ a place on one ramp between two ends mixed from the theme accent in OKLCH:
 `--dsh-claude-effort-low` toward the raised surface (less saturated, lower
 contrast) and `--dsh-claude-effort-high` toward the label ink (more contrast). The rung's
 place is its index over the ladder's span, so a four-stop ladder reads weak,
-two steps between, then strong, and the hue stays the reader's theme hue. The
-switch-off level and the model's own default level have no strength the catalog
+two steps between, then strong. The hue starts at the theme accent and travels
+slightly toward red as the rung climbs: an accent above 180° leans toward 359°,
+one below 180° toward 0°, by a quarter of the distance at the top, while HSL
+keeps the saturation and lightness of the ramp step.
+The switch-off level and the model's own default level have no strength the catalog
 names, so both keep the resting ink (`--dsw-alias-label-secondary`). The row off
 leaves the resting ink on every rung.
 

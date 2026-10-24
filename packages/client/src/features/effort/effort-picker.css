@@ -406,24 +406,26 @@ body[data-dsh-claude-style] .dsh-claude-effort-btn-label {
   display: block;
   padding: 0;
 }
-/* The rung in force colours the label while the Composer tab's effort-accent
-   row is on. The override writes the rung's place on a ramp (0 to 100) whose
-   two ends are mixed from the theme's accent in OKLCH: the weak end toward the
-   raised surface (less saturated, less contrast), the strong end toward the
-   label ink (deeper, more contrast). The hue stays the reader's theme hue. A
-   rung with no place on the ramp — the switch-off level, the model's own
-   default level — leaves the attribute off and keeps the resting ink. The
-   pointer's colour gives way to the ramp: the ramp outranks it, and the plate
-   behind the seat is what answers the pointer. Named through the seat box
-   because the row's one type rule outranks this button on its own. */
-body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-model-seat > .dsh-claude-effort-btn[data-tint] {
-  color: color-mix(in oklch, var(--dsh-claude-effort-low, #4d93f8), var(--dsh-claude-effort-high, #8b5cf6) calc(var(--dsh-claude-effort-tint, 0) * 1%));
-}
-/* The open card's words take the same rung colour as the trigger: its caption,
-   the level's two swap layers and the scale's ends all read one mixed ink. */
+/* The rung in force colours the trigger and the card's level name while the
+   Composer tab's effort-accent row is on. The override writes the rung's place
+   on a ramp (0 to 100) whose two ends are mixed from the theme's accent in
+   OKLCH: the weak end toward the raised surface (less saturated, less contrast),
+   the strong end toward the label ink (more contrast). The hue then travels
+   slightly toward red as the rung climbs: an accent above 180° leans toward
+   359°, one below 180° toward 0°, by a quarter of that distance at the top.
+   HSL carries the same hue as HSV, and the shift leaves its saturation and
+   lightness alone. A rung with
+   no place on the ramp — the switch-off level, the model's own default level —
+   leaves the attribute off and keeps the resting ink. */
+body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-model-seat-effort > .dsh-claude-effort-btn[data-tint],
 body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-effort[data-tint] {
-  --dsh-claude-effort-ink: color-mix(in oklch, var(--dsh-claude-effort-low, #4d93f8), var(--dsh-claude-effort-high, #8b5cf6) calc(var(--dsh-claude-effort-tint, 0) * 1%));
+  --dsh-claude-effort-ramp: color-mix(in oklch, var(--dsh-claude-effort-low, var(--dsw-alias-brand-primary)), var(--dsh-claude-effort-high, var(--dsw-alias-brand-primary)) calc(var(--dsh-claude-effort-tint, 0) * 1%));
+  --dsh-claude-effort-ink: hsl(from var(--dsh-claude-effort-ramp) calc(h + (359 * clamp(0, (h - 180) * 1000, 1) - h) * var(--dsh-claude-effort-tint, 0) * 0.0025) s l);
 }
+body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-model-seat-effort > .dsh-claude-effort-btn[data-tint] {
+  color: var(--dsh-claude-effort-ink);
+}
+/* The open card's level name takes the same rung colour as the trigger. */
 body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-effort[data-tint] .dsh-claude-effort-value,
 body[data-dsh-claude-style][data-dsh-claude-effort-accent] .dsh-claude-effort[data-tint] .dsh-claude-effort-value-preview {
   color: var(--dsh-claude-effort-ink);
