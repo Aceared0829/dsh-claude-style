@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "改善对话输入区底部控件的对齐与文字层次：权限、统计、模型与推理强度共用 28px 控制盒和 2px 内边距，文字统一以半透明主文字色呈现，悬停时恢复到完全不透明。",
-  "en": "Improve the alignment and text hierarchy of the controls under the conversation composer: permission, statistics, model and effort now share a 28px control box and a 2px inset, their words use one translucent primary ink, and the ink returns to full opacity under the pointer."
-}
