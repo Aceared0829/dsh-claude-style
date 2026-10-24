@@ -44,6 +44,9 @@ export default {
       JSON.stringify(tinted))
     check('a custom accent takes the accent tokens, with the light ink on a dark fill',
       tinted.accent === '#1a7f5a' && tinted.accentInk === '#faf9f5', JSON.stringify({ accent: tinted.accent, ink: tinted.accentInk }))
+    check('an unpicked inline-code colour keeps the card\'s own ink for each scheme, so the chip stays legible on the dark canvas',
+      !!tinted.codeInk && tinted.codeInk.light === 'rgb(148, 51, 51)' && tinted.codeInk.dark === 'rgb(232, 160, 138)',
+      JSON.stringify(tinted.codeInk))
     const accented = brand.accented || {}
     const accentRgb = brand.accentRgb
     check('the accent choice paints the mark, the wordmark and the account row\'s fallback picture as shapes in the accent, while the page follows a brand\'s own colour card',
