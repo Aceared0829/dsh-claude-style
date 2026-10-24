@@ -39,15 +39,20 @@ const REST_HEIGHT = 0.003
  * strongly and swallow what reaches them. A step is stable while
  * c·step·√(4/dx² + 4/dy²) < 2, which the largest speed (1.4 × speedNear, from
  * the noise factor's cap) satisfies at WAVE_STEP.
+ *
+ * @param columns - the grid's width in cells.
+ * @param rows - the grid's height in cells.
+ * @param random - the source of the field's noise seed and each click's shape;
+ *   tests pass a seeded sequence so one sampled profile cannot decide a check.
  */
-export function createWaveField(columns: number, rows: number): WaveField {
+export function createWaveField(columns: number, rows: number, random: () => number = Math.random): WaveField {
   const cells = columns * rows
   const height = new Float32Array(cells)
   const velocity = new Float32Array(cells)
   const speedSquared = new Float32Array(cells)
   const speedFactor = new Float32Array(cells)
   const damping = new Float32Array(cells)
-  const seed = Math.random() * 1000
+  const seed = random() * 1000
   const { cellWidth, cellHeight } = RIPPLE
   const widthSquared = cellWidth * cellWidth
   const heightSquared = cellHeight * cellHeight
@@ -141,9 +146,9 @@ export function createWaveField(columns: number, rows: number): WaveField {
         column,
         row,
         time: 0,
-        duration: (1 + Math.floor(Math.random() * 2)) / RIPPLE.sourceFrequency,
-        radiusScale: 0.7 + Math.random() * 1.1,
-        amplitudeScale: 0.6 + Math.random() * 0.8,
+        duration: (1 + Math.floor(random() * 2)) / RIPPLE.sourceFrequency,
+        radiusScale: 0.7 + random() * 1.1,
+        amplitudeScale: 0.6 + random() * 0.8,
       })
       moving = true
     },

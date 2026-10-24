@@ -22,6 +22,15 @@ const ROWS = 70
 const CENTRE_COLUMN = 80
 const CENTRE_ROW = 35
 
+/** A field whose noise seed and click profiles come from one fixed sequence, so a sampled weak click cannot decide a timing check. */
+function createWaves() {
+  let state = 0x9e3779b9
+  return createWaveField(COLUMNS, ROWS, () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0
+    return state / 0x100000000
+  })
+}
+
 /** How many cells to the right of the centre the farthest cell above `level` lies on the centre row. */
 function reach(height: Float32Array, level: number) {
   let far = 0
@@ -37,14 +46,14 @@ function front(height: Float32Array) {
 }
 
 test('a field nobody has clicked stays flat and at rest', () => {
-  const waves = createWaveField(COLUMNS, ROWS)
+  const waves = createWaves()
   waves.advance(0.05)
   expect(waves.active()).toBe(false)
   expect(waves.height.every(value => value === 0)).toBe(true)
 })
 
 test('a click starts waves that travel outward, slowing with distance', () => {
-  const waves = createWaveField(COLUMNS, ROWS)
+  const waves = createWaves()
   waves.disturb(CENTRE_COLUMN, CENTRE_ROW)
   expect(waves.active()).toBe(true)
   for (let frame = 0; frame < 15; frame++) waves.advance(1 / 60)
@@ -88,7 +97,7 @@ test('a click on the far side of the page does not slow a ring already in flight
 })
 
 test('the waves die out and the field comes to rest', () => {
-  const waves = createWaveField(COLUMNS, ROWS)
+  const waves = createWaves()
   waves.disturb(CENTRE_COLUMN, CENTRE_ROW)
   for (let frame = 0; frame < 60 * 8; frame++) waves.advance(1 / 60)
   expect(waves.active()).toBe(false)
@@ -96,7 +105,7 @@ test('the waves die out and the field comes to rest', () => {
 })
 
 test('a late frame advances the waves by at most the cap, so a hidden page does not replay its absence', () => {
-  const waves = createWaveField(COLUMNS, ROWS)
+  const waves = createWaves()
   waves.disturb(CENTRE_COLUMN, CENTRE_ROW)
   waves.advance(60)
   // Sixty seconds replayed would have brought the field to rest; a capped advance leaves the waves moving.
@@ -106,7 +115,7 @@ test('a late frame advances the waves by at most the cap, so a hidden page does 
 test('clicks anywhere on the field, at any frame rate, keep every height finite and bounded', () => {
   const click = fc.tuple(fc.integer({ min: 0, max: COLUMNS - 1 }), fc.integer({ min: 0, max: ROWS - 1 }))
   fc.assert(fc.property(fc.array(click, { minLength: 1, maxLength: 4 }), fc.constantFrom(1 / 30, 1 / 60, 1 / 144), (clicks, frame) => {
-    const waves = createWaveField(COLUMNS, ROWS)
+    const waves = createWaves()
     for (const [column, row] of clicks) waves.disturb(column, row)
     for (let elapsed = 0; elapsed < 2; elapsed += frame) waves.advance(frame)
     expect(waves.height.every(value => Number.isFinite(value) && Math.abs(value) < 10)).toBe(true)
