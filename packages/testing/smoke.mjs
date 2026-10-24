@@ -61,10 +61,13 @@
  *        (JOBS below, `--jobs` or DSH_SMOKE_JOBS to change it) and the pages
  *        that watch motion run two at a time at the end, over a quiet browser.
  *        The Node host half runs either way.
- * Exit:  0 every check passed · 1 a check failed · 2 the browser half could not run
+ * Exit:  0 every check passed · 1 a check failed · 2 the command line names
+ *        nothing it can run · 3 the browser half gave no verdict (no browser, or
+ *        it could not start)
  */
 import { availableParallelism } from 'os'
 import { findChrome, openBrowser } from './browser.mjs'
+import { UNJUDGED_EXIT } from './host-version.mjs'
 import { check, failures, skips, setTier, tierName, TIMING_CASES, FEATURE_CASES, pagesFor } from './smoke/shared.mjs'
 import { hostHalf } from './smoke/host-half.mjs'
 import { page } from './smoke/page.mjs'
@@ -210,7 +213,16 @@ async function browserHalf(planned, jobs) {
   const base = server.base
   // The machine's own motion setting must not decide a check: every case runs
   // with no reduced-motion request, and a probe that needs one asks for it itself.
-  const instance = await openBrowser({ width: 1280, height: 800, reducedMotion: 'no-preference' })
+  let instance
+  try {
+    instance = await openBrowser({ width: 1280, height: 800, reducedMotion: 'no-preference' })
+  } catch (error) {
+    // A browser that will not start judges nothing; the run says so with the
+    // exit code a no-verdict run answers, rather than a failed check.
+    console.error(`smoke: the browser could not start: ${error.message}`)
+    await server.close()
+    return { ran: false, scope: '' }
+  }
   try {
     // A page that watches motion reads it frame by frame, so it runs alone over
     // an idle browser; every other page is independent of its neighbours and
@@ -256,10 +268,10 @@ async function main() {
   await hostHalf()
   const { ran, scope } = await browserHalf(planned, jobs)
   const skipped = skips() === 0 ? '' : `, ${skips()} timing checks skipped`
-  console.log(failures() === 0
-    ? `\nsmoke: all checks passed (${scope}${skipped})${ran ? '' : ' (browser half skipped)'}`
-    : `\nsmoke: ${failures()} check(s) failed`)
-  process.exit(failures() > 0 ? 1 : ran ? 0 : 2)
+  if (failures() > 0) console.log(`\nsmoke: ${failures()} check(s) failed`)
+  else if (ran) console.log(`\nsmoke: all checks passed (${scope}${skipped})`)
+  else console.log(`\nsmoke: the browser half gave no verdict${skipped}`)
+  process.exit(failures() > 0 ? 1 : ran ? 0 : UNJUDGED_EXIT)
 }
 
 withLock('smoke', 'smoke', main).catch((error) => {

@@ -40,6 +40,8 @@ const CORPUS = path.join(import.meta.dirname, 'faults', 'corpus.json')
 const RECORD = path.join(import.meta.dirname, 'faults', 'expected.json')
 const OUT = path.join(ROOT, '.debug', 'faults')
 const VITEST = path.join('node_modules', 'vitest', 'vitest.mjs')
+/** The behaviour lane waits on frames, so the corpus drives two pages at once. */
+const BEHAVIOUR_JOBS = ['--jobs', '2']
 
 function bad(message) {
   console.error(`faults: ${message}`)
@@ -172,7 +174,7 @@ function judge(dir, fault, suite, cleanBehaviour) {
     if (build.code !== 0) {
       red.push(`build (${build.output.split('\n').find((line) => /error|refus/i.test(line)) ?? 'failed'})`)
     } else {
-      run(dir, 'packages/testing/behaviour.mjs', selection)
+      run(dir, 'packages/testing/behaviour.mjs', [...BEHAVIOUR_JOBS, ...selection])
       const report = path.join(dir, '.debug', 'behaviour', 'report.json')
       // A behaviour test that already fails on the untouched copy is red for
       // its own reason, and saying the fault was caught by it would credit the
@@ -217,7 +219,7 @@ function main() {
   if (asked.suite === 'new' && chosen.some((fault) => reach(fs.readFileSync(path.join(import.meta.dirname, 'faults', fault.patch), 'utf8')).browserHalf)) {
     const build = run(dir, 'scripts/build.mjs', [])
     if (build.code !== 0) bad('the build is red before any fault; the behaviour lane cannot be read')
-    run(dir, 'packages/testing/behaviour.mjs', [])
+    run(dir, 'packages/testing/behaviour.mjs', BEHAVIOUR_JOBS)
     const report = path.join(dir, '.debug', 'behaviour', 'report.json')
     if (fs.existsSync(report)) {
       for (const result of JSON.parse(fs.readFileSync(report, 'utf8')).results) {
