@@ -336,9 +336,13 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
     // not fold and unfold around it. A route the price table cannot price has
     // nothing to wait for, and the segment goes.
     show(shown.cost, billing && hasTokens && (cost !== null || costPending) && at < 3)
-    show(shown.total, !footerMode && hasTokens && merged)
+    // The compact footer carries one token total where the line of their own
+    // folds the two directions into it at the ladder's merged step.
+    show(shown.total, hasTokens && (footerMode || merged))
     show(shown.cache, hasCache)
-    shown.cell.cacheHead.hidden = at >= 1
+    // The compact footer's cache figure carries its own percent sign alone: the
+    // words before it would outweigh the figures beside them.
+    shown.cell.cacheHead.hidden = footerMode || at >= 1
 
     if (hasCounts && counts !== null && stats !== null) {
       writeTextInPlace(shown.cell.turns, String(Math.round(stats.turns)))
@@ -351,13 +355,16 @@ export function createInlineStats(read: () => StatsReading, chatText: () => Host
       writeText(shown.cell.speedTail, speedParts[1] ?? '')
     }
     if (hasTokens && usage !== null) {
-      // Every token figure folds into k / M / B at the ladder's last step.
+      // Every token figure folds into k / M / B at the ladder's last step. The
+      // compact footer's one total wears that folded shape and its unit from the
+      // first character.
       const readTokens = (value: number) => at >= FIT_MAX ? formatCompactTokens(Math.round(value)) : sessionStatsGrouped(Math.round(value), chat)
+      const total = billed + usage.outputTokens
       writeTextInPlace(shown.cell.input, readTokens(billed))
       writeText(shown.cell.inputTail, tokenParts[1] ?? '')
       writeTextInPlace(shown.cell.output, readTokens(usage.outputTokens))
       writeText(shown.cell.outputTail, tokenParts[1] ?? '')
-      writeTextInPlace(shown.cell.total, readTokens(billed + usage.outputTokens))
+      writeTextInPlace(shown.cell.total, footerMode ? `${formatCompactTokens(Math.round(total))}tok` : readTokens(total))
       // A figure that is still coming keeps the segment's place with the
       // currency's own dash; the amount replaces it in the same width. A route
       // the table cannot price has nothing to wait for, so the segment is

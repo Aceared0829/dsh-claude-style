@@ -1,13 +1,14 @@
 /* @composer-gate */
-/* Only the containing dock moves; every host node retains its React parent. */
+/* Only the figures' line leaves the host dock; every host node keeps its React
+   parent, and the meter keeps the row the host draws it in, so the ring stands
+   where the popover position draws it too. */
 body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-part~="composer-stack"] {
   position: relative;
 }
-body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock] {
-  display: flex;
-  align-items: center;
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-line] {
+  flex: none;
 }
-body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock="overlay"] {
+body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-line="overlay"] {
   position: absolute;
   left: var(--dsh-claude-footer-left);
   bottom: var(--dsh-claude-footer-bottom);
@@ -15,12 +16,5 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-c
   width: max-content;
   margin: 0;
   padding: 0;
-  pointer-events: none;
-}
-body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-line],
-body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock] > [data-dsh-claude-context-meter] {
-  position: relative;
   z-index: 3;
-  pointer-events: auto;
-  flex: none;
 }

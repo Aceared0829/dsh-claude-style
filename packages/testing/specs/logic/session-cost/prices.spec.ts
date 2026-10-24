@@ -101,8 +101,9 @@ test('a model the official table does not carry is priced from the catalogue', (
   expect(priceFor(document, 'plan-only', 'USD')).toBeUndefined()
 })
 
-test('the figure keeps four decimals and its currency symbol', () => {
+test('the figure takes the shorter of four significant digits and four decimals', () => {
   expect(formatMoneyMicro(200, 'USD')).toBe('$0.0002')
   expect(formatMoneyMicro(1500, 'CNY')).toBe('¥0.0015')
-  expect(formatMoneyMicro(0, 'CNY')).toBe('¥0.0000')
+  expect(formatMoneyMicro(0, 'CNY')).toBe('¥0.000')
+  expect(formatMoneyMicro(1_234_567, 'CNY')).toBe('¥1.235')
 })

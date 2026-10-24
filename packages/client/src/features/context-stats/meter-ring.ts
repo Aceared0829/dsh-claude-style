@@ -1,4 +1,4 @@
-import { CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_BAND, SLOT_NODE_ATTR, STATS_POSITION_CONTEXT } from '../../constants'
+import { CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_BAND, SLOT_NODE_ATTR, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER } from '../../constants'
 import { DIALOG_TRIGGER_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { findModelSlot } from '@dsh-claude-style/engine/host'
@@ -193,10 +193,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /**
    * Where the ring belongs: the row's own position, a seat box to stand behind,
    * and a card the host has not drawn as the hero — the home page's composer
-   * keeps the host's line, as do the numbers asked onto a line of their own.
+   * keeps the host's line, as does the line of their own. The compact footer
+   * reads the same ring in the row, so its figures ride the toolbar alone.
    */
   function placeOf() {
-    if (readPrefs().statsPosition !== STATS_POSITION_CONTEXT) return null
+    const position = readPrefs().statsPosition
+    if (position !== STATS_POSITION_CONTEXT && position !== STATS_POSITION_FOOTER) return null
     const seat = typeof ui.model?.seatBox === 'function' ? ui.model.seatBox() : null
     if (seat === null) return null
     const slot = findModelSlot()

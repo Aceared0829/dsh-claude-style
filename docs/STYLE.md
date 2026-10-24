@@ -675,8 +675,9 @@ The cost is the session's own. The host half prices every settlement at its
 own instant and route and answers the settled total over `SESSION_COST_PATH`;
 the browser adds the tokens the streaming answer has grown by at the output
 rate in force, so the figure moves with the written-back tokens and settles
-with them. It writes four decimals and the symbol of the `billingCurrency`
-setting (`¥0.0015`, `$0.0002`): the official CNY and USD tables are stored
+with them. It writes the shorter of four significant digits and four decimals,
+with the symbol of the `billingCurrency` setting (`¥0.0015`, `$0.0002`,
+`¥2.405`): the official CNY and USD tables are stored
 apart, so the setting picks a table rather than converting one. A model the
 official table does not carry is priced from the snapshot's catalogue — its
 published CNY line when the vendor has one, its USD list price converted at the

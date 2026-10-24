@@ -266,8 +266,24 @@ export function costMicro(usage: PriceUsage, tier: PriceTier): number {
   return Number.isFinite(cost) && cost > 0 ? cost : 0
 }
 
-/** One amount in micro units, as the four-decimal figure the line carries. */
+/** Four significant digits of `amount`, written without an exponent. */
+function significantFigure(amount: number) {
+  const text = amount.toPrecision(4)
+  if (!text.includes('e')) return text
+  // Past four integer digits toPrecision turns to an exponent; rounding at the
+  // same scale keeps the figure a currency is written in.
+  const scale = 10 ** (Math.floor(Math.log10(amount)) - 3)
+  return String(Math.round(amount / scale) * scale)
+}
+
+/**
+ * One amount in micro units, as the shorter of its four-significant-digit and
+ * four-decimal figures: a small amount keeps its decimals, a large one its
+ * significant digits.
+ */
 export function formatMoneyMicro(micro: number, currency: Currency): string {
   const amount = Number.isFinite(micro) && micro > 0 ? micro / 1_000_000 : 0
-  return `${CURRENCY_SYMBOL[currency]}${amount.toFixed(4)}`
+  const decimals = amount.toFixed(4)
+  const significant = significantFigure(amount)
+  return `${CURRENCY_SYMBOL[currency]}${significant.length < decimals.length ? significant : decimals}`
 }
