@@ -93,14 +93,23 @@ export default spec({ page: 'stats-inline' }, ({ test }) => {
       return reading(t)
     }
 
-    const compact = await at(480)
-    t.expectThat.equal([compact.mode, compact.detail, compact.segments], ['overlay', 'compact', 3], 'a narrow overlay keeps the folded total')
+    // The widths where each step first fits depend on the font, so walk outward
+    // and read the steps as they appear instead of naming a platform's pixels.
+    const found = new Map()
+    for (let width = 360; width <= 900; width += 5) {
+      const reading = await at(width)
+      if (reading.mode === 'overlay' && !found.has(reading.detail)) found.set(reading.detail, reading)
+      if (found.has('compact') && found.has('exact') && found.has('directions')) break
+    }
+    t.expectThat.equal([...found.keys()], ['compact', 'exact', 'directions'], 'the footer expands through every step as the card widens')
+    const compact = found.get('compact')
+    t.expectThat.equal([compact.mode, compact.segments], ['overlay', 3], 'the narrowest overlay keeps the folded total')
     t.expectThat.equal(compact.order[1].includes('100.1k') && !/[↑↓]/.test(compact.order[1]), true, 'the folded total stays a compact figure with no directions')
-    const exact = await at(500)
-    t.expectThat.equal([exact.mode, exact.detail, exact.segments], ['overlay', 'exact', 3], 'a wider overlay expands the total without leaving the line')
+    const exact = found.get('exact')
+    t.expectThat.equal([exact.mode, exact.segments], ['overlay', 3], 'a wider overlay expands the total without leaving the line')
     t.expectThat.equal(exact.order[1].includes('100,100 tok') && !/[↑↓]/.test(exact.order[1]), true, 'the total becomes its exact grouped value')
-    const directions = await at(600)
-    t.expectThat.equal([directions.mode, directions.detail, directions.segments], ['overlay', 'directions', 4], 'the widest overlay gives the total up for both directions')
+    const directions = found.get('directions')
+    t.expectThat.equal([directions.mode, directions.segments], ['overlay', 4], 'the widest overlay gives the total up for both directions')
     t.expectThat.equal(directions.order[0].startsWith('¥') && directions.order[1].startsWith('↑') && directions.order[2].startsWith('↓') && directions.order[3].endsWith('%'), true, 'the cost leads, the directions follow and the cache share closes')
   })
 
