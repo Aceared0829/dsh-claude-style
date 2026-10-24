@@ -512,11 +512,14 @@ const SCENARIOS = {
     async assert({ session, notes }) {
       const results = notes.contract
       const byState = (state) => results.filter((result) => result.state === state)
-      const failed = results.filter((result) => !result.ok)
+      // A computed reading is the host's own exact output; a difference from the
+      // snapshot is printed as an observation and blocks nothing (D77).
+      const failed = results.filter((result) => !result.ok && result.observation !== true)
+      const differing = results.filter((result) => !result.ok && result.observation === true)
       const unchecked = results.filter((result) => result.observed === 'reported, not checked here')
       const line = (state) => {
         const state_ = byState(state)
-        const broken = state_.filter((result) => !result.ok).map((result) => `${result.id} (${result.observed})`)
+        const broken = state_.filter((result) => !result.ok && result.observation !== true).map((result) => `${result.id} (${result.observed})`)
         return check(`${state} 状态的条目都在`, broken.length === 0, `${state_.length} 条${broken.length === 0 ? '' : `，失效：${broken.join('、')}`}`)
       }
       return [
@@ -524,6 +527,7 @@ const SCENARIOS = {
         check('没有页面形态的条目已逐条列出', unchecked.length > 0, `${unchecked.length} 条由行为场景与单元测试持有：${unchecked.map((result) => result.id).join('、')}`),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
         ...failed.slice(0, 8).map((result) => check(`契约条目 ${result.id} 仍然成立`, false, `${result.observed}（${result.state}）`)),
+        ...differing.map((result) => observe(`契约条目 ${result.id} 的宿主输出仍与快照记录相同`, false, `${result.observed}（${result.state}）`)),
       ]
     },
   },

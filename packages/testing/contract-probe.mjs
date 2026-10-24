@@ -3,7 +3,15 @@
  * checked entry by entry on the lane's real page, for the `contract` scenario
  * (D3, D77).
  */
+import snapshot from './data/host-snapshot.json' with { type: 'json' }
 import { loadModule } from '../../scripts/shared/ts-module.mjs'
+
+/** The value the host snapshot records under one dotted key. */
+function recorded(key) {
+  const value = key.split('.').reduce((held, part) => (held === undefined || held === null ? undefined : held[part]), snapshot)
+  if (value === undefined) throw new Error(`contract: the host snapshot holds no "${key}"`)
+  return value
+}
 
 /**
  * Run the probes of the given states and keep the results under
@@ -28,7 +36,11 @@ async function recordProbes(context, states, windowMs = 0) {
  */
 async function probeContract(page, states, windowMs = 0) {
   const { HOST_DOM } = loadModule('packages/contracts/src/table.ts')
+  // A computed reading compares the host's own output with the snapshot the
+  // stand-in mounts its structure from, so the two records cannot drift apart
+  // in silence (D3, D77).
   const entries = HOST_DOM.filter((entry) => states.includes(entry.probe.state))
+    .map((entry) => (entry.probe.kind === 'computed' ? { ...entry, expected: recorded(entry.probe.record) } : entry))
   const frames = windowMs === 0 ? 0 : Math.round(windowMs / 16)
   const deadline = Date.now() + windowMs
   let results = await page.evaluate(runProbes, { table: HOST_DOM, entries, frames })
@@ -92,8 +104,18 @@ function runProbes({ table, entries, frames = 0 }) {
       return { ok: matches > 0, observed: `${matches} element${matches === 1 ? '' : 's'}` }
     }
     if (probe.kind === 'property') {
-      const resolved = getComputedStyle(document.documentElement).getPropertyValue(entry.value).trim()
+      const element = probe.within === undefined ? document.documentElement : document.querySelector(byId.get(probe.within).value)
+      const resolved = element === null ? '' : getComputedStyle(element).getPropertyValue(entry.value).trim()
       return { ok: resolved !== '', observed: resolved === '' ? 'not resolved' : `"${resolved}"` }
+    }
+    if (probe.kind === 'computed') {
+      // The host's own exact output: a difference from the snapshot is reported
+      // as an observation and blocks nothing (D77).
+      const named = probe.within === undefined ? null : document.querySelector(byId.get(probe.within).value)
+      const element = probe.parent === true && named !== null ? named.parentElement : named
+      const resolved = element === null ? '' : getComputedStyle(element).getPropertyValue(probe.property).trim()
+      const same = resolved !== '' && resolved === entry.expected
+      return { ok: same, observed: `${resolved === '' ? 'not resolved' : resolved} (recorded ${entry.expected})`, observation: true }
     }
     if (probe.kind === 'global') {
       const resolved = path_(entry.value)
