@@ -21,6 +21,8 @@ const RIPPLE_ATTR = 'data-dsh-claude-ripple'
 const INK_TOKEN = '--dsh-claude-ripple-ink'
 const WAVE_TOKEN = '--dsh-claude-ripple-wave'
 const FONT_TOKEN = '--dsh-claude-font-code'
+/** The consecutive unreadable-colour rounds the feature rides out before it retires (D12). */
+const FAILED_ROUNDS_TO_RETIRE = 5
 
 /** The field on one hero root: the canvas, the grid it is sized for, and the two layers that fill it. */
 interface Mounted {
@@ -127,6 +129,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     let previous = performance.now()
     let frameWanted = false
+    /** The consecutive rounds whose colour read failed; a readable read clears it. */
+    let failedRounds = 0
 
     /** Ask for a frame now; a pending timer is dropped, since the frame decides the next wake-up. */
     function wake() {
@@ -151,7 +155,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         previous = now
         if (current.canvas.width > 0 && current.field.needsDraw(now, still)) {
           // A page without its tokens has no colours yet; it is asked again on the next wake-up.
-          current.palette = readPalette(canvas)
+          // A token that is present but unreadable fails the read outright — a permanent mistake
+          // in the token chain (D12). The failure is reported each round it happens, the count
+          // rides out a page that is still settling (the wake-ups come from the size observer
+          // and presses), and after several failed rounds the feature retires: the frame loop
+          // would otherwise throw into every wake-up forever, and a wrong colour is not one the
+          // canvas can invent its way out of. A readable read clears the count, so a chain that
+          // becomes readable (the palette applying late, a corrected colour) recovers.
+          try {
+            current.palette = readPalette(canvas)
+            failedRounds = 0
+          } catch (error) {
+            failedRounds += 1
+            reportError(error)
+            if (failedRounds >= FAILED_ROUNDS_TO_RETIRE) {
+              ui.retire('homeRipple')
+              return
+            }
+          }
           if (current.palette !== null) current.field.draw(now, current.palette, still)
         }
         if (current.field.busy() && !still) wake()

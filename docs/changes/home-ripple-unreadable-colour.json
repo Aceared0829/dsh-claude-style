@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-24",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "修复水波纹字符背景在颜色令牌不可读时持续报错且不退出：连续几轮读取失败后报告并退役，令牌恢复可读则照常绘制",
+  "en": "Fix the home ripple reporting forever without exiting while a colour token stays unreadable: it retires after several failed rounds and draws again once the tokens read"
+}
