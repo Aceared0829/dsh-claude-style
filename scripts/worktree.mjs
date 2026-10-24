@@ -1,21 +1,22 @@
 #!/usr/bin/env node
 /**
- * worktree.mjs — take a scratch worktree off this repository without touching
- * the tree it points at.
+ * worktree.mjs — create or take off a scratch worktree without touching the
+ * tree it borrows from.
  *
  * A scratch worktree under `.debug/` or `.agents/worktrees/` borrows the main
  * tree's `node_modules` by way of a directory link, so the checkout it runs in
- * needs no install of its own. `git worktree remove` deletes the worktree's
- * files itself, and on Windows it follows such a link: every file of the main
- * tree's `packages/` and `node_modules/` goes with it. This script unlinks the
- * links at the worktree's own top level first, then hands the directory to git,
- * so what is deleted is the worktree's files and the links, and nothing a link
- * points at.
+ * needs no install of its own. `add` creates the worktree at a commit and links
+ * `node_modules` into it; `remove` unlinks that link first and then hands the
+ * directory to git. `git worktree remove` deletes the worktree's files itself,
+ * and on Windows it follows such a link: every file of the main tree's
+ * `packages/` and `node_modules/` goes with it. Unlinking first keeps what is
+ * deleted to the worktree's files and the links, and nothing a link points at.
  *
  * Only a worktree under `.debug/` or `.agents/worktrees/` is accepted, and only
  * a linked one: the main working tree is never a candidate.
  *
- * Usage: node scripts/worktree.mjs remove <path> [--dry-run]
+ * Usage: node scripts/worktree.mjs add <path> <ref>
+ *        node scripts/worktree.mjs remove <path> [--dry-run]
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -24,46 +25,89 @@ import { runner } from './shared/run.mjs'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const run = runner(ROOT)
 
-const [action, target, ...flags] = process.argv.slice(2)
-if (action !== 'remove' || !target) {
-  console.error('usage: node scripts/worktree.mjs remove <path> [--dry-run]')
-  process.exit(2)
-}
-const dryRun = flags.includes('--dry-run')
-
-const worktree = path.resolve(ROOT, target)
 /** The directories a scratch worktree may sit in; the main working tree is never a candidate. */
 const SCRATCH = [path.join(ROOT, '.debug'), path.join(ROOT, '.agents', 'worktrees')]
   .map((dir) => dir.toLowerCase() + path.sep)
 
-// The listed worktrees are absolute paths with forward slashes, one per line.
-const listed = run('git', ['worktree', 'list', '--porcelain'])
-  .split('\n')
-  .filter((line) => line.startsWith('worktree '))
-  .map((line) => path.resolve(line.slice('worktree '.length)).toLowerCase())
-if (!SCRATCH.some((dir) => worktree.toLowerCase().startsWith(dir))) {
-  console.error(`worktree: ${worktree} is outside .debug/ and .agents/worktrees/; the main tree is never removed here`)
-  process.exit(1)
-}
-if (!listed.includes(worktree.toLowerCase())) {
-  console.error(`worktree: ${worktree} is not a linked worktree of this repository`)
-  process.exit(1)
+function usage() {
+  console.error('usage: node scripts/worktree.mjs add <path> <ref>\n       node scripts/worktree.mjs remove <path> [--dry-run]')
+  process.exit(2)
 }
 
-/** The entries at the worktree's top level that are links rather than directories of their own. */
-const links = fs.existsSync(worktree)
-  ? fs.readdirSync(worktree).flatMap((name) => {
-    const full = path.join(worktree, name)
-    return fs.lstatSync(full).isSymbolicLink() ? [full] : []
-  })
-  : []
-
-for (const link of links) {
-  console.log(`${dryRun ? 'would unlink' : 'unlink'} ${path.relative(ROOT, link)} -> ${fs.readlinkSync(link)}`)
-  // `unlink` takes the link itself away: the directory it names keeps its files.
-  if (!dryRun) fs.unlinkSync(link)
+/** The target resolved under a scratch directory, or the process exits naming the rule. */
+function scratch(target) {
+  const worktree = path.resolve(ROOT, target)
+  if (!SCRATCH.some((dir) => worktree.toLowerCase().startsWith(dir))) {
+    console.error(`worktree: ${worktree} is outside .debug/ and .agents/worktrees/; the main tree is never a candidate`)
+    process.exit(1)
+  }
+  return worktree
 }
-if (dryRun) process.exit(0)
 
-run('git', ['worktree', 'remove', '--force', worktree])
-console.log(`worktree: removed ${path.relative(ROOT, worktree)} (${links.length} link${links.length === 1 ? '' : 's'} unlinked first)`)
+function add(args) {
+  const [target, ref, ...extra] = args
+  if (target === undefined || ref === undefined || ref.trim() === '' || extra.length > 0) usage()
+  const worktree = scratch(target)
+  if (fs.lstatSync(worktree, { throwIfNoEntry: false }) !== undefined) {
+    console.error(`worktree: ${worktree} already exists`)
+    process.exit(1)
+  }
+  const modules = path.join(ROOT, 'node_modules')
+  if (!fs.existsSync(modules)) {
+    console.error(`worktree: ${modules} is missing; run npm install in the main tree first`)
+    process.exit(1)
+  }
+  let commit
+  try {
+    commit = run('git', ['rev-parse', '--verify', '--quiet', '--end-of-options', `${ref}^{commit}`])
+  } catch {
+    // Git's exit status is the only evidence that the ref names no commit here.
+    console.error(`worktree: ${ref} is not a commit in this repository`)
+    process.exit(1)
+  }
+  run('git', ['worktree', 'add', '--detach', worktree, commit])
+  // A junction resolves without the privilege a symbolic link needs on Windows;
+  // `remove` unlinks either kind before git sees the directory.
+  fs.symlinkSync(modules, path.join(worktree, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir')
+  console.log(`worktree: added ${path.relative(ROOT, worktree)} at ${commit.slice(0, 12)} (node_modules linked)`)
+}
+
+function remove(args) {
+  const [target, ...flags] = args
+  if (target === undefined) usage()
+  const dryRun = flags.includes('--dry-run')
+  const worktree = scratch(target)
+
+  // The listed worktrees are absolute paths with forward slashes, one per line.
+  const listed = run('git', ['worktree', 'list', '--porcelain'])
+    .split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => path.resolve(line.slice('worktree '.length)).toLowerCase())
+  if (!listed.includes(worktree.toLowerCase())) {
+    console.error(`worktree: ${worktree} is not a linked worktree of this repository`)
+    process.exit(1)
+  }
+
+  /** The entries at the worktree's top level that are links rather than directories of their own. */
+  const links = fs.existsSync(worktree)
+    ? fs.readdirSync(worktree).flatMap((name) => {
+      const full = path.join(worktree, name)
+      return fs.lstatSync(full).isSymbolicLink() ? [full] : []
+    })
+    : []
+
+  for (const link of links) {
+    console.log(`${dryRun ? 'would unlink' : 'unlink'} ${path.relative(ROOT, link)} -> ${fs.readlinkSync(link)}`)
+    // `unlink` takes the link itself away: the directory it names keeps its files.
+    if (!dryRun) fs.unlinkSync(link)
+  }
+  if (dryRun) process.exit(0)
+
+  run('git', ['worktree', 'remove', '--force', worktree])
+  console.log(`worktree: removed ${path.relative(ROOT, worktree)} (${links.length} link${links.length === 1 ? '' : 's'} unlinked first)`)
+}
+
+const [action, ...args] = process.argv.slice(2)
+if (action === 'add') add(args)
+else if (action === 'remove') remove(args)
+else usage()

@@ -9,7 +9,7 @@
  * moved to its one home (a token, a spec, a comment, an ADR or a change file).
  * `index.json` is generated from the directories, never typed by hand.
  *
- * Usage: node scripts/work.mjs <new|list|start|verify|review|check|close|gc|help>
+ * Usage: node scripts/work.mjs <new|list|start|verify|review|check|close|gc|path|help>
  *        Run `node scripts/work.mjs help` for the arguments of each command.
  */
 import { execFileSync } from 'node:child_process'
@@ -19,7 +19,13 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import { createTemporaryFiles, removeDebugDirectory } from './shared/temporary-files.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
-const DEBUG = path.join(ROOT, '.debug')
+/**
+ * Orders and the temporary sessions `gc` collects live in the main working tree's
+ * `.debug`, shared by every linked worktree; the schema and template come from ROOT.
+ */
+const COMMON = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: ROOT, encoding: 'utf8' }).trim()
+const STORAGE = path.dirname(path.resolve(ROOT, COMMON))
+const DEBUG = path.join(STORAGE, '.debug')
 const WORK = path.join(DEBUG, 'work')
 const INDEX = path.join(WORK, 'index.json')
 const LOCK = path.join(WORK, '.lock')
@@ -40,7 +46,7 @@ function today() {
 }
 
 function relative(file) {
-  return path.relative(ROOT, file).split(path.sep).join('/')
+  return path.relative(STORAGE, file).split(path.sep).join('/')
 }
 
 function isInside(parent, child) {
@@ -55,8 +61,9 @@ function safeRelative(value) {
     && !value.split(/[\\/]/).includes('..')
 }
 
+/** A work order's references resolve against the tree that holds the orders, whichever checkout runs the check. */
 function existsAt(value) {
-  return existsIn(ROOT, value)
+  return existsIn(STORAGE, value)
 }
 
 function existsIn(base, value) {
@@ -300,7 +307,7 @@ function validateOrder(order, all) {
     else if (!all.some((other) => other.meta.id === entry)) problems.push(`${name}: depends on "${entry}", which is not an order`)
   }
   if (typeof meta.worktree === 'string' && meta.worktree !== '') {
-    const tree = path.resolve(ROOT, meta.worktree)
+    const tree = path.resolve(STORAGE, meta.worktree)
     if (!isInside(DEBUG, tree)) problems.push(`${name}: worktree "${meta.worktree}" must stay under .debug/`)
   }
   return problems
@@ -338,7 +345,7 @@ export function checkWorkOrders() {
   const ids = new Set(valid.map((order) => order.meta.id))
   const docs = ['README.md', 'README.en.md', 'docs/ARCHITECTURE.md', 'docs/CHANGELOG.md', 'docs/STYLE.md', 'AGENTS.md']
   for (const dir of ['docs/adr', 'docs/changes']) {
-    const full = path.join(ROOT, dir)
+    const full = path.join(STORAGE, dir)
     if (fs.existsSync(full)) {
       for (const name of fs.readdirSync(full)) {
         if (dir === 'docs/adr' ? name.endsWith('.md') : name.endsWith('.json')) docs.push(`${dir}/${name}`)
@@ -346,8 +353,8 @@ export function checkWorkOrders() {
     }
   }
   for (const file of docs) {
-    if (!fs.existsSync(path.join(ROOT, file)) || ids.size === 0) continue
-    const text = fs.readFileSync(path.join(ROOT, file), 'utf8')
+    if (!fs.existsSync(path.join(STORAGE, file)) || ids.size === 0) continue
+    const text = fs.readFileSync(path.join(STORAGE, file), 'utf8')
     for (const id of ids) {
       if (text.includes(id)) problems.push(`${file}: names work order ${id} — durable documents do not cite work orders`)
     }
@@ -517,7 +524,7 @@ function commandClose(args) {
     return
   }
   if (order.meta.worktree !== null) {
-    const tree = path.resolve(ROOT, order.meta.worktree)
+    const tree = path.resolve(STORAGE, order.meta.worktree)
     if (!isInside(DEBUG, tree)) throw new Error(`work: worktree "${order.meta.worktree}" is outside .debug/`)
     if (fs.existsSync(tree)) {
       const dirty = execFileSync('git', ['-C', tree, 'status', '--porcelain'], { encoding: 'utf8' }).trim()
@@ -526,7 +533,7 @@ function commandClose(args) {
   }
   const target = path.resolve(order.dir)
   if (path.dirname(target) !== path.resolve(WORK)) throw new Error(`work: refusing to delete ${target}`)
-  removeDebugDirectory(ROOT, WORK, target)
+  removeDebugDirectory(STORAGE, WORK, target)
   syncIndex()
   console.log(`work: closed ${order.meta.id}`)
   if (order.meta.change !== null) console.log(`  change: ${order.meta.change}`)
@@ -558,6 +565,19 @@ function commandList(args) {
   }
 }
 
+/** Prints one material directory of an order, so a script in any checkout writes into the shared order. */
+function commandPath(args) {
+  const { positional } = flagsOf(args)
+  const order = orderById(positional[0])
+  const kind = positional[1] ?? 'tmp'
+  if (positional.length > 2 || !['tmp', 'refs', 'shots'].includes(kind)) {
+    throw new Error('work: path takes an order id and tmp, refs or shots')
+  }
+  const dir = path.join(order.dir, kind)
+  fs.mkdirSync(dir, { recursive: true })
+  console.log(dir)
+}
+
 function commandCheck(args) {
   const quiet = flagsOf(args).flags.quiet === true
   const result = checkWorkOrders()
@@ -583,7 +603,7 @@ function commandGc(args) {
     }
     if (dry) console.log(`work: would remove ${relative(dir)}`)
     else {
-      removeDebugDirectory(ROOT, WORK, dir)
+      removeDebugDirectory(STORAGE, WORK, dir)
       removed.push(relative(dir))
     }
   }
@@ -600,7 +620,7 @@ function commandGc(args) {
       }
     }
   }
-  for (const directory of createTemporaryFiles(ROOT).collect(!dry)) {
+  for (const directory of createTemporaryFiles(STORAGE).collect(!dry)) {
     console.log(`work: ${dry ? 'would remove' : 'removed'} ${relative(directory)}`)
     if (!dry) removed.push(relative(directory))
   }
@@ -619,6 +639,7 @@ function help() {
   review <id> [--reviewer …]
   check [--quiet]
   close <id> [--force]
+  path <id> [tmp|refs|shots]     print an order directory's absolute path
   gc [--yes]                     also collect expired .debug/tmp sessions
 
 A work order is deleted by close; measurements live in its work.md until then.`)
@@ -635,6 +656,7 @@ function main() {
     case 'review': return commandReview(args)
     case 'check': return commandCheck(args)
     case 'close': return commandClose(args)
+    case 'path': return commandPath(args)
     case 'gc': return commandGc(args)
     default:
       help()
