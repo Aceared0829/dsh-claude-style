@@ -35,13 +35,25 @@ const document: PriceDocument = {
       },
     },
   },
-  aliases: { 'deepseek-v4-flash': 'deepseek-flash', 'k3-256k': 'kimi-k3' },
+  aliases: {
+    'deepseek-v4-flash': 'deepseek-flash',
+    'k3': 'kimi-k3',
+    'k3-256k': 'kimi-k3',
+    'k3.1-pro': 'kimi-k3.1-pro',
+    'k3.1-pro-highspeed': 'kimi-k3.1-pro-highspeed',
+  },
   catalog: {
     'kimi-k3': '3 3 15',
+    'kimi-k3.1-pro': '2 0.2 10',
+    'kimi-k3.1-pro-highspeed': '4 0.2 20',
     'gemini-3.8-flash': '0.75 0.75 3.75',
     'plan-only': '0 0 0',
   },
-  catalogCny: { 'kimi-k3': '20 2 100' },
+  catalogCny: {
+    'kimi-k3': '20 2 100',
+    'kimi-k3.1-pro': '13 1.3 68',
+    'kimi-k3.1-pro-highspeed': '26 1.3 136',
+  },
   usdToCny: 7.2,
 }
 
@@ -99,6 +111,19 @@ test('a model the official table does not carry is priced from the catalogue', (
   expect(priceFor(document, 'gemini-3.8-flash-high', 'USD')?.offPeak.cacheMiss).toBe(0.75)
   // A plan listing (every number zero) is no price at all.
   expect(priceFor(document, 'plan-only', 'USD')).toBeUndefined()
+})
+
+test('a Kimi Code route resolves to the model the catalogue lists', () => {
+  // Kimi Code names its routes without the vendor's prefix, so the picker id
+  // reaches the catalogue through the snapshot's aliases.
+  expect(priceFor(document, 'k3.1-pro', 'USD')?.offPeak.cacheMiss).toBe(2)
+  expect(priceFor(document, 'k3.1-pro', 'USD')?.offPeak.output).toBe(10)
+  expect(priceFor(document, 'k3.1-pro-highspeed', 'USD')?.offPeak.output).toBe(20)
+  expect(priceFor(document, 'k3', 'USD')?.offPeak.output).toBe(15)
+  // The vendor publishes the K3.1 lines in CNY: they answer as published.
+  expect(priceFor(document, 'k3.1-pro', 'CNY')?.offPeak.cacheHit).toBe(1.3)
+  expect(priceFor(document, 'k3.1-pro', 'CNY')?.offPeak.output).toBe(68)
+  expect(priceFor(document, 'k3.1-pro-highspeed', 'CNY')?.offPeak.output).toBe(136)
 })
 
 test('the figure takes the shorter of four significant digits and four decimals', () => {

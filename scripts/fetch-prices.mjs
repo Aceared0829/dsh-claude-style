@@ -41,20 +41,28 @@ const CATALOG_URL = 'https://models.dev/api.json'
 const USD_TO_CNY = 7.2
 /**
  * CNY list prices for models whose vendor publishes them, in the same
- * `"input cacheRead output"` form (yuan per million tokens). K3's official
- * table also lists cache writes at ¥20 (5 min) and ¥40 (1 hour); this meter
- * bills writes at the hit rate, so the line carries the three it prices.
- * Source: Kimi's pricing page, observed 2026-10-21.
+ * `"input cacheRead output"` form (yuan per million tokens). The K3 tables also
+ * list cache writes (K3 at ¥20 for 5 min and ¥40 for 1 hour); this meter bills
+ * writes at the hit rate, so a line carries the three it prices.
+ * Source: Kimi's pricing page, observed 2026-10-24.
  */
-const CATALOG_CNY = { 'kimi-k3': '20 2 100' }
+const CATALOG_CNY = {
+  'kimi-k3': '20 2 100',
+  'kimi-k3.1-pro': '13 1.3 68',
+  'kimi-k3.1-pro-highspeed': '26 1.3 136',
+}
 const ALIASES = {
   'deepseek-v4-flash': 'deepseek-flash',
   'deepseek-v4-flash-vision-exp': 'deepseek-flash',
   'deepseek-v4.1-flash': 'deepseek-flash',
   'deepseek-chat': 'deepseek-flash',
   'deepseek-reasoner': 'deepseek-flash',
-  // The Kimi Code picker's own id for K3, which the catalogue lists as kimi-k3.
+  // The Kimi Code picker names its routes without the vendor's prefix; the
+  // catalogue lists them as kimi-k3 and kimi-k3.1-pro.
+  'k3': 'kimi-k3',
   'k3-256k': 'kimi-k3',
+  'k3.1-pro': 'kimi-k3.1-pro',
+  'k3.1-pro-highspeed': 'kimi-k3.1-pro-highspeed',
 }
 const MODEL_ID = /deepseek-[a-z0-9_.-]+/i
 
