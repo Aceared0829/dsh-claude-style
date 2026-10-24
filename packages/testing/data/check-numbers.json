@@ -916,7 +916,7 @@
       "the view tabs draw their pill under the active tab inside the plate, without sliding in": [
         0
       ],
-      "a view switch slides the pill to the newly active tab (line 130)": [
+      "a view switch slides the pill to the newly active tab (line 133)": [
         1
       ],
       "the title is handed the room left between its own edge and the controls once the strip's width is reserved, and the row it left keeps its gap under it": [
