@@ -15,9 +15,10 @@ export default {
   stylesheets: [{ file: 'footer-layout.css', rank: 106, gate: true }],
   settingsRows: [{
     tab: 'composer',
-    // The meter's face and its number stand ahead of the figures' own rows:
-    // the face is what the reader looks at, the figures what they read.
-    rank: 43,
+    // The meter's face and its number open the statistics rows, after the
+    // model picker's block: the face is what the reader looks at, the figures
+    // what they read.
+    rank: 46,
     pref: 'contextDisplay',
     title: 'contextDisplayTitle',
     desc: 'contextDisplayDesc',
@@ -29,7 +30,7 @@ export default {
     },
   }, {
     tab: 'composer',
-    rank: 44,
+    rank: 47,
     pref: 'contextNumbers',
     title: 'contextNumbersTitle',
     desc: 'contextNumbersDesc',
@@ -40,9 +41,9 @@ export default {
     },
   }, {
     tab: 'composer',
-    // The two figures' rows stand with the composer's other billing display,
-    // under the group's peak-rate row (peakrate.manifest.ts, rank 45).
-    rank: 46,
+    // The figures' rows follow the meter's own, the footer alignment refining
+    // the place this row sets.
+    rank: 48,
     pref: 'statsPosition',
     title: 'statsPositionTitle',
     choiceLabels: {
@@ -59,7 +60,7 @@ export default {
     },
   }, {
     tab: 'composer',
-    rank: 48,
+    rank: 49,
     pref: 'statsFooterAlign',
     parent: 'statsPosition',
     title: 'statsFooterAlignTitle',
@@ -71,7 +72,7 @@ export default {
     },
   }, {
     tab: 'composer',
-    rank: 47,
+    rank: 50,
     pref: 'billingCurrency',
     title: 'billingCurrencyTitle',
     desc: 'billingCurrencyDesc',

@@ -4,6 +4,16 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 ## [Unreleased]
 
+[中文](#cn-unreleased) | [English](#en-unreleased)
+
+<h3 id="cn-unreleased">问题修复</h3>
+
+- 修复主窗口设置中输入区的上下文外显样式与数字夹在模型选择器各项之间的问题：它们现在与统计信息位置、底栏统计位置和计费币种排成一块。
+
+<h3 id="en-unreleased">Bug Fixes</h3>
+
+- Fix Context display and Context display number sitting among the model picker's rows in Main window settings: they now stand in one block with Conversation statistics position, Footer alignment and Billing currency.
+
 ## [0.19.0] - 2026-10-23
 
 [中文](#cn-0.19.0) | [English](#en-0.19.0)
