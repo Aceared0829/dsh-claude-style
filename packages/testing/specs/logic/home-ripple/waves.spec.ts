@@ -1,8 +1,9 @@
 /**
  * The home page's ripple field: a click starts waves that travel outward and
- * slow with distance, die out and leave the field flat, and a late frame
- * advances them by a capped step so a page shown again does not replay its
- * absence.
+ * slow with distance, a click on the far side of the page leaves a ring already
+ * in flight travelling as the click that started it set it, the waves die out
+ * and leave the field flat, and a late frame advances them by a capped step so a
+ * page shown again does not replay its absence.
  *
  * @capability home-ripple
  * @features home-ripple
@@ -11,6 +12,10 @@
 import { expect, test } from 'vitest'
 import fc from 'fast-check'
 import { createWaveField } from '@dsh-claude-style/client/pure'
+
+// How many cells a ring covers in a quarter second when it has slowed to the far end of its click's profile,
+// against the ground the same click carries it over: the two differ by the ratio of the profile's two speeds.
+const FAR_SHARE = 0.05
 
 const COLUMNS = 160
 const ROWS = 70
@@ -24,6 +29,11 @@ function reach(height: Float32Array, level: number) {
     if (Math.abs(height[CENTRE_ROW * COLUMNS + column]!) > level) far = column - CENTRE_COLUMN
   }
   return far
+}
+
+/** The outermost cell of the ring a click at the centre started, wherever the noise moved the ring's crest to. */
+function front(height: Float32Array) {
+  return reach(height, 0.0005)
 }
 
 test('a field nobody has clicked stays flat and at rest', () => {
@@ -47,6 +57,34 @@ test('a click starts waves that travel outward, slowing with distance', () => {
   // The second quarter second covers less ground than the first: the speed fell with the distance.
   expect(late - early).toBeLessThan(early)
   expect(waves.height.every(Number.isFinite)).toBe(true)
+})
+
+test('a click on the far side of the page does not slow a ring already in flight', () => {
+  const alone = createWaveField(COLUMNS, ROWS)
+  const followed = createWaveField(COLUMNS, ROWS)
+  for (const waves of [alone, followed]) {
+    waves.disturb(CENTRE_COLUMN, CENTRE_ROW)
+    for (let frame = 0; frame < 15; frame++) waves.advance(1 / 60)
+  }
+  const early = front(alone.height)
+  // The later click lands in the opposite corner, away from the row the ring is measured on. The half second that
+  // follows lets a slowed ring fall behind far enough to see it, and two steps then let the field's front settle
+  // and shed the noise that the border's damping leaves under it.
+  followed.advance(1 / 600)
+  followed.disturb(4, 4)
+  for (let frame = 0; frame < 30; frame++) {
+    alone.advance(1 / 60)
+    followed.advance(1 / 60)
+  }
+  const free = front(alone.height) - early
+  alone.advance(2 / 600)
+  followed.advance(2 / 600)
+  const late = front(followed.height)
+  // The ring travels on the curve of the click that started it, so a click elsewhere leaves the ground it covers
+  // nearly as it was. A click that reset the speeds to those around itself would hold the ring to the far end of
+  // that curve, and the ground it covers over the same half second would fall to a fraction of the ring's own.
+  expect(late - early, `early=${early} late=${late} alone=${free}`).toBeGreaterThan(free / 2)
+  expect(free).toBeGreaterThan(early * FAR_SHARE)
 })
 
 test('the waves die out and the field comes to rest', () => {
