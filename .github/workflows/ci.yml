@@ -2,13 +2,15 @@ name: CI
 
 # A push to master is judged by the checks, the build and the spec lane alone:
 # development carries no page gate (D77), so a push answers in minutes and waits
-# on nothing. The whole matrix — the smoke, the behaviour specs on three systems
-# and the end-to-end lane — is judged on a pull request, a merge-queue entry and
-# a manual run, and the manual run is the one a release takes before its tag; the
-# release workflow runs the gates once more before it publishes. A branch is
-# judged through its pull request or the queue, so a branch push of its own is
-# not read here, and `branches` keeps every other push out, tag pushes with
-# them: the release workflow owns tags.
+# on nothing. The page lanes that a push leaves out run beside it in
+# `.github/workflows/observe.yml`, which joins no branch rule. The whole matrix —
+# the smoke, the behaviour specs on three systems and the end-to-end lane — is
+# judged on a pull request, a merge-queue entry and a manual run, and the manual
+# run is the one a release takes before its tag; the release workflow runs the
+# gates once more before it publishes. A branch is judged through its pull
+# request or the queue, so a branch push of its own is not read here, and
+# `branches` keeps every other push out, tag pushes with them: the release
+# workflow owns tags.
 #
 # One concurrency group per event and commit, so a series of pushes each finish
 # with a verdict instead of cancelling one another, and a pull request does not
