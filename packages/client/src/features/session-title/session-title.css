@@ -12,9 +12,11 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="header-title"] > [data-dsh-c
   background: var(--dsh-claude-hover-bg);
 }
 
-/* The tip under the words, in the label ink on the canvas tone the usage panel's
-   day tip uses: it never takes the pointer, and its box is placed in the page's
-   own space, so a scaled page keeps it under the words it names. */
+/* The tip under the words, in the label ink on the host's raised-surface tone —
+   the pairing the usage panel's day tip uses, and the one whose words stay
+   readable while a wallpaper plugin clears the canvas tone. It never takes the
+   pointer, and its box is placed in the page's own space, so a scaled page
+   keeps it under the words it names. */
 body[data-dsh-claude-style] .dsh-claude-session-title-tip {
   position: fixed;
   box-sizing: border-box;
@@ -22,7 +24,7 @@ body[data-dsh-claude-style] .dsh-claude-session-title-tip {
   padding: 4px 9px;
   border-radius: 7px;
   background: var(--dsw-alias-label-primary, #161616);
-  color: var(--dsw-alias-bg-base, #ffffff);
+  color: var(--dsw-alias-bg-layer-3, #ffffff);
   font-family: var(--dsw-font-family);
   font-size: 12px;
   font-weight: 500;

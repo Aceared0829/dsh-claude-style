@@ -266,7 +266,8 @@ body[data-dsh-claude-style] .dsh-claude-brand-image-button:focus-visible {
 
 /* The removal of the reader's own picture sits in the corner the action plate
    leaves free, in the page's own ink rather than the accent, which names the
-   action rather than its undo. */
+   action rather than its undo. The ink is the host's raised-surface tone: the
+   canvas tone is cleared to transparent while a wallpaper plugin shows one. */
 body[data-dsh-claude-style] .dsh-claude-brand-clear {
   position: absolute;
   top: -6px;
@@ -280,7 +281,7 @@ body[data-dsh-claude-style] .dsh-claude-brand-clear {
   border-radius: 50%;
   corner-shape: round;
   background: var(--dsw-alias-label-secondary);
-  color: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-bg-layer-3, #ffffff);
   font: inherit;
   font-size: 12px;
   line-height: 1;
