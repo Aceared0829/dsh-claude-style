@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "改善推理档位的强调色：外显文字与滑块卡片中的档位名跟随主题强调色，弱档更淡、强档对比更强，并随档位升高略微向红色偏移；说明文字和两端的「更快 / 更强」保持原来的灰色。",
-  "en": "Improve the reasoning level's accent colour: the composer's words and the slider card's level name follow the theme accent, lighter at the weak end and stronger at the top, leaning slightly toward red as the level climbs; the caption and the Faster / Smarter scale ends keep their own grey."
-}

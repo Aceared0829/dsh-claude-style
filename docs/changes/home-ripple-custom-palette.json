@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "修复选择自定义配色后，开启「水波纹字符背景」的新会话首页不显示字符水波纹、控制台报「not an opaque colour」的问题。",
-  "en": "Fix the new-conversation page drawing no ripple field, with an error in the console, once a custom palette is chosen and the field is on."
-}

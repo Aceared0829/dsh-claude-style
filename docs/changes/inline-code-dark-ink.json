@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "自定义配色未选行内代码色时，深色主题沿用浅色卡的字色，代码胶囊几乎看不见；现在按主题各取本卡的字色。",
-  "en": "An unpicked inline-code colour fell back to the light card's ink under the dark theme, leaving code chips all but invisible; each scheme now takes its own card ink."
-}

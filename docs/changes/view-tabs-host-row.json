@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "修复在较新的宿主版本上会话视图页签只剩当前一个、其余被收进「更多」菜单的问题：全部视图重新排在页签栏里，选中项仍由一颗滑动的药丸标出，「更多」按钮与页签栏并排。",
-  "en": "Fix newer hosts showing only the current conversation view tab, with the other views sent into the More menu: every view sits in the strip again, the selected one still marked by the sliding pill, and the More button beside it."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "改善推理档位的名称切换：名称的模糊进出改由滑块行程驱动，向更强档拖动时旧名向上离开、新名从下方进入，向更弱档拖动时反向播放。",
-  "en": "Improve how the reasoning level's name changes: the blur and travel now follow the slider's own path, with the old name leaving upward and the new one rising from below toward a stronger level, and the motion playing in reverse toward a weaker one."
-}

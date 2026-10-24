@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 2,
-  "external": false,
-  "zh": "修复选择自定义配色后发送消息时，飞出的气泡取不到读者自己的气泡颜色、晕圈落在透明卡片上、气泡边缘的细线不显示的问题。",
-  "en": "Fix the send flight once a custom palette is chosen: the flying bubble no longer takes its fill from the reader's own bubble, the halo lands on the transparent card, and the hairline around the bubble is left out."
-}

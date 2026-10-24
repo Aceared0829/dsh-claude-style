@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "improvements",
-  "order": 0,
-  "external": false,
-  "zh": "改善模型选择器的发布标记：1017 标签改用中性灰底与次级灰字，不再使用宿主的业务色。",
-  "en": "Improve the model picker's release marker: the 1017 tag now uses a neutral grey plate and secondary grey ink instead of the host's business colour."
-}

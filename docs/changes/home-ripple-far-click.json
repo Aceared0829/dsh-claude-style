@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "zh": "修复新会话页水波纹字符背景在相隔较远处连续点击时，先前的波纹突然变慢的问题：每一次点击现在只加快它自己周围的波速，已经荡开的波纹保持原来的行进速度。",
-  "en": "Fix the new-conversation page's ripple glyph background slowing a ring already in flight when a second press lands far from the first: a press now speeds up only the ground around itself, and a ring keeps travelling as the press that started it set it."
-}
