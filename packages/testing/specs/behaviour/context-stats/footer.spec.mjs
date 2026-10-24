@@ -25,6 +25,8 @@ async function reading(t) {
       nativeParent: dock.parentElement === card.parentElement,
       lineInDock: line.parentElement === dock,
       segments: [...line.children].filter(child => child.getClientRects().length > 0).length,
+      lineGap: getComputedStyle(line).columnGap,
+      dockGap: getComputedStyle(dock).columnGap,
       line: box(line),
       dock: box(dock),
       toolbar: box(row),
@@ -55,6 +57,8 @@ export default spec({ page: 'stats-inline' }, ({ test }) => {
     const inline = await reading(t)
     t.expectThat.equal([inline.marked, inline.mode, inline.nativeParent], [false, null, true], 'inline mode restores the native dock flow')
     t.expectThat.equal(inline.segments > center.segments, true, 'inline mode restores the fuller statistics')
+    t.expectThat.equal(center.lineGap, inline.lineGap, 'the compact footer keeps the gap the line puts between its figures on its own line')
+    t.expectThat.equal(center.dockGap, inline.dockGap, 'and the meter keeps the dock\'s own gap beside it')
     await t.prefs({ statsPosition: 'context' })
     t.expectThat.absent(await t.read.count(t.surface('stats.inline-line')), 'context mode removes the inline figures')
   })

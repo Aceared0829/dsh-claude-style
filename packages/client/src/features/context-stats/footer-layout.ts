@@ -52,11 +52,15 @@ export function createFooterLayout() {
         const tools = row.querySelector<HTMLElement>('[data-dsh-claude-part~="tools"]')
         const trailing = row.querySelector<HTMLElement>('[data-dsh-claude-part~="trailing"]')
         const meter = nextDock.querySelector<HTMLElement>('[data-dsh-claude-context-meter]')
+        // The room the meter takes beside the line, its gap included: the gap is
+        // the dock's own, so the footer stands apart exactly like the line on its
+        // own line.
+        const gap = Number.parseFloat(getComputedStyle(nextDock).columnGap) || 0
         const rowBox = inPageBox(row.getBoundingClientRect())
         const stackBox = inPageBox(stack.getBoundingClientRect())
         const start = tools ? inPageBox(tools.getBoundingClientRect()).right + 12 : rowBox.left
         const end = trailing ? inPageBox(trailing.getBoundingClientRect()).left - 12 : rowBox.right
-        const width = inPageBox(root.getBoundingClientRect()).width + (meter ? inPageBox(meter.getBoundingClientRect()).width + 24 : 0)
+        const width = inPageBox(root.getBoundingClientRect()).width + (meter ? inPageBox(meter.getBoundingClientRect()).width + gap : 0)
         const align = readPrefs().statsFooterAlign
         const left = align === 'left' ? start : align === 'right' ? end - width : (start + end - width) / 2
         measured = {

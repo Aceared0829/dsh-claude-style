@@ -6,11 +6,19 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 
 [中文](#cn-unreleased) | [English](#en-unreleased)
 
-<h3 id="cn-unreleased">问题修复</h3>
+<h3 id="cn-unreleased">体验优化</h3>
+
+- 改善紧凑底栏的元素间距：各数字之间、数字与上下文表盘之间的距离改为与独立成行时一致，底栏整体收窄。
+
+### 问题修复
 
 - 修复主窗口设置中输入区的上下文外显样式与数字夹在模型选择器各项之间的问题：它们现在与统计信息位置、底栏统计位置和计费币种排成一块。
 
-<h3 id="en-unreleased">Bug Fixes</h3>
+<h3 id="en-unreleased">Improvements</h3>
+
+- Improve the compact footer's spacing: figures stand apart, and apart from the context meter, exactly as they do on their own line, narrowing the footer.
+
+### Bug Fixes
 
 - Fix Context display and Context display number sitting among the model picker's rows in Main window settings: they now stand in one block with Conversation statistics position, Footer alignment and Billing currency.
 

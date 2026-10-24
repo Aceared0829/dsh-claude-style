@@ -6,7 +6,6 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-c
 body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock] {
   display: flex;
   align-items: center;
-  gap: 24px;
 }
 body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-claude-footer-dock="overlay"] {
   position: absolute;
@@ -24,7 +23,4 @@ body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] [data-dsh-c
   z-index: 3;
   pointer-events: auto;
   flex: none;
-}
-body[data-dsh-claude-style][data-dsh-claude-stats-position="footer"] .dsh-claude-inline-stats {
-  gap: 26px;
 }
