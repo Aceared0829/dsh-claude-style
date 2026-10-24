@@ -29,9 +29,9 @@
       },
       { "match": "glm", "brand": "zai" },
       {
-        "match": "kimi|(^|[^a-z0-9])k3($|-)",
+        "match": "kimi|(^|[^a-z0-9])k3([._-]?\\d)?($|-)",
         "brand": "kimi",
-        "note": "The id can carry the serving provider's namespace (`cn:k3`, `moonshot/k3`), so the segment start accepts any character outside a letter or a digit. Requiring `k3` to start a segment is what leaves `mk3` unclaimed."
+        "note": "The id can carry the serving provider's namespace (`cn:k3`, `moonshot/k3`), so the segment start accepts any character outside a letter or a digit. Requiring `k3` to start a segment is what leaves `mk3` unclaimed. A version number belongs to the name (`k3.1`), so it may follow `k3` before the segment ends, and `k3-256k` still ends on its hyphen."
       },
       { "match": "qwen", "brand": "qwen" },
       { "match": "step", "brand": "stepfun" },
@@ -292,6 +292,14 @@
       }
     },
 
+    {
+      "match": "kimi.*k3[._-]?1(?!\\d)|(^|[^a-z0-9])k3[._-]?1(?!\\d)",
+      "note": "Anchored to the K3.1 generation and read before the K3 rule below, which would otherwise hand `kimi-k3.1-pro` the 2.8T line. No tier in the pattern: Highspeed is the same model at a faster output, so it reads this sentence too. The mention carries the same segment start as the lockup rule, so `cn:k3.1` reads this line.",
+      "text": {
+        "zh": "开放权重模型，以代码、金融研究与长程 Agent 任务见长。",
+        "en": "An open-weight model, strong at coding, financial research and long-horizon agent work."
+      }
+    },
     {
       "match": "kimi.*(k3|k-?3)|(^|[^a-z0-9])k-?3",
       "note": "Anchored to the K3 line: the 2.8T size belongs to it, and the catalog's `k3` and `k3-256k` spellings are the same line. The K3 mentions carry the same segment start as the lockup rule, so an id spelled `cn:k3` reads this line.",
