@@ -50,6 +50,15 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model
   box-sizing: border-box;
   transition: background var(--dsh-claude-timing-feedback);
 }
+/* The level keeps its room while the name beside it shortens; its part must not
+   shrink under its own button, or the button would paint over the ring the row
+   lays out after the seat. */
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-seat-effort {
+  flex: none;
+}
+body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-seat-model {
+  flex: 0 1 auto;
+}
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-seat-model:empty,
 body[data-dsh-claude-style] [data-dsh-claude-part~="trailing"] .dsh-claude-model-seat > .dsh-claude-model-seat-effort:empty {
   display: none;
