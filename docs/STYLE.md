@@ -36,9 +36,8 @@ Rules:
   plate, DeepSeek's light blue `#ECF0FF`; the custom card derives it from its
   own canvas, so a conversation bubble reads as the card that painted it.
 - Accent usage stays under ~10% of visible elements.
-- Literal colours stay outside the ladder: the reasoning slider's violet
-  (`--dsh-claude-apex*`), the selection ring, the ripple's front, the peak and
-  off-peak badges and the popover shadow.
+- Literal colours stay outside the ladder: the selection ring, the ripple's
+  front, the peak and off-peak badges and the popover shadow.
 
 **The DeepSeek card** turns both schemes blue. Its accent is DeepSeek's brand
 blue `#4D6BFE` — the colour of its whale logo and of Deepy; the sidebar's whale
@@ -48,7 +47,7 @@ blue-black, and its dark outlines are surface steps rather than highlights. The
 skin's Claude marks (the account row's picture without an avatar) become
 DeepSeek's
 whale (`packages/assets/src/brand/deepseek-mark.svg`, the host's `FISH_LOGO_PATH`); the
-violet top rung of the reasoning slider stays.
+reasoning slider's accent follows whichever palette is in force.
 
 The tables below are generated from `packages/client/src/theme/tokens.json` by `npm run build`;
 edit the JSON, not the tables. A token's row names the tone it reads and the
@@ -208,27 +207,25 @@ Under the host typeface the skin's own faces fall back to the host's:
 `--dsh-claude-font-serif`, `-prose` and `-brand` to `--dsw-font-family` (the host
 carries no serif), `--dsh-claude-font-code` to `--ds-font-family-code`.
 
-Two colours stay whoever paints: the reasoning slider's violet top rung
-(`--dsh-claude-apex*`) and the account-hold page, which reproduces a Claude
-screen. The effort trigger's ramp (`--dsh-claude-effort-*`) is the same kind of
-colour — a copy of the reference effort slider's own blue-to-violet ladder, kept
-apart from the brand's accent. Translucent neutral hover tints and the usage
-panel's data colours stay literal; they read on any canvas. Every other colour
-that paints a surface, a text, a border or an accent reads a token.
+The account-hold page keeps its own colours, reproducing a Claude screen.
+The reasoning slider and its trigger take the theme accent: the dot matrix and
+knob glow read `--dsh-claude-apex*`, and the level ramp reads
+`--dsh-claude-effort-*`. Translucent neutral hover tints and the usage panel's
+data colours stay literal; they read on any canvas. Every other colour that
+paints a surface, a text, a border or an accent reads a token.
 
 **The effort trigger's tone.** While the Composer tab's effort-accent row is on,
-the effort level's text in the composer's seat box takes its colour from the rung
-in force. Every thinking rung has a place on one ramp between two fixed colours —
-the blue `--dsh-claude-effort-low` and the violet `--dsh-claude-effort-high`, the
-ladder the reference effort slider draws — and the rung's place is its index over
-the ladder's span, so a four-stop ladder reads blue, two steps between, then the
-violet on the strongest level. The ramp is mixed in OKLCH, which keeps the steps
-apart at every ladder length. It reads no brand token: a ramp derived from the
-DeepSeek brand's blue accent left its three levels within a few steps of each
-other, indistinguishable at 13px. The switch-off level and the model's own
-default level have no strength the catalog names, so both keep the resting ink
-(`--dsw-alias-label-secondary`). The row off leaves the resting ink on every
-rung.
+the effort level's text in the composer's seat box and the card's level name
+take their colour from the rung in force. The caption and the scale ends keep
+their own caption inks. Every thinking rung has
+a place on one ramp between two ends mixed from the theme accent in OKLCH:
+`--dsh-claude-effort-low` toward the raised surface (less saturated, lower
+contrast) and `--dsh-claude-effort-high` toward the label ink (more contrast). The rung's
+place is its index over the ladder's span, so a four-stop ladder reads weak,
+two steps between, then strong, and the hue stays the reader's theme hue. The
+switch-off level and the model's own default level have no strength the catalog
+names, so both keep the resting ink (`--dsw-alias-label-secondary`). The row off
+leaves the resting ink on every rung.
 
 **The composer's seat.** The model's name and the effort level share one box in
 the row, the way the host's own seat carries both texts: the box is the row's one

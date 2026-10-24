@@ -88,6 +88,31 @@ export default spec({ page: 'effort' }, ({ test }) => {
     t.expectThat.equal(strongest > weakest, true, `the strongest rung is the heaviest (${strongest} against ${weakest})`)
   })
 
+  test('the open card level name carries the trigger colour, the caption keeps its grey, and the hue is the theme accent', async (t) => {
+    await open(t)
+    const labelBefore = await painted(t, t.surface('effort.label'))
+    const endBefore = await painted(t, t.surface('effort.end'))
+    await pick(t, 0)
+    const labelLow = await painted(t, t.surface('effort.label'))
+    const endLow = await painted(t, t.surface('effort.end'))
+    t.expectThat.equal([labelLow, endLow].join(), [labelBefore, endBefore].join(), 'the caption and the scale ends keep their own inks across the ladder')
+
+    await pick(t, 0.97)
+    const trigger = await painted(t, t.surface('effort.trigger'))
+    const value = await painted(t, t.surface('effort.value'))
+    const preview = await painted(t, t.surface('effort.value-preview'))
+    t.expectThat.equal([value, preview].every(colour => colour === trigger), true, `the card's level name takes the trigger's rung colour (${[trigger, value, preview].join(', ')})`)
+
+    const before = trigger
+    await t.page.evaluate(() => document.body.style.setProperty('--dsw-alias-brand-primary', '#00ff00'))
+    await t.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    const green = await painted(t, t.surface('effort.trigger'))
+    const [r, g, b] = green.match(/[\d.]+/g).slice(0, 3).map(Number)
+    t.expectThat.equal(green !== before && g > r + 30 && g > b + 30, true, `the rung follows the accent hue (${before} → ${green})`)
+    await t.page.evaluate(() => document.body.style.removeProperty('--dsw-alias-brand-primary'))
+    await t.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+  })
+
   test('the effort-accent row is what paints the colour, and off leaves every rung one ink', async (t) => {
     const trigger = t.surface('effort.trigger')
     await open(t)

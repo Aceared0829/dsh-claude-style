@@ -1711,11 +1711,6 @@
       "prop": "box-shadow",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] .dsh-claude-effort[data-apex] .dsh-claude-effort-value{color:var(--dsh-claude-apex-ink, #5f51b5)!}|color": {
-      "selector": "body[data-dsh-claude-style] .dsh-claude-effort[data-apex] .dsh-claude-effort-value",
-      "prop": "color",
-      "verdict": "unmatched"
-    },
     "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-effort[data-apex] .dsh-claude-effort-knob{box-shadow:0 0 10px color-mix(in srgb,var(--dsh-claude-apex, #9d8ce0) 80%,transparent),0 0 0 1px color-mix(in srgb,var(--dsh-claude-apex, #9d8ce0) 35%,transparent)!}|box-shadow": {
       "selector": "body[data-dsh-claude-style][data-ds-dark-theme] .dsh-claude-effort[data-apex] .dsh-claude-effort-knob",
       "prop": "box-shadow",
