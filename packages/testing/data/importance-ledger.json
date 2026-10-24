@@ -329,52 +329,42 @@
       "state": "motion reduced",
       "opponents": []
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|position": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|position": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "position",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|top": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|top": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "top",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|left": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|left": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "left",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|margin": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|margin": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "margin",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|transform": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|transform": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "transform",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|justify-self": {
-      "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
-      "prop": "justify-self",
-      "verdict": "unmatched"
-    },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|z-index": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|z-index": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "z-index",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|-webkit-app-region": {
-      "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
-      "prop": "-webkit-app-region",
-      "verdict": "unmatched"
-    },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|opacity": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|opacity": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "opacity",
       "verdict": "unmatched"
     },
-    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;justify-self:auto!;z-index:var(--dsh-claude-layer-chrome)!;-webkit-app-region:no-drag!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|transition": {
+    "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]{position:fixed!;top:calc(var(--dsh-windows-titlebar-height, 40px) / 2)!;left:50%!;margin:0!;transform:translate(-50%,-50%)!;z-index:var(--dsh-claude-layer-chrome)!;opacity:0!;transition:opacity var(--dsh-claude-duration-fade) var(--dsh-claude-ease-standard)!}|transition": {
       "selector": "body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs]",
       "prop": "transition",
       "verdict": "unmatched"

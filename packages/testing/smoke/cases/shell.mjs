@@ -100,6 +100,39 @@ export default {
     check('teardown takes the pill, its placement and the strip stamp off the view tabs', pill.left === false, JSON.stringify(pill.left))
     commonChecks(r)
   },
+  // The strip's row shape (0.2.1-rc.3): the host draws the tablist and the
+  // overflow button in a row of its own and counts the tabs it keeps from that
+  // row's width, so the row keeps the header's width while the plate inside it
+  // hugs the tabs and the pill travels inside the plate.
+  'view-tabs-row'(r) {
+    basicChecks(r)
+    const row = r.viewRow || {}
+    const plate = row.plate || {}
+    const chip = row.chip || {}
+    const under = (s) => !!s && s.attr && s.content !== 'none' && Math.abs(s.x - s.itemX) < 0.5 &&
+      Math.abs(s.w - s.itemW) < 0.5 && s.itemFill === 'rgba(0, 0, 0, 0)'
+    check('the row the host counts its tabs from spans the header, and the plate inside it hugs them',
+      row.justifyContent === 'center' && row.pointerEvents === 'none' &&
+        row.width === row.headerWidth && row.counted === row.headerWidth &&
+        plate.width < row.width - chip.width,
+      JSON.stringify({ justifyContent: row.justifyContent, pointerEvents: row.pointerEvents, row: row.width, counted: row.counted, plate: plate.width, chip: chip.width }))
+    check('the plate is the skin\'s small switch, carrying its shell and its own radius',
+      plate.radius === '7px' && plate.padding === '2px' && plate.gap === '2px' && plate.background !== 'rgba(0, 0, 0, 0)',
+      JSON.stringify(plate))
+    check('the plate and the overflow button stand as one group in the row\'s middle, the button seated like a tab',
+      Math.abs(row.groupCentre - row.width / 2) <= 1 && chip.centre === plate.centre &&
+        chip.width === 22 && chip.height === 22 && chip.marginTop === '0px',
+      JSON.stringify({ group: row.groupCentre, width: row.width, plate: plate, chip: chip }))
+    check('the tabs are the compact 22px segment, without the shipped underline',
+      row.tabHeight === '22px' && row.underline === 'none', JSON.stringify({ height: row.tabHeight, underline: row.underline }))
+    check('the view tabs draw their pill under the active tab inside the plate, without sliding in',
+      under(row.pill) && row.pill.slides.length === 0, JSON.stringify(row.pill))
+    check('a view switch slides the pill to the newly active tab',
+      under(row.pillSwitched) && row.pillSwitched.slides.indexOf('transform') !== -1 && row.pillSwitched.x > row.pill.x,
+      JSON.stringify(row.pillSwitched), 'timing')
+    check('teardown hands the row and the plate back as the host drew them', row.left === false, JSON.stringify(row.left))
+    commonChecks(r)
+  },
   // The header band: the conversation's title and the header's control clusters
   // in the desktop caption row, and the row they leave behind.
   'header-band'(r) {
