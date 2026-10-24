@@ -6,7 +6,7 @@ import { findHeroRoot } from '@dsh-claude-style/engine/host'
 import type { FrameTask } from '@dsh-claude-style/engine/frame'
 import { motionReduced } from '../../core/prefs'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
-import { createGlyphField } from './ripple-field'
+import { createGlyphField, readColour } from './ripple-field'
 import type { FieldPalette, GlyphField, Rgb } from './ripple-field'
 import { RIPPLE } from './ripple-params'
 import { createWaveField } from './ripple-wave'
@@ -44,18 +44,15 @@ interface Mounted {
  * A token's colour as channels, or null while the page has not applied the
  * token yet: the tokens stand behind the palette attribute, which is written
  * once the preferences have been read, so a page that opens on the home screen
- * mounts the field before its colours exist. The canvas context turns whatever
- * the page resolves the token to (a literal, or the host's own alias) into
- * `#rrggbb`; a value it cannot read is a mistake in the token table (D12).
+ * mounts the field before its colours exist. A value the canvas cannot paint is
+ * a mistake in the token table (D12).
  */
-function colour(context: CanvasRenderingContext2D, style: CSSStyleDeclaration, token: string): Rgb | null {
+function colour(style: CSSStyleDeclaration, token: string): Rgb | null {
   const value = style.getPropertyValue(token).trim()
   if (value === '') return null
-  context.fillStyle = '#000001'
-  context.fillStyle = value
-  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(context.fillStyle)
-  if (match === null || context.fillStyle === '#000001') throw new Error(`home-ripple: ${token} is "${value}", not an opaque colour`)
-  return [parseInt(match[1]!, 16), parseInt(match[2]!, 16), parseInt(match[3]!, 16)]
+  const channels = readColour(value)
+  if (channels === null) throw new Error(`home-ripple: ${token} is "${value}", not an opaque colour`)
+  return channels
 }
 
 /**
@@ -74,16 +71,11 @@ function colour(context: CanvasRenderingContext2D, style: CSSStyleDeclaration, t
  */
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let mounted: Mounted | null = null
-  let colourContext: CanvasRenderingContext2D | null | undefined
 
   function readPalette(canvas: HTMLCanvasElement): FieldPalette | null {
     const style = getComputedStyle(canvas)
-    // The canvas itself holds a webgl context, so the colours are parsed on a canvas of their own.
-    colourContext ??= canvas.ownerDocument.createElement('canvas').getContext('2d')
-    if (colourContext === null) throw new Error('home-ripple: the colour canvas has no 2d context')
-    const context = colourContext
-    const ink = colour(context, style, INK_TOKEN)
-    const wave = colour(context, style, WAVE_TOKEN)
+    const ink = colour(style, INK_TOKEN)
+    const wave = colour(style, WAVE_TOKEN)
     if (ink === null || wave === null) return null
     return {
       ink,
