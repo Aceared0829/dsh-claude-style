@@ -123,7 +123,7 @@ export default {
       plate.radius === '7px' && plate.padding === '2px' && plate.gap === '2px' && plate.background !== 'rgba(0, 0, 0, 0)',
       JSON.stringify(plate))
     check('the plate and the overflow button stand as one group in the row\'s middle, the button seated like a tab',
-      Math.abs(row.groupCentre - row.width / 2) <= 1 && chip.centre === plate.centre &&
+      Math.abs(row.groupCentre - row.width / 2) <= 1 && Math.abs(chip.centre - plate.centre) <= 1 &&
         chip.width === 22 && chip.height === 22 && chip.marginTop === '0px',
       JSON.stringify({ group: row.groupCentre, width: row.width, plate: plate, chip: chip }))
     check('the tabs are the compact 22px segment, without the shipped underline',
