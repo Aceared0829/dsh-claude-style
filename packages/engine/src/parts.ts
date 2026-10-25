@@ -346,6 +346,17 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
   return changed
 }
 
+/**
+ * Write the parts of one subtree now, ahead of the marking pass (D40). The pass
+ * holds a large batch back to the task after the paint, so a list the host
+ * rebuilds would paint one frame without its parts; a reader whose styles are
+ * keyed on them asks here, while the frame that mounted the nodes still stands.
+ */
+export function markPartsWithin(root: Element) {
+  const { lookups, roots } = contextAt(root)
+  walk(root, lookups, roots)
+}
+
 /** Take every part and hold mark off, for the teardown. */
 export function clearParts(root: ParentNode = document) {
   for (const element of root.querySelectorAll(`[${vocabulary().part}], [${vocabulary().holds}]`)) {

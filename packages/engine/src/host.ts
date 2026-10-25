@@ -1,5 +1,5 @@
 import { COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, FOREGROUND_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService, HostWorkspaceViewStore } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
 
@@ -458,6 +458,31 @@ export function hostRemotePermissionPresets(lookup: HostServiceLookup | null | u
 export function hostWorkspaces(lookup: HostServiceLookup | null | undefined): HostWorkspacesService | null {
   const workspaces = lookup?.get('workspaces') as HostWorkspacesService | undefined
   return workspaces ?? null
+}
+
+/**
+ * The workspace browser's viewing store: the grouping and the archived filter
+ * behind the host's own view menu. The host registers its browser under
+ * `sidebar.workspaces` with the store it creates, and that registration's
+ * `create` answers the one instance the browser renders from, so a write here
+ * is the menu's own. Null when the host carries no such registration or its
+ * store is not the shape this reads: the caller stays off rather than mounting a
+ * control that cannot drive the host (D12).
+ */
+export function hostWorkspaceView(lookup: HostContext | null | undefined): HostWorkspaceViewStore | null {
+  const slots = lookup === null || lookup === undefined ? null : hostSlots(lookup)
+  if (slots === null) return null
+  const entries = slots.entries('sidebar.workspaces')
+  for (let i = 0; i < entries.length; i++) {
+    const declaration = entries[i].store
+    if (declaration === undefined) continue
+    const view = declaration.create() as unknown as HostWorkspaceViewStore
+    if (view === null || typeof view !== 'object') continue
+    if (typeof view.getSnapshot !== 'function') continue
+    if (typeof view.actions?.setArchivedFilter !== 'function' || typeof view.actions?.setGroupBy !== 'function') continue
+    return view
+  }
+  return null
 }
 
 /** The shell's workspace actions: open a session, start one. */
