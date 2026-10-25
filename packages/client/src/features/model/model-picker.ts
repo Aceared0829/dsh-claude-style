@@ -12,7 +12,7 @@ import { byModelId, createModelRows } from './rows'
 import { releaseTag } from './release-tag'
 import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { removeStrayNodes, pressKeepsPopoverOpen } from '../../shared/popover'
-import { setSwappingText } from '../../shared/swapping-text'
+import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { HostModelGroup } from '@dsh-claude-style/contracts/services'
 import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
@@ -335,11 +335,24 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * Hand the host's own model seat and menu back: unmark the seat, remove the
    * skin's trigger and popovers, drop the catalog subscription.
    */
+  /**
+   * Let a label's swap go before its node leaves the page. The swap keeps a
+   * frame, a timer and a size subscription of its own (shared/swapping-text.ts);
+   * none of them follows the node out, and the size registry holds them by
+   * strong reference, so a trigger rebuilt or dropped without this leaves its
+   * sizer and its subscription behind for the page's lifetime.
+   */
+  function releaseModelLabels(scope: ParentNode = document) {
+    const labels = scope.querySelectorAll<HTMLElement>('.dsh-claude-model-btn-label')
+    for (let i = 0; i < labels.length; i++) releaseSwappingText(labels[i])
+  }
+
   function dropModelControl() {
     const allHosts = document.querySelectorAll('[data-dsh-claude-model-host]')
     for (let h = 0; h < allHosts.length; h++) {
       allHosts[h].removeAttribute('data-dsh-claude-model-host')
     }
+    releaseModelLabels()
     removeStrayNodes(document, '.dsh-claude-model-seat', [])
     seatBox = null
     removeStrayNodes(document, '.dsh-claude-model-btn', [])
@@ -383,6 +396,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     seatBox = ensureSeatBox(slot, seatBox)
     const modelPart = ensureSeatPart(seatBox, 'model')
     if (modelBtn === null || modelBtn.parentElement !== modelPart) {
+      // The old trigger carries the old label: its swap goes before the node does.
+      if (modelBtn !== null) releaseModelLabels(modelBtn)
       if (modelBtn !== null && modelBtn.parentElement !== null) modelBtn.parentElement.removeChild(modelBtn)
       modelBtn = document.createElement('button')
       modelBtn.type = 'button'

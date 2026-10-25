@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "改善颜色涂装的开销：等待行与设置预览卡上，色相与漂移两条常驻动画从连续插值改为按二十四步推进，`filter` 与八层背景位置从每帧重绘降为每周期二十四次（约每秒五次）；四到五秒的周期下，漂移仍读作流动而不是跳动。",
+  "en": "Improve the cost of the colour wash: on the waiting line and the settings preview cards, the hue turn and the drift advance in twenty-four steps instead of interpolating continuously, taking the `filter` and the eight background positions from a repaint per frame to twenty-four a cycle (about five a second); over a four-to-five-second cycle the drift still reads as drifting rather than stepping."
+}

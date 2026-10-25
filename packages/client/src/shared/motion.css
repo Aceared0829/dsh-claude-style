@@ -118,12 +118,20 @@ body[data-dsh-claude-style] {
 /* The colour wash, transitions.dev's "Pro gradient text" (MIT,
    docs/THIRD_PARTY_NOTICES.md): the washes orbit the glyph box while the hue turns a
    full circle through them, so the letters pass through every colour and no two
-   moments of the loop look alike. */
+   moments of the loop look alike. The hue turns in steps too (see the rule that
+   runs it below): a filter over seven washes asks the compositor for a surface
+   and re-runs its colour matrix wherever it lands, so a continuous turn ran it
+   once a frame, and the turn is slow enough for a step to read as colour
+   moving rather than colour jumping. */
 @keyframes dsh-claude-wash-hue {
   from { filter: hue-rotate(0deg) saturate(1.3); }
   to { filter: hue-rotate(-360deg) saturate(1.3); }
 }
 
+/* The washes orbit in steps. A background position costs a repaint wherever it
+   lands, so a continuous orbit had the eight layers repainting once a frame;
+   stepping the orbit paints the same path once every twenty-fourth of the
+   period, and the washes travel too slowly for a step to read as a jump. */
 @keyframes dsh-claude-wash-drift {
   0%, 100% { background-position: 100% 0%, 0% 50%, 100% 50%, 0% 100%, 0% 0%, 50% 0%, 50% 100%, 0 0; }
   25% { background-position: 100% 100%, 50% 0%, 50% 100%, 0% 0%, 100% 0%, 100% 50%, 0% 50%, 0 0; }
@@ -205,7 +213,7 @@ body[data-dsh-claude-style][data-dsh-claude-status-motion="wash"] .dsh-claude-ch
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: dsh-claude-wash-hue var(--dsh-claude-period-wash-hue) linear infinite, dsh-claude-wash-drift var(--dsh-claude-period-wash-drift) var(--dsh-claude-ease-in-out) infinite;
+  animation: dsh-claude-wash-hue var(--dsh-claude-period-wash-hue) steps(24, end) infinite, dsh-claude-wash-drift var(--dsh-claude-period-wash-drift) steps(24, end) infinite;
 }
 
 /* The reader's animation choice (D40): the band is left out and the wash holds

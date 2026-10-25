@@ -83,6 +83,8 @@ export function createCaretMotion(read: () => string) {
   let queued = false
   /** Cancels the frame queued; null when there is none, so dispose can cancel it. */
   let cancelFrame: (() => void) | null = null
+  /** The settle a focus change waits out before the surface is looked at again. */
+  let focusSettleTimer: number | null = null
   /**
    * Cancels the one-off frame that gives the transition back after an
    * instant landing; null when there is none, so dispose can cancel it too —
@@ -221,7 +223,11 @@ export function createCaretMotion(read: () => string) {
    */
   const syncAfterFocusChange = () => {
     queue()
-    window.setTimeout(() => {
+    // One settle at a time: a focus change during the wait replaces it, the way
+    // the wait itself is about the surface the last change landed on.
+    if (focusSettleTimer !== null) window.clearTimeout(focusSettleTimer)
+    focusSettleTimer = window.setTimeout(() => {
+      focusSettleTimer = null
       if (needsTakeover()) queue()
     }, CARET_FOCUS_SETTLE_MS)
   }
@@ -496,6 +502,8 @@ export function createCaretMotion(read: () => string) {
       cancelFrame = null
       if (cancelTransitionFrame !== null) cancelTransitionFrame()
       cancelTransitionFrame = null
+      if (focusSettleTimer !== null) window.clearTimeout(focusSettleTimer)
+      focusSettleTimer = null
       document.removeEventListener('selectionchange', queue)
       document.removeEventListener('focusin', syncAfterFocusChange)
       document.removeEventListener('focusout', syncAfterFocusChange)
