@@ -29,6 +29,7 @@ import { createPeakRate } from './peakrate.js'
 import { createPrices } from './prices.js'
 import { QUERY_MAX, createSessionSearch } from './search.js'
 import { createSessionCost } from './session-cost.js'
+import { sessionDirectoryName } from './session-name.js'
 import { createUsage } from './usage.js'
 
 /** The copy document, built from `packages/client/data/model-descriptions.json` by scripts/build.mjs. */
@@ -71,30 +72,6 @@ const FONT_FILES = {
 const ASSETS_PATH = `${ROUTE_PREFIX}/assets/`
 /** Largest deletion request body read; a real one carries one id. */
 const DELETE_BODY_MAX = 4096
-
-/**
- * The single directory name the harness stores one session id under: a code
- * unit outside `A-Za-z0-9._-` becomes `~XXXX`, `.` and `..` included, so the
- * mapping is injective over every id and a plugin-generated id
- * (`im:<channel>:dm:<user>:<token>@<domain>`) has a name of its own.
- *
- * This restates `encodeSegment` in the host's session persistence
- * (`@deepseek-ai/dsh-session-persistence-jsonl`), which no shared module hands
- * to the host half, so the storage layout lives beside the one route that reads
- * it.
- */
-function sessionDirectoryName(id: string): string {
-  if (id === '.') return '~002E'
-  if (id === '..') return '~002E~002E'
-  let name = ''
-  for (let index = 0; index < id.length; index += 1) {
-    const unit = id.charAt(index)
-    name += unit !== '~' && /^[A-Za-z0-9._-]$/.test(unit)
-      ? unit
-      : `~${id.charCodeAt(index).toString(16).toUpperCase().padStart(4, '0')}`
-  }
-  return name
-}
 
 /**
  * An id the deletion route takes: the characters a plugin-generated id carries
