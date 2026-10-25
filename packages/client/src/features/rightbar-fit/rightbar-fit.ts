@@ -2,6 +2,7 @@ import { RIGHTBAR_COLUMN_SELECTOR, RIGHTBAR_HANDLE_SELECTOR, RIGHTBAR_PANEL_SELE
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { PAGE_ZOOM_ATTR } from '../../constants'
+import { heldWrites } from '../../shared/held-writes'
 import { pageZoomFactor } from '../../shared/page-zoom'
 
 /**
@@ -16,59 +17,24 @@ import { pageZoomFactor } from '../../shared/page-zoom'
  * at scale 1 keeps the host's numbers.
  */
 
-interface Held {
-  raw: string
-  written: string
-}
-
 /** Trim a computed page length to the shape a CSS declaration keeps. */
 function length(value: number) {
   return `${Math.round(value * 100) / 100}px`
 }
 
 export function install() {
-  const held = new Map<HTMLElement, Map<string, Held>>()
+  const writes = heldWrites()
   let panel: HTMLElement | null = null
   let handle: HTMLElement | null = null
   /** The subscriptions hearing the two elements standing right now. */
   const heard: (() => void)[] = []
   let queued = false
 
-  function apply(element: HTMLElement, property: string, raw: string, next: string) {
-    const own = held.get(element)
-    if (next === raw) {
-      if (own !== undefined) {
-        own.delete(property)
-        if (own.size === 0) held.delete(element)
-      }
-      return
-    }
-    element.style.setProperty(property, next)
-    const map = own ?? new Map<string, Held>()
-    map.set(property, { raw, written: next })
-    held.set(element, map)
-  }
-
-  function restore() {
-    for (const [element, declarations] of held) {
-      for (const [property, record] of declarations) {
-        if (element.style.getPropertyValue(property) === record.written) element.style.setProperty(property, record.raw)
-      }
-    }
-    held.clear()
-  }
-
-  /** The host's own value, unwrapping this feature's write while it still stands. */
-  function hostValue(element: HTMLElement, property: string, current: string) {
-    const record = held.get(element)?.get(property)
-    return record !== undefined && record.written === current ? record.raw : current
-  }
-
   function fixPanel(factor: number) {
     if (panel === null) return
     const current = panel.style.getPropertyValue('width').trim()
     if (!current.endsWith('px')) return
-    const raw = hostValue(panel, 'width', current)
+    const raw = writes.hostValue(panel, 'width', current)
     const width = Number.parseFloat(raw)
     if (!Number.isFinite(width)) return
     // The column the grid gives this panel is its ceiling: a panel wider than
@@ -79,24 +45,26 @@ export function install() {
     const track = column()
     const limit = track === null || track.clientWidth <= 0 ? Number.POSITIVE_INFINITY : track.clientWidth
     const page = length(Math.min(width / factor, limit))
-    apply(panel, 'width', raw, page)
+    writes.write(panel, 'width', raw, page)
     // The panel carries its width twice, and the second declaration states its
     // own number: it is read from itself rather than from the width.
     const sidebar = panel.style.getPropertyValue('--dsh-sidebar-width').trim()
-    if (sidebar.endsWith('px')) apply(panel, '--dsh-sidebar-width', hostValue(panel, '--dsh-sidebar-width', sidebar), page)
+    if (sidebar.endsWith('px')) {
+      writes.write(panel, '--dsh-sidebar-width', writes.hostValue(panel, '--dsh-sidebar-width', sidebar), page)
+    }
   }
 
   function fixHandle(factor: number) {
     if (handle === null || panel === null) return
     const current = handle.style.getPropertyValue('left').trim()
     if (!current.endsWith('px')) return
-    const raw = hostValue(handle, 'left', current)
+    const raw = writes.hostValue(handle, 'left', current)
     const left = Number.parseFloat(raw)
     if (!Number.isFinite(left)) return
     // The handle sits on the panel's visible left edge, which is the width the
     // panel actually took rather than the one the host wrote for it.
     const page = length(document.documentElement.clientWidth / factor - panel.offsetWidth)
-    apply(handle, 'left', raw, page)
+    writes.write(handle, 'left', raw, page)
   }
 
   function sync() {
@@ -113,7 +81,7 @@ export function install() {
     }
     const factor = pageZoomFactor()
     if (factor === 1) {
-      restore()
+      writes.restore()
       return
     }
     fixPanel(factor)
@@ -142,6 +110,6 @@ export function install() {
     panels.release()
     handles.release()
     for (const stop of heard.splice(0)) stop()
-    restore()
+    writes.restore()
   }
 }
