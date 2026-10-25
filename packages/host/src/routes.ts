@@ -197,6 +197,13 @@ async function deleteSession(ctx: DshContext, req: DshRequest, res: DshResponse)
     sendJson(res, 403, { ok: false, error: 'session directory outside the sessions root' })
     return
   }
+  // A session opened while the scan above ran is live by now, and the first
+  // check could not see it: asking again leaves only the gap between this check
+  // and the removal.
+  if (sessionIsLive(ctx, sessionId)) {
+    sendJson(res, 409, { ok: false, error: 'session is open' })
+    return
+  }
   // A storage fault propagates to the route's 500 answer, carrying the OS error.
   rmSync(dir, { recursive: true, force: true })
   await unarchiveSession(ctx, sessionId)
@@ -277,6 +284,10 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
       path: ROUTE_PREFIX,
       handler: (req: DshRequest, res: DshResponse) => {
         if (methodRefused(req, res, ['GET', 'HEAD'])) return
+        // The page's own reading material, behind the same fence as every other
+        // route: a same-origin subresource sends no Origin and a `same-origin`
+        // `Sec-Fetch-Site`, both of which the fence allows (D75).
+        if (fenceRefused(ctx, req, res)) return
         /* v8 ignore next -- node:http always sets url on server requests. */
         const sub = new URL(req.url ?? '/', 'http://x').pathname.slice(ROUTE_PREFIX.length)
         if (sub === `/${COPY_FILE}`) {
