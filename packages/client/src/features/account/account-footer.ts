@@ -11,6 +11,7 @@ import type { AccountSurfaceMode } from './surface'
 import { createAccountDrawer } from './account-drawer'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, pressKeepsPopoverOpen, registerPopover, unregisterPopover } from '../../shared/popover'
 import { inPageBox } from '../../shared/page-zoom'
+import { resolveDisplayName } from '../../shared/identity'
 import type { HostContext } from '@dsh-claude-style/engine/host'
 import type { CloseReason, FeatureHandle } from '@dsh-claude-style/engine/scheduler'
 import type { FeatureUi } from '../../core/feature'
@@ -45,6 +46,8 @@ export interface FooterHandle extends FeatureHandle {
 export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The marker the stylesheet hangs the host account row's Claude shape on. */
   const HOST_ROW_ATTR = 'data-dsh-claude-account-host-row'
+  /** The host row's own label, kept while the skin's name stands in its place. */
+  const HOST_ROW_NAME_ATTR = 'data-dsh-claude-account-host-name'
   const profile = createAccountProfile(ctx, () => {
     if (typeof ui.schedule === 'function') ui.schedule()
   })
@@ -367,7 +370,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const injected = document.querySelectorAll('.dsh-claude-account-inject')
     for (let i = 0; i < injected.length; i++) injected[i].remove()
     const marked = document.querySelectorAll(`[${HOST_ROW_ATTR}]`)
-    for (let m = 0; m < marked.length; m++) marked[m].removeAttribute(HOST_ROW_ATTR)
+    for (let m = 0; m < marked.length; m++) {
+      // The row outlives the takeover, so its own label goes back with it.
+      restoreHostRowName(marked[m])
+      marked[m].removeAttribute(HOST_ROW_ATTR)
+    }
     // The host's row outlives this generation, so its listeners come off here:
     // a switch off and on again must not leave a second set behind.
     for (const [row, bindings] of hostRowBindings) {
@@ -396,6 +403,53 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const row = synthetic ? drawer.btn() : hostMenu.trigger()
     if (row === null) return
     rowBoxes = { row, rowRect: inPageBox(row.getBoundingClientRect()), footRect: synthetic ? inPageBox(footArea.getBoundingClientRect()) : null }
+  }
+
+  /**
+   * The text node the host writes its own account label into — the account
+   * number a Desktop signs in with. The row is the host's own button, so the
+   * label is found rather than named: the first text node with words in it.
+   */
+  function hostRowLabelNode(row: Element): Text | null {
+    const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      if ((node.nodeValue || '').trim() !== '') return node as Text
+    }
+    return null
+  }
+
+  /**
+   * Put the skin's name where the host's own label stands.
+   *
+   * The settings page promises the stored name shows on the account row, and
+   * on the host path that row is the host's own button: its box, its picture
+   * and its click stay exactly as the host drew them, and only the words
+   * change. A host that signed in writes the account number there, which is
+   * the one thing that promise exists to keep off the row. Every pass
+   * re-checks, because the host renders the row itself and may write its own
+   * label back.
+   */
+  function syncHostRowName(row: Element) {
+    // Nothing resolved: the host's own label is the only name there is.
+    const name = resolveDisplayName()
+    if (name === '') return
+    const node = hostRowLabelNode(row)
+    if (node === null) return
+    const label = (node.nodeValue || '').trim()
+    if (label === name) return
+    // Kept on the row itself: the node belongs to the host, and handing the
+    // footer back must leave the host's own label where it found it.
+    if (!row.hasAttribute(HOST_ROW_NAME_ATTR)) row.setAttribute(HOST_ROW_NAME_ATTR, label)
+    node.nodeValue = name
+  }
+
+  /** Hand the host's own label back to the row it came from. */
+  function restoreHostRowName(row: Element) {
+    if (!row.hasAttribute(HOST_ROW_NAME_ATTR)) return
+    const original = row.getAttribute(HOST_ROW_NAME_ATTR) || ''
+    row.removeAttribute(HOST_ROW_NAME_ATTR)
+    const node = hostRowLabelNode(row)
+    if (node !== null && (node.nodeValue || '').trim() !== original) node.nodeValue = original
   }
 
   /**
@@ -454,6 +508,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // DOM and flow, never moved or copied.
     const hostTrigger = hostMenu.trigger()
     if (hostTrigger !== null && !hostTrigger.hasAttribute(HOST_ROW_ATTR)) hostTrigger.setAttribute(HOST_ROW_ATTR, '')
+    // The host path's row holds the host's own label — the account number a
+    // signed-in Desktop shows. The skin's name stands in its place.
+    if (hostTrigger !== null && surface.mode() === 'host') syncHostRowName(hostTrigger)
     // The entry row — the host's own row, or the self-built button — is the
     // shape both cards have to match, so its box is measured here and handed
     // to the stylesheet. The hover preference is bound on the host's row in
