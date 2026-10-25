@@ -103,6 +103,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The list's additions, marked before the frame paints; see watchAdditions. */
   let stopAdditions: (() => void) | null = null
   let additionsRoot: Element | null = null
+  /** The slot service's injected scope, released with this install. */
+  let slotsFiber: { dispose?: () => void } | null = null
   let disposed = false
 
   /** The section root a label sits in: the label's header, and that header's parent. */
@@ -325,7 +327,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** Register the delete action in the host's row-action list, once its declaration is on the ledger. */
   function registerDeleteAction() {
     if (typeof ctx.inject !== 'function') return
-    ctx.inject(['slots'], scope => {
+    // The injected scope holds the slot registration; the teardown releases it,
+    // or the action outlives the feature and keeps rendering on every host row.
+    slotsFiber = ctx.inject(['slots'], scope => {
       const slots = hostSlots(scope)
       if (slots === null || typeof slots.inject !== 'function') return
       scope.effect(() => slots.inject(SESSION_ROW_ACTION_SLOT, () => slots.register(
@@ -474,6 +478,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   return () => {
     disposed = true
     toast.dispose()
+    if (slotsFiber !== null && typeof slotsFiber.dispose === 'function') slotsFiber.dispose()
+    slotsFiber = null
     stopAdditions?.()
     stopAdditions = null
     additionsRoot = null

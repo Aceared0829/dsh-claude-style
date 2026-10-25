@@ -88,6 +88,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   let timer: number | null = null
   let cancelTick: (() => void) | null = null
   let queued: Promise<void> | null = null
+  /** The badge exits still playing; the teardown cancels every one of them. */
+  const badgeTimers = new Set<number>()
 
   // The detail choice is read on every pass; a change of it rewrites the line
   // at once rather than waiting out the standing word's lock.
@@ -282,11 +284,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     }
     if (badge.hidden || badge.hasAttribute(BADGE_LEAVING_ATTR)) return
     badge.setAttribute(BADGE_LEAVING_ATTR, '')
-    window.setTimeout(() => {
+    const exit = window.setTimeout(() => {
+      badgeTimers.delete(exit)
       if (!badge.hasAttribute(BADGE_LEAVING_ATTR)) return
       badge.removeAttribute(BADGE_LEAVING_ATTR)
       badge.hidden = true
     }, motionMs('--dsh-claude-duration-exit'))
+    badgeTimers.add(exit)
   }
 
   /** Take one row's line down and give the host's words back. */
@@ -348,6 +352,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   return () => {
     offDetailChoice()
     runningRows.release()
+    for (const exit of badgeTimers) window.clearTimeout(exit)
+    badgeTimers.clear()
     if (timer !== null) window.clearInterval(timer)
     timer = null
     if (cancelTick !== null) cancelTick()
