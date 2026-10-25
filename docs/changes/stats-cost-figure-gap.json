@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-25",
+  "group": "fixes",
+  "order": 16,
+  "external": false,
+  "zh": "修复独立成行时费用数字与前后数字之间的间距比其他数字之间更宽的问题，各数字现在按行自身的间距等距排布。",
+  "en": "Fix the cost figure standing farther from the figures around it than they stand from each other when the statistics have a line of their own: every figure now keeps the line's own gap."
+}
