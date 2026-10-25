@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-25",
-  "group": "fixes",
-  "order": 15,
-  "external": false,
-  "zh": "修复独立成行时统计行比输入区底部那一行更高的问题：统计行现在与那一行同高，紧凑底栏仍占工具栏的一行。",
-  "en": "Fix the statistics standing taller than the composer's bottom row when they have a line of their own: the line now matches that row's height, while the compact footer keeps the toolbar row's."
-}

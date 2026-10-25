@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 11,
-  "external": false,
-  "zh": "修复内容搜索对含冒号或斜杠的会话 id 写不进缓存、以及一次读取失败让该会话从结果中消失的问题：缓存文件按 id 的哈希命名，读取失败的会话保留上一份语料并在下一轮重试。",
-  "en": "Fix content search failing to cache sessions whose ids carry a colon or a slash, and a session disappearing from results after one unreadable pass: cache files are named by a hash of the id, and a session that cannot be read keeps its previous corpus and is retried on the next pass."
-}

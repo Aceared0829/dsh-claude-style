@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "zh": "修复「进行中」分段仍显示已归档会话的问题：切换分段会同步宿主的筛选与分组，已归档改用宿主自己的列表，归档行保留删除按钮。",
-  "en": "Fix the In progress section still listing archived conversations: switching the segment now drives the host's filter and grouping, the archived view uses the host's own list, and its rows keep the delete button."
-}

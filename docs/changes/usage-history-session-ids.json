@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 10,
-  "external": false,
-  "zh": "修复用量面板丢失账本安装前的历史、以及插件生成的会话不计入用量的问题：用量折叠按宿主认的逻辑会话 id 读取日志，账本没有记录的日子由本地折叠补齐。",
-  "en": "Fix the usage panel losing history from before the cost ledger existed and sessions with plugin-generated ids never reaching the totals: the fold now reads logs by the host's logical session id, and days the ledger never recorded are filled from the local fold."
-}

@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "security",
-  "order": 5,
-  "external": false,
-  "zh": "修复模型文案、字体与构建资源路由缺少同源栅栏的问题：这三个入口与其余私有路由共用同一道校验，非本机页面不能再借它们探测用户自置的字体。",
-  "en": "Fix the model copy, font and built-asset routes missing the same-origin fence every other private route carries: all three now pass the same check, so a page outside this machine can no longer probe the fonts a reader dropped in."
-}

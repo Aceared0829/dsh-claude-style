@@ -1,8 +1,0 @@
-{
-  "at": "2026-10-24",
-  "group": "fixes",
-  "order": 13,
-  "external": false,
-  "zh": "修复关闭工作区开关后归档删除按钮仍在渲染、占位文案不随特性退出还原、折叠动画期间的第二次点击被丢弃，以及等待徽章退场定时器不随特性停止的问题。",
-  "en": "Fix the archived-row delete action staying mounted after the workspace switch is turned off, placeholder text not being restored when the feature stands down, a second fold click dropped during the closing animation, and the wait badge's exit timer outliving its feature."
-}
