@@ -1,3 +1,4 @@
+import { COMPOSER_SELECTOR, RIGHTBAR_COLUMN_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { PAGE_ZOOM_ATTR } from '../../constants'
@@ -5,26 +6,23 @@ import { heldWrites } from '../../shared/held-writes'
 import { pageZoomFactor } from '../../shared/page-zoom'
 
 /**
- * The bottom panel of a third-party sidebar, placed in the page's pixels.
+ * The bottom panel of `dsh-better-sidebar`, placed in the page's pixels.
  *
- * The panel is laid out from the viewport's pixels by the plugin that owns it,
- * while the page's zoom scales the fixed host it hangs in a second time: at
- * 1.25x the panel leaves the viewport, at 0.8x it stands over the conversation.
- * Its own size already carries the factor, so only the edges are taken from what
- * already sits in the page — the two side columns and the composer's seat.
- * A sidebar being dragged keeps its own layout, so nothing is written until the
- * drag ends; a page at scale 1 keeps every host value.
+ * The plugin lays the panel out from the viewport's pixels while the page's zoom
+ * scales the fixed host it hangs in a second time: at 1.25x the panel leaves the
+ * viewport, at 0.8x it stands over the conversation. Its own size already
+ * carries the factor, so only the edges are taken from what already sits in the
+ * page — the two side columns and the composer's seat, read through the host's
+ * contracts and the skin's own part mark. A column being dragged keeps its own
+ * layout, so nothing is written until the drag ends; a page at scale 1 keeps
+ * every value the plugin wrote.
  */
 
-/** The bottom panel a sidebar plugin mounts (its own module's class prefix). */
-const BOTTOM_PANEL_SELECTOR = '[class*="_bottomPanel"]'
-/** The left column the panel starts from. */
-const LEFT_COLUMN_SELECTOR = '[class*="_sidebarCol"]'
-/** The right column the panel ends at. */
-const RIGHT_COLUMN_SELECTOR = '[class*="_rightbarCol"]'
-/** The composer's seat: the panel starts under its bottom edge. */
-const COMPOSER_SEAT_SELECTOR = '[class*="_composerSeat"]'
-/** Raised on the body while a side column is being dragged. */
+/** The panel the plugin mounts, under its own mark. */
+const BOTTOM_PANEL_SELECTOR = '[data-dsh-bottom-panel]'
+/** The left sidebar column, marked by the parts pass (engine/parts-table.ts). */
+const LEFT_COLUMN_SELECTOR = '[data-dsh-claude-part~="sidebar-column"]'
+/** Raised on the body by the plugin while a column is being dragged. */
 const SIDEBAR_DRAGGING_ATTRIBUTE = 'data-dsh-sidebar-dragging'
 
 /** Trim a computed page length to the shape a CSS declaration keeps. */
@@ -66,9 +64,11 @@ export function install() {
     place(panel, 'width', (right.left - left.right) / factor)
     place(panel, 'top', bottom.bottom / factor)
     place(panel, 'height', (window.innerHeight - bottom.bottom) / factor)
-    // The panel's own anchor is the host's bottom edge; the four lengths above
-    // state both edges already, so the host's anchor must not stand beside them.
-    if (panel.style.getPropertyValue('bottom').trim() !== 'auto') panel.style.setProperty('bottom', 'auto', 'important')
+    // The plugin anchors the panel to its own bottom edge in its stylesheet; the
+    // four lengths above state both edges already, so the anchor is written
+    // beside them and put back with the rest when the page returns to scale 1.
+    const anchor = panel.style.getPropertyValue('bottom').trim()
+    writes.write(panel, 'bottom', writes.hostValue(panel, 'bottom', anchor), 'auto')
   }
 
   function sync() {
@@ -93,8 +93,8 @@ export function install() {
   // reach; the bus's kept matches hear it arrive and leave.
   const panels = observeMatches<HTMLElement>(BOTTOM_PANEL_SELECTOR, schedule)
   const leftColumn = cacheFirstMatch<HTMLElement>(LEFT_COLUMN_SELECTOR)
-  const rightColumn = cacheFirstMatch<HTMLElement>(RIGHT_COLUMN_SELECTOR)
-  const composerSeat = cacheFirstMatch<HTMLElement>(COMPOSER_SEAT_SELECTOR)
+  const rightColumn = cacheFirstMatch<HTMLElement>(RIGHTBAR_COLUMN_SELECTOR)
+  const composerSeat = cacheFirstMatch<HTMLElement>(COMPOSER_SELECTOR)
   // The factor rides an attribute on the body, so a change of zoom re-derives
   // every edge; the drag flag rides the body too, and its end re-derives them.
   const stopZoom = subscribeMutations(document.body, { attributes: true, attributeFilter: [PAGE_ZOOM_ATTR] }, schedule)
