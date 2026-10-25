@@ -52,6 +52,20 @@ function stillFirstMatch(element: Element, selector: string) {
   return true
 }
 
+/** The batch count the one shared body watch has seen: every cached seat forgets its answer when this moves. */
+let matchEpoch = 0
+/** Whether the shared body watch is open. One is enough for every seat, and it is never closed. */
+let matchEpochWatched = false
+
+/** Open the one body watch the cached seats read: the first cacheFirstMatch call does it. */
+function openMatchEpochWatch() {
+  if (matchEpochWatched) return
+  matchEpochWatched = true
+  subscribeMutations(document.body, { subtree: true, childList: true }, () => {
+    matchEpoch += 1
+  })
+}
+
 /**
  * The first match of `selector`, resolved once and kept while it stays the
  * first match (D40): a pass re-reads it, and the document is queried again only
@@ -63,24 +77,29 @@ function stillFirstMatch(element: Element, selector: string) {
  * most of the pages a pass runs over — the hero root on a conversation page,
  * the settings nav list away from the dialog — so a query re-issued per pass
  * paid a document walk for an answer that only the host's own mounting can
- * change. A batch that adds or removes nodes asks for the query once more, and
- * this subscription exists whether or not a reader has asked for anything yet,
- * so no answer is kept across a mount.
+ * change.
+ *
+ * One body watch serves every cached seat, opened by the first reader and never
+ * closed: a seat created inside `install()` would otherwise add a subscription
+ * per enable, and the batch the watch hears is the only thing that can change a
+ * kept answer. The watch moves an epoch rather than clearing each reader by
+ * hand, so a reader that has not asked since the last batch drops its answer on
+ * the next call.
  *
  * Exported for the seats one feature alone reads (a header, a slot, a meter):
  * the mechanism lives once, the selector stays with its reader.
  */
 export function cacheFirstMatch<T extends Element>(selector: string) {
+  openMatchEpochWatch()
   let kept: T | null = null
   let answered = false
-  // The subscription outlives the reader on purpose: a generation whose
-  // teardown a client reload dropped would otherwise keep an answer with
-  // nothing left to clear it.
-  subscribeMutations(document.body, { subtree: true, childList: true }, () => {
-    kept = null
-    answered = false
-  })
+  let seenEpoch = matchEpoch
   return () => {
+    if (seenEpoch !== matchEpoch) {
+      kept = null
+      answered = false
+      seenEpoch = matchEpoch
+    }
     if (kept !== null && stillFirstMatch(kept, selector)) return kept
     if (kept === null && answered) return null
     kept = document.querySelector<T>(selector)

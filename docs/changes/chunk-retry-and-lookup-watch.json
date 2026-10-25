@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-24",
+  "group": "fixes",
+  "order": 14,
+  "external": false,
+  "zh": "修复延后加载的功能块一次失败后再也不重试、以及反复开关功能累积页面观察的问题：失败的块加载会被遗忘并在下次启用时重试，宿主查找共用一条页面观察；分块脚本超时也会失败而不是无限挂起。",
+  "en": "Fix deferred feature chunks never retrying after one failed load and feature switches accumulating page observers: a failed chunk is forgotten and retried on the next enable, host lookups share one page observation, and a chunk whose script never arrives now times out instead of hanging."
+}

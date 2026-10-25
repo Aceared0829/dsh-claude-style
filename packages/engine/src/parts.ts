@@ -47,6 +47,12 @@ export interface PartsVocabulary extends PartsTableVocabulary {
 let adopted: PartsVocabulary | null = null
 
 /**
+ * The last generation whose marking pass installed: a teardown that finds a
+ * newer one here leaves the marks standing, because they are the newer one's.
+ */
+let lastPartsGeneration = 0
+
+/**
  * The vocabulary, or a refusal: the marking pass writes the skin's own
  * attributes, so a pass running before the hand-over is a wiring mistake.
  */
@@ -378,10 +384,16 @@ export function clearParts(root: ParentNode = document) {
  * for one more pass, through `onMarked`. The next pass writes nothing (every
  * mark already holds) and the walk settles.
  *
+ * A teardown that runs after a newer generation has installed leaves the marks
+ * standing: they are the newer generation's, and clearing them would hand it a
+ * page without the parts its sheet reads (D74, as mountStylesheet guards its
+ * own sheet).
+ *
  * @param next - the skin's own attribute vocabulary and menu anchors (D73).
  * @param onMarked - called once per batch that changed a mark.
  */
 export function installParts(next: PartsVocabulary, onMarked?: () => void) {
+  const generation = ++lastPartsGeneration
   adopted = next
   LOOKUPS = buildLookups(next)
   ANCHOR_SELECTOR = partRegions(next).map((region) => region.within).join(', ')
@@ -439,6 +451,8 @@ export function installParts(next: PartsVocabulary, onMarked?: () => void) {
   })
   return () => {
     stop()
-    clearParts()
+    // A newer generation installed after this one: its marks are the ones
+    // standing, and clearing them here would strip the page it just marked.
+    if (lastPartsGeneration === generation) clearParts()
   }
 }

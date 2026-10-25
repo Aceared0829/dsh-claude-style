@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-24",
+  "group": "fixes",
+  "order": 12,
+  "external": false,
+  "zh": "修复单个特性的失败牵连整页的问题：设置写入被拒绝时重新读取存储值，事件分发与滚动缓动逐个隔离，measure 与 sync 分别累计连续失败次数。",
+  "en": "Fix one feature's failure spreading across the page: a rejected settings write reads the stored value back, event dispatch and scroll easing are isolated per feature, and measure and sync count consecutive failures apart."
+}
