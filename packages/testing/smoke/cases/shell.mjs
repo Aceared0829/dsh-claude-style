@@ -124,6 +124,10 @@ export default {
         row.width === row.headerWidth && row.counted === row.headerWidth &&
         plate.width < row.width - chip.width,
       JSON.stringify({ justifyContent: row.justifyContent, pointerEvents: row.pointerEvents, row: row.width, counted: row.counted, plate: plate.width, chip: chip.width }))
+    check('the lift rides the plate and the button, leaving the row that spans the header untranslated',
+      row.transform !== undefined && row.transform.row === 'none' &&
+        row.transform.list !== undefined && row.transform.list !== 'none',
+      JSON.stringify(row.transform))
     check('the plate is the skin\'s small switch, carrying its shell and its own radius',
       plate.radius === '7px' && plate.padding === '2px' && plate.gap === '2px' && plate.background !== 'rgba(0, 0, 0, 0)',
       JSON.stringify(plate))

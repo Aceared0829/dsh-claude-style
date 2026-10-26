@@ -187,6 +187,9 @@
       r.viewRow = {
         justifyContent: rowStyle.justifyContent,
         pointerEvents: rowStyle.pointerEvents,
+        // The lift rides the content, not the row: a translated row would put
+        // its full-width box over the header's actions (#174).
+        transform: { row: rowStyle.transform, list: listStyle.transform },
         width: Math.round(rowBox.width),
         headerWidth: rowHeader.clientWidth,
         counted: row.clientWidth,

@@ -55,6 +55,22 @@ body[data-dsh-claude-style] [data-dsh-view-tabs-row] {
   gap: 6px;
   pointer-events: none;
 }
+/* What rises is the content, not the row. Translating the row would drag its
+   full-width box onto the title row, where it covers the header's actions; macOS
+   reads the box rather than pointer-events for its native drag region, so a
+   press on a button under it moves the window (#174). The shift already keeps
+   the content clear of the title and the actions sideways. */
+body[data-dsh-claude-style] [data-dsh-view-tabs-row] {
+  transform: none;
+}
+body[data-dsh-claude-style] [data-dsh-view-tabs-row] > * {
+  transform: translateY(var(--dsh-view-tabs-shift, -10px));
+}
+/* The Windows titlebar mode places the strip itself and writes no shift; the
+   content keeps out of the translate there. */
+body[data-dsh-claude-style] [data-dsh-titlebar-tabs] [data-dsh-view-tabs-row] > * {
+  transform: none;
+}
 /* `centerCol` is the pane holding the header AND the transcript, so hovering the
    strip itself keeps it up, while the right sidebar — which sits outside it —
    does not bring it back. */

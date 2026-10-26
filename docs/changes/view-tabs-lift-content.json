@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 2,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "修复 macOS 上标签条上抬后标题栏按钮间歇点不动：上抬的只有标签与更多按钮，跨过整个标题行的行留在自己的位置，不再盖住标题栏右上角的按钮，按住按钮也不会拖动窗口。",
+  "en": "Fix the titlebar buttons on macOS intermittently ignoring a press once the view-tab strip rises: only the tabs and the overflow button take the lift, while the row spanning the header stays where it is and no longer covers the buttons at the header's right end, so holding one drags no window."
+}
