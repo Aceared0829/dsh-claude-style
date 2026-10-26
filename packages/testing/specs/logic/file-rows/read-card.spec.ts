@@ -9,7 +9,7 @@
  * @risk A file the model read shows the wrong lines or wrong line numbers, or a result that is not a read is drawn as a file window.
  */
 import { expect, test } from 'vitest'
-import { chatFileOperation, chatFileOperationTitle, chatFileReadCard, chatFileReadEnvelope, chatFileReadMeta } from '@dsh-claude-style/client/pure'
+import { fileToolOperation, chatFileOperationTitle, chatFileReadCard, chatFileReadEnvelope, chatFileReadMeta } from '@dsh-claude-style/client/pure'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 
 /** One settled read result: its arguments, its single text block and its own metadata. */
@@ -29,11 +29,11 @@ function envelope(body: string, path = 'app.js') {
 }
 
 test('the three tools that touch a file map to their own operation, and anything else to none', () => {
-  expect(chatFileOperation('read')).toBe('read')
-  expect(chatFileOperation('edit')).toBe('edit')
-  expect(chatFileOperation('write')).toBe('write')
-  expect(chatFileOperation('bash')).toBe(null)
-  expect(chatFileOperation('read_image')).toBe(null)
+  expect(fileToolOperation('read')).toBe('read')
+  expect(fileToolOperation('edit')).toBe('edit')
+  expect(fileToolOperation('write')).toBe('write')
+  expect(fileToolOperation('bash')).toBe(null)
+  expect(fileToolOperation('read_image')).toBe(null)
 })
 
 test('each operation reads the host\'s own title key', () => {

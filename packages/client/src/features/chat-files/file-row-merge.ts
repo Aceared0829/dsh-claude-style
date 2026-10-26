@@ -1,6 +1,7 @@
 import { CHAT_CALL_SELECTOR, FLOW_BLOCK_SELECTOR, PROCESS_CONTENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { notifyAll } from '@dsh-claude-style/engine/notify'
-import type { FileHunk, FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
+import type { FileHunk, FileReadCard, FileRowState } from './file-row-model'
+import type { FileToolOperation } from '../../shared/file-tool'
 
 /**
  * The file row's read-across-calls half: the calls that touched one file
@@ -34,7 +35,7 @@ export interface FileMergeRow {
    */
   callId: string
   path: string
-  operation: FileRowOperation
+  operation: FileToolOperation
   hunks: readonly FileHunk[]
   state: FileRowState
   /** The window it read, for a read call that has one. */
@@ -52,7 +53,7 @@ export interface FileMergeView {
   /** Whether any call of the file is still running. */
   running: boolean
   /** The operation the file's work last reached: the row wears its icon and title. */
-  operation: FileRowOperation
+  operation: FileToolOperation
   /** The file's last read, for a group whose calls changed nothing. */
   read: FileReadCard | null
 }

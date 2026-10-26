@@ -1,5 +1,7 @@
 import { callString } from '../../shared/call-args'
 import type { CallArgs } from '../../shared/call-args'
+import { fileToolOperation } from '../../shared/file-tool'
+import type { FileToolOperation } from '../../shared/file-tool'
 import type { CopyKey } from './copy'
 import type { HostText } from '@dsh-claude-style/engine/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
@@ -47,12 +49,6 @@ export interface FileHunk {
 /** Where a file row's call stands. */
 export type FileRowState = 'preparing' | 'running' | 'ok' | 'error' | 'stopped'
 
-/**
- * What one row did to its file: a read of it, or one of the two changes
- * to it. The names are the host's own tool-view keys and its variant names.
- */
-export type FileRowOperation = 'read' | 'edit' | 'write'
-
 /** One line of a read card: its file line number and its text, without its newline. */
 export interface FileReadLine {
   number: number
@@ -67,16 +63,8 @@ export interface FileReadCard {
   lang?: string
 }
 
-/** The operation a tool name stands for, or null for a tool that is not a file operation. */
-export function chatFileOperation(toolName: string): FileRowOperation | null {
-  if (toolName === 'read') return 'read'
-  if (toolName === 'edit') return 'edit'
-  if (toolName === 'write') return 'write'
-  return null
-}
-
 /** The host's title key for one operation. */
-export function chatFileOperationTitle(operation: FileRowOperation) {
+export function chatFileOperationTitle(operation: FileToolOperation) {
   if (operation === 'read') return 'tool.title.read'
   return operation === 'write' ? 'tool.title.write' : 'tool.title.edit'
 }
@@ -296,7 +284,7 @@ export function chatFileDiffHunks(block: HostChatBlock, args: CallArgs | null) {
 export function chatFileRowModel(toolName: string, block: HostChatBlock, args: CallArgs | null, cwd: string | undefined, home: string | undefined) {
   const done = 'kind' in block
   const head = chatFileCallHead(block)
-  const operation = chatFileOperation(toolName) ?? 'edit'
+  const operation = fileToolOperation(toolName) ?? 'edit'
   const state: FileRowState = !done
     ? block.phase === 'preparing' ? 'preparing' : 'running'
     : block.error?.code === 'interrupted' ? 'stopped' : block.isError ? 'error' : 'ok'

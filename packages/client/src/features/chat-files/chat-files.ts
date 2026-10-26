@@ -1,13 +1,15 @@
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import * as React from 'react'
-import { CHAT_DIFF_MAX_LINES, CHAT_FILE_ADD_CLASS, CHAT_FILE_BODY_CLASS, CHAT_FILE_CHEVRON_CLASS, CHAT_FILE_DEL_CLASS, CHAT_FILE_DIFF_CLASS, CHAT_FILE_HIDDEN_CLASS, CHAT_FILE_INSPECT_CLASS, CHAT_FILE_IO_CLASS, CHAT_FILE_IO_DIVIDER_CLASS, CHAT_FILE_IO_LABEL_CLASS, CHAT_FILE_IO_SECTION_CLASS, CHAT_FILE_IO_TEXT_CLASS, CHAT_FILE_LEADING_CLASS, CHAT_FILE_LINK_CLASS, CHAT_FILE_MERGED_COPY, CHAT_FILE_MERGE_ATTR, CHAT_FILE_MERGE_GONE, CHAT_FILE_MERGE_HEAD, CHAT_FILE_MERGE_MEMBER, CHAT_FILE_OP_ATTR, CHAT_FILE_OP_CLASS, CHAT_FILE_OP_IN_CLASS, CHAT_FILE_OP_OUT_CLASS, CHAT_FILE_OP_SWAPPING_CLASS, CHAT_FILE_READ_CLASS, CHAT_FILE_ROLL_CLASS, CHAT_FILE_ROLL_DIGIT_CLASS, CHAT_FILE_ROLL_IN_CLASS, CHAT_FILE_ROLL_MOVING_CLASS, CHAT_FILE_ROLL_OUT_CLASS, CHAT_FILE_ROW_CLASS, CHAT_FILE_ROW_LINE_CLASS, CHAT_FILE_SEAT, CHAT_FILE_SEP_CLASS, CHAT_FILE_STAT_CLASS, CHAT_FILE_SUFFIX_CLASS, CHAT_FILE_TITLE_CLASS, CHAT_FILE_TITLE_SLOT_CLASS, CHAT_READ_MAX_LINES, chatFileCallHead, chatFileCallId, chatFileDiffBlockLabels, chatFileDiffHunks, chatFileOperation, chatFileOperationTitle, chatFileReadBlockLabels, chatFileReadCard, chatFileRowModel, chatFileShortenPath, chatFileStateLabel, chatFileSummaryClassName } from './file-row-model'
+import { CHAT_DIFF_MAX_LINES, CHAT_FILE_ADD_CLASS, CHAT_FILE_BODY_CLASS, CHAT_FILE_CHEVRON_CLASS, CHAT_FILE_DEL_CLASS, CHAT_FILE_DIFF_CLASS, CHAT_FILE_HIDDEN_CLASS, CHAT_FILE_INSPECT_CLASS, CHAT_FILE_IO_CLASS, CHAT_FILE_IO_DIVIDER_CLASS, CHAT_FILE_IO_LABEL_CLASS, CHAT_FILE_IO_SECTION_CLASS, CHAT_FILE_IO_TEXT_CLASS, CHAT_FILE_LEADING_CLASS, CHAT_FILE_LINK_CLASS, CHAT_FILE_MERGED_COPY, CHAT_FILE_MERGE_ATTR, CHAT_FILE_MERGE_GONE, CHAT_FILE_MERGE_HEAD, CHAT_FILE_MERGE_MEMBER, CHAT_FILE_OP_ATTR, CHAT_FILE_OP_CLASS, CHAT_FILE_OP_IN_CLASS, CHAT_FILE_OP_OUT_CLASS, CHAT_FILE_OP_SWAPPING_CLASS, CHAT_FILE_READ_CLASS, CHAT_FILE_ROLL_CLASS, CHAT_FILE_ROLL_DIGIT_CLASS, CHAT_FILE_ROLL_IN_CLASS, CHAT_FILE_ROLL_MOVING_CLASS, CHAT_FILE_ROLL_OUT_CLASS, CHAT_FILE_ROW_CLASS, CHAT_FILE_ROW_LINE_CLASS, CHAT_FILE_SEAT, CHAT_FILE_SEP_CLASS, CHAT_FILE_STAT_CLASS, CHAT_FILE_SUFFIX_CLASS, CHAT_FILE_TITLE_CLASS, CHAT_FILE_TITLE_SLOT_CLASS, CHAT_READ_MAX_LINES, chatFileCallHead, chatFileCallId, chatFileDiffBlockLabels, chatFileDiffHunks, chatFileOperationTitle, chatFileReadBlockLabels, chatFileReadCard, chatFileRowModel, chatFileShortenPath, chatFileStateLabel, chatFileSummaryClassName } from './file-row-model'
 import { createFileMerge, rowCarrier } from './file-row-merge'
 import { copy } from './copy'
 import { callArgsOf } from '../../shared/call-args'
 import { motionReduced } from '../../core/prefs'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { motionMs } from '../../shared/motion'
-import type { FileReadCard, FileRowOperation, FileRowState } from './file-row-model'
+import { fileToolOperation } from '../../shared/file-tool'
+import type { FileReadCard, FileRowState } from './file-row-model'
+import type { FileToolOperation } from '../../shared/file-tool'
 import type { HostContext, HostFiber, HostText } from '@dsh-claude-style/engine/host'
 import type { HostChatBlock } from '@dsh-claude-style/contracts/services'
 import type { FeatureUi } from '../../core/feature'
@@ -162,7 +164,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The file's work moving on: the label leaving and the one taking its place,
     // in one grid cell so the path beside them does not move sideways
     // (transitions.dev's "Text states swap"; D40 for the animation choice).
-    const [swapFrom, setSwapFrom] = React.useState<FileRowOperation | null>(null)
+    const [swapFrom, setSwapFrom] = React.useState<FileToolOperation | null>(null)
     const shownOperation = React.useRef(operation)
     const labelRef = React.useRef<HTMLSpanElement | null>(null)
     React.useLayoutEffect(() => {
@@ -221,10 +223,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The operation block: the read family browses its file, the two mutations
     // edit it. The block swaps whole while the file's work moves on.
     const opBlockClass = CHAT_FILE_OP_CLASS + (swapFrom === null ? '' : ' ' + CHAT_FILE_OP_SWAPPING_CLASS)
-    const opIcon = (kind: FileRowOperation) => (kind === 'read'
+    const opIcon = (kind: FileToolOperation) => (kind === 'read'
       ? h(primitives.IconBrowseOutlineRegular, { size: 14 })
       : h(primitives.IconEditOutlineRegular, { size: 14 }))
-    const opLabel = (kind: FileRowOperation) => h(primitives.TextShimmer, { active: running, children: t(chatFileOperationTitle(kind)) })
+    const opLabel = (kind: FileToolOperation) => h(primitives.TextShimmer, { active: running, children: t(chatFileOperationTitle(kind)) })
     const operationIcon = swapFrom === null
       ? h('span', { className: opBlockClass }, opIcon(operation))
       : h('span', { className: opBlockClass },

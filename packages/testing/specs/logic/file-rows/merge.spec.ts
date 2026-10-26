@@ -10,7 +10,7 @@
  */
 import { expect, test } from 'vitest'
 import { byDocumentOrder, createFileMerge, mergeViews, rowCarrier } from '@dsh-claude-style/client/pure'
-import type { FileHunk, FileMergeRow, FileReadCard, FileRowOperation, FileRowState } from '@dsh-claude-style/client/pure'
+import type { FileHunk, FileMergeRow, FileReadCard, FileToolOperation, FileRowState } from '@dsh-claude-style/client/pure'
 import { CHAT_CALL_SELECTOR, FLOW_BLOCK_SELECTOR, PROCESS_CONTENT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { hostElement } from '../../fixtures/host-markup'
 
@@ -33,7 +33,7 @@ const content = () => hostElement(PROCESS_CONTENT_SELECTOR)
 
 let calls = 0
 /** One file row inside a content layer: the host's call row holding the row's root, as the host nests them. */
-function row(layer: Element, path: string, hunks: FileHunk[], state: FileRowState = 'ok', operation: FileRowOperation = 'edit', read: FileReadCard | null = null): FileMergeRow {
+function row(layer: Element, path: string, hunks: FileHunk[], state: FileRowState = 'ok', operation: FileToolOperation = 'edit', read: FileReadCard | null = null): FileMergeRow {
   calls += 1
   const callId = `call-${calls}`
   const carrier = hostElement(CHAT_CALL_SELECTOR, callId)
@@ -44,7 +44,7 @@ function row(layer: Element, path: string, hunks: FileHunk[], state: FileRowStat
 }
 
 /** One call the host runs through a row element it keeps for the file's next call. */
-function call(element: HTMLElement, callId: string, operation: FileRowOperation, hunks: FileHunk[], read: FileReadCard | null = null): FileMergeRow {
+function call(element: HTMLElement, callId: string, operation: FileToolOperation, hunks: FileHunk[], read: FileReadCard | null = null): FileMergeRow {
   return { element, callId, path: 'app.js', operation, hunks, state: 'ok', read }
 }
 
