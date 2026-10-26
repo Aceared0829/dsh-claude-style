@@ -203,11 +203,23 @@ const SCENARIOS = {
         const meter = read('[data-dsh-claude-meter-ring]')
         const card = read('[data-composer-card]')
         const row = read('[data-dsh-claude-part~="row"]')
+        // What stands past the row's own right edge: the row's scrollWidth is
+        // the largest such overflow, and the name says which part carries it.
+        const overflowing = (() => {
+          if (row === null) return []
+          const bound = row.getBoundingClientRect().right
+          return [...row.querySelectorAll('*')]
+            .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+            .filter(({ el, rect }) => rect.width > 0 && rect.right > bound + 1 && getComputedStyle(el).display !== 'none')
+            .map(({ el, rect }) => `${el.tagName.toLowerCase()}.${(typeof el.className === 'string' ? el.className : '').split(' ')[0]}+${Math.round(rect.right - bound)}`)
+            .slice(-6)
+        })()
         return {
           width: window.innerWidth,
           card: box(card),
           cardOver: card === null ? 0 : card.scrollWidth - card.clientWidth,
           rowOver: row === null ? 0 : row.scrollWidth - row.clientWidth,
+          overflowing,
           perm: box(perm),
           permMax: cap(perm),
           permEllipsis: permLabel === null ? null : getComputedStyle(permLabel).textOverflow,
@@ -227,7 +239,21 @@ const SCENARIOS = {
         inside(state.effort, state.card) && apart(state.meter, state.model) && apart(state.meter, state.effort)
       const narrow = await read()
       await page.setViewportSize({ width: 330, height: 844 })
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // The statistics fold onto a line of their own in a measure pass, and a
+      // fixed pause reads the row mid-move on a loaded machine. Wait for the
+      // row to hold its width for three frames, then read what settled.
+      await page.evaluate(() => new Promise((resolve) => {
+        const deadline = performance.now() + 4000
+        let held = 0
+        const step = () => {
+          const row = document.querySelector('[data-dsh-claude-part~="row"]')
+          const fits = row === null || row.scrollWidth <= row.clientWidth
+          held = fits ? held + 1 : 0
+          if (held >= 3 || performance.now() > deadline) resolve()
+          else requestAnimationFrame(step)
+        }
+        step()
+      }))
       const tight = await read()
       await page.setViewportSize({ width: 390, height: 844 })
       return [
@@ -243,7 +269,7 @@ const SCENARIOS = {
           JSON.stringify({ card: narrow.card, perm: narrow.perm, model: narrow.model, effort: narrow.effort, meter: narrow.meter })),
         check('再窄一些时控件仍留在卡片里，输入区也不再横向滚动',
           fits(tight) && tight.cardOver <= 0 && tight.rowOver <= 0,
-          JSON.stringify({ width: tight.width, card: tight.card, cardOver: tight.cardOver, rowOver: tight.rowOver, model: tight.model, effort: tight.effort, meter: tight.meter })),
+          JSON.stringify({ width: tight.width, card: tight.card, cardOver: tight.cardOver, rowOver: tight.rowOver, overflowing: tight.overflowing, perm: tight.perm, model: tight.model, effort: tight.effort, meter: tight.meter })),
         check('控制台没有异常', session.problems.length === 0, session.problems.slice(0, 3).join(' | ')),
       ]
     },
