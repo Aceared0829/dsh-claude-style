@@ -958,17 +958,20 @@ grid takes one
 equal column per week (twenty-six weeks), square cells from a 3px gutter, in
 Claude Code's blue data ramp (`#3b6ecf` mixed in at the shares `HOME_HEAT_RAMP`
 in `packages/client/src/constants.ts` lists, over the neutral empty cell); because the columns are fractions of the panel's own width, the newest
-week can never fall past the edge. Hovering a cell shows Claude Code's day tip at
-once: a solid pill in the label ink with the canvas tone for text (so it inverts
-with the theme), 13px medium, reading the day in the shell's language and the
-tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure the cell's heat
-is bucketed from; the pill is centred on its cell except where its own width
-would carry it past the panel's edge, and there it lines up with that cell's
-outer edge so it stays inside the panel, and it stands above its cell except
-where the cell holds more room below it, and there it hangs under the cell so it
-never reaches over the grid's top edge across the stat cells; the pill's own
-width and height are read off the cell the
-pointer is on (`packages/client/src/features/home/heat-tip.ts`).
+week can never fall past the edge. Hovering a cell raises Claude Code's day tip
+after a short rest: a solid pill in the label ink with the canvas tone for text
+(so it inverts with the theme), 13px medium, reading the day in the shell's
+language and the tokens that day spent ("Sep 9 — 15.9k tokens"), the same figure
+the cell's heat is bucketed from. The grid carries one pill and moves it onto the
+day the pointer names, so a crossing between two cells changes its words in place
+and leaves it standing over the gutters between them rather than building and
+dropping a box for every cell; it is centred on its day except where its own
+width would carry it past the panel's edge, and there it lines up with that
+cell's outer edge so it stays inside the panel, and it stands above its cell
+except where the cell holds more room below it, and there it hangs under the cell
+so it never reaches over the grid's top edge across the stat cells; its width is
+taken from the words it carries and its height from its own box
+(`packages/client/src/features/home/heat-tip.ts`).
 Models is Claude Code's own shape: one column
 per day of the chart's thirty-day window, stacked from the axis up with each
 model's slice in its rank's colour (ranks past the ramp share its last, grey
