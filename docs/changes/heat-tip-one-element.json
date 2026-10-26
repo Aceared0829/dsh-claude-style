@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "改善用量面板热力图的日提示：提示改为网格里常驻的一个元素，指针从一天移到另一天时在两个字之间移动与缩放，不再为每一格生成再销毁，指针移过格间空隙时也不再消失；出现前有一小段停顿，离开时随即淡出。",
+  "en": "Improve the usage panel's day tip: the tip is one element the grid keeps, so it travels and resizes between two days instead of being built and dropped for each cell, and crossing the gutters between cells no longer makes it disappear; it rests a moment before appearing and fades at once on the way out."
+}

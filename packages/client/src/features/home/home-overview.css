@@ -62,6 +62,10 @@ body[data-dsh-claude-style] .dsh-claude-home-heat {
   grid-auto-columns: 1fr;
   gap: 3px;
   align-content: start;
+  /* The grid is the plane the day tip is placed on: the pill's offsets are
+     lengths in this box (heat-tip.ts), so the grid is the element the pill is
+     positioned against. */
+  position: relative;
 }
 
 /* Claude Code's heat grid is a blue data ramp, not the brand ember: the empty
@@ -80,19 +84,24 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell {
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #161616) 11%, transparent);
 }
 
-/* Claude Code's day tip: a solid pill in the label ink over the cell, the day
-   and its messages in the host's raised-surface tone, the pairing the host's
-   own tooltip states. A wallpaper plugin clears `--dsw-alias-bg-base` to
-   transparent for the page's ground, so a canvas tone used as ink leaves the
-   words invisible; the surface tone survives that clearing. It appears the
-   moment the pointer is on the cell, and never takes the pointer itself. */
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip]:hover::after {
-  content: attr(data-tip);
+/* Claude Code's day tip: one pill the grid carries, which names the day the
+   pointer is on (heat-tip.ts). It appears after a short rest and grows from the
+   side it hangs on, and it leaves at once; its width, place and side are written
+   before the showing attribute, so a crossing stands over the next day on the
+   first frame rather than travelling there. The paint is solid label ink with the
+   host's raised-surface tone for the words — a wallpaper plugin clears
+   --dsw-alias-bg-base to transparent for the page's ground, so a canvas tone
+   used as ink leaves the words invisible. */
+body[data-dsh-claude-style] .dsh-claude-home-heat-hint {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
+  top: 0;
+  left: 0;
   z-index: 2;
-  transform: translateX(-50%);
+  box-sizing: border-box;
+  /* The pill is as wide as the day it names: it holds one line, and that line is
+     what the placement measures (heat-tip.ts). */
+  display: inline-flex;
+  align-items: center;
   padding: 5px 10px;
   border-radius: 8px;
   background: var(--dsw-alias-label-primary, #161616);
@@ -103,25 +112,35 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip]:hover::after {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
+  opacity: 0;
+  translate: var(--dsh-claude-heat-tip-x, 0px) var(--dsh-claude-heat-tip-y, 0px);
+  scale: var(--dsh-claude-scale-surface);
+  transform-origin: 50% 100%;
+  /* The showing rule swaps the fade's length through --dsh-claude-heat-hint-fade
+     and leaves transition-duration alone, so the reduced-motion rule
+     (theme/chrome.css) still outranks it. The pill travels and resizes on the
+     settling curve, so a run along a row reads as one pill following the pointer
+     rather than a box appearing under each day. */
+  --dsh-claude-heat-hint-fade: var(--dsh-claude-duration-hint-exit);
+  transition-property: opacity, scale, translate, width;
+  transition-duration: var(--dsh-claude-heat-hint-fade), var(--dsh-claude-heat-hint-fade), var(--dsh-claude-duration-move), var(--dsh-claude-duration-move);
+  transition-timing-function: var(--dsh-claude-ease-out), var(--dsh-claude-ease-out), var(--dsh-claude-ease-settle), var(--dsh-claude-ease-settle);
 }
 
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge="start"]:hover::after {
-  left: 0;
-  transform: none;
+/* Hanging under its cell, the pill grows from its own top edge. A pill that
+   crosses to the other side of its cell is read as crossing, so both origins
+   travel on the same clock. */
+body[data-dsh-claude-style] .dsh-claude-home-heat-hint[data-side="below"] {
+  transform-origin: 50% 0;
 }
 
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge="end"]:hover::after {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-/* A cell in the grid's upper rows holds more room below it than above, so its
-   pill hangs under the cell instead of reaching over the grid's top edge and
-   across the stat cells above (heat-tip.ts). */
-body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-side="below"]:hover::after {
-  top: calc(100% + 6px);
-  bottom: auto;
+body[data-dsh-claude-style] .dsh-claude-home-heat-hint[data-shown] {
+  --dsh-claude-heat-hint-fade: var(--dsh-claude-duration-surface);
+  opacity: 1;
+  scale: 1;
+  /* The rest before a hint appears sits on the arrival alone: a pill already
+     showing that follows the pointer to the next day carries no delay. */
+  transition-delay: var(--dsh-claude-duration-hint-delay), var(--dsh-claude-duration-hint-delay), 0s, 0s;
 }
 
 /* The one-liner under the grid: a plain caption, no emphasis of its own. */
