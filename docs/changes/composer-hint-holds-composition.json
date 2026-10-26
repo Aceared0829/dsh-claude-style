@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "修复中文输入法的合成被皮肤打断：输入框处于合成期间时，空闲提示不再写入输入卡片，合成落地后再补写一次，微软拼音等输入法可以完整输入一个词。",
+  "en": "Fix the skin breaking an input-method composition: the idle hint is no longer written into the composer card while the field is composing, and settles once the composition lands, so CJK input methods can finish a word."
+}

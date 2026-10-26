@@ -53,14 +53,22 @@ const HINT_SOURCES = [
  * arrive in one order: a writer that only moves a shipped hint across would
  * leave the previous language standing.
  *
+ * A composition in flight over the field holds every write: the hint's nodes
+ * stand in the card the reader's editor composes in, and a write there makes
+ * the browser drop the letters typed but not committed. The settle after
+ * compositionend is what puts the hint right.
+ *
  * @param cards - the composer cards, kept current by the bus (D40).
  * @param placeholders - the placeholders those cards carry, from the same source.
+ * @param composing - whether the reader's field is part-way through a composition.
  */
-export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholders: MatchList<HTMLElement>) {
+export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholders: MatchList<HTMLElement>, composing: () => boolean) {
   /** How many passes this generation has run. */
   let pass = 0
   /** The shell's locale when the stand-in was last drawn. */
   let drawnLocale = ''
+  /** Whether a composition in flight held a pass back, so the settle after it has work to do. */
+  let held = false
   /**
    * The host's own hint text this generation replaced, with the skin's text it
    * was replaced by. The teardown and a restyle that stands down put the host's
@@ -91,6 +99,26 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
   /** The words the skin's hint shows, in the shell's language. */
   function targetHint(hero: boolean) {
     return copyIn(ENTRIES, hero ? 'heroHint' : 'defaultHint', activeLocale())
+  }
+
+  /**
+   * Whether a composition in flight keeps this pass from writing. The hint's
+   * nodes stand in the card the reader's editor composes in, and a write there
+   * under a composition makes the browser drop the letters typed but not
+   * committed (composer.composing).
+   */
+  function heldByComposition() {
+    if (!composing()) return false
+    held = true
+    return true
+  }
+
+  /** Put the hint in the words this page wants, now. */
+  function write(hero: boolean, active: boolean) {
+    held = false
+    const target = targetHint(hero)
+    rewriteHint(target, active)
+    syncStandIn(target, active)
   }
 
   /**
@@ -210,13 +238,23 @@ export function createPlaceholderCopy(cards: MatchList<HTMLElement>, placeholder
      * again, so this runs whether or not the restyle applies.
      */
     sync(hero: boolean, active: boolean) {
-      const target = targetHint(hero)
-      rewriteHint(target, active)
-      syncStandIn(target, active)
+      if (heldByComposition()) return
+      write(hero, active)
     },
     /** A composer input or composition event: only the stand-in can have changed. */
     onInput(hero: boolean, active: boolean) {
+      if (heldByComposition()) return
+      held = false
       syncStandIn(targetHint(hero), active)
+    },
+    /**
+     * A composition has landed: the pass it held back runs now. The host's flag
+     * may still stand when this is queued, and a new composition in flight
+     * leaves the hint to that one's end.
+     */
+    settle(hero: boolean, active: boolean) {
+      if (!held || heldByComposition()) return
+      write(hero, active)
     },
     /** The placeholders the skin added stand in for the host's own, so they leave with it. */
     dispose() {

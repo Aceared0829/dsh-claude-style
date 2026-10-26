@@ -10,7 +10,7 @@ import type { FeatureUi } from '../../core/feature'
 import type manifest from './composer.manifest'
 import { closestFrom, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { writeScroll } from '@dsh-claude-style/engine/scroll-owner'
-import { captureComposerCaret, focusKeepingComposerCaret } from '../../shared/composer-caret'
+import { captureComposerCaret, composerComposing, focusKeepingComposerCaret } from '../../shared/composer-caret'
 import { createPlaceholderCopy } from './placeholder-copy'
 import { installWindowBlurMirror } from './selection-mirror'
 
@@ -51,7 +51,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The idle hint's own words, and the synthetic placeholder that carries them. */
   const cards = observeComposerCards()
   const placeholders = observeComposerPlaceholders()
-  const placeholderCopy = createPlaceholderCopy(cards, placeholders)
+  const placeholderCopy = createPlaceholderCopy(cards, placeholders, composerComposing)
   /**
    * The attachment tiles the skin marked, read once at install so a generation
    * whose teardown a hot reload dropped still has its marks swept.
@@ -59,6 +59,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   const markedTiles = new Set<Element>(document.querySelectorAll(`[data-dsh-claude-attachment]`))
   /** The window-blur mirror the selection paints key on */
   const stopWindowBlur = installWindowBlurMirror()
+
+  /**
+   * A composition has landed: the hint's writes were held back while one was in
+   * flight, and the host's own flag may still stand when this listener runs, so
+   * the settle waits for the frame after it.
+   */
+  const onCompositionEnd = () => {
+    requestFrame({ write() { placeholderCopy.settle(hero, active) } })
+  }
+  document.addEventListener('compositionend', onCompositionEnd, true)
 
   /**
    * Read the page's composer state. The host marks the conversation root
@@ -365,7 +375,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     isChatHidden() { return chatHidden },
     /** A copy source changed, the composer-scope preference among them: read again now. */
     onCopyChange: readState,
-    /** A composer input or composition event: the hint's synthetic placeholder may have changed. */
+    /** A composer input: the hint's synthetic placeholder may have changed, unless a composition holds it. */
     onInput() { placeholderCopy.onInput(hero, active) },
     onPointerDown: focusEditorOnPress,
     /** The composer card changed size: the transcript follows it. */
@@ -379,6 +389,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     active = false
     heroCard = null
     stopWindowBlur()
+    document.removeEventListener('compositionend', onCompositionEnd, true)
     placeholderCopy.dispose()
     cards.release()
     placeholders.release()
