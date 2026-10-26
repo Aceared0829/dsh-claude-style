@@ -161,6 +161,19 @@ body[data-dsh-claude-style][data-dsh-claude-page-zoom]:not([data-dsh-claude-page
   width: var(--dsh-claude-page-width, 100%);
   height: var(--dsh-claude-page-height, 100%);
   overflow: hidden;
+  /* Read before `zoom` and drawn through it: the 8px of the body's default
+     margin came out a factor wider and stood outside the box the body's own
+     `overflow` clips, so the page scrolled sideways past the window. */
+  margin: 0;
+}
+
+/* The document element's own 8px is read the same way and clipped by nothing the
+   body states, so it goes too; the page drawn at a factor is the window's size,
+   and the document then has no scroll of its own to give the reader. The body's
+   mark is what this reads, the way the token layer reads the palette card. */
+html:has(body[data-dsh-claude-style][data-dsh-claude-page-zoom]:not([data-dsh-claude-page-zoom="1"])) {
+  padding: 0;
+  overflow: hidden;
 }
 
 /* The host caps its own dialogs against the window's viewport units, which a
