@@ -90,6 +90,15 @@ export function featureCopy(entries: CopyEntries, key: string, params?: CopyPara
 }
 
 /**
+ * A feature's own `copy` function over its copy document: the type keeps the
+ * keys that document carries, so a misspelt line fails the build instead of
+ * reading as its own key on the page.
+ */
+export function createCopy<C extends CopyEntries>(entries: C) {
+  return (key: keyof C & string, params?: CopyParams) => featureCopy(entries, key, params)
+}
+
+/**
  * One line of a feature's copy in a language named by a preference rather than
  * by the shell: the account-hold screen reproduces a real Claude page, so it is
  * read in the language that page was written in whatever the UI is set to.

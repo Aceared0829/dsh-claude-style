@@ -1,5 +1,5 @@
 import COPY from './settings.copy.json'
-import { featureCopy } from '../../core/i18n'
+import { createCopy, featureCopy } from '../../core/i18n'
 import type { CopyParams } from '../../core/i18n'
 
 export type CopyKey = keyof typeof COPY
@@ -9,9 +9,7 @@ export type CopyKey = keyof typeof COPY
  * (packages/client/src/features/settings/settings.copy.json): the copy ships with the
  * bundle, so the first paint carries it and a key is this file's own.
  */
-export function copy(key: CopyKey, params?: CopyParams) {
-  return featureCopy(COPY, key, params)
-}
+export const copy = createCopy(COPY)
 
 /**
  * A line two features' settings rows share, kept in this page's own copy (D72):
