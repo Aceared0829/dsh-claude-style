@@ -70,6 +70,18 @@ body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-clau
   margin-right: auto;
 }
 
+/* The host's slot anchors draw no box (`display: contents`), so their children
+   sort in the column by the rules above; a wrapper that draws one instead has to
+   take its place itself, or the composer card lands straight under the greeting
+   with the panel after it (#177). */
+body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > :is([data-slot="conversation.input.dock"], .dsh-claude-home-seat) {
+  order: 1;
+}
+
+body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > [data-slot="conversation.composer.bar"] {
+  order: 3;
+}
+
 body[data-dsh-claude-style][data-dsh-claude-home-layout="studio"] [data-dsh-claude-part~="composer-hero"] > [data-dsh-claude-part~="hero-workspace-row"] {
   order: 2;
   /* Everything below the panel drops to the bottom edge: the auto margin eats

@@ -231,6 +231,56 @@
         holder.remove()
         return display
       }
+      // The column's order is read from the boxes the hero stack lays out. A
+      // slot anchor that draws no box hands its children the verbatim order the
+      // rules give, and one that draws a box takes its own place in the column;
+      // a wrapper drawing a box with no order of its own sorts first, which is
+      // the composer card standing at the greeting with the panel under it
+      // (#177). Both widths of the stack are read, since the boxed anchor is
+      // what the reader's window happened to render.
+      async function stackOrder(containerWidth) {
+        var holder = document.createElement('div')
+        holder.setAttribute('data-conversation-scroll', '')
+        holder.style.width = containerWidth + 'px'
+        var stack = document.createElement('div')
+        stack.className = '_composerStack_x_1 _composerHero_x_1'
+        // The host's stack is the column the order rules sort; the stand-in has no
+        // host sheet to say so.
+        stack.style.display = 'flex'
+        stack.style.flexDirection = 'column'
+        var headline = document.createElement('div')
+        headline.className = '_headline_x_1'
+        headline.style.height = '24px'
+        var inlineBar = document.createElement('div')
+        inlineBar.setAttribute('data-slot', 'conversation.composer.bar')
+        var inlineCard = inlineBar.appendChild(document.createElement('div'))
+        inlineCard.setAttribute('data-composer-card', '')
+        inlineCard.style.height = '40px'
+        var dock = document.createElement('div')
+        dock.setAttribute('data-slot', 'conversation.input.dock')
+        var dockPanel = dock.appendChild(document.createElement('div'))
+        dockPanel.style.height = '80px'
+        stack.append(headline, inlineBar, dock)
+        holder.appendChild(stack)
+        document.body.appendChild(holder)
+        // The stack's marks land in the observer's callback, before the next task (D40).
+        await sleep(50)
+        var box = stack.getBoundingClientRect()
+        // Where each box the stack lays out stands, top to bottom: the greeting
+        // (first), the panel, the context row and the card. A box that draws its
+        // own wrapper reports the wrapper's place.
+        var card = inlineBar.firstElementChild
+        var panel = dock.firstElementChild
+        var places = [
+          { what: 'greeting', top: Math.round(headline.getBoundingClientRect().top - box.top) },
+          { what: 'panel', top: Math.round(panel.getBoundingClientRect().top - box.top) },
+          { what: 'card', top: Math.round(card.getBoundingClientRect().top - box.top) },
+        ]
+        var results = { width: Math.round(box.width), places: places, anchored: getComputedStyle(inlineBar).display }
+        holder.remove()
+        return results
+      }
+      r.stackOrder = { narrow: await stackOrder(360), wide: await stackOrder(720) }
       r.panelDisplay = {
         hero: await panelDisplay('_composerStack_x_1 _composerHero_x_1'),
         coldStart: await panelDisplay('_composerStack_x_1 _composerHero_x_1', true),

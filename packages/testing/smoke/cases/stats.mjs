@@ -236,6 +236,18 @@ export default {
       r.panelDisplay !== undefined && r.panelDisplay.hero === 'flex' && r.panelDisplay.coldStart === 'flex' &&
         r.panelDisplay.conversation === 'none',
       JSON.stringify(r.panelDisplay))
+    const bandPlaced = (band) => {
+      const places = band === undefined || band === null ? [] : band.places || []
+      const top = (what) => {
+        const found = places.find((entry) => entry.what === what)
+        return found === undefined ? null : found.top
+      }
+      return top('greeting') !== null && top('panel') !== null && top('card') !== null &&
+        top('greeting') < top('panel') && top('panel') < top('card')
+    }
+    check('a hero slot anchor that draws a box still takes its place, so the card stays under the panel instead of the greeting',
+      r.stackOrder !== undefined && bandPlaced(r.stackOrder.narrow) && bandPlaced(r.stackOrder.wide),
+      JSON.stringify(r.stackOrder))
     const cold = r.coldStart || {}
     check('the cold start screen carries the usage panel on the skin\'s own seat, given back once the dock arrives',
       cold.seat === true && cold.rendered === true && cold.seatAfterDock === false && cold.unmountedAfterDock === true,
