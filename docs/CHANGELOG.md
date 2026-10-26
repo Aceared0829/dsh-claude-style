@@ -23,6 +23,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - 修复宿主的语音输入展开输入行活动格时，主题认不出这一格、挂载其中的麦克风入口随之失去座位排版的问题。
 - 修复页面缩放下页面横向滚动、内容越出窗口右边界（#166）：缩放只写在 `<body>` 上，`<html>` 的内边距与 `<body>` 的外边距先按窗口排版、再被倍数放大，越过窗口的那几像素又没有哪个 `overflow` 收得住。缩放时两者一并归零，纵向滚动交给文档元素，页面宽度不再随倍数多出几像素。
 - 修复中文输入法的合成被皮肤打断：输入框处于合成期间时，空闲提示不再写入输入卡片，合成落地后再补写一次，微软拼音等输入法可以完整输入一个词。
+- 修复模型选择器的峰谷徽章在分钟刷新后仍使用旧的悬停提示与读屏文字，使两级菜单的倍率、倒计时与完整说明同步更新，跨分钟打开二级菜单时也会刷新已有行。
 - 修复窗口不可见时皮肤动画仍在运行：页面隐藏时 `<body>` 带上 `data-dsh-claude-asleep`，样式表把页面上的动画停在当下位置，首页涟漪的帧与字符定时器一并停摆，回到前台从当下继续，不再追赶积压的合成帧。
 - 修复比窗口还高的皮肤弹层把下半截画到页面外：落位之后统一夹进窗口，卡片从窗口上沿开始，底部的行不再落到看不见的地方。
 - 修复选择「减弱」动画后骨架脉冲仍在循环：上下文统计面板与首页用量面板的占位条各有一处声明压过全局兜底把循环次数定成一次的规则，一处是带 `!important` 的动画简写，一处是更高的选择器权重；两处改为从兜底网读循环次数。
@@ -49,6 +50,7 @@ All notable changes to `dsh-claude-style` are documented here, newest first.
 - Fix the theme not recognising the composer's activity seat while the host expands it for voice input, which took the seat's layout away from the microphone entry mounted inside it.
 - Fix the page scrolling sideways and content running past the window's right edge at a page zoom (#166): the scale was written on `<body>` alone, so the document element's padding and the body's margin were laid out against the window and then drawn through the factor, and no `overflow` could clip the few pixels that reached past it. Both go to zero while the page is drawn at a factor and the document element takes the vertical scroll, so the page no longer grows a few pixels wider with every step.
 - Fix the skin breaking an input-method composition: the idle hint is no longer written into the composer card while the field is composing, and settles once the composition lands, so CJK input methods can finish a word.
+- Fix model picker rate badges retaining stale tooltips and accessible names after a minute refresh, keeping the rate, countdown and full judgement together in both menu levels and refreshing existing rows when the second level opens in a new minute.
 - Fix the skin's animations running while the window is hidden: a hidden page marks `<body>` with `data-dsh-claude-asleep`, the stylesheet holds every animation on the page where it stands, and the home ripple's frame and character clocks stop with it, so a return carries on from there instead of catching up on queued frames.
 - Fix a skin popover taller than the window drawing its lower rows off the page: every card is held inside the window after it is placed, so it begins at the window's top edge instead of ending below its bottom.
 - Fix the skeleton pulses still cycling under the Reduced animation choice: the placeholders of the context statistics panel and of the home page's usage panel each overrode the theme-wide net's single iteration — one through a shorthand carrying `!important`, the other through a heavier selector — and both now take their iteration count from that net.
