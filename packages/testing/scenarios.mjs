@@ -240,21 +240,14 @@ const SCENARIOS = {
       const narrow = await read()
       await page.setViewportSize({ width: 330, height: 844 })
       // The statistics fold onto a line of their own in a measure pass, and a
-      // fixed pause reads the row mid-move on a loaded machine. Wait for the
-      // row to hold its width for three frames, then read what settled.
-      await page.evaluate(() => new Promise((resolve) => {
-        const deadline = performance.now() + 4000
-        let held = 0
-        const step = () => {
-          const row = document.querySelector('[data-dsh-claude-part~="row"]')
-          const fits = row === null || row.scrollWidth <= row.clientWidth
-          held = fits ? held + 1 : 0
-          if (held >= 3 || performance.now() > deadline) resolve()
-          else requestAnimationFrame(step)
-        }
-        step()
-      }))
-      const tight = await read()
+      // fixed pause reads the row mid-move on a loaded machine. Read until the
+      // card and the row stop overflowing for three passes, then judge that.
+      let tight = await read()
+      for (let held = 0, tries = 0; held < 3 && tries < 40; tries += 1) {
+        await page.waitForTimeout(100)
+        tight = await read()
+        held = tight.cardOver <= 0 && tight.rowOver <= 0 ? held + 1 : 0
+      }
       await page.setViewportSize({ width: 390, height: 844 })
       return [
         check('页面是手机的宽度', narrow.width === 390, `innerWidth=${narrow.width}`),
