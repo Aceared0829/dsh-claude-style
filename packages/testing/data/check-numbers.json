@@ -913,10 +913,15 @@
         2,
         22
       ],
+      "neighbouring view-tab buttons keep separate layout boxes": [
+        0,
+        1,
+        4
+      ],
       "the view tabs draw their pill under the active tab inside the plate, without sliding in": [
         0
       ],
-      "a view switch slides the pill to the newly active tab (line 138)": [
+      "a view switch slides the pill to the newly active tab (line 142)": [
         1
       ],
       "the title is handed the room left between its own edge and the controls once the strip's width is reserved, and the row it left keeps its gap under it": [

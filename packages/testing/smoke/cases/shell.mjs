@@ -133,6 +133,10 @@ export default {
       JSON.stringify({ group: row.groupCentre, width: row.width, plate: plate, chip: chip }))
     check('the tabs are the compact 22px segment, without the shipped underline',
       row.tabHeight === '22px' && row.underline === 'none', JSON.stringify({ height: row.tabHeight, underline: row.underline }))
+    const tabBoxes = row.tabBoxes || []
+    check('neighbouring view-tab buttons keep separate layout boxes',
+      tabBoxes.length === 4 && tabBoxes.every((box, index) => index === 0 || tabBoxes[index - 1].right <= box.left),
+      JSON.stringify(tabBoxes))
     check('the view tabs draw their pill under the active tab inside the plate, without sliding in',
       under(row.pill) && row.pill.slides.length === 0, JSON.stringify(row.pill))
     check('a view switch slides the pill to the newly active tab',

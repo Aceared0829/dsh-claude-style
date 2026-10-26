@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "修复会话视图页签的按钮盒相互重叠的问题，使各页签的点击区域与选中底板保持独立。",
+  "en": "Fix overlapping conversation view-tab buttons so each tab keeps its own hit area and active pill."
+}

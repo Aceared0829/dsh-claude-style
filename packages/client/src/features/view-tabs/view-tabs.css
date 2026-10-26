@@ -78,6 +78,8 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="view-tabs-list"] {
   min-height: 0;
 }
 body[data-dsh-claude-style] [data-dsh-view-tabs] [data-dsh-claude-part~="view-tab"] {
+  /* The host's negative text-tab margins would overlap adjacent segments. */
+  margin: 0;
   height: 22px;
   /* The host's own tab asks for a 25px box; the pill above it is one segment. */
   min-height: 0;

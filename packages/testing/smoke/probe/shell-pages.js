@@ -150,6 +150,11 @@
       // The row must span the header for that count while the plate inside it
       // hugs the tabs, and the pill travels inside the plate.
       var rowHeader = document.createElement('div')
+      // The host's text tabs use negative margins, and its overflow seat is flex.
+      var rowHostStyle = document.createElement('style')
+      rowHostStyle.textContent = '._tab_v_1 { margin: -10px -10px 0; }' +
+        '._viewsMoreAnchor_v_1 { display: flex; }'
+      document.head.appendChild(rowHostStyle)
       rowHeader.className = '_header_v_1'
       rowHeader.setAttribute('data-slot', 'conversation.header')
       rowHeader.innerHTML = '<div class="_tabs_v_1">' +
@@ -175,6 +180,10 @@
       var rowStyle = getComputedStyle(row)
       var listStyle = getComputedStyle(list)
       var moreStyle = getComputedStyle(more)
+      var tabBoxes = Array.prototype.map.call(rowTabs, function (tab) {
+        var box = tab.getBoundingClientRect()
+        return { left: box.left, right: box.right }
+      })
       r.viewRow = {
         justifyContent: rowStyle.justifyContent,
         pointerEvents: rowStyle.pointerEvents,
@@ -197,6 +206,7 @@
           marginTop: moreStyle.marginTop,
         },
         tabHeight: getComputedStyle(rowTabs[0]).height,
+        tabBoxes: tabBoxes,
         underline: getComputedStyle(rowTabs[0], '::after').display,
         pill: pillState(list, rowTabs[0]),
       }
