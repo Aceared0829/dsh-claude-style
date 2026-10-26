@@ -277,6 +277,12 @@ export const COMPOSER_VARIANT_ATTRIBUTE = 'data-composer-variant'
  * whole class tokens, so no substring match is involved (D3).
  */
 export const PERMISSION_TRIGGER_SELECTOR = '[data-slot="conversation.input.permission"] button:not([class^="dsh-claude-"], [class*=" dsh-claude-"])'
+/**
+ * The slot the host mounts a plugin's own entry in beside the model seat: the
+ * built-in voice input puts its microphone there, and the host expands the seat
+ * around the slot while that plugin is live.
+ */
+export const CONVERSATION_ACTIVITY_SLOT_SELECTOR = '[data-slot="conversation.input.activity"]'
 /** A host button that opens a dialog: the model and effort pickers in the composer stack. */
 export const DIALOG_TRIGGER_SELECTOR = 'button[aria-haspopup="dialog"]'
 /** The sidebar footer block; the skin's account entry lives inside it. */

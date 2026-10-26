@@ -137,7 +137,11 @@ export const CONVERSATION_PARTS: PartTable = {
   dock: 'composer-dock',
   overlayAnchor: 'composer-overlay-anchor',
   standardControls: 'composer-controls',
+  // The host names its one activity seat two ways: `activity` while the slot is
+  // idle, `activityExpanded` while a plugin (the voice input) expands it. The
+  // seat keeps its part through both, or the rules reading it stop at the switch.
   activity: 'composer-activity',
+  activityExpanded: 'composer-activity',
   primary: 'composer-primary',
   trigger: 'trigger',
   chevron: 'trigger-chevron',
