@@ -332,10 +332,6 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Hand the host's own model seat and menu back: unmark the seat, remove the
-   * skin's trigger and popovers, drop the catalog subscription.
-   */
-  /**
    * Let a label's swap go before its node leaves the page. The swap keeps a
    * frame, a timer and a size subscription of its own (shared/swapping-text.ts);
    * none of them follows the node out, and the size registry holds them by
@@ -347,6 +343,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     for (let i = 0; i < labels.length; i++) releaseSwappingText(labels[i])
   }
 
+  /**
+   * Hand the host's own model seat and menu back: unmark the seat, remove the
+   * skin's trigger and popovers, drop the catalog subscription.
+   */
   function dropModelControl() {
     const allHosts = document.querySelectorAll('[data-dsh-claude-model-host]')
     for (let h = 0; h < allHosts.length; h++) {
