@@ -386,9 +386,12 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="conversation-header"][data-d
    setting. Scoped to the skin's own class prefix so the host's transitions stay
    as the host wrote them; the prefix is matched as a whole class token, so a
    host or plugin class that merely holds the letters is not touched. One thing
-   keeps moving on purpose: the segmented controls' sliding pill. */
+   keeps moving on purpose: the segmented controls' sliding pill. An animation
+   whose shorthand carries an `!important` of its own, or whose selector outranks
+   this rule, takes its count from --dsh-claude-loop-count, which is set here. */
 body[data-dsh-claude-style][data-dsh-claude-motion="reduced"] :is([class^="dsh-claude-"], [class*=" dsh-claude-"]) {
   animation-duration: var(--dsh-claude-duration-reduced) !important;
-  animation-iteration-count: 1 !important;
+  animation-iteration-count: 1;
+  --dsh-claude-loop-count: 1;
   transition-duration: var(--dsh-claude-duration-reduced);
 }

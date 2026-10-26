@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "修复选择「减弱」动画后骨架脉冲仍在循环：上下文统计面板与首页用量面板的占位条各有一处声明压过全局兜底把循环次数定成一次的规则，一处是带 `!important` 的动画简写，一处是更高的选择器权重；两处改为从兜底网读循环次数。",
+  "en": "Fix the skeleton pulses still cycling under the Reduced animation choice: the placeholders of the context statistics panel and of the home page's usage panel each overrode the theme-wide net's single iteration — one through a shorthand carrying `!important`, the other through a heavier selector — and both now take their iteration count from that net."
+}

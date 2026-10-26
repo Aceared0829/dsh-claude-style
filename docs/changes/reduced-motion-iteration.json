@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复选择「减弱」动画时页面反而更忙：全局那道网把所有皮肤动画的时长压到 0.01ms，却没有同时压住循环次数，于是带 `!important` 的动画简写与特异性更高的规则继续循环——每次循环只花百分之一毫秒，元素从此留在动画的每帧集合里。循环次数现在与时长带同样的权重。",
-  "en": "Fix the reduced animation choice making the page busier: the theme-wide net pressed every skin animation's duration to 0.01ms but left its iteration count unweighted, so shorthands carrying `!important` and higher-specificity rules kept cycling — each cycle over in a hundredth of a millisecond — and the element stayed in the animation frame set for good. The iteration count now carries the same weight as the duration."
-}
