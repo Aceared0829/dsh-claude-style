@@ -1,4 +1,4 @@
-import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER, STATS_POSITION_INLINE } from '../../constants'
+import { CONVERSATION_COMPOSER_REQUIRES, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER, STATS_POSITION_INLINE } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -23,22 +23,14 @@ export default {
     title: 'contextDisplayTitle',
     desc: 'contextDisplayDesc',
     control: 'context-display',
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'conversationComposerNote',
-    },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
     tab: 'composer',
     rank: 47,
     pref: 'contextNumbers',
     title: 'contextNumbersTitle',
     desc: 'contextNumbersDesc',
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'conversationComposerNote',
-    },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
     tab: 'composer',
     // The figures' rows follow the meter's own, the footer alignment refining
@@ -53,11 +45,7 @@ export default {
     },
     // The figures hang off the meter the composer restyle stamps, and a
     // session's figures only exist in the conversation.
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'conversationComposerNote',
-    },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
     tab: 'composer',
     rank: 49,
@@ -77,11 +65,7 @@ export default {
     title: 'billingCurrencyTitle',
     desc: 'billingCurrencyDesc',
     choiceLabels: { off: 'billingCurrencyOff', CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'conversationComposerNote',
-    },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
   }],
   cases: ['context-stats', 'stats-compact', 'stats-inline']
 } satisfies FeatureManifest

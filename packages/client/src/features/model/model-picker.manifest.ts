@@ -1,4 +1,4 @@
-import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
+import { ANY_COMPOSER_REQUIRES } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -14,11 +14,7 @@ export default {
     pref: 'modelPicker',
     title: 'pickerTitle',
     // The menu is drawn into the restyled composer.
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'composerRequired',
-    },
+    requires: ANY_COMPOSER_REQUIRES,
   }, {
     // The catalog's own description lines, which the picker draws, under it.
     tab: 'composer',

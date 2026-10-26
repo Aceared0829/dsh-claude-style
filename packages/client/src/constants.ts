@@ -13,6 +13,7 @@
  * gates, and the identity constants.
  */
 export * from '@dsh-claude-style/contracts/prefs'
+import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '@dsh-claude-style/contracts/prefs'
 import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 export { PACKAGE_NAME }
 
@@ -137,6 +138,22 @@ export const CONTEXT_DISPLAY_ATTR = 'data-dsh-claude-context-display'
 export const CONTEXT_NUMBERS_ATTR = 'data-dsh-claude-context-numbers'
 /** The room under the conversation's composer (features/composer/bottom-gap.css); the host's own writes no attribute. */
 export const COMPOSER_GAP_ATTR = 'data-dsh-claude-composer-gap'
+/**
+ * The requirement the settings rows under the conversation's composer carry
+ * (D72): they restyle that composer, which the hero's own and the "all" scope
+ * do not stand for.
+ */
+export const CONVERSATION_COMPOSER_REQUIRES = {
+  pref: 'composerScope',
+  values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+  note: 'conversationComposerNote',
+} as const
+/** The requirement the settings rows that restyle any composer carry (D72): the hero's, the conversation's and the "all" scope. */
+export const ANY_COMPOSER_REQUIRES = {
+  pref: 'composerScope',
+  values: [COMPOSER_SCOPE_HERO, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
+  note: 'composerRequired',
+} as const
 /** The factor the conversation column draws at (features/conversation-width/); the full width writes no attribute. */
 export const CONVERSATION_WIDTH_ATTR = 'data-dsh-claude-conversation-width'
 /**

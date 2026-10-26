@@ -1,4 +1,4 @@
-import { COMPOSER_GAP_COMPACT, COMPOSER_GAP_ROOMY, COMPOSER_GAP_THEME, COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '../../constants'
+import { COMPOSER_GAP_COMPACT, COMPOSER_GAP_ROOMY, COMPOSER_GAP_THEME, COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO, CONVERSATION_COMPOSER_REQUIRES } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
@@ -33,12 +33,7 @@ export default {
       [COMPOSER_GAP_THEME]: 'gapTheme',
       [COMPOSER_GAP_ROOMY]: 'gapRoomy',
     },
-    // The gap sits under the conversation's composer, which only these two scopes restyle.
-    requires: {
-      pref: 'composerScope',
-      values: [COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_ALL],
-      note: 'conversationComposerNote',
-    },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
   }],
   cases: ['composer', 'sync-fault', 'hero', 'late-forms']
 } satisfies FeatureManifest
