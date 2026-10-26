@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "at": "2026-10-25",
-  "zh": "修复宿主的语音输入展开输入行活动格时，主题认不出这一格、挂载其中的麦克风入口随之失去座位排版的问题。",
-  "en": "Fix the theme not recognising the composer's activity seat while the host expands it for voice input, which took the seat's layout away from the microphone entry mounted inside it."
-}

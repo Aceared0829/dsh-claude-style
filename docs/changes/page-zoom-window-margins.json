@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 0,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复页面缩放下页面横向滚动、内容越出窗口右边界（#166）：缩放只写在 `<body>` 上，`<html>` 的内边距与 `<body>` 的外边距先按窗口排版、再被倍数放大，越过窗口的那几像素又没有哪个 `overflow` 收得住。缩放时两者一并归零，纵向滚动交给文档元素，页面宽度不再随倍数多出几像素。",
-  "en": "Fix the page scrolling sideways and content running past the window's right edge at a page zoom (#166): the scale was written on `<body>` alone, so the document element's padding and the body's margin were laid out against the window and then drawn through the factor, and no `overflow` could clip the few pixels that reached past it. Both go to zero while the page is drawn at a factor and the document element takes the vertical scroll, so the page no longer grows a few pixels wider with every step."
-}

@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复三处随使用累积的残留：模型按钮重建时，标签交换的尺寸订阅没有随旧标签释放；模型子菜单的悬停定时器与光标焦点结算的定时器在功能拆卸后仍会触发。",
-  "en": "Fix three leftovers that accumulate with use: a rebuilt model button left its label's swap subscription behind with the old label, and the model sub-menu's hover timer and the caret's focus-settle timer still fired after their feature was torn down."
-}

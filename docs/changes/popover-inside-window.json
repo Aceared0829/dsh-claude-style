@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复比窗口还高的皮肤弹层把下半截画到页面外：落位之后统一夹进窗口，卡片从窗口上沿开始，底部的行不再落到看不见的地方。",
-  "en": "Fix a skin popover taller than the window drawing its lower rows off the page: every card is held inside the window after it is placed, so it begins at the window's top edge instead of ending below its bottom."
-}

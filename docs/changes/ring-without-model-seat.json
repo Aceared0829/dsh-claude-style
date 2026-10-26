@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 4,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复关闭「重绘模型选择器」后上下文圆环掉到工具栏下方单独一行（#162）：圆环原本以模型座位的盒子为落点，关闭重绘后座位不存在，于是皮肤既没有画圆环、也没有把宿主自己的圆环收起来，宿主那个更宽的圆环占住这一行，中段空档被判为放不下，整行让到下方。圆环回答的是上下文用量，与模型选择器是否重绘无关：没有座位时它落在座位的槽本身，宿主圆环照旧收起。",
-  "en": "Fix the context ring dropping to a line of its own under the toolbar when \"Redraw the model picker\" is off (#162): the ring stood behind the model seat's box, and with the picker's redraw off there is no seat — so the skin drew no ring and left the host's own meter uncovered, whose wider box took the row and made the middle gap read as too narrow, moving the whole line below. The ring answers the context reading, not the picker's switch: with no seat it closes the slot itself, and the host's meter stays covered."
-}

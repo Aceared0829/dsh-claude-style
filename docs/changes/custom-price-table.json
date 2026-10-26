@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 3,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "新增自定义计费表（#170）：设置页「计费币种」下面多一行「编辑」，打开一张按模型填写单价的表（模型 / 缓存读 / 输入 / 输出，每百万 token）。填过的桶覆盖官方价格表，留空的桶仍按表格计价；表格里查不到的模型只按这张表计价。价格表跟会话一起送到宿主，正在流式估算的那一段也按同一张表算。窄屏时每一行折成一张卡片，模型在上、三个单价各带标签。",
-  "en": "Add the custom price table (#170): a \"Edit\" row under the billing currency opens a per-model table of rates (model / cache read / input / output, per million tokens). A filled bucket overrides the official tables and a blank one keeps their rate; a model the tables do not carry is priced from this table alone. The rows travel with the session to the host, so the answer still streaming is priced the same way. Under 760px each row folds into a card with the model above three labelled rates."
-}

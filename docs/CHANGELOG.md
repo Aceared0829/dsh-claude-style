@@ -2,6 +2,62 @@
 
 All notable changes to `dsh-claude-style` are documented here, newest first.
 
+## [0.19.4] - 2026-10-26
+
+[中文](#cn-0.19.4) | [English](#en-0.19.4)
+
+<h3 id="cn-0.19.4">新增功能</h3>
+
+- 新增看板用量能力：已折好的会话用量（每天的四类 token 分桶、按小时的结算次数与各模型总量）经 `dsh-claude-style:usage` 交给看板组件，与工作台首页那块用量面板读同一份缓存；能力注册可以带自己的调用时长上限。
+- 新增对 `dsh-better-sidebar` 底部面板的页面像素适配：面板的左右边取两侧栏的实际位置、上边取输入区座位的下沿、下边取窗口底，全部按页面缩放因子换算；拖拽侧栏期间暂停写入，缩放回到 1 倍时把插件自己的值写回。
+- 新增自定义计费表（#170）：设置页「计费币种」下面多一行「编辑」，打开一张按模型填写单价的表（模型 / 缓存读 / 输入 / 输出，每百万 token）。填过的桶覆盖官方价格表，留空的桶仍按表格计价；表格里查不到的模型只按这张表计价。价格表跟会话一起送到宿主，正在流式估算的那一段也按同一张表算。窄屏时每一行折成一张卡片，模型在上、三个单价各带标签。
+
+### 体验优化
+
+- 改善用量面板热力图的日提示：提示改为网格里常驻的一个元素，指针从一天移到另一天时在两天之间移动与缩放，不再为每一格生成一个再销毁，指针移过格间空隙时也不再消失；出现前有一小段停顿，离开时随即淡出。
+- 改善颜色涂装的开销：等待行与设置预览卡上，色相与漂移两条常驻动画从连续插值改为按二十四步推进，`filter` 与八层背景位置从每帧重绘降为每周期二十四次（约每秒五次）；四到五秒的周期下，漂移仍读作流动而不是跳动。
+- 改善折叠摘要测算文案宽度的开销：测量所依赖的字体签名按隐藏的测量元素缓存，字体加载完成时整体失效，`getComputedStyle` 不再每个分组每趟重算；宽度表超过五百条时重新开始，长会话里每个不同的计数不再各占一条永久记录。
+
+### 问题修复
+
+- 修复宿主的语音输入展开输入行活动格时，主题认不出这一格、挂载其中的麦克风入口随之失去座位排版的问题。
+- 修复页面缩放下页面横向滚动、内容越出窗口右边界（#166）：缩放只写在 `<body>` 上，`<html>` 的内边距与 `<body>` 的外边距先按窗口排版、再被倍数放大，越过窗口的那几像素又没有哪个 `overflow` 收得住。缩放时两者一并归零，纵向滚动交给文档元素，页面宽度不再随倍数多出几像素。
+- 修复中文输入法的合成被皮肤打断：输入框处于合成期间时，空闲提示不再写入输入卡片，合成落地后再补写一次，微软拼音等输入法可以完整输入一个词。
+- 修复窗口不可见时皮肤动画仍在运行：页面隐藏时 `<body>` 带上 `data-dsh-claude-asleep`，样式表把页面上的动画停在当下位置，首页涟漪的帧与字符定时器一并停摆，回到前台从当下继续，不再追赶积压的合成帧。
+- 修复比窗口还高的皮肤弹层把下半截画到页面外：落位之后统一夹进窗口，卡片从窗口上沿开始，底部的行不再落到看不见的地方。
+- 修复选择「减弱」动画后骨架脉冲仍在循环：上下文统计面板与首页用量面板的占位条各有一处声明压过全局兜底把循环次数定成一次的规则，一处是带 `!important` 的动画简写，一处是更高的选择器权重；两处改为从兜底网读循环次数。
+- 修复会话视图页签的按钮盒相互重叠的问题，使各页签的点击区域与选中底板保持独立。
+- 修复侧栏页脚的更新入口在接管后消失（#167）：插件挂在 `sidebar.footer.action` 里的更新控件带 `data-dsh-plugin="update"` 与 `data-dsh-part="entry"`，皮肤按这两个名字认出它，把它留在侧栏——原节点留在槽位里不显示，账号行右端立一份它的副本，文案、图标、进度与点击都跟着插件自己走；侧栏收成细轨时副本收起。
+- 修复三处随使用累积的残留：模型按钮重建时，标签交换的尺寸订阅没有随旧标签释放；模型子菜单的悬停定时器与光标焦点结算的定时器在功能拆卸后仍会触发。
+- 修复账号行显示登录用的账号号码而不是设置里的用户名：桌面端有账号行时那一行由宿主自己渲染，皮肤只重绘了它的盒子与头像，文字从未被替换；而设置页明确写着「用户名显示在欢迎语与账号行里」。现在宿主那行的标签换成解析出的名字，交还页脚时把宿主原文放回。
+- 修复关闭「重绘模型选择器」后上下文圆环掉到工具栏下方单独一行（#162）：圆环原本以模型座位的盒子为落点，关闭重绘后座位不存在，于是皮肤既没有画圆环、也没有把宿主自己的圆环收起来，宿主那个更宽的圆环占住这一行，中段空档被判为放不下，整行让到下方。圆环回答的是上下文用量，与模型选择器是否重绘无关：没有座位时它落在座位的槽本身，宿主圆环照旧收起。
+
+<h3 id="en-0.19.4">New Features</h3>
+
+- Add a widget-board usage capability: the folded session usage (four token buckets per day, settlements per hour and per-model totals) reaches widget cards as `dsh-claude-style:usage`, reading the same cache as the studio home panel; a capability registration can now carry its own call timeout.
+- Add page-pixel fitting for `dsh-better-sidebar`'s bottom panel: its left and right edges follow the two side columns, its top edge follows the composer seat's bottom, and its height reaches the window's bottom, all divided by the page-zoom factor; writes pause while a column is dragged, and every value the plugin wrote is restored at scale 1.
+- Add the custom price table (#170): a "Edit" row under the billing currency opens a per-model table of rates (model / cache read / input / output, per million tokens). A filled bucket overrides the official tables and a blank one keeps their rate; a model the tables do not carry is priced from this table alone. The rows travel with the session to the host, so the answer still streaming is priced the same way. Under 760px each row folds into a card with the model above three labelled rates.
+
+### Improvements
+
+- Improve the usage panel's day tip: the tip is one element the grid keeps, so it travels and resizes between two days instead of being built and dropped for each cell, and crossing the gutters between cells no longer makes it disappear; it rests a moment before appearing and fades at once on the way out.
+- Improve the cost of the colour wash: on the waiting line and the settings preview cards, the hue turn and the drift advance in twenty-four steps instead of interpolating continuously, taking the `filter` and the eight background positions from a repaint per frame to twenty-four a cycle (about five a second); over a four-to-five-second cycle the drift still reads as drifting rather than stepping.
+- Improve the cost of measuring a folded summary's wording: the face a measurement depends on is kept per hidden measuring span and dropped when a face arrives, so `getComputedStyle` is no longer recalculated per group per pass, and the table starts over past five hundred entries instead of keeping a permanent record for every count a long session rolls.
+
+### Bug Fixes
+
+- Fix the theme not recognising the composer's activity seat while the host expands it for voice input, which took the seat's layout away from the microphone entry mounted inside it.
+- Fix the page scrolling sideways and content running past the window's right edge at a page zoom (#166): the scale was written on `<body>` alone, so the document element's padding and the body's margin were laid out against the window and then drawn through the factor, and no `overflow` could clip the few pixels that reached past it. Both go to zero while the page is drawn at a factor and the document element takes the vertical scroll, so the page no longer grows a few pixels wider with every step.
+- Fix the skin breaking an input-method composition: the idle hint is no longer written into the composer card while the field is composing, and settles once the composition lands, so CJK input methods can finish a word.
+- Fix the skin's animations running while the window is hidden: a hidden page marks `<body>` with `data-dsh-claude-asleep`, the stylesheet holds every animation on the page where it stands, and the home ripple's frame and character clocks stop with it, so a return carries on from there instead of catching up on queued frames.
+- Fix a skin popover taller than the window drawing its lower rows off the page: every card is held inside the window after it is placed, so it begins at the window's top edge instead of ending below its bottom.
+- Fix the skeleton pulses still cycling under the Reduced animation choice: the placeholders of the context statistics panel and of the home page's usage panel each overrode the theme-wide net's single iteration — one through a shorthand carrying `!important`, the other through a heavier selector — and both now take their iteration count from that net.
+- Fix overlapping conversation view-tab buttons so each tab keeps its own hit area and active pill.
+- Fix the update control vanishing from the sidebar footer once the skin takes the footer over (#167): the control a plugin mounts into `sidebar.footer.action` names itself with `data-dsh-plugin="update"` and `data-dsh-part="entry"`, and the skin recognises it by those names and keeps it in the sidebar — the plugin's own node stays hidden in its slot while a copy of it stands at the right end of the account row, carrying the plugin's words, mark, progress and press; the rail folds the copy away.
+- Fix three leftovers that accumulate with use: a rebuilt model button left its label's swap subscription behind with the old label, and the model sub-menu's hover timer and the caret's focus-settle timer still fired after their feature was torn down.
+- Fix the account row showing the account number the host signs in with instead of the name from the settings: on a host that renders that row itself the skin repainted its box and picture but never its words, while the settings page promises the name shows on the account row too. The host row's label now carries the resolved name, and the host's own label is put back when the footer is handed over.
+- Fix the context ring dropping to a line of its own under the toolbar when "Redraw the model picker" is off (#162): the ring stood behind the model seat's box, and with the picker's redraw off there is no seat — so the skin drew no ring and left the host's own meter uncovered, whose wider box took the row and made the middle gap read as too narrow, moving the whole line below. The ring answers the context reading, not the picker's switch: with no seat it closes the slot itself, and the host's meter stays covered.
+
 ## [0.19.3] - 2026-10-25
 
 [中文](#cn-0.19.3) | [English](#en-0.19.3)

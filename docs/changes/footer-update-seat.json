@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复侧栏页脚的更新入口在接管后消失（#167）：插件挂在 `sidebar.footer.action` 里的更新控件带 `data-dsh-plugin=\"update\"` 与 `data-dsh-part=\"entry\"`，皮肤按这两个名字认出它，把它留在侧栏——原节点留在槽位里不显示，账号行右端立一份它的副本，文案、图标、进度与点击都跟着插件自己走；侧栏收成细轨时副本收起。",
-  "en": "Fix the update control vanishing from the sidebar footer once the skin takes the footer over (#167): the control a plugin mounts into `sidebar.footer.action` names itself with `data-dsh-plugin=\"update\"` and `data-dsh-part=\"entry\"`, and the skin recognises it by those names and keeps it in the sidebar — the plugin's own node stays hidden in its slot while a copy of it stands at the right end of the account row, carrying the plugin's words, mark, progress and press; the rail folds the copy away."
-}

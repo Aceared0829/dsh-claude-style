@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 2,
-  "external": false,
-  "at": "2026-10-25",
-  "zh": "新增对 `dsh-better-sidebar` 底部面板的页面像素适配：面板的左右边取两侧栏的实际位置、上边取输入区座位的下沿、下边取窗口底，全部按页面缩放因子换算；拖拽侧栏期间暂停写入，缩放回到 1 倍时把插件自己的值写回。",
-  "en": "Add page-pixel fitting for `dsh-better-sidebar`'s bottom panel: its left and right edges follow the two side columns, its top edge follows the composer seat's bottom, and its height reaches the window's bottom, all divided by the page-zoom factor; writes pause while a column is dragged, and every value the plugin wrote is restored at scale 1."
-}
