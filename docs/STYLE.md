@@ -718,6 +718,15 @@ fits its figures again for the width the arriving amount needs. The
 nothing is drawn, and the browser asks the host for neither the price table nor
 the session's total.
 
+The settings page's custom price table (the row under the currency) writes a row
+per model — `model|input|cacheRead|output`, per million tokens in that currency —
+and a filled bucket overrides the tables' rate while a blank one leaves it alone.
+The rows travel to the host with the session's cost ask, so a settlement and the
+answer still streaming are priced from one set of rates; a model neither the
+tables nor a row prices leaves the segment out of the line as before. The
+editor's card is the modal's own: a 720px card on the window, and a page under
+760px folds each row into a card with the model above three labelled rates.
+
 Which figures appear follows the host's statistics row. Its detailed form gets
 the whole list. Its compact form carries only the output speed and the cache-hit
 share on the composer line, so the block keeps the four that row leaves out —

@@ -213,6 +213,14 @@ export const USERNAME_MAX = 64
 /** Most quick-provider ids kept, and the longest id accepted. */
 export const QUICK_PROVIDERS_MAX = 64
 export const PROVIDER_ID_MAX = 128
+/**
+ * The custom price table (billing-table.ts): most rows kept, the longest model
+ * name accepted, and the longest rate written as text — rates are decimal text
+ * so a stored row never loses a digit to a float.
+ */
+export const PRICE_ROWS_MAX = 32
+export const PRICE_ROW_MODEL_MAX = 96
+export const PRICE_ROW_RATE_MAX = 16
 
 /* ---------- the table ---------- */
 
@@ -294,6 +302,12 @@ export const PREFS = {
   statsFooterAlign: { type: 'choice', values: STATS_FOOTER_ALIGNS, default: 'center' },
   /** Which official price table the session's cost follows, or off for no figure at all. */
   billingCurrency: { type: 'choice', values: BILLING_CHOICES, default: CURRENCY_CNY },
+  /**
+   * The reader's own prices, one row each: `model|input|cacheRead|output` per
+   * million tokens, in the billing currency. A row overrides the table for that
+   * model (billing-table.ts); a blank bucket leaves that rate to the table.
+   */
+  billingTable: { type: 'list', default: [], max: PRICE_ROWS_MAX, entryMax: 256, drop: [] },
   workspaceView: { type: 'boolean', default: true },
   dockCards: { type: 'boolean', default: true },
   sidebarSearch: { type: 'boolean', default: true },

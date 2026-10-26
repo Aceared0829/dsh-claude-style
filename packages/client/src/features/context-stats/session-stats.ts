@@ -7,12 +7,14 @@ import { createContextStatsBinding } from './stats-binding'
 import { createInlineStats } from './inline-stats'
 import { createStatsBlock } from './stats-block'
 import { createStreamEstimate } from './stream-estimate'
-import { createSessionCost, loadPrices, priceDocument, priceGeneration } from './session-cost'
+import { adoptBillingRows, billingRows, createSessionCost, loadPrices, priceDocument, priceGeneration } from './session-cost'
+import { noteUnpricedModel } from './billing-editor'
 import { paintContextPie, readPieColours, releaseContextPie } from './context-meter-pie'
 import { CONTEXT_STATS_ATTR, CONTEXT_PANEL_ATTR, clearStrayContextNodes, contextPanel, findContextMeter, markContextMeter, meterOccupancy, releaseDialogWatch } from './stats-panel'
 import { CONTEXT_STOPS, rampPosition, writeRamp } from './stats-ramp'
 import { writeContextBand } from './context-meter-face'
 import { priceFor, priceTierAt } from '@dsh-claude-style/contracts/prices'
+import { overlayBilling } from '@dsh-claude-style/contracts/billing-table'
 import type { Currency } from '@dsh-claude-style/contracts/prices'
 import type { HostContext, HostText } from '@dsh-claude-style/engine/host'
 import type { HostContextPressureProjection, HostSessionStatsProjection, HostSnapshotSource, HostTokenUsageProjection } from '@dsh-claude-style/contracts/services'
@@ -184,8 +186,16 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
     if (document === null) return { cost: null, pending: true }
     if (model === null || model === undefined) return { cost: null, pending: false }
     const price = priceFor(document, model, currency)
-    if (price === undefined) return { cost: null, pending: false }
-    const tier = priceTierAt(price, Date.now(), document.schedule)
+    // The reader's own rows answer over the table for the answer still coming
+    // (billing-table.ts), in the currency they were written in.
+    const table = price === undefined ? undefined : priceTierAt(price, Date.now(), document.schedule)
+    const tier = readPrefs().billingCurrency === currency ? overlayBilling(billingRows(), model, table) : table
+    if (tier === undefined) {
+      // A route neither the tables nor the reader's rows answer: offered to the
+      // custom table's editor as a row to fill (billing-editor.ts).
+      noteUnpricedModel(model)
+      return { cost: null, pending: false }
+    }
     const settled = currency === 'CNY' ? answered.cny : answered.usd
     return { cost: settled + grown * tier.output, pending: false }
   }
@@ -206,6 +216,7 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
       if (grown > 0) usage = { ...raw, outputTokens: Math.round(raw.outputTokens + grown) }
     }
     const billing = currency()
+    syncBillingRows()
     const priced = billing === null ? { cost: null, pending: false } : costOfReading(usage, grown, billing, selection)
     return { stats, usage, cost: priced.cost, billing: billing !== null, costPending: priced.pending }
   }
@@ -280,6 +291,18 @@ export function createSessionStats(ctx: HostContext, ring: () => MeterRingFace |
     // billing off there is nothing to ask for.
     if (billingChosen() && currency() !== null) cost.ask(Date.now())
     renderNumbers()
+  }
+
+  /**
+   * Hand the reader's own price rows to the cost ask (billing-table.ts). The
+   * rows are the page's preferences and the currency is the table they were
+   * written in; a row that moved re-prices the sessions already asked about, so
+   * an edit shows at once instead of after the next settlement.
+   */
+  function syncBillingRows() {
+    const choice = readPrefs().billingCurrency
+    const currencyCode = choice === BILLING_OFF ? null : choice
+    if (adoptBillingRows(readPrefs().billingTable, currencyCode) && currencyCode !== null) cost.ask(Date.now(), true)
   }
 
   /**

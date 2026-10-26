@@ -16,6 +16,8 @@
  */
 import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { costMicro, priceFor, priceTierAt } from '@dsh-claude-style/contracts/prices'
+import { overlayBilling, parseBillingTable } from '@dsh-claude-style/contracts/billing-table'
+import type { BillingRow } from '@dsh-claude-style/contracts/billing-table'
 import type { PriceDocument, PriceUsage, SessionCostAnswer } from '@dsh-claude-style/contracts/prices'
 import type { DshContext } from '@dsh-claude-style/engine/node/dsh'
 import { readEvents } from '@dsh-claude-style/engine/node/session-events'
@@ -25,6 +27,23 @@ import type { PriceStore } from './prices.js'
 
 /** The sessions whose totals are kept before the oldest is forgotten. */
 const KEPT_SESSIONS = 128
+
+/**
+ * The reader's own rows, and the currency they are written in: `currency` null
+ * while no row is stored, so a settlement is priced off the tables alone.
+ */
+export interface BillingRows {
+  rows: readonly BillingRow[]
+  currency: 'CNY' | 'USD' | null
+}
+
+export const NO_BILLING: BillingRows = { rows: [], currency: null }
+
+/** The rows one request carries, read from the stored text entries. */
+export function billingRowsOf(entries: readonly string[], currency: 'CNY' | 'USD' | null): BillingRows {
+  const rows = parseBillingTable(entries)
+  return rows.length === 0 ? NO_BILLING : { rows, currency }
+}
 
 /** One priced settlement, kept so a retry can take it back out. */
 interface Settlement {
@@ -75,7 +94,7 @@ function sameUsage(settlement: Settlement, usage: PriceUsage) {
  *
  * @returns a new state, or the same reference when the event moves no figure.
  */
-export function applyCostEvent(state: CostState, event: UsageEvent, document: PriceDocument): CostState {
+export function applyCostEvent(state: CostState, event: UsageEvent, document: PriceDocument, billing: BillingRows = NO_BILLING): CostState {
   const type = event?.type
   if (type === 'llm/retry-started') {
     const turn = event.data?.turn
@@ -101,8 +120,14 @@ export function applyCostEvent(state: CostState, event: UsageEvent, document: Pr
   let partial = state.partial
   const priced = (currency: 'CNY' | 'USD') => {
     const price = model === null ? undefined : priceFor(document, model, currency)
-    if (price === undefined) return null
-    return costMicro(usage, priceTierAt(price, time, document.schedule))
+    const tier = price === undefined ? undefined : priceTierAt(price, time, document.schedule)
+    // The reader's own rows answer in the currency they were written in; the
+    // other table keeps its own rates (billing-table.ts).
+    const overlaid = model === null || (billing.currency !== null && billing.currency !== currency)
+      ? tier
+      : overlayBilling(billing.rows, model, tier)
+    if (overlaid === undefined) return null
+    return costMicro(usage, overlaid)
   }
   const cnyCost = priced('CNY')
   const usdCost = priced('USD')
@@ -131,16 +156,16 @@ export function applyCostEvent(state: CostState, event: UsageEvent, document: Pr
 }
 
 /** A whole log's totals, for a session first asked about after a restart. */
-export function foldSessionCost(events: readonly UsageEvent[], document: PriceDocument): CostState {
+export function foldSessionCost(events: readonly UsageEvent[], document: PriceDocument, billing: BillingRows = NO_BILLING): CostState {
   let state: CostState = { cny: 0, usd: 0, partial: false, last: null, model: null }
-  for (let i = 0; i < events.length; i++) state = applyCostEvent(state, events[i], document)
+  for (let i = 0; i < events.length; i++) state = applyCostEvent(state, events[i], document, billing)
   return state
 }
 
 /** What the store answers for one session, or null while the log cannot be read. */
 export interface SessionCostStore {
   ensure(): void
-  get(sessionId: string): Promise<SessionCostAnswer | null>
+  get(sessionId: string, billing?: BillingRows): Promise<SessionCostAnswer | null>
   dispose(): void
 }
 
@@ -149,6 +174,13 @@ const STALE_MS = 10_000
 
 export function createSessionCost(ctx: DshContext, prices: PriceStore): SessionCostStore {
   const states = new Map<string, CostState>()
+  /**
+   * The rows the live subscription prices with, and the signature of the last
+   * ask: a reader who edits the table gets every total folded again, the way a
+   * replaced price table clears them.
+   */
+  let liveBilling: BillingRows = NO_BILLING
+  let billingSignature = ''
   /** When each total was last advanced, by a live event or by a fold. */
   const touchedAt = new Map<string, number>()
   const pending = new Map<string, Promise<SessionCostAnswer | null>>()
@@ -177,7 +209,7 @@ export function createSessionCost(ctx: DshContext, prices: PriceStore): SessionC
     if (state === undefined) return
     const document = prices.document()
     if (document === null) return
-    const next = applyCostEvent(state, event, document)
+    const next = applyCostEvent(state, event, document, liveBilling)
     if (next !== state) states.set(sessionId, next)
     touchedAt.set(sessionId, Date.now())
   }
@@ -190,8 +222,16 @@ export function createSessionCost(ctx: DshContext, prices: PriceStore): SessionC
     })
   }
 
-  async function get(sessionId: string): Promise<SessionCostAnswer | null> {
+  async function get(sessionId: string, billing: BillingRows = NO_BILLING): Promise<SessionCostAnswer | null> {
     prices.ensure()
+    const signature = billing.currency === null ? '' : billing.rows.map(row => `${row.model}|${row.cacheMiss}|${row.cacheHit}|${row.output}`).join(';')
+    if (signature !== billingSignature) {
+      billingSignature = signature
+      liveBilling = billing
+      states.clear()
+      touchedAt.clear()
+      pending.clear()
+    }
     const held = states.get(sessionId)
     const touched = touchedAt.get(sessionId)
     // A total a live event has not advanced for a while is folded again: a
@@ -206,7 +246,7 @@ export function createSessionCost(ctx: DshContext, prices: PriceStore): SessionC
       .then((events) => {
         pending.delete(sessionId)
         if (events === null) return null
-        const state = foldSessionCost(events, document)
+        const state = foldSessionCost(events, document, liveBilling)
         states.set(sessionId, state)
         touchedAt.set(sessionId, Date.now())
         trim()

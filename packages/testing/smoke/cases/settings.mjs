@@ -17,7 +17,7 @@ export default {
     const expected = {
       general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
       appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
-      'main-window': ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand', 'composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl'],
+      'main-window': ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand', 'composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl', 'billingTable'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'sidebarPeek', 'dockCards', 'sidebarLayout'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
     }
@@ -27,7 +27,7 @@ export default {
     // composer's billing display.
     const mainWindowGroups = [
       { label: 'Conversation', rows: ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand'] },
-      { label: 'Composer', rows: ['composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl'] },
+      { label: 'Composer', rows: ['composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl', 'billingTable'] },
     ]
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window, and the footer alignment for
@@ -84,13 +84,13 @@ export default {
       JSON.stringify(off))
     const unmet = settings.requirementsOff || {}
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' figures grey out, the two switches and the statistics rows saying what they wait for; with the footer takeover off, so does the easter egg under it',
-      !!unmet.mainWindow && JSON.stringify(unmet.mainWindow.disabled) === '["headerBand","composerBottomGap","modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl"]' &&
-        JSON.stringify(unmet.mainWindow.notes) === '["headerBand","composerBottomGap","modelPicker","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl"]' &&
+      !!unmet.mainWindow && JSON.stringify(unmet.mainWindow.disabled) === '["headerBand","composerBottomGap","modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl","billingTable"]' &&
+        JSON.stringify(unmet.mainWindow.notes) === '["headerBand","composerBottomGap","modelPicker","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl","billingTable"]' &&
         !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
       JSON.stringify(unmet))
     const hero = settings.heroOnly || {}
     check('with the restyle on the home page alone, the picker and the permission control take input, the statistics\' position still waits for a conversation and the title-bar band for the window',
-      !!hero.mainWindow && JSON.stringify(hero.mainWindow.disabled) === '["headerBand","composerBottomGap","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency"]',
+      !!hero.mainWindow && JSON.stringify(hero.mainWindow.disabled) === '["headerBand","composerBottomGap","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","billingTable"]',
       JSON.stringify(hero))
     const pageZoom = settings.pageZoom || {}
     const zoomed = pageZoom.zoomed || {}

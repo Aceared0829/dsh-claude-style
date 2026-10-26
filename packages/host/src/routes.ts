@@ -28,12 +28,22 @@ import { packageRoot } from './package-root.js'
 import { createPeakRate } from './peakrate.js'
 import { createPrices } from './prices.js'
 import { QUERY_MAX, createSessionSearch } from './search.js'
-import { createSessionCost } from './session-cost.js'
+import { billingRowsOf, createSessionCost } from './session-cost.js'
 import { sessionDirectoryName } from './session-name.js'
 import { createUsage } from './usage.js'
 
 /** The copy document, built from `packages/client/data/model-descriptions.json` by scripts/build.mjs. */
 const COPY_FILE = 'model-descriptions.json'
+
+/** The custom price rows one ask carries: one `b` query parameter per row, plus the currency they are written in. */
+const BILLING_ROWS_MAX = 32
+const BILLING_ROW_MAX = 256
+
+function readBillingRows(query: URLSearchParams) {
+  const currency = query.get('cur')
+  const rows = query.getAll('b').slice(0, BILLING_ROWS_MAX).filter(row => row.length <= BILLING_ROW_MAX)
+  return billingRowsOf(rows, currency === 'CNY' || currency === 'USD' ? currency : null)
+}
 /**
  * Webfonts this plugin serves under `${ROUTE_PREFIX}/fonts/`, mapped to their
  * content type. The table is a whitelist: the filename is the whole request
@@ -484,12 +494,17 @@ export function registerRoutes(ctx: DshContext, scope: DshScope) {
         // fence as the usage roll-up and never accepts a path outside one id.
         if (methodRefused(req, res, ['GET'])) return
         if (fenceRefused(ctx, req, res)) return
-        const sessionId = (new URL(req.url ?? '/', 'http://local').searchParams.get('id') ?? '').trim()
+        const query = new URL(req.url ?? '/', 'http://local').searchParams
+        const sessionId = (query.get('id') ?? '').trim()
         if (!SESSION_ID_RE.test(sessionId)) {
           sendJson(res, 400, { ok: false, error: 'invalid session id' })
           return
         }
-        sendPayload(res, sessionCost.get(sessionId).then(value => ({ value })))
+        // The reader's own rows travel with the ask (billing-table.ts): the host
+        // prices with them, so a session is priced the same on a restart as in
+        // the page that holds the settings.
+        const billing = readBillingRows(query)
+        sendPayload(res, sessionCost.get(sessionId, billing).then(value => ({ value })))
       },
     })
 

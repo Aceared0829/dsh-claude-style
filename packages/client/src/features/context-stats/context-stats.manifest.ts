@@ -12,7 +12,7 @@ export default {
   pref: 'statsPosition',
   // The panel carries the full reading in every position.
   prefValues: [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER],
-  stylesheets: [{ file: 'footer-layout.css', rank: 106, gate: true }],
+  stylesheets: [{ file: 'footer-layout.css', rank: 106, gate: true }, { file: 'billing-table.css', rank: 108, gate: true }],
   settingsRows: [{
     tab: 'composer',
     // The meter's face and its number open the statistics rows, after the
@@ -65,6 +65,16 @@ export default {
     title: 'billingCurrencyTitle',
     desc: 'billingCurrencyDesc',
     choiceLabels: { off: 'billingCurrencyOff', CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
+    requires: CONVERSATION_COMPOSER_REQUIRES,
+  }, {
+    tab: 'composer',
+    // Directly under the currency: both answer what a session costs, and the
+    // table's own unit is that currency.
+    rank: 51,
+    pref: 'billingTable',
+    title: 'billingTableTitle',
+    desc: 'billingTableDesc',
+    control: 'billing-table',
     requires: CONVERSATION_COMPOSER_REQUIRES,
   }],
   cases: ['context-stats', 'stats-compact', 'stats-inline']

@@ -5,6 +5,8 @@ import { METER_RING_RADIUS, METER_RING_SIZE, contextBandAt, ringDash } from './c
 import { CONTEXT_STOPS, rampPosition } from './stats-ramp'
 import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import { openBillingEditor, unpricedModels } from './billing-editor'
+import { parseBillingTable } from '@dsh-claude-style/contracts/billing-table'
 import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
@@ -43,6 +45,7 @@ const FACES = [
 /** The row controls this feature draws itself (D72). */
 export const controls: SettingsControlsOf<typeof manifest> = {
   'context-display': ContextDisplayPicker,
+  'billing-table': BillingTableRow,
 }
 
 /**
@@ -132,4 +135,32 @@ function ContextDisplayPicker(props: SettingsRowView) {
     disabled: props.disabled,
     label: copy('contextDisplayTitle'),
   })
+}
+
+/**
+ * The custom price table's settings row: one button opening the editor
+ * (billing-editor.ts). The row says how many rows stand and how many models the
+ * table could not price, so the reader can tell whether the table needs a row
+ * before opening it.
+ */
+function BillingTableRow(props: SettingsRowView) {
+  const count = parseBillingTable(props.prefs.billingTable).length
+  const missing = unpricedModels().length
+  const summary = missing === 0
+    ? copy('billingTableCount').replace('{count}', String(count))
+    : copy('billingTableCountMissing').replace('{count}', String(count)).replace('{missing}', String(missing))
+  const open = () => {
+    if (props.disabled) return
+    openBillingEditor(props.prefs.billingTable, props.prefs.billingCurrency, entries => props.write({ billingTable: entries }))
+  }
+  return React.createElement(
+    'span',
+    { className: 'dsh-claude-billing-row-control' },
+    React.createElement('span', { className: 'dsh-claude-billing-row-summary' }, summary),
+    React.createElement(
+      'button',
+      { type: 'button', className: 'dsh-claude-billing-row-button', onClick: open, disabled: props.disabled },
+      copy('billingTableEdit'),
+    ),
+  )
 }
