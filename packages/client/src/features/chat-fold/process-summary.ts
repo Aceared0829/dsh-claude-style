@@ -196,6 +196,23 @@ export function createProcessSummary() {
    * and asking again would write the span's text and lay it out again (D9).
    */
   const fitWidths = new Map<string, number>()
+  /**
+   * How many measured wordings the table keeps. A running group's sentence
+   * carries its counts, and every count the session rolls is a sentence of its
+   * own, so a long conversation would otherwise keep every wording it ever
+   * showed. Past the ceiling the table starts over: the measurements are
+   * re-taken, nothing else changes.
+   */
+  const FIT_WIDTH_LIMIT = 512
+  /**
+   * The face each span is set in, kept beside the span. `getComputedStyle`
+   * recalculates style before it answers, and a pass asks for a width once per
+   * group, so reading the face per question paid a recalculation per group for
+   * an answer that only a face arriving or the reader zooming can change.
+   */
+  const faceSignatures = new WeakMap<HTMLElement, { epoch: number, signature: string }>()
+  /** Moves when a face arrives, so every kept signature is read again. */
+  let faceEpoch = 0
   /** What each running summary's band copy says, so a pass that changes nothing writes nothing. */
   const bandSentences = new WeakMap<HTMLElement, string>()
 
@@ -266,10 +283,24 @@ export function createProcessSummary() {
     return Math.max(0, room)
   }
 
+  /**
+   * The face a span is set in: the half of a width's key that comes from the
+   * stylesheet rather than the words. Kept with the span and read once per
+   * generation of faces (faceEpoch), because the question is asked once per
+   * group per pass and reading it costs a style recalculation each time.
+   */
+  function faceSignature(fit: HTMLElement): string {
+    const kept = faceSignatures.get(fit)
+    if (kept !== undefined && kept.epoch === faceEpoch) return kept.signature
+    const style = getComputedStyle(fit)
+    const signature = `${style.fontSize}\u0000${style.fontFamily}\u0000${style.fontWeight}\u0000${style.letterSpacing}`
+    faceSignatures.set(fit, { epoch: faceEpoch, signature })
+    return signature
+  }
+
   /** The key one sentence's measured width is kept under, for the face it is set in. */
   function fitKey(fit: HTMLElement, sentence: string) {
-    const style = getComputedStyle(fit)
-    return `${sentence}\u0000${style.fontSize}\u0000${style.fontFamily}\u0000${style.fontWeight}\u0000${style.letterSpacing}`
+    return `${sentence}\u0000${faceSignature(fit)}`
   }
 
   /**
@@ -285,6 +316,7 @@ export function createProcessSummary() {
     if (known !== undefined) return known
     if (fit.textContent !== sentence) fit.textContent = sentence
     const width = inPagePixels(fit.getBoundingClientRect().width)
+    if (fitWidths.size >= FIT_WIDTH_LIMIT) fitWidths.clear()
     fitWidths.set(key, width)
     return width
   }
@@ -519,6 +551,7 @@ export function createProcessSummary() {
   // A face arriving changes what a wording measures: nothing measured under the
   // faces of the first frame stands past them.
   const onFacesLoaded = () => {
+    faceEpoch += 1
     fitWidths.clear()
   }
   document.fonts.addEventListener('loadingdone', onFacesLoaded)

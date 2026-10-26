@@ -81,7 +81,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /** Build the ring once: the button, its ring and the number beside it, in the host's own anatomy. */
-  function ensureRing(slot: HTMLElement, seat: HTMLElement) {
+  function ensureRing(slot: HTMLElement, seat: HTMLElement | null) {
     if (ring === null) {
       const root = document.createElement('span')
       root.setAttribute(METER_RING_ATTR, '')
@@ -98,8 +98,14 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       ringFill = button.querySelector('circle.dsh-claude-meter-ring-fill')
       shown = null
     }
-    // After the seat box, which the model picker keeps first in the slot.
-    if (ring.parentElement !== slot || ring.previousElementSibling !== seat) slot.insertBefore(ring, seat.nextSibling)
+    // After the seat box, which the model picker keeps first in the slot; with
+    // the picker's own redraw off there is no seat box, and the ring closes the
+    // slot instead of giving the row back to the host's meter (issue #162).
+    if (seat !== null) {
+      if (ring.parentElement !== slot || ring.previousElementSibling !== seat) slot.insertBefore(ring, seat.nextSibling)
+    } else if (ring.parentElement !== slot || ring.nextElementSibling !== null) {
+      slot.appendChild(ring)
+    }
   }
 
   /** The ring's own words and arc for the percentage it shows. */
@@ -191,19 +197,28 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Where the ring belongs: the row's own position, a seat box to stand behind,
-   * and a card the host has not drawn as the hero — the home page's composer
-   * keeps the host's line, as does the line of their own. The compact footer
-   * reads the same ring in the row, so its figures ride the toolbar alone.
+   * Where the ring belongs: the row's own position, a seat box to stand behind
+   * when the model picker keeps one, and a card the skin has restyled and the
+   * host has not drawn as the hero — the home page's composer keeps the host's
+   * line, as does the line of their own. The compact footer reads the same ring
+   * in the row, so its figures ride the toolbar alone.
+   *
+   * The seat says where the ring stands, not whether it stands. With the model
+   * picker's own redraw off there is no seat box, and this used to read as "no
+   * ring": the host's own meter kept the row, and being wider than the ring it
+   * pushed the row below the toolbar (issue #162). The ring answers the context
+   * reading alone, so it keeps the row either way. A card with no variant is one
+   * the composer restyle has stood down from, where the host's own toolbar and
+   * its own meter are the whole row.
    */
   function placeOf() {
     const position = readPrefs().statsPosition
     if (position !== STATS_POSITION_CONTEXT && position !== STATS_POSITION_FOOTER) return null
     const seat = typeof ui.model?.seatBox === 'function' ? ui.model.seatBox() : null
-    if (seat === null) return null
     const slot = findModelSlot()
     const card = slot === null ? null : slot.closest<HTMLElement>('[data-composer-card]')
-    if (slot === null || card === null || card.getAttribute('data-composer-variant') === 'hero') return null
+    const variant = card === null ? null : card.getAttribute('data-composer-variant')
+    if (slot === null || card === null || variant === null || variant === 'hero') return null
     return { slot, seat }
   }
 

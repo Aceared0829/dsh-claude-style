@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 3,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "修复账号行显示登录用的账号号码而不是设置里的用户名：桌面端有账号行时那一行由宿主自己渲染，皮肤只重绘了它的盒子与头像，文字从未被替换；而设置页明确写着「用户名显示在欢迎语与账号行里」。现在宿主那行的标签换成解析出的名字，交还页脚时把宿主原文放回。",
+  "en": "Fix the account row showing the account number the host signs in with instead of the name from the settings: on a host that renders that row itself the skin repainted its box and picture but never its words, while the settings page promises the name shows on the account row too. The host row's label now carries the resolved name, and the host's own label is put back when the footer is handed over."
+}

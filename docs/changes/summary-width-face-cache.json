@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 2,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "改善折叠摘要测算文案宽度的开销：测量所依赖的字体签名按隐藏的测量元素缓存，字体加载完成时整体失效，`getComputedStyle` 不再每个分组每趟重算；宽度表超过五百条时重新开始，长会话里每个不同的计数不再各占一条永久记录。",
+  "en": "Improve the cost of measuring a folded summary's wording: the face a measurement depends on is kept per hidden measuring span and dropped when a face arrives, so `getComputedStyle` is no longer recalculated per group per pass, and the table starts over past five hundred entries instead of keeping a permanent record for every count a long session rolls."
+}

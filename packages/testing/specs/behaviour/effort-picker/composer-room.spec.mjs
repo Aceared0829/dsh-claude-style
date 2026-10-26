@@ -72,12 +72,20 @@ export default spec({ page: 'effort', bands: ['phone', 'compact', 'wide'], densi
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
 
-  test('switching the picker off hands the seat back whole, the level and the ring with it', async (t) => {
+  test('switching the picker off hands the seat back, and the ring keeps the row', async (t) => {
     await t.prefs({ modelPicker: false })
     t.expectThat.absent(await t.read.box(t.surface('model.seat')), 'the seat box')
     t.expectThat.absent(await t.read.box(t.surface('effort.trigger')), 'the level')
-    t.expectThat.absent(await t.read.box(t.surface('stats.meter-ring')), 'the ring')
-    t.expectThat.visible(await boxOf(modelButton(t.page)), 'the host\'s own seat')
+    // The ring answers the context reading, not the picker's switch: with no
+    // seat box it closes the slot rather than handing the row back to the host's
+    // own, wider meter (features/context-stats/meter-ring.ts, issue #162).
+    const ring = await t.read.box(t.surface('stats.meter-ring'))
+    const hostSeat = await boxOf(modelButton(t.page))
+    t.expectThat.visible(ring, 'the ring')
+    t.expectThat.visible(hostSeat, 'the host\'s own seat')
+    const ringLine = Math.round((ring.top + ring.bottom) / 2)
+    const seatLine = Math.round((hostSeat.top + hostSeat.bottom) / 2)
+    t.expectThat.equal(Math.abs(ringLine - seatLine) <= 4, true, `the ring rides the row's own line (${ringLine} against ${seatLine})`)
     t.expectThat.noHorizontalOverflow(await t.read.overflow(t.host('chat.scroller')), 'the conversation')
   })
 
