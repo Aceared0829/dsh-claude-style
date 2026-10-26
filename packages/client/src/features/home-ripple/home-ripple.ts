@@ -5,6 +5,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { findHeroRoot } from '@dsh-claude-style/engine/host'
 import type { FrameTask } from '@dsh-claude-style/engine/frame'
 import { motionReduced } from '../../core/prefs'
+import { pageHidden, subscribePageHidden } from '../../core/page-visibility'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createGlyphField, readColour } from './ripple-field'
 import type { FieldPalette, GlyphField, Rgb } from './ripple-field'
@@ -38,6 +39,7 @@ interface Mounted {
   stopPresses: () => void
   stopFrames: () => void
   stopSize: () => void
+  stopVisibility: () => void
   /** The pending idle wake-up, or 0. */
   timer: number
 }
@@ -125,6 +127,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       stopPresses: () => {},
       stopFrames: () => {},
       stopSize: () => {},
+      stopVisibility: () => {},
       timer: 0,
     }
     let previous = performance.now()
@@ -136,13 +139,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     function wake() {
       window.clearTimeout(current.timer)
       current.timer = 0
-      if (frameWanted) return
+      // A page off screen runs no frame: coming back to it asks again.
+      if (pageHidden() || frameWanted) return
       frameWanted = true
       current.stopFrames = requestFrame(task)
     }
 
     /** Wait on a timer for the next change of characters. */
     function sleep(now: number) {
+      if (pageHidden()) return
       const period = 1000 / RIPPLE.changeRate
       current.timer = window.setTimeout(wake, period - (now % period) + 1)
     }
@@ -198,6 +203,23 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       layout(current)
       wake()
     })
+    // A page off screen holds both clocks: the frames and the character clock are
+    // work for a window nobody sees, and what they queued is what the return has
+    // to catch up on. Coming back starts from now, so the field redraws at its own
+    // pace rather than replaying the absence.
+    current.stopVisibility = subscribePageHidden((hidden) => {
+      if (!hidden) {
+        previous = performance.now()
+        wake()
+        return
+      }
+      window.clearTimeout(current.timer)
+      current.timer = 0
+      // A cancelled frame never reaches `write`, which is the only other place
+      // this flag comes down: left standing, it would hold every later wake-up.
+      frameWanted = false
+      current.stopFrames()
+    })
     return current
   }
 
@@ -207,6 +229,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     mounted.stopFrames()
     mounted.stopSize()
     mounted.stopPresses()
+    mounted.stopVisibility()
     mounted.field.dispose()
     mounted.canvas.remove()
     mounted.root.removeAttribute(RIPPLE_ATTR)

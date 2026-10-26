@@ -83,6 +83,13 @@ export const BRAND_INK_ATTR = 'data-dsh-claude-brand-ink'
 export const MOTION_ATTR = 'data-dsh-claude-motion'
 
 /**
+ * The mark a page wears while it is off screen (core/page-visibility.ts): the
+ * stylesheet holds every animation still under it, so a hidden window stops
+ * paying for frames it will have to catch up on.
+ */
+export const ASLEEP_ATTR = 'data-dsh-claude-asleep'
+
+/**
  * The host frame's mark while the sidebar stands over the page from a hover
  * (features/sidebar-peek): `open`, then `closing` for the slide back out. The
  * collapsed column's width the centre keeps clear of and the width the slide

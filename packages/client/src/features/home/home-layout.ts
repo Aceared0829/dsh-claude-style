@@ -5,6 +5,7 @@ import { HOME_HERO_ATTR, HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO, PREF_DEFAULTS } f
 import type { Prefs } from '../../constants'
 import { COMPOSER_STACK, cacheFirstMatch, hostSlots } from '@dsh-claude-style/engine/host'
 import { readPrefs } from '../../core/prefs'
+import { pageHidden, subscribePageHidden } from '../../core/page-visibility'
 import { motionMs } from '../../shared/motion'
 import { HOME_RANGES, createHomeUsage, homePanelData } from './data'
 import { createGreetingCopy } from './greeting-copy'
@@ -305,16 +306,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * back on the morning's numbers otherwise.
    */
   function onWindowWake() {
-    // Leaving is not coming back: a tab being hidden asks for no read, and a
-    // hidden tab's timers are throttled anyway.
-    if (document.hidden) return
+    // Leaving is not coming back: a page off screen asks for no read, and a
+    // hidden page's timers are throttled anyway.
+    if (pageHidden()) return
     if (layout !== HOME_LAYOUT_STUDIO || !heroPhase()) return
     usage.refresh('wake')
   }
   // The window's own focus covers the desktop shell's window and the browser
-  // tab alike; `visibilitychange` covers a tab the reader left the window on.
+  // tab alike; the page's visibility (core/page-visibility.ts) covers a window
+  // another application covers, and reports the return alone.
   window.addEventListener('focus', onWindowWake)
-  document.addEventListener('visibilitychange', onWindowWake)
+  const stopWatchingVisibility = subscribePageHidden(hidden => { if (!hidden) onWindowWake() })
 
   ui.homeLayout = { sync }
 
@@ -323,7 +325,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   return () => {
     window.removeEventListener('focus', onWindowWake)
-    document.removeEventListener('visibilitychange', onWindowWake)
+    stopWatchingVisibility()
     unmountColdSeat()
     usage.stop()
     document.body.removeAttribute(HOME_LAYOUT_ATTR)

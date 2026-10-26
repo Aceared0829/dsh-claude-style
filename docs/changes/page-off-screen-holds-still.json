@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 1,
+  "external": false,
+  "at": "2026-10-25",
+  "zh": "修复窗口不可见时皮肤动画仍在运行：页面隐藏时 `<body>` 带上 `data-dsh-claude-asleep`，样式表把页面上的动画停在当下位置，首页涟漪的帧与字符定时器一并停摆，回到前台从当下继续，不再追赶积压的合成帧。",
+  "en": "Fix the skin's animations running while the window is hidden: a hidden page marks `<body>` with `data-dsh-claude-asleep`, the stylesheet holds every animation on the page where it stands, and the home ripple's frame and character clocks stop with it, so a return carries on from there instead of catching up on queued frames."
+}

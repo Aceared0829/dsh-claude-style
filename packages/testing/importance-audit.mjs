@@ -50,6 +50,7 @@ import postcss from 'postcss'
 import selectorParser from 'postcss-selector-parser'
 import { minifyCss } from '../../scripts/shared/minify-css.mjs'
 import { ruleKey } from '../../scripts/shared/rule-key.mjs'
+import surfaceTable from './data/surface.json' with { type: 'json' }
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..')
 /** The marker declaration carrying each rule's index into the page's CSSOM. */
@@ -58,6 +59,16 @@ const MARK = '--dsh-audit-rule'
 const SHEET = 'style[data-plugin-css="dsh-claude-style/client.css"]'
 /** Pseudo-elements the page can read a computed style for. */
 const READABLE_PSEUDO = new Set(['::before', '::after', '::marker', '::placeholder'])
+/**
+ * A skin mark as a selector reads it, taken from the surface table: the marks
+ * the list below already spells stay as they are, and one added now is read
+ * rather than written down a second time (D77).
+ */
+function mark(id) {
+  const entry = surfaceTable.surface.find((candidate) => candidate.id === id)
+  if (entry === undefined) throw new Error(`importance: no surface entry "${id}" for the mark a rule waits on`)
+  return `[${entry.attribute}]`
+}
 /**
  * Selectors whose rule only applies while a transient mark is on the page,
  * under a pointer state the walk cannot hold, or in a state the walk carries
@@ -69,8 +80,9 @@ const READABLE_PSEUDO = new Set(['::before', '::after', '::marker', '::placehold
  * controls, the send flight, the wait badge's leave, the reveal of a panel, the
  * reasoning window whose markdown variant the walk's turn sometimes carries), a
  * state a pointer holds (a dragged effort knob, a file row swapping its
- * operation), and the host's own mark for a theme transition. The hover walk
- * still covers the rules whose own trigger it can point at.
+ * operation), the mark the page wears while it is off screen, which only a
+ * hidden window carries, and the host's own mark for a theme transition. The
+ * hover walk still covers the rules whose own trigger it can point at.
  */
 const TRANSIENT_SELECTORS = [
   '[data-dsh-claude-rolling]', '[data-dsh-claude-composer-active]',
@@ -81,7 +93,7 @@ const TRANSIENT_SELECTORS = [
   '[data-dsh-claude-reader-hold]', '[data-dsh-claude-summary-running]', '[data-dsh-claude-wait-badge-leaving]',
   '[data-dsh-claude-file-merge]', '[data-dsh-claude-chat-reveal]', '[data-dsh-claude-roll]',
   '[data-dsh-claude-dragging]', '[data-dsh-claude-swapping]',
-  '[data-dsh-claude-reason-window]',
+  '[data-dsh-claude-reason-window]', mark('skin.asleep'),
   '[data-dsh-theme-transitioning]',
 ]
 

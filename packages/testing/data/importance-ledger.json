@@ -1613,6 +1613,11 @@
       "selector": "html[data-dsh-theme-transitioning] body[data-dsh-claude-style][data-dsh-theme-transitioning] *",
       "prop": "transition",
       "verdict": "transient state"
+    },
+    "body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *,body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *:before,body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *:after{animation-play-state:paused!}|animation-play-state": {
+      "selector": "body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *,body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *:before,body[data-dsh-claude-style][data-dsh-claude-asleep][data-dsh-claude-asleep] *:after",
+      "prop": "animation-play-state",
+      "verdict": "transient state"
     }
   }
 }

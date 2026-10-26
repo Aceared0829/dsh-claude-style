@@ -11,6 +11,7 @@ import { adoptPrefs, adoptSettingsForm, clearPrefsAttributes, disposePrefsBindin
 import { reportFeatureFailure } from '@dsh-claude-style/engine/scheduler'
 import { installScheduler } from './core/scheduler'
 import type { HandleName, Ui } from './core/scheduler'
+import { installPageVisibility } from './core/page-visibility'
 import { mountStylesheet, parkForeignSheets } from './core/stylesheet'
 import { peerPresent, subscribePeerPresence } from './shared/peer-plugin'
 import { pageOwner, subscribePageOwner } from './shared/visual-owner'
@@ -85,6 +86,8 @@ export function apply(ctx: HostContext) {
   let offOwnerWatch: (() => void) | null = null
   /** Unmounts this generation's stylesheet; set once the sheet is mounted. */
   let stopStylesheet: (() => void) | null = null
+  /** Mirrors the page's visibility onto the document; set with the sheet that reads it. */
+  let stopVisibility: (() => void) | null = null
   /** Carries the host's floating layer in a page drawn at a scale; set with the sheet that scales it. */
   let stopScale: (() => void) | null = null
   /** Stops the part-marking pass; set once the page is taken (D3). */
@@ -121,6 +124,11 @@ export function apply(ctx: HostContext) {
     clearPrefsAttributes()
     body.removeAttribute('data-dsh-claude-style')
     body.removeAttribute(HANDOFF_ATTR)
+    // The visibility mark is the sheet's to read, so it goes before the sheet does.
+    if (stopVisibility !== null) {
+      stopVisibility()
+      stopVisibility = null
+    }
     // This generation's own sheet, handed over rather than taken away when a
     // newer generation has mounted after it (mountStylesheet). The carried layer
     // goes with it: it is this sheet's own zoom those cards are carried under.
@@ -343,6 +351,9 @@ export function apply(ctx: HostContext) {
     // The sheet carries this package's own tags and is unmounted by
     // release(); the features install onto a page that already wears it.
     if (stopStylesheet === null) stopStylesheet = mountStylesheet()
+    // The page's visibility, mirrored for the sheet just mounted and for the
+    // clocks in script that stop with it (core/page-visibility.ts).
+    if (stopVisibility === null) stopVisibility = installPageVisibility()
     // Before the features: every rule they and the theme's own sheets write
     // reads the part names this pass puts on the host's elements (D3). A batch
     // that moved a mark asks for one more pass, so a feature that measures what
