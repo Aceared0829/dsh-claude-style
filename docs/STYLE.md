@@ -563,6 +563,11 @@ close)` and calls `closeOtherPopovers(name)` on the way open, so opening the
 model picker folds the permission menu, the account drawer and the host's hero
 menu.
 
+Every card the skin places stays inside the window: `positionAnchoredPopover`
+holds the resolved position inside the window's own pixels, so a card taller
+than the room beside its trigger begins at the window's top edge rather than
+drawing its lower rows past the bottom of the page.
+
 The context meter's popover is the host's own panel (it portals it, places it,
 and dismisses it), so the skin drives its trigger on hover and paints nothing of
 the shell itself. What it carries is described under "Context popover" below.

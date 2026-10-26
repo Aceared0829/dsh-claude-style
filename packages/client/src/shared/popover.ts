@@ -79,6 +79,26 @@ export function resolveAnchoredPosition(rect: DOMRect, width: number, height: nu
 }
 
 /**
+ * A resolved position held inside the window, in the space the position is
+ * written in: a card laid out taller than the room beside its trigger still
+ * starts at the top of the window instead of running off its bottom edge.
+ * `anchorSpace`'s viewport is the window in the page's pixels, which is the
+ * space a card's `left` and `top` are read in (shared/page-zoom.ts).
+ */
+export function clampToViewport(
+  position: { x: number, y: number },
+  width: number,
+  height: number,
+  viewport: { width: number, height: number } = pageViewport(),
+  margin = POPOVER_MARGIN,
+) {
+  return {
+    x: Math.max(margin, Math.min(position.x, viewport.width - width - margin)),
+    y: Math.max(margin, Math.min(position.y, viewport.height - height - margin)),
+  }
+}
+
+/**
  * The top of a card that opens over its trigger: above it while it fits there,
  * below it while it fits there instead, and otherwise held against the window's
  * edge on the side with more room. A card that fits neither way covers the
@@ -102,7 +122,8 @@ function topOverTrigger(rect: DOMRect, height: number, gap: number, margin: numb
  */
 export function positionAnchoredPopover(trigger: Element, pop: HTMLElement, opts: AnchorOptions = {}) {
   const space = anchorSpace(trigger)
-  const { x, y } = resolveAnchoredPosition(space.rect, pop.offsetWidth, pop.offsetHeight, { ...opts, viewport: space.viewport })
+  const anchored = resolveAnchoredPosition(space.rect, pop.offsetWidth, pop.offsetHeight, { ...opts, viewport: space.viewport })
+  const { x, y } = clampToViewport(anchored, pop.offsetWidth, pop.offsetHeight, space.viewport, opts.margin || POPOVER_MARGIN)
   const leftValue = `${Math.round(x)}px`
   const topValue = `${Math.round(y)}px`
   if (opts.important) {
