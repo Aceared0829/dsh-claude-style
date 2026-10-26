@@ -1,7 +1,9 @@
 import * as React from 'react'
 import { CHAT_REVEAL_OFF, CHAT_REVEAL_ON } from '../../constants'
 import { motionMs } from '../../shared/motion'
+import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
 import type manifest from './chat-reveal.manifest'
@@ -42,37 +44,26 @@ function RevealPicker(props: SettingsRowView) {
     return () => window.clearInterval(timer)
   }, [sample])
   const shown = Math.min(tick, Array.from(sample).length)
-  const options: { value: Prefs['chatReveal'], label: string }[] = [
-    { value: CHAT_REVEAL_ON, label: copy('chatRevealOn') },
-    { value: CHAT_REVEAL_OFF, label: copy('chatRevealOff') },
-  ]
-  return React.createElement(
-    'div',
-    { className: 'dsh-claude-reveal-picker', role: 'group' },
-    options.map(option => React.createElement(
-      'button',
-      {
-        key: option.value,
-        type: 'button',
-        className: 'dsh-claude-reveal-card',
-        // The card whose pieces wear the fade (settings-cards.css); the other
-        // hands them their turn with nothing between.
-        'data-fade': option.value === CHAT_REVEAL_ON ? '' : undefined,
-        disabled: props.disabled,
-        'data-active': option.value === props.prefs.chatReveal ? '' : undefined,
-        'aria-pressed': option.value === props.prefs.chatReveal ? 'true' : 'false',
-        'aria-label': option.label,
-        onClick: () => { if (option.value !== props.prefs.chatReveal) props.write({ chatReveal: option.value }) },
-      },
-      React.createElement(
-        'span',
-        { className: 'dsh-claude-reveal-sample', 'aria-hidden': 'true' },
-        Array.from(sample).map((piece, index) => React.createElement(
-          'span',
-          { key: `${index}-${piece}`, className: 'dsh-claude-reveal-piece', 'data-in': index < shown ? '' : undefined },
-          piece,
-        )),
-      ),
+  const card = React.createElement(
+    'span',
+    { className: 'dsh-claude-reveal-sample', 'aria-hidden': 'true' },
+    Array.from(sample).map((piece, index) => React.createElement(
+      'span',
+      { key: `${index}-${piece}`, className: 'dsh-claude-reveal-piece', 'data-in': index < shown ? '' : undefined },
+      piece,
     )),
   )
+  // The card whose pieces wear the fade (settings-cards.css); the other hands
+  // them their turn with nothing between.
+  const options: PreviewOption<Prefs['chatReveal']>[] = [
+    { value: CHAT_REVEAL_ON, label: copy('chatRevealOn'), content: card, attributes: { 'data-fade': '' } },
+    { value: CHAT_REVEAL_OFF, label: copy('chatRevealOff'), content: card },
+  ]
+  return React.createElement(PreviewCards<Prefs['chatReveal']>, {
+    cardClass: 'dsh-claude-reveal-card',
+    options,
+    value: props.prefs.chatReveal,
+    write: (value: Prefs['chatReveal']) => props.write({ chatReveal: value }),
+    disabled: props.disabled,
+  })
 }

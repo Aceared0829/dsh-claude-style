@@ -2,7 +2,9 @@ import * as React from 'react'
 import { CARET_MOTION_OFF, CARET_MOTION_TYPING } from '../../constants'
 import { motionMs } from '../../shared/motion'
 import { inPagePixels } from '../../shared/page-zoom'
+import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
 import type manifest from './caret.manifest'
@@ -68,49 +70,40 @@ function CaretPicker(props: SettingsRowView) {
       : last.getBoundingClientRect().right
     picker.style.setProperty('--dsh-claude-caret-x', `${inPagePixels(edge - lineLeft)}px`)
   }, [at, sample])
-  const options: { value: Prefs['caretMotion'], label: string }[] = [
-    { value: CARET_MOTION_TYPING, label: copy('caretOn') },
-    { value: CARET_MOTION_OFF, label: copy('caretOff') },
-  ]
-  return React.createElement(
-    'div',
-    { className: 'dsh-claude-caret-picker', role: 'group', ref: pickerRef },
-    options.map(option => React.createElement(
-      'button',
+  const cardSample = (option: Prefs['caretMotion']) => React.createElement(
+    'span',
+    { className: 'dsh-claude-caret-sample', 'aria-hidden': 'true' },
+    React.createElement(
+      'span',
       {
-        key: option.value,
-        type: 'button',
-        className: 'dsh-claude-caret-card',
-        disabled: props.disabled,
-        'data-active': option.value === props.prefs.caretMotion ? '' : undefined,
-        'aria-pressed': option.value === props.prefs.caretMotion ? 'true' : 'false',
-        'aria-label': option.label,
-        onClick: () => { if (option.value !== props.prefs.caretMotion) props.write({ caretMotion: option.value }) },
+        className: 'dsh-claude-caret-sample-text',
+        ref: option === CARET_MOTION_TYPING ? lineRef : undefined,
       },
-      React.createElement(
+      pieces.map((piece, index) => React.createElement(
         'span',
-        { className: 'dsh-claude-caret-sample', 'aria-hidden': 'true' },
-        React.createElement(
-          'span',
-          {
-            className: 'dsh-claude-caret-sample-text',
-            ref: option.value === CARET_MOTION_TYPING ? lineRef : undefined,
-          },
-          pieces.map((piece, index) => React.createElement(
-            'span',
-            // A character that has not been typed yet holds its place in the
-            // line, so the line does not reflow as it is typed.
-            { key: `${index}-${piece}`, className: 'dsh-claude-caret-piece', 'data-in': index < at ? '' : undefined },
-            piece,
-          )),
-        ),
-        React.createElement('span', {
-          className: `dsh-claude-caret-sample-bar dsh-claude-caret-${option.value}`,
-          // The blink is switched off for the whole time the line is being
-          // typed, so the caret is lit while it moves.
-          'data-typing': at < pieces.length ? '' : undefined,
-        }),
-      ),
-    )),
+        // A character that has not been typed yet holds its place in the
+        // line, so the line does not reflow as it is typed.
+        { key: `${index}-${piece}`, className: 'dsh-claude-caret-piece', 'data-in': index < at ? '' : undefined },
+        piece,
+      )),
+    ),
+    React.createElement('span', {
+      className: `dsh-claude-caret-sample-bar dsh-claude-caret-${option}`,
+      // The blink is switched off for the whole time the line is being
+      // typed, so the caret is lit while it moves.
+      'data-typing': at < pieces.length ? '' : undefined,
+    }),
   )
+  const options: PreviewOption<Prefs['caretMotion']>[] = [
+    { value: CARET_MOTION_TYPING, label: copy('caretOn'), content: cardSample(CARET_MOTION_TYPING) },
+    { value: CARET_MOTION_OFF, label: copy('caretOff'), content: cardSample(CARET_MOTION_OFF) },
+  ]
+  return React.createElement(PreviewCards<Prefs['caretMotion']>, {
+    cardClass: 'dsh-claude-caret-card',
+    options,
+    value: props.prefs.caretMotion,
+    write: (value: Prefs['caretMotion']) => props.write({ caretMotion: value }),
+    disabled: props.disabled,
+    element: pickerRef,
+  })
 }

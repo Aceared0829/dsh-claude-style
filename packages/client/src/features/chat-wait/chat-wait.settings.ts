@@ -5,7 +5,9 @@ import { motionReduced } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
 import { SWEEP_BAND_CLASS, SWEEP_GLYPHS_CLASS } from '../../shared/sweep-band'
 import { waitingWord } from '../../shared/turn-activity'
+import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
 import type manifest from './chat-wait.manifest'
@@ -78,43 +80,34 @@ function StatusMotionPicker(props: SettingsRowView) {
       preciseWords[preciseTurn % preciseWords.length] ?? preciseWords[0],
     ]
     : plainWords
-  const options: { value: Prefs['statusMotion'], label: string }[] = [
-    { value: STATUS_MOTION_SWEEP, label: copy('statusMotionSweep') },
-    { value: STATUS_MOTION_WASH, label: copy('statusMotionWash') },
-  ]
-  return React.createElement(
-    'div',
-    { className: 'dsh-claude-motion-picker', role: 'group', ref: pickerRef },
-    options.map(option => React.createElement(
-      'button',
-      {
-        key: option.value,
-        type: 'button',
-        className: 'dsh-claude-motion-card',
-        disabled: props.disabled,
-        'data-active': option.value === props.prefs.statusMotion ? '' : undefined,
-        'aria-pressed': option.value === props.prefs.statusMotion ? 'true' : 'false',
-        'aria-label': option.label,
-        onClick: () => { if (option.value !== props.prefs.statusMotion) props.write({ statusMotion: option.value }) },
-      },
-      // Each wording wears the card's paint by carrying the shared look's own
-      // class (shared/motion.css), so the band or the wash rides the words
-      // that are standing; the band is the host's own, built the way
-      // shared/sweep-band.ts builds it on the line.
-      React.createElement(
-        'span',
-        { className: 'dsh-claude-motion-sample', 'aria-hidden': 'true' },
-        words.map((word, at) => React.createElement('span', {
-          // Each turn re-keys the pair, which is what makes the two halves
-          // play again on the precise line.
-          key: props.prefs.statusDetail ? `${preciseTurn}-${at}` : word,
-          className: `dsh-claude-motion-word dsh-claude-${option.value}`
-            + (props.prefs.statusDetail ? (at === 0 ? ' dsh-claude-word-out' : ' dsh-claude-word-in') : ''),
-          'data-text': word,
-        }, word, option.value === STATUS_MOTION_SWEEP
-          ? React.createElement('span', { className: SWEEP_BAND_CLASS }, React.createElement('span', { className: SWEEP_GLYPHS_CLASS, 'data-text': word }))
-          : null)),
-      ),
-    )),
+  // Each wording wears the card's paint by carrying the shared look's own
+  // class (shared/motion.css), so the band or the wash rides the words that are
+  // standing; the band is the host's own, built the way shared/sweep-band.ts
+  // builds it on the line.
+  const sample = (option: Prefs['statusMotion']) => React.createElement(
+    'span',
+    { className: 'dsh-claude-motion-sample', 'aria-hidden': 'true' },
+    words.map((word, at) => React.createElement('span', {
+      // Each turn re-keys the pair, which is what makes the two halves
+      // play again on the precise line.
+      key: props.prefs.statusDetail ? `${preciseTurn}-${at}` : word,
+      className: `dsh-claude-motion-word dsh-claude-${option}`
+        + (props.prefs.statusDetail ? (at === 0 ? ' dsh-claude-word-out' : ' dsh-claude-word-in') : ''),
+      'data-text': word,
+    }, word, option === STATUS_MOTION_SWEEP
+      ? React.createElement('span', { className: SWEEP_BAND_CLASS }, React.createElement('span', { className: SWEEP_GLYPHS_CLASS, 'data-text': word }))
+      : null)),
   )
+  const options: PreviewOption<Prefs['statusMotion']>[] = [
+    { value: STATUS_MOTION_SWEEP, label: copy('statusMotionSweep'), content: sample(STATUS_MOTION_SWEEP) },
+    { value: STATUS_MOTION_WASH, label: copy('statusMotionWash'), content: sample(STATUS_MOTION_WASH) },
+  ]
+  return React.createElement(PreviewCards<Prefs['statusMotion']>, {
+    cardClass: 'dsh-claude-motion-card',
+    options,
+    value: props.prefs.statusMotion,
+    write: (value: Prefs['statusMotion']) => props.write({ statusMotion: value }),
+    disabled: props.disabled,
+    element: pickerRef,
+  })
 }

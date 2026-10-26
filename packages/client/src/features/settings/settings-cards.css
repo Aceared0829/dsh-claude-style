@@ -7,7 +7,7 @@
    the row shell, the switches, the brand editor and the tab strip are the
    other. */
 
-body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker, .dsh-claude-context-display) {
+body[data-dsh-claude-style] .dsh-claude-settings-row-block > .dsh-claude-preview-picker {
   align-self: stretch;
 }
 
@@ -22,13 +22,13 @@ body[data-dsh-claude-style] .dsh-claude-settings-row-block > :is(.dsh-claude-bra
    starburst, DeepSeek's whale in brand blue — inlined as CSS data URIs, so they
    read in full colour on either theme: a new brand is one option in
    settings-tab-general.ts and one [data-brand] rule here. */
-body[data-dsh-claude-style] :is(.dsh-claude-brand-picker, .dsh-claude-motion-picker, .dsh-claude-caret-picker, .dsh-claude-reveal-picker, .dsh-claude-enter-picker, .dsh-claude-ongoing-picker, .dsh-claude-context-display) {
+body[data-dsh-claude-style] .dsh-claude-preview-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card) {
+body[data-dsh-claude-style] .dsh-claude-preview-card {
   appearance: none;
   margin: 0;
   display: flex;
@@ -47,16 +47,16 @@ body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card,
   transition: border-color var(--dsh-claude-timing-feedback);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card):hover {
+body[data-dsh-claude-style] .dsh-claude-preview-card:hover {
   border-color: var(--dsw-alias-border-l2);
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card):focus-visible {
+body[data-dsh-claude-style] .dsh-claude-preview-card:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary, #d97757);
   outline-offset: 1px;
 }
 
-body[data-dsh-claude-style] :is(.dsh-claude-brand-card, .dsh-claude-motion-card, .dsh-claude-caret-card, .dsh-claude-reveal-card, .dsh-claude-enter-card, .dsh-claude-ongoing-card, .dsh-claude-context-display-card)[data-active] {
+body[data-dsh-claude-style] .dsh-claude-preview-card[data-active] {
   border-color: var(--dsw-alias-brand-primary, #d97757);
 }
 

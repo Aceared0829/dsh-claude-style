@@ -1,5 +1,7 @@
 import * as React from 'react'
 import { MOTION_FULL, MOTION_REDUCED, MOTION_SYSTEM, ONGOING_INDICATOR_BREATHE, ONGOING_INDICATOR_RING } from '../../constants'
+import { PreviewCards } from '../../shared/preview-cards'
+import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SegmentOption, SettingsTab, SettingsView } from './settings-controls'
 import { copy } from './copy'
@@ -23,34 +25,24 @@ export function createSettingsMotionTab(): SettingsTab {
    * (theme/sidebar.css), so a card wears the mark rather than a picture of it.
    */
   function ongoingPicker(prefs: Prefs, write: SettingsView['write']) {
-    const options: SegmentOption<Prefs['ongoingIndicator']>[] = [
-      { value: ONGOING_INDICATOR_BREATHE, label: copy('ongoingBreathe') },
-      { value: ONGOING_INDICATOR_RING, label: copy('ongoingRing') },
-    ]
-    return React.createElement(
-      'div',
-      { className: 'dsh-claude-ongoing-picker', role: 'group' },
-      options.map(option => React.createElement(
-        'button',
-        {
-          key: option.value,
-          type: 'button',
-          className: 'dsh-claude-ongoing-card',
-          'data-active': option.value === prefs.ongoingIndicator ? '' : undefined,
-          'aria-pressed': option.value === prefs.ongoingIndicator ? 'true' : 'false',
-          'aria-label': option.label,
-          onClick: () => { if (option.value !== prefs.ongoingIndicator) write({ ongoingIndicator: option.value }) },
-        },
-        React.createElement(
-          'span',
-          { className: 'dsh-claude-ongoing-sample', 'aria-hidden': 'true' },
-          // The look is fixed to the card's own choice, so both cards show
-          // their mark whatever the page is set to.
-          React.createElement('span', { className: 'dsh-claude-ongoing-mark', 'data-look': option.value }),
-          React.createElement('span', { className: 'dsh-claude-ongoing-sample-title' }, copy('ongoingSample')),
-        ),
-      )),
+    // The look is fixed to the card's own choice, so both cards show their
+    // mark whatever the page is set to.
+    const sample = (indicator: Prefs['ongoingIndicator']) => React.createElement(
+      'span',
+      { className: 'dsh-claude-ongoing-sample', 'aria-hidden': 'true' },
+      React.createElement('span', { className: 'dsh-claude-ongoing-mark', 'data-look': indicator }),
+      React.createElement('span', { className: 'dsh-claude-ongoing-sample-title' }, copy('ongoingSample')),
     )
+    const options: PreviewOption<Prefs['ongoingIndicator']>[] = [
+      { value: ONGOING_INDICATOR_BREATHE, label: copy('ongoingBreathe'), content: sample(ONGOING_INDICATOR_BREATHE) },
+      { value: ONGOING_INDICATOR_RING, label: copy('ongoingRing'), content: sample(ONGOING_INDICATOR_RING) },
+    ]
+    return React.createElement(PreviewCards<Prefs['ongoingIndicator']>, {
+      cardClass: 'dsh-claude-ongoing-card',
+      options,
+      value: prefs.ongoingIndicator,
+      write: (value: Prefs['ongoingIndicator']) => write({ ongoingIndicator: value }),
+    })
   }
 
   function rows(view: SettingsView) {

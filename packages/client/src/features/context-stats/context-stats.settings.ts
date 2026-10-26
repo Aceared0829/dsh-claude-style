@@ -3,7 +3,10 @@ import { CONTEXT_DISPLAY_PIE, CONTEXT_DISPLAY_RING_BAND, CONTEXT_DISPLAY_RING_RA
 import { contextPieImage } from './context-meter-pie'
 import { METER_RING_RADIUS, METER_RING_SIZE, contextBandAt, ringDash } from './context-meter-face'
 import { CONTEXT_STOPS, rampPosition } from './stats-ramp'
+import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import type { PreviewOption } from '../../shared/preview-cards'
+import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
 import type manifest from './context-stats.manifest'
 
@@ -110,31 +113,23 @@ function ContextDisplayPicker(props: SettingsRowView) {
     observer.observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme'] })
     return () => observer.disconnect()
   }, [])
-  return React.createElement(
-    'div',
-    { className: 'dsh-claude-context-display', role: 'group', 'aria-label': copy('contextDisplayTitle') },
-    FACES.map((face) => {
-      const selected = props.prefs.contextDisplay === face.value
-      return React.createElement(
-        'button',
-        {
-          key: face.value,
-          type: 'button',
-          className: 'dsh-claude-context-display-card',
-          disabled: props.disabled,
-          'data-active': selected ? '' : undefined,
-          'aria-pressed': selected ? 'true' : 'false',
-          // The cards carry no visible text: the face's name is its accessible
-          // name, and the row's description names the three in card order.
-          'aria-label': copy(face.label),
-          onClick: () => { if (!props.disabled && !selected) props.write({ contextDisplay: face.value }) },
-        },
-        React.createElement(
-          'span',
-          { className: 'dsh-claude-context-display-samples', 'aria-hidden': 'true' },
-          SAMPLE_READINGS[face.value].map((percent) => React.createElement(ContextSample, { key: percent, face: face.value, percent })),
-        ),
-      )
-    }),
-  )
+  // The cards carry no visible text: the face's name is its accessible name,
+  // and the row's description names the three in card order.
+  const options: PreviewOption<Prefs['contextDisplay']>[] = FACES.map((face) => ({
+    value: face.value,
+    label: copy(face.label),
+    content: React.createElement(
+      'span',
+      { className: 'dsh-claude-context-display-samples', 'aria-hidden': 'true' },
+      SAMPLE_READINGS[face.value].map((percent) => React.createElement(ContextSample, { key: percent, face: face.value, percent })),
+    ),
+  }))
+  return React.createElement(PreviewCards<Prefs['contextDisplay']>, {
+    cardClass: 'dsh-claude-context-display-card',
+    options,
+    value: props.prefs.contextDisplay,
+    write: (value: Prefs['contextDisplay']) => props.write({ contextDisplay: value }),
+    disabled: props.disabled,
+    label: copy('contextDisplayTitle'),
+  })
 }

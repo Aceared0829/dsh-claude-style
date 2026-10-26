@@ -3,7 +3,9 @@ import { MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW } from '../../constants'
 import { motionReduced } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
 import { withoutTransition } from '../../shared/transition'
+import { PreviewCards } from '../../shared/preview-cards'
 import { copy } from './copy'
+import type { PreviewOption } from '../../shared/preview-cards'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
 import type manifest from './send-flight.manifest'
@@ -63,47 +65,37 @@ function MessageEnterPicker(props: SettingsRowView) {
       stack.style.transform = ''
     }
   }, [shown])
-  const options: { value: Prefs['messageEnter'], label: string }[] = [
-    { value: MESSAGE_ENTER_GROW, label: copy('messageEnterGrow') },
-    { value: MESSAGE_ENTER_FLIGHT, label: copy('messageEnterFlight') },
-  ]
-  return React.createElement(
-    'div',
-    { className: 'dsh-claude-enter-picker', role: 'group', ref: pickerRef },
-    options.map(option => React.createElement(
-      'button',
-      {
-        key: option.value,
-        type: 'button',
-        className: 'dsh-claude-enter-card',
-        // The effect this card shows, which is also the value it writes
-        // (settings-cards.css).
-        'data-enter': option.value,
-        disabled: props.disabled,
-        'data-active': option.value === props.prefs.messageEnter ? '' : undefined,
-        'aria-pressed': option.value === props.prefs.messageEnter ? 'true' : 'false',
-        'aria-label': option.label,
-        onClick: () => { if (option.value !== props.prefs.messageEnter) props.write({ messageEnter: option.value }) },
-      },
-      React.createElement(
+  const sample = React.createElement(
+    'span',
+    { className: 'dsh-claude-enter-sample', 'aria-hidden': 'true' },
+    React.createElement(
+      'span',
+      { className: 'dsh-claude-enter-stack' },
+      ...shown.map((id, at) => React.createElement(
         'span',
-        { className: 'dsh-claude-enter-sample', 'aria-hidden': 'true' },
-        React.createElement(
-          'span',
-          { className: 'dsh-claude-enter-stack' },
-          ...shown.map((id, at) => React.createElement(
-            'span',
-            {
-              key: id,
-              className: 'dsh-claude-enter-bubble',
-              // The messages already standing arrived in earlier turns and
-              // stay as they are; the last one is the one arriving now.
-              'data-standing': at < shown.length - 1 ? '' : undefined,
-            },
-            texts[id % texts.length],
-          )),
-        ),
-      ),
-    )),
+        {
+          key: id,
+          className: 'dsh-claude-enter-bubble',
+          // The messages already standing arrived in earlier turns and
+          // stay as they are; the last one is the one arriving now.
+          'data-standing': at < shown.length - 1 ? '' : undefined,
+        },
+        texts[id % texts.length],
+      )),
+    ),
   )
+  const options: PreviewOption<Prefs['messageEnter']>[] = [
+    // The effect each card shows, which is also the value it writes
+    // (settings-cards.css).
+    { value: MESSAGE_ENTER_GROW, label: copy('messageEnterGrow'), content: sample, attributes: { 'data-enter': MESSAGE_ENTER_GROW } },
+    { value: MESSAGE_ENTER_FLIGHT, label: copy('messageEnterFlight'), content: sample, attributes: { 'data-enter': MESSAGE_ENTER_FLIGHT } },
+  ]
+  return React.createElement(PreviewCards<Prefs['messageEnter']>, {
+    cardClass: 'dsh-claude-enter-card',
+    options,
+    value: props.prefs.messageEnter,
+    write: (value: Prefs['messageEnter']) => props.write({ messageEnter: value }),
+    disabled: props.disabled,
+    element: pickerRef,
+  })
 }
