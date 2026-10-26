@@ -1,4 +1,4 @@
-import { inPageBox } from '../../shared/page-zoom'
+import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 
 /**
  * The day tip the usage panel's heat grid shows: one pill the grid carries, which
@@ -49,8 +49,8 @@ export interface HeatTipPlacement {
  *
  * @param cell - the day under the pointer.
  * @param grid - the grid the pill stands in.
- * @param width - the pill's measured width, padding included.
- * @param height - the pill's measured height, padding included.
+ * @param width - the pill's measured width, padding included, in the page's pixels.
+ * @param height - the pill's measured height, padding included, in the page's pixels.
  */
 export function placeHeatTip(cell: HTMLElement, grid: HTMLElement, width: number, height: number): HeatTipPlacement {
   const gridBox = inPageBox(grid.getBoundingClientRect())
@@ -123,7 +123,12 @@ export function showHeatTip(cell: HTMLElement, grid: HTMLElement) {
   text.textContent = label
   WORDS.selectNodeContents(text)
   const style = getComputedStyle(element)
-  const width = Math.ceil(WORDS.getBoundingClientRect().width) + Math.ceil(Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
+  // The words are measured in the viewport's pixels while the width written below
+  // and the padding the style reports are the page's own, so the measure is
+  // brought over before the two are added (shared/page-zoom.ts). The height comes
+  // from `offsetHeight`, which is already a length of that space.
+  const words = inPagePixels(WORDS.getBoundingClientRect().width)
+  const width = Math.ceil(words) + Math.ceil(Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
   const height = Math.ceil(element.offsetHeight)
   const placement = placeHeatTip(cell, grid, width, height)
   if (arriving) element.style.transition = 'none'

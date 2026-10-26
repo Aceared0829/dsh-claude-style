@@ -19,6 +19,7 @@ import { surfaceAttribute, surfaceClass } from '../../fixtures/surface'
 
 const ROOT = surfaceAttribute('skin.root')
 const TIP = surfaceAttribute('home.heat-tip')
+const ZOOM = surfaceAttribute('skin.page-zoom')
 const COLUMNS = 26
 const cleanups: (() => void)[] = []
 afterEach(async () => {
@@ -107,6 +108,23 @@ test('a cell the centred pill already fits in is named by a centred pill', () =>
   const placement = placeHeatTip(cell, grid, box.width, box.height)
   const cellBox = cell.getBoundingClientRect()
   expect(placement.left).toBeCloseTo(cellBox.left + cellBox.width / 2 - box.width / 2 - grid.getBoundingClientRect().left, 1)
+})
+
+test('the pill keeps its words on its day when the page is drawn at a zoom', () => {
+  const { grid, pill, cells } = mount()
+  // The inline factor stands in for the rule theme/chrome.css writes from this
+  // attribute, which this spec does not load.
+  document.body.setAttribute(ZOOM, '1.5')
+  document.body.style.zoom = '1.5'
+  cleanups.push(() => { document.body.style.zoom = ''; document.body.removeAttribute(ZOOM) })
+  const cell = cellAt(cells, 12, 3)
+  showHeatTip(cell, grid)
+  // The words, not the box around them: a width taken in the viewport's pixels
+  // and written back as the page's own leaves the words off their day inside a
+  // pill that is still centred (heat-tip.ts).
+  const words = pill.firstElementChild!.getBoundingClientRect()
+  const cellBox = cell.getBoundingClientRect()
+  expect(Math.abs(words.left + words.width / 2 - (cellBox.left + cellBox.width / 2))).toBeLessThan(1.5)
 })
 
 test('hovering any day leaves the panel without a horizontal scrollbar', async () => {
