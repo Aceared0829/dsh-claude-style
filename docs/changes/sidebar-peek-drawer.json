@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-26",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "修复窄窗口下指针停在侧栏开关上时整窗被压暗的问题：界面自身已把侧栏作为抽屉打开时，悬停展开不再介入。",
+  "en": "Fix the whole window dimming while the pointer rests on the sidebar toggle in a narrow window: the hover peek stands down where the interface already opens the sidebar as a drawer."
+}
