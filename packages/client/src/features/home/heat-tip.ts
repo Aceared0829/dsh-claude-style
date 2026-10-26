@@ -1,78 +1,151 @@
-import { inPageBox } from '../../shared/page-zoom'
+import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 
 /**
- * Where a heat cell's tip pill stands.
+ * The day tip the usage panel's heat grid shows: one pill the grid carries, which
+ * names whichever day the pointer is on.
  *
- * The pill is centred on its cell (home-overview.css), so it hangs half its own
- * width past either side of it: a cell within that reach of the grid's own edge
- * carries the pill over the panel's edge, and the panel — a scroll container —
- * answers with a horizontal scrollbar under the grid. Which cells are within
- * reach is the pill's own width, and that changes with the day written on it and
- * the figure beside it, so the cell the pointer is on says it: the pill is
- * generated only while that cell is hovered, and its used width is readable
- * from there.
+ * It stands in the grid once and moves between cells, so a crossing changes the
+ * word in one pill rather than building a box per cell and dropping it again in
+ * the 3px gutters between them.
  *
- * The pill also stands twice a cell tall, so a cell in the grid's upper rows
- * carries it over the grid's own top edge and across the panel's stat cells
- * above. The side is the cell's own too: the pill stands on whichever side of
- * the cell holds more room, above when the two are equal, and its height is
- * read off the same generated pill as the width.
- *
- * The answers are written on the cell as `data-edge` and `data-side`, which the
- * stylesheet reads: `start` lines the pill up with the cell's left edge, `end`
- * with its right, neither is the centred pill that already fits, and `below`
- * hangs the pill under the cell.
+ * Where it stands is decided from the pill's own measured box: centred on its cell
+ * while it fits inside the grid, pushed in at the edge where it would hang past
+ * it, and hung under cells whose lower side holds more room than the upper one —
+ * a pill over the grid's top edge would be clipped by the panel's scroll box.
  */
 
-/** The cell the heat grid is built from; the pill hangs off it. */
+/** The cell the heat grid is built from; the pill names the day it stands for. */
 export const HEAT_CELL_SELECTOR = '.dsh-claude-home-heat-cell'
-/** The alignment the stylesheet reads off the hovered cell. */
-export const HEAT_TIP_EDGE_ATTR = 'data-edge'
-/** The side the stylesheet reads off the hovered cell; absent means above. */
-export const HEAT_TIP_SIDE_ATTR = 'data-side'
-/** The side value that hangs the pill under its cell. */
-export const HEAT_TIP_SIDE_BELOW = 'below'
+/** The words a cell carries for its own day. */
+export const HEAT_TIP_ATTR = 'data-tip'
+/** The pill the grid carries: the day tip, painted as the inverted pill. */
+export const HEAT_HINT_CLASS = 'dsh-claude-home-heat-hint'
+/** The box inside the pill its words sit in. */
+export const HEAT_HINT_TEXT_CLASS = 'dsh-claude-home-heat-hint-text'
+/** The attribute the sheet shows the pill by; its absence is the pill away. */
+export const HEAT_HINT_SHOWN_ATTR = 'data-shown'
+/** The side of its cell the pill stands on, read by the sheet's own origin. */
+export const HEAT_HINT_SIDE_ATTR = 'data-side'
+/** The air between a cell and the pill that names it. */
+export const HEAT_TIP_GAP = 6
 
-/** What one cell's pill was told to do. */
+/** Where the pill stands, as lengths of the grid's own box. */
 export interface HeatTipPlacement {
-  /** The edge the pill lines up with, null while the centred pill already fits. */
-  edge: 'start' | 'end' | null
-  /** The side the pill stands on, null for above. */
-  side: typeof HEAT_TIP_SIDE_BELOW | null
+  /** The left edge, from the grid's left edge. */
+  left: number
+  /** The top edge, from the grid's top edge. */
+  top: number
+  /** The side of the cell the pill stands on. */
+  side: 'above' | 'below'
 }
 
 /**
- * Stand a heat cell's tip pill inside `grid`: line it up with the edge that keeps
- * it in, and put it on the side of the cell that has the room. Say which edge and
- * which side that was.
+ * Stand a cell's pill inside `grid`: line it up with the edge that keeps it in,
+ * and put it on the side of the cell that has the room.
  *
- * The pill's box is its used box plus the padding the stylesheet gives it, since
- * the `width` and `height` a computed style reports are the content box alone.
- * Those are in the pixels the page's own styles read, and a measured box is in
- * the viewport's, so the boxes are brought over before the two are compared
+ * The boxes are measured in the viewport's pixels and returned as lengths the
+ * page's own styles read, since the page may be drawn at a zoom
  * (shared/page-zoom.ts).
+ *
+ * @param cell - the day under the pointer.
+ * @param grid - the grid the pill stands in.
+ * @param width - the pill's measured width, padding included, in the page's pixels.
+ * @param height - the pill's measured height, padding included, in the page's pixels.
  */
-export function placeHeatTip(cell: HTMLElement, grid: HTMLElement): HeatTipPlacement {
-  const pill = window.getComputedStyle(cell, '::after')
-  const width = parseFloat(pill.width) + parseFloat(pill.paddingLeft) + parseFloat(pill.paddingRight)
-  const height = parseFloat(pill.height) + parseFloat(pill.paddingTop) + parseFloat(pill.paddingBottom)
+export function placeHeatTip(cell: HTMLElement, grid: HTMLElement, width: number, height: number): HeatTipPlacement {
   const gridBox = inPageBox(grid.getBoundingClientRect())
   const cellBox = inPageBox(cell.getBoundingClientRect())
-  const centre = cellBox.left + cellBox.width / 2
-  // A pill whose box could not be read — no tip on this cell, or a page that
-  // has not generated it — answers NaN here, and a comparison against NaN is
-  // false, which leaves the pill centred and above.
-  const edge = centre - width / 2 < gridBox.left ? 'start' : centre + width / 2 > gridBox.right ? 'end' : null
-  if (edge === null) cell.removeAttribute(HEAT_TIP_EDGE_ATTR)
-  else if (cell.getAttribute(HEAT_TIP_EDGE_ATTR) !== edge) cell.setAttribute(HEAT_TIP_EDGE_ATTR, edge)
-
+  const centred = cellBox.left + cellBox.width / 2 - width / 2
+  const left = Math.min(Math.max(centred, gridBox.left), gridBox.right - width)
   const above = cellBox.top - gridBox.top
   const below = gridBox.bottom - cellBox.bottom
   // The lower side takes the pill only where it holds more room than the upper
   // one and room enough for the pill itself: a grid squeezed too short for
   // either keeps the pill above, where it has always stood.
-  const side = below > above && below >= height ? HEAT_TIP_SIDE_BELOW : null
-  if (side === null) cell.removeAttribute(HEAT_TIP_SIDE_ATTR)
-  else if (cell.getAttribute(HEAT_TIP_SIDE_ATTR) !== side) cell.setAttribute(HEAT_TIP_SIDE_ATTR, side)
-  return { edge, side }
+  const side = below > above && below >= height + HEAT_TIP_GAP ? 'below' : 'above'
+  const top = side === 'below' ? cellBox.bottom + HEAT_TIP_GAP : cellBox.top - HEAT_TIP_GAP - height
+  return {
+    // The pill is positioned in the grid's own box, so the viewport's edges are
+    // measured off the grid rather than written down.
+    left: left - gridBox.left,
+    top: top - gridBox.top,
+    side,
+  }
+}
+
+/** The pill one grid carries: the element the page holds now, and a pending write. */
+interface HeatTip {
+  element: HTMLElement
+  text: HTMLElement
+}
+
+/** The pill each grid was last driven through, by the grid it stands in. */
+const PILLS = new WeakMap<HTMLElement, HeatTip>()
+
+/**
+ * The pill standing in `grid`. A re-render replaces the grid's children, so the
+ * element is looked up again whenever the one held has left.
+ */
+function pillOf(grid: HTMLElement) {
+  const held = PILLS.get(grid)
+  if (held !== undefined && held.element.parentElement === grid) return held
+  const element = grid.querySelector(`:scope > .${HEAT_HINT_CLASS}`)
+  if (!(element instanceof HTMLElement)) throw new Error(`heat-tip: the grid carries no ${HEAT_HINT_CLASS}`)
+  const text = element.firstElementChild
+  if (!(text instanceof HTMLElement)) throw new Error(`heat-tip: the pill carries no ${HEAT_HINT_TEXT_CLASS}`)
+  const pill = { element, text }
+  PILLS.set(grid, pill)
+  return pill
+}
+
+/** The words' own width, taken from the text rather than from the box it sits in. */
+const WORDS = new Range()
+
+/**
+ * Name the day under the pointer in the grid's pill, and stand it over that cell.
+ *
+ * The width comes from the words themselves: the pill travels between two days on
+ * a transition, so its own box holds a width from the frame before, and the box
+ * the placement needs is the one the new words will take. That travel is also why
+ * the first sighting writes its place with the transitions held back — a pill
+ * arriving at its day is seen appearing there, never sliding out of the corner it
+ * rested in (home-overview.css).
+ *
+ * @param cell - the day under the pointer.
+ * @param grid - the grid the cell stands in.
+ */
+export function showHeatTip(cell: HTMLElement, grid: HTMLElement) {
+  const label = cell.getAttribute(HEAT_TIP_ATTR)
+  // A grid still drawing its placeholders names no day yet.
+  if (label === null) return
+  const { element, text } = pillOf(grid)
+  const arriving = !element.hasAttribute(HEAT_HINT_SHOWN_ATTR)
+  text.textContent = label
+  WORDS.selectNodeContents(text)
+  const style = getComputedStyle(element)
+  // The words are measured in the viewport's pixels while the width written below
+  // and the padding the style reports are the page's own, so the measure is
+  // brought over before the two are added (shared/page-zoom.ts). The height comes
+  // from `offsetHeight`, which is already a length of that space.
+  const words = inPagePixels(WORDS.getBoundingClientRect().width)
+  const width = Math.ceil(words) + Math.ceil(Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
+  const height = Math.ceil(element.offsetHeight)
+  const placement = placeHeatTip(cell, grid, width, height)
+  if (arriving) element.style.transition = 'none'
+  element.style.width = `${width}px`
+  element.style.setProperty('--dsh-claude-heat-tip-x', `${placement.left}px`)
+  element.style.setProperty('--dsh-claude-heat-tip-y', `${placement.top}px`)
+  element.setAttribute(HEAT_HINT_SIDE_ATTR, placement.side)
+  if (arriving) {
+    // Read the place back once, so the travel the sheet declares starts from it
+    // rather than from the pill's last resting corner.
+    void element.offsetWidth
+    element.style.transition = ''
+  }
+  element.setAttribute(HEAT_HINT_SHOWN_ATTR, '')
+}
+
+/** Take the grid's pill away, the pointer having left the grid. */
+export function hideHeatTip(grid: HTMLElement) {
+  PILLS.get(grid)?.element.removeAttribute(HEAT_HINT_SHOWN_ATTR)
 }

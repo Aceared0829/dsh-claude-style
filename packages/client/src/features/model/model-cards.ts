@@ -262,6 +262,14 @@ export function createModelCards(options: {
     return rebuilt
   }
 
+  /**
+   * The More-models cell drills in on the same dwell/grace as the trigger. Held
+   * here rather than built inside the returned object, so dispose can cancel a
+   * dwell still waiting: its timer would otherwise fire into a feature that has
+   * been torn down and open a card nothing owns.
+   */
+  const subIntent = createHoverIntent(openModelSub, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY)
+
   return {
     /** Level 1's scrolling body, for the pass that paints the rows. */
     body: () => modelBody,
@@ -278,8 +286,7 @@ export function createModelCards(options: {
     hoverOn,
     scheduleOpenMain: () => modelHoverIntent.scheduleOpen(),
     scheduleClose: scheduleCloseModel,
-    /** The More-models cell drills in on the same dwell/grace as the trigger. */
-    subIntent: createHoverIntent(openModelSub, closeModelIfAway, POPOVER_OPEN_DELAY, MODEL_CLOSE_DELAY),
+    subIntent,
     openMain: openModelPopover,
     openSub: openModelSub,
     closeAll: closeModelPopovers,
@@ -296,8 +303,9 @@ export function createModelCards(options: {
       unbindPointerTracking()
       cancelCloseModel()
     },
-    /** Leave the shared popover registry. */
+    /** Leave the shared popover registry, with no dwell left waiting to open a card. */
     dispose() {
+      subIntent.cancel()
       unregisterPopover('model')
     },
   }

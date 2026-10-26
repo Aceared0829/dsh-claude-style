@@ -235,11 +235,13 @@ body[data-dsh-claude-style] .dsh-claude-home-panel-side {
 }
 
 /* While the host half is still folding, every skeleton surface breathes together:
-   the tiles' stand-in figures, the heat grid, and the models tab's stand-in rows. */
+   the tiles' stand-in figures, the heat grid, and the models tab's stand-in rows.
+   The count is the choice's (theme/chrome.css, D40): this selector outranks the
+   net's own count. */
 body[data-dsh-claude-style] .dsh-claude-home-panel[data-computing] .dsh-claude-home-stat[data-skeleton] .dsh-claude-home-stat-value,
 body[data-dsh-claude-style] .dsh-claude-home-panel[data-computing] .dsh-claude-home-models[data-skeleton] .dsh-claude-home-model-swatch,
 body[data-dsh-claude-style] .dsh-claude-home-heat[data-skeleton] .dsh-claude-home-heat-cell {
-  animation: dsh-claude-pulse var(--dsh-claude-period-pulse) var(--dsh-claude-ease-in-out) infinite;
+  animation: dsh-claude-pulse var(--dsh-claude-period-pulse) var(--dsh-claude-ease-in-out) var(--dsh-claude-loop-count, infinite);
 }
 
 /* The numbers landing take over from the placeholders in one motion: each
