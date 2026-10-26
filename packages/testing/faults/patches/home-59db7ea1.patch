@@ -1,112 +1,19 @@
 diff --git a/packages/client/src/features/home/heat-tip.ts b/packages/client/src/features/home/heat-tip.ts
-index 0aa4431..ee0055f 100644
+index 9add8fbf..cd8642a8 100644
 --- a/packages/client/src/features/home/heat-tip.ts
 +++ b/packages/client/src/features/home/heat-tip.ts
-@@ -1,7 +1,7 @@
- import { inPageBox } from '../../shared/page-zoom'
- 
- /**
-- * Where a heat cell's tip pill lines up.
-+ * Where a heat cell's tip pill stands.
-  *
-  * The pill is centred on its cell (home-overview.css), so it hangs half its own
-  * width past either side of it: a cell within that reach of the grid's own edge
-@@ -12,37 +12,67 @@ import { inPageBox } from '../../shared/page-zoom'
-  * generated only while that cell is hovered, and its used width is readable
-  * from there.
-  *
-- * The answer is written on the cell as `data-edge`, which the stylesheet reads:
-- * `start` lines the pill up with the cell's left edge, `end` with its right, and
-- * neither is the centred pill that already fits.
-+ * The pill also stands twice a cell tall, so a cell in the grid's upper rows
-+ * carries it over the grid's own top edge and across the panel's stat cells
-+ * above. The side is the cell's own too: the pill stands on whichever side of
-+ * the cell holds more room, above when the two are equal, and its height is
-+ * read off the same generated pill as the width.
-+ *
-+ * The answers are written on the cell as `data-edge` and `data-side`, which the
-+ * stylesheet reads: `start` lines the pill up with the cell's left edge, `end`
-+ * with its right, neither is the centred pill that already fits, and `below`
-+ * hangs the pill under the cell.
-  */
- 
- /** The cell the heat grid is built from; the pill hangs off it. */
- export const HEAT_CELL_SELECTOR = '.dsh-claude-home-heat-cell'
- /** The alignment the stylesheet reads off the hovered cell. */
- export const HEAT_TIP_EDGE_ATTR = 'data-edge'
-+/** The side the stylesheet reads off the hovered cell; absent means above. */
-+export const HEAT_TIP_SIDE_ATTR = 'data-side'
-+/** The side value that hangs the pill under its cell. */
-+export const HEAT_TIP_SIDE_BELOW = 'below'
-+
-+/** What one cell's pill was told to do. */
-+export interface HeatTipPlacement {
-+  /** The edge the pill lines up with, null while the centred pill already fits. */
-+  edge: 'start' | 'end' | null
-+  /** The side the pill stands on, null for above. */
-+  side: typeof HEAT_TIP_SIDE_BELOW | null
-+}
- 
- /**
-- * Line a heat cell's tip pill up with the edge that keeps it inside `grid`, and
-- * say which edge that was (null while the centred pill already fits).
-+ * Stand a heat cell's tip pill inside `grid`: line it up with the edge that keeps
-+ * it in, and put it on the side of the cell that has the room. Say which edge and
-+ * which side that was.
-  *
-- * The pill's width is its used width plus the padding the stylesheet gives it,
-- * since the `width` a computed style reports is the content box alone. That
-- * width is in the pixels the page's own styles read, and a measured box is in
-+ * The pill's box is its used box plus the padding the stylesheet gives it, since
-+ * the `width` and `height` a computed style reports are the content box alone.
-+ * Those are in the pixels the page's own styles read, and a measured box is in
-  * the viewport's, so the boxes are brought over before the two are compared
-  * (shared/page-zoom.ts).
-  */
--export function placeHeatTip(cell: HTMLElement, grid: HTMLElement): 'start' | 'end' | null {
-+export function placeHeatTip(cell: HTMLElement, grid: HTMLElement): HeatTipPlacement {
-   const pill = window.getComputedStyle(cell, '::after')
-   const width = parseFloat(pill.width) + parseFloat(pill.paddingLeft) + parseFloat(pill.paddingRight)
-+  const height = parseFloat(pill.height) + parseFloat(pill.paddingTop) + parseFloat(pill.paddingBottom)
-   const gridBox = inPageBox(grid.getBoundingClientRect())
+@@ -57,8 +57,12 @@ export function placeHeatTip(cell: HTMLElement, grid: HTMLElement, width: number
    const cellBox = inPageBox(cell.getBoundingClientRect())
-   const centre = cellBox.left + cellBox.width / 2
--  // A pill whose width could not be read — no tip on this cell, or a page that
-+  // A pill whose box could not be read — no tip on this cell, or a page that
-   // has not generated it — answers NaN here, and a comparison against NaN is
--  // false, which leaves the pill centred.
-+  // false, which leaves the pill centred and above.
-   const edge = centre - width / 2 < gridBox.left ? 'start' : centre + width / 2 > gridBox.right ? 'end' : null
-   if (edge === null) cell.removeAttribute(HEAT_TIP_EDGE_ATTR)
-   else if (cell.getAttribute(HEAT_TIP_EDGE_ATTR) !== edge) cell.setAttribute(HEAT_TIP_EDGE_ATTR, edge)
--  return edge
-+
+   const centred = cellBox.left + cellBox.width / 2 - width / 2
+   const left = Math.min(Math.max(centred, gridBox.left), gridBox.right - width)
+-  // The pill stands above its cell, whatever room the cell holds below it.
+-  const side: HeatTipPlacement['side'] = 'above'
 +  const above = cellBox.top - gridBox.top
 +  const below = gridBox.bottom - cellBox.bottom
 +  // The lower side takes the pill only where it holds more room than the upper
 +  // one and room enough for the pill itself: a grid squeezed too short for
 +  // either keeps the pill above, where it has always stood.
-+  const side = below > above && below >= height ? HEAT_TIP_SIDE_BELOW : null
-+  if (side === null) cell.removeAttribute(HEAT_TIP_SIDE_ATTR)
-+  else if (cell.getAttribute(HEAT_TIP_SIDE_ATTR) !== side) cell.setAttribute(HEAT_TIP_SIDE_ATTR, side)
-+  return { edge, side }
- }
-diff --git a/packages/client/src/features/home/home-overview.css b/packages/client/src/features/home/home-overview.css
-index ef24d68..5166bac 100644
---- a/packages/client/src/features/home/home-overview.css
-+++ b/packages/client/src/features/home/home-overview.css
-@@ -113,6 +113,14 @@ body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-edge="end"
-   transform: none;
- }
- 
-+/* A cell in the grid's upper rows holds more room below it than above, so its
-+   pill hangs under the cell instead of reaching over the grid's top edge and
-+   across the stat cells above (heat-tip.ts). */
-+body[data-dsh-claude-style] .dsh-claude-home-heat-cell[data-tip][data-side="below"]:hover::after {
-+  top: calc(100% + 6px);
-+  bottom: auto;
-+}
-+
- /* The one-liner under the grid: a plain caption, no emphasis of its own. */
- body[data-dsh-claude-style] .dsh-claude-home-fun {
-   color: var(--dsw-alias-label-tertiary, #8f8a7e);
++  const side = below > above && below >= height + HEAT_TIP_GAP ? 'below' : 'above'
+   const top = side === 'below' ? cellBox.bottom + HEAT_TIP_GAP : cellBox.top - HEAT_TIP_GAP - height
+   return {
+     // The pill is positioned in the grid's own box, so the viewport's edges are
