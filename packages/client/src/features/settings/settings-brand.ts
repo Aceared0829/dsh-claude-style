@@ -2,6 +2,7 @@ import * as React from 'react'
 import { BRAND_INK_ACCENT, BRAND_INK_ORIGINAL, BRAND_INK_TEXT, BRANDS, PALETTE_COLORING_BRAND, PALETTE_COLORING_CUSTOM } from '../../constants'
 import { PALETTE_CARDS } from 'virtual:dsh-claude-style/generated'
 import { BrandLockup } from './settings-brand-lockup'
+import { withoutTransition } from '../../shared/transition'
 import type { SegmentOption, SettingsRow, SettingsView } from './settings-controls'
 import type { Prefs } from '../../constants'
 import { copy } from './copy'
@@ -53,13 +54,12 @@ function placeHint(hint: HTMLElement, disc: HTMLElement, label: string) {
   const width = Math.ceil(text.scrollWidth + Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
   // offsetLeft, not the client rect: the disc's own lift and scale stay out of the measure.
   const x = disc.offsetLeft + disc.offsetWidth / 2 - width / 2
-  if (!showing) hint.style.transition = 'none'
-  hint.style.width = `${width}px`
-  hint.style.setProperty('--dsh-claude-hint-x', `${x}px`)
-  if (!showing) {
-    void hint.offsetWidth
-    hint.style.transition = ''
+  const write = () => {
+    hint.style.width = `${width}px`
+    hint.style.setProperty('--dsh-claude-hint-x', `${x}px`)
   }
+  if (showing) write()
+  else withoutTransition([hint], write)
   hint.setAttribute('data-show', '')
 }
 

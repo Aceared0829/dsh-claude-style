@@ -1,4 +1,5 @@
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
+import { withoutTransition } from '../../shared/transition'
 
 /**
  * The day tip the usage panel's heat grid shows: one pill the grid carries, which
@@ -131,17 +132,14 @@ export function showHeatTip(cell: HTMLElement, grid: HTMLElement) {
   const width = Math.ceil(words) + Math.ceil(Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight))
   const height = Math.ceil(element.offsetHeight)
   const placement = placeHeatTip(cell, grid, width, height)
-  if (arriving) element.style.transition = 'none'
-  element.style.width = `${width}px`
-  element.style.setProperty('--dsh-claude-heat-tip-x', `${placement.left}px`)
-  element.style.setProperty('--dsh-claude-heat-tip-y', `${placement.top}px`)
-  element.setAttribute(HEAT_HINT_SIDE_ATTR, placement.side)
-  if (arriving) {
-    // Read the place back once, so the travel the sheet declares starts from it
-    // rather than from the pill's last resting corner.
-    void element.offsetWidth
-    element.style.transition = ''
+  const write = () => {
+    element.style.width = `${width}px`
+    element.style.setProperty('--dsh-claude-heat-tip-x', `${placement.left}px`)
+    element.style.setProperty('--dsh-claude-heat-tip-y', `${placement.top}px`)
+    element.setAttribute(HEAT_HINT_SIDE_ATTR, placement.side)
   }
+  if (arriving) withoutTransition([element], write)
+  else write()
   element.setAttribute(HEAT_HINT_SHOWN_ATTR, '')
 }
 

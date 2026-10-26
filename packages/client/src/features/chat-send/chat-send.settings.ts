@@ -2,6 +2,7 @@ import * as React from 'react'
 import { MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW } from '../../constants'
 import { motionReduced } from '../../core/prefs'
 import { motionMs } from '../../shared/motion'
+import { withoutTransition } from '../../shared/transition'
 import { copy } from './copy'
 import type { Prefs } from '../../constants'
 import type { SettingsControlsOf, SettingsRowView } from '../../core/feature'
@@ -58,10 +59,7 @@ function MessageEnterPicker(props: SettingsRowView) {
     }
     for (const stack of picker.querySelectorAll<HTMLElement>('.dsh-claude-enter-stack')) {
       const row = Number.parseFloat(getComputedStyle(stack).getPropertyValue('--dsh-claude-enter-row')) || 28
-      stack.style.transition = 'none'
-      stack.style.transform = `translateY(${row}px)`
-      void stack.offsetWidth
-      stack.style.transition = ''
+      withoutTransition([stack], () => { stack.style.transform = `translateY(${row}px)` })
       stack.style.transform = ''
     }
   }, [shown])

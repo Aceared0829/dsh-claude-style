@@ -5,6 +5,7 @@ import type { EffortStep } from './ladder'
 import { createEffortMatrix } from './matrix'
 import { buildElement, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { inPagePixels } from '../../shared/page-zoom'
+import { withoutTransition } from '../../shared/transition'
 import { createNameSwap } from './name-swap'
 import type { ModelCatalog } from '../model/catalog'
 import { copy } from './copy'
@@ -252,13 +253,10 @@ export function createEffortControl(opts: {
       fill.style.width = width
       return
     }
-    knob.style.transition = 'none'
-    fill.style.transition = 'none'
-    knob.style.translate = value
-    fill.style.width = width
-    void knob.offsetWidth
-    knob.style.transition = ''
-    fill.style.transition = ''
+    withoutTransition([knob, fill], () => {
+      knob.style.translate = value
+      fill.style.width = width
+    })
   }
 
   /** Where the pointer sits along the track, in knob-travel units. */
