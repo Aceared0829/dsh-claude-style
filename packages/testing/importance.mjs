@@ -182,6 +182,14 @@ function importanceScenario(lane) {
       await control.click({ force: true })
       await page.waitForTimeout(500)
       await audit.state(`settings control ${tab}.${index + 1}`)
+      // The billing table's edit row opens the skin's own card over the tab
+      // strip. The state above is audited with the card up, and the card is
+      // closed here so the next tab's press is not swallowed by it.
+      const card = page.locator('.dsh-claude-billing-card')
+      if (await card.count() > 0) {
+        await card.locator('.dsh-claude-billing-close').click({ force: true })
+        await page.waitForTimeout(300)
+      }
     }
   }
 

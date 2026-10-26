@@ -109,9 +109,7 @@
     if (url === '/dsh-claude-style/prices' || url.indexOf('/dsh-claude-style/session-cost') === 0) {
       var cost = window.__costFixture
       if (cost === undefined || cost === null) return realFetch.apply(window, arguments)
-      var reading = { url: url, id: null }
-      var idAt = url.indexOf('?id=')
-      if (idAt !== -1) reading.id = decodeURIComponent(url.slice(idAt + 4))
+      var reading = { url: url, id: new URL(url, window.location.origin).searchParams.get('id') }
       ;(window.__costRequests = window.__costRequests || []).push(reading)
       if (url === '/dsh-claude-style/prices') {
         return Promise.resolve(jsonResponse({ ok: true, document: cost.prices, fetchedAt: new Date().toISOString() }))
