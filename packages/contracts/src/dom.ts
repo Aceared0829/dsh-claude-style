@@ -447,6 +447,19 @@ export const PLUGIN_SHEET_SELECTOR = 'style[data-plugin]'
 export const PLUGIN_SHEET_OWNER_ATTRIBUTE = 'data-plugin'
 export const PLUGIN_SHEET_PATH_ATTRIBUTE = 'data-plugin-css'
 
+/* ---------- a plugin's footer control ---------- */
+/**
+ * The two attributes a plugin puts on a control it mounts into the sidebar
+ * footer: the package it belongs to, and the part the control plays inside its
+ * own entry — `entry` on the control the sidebar footer shows. The skin keeps
+ * the update control in the sidebar rather than gathering it into the account
+ * popover (constants.ts, FOOTER_SEATS), and reads it through the plugin's own
+ * naming rather than a class name the build hashes.
+ */
+export const PLUGIN_ENTRY_ATTRIBUTE = 'data-dsh-part'
+export const PLUGIN_ENTRY_OWNER_ATTRIBUTE = 'data-dsh-plugin'
+export const PLUGIN_ENTRY_UPDATE_SELECTOR = `button[${PLUGIN_ENTRY_OWNER_ATTRIBUTE}="update"][${PLUGIN_ENTRY_ATTRIBUTE}="entry"]`
+
 /* ---------- ds-bot (Fei2411/DeepSeek-Bot) ---------- */
 
 /**

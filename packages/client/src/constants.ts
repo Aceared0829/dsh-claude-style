@@ -15,6 +15,7 @@
 export * from '@dsh-claude-style/contracts/prefs'
 import { COMPOSER_SCOPE_ALL, COMPOSER_SCOPE_CONVERSATION, COMPOSER_SCOPE_HERO } from '@dsh-claude-style/contracts/prefs'
 import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
+import { PLUGIN_ENTRY_UPDATE_SELECTOR } from '@dsh-claude-style/contracts/dom'
 export { PACKAGE_NAME }
 
 export const STYLE_ID = 'dsh-claude-style-style'
@@ -89,6 +90,22 @@ export const MOTION_ATTR = 'data-dsh-claude-motion'
  * paying for frames it will have to catch up on.
  */
 export const ASLEEP_ATTR = 'data-dsh-claude-asleep'
+
+/**
+ * A footer entry the skin keeps in the sidebar rather than gathering into the
+ * account popover (features/account/footer-mirror.ts, footer-seats.ts): the
+ * element carries the seat it stands in, and the account row carries a copy of
+ * it.
+ */
+export const FOOTER_SEAT_ATTR = 'data-dsh-claude-footer-seat'
+/**
+ * The seats a kept entry may take. A seat is matched on the naming the plugin
+ * itself writes, so the skin reaches a control it does not own without a class
+ * name the build hashes.
+ */
+export const FOOTER_SEATS = [
+  { seat: 'update', selector: PLUGIN_ENTRY_UPDATE_SELECTOR },
+] as const
 
 /**
  * The host frame's mark while the sidebar stands over the page from a hover

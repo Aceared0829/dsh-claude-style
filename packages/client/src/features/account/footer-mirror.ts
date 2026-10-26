@@ -1,6 +1,7 @@
 import { FOOTER_ACTIONS_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { findFootArea } from '@dsh-claude-style/engine/host'
 import { hasSkinClass } from '@dsh-claude-style/engine/dom'
+import { FOOTER_SEAT_ATTR, FOOTER_SEATS } from '../../constants'
 import { buildPopoverItem } from '../../shared/popover'
 import { copy } from './copy'
 
@@ -42,7 +43,10 @@ export function createFooterMirror(options: {
    *   - an entry that IS an overlay (a plugin's own dialog mounted into
    *     the footer, the cost-meter update notice) is no unit at all: it
    *     is left whole, marked `data-dsh-claude-footer-overlay` and
-   *     nothing else, so the takeover writes no display rule onto it.
+   *     nothing else, so the takeover writes no display rule onto it;
+   *   - an entry a FOOTER_SEATS seat claims (constants.ts) stays in the
+   *     sidebar: it keeps its entry mark and gains the seat and the snapshot
+   *     its rule copies, and the popover gathers no row for it.
    * Returns the live entry list for popover mirroring.
    */
   function syncFooterVisibility(footArea: Element) {
@@ -66,6 +70,18 @@ export function createFooterMirror(options: {
         entry.setAttribute('data-dsh-claude-footer-overlay', '')
         continue
       }
+      const seat = seatOf(entry)
+      if (seat !== null) {
+        // A kept entry stands in the sidebar: the account row carries a copy of
+        // it (footer-seats.ts), and the plugin's own node stays hidden in its
+        // slot rather than collapsed into the popover. Neither the entry mark
+        // nor the hidden mark is written — the seat rule owns the node.
+        entry.setAttribute(FOOTER_SEAT_ATTR, seat)
+        entry.removeAttribute('data-dsh-claude-footer-entry')
+        entry.removeAttribute('data-dsh-claude-footer-hidden')
+        continue
+      }
+      entry.removeAttribute(FOOTER_SEAT_ATTR)
       entry.setAttribute('data-dsh-claude-footer-entry', '')
       const all = entry.querySelectorAll('*')
       for (let j = 0; j < all.length; j++) {
@@ -85,6 +101,19 @@ export function createFooterMirror(options: {
     const all = entry.querySelectorAll('*')
     for (let i = 0; i < all.length; i++) nodes.push(all[i])
     return nodes
+  }
+
+  /**
+   * The seat a footer entry keeps in the sidebar, or null for an entry the
+   * popover gathers (constants.ts, FOOTER_SEATS). A seat is matched on the
+   * naming the plugin itself writes on its control, so the skin reaches a
+   * control the plugin owns without a class name the build hashes.
+   */
+  function seatOf(entry: Element) {
+    for (const option of FOOTER_SEATS) {
+      if (entry.matches(option.selector)) return option.seat
+    }
+    return null
   }
 
   /**
@@ -475,6 +504,10 @@ export function createFooterMirror(options: {
         // row, and a clone of it would carry the dialog's own `open` into the
         // popover as a second, non-modal copy.
         if (entry.hasAttribute('data-dsh-claude-footer-overlay')) return
+        // An entry the skin keeps in the sidebar already stands where the
+        // reader finds it: a second copy inside the popover would be two
+        // controls for one state.
+        if (entry.hasAttribute(FOOTER_SEAT_ATTR)) return
         const trigger = findFooterTrigger(entry)
         const hasContent = (entry.textContent || '').trim() !== '' ||
                          entry.querySelector('svg, img, canvas') !== null
@@ -589,12 +622,13 @@ export function createFooterMirror(options: {
   /** Drop every takeover marker from the host's footer entries. */
   function clear(footArea: Element) {
     const marked = footArea.querySelectorAll(
-      '[data-dsh-claude-footer-entry], [data-dsh-claude-footer-hidden], [data-dsh-claude-footer-overlay]',
+      '[data-dsh-claude-footer-entry], [data-dsh-claude-footer-hidden], [data-dsh-claude-footer-overlay], [data-dsh-claude-footer-seat]',
     )
     for (let i = 0; i < marked.length; i++) {
       marked[i].removeAttribute('data-dsh-claude-footer-entry')
       marked[i].removeAttribute('data-dsh-claude-footer-hidden')
       marked[i].removeAttribute('data-dsh-claude-footer-overlay')
+      marked[i].removeAttribute(FOOTER_SEAT_ATTR)
     }
   }
 

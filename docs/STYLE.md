@@ -646,6 +646,14 @@ that carries its one-shot entrance), and the feature stamps
 placement has been read twice with the same value. The entrance animation hangs
 on that stamp, so it plays on the card the reader will actually see.
 
+One footer control stays in the sidebar rather than becoming a row of that
+card: the update plugin's own button, which names itself with
+`data-dsh-plugin="update"` and `data-dsh-part="entry"`. The takeover leaves the
+plugin's node hidden in its slot and stands a copy of it at the right end of the
+account row — the plugin's words, mark, progress and press, at the pill's 22px
+height and 11px type — so a reader reaching for an update does not have to open
+the menu first. The rail has no room beside the icon and folds the copy away.
+
 ## Context popover · 上下文弹层
 
 The context meter's popover is the host's own panel: the skin opens it by

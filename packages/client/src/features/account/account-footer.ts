@@ -9,6 +9,7 @@ import { createAccountRows } from './rows'
 import { createAccountSurface } from './surface'
 import type { AccountSurfaceMode } from './surface'
 import { createAccountDrawer } from './account-drawer'
+import { createFooterSeats } from './footer-seats'
 import { POPOVER_CLOSE_DELAY, POPOVER_OPEN_DELAY, closeOtherPopovers, createHoverIntent, pressKeepsPopoverOpen, registerPopover, unregisterPopover } from '../../shared/popover'
 import { inPageBox } from '../../shared/page-zoom'
 import { resolveDisplayName } from '../../shared/identity'
@@ -134,6 +135,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     isOpen() { return surface.mode() === 'synthetic' && drawer.isOpen() },
     close: closeSurface
   })
+  // The entries the skin keeps in the sidebar (footer-seats.ts): the update
+  // control among them, which the reader reaches without opening the popover.
+  const seats = createFooterSeats()
   // The account area takes part in the shared popover rule (shared/popover.ts):
   // ONE entry for both surfaces, since a given host has only one of them.
   registerPopover('account', closeAccountSurfaces)
@@ -367,6 +371,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The menu marker goes with the takeover: an open host menu must not
     // keep the skin's card styling after the footer is handed back.
     surface.clearMenu()
+    // The copies stand inside the row the takeover draws, so they leave with it.
+    seats.clear()
     const injected = document.querySelectorAll('.dsh-claude-account-inject')
     for (let i = 0; i < injected.length; i++) injected[i].remove()
     const marked = document.querySelectorAll(`[${HOST_ROW_ATTR}]`)
@@ -384,6 +390,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     unbindHostMenu()
     menuPlacement.unwatch()
     if (footArea) mirror.clear(footArea)
+    seats.clear()
   }
 
   /** The entry row's boxes, taken in the pass's read phase when the row already stands (D40). */
@@ -524,6 +531,9 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // their icons painted beside the account row until the drawer had been
     // opened once. Only the mirroring needs a container to write into.
     mirror.sync(footArea)
+    // A seated entry stands in the account row itself, so the row has to be
+    // mounted before the copy has a place to go.
+    if (entryRow !== null) seats.sync(footArea)
 
     const root = surface.mode() === 'host' ? surface.container() : drawer.popover()
     if (root === null) return

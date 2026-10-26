@@ -78,6 +78,64 @@ body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-pa
   display: none !important;
 }
 
+/* A seated entry keeps the sidebar: its plugin's node stays hidden in the slot
+   it was mounted into, and a copy of it stands at the right end of the account
+   row (features/account/footer-seats.ts) so the reader reaches it without
+   opening the popover. The copy carries the plugin's own markup, icon, label
+   and progress; the skin only gives it the row's height and its place before
+   the chevron. The foot area is the positioning box, and the row stands 6px
+   above its bottom edge (the block's own padding), so no measurement is read
+   in the write phase. */
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-footer-seat] {
+  display: none;
+}
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] .dsh-claude-footer-seat-copy {
+  position: absolute;
+  right: calc(var(--dsh-sidebar-inline-padding, 12px) + 18px);
+  bottom: 6px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  /* The copy paints only where the plugin's own control does: the row under it
+     keeps every press outside the pill. */
+  pointer-events: none;
+}
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] .dsh-claude-footer-seat-copy > * {
+  display: inline-flex;
+  align-items: center;
+  pointer-events: auto;
+}
+/* The rail's row is an icon alone; the pill has no room beside it. */
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] .dsh-claude-footer-seat-copy {
+  display: none;
+}
+
+/* The copy keeps the plugin's words and mark and draws them as the skin's
+   pill: the accent surface, the smallest type. The properties are stated
+   without `!important`, since the copy carries the plugin's markup. */
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] .dsh-claude-footer-seat-copy > * {
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
+  font-family: var(--dsw-font-family);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 22px;
+  white-space: nowrap;
+}
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] .dsh-claude-footer-seat-copy > * :is(svg, img) {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  flex: none;
+}
+
 /* Collapsed rail mode adaptations */
 body[data-dsh-claude-style] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] .dsh-claude-account-btn {
   width: 36px;
