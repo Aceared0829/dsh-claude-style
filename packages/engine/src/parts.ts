@@ -353,10 +353,10 @@ function walk(element: Element, inherited: readonly RegionLookup[], roots: Map<s
 }
 
 /**
- * Write the parts of one subtree now, ahead of the marking pass (D40). The pass
- * holds a large batch back to the task after the paint, so a list the host
- * rebuilds would paint one frame without its parts; a reader whose styles are
- * keyed on them asks here, while the frame that mounted the nodes still stands.
+ * Write the parts of one subtree now, inside the task that built it (D40). A
+ * feature that mounts its own list and measures it before handing the task back
+ * asks here: the marking pass reads the batch in the observer's callback, which
+ * is a task later than the one that wrote the nodes.
  */
 export function markPartsWithin(root: Element) {
   const { lookups, roots } = contextAt(root)
@@ -414,6 +414,13 @@ export function installParts(next: PartsVocabulary, onMarked?: () => void) {
     // holds from there on.
     attributeFilter: ['class', next.regions.account, next.regions.hero, ...HOLD_ATTRIBUTES],
     skipQuiet: true,
+    // The marks this pass writes are what the sheet draws the frame with: the
+    // prose's face and line height, the table's widths. A session switch mounts
+    // its transcript in one large batch, and a pass that waited for the task
+    // after the paint drew that frame in the host's own type and then moved it
+    // (#178). The pass a batch asks for afterwards (`onMarked`) is the
+    // features' schedule, and that one still waits for its frame.
+    beforePaint: true,
   }, (records) => {
     let changed = false
     for (const record of records) {
