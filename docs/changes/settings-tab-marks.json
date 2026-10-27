@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 12,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "设置页标签栏的每个标签前新增一枚线性图标：通用、外观、主窗口、侧栏、动效各有自己的记号，跟随标签文字一起取色。",
+  "en": "Add a line mark before each tab in the settings tab strip: general, appearance, main window, sidebar and motion each get their own, taking the tab label's colour."
+}

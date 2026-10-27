@@ -113,6 +113,15 @@ body[data-dsh-claude-style] .dsh-claude-settings-tabs > [role="tab"] {
   min-width: max-content;
 }
 
+/* Each tab wears its own mark before its label, on the label's line: the strip
+   stays one text line tall, and the mark takes the tab's colour with it. */
+body[data-dsh-claude-style] .dsh-claude-settings-tabs > [role="tab"] .dsh-claude-settings-tab-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
 /* The rows sit in a fieldset so a read-only page disables every control at
    once (settings.ts); the fieldset's own frame and its min-content floor,
    which would widen a phone's page, are taken off. */

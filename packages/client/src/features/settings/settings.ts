@@ -12,6 +12,7 @@ import { createSettingsGeneralTab } from './settings-tab-general'
 import { createSettingsMainWindowTab } from './settings-tab-main-window'
 import { createSettingsMotionTab } from './settings-tab-motion'
 import { createSettingsSidebarTab } from './settings-tab-sidebar'
+import { settingsTabIcon } from './settings-tab-icons'
 import { installThemeFlip } from './theme-flip'
 import type { Prefs } from '../../constants'
 import type { SettingsTabId } from '../../core/feature'
@@ -99,6 +100,7 @@ export function ClaudeStyleSettingsTabStrip(props: { active: SettingsTabId, onPi
       'aria-selected': tab.id === props.active ? 'true' : 'false',
       onClick() { if (tab.id !== props.active) props.onPick(tab.id) },
     },
+    settingsTabIcon(tab.id),
     tab.label(),
   ))
   return React.createElement(ClaudeStyleSegmentGroup, { role: 'tablist', className: 'dsh-claude-settings-tabs' }, buttons)
