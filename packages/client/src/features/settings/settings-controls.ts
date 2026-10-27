@@ -219,12 +219,13 @@ function featureRows(slot: SettingsRowSlot, view: SettingsView): SettingsRow[] {
     const ownStatus = row.status === undefined ? undefined : ROW_CONTROLS[feature.id]?.[row.status]
     const status = ownStatus === undefined ? null : React.createElement(ownStatus, { key: 'status', prefs: view.prefs, write: view.write, disabled: off })
     const description = status === null ? described : described === null ? status : [described, status]
-    const node = row.parent === undefined
+    // A feature's own control (preview cards, a table) takes the line under the
+    // row's text, or the whole row when it has none, under a parent row too.
+    const node = row.parent === undefined || own !== undefined
       ? controls.row(pref, title, description, control, {
         disabled: off,
-        // A feature's own control is a grid of preview cards: it takes the
-        // line under the row's text (or the whole row when it has none).
         block: own !== undefined,
+        sub: row.parent !== undefined,
         experimental: row.experimental === true,
       })
       : controls.subRow(pref, title ?? '', description, control, !off, row.experimental === true)

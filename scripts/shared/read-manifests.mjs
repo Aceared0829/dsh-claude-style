@@ -22,8 +22,8 @@ const FEATURES = path.join(SRC, 'features')
 const SUFFIX = '.manifest.ts'
 /** The preference table both halves share: a settings row names one of its keys (D73). */
 const { PREFS } = loadModule('packages/contracts/src/prefs.ts')
-/** Where a settings row can stand (core/feature.ts SettingsRowSlot): the strip's tabs and the main window's two groups. */
-const SETTINGS_SLOTS = new Set(['general', 'appearance', 'main-window', 'sidebar', 'motion', 'conversation', 'composer'])
+/** Where a settings row can stand (core/feature.ts SettingsRowSlot): the strip's tabs and the main window's groups. */
+const SETTINGS_SLOTS = new Set(['general', 'appearance', 'main-window', 'sidebar', 'motion', 'conversation', 'composer', 'statistics'])
 /** The settings page's own copy: the lines two features' rows share live there (D72). */
 const SETTINGS_COPY = (() => {
   const file = path.join(FEATURES, 'settings', 'settings.copy.json')

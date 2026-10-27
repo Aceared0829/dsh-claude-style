@@ -4,16 +4,18 @@ import { copy } from './copy'
 import type { SettingsGroup, SettingsRow, SettingsTab, SettingsView } from './settings-controls'
 
 /**
- * The settings page's Main window tab: the conversation side above, the
- * composer's below, each under its own label.
+ * The settings page's Main window tab: the conversation side, the composer's
+ * controls, and the context and cost figures the composer carries, each under
+ * its own label.
  *
- * The rows of both groups are the features' own, placed here by their manifests
- * (D72), which name the group they stand in: the conversation navigator, the
- * chat-area interactions, the Chat / Trajectory strip and the Windows title-bar
- * band above; the restyle's scope, the model picker with its descriptions, the
- * peak rate meter and the permission control below. The labels are this page's
- * own, and so is the quick-provider row, whose popover is imperative where this
- * page is React (settings.ts).
+ * The rows of every group are the features' own, placed here by their manifests
+ * (D76), which name the group they stand in: the message navigator, the column's
+ * width, the Chat / Trajectory strip and the Windows title-bar band first; the
+ * restyle's scope with its bottom gap, the permission control and the model
+ * picker with the rows that hang off it next; the context meter, the statistics'
+ * place and the billing last. The labels are this page's own, and so is the
+ * quick-provider row, whose popover is imperative where this page is React
+ * (settings.ts).
  */
 export function createSettingsMainWindowTab(): SettingsTab {
   /** What the quick-provider trigger reads: how many, or nothing chosen. */
@@ -62,6 +64,7 @@ export function createSettingsMainWindowTab(): SettingsTab {
     return [
       { id: 'conversation', label: () => copy('groupConversation') },
       { id: 'composer', label: () => copy('groupComposer'), rows: composerRows },
+      { id: 'statistics', label: () => copy('groupStatistics') },
     ]
   }
 

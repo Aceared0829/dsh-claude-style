@@ -12,12 +12,12 @@ export default {
   // two entrances as the option under it (chat-send.settings.ts).
   settingsRows: [{
     tab: 'motion',
-    rank: 50,
+    rank: 25,
     pref: 'chatSend',
     title: 'messageEnterTitle',
   }, {
     tab: 'motion',
-    rank: 51,
+    rank: 26,
     pref: 'messageEnter',
     control: 'send-preview',
     stillWhenReduced: true,

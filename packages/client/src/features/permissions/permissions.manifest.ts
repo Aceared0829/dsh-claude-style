@@ -10,7 +10,8 @@ export default {
   stylesheets: [{ file: 'permissions.css', rank: 230 }],
   settingsRows: [{
     tab: 'composer',
-    rank: 51,
+    // After the restyle and its gap, ahead of the model picker and the rows under it.
+    rank: 20,
     pref: 'permissionsControl',
     title: 'permissionsTitle',
     // The segments are drawn into the restyled composer.

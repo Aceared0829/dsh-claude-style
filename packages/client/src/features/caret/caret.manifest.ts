@@ -11,7 +11,8 @@ export default {
   stylesheets: [{ file: 'caret.css', rank: 220 }],
   settingsRows: [{
     tab: 'motion',
-    rank: 20,
+    // After the chat area's rows (10–26): the caret is the composer's.
+    rank: 30,
     pref: 'caretMotion',
     title: 'caretTitle',
     control: 'caret-preview',

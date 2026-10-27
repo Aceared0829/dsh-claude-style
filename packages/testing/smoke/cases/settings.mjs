@@ -15,19 +15,19 @@ export default {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
-      appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
-      'main-window': ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand', 'composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl', 'billingTable'],
-      sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'workspaceView', 'sidebarPeek', 'dockCards', 'sidebarLayout'],
-      motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'caretMotion', 'ongoingIndicator', 'chatReveal', 'chatSend', 'messageEnter'],
+      general: ['username', 'pageZoom', 'autoPopover', 'sodium'],
+      appearance: ['brand', 'brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
+      'main-window': ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand', 'composerScope', 'composerBottomGap', 'permissionsControl', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'effortAccent', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'billingTable'],
+      sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'sidebarEntries', 'workspaceView', 'sidebarPeek', 'sidebarLayout', 'dockCards'],
+      motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'chatReveal', 'chatSend', 'messageEnter', 'caretMotion', 'ongoingIndicator'],
     }
-    // The main window's two groups, the conversation side above the composer's,
-    // each under its label and carrying its own rows: what used to be the
-    // Conversation and Composer tabs, and the statistics rows with the
-    // composer's billing display.
+    // The main window's three groups, each under its label and carrying its own
+    // rows: the conversation side, the composer's controls with the model
+    // picker's rows, and the context meter with the statistics and the billing.
     const mainWindowGroups = [
       { label: 'Conversation', rows: ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand'] },
-      { label: 'Composer', rows: ['composerScope', 'composerBottomGap', 'modelPicker', 'modelDescriptions', 'effortAccent', 'quickProviders', 'peakrate', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'permissionsControl', 'billingTable'] },
+      { label: 'Composer', rows: ['composerScope', 'composerBottomGap', 'permissionsControl', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'effortAccent'] },
+      { label: 'Context and cost', rows: ['contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'billingTable'] },
     ]
     // Greyed by the page itself rather than by a preference: the title-bar
     // band waits for the Windows desktop window, and the footer alignment for
@@ -77,15 +77,15 @@ export default {
         typeof paletteCard(customCards, 'custom').reset === 'string' && paletteCard(customCards, 'custom').reset.length > 0,
       JSON.stringify(customCards))
     const off = settings.parentsOff || {}
-    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the search box\'s style with the sidebar search off, and the title-bar band for the window on every page',
+    check('a sub-row greys out while its parent is off: the accent colour with the colours following the host, the mascot\'s place with the mascot off, the model descriptions, the effort accent colour, the quick providers and the peak rate meter with the model picker off, the custom price table with the billing off, the search box\'s style with the sidebar search off, and the title-bar band for the window on every page',
       !!off.appearance && JSON.stringify(off.appearance.disabled) === '["mascotScope"]' &&
-        !!off.mainWindow && JSON.stringify(off.mainWindow.disabled) === '["headerBand","modelDescriptions","effortAccent","quickProviders","peakrate","statsFooterAlign"]' &&
+        !!off.mainWindow && JSON.stringify(off.mainWindow.disabled) === '["headerBand","modelDescriptions","quickProviders","peakrate","effortAccent","statsFooterAlign","billingTable"]' &&
         !!off.sidebar && JSON.stringify(off.sidebar.disabled) === '["searchStyle"]',
       JSON.stringify(off))
     const unmet = settings.requirementsOff || {}
     check('with the composer restyle off, the model picker with its sub-rows, the permission control and the statistics\' figures grey out, the two switches and the statistics rows saying what they wait for; with the footer takeover off, so does the easter egg under it',
-      !!unmet.mainWindow && JSON.stringify(unmet.mainWindow.disabled) === '["headerBand","composerBottomGap","modelPicker","modelDescriptions","effortAccent","quickProviders","peakrate","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl","billingTable"]' &&
-        JSON.stringify(unmet.mainWindow.notes) === '["headerBand","composerBottomGap","modelPicker","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","permissionsControl","billingTable"]' &&
+      !!unmet.mainWindow && JSON.stringify(unmet.mainWindow.disabled) === '["headerBand","composerBottomGap","permissionsControl","modelPicker","modelDescriptions","quickProviders","peakrate","effortAccent","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","billingTable"]' &&
+        JSON.stringify(unmet.mainWindow.notes) === '["headerBand","composerBottomGap","permissionsControl","modelPicker","contextDisplay","contextNumbers","statsPosition","statsFooterAlign","billingCurrency","billingTable"]' &&
         !!unmet.sidebar && JSON.stringify(unmet.sidebar.disabled) === '["banLocale"]' && JSON.stringify(unmet.sidebar.notes) === '[]',
       JSON.stringify(unmet))
     const hero = settings.heroOnly || {}

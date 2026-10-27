@@ -14,10 +14,9 @@ export default {
   prefValues: [STATS_POSITION_INLINE, STATS_POSITION_CONTEXT, STATS_POSITION_FOOTER],
   stylesheets: [{ file: 'footer-layout.css', rank: 106, gate: true }, { file: 'billing-table.css', rank: 108, gate: true }],
   settingsRows: [{
-    tab: 'composer',
-    // The meter's face and its number open the statistics rows, after the
-    // model picker's block: the face is what the reader looks at, the figures
-    // what they read.
+    tab: 'statistics',
+    // The meter's face and its number open the group: the face is what the
+    // reader looks at, the figures what they read.
     rank: 46,
     pref: 'contextDisplay',
     title: 'contextDisplayTitle',
@@ -25,14 +24,14 @@ export default {
     control: 'context-display',
     requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
-    tab: 'composer',
+    tab: 'statistics',
     rank: 47,
     pref: 'contextNumbers',
     title: 'contextNumbersTitle',
     desc: 'contextNumbersDesc',
     requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
-    tab: 'composer',
+    tab: 'statistics',
     // The figures' rows follow the meter's own, the footer alignment refining
     // the place this row sets.
     rank: 48,
@@ -47,7 +46,7 @@ export default {
     // session's figures only exist in the conversation.
     requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
-    tab: 'composer',
+    tab: 'statistics',
     rank: 49,
     pref: 'statsFooterAlign',
     parent: 'statsPosition',
@@ -59,7 +58,7 @@ export default {
       note: 'statsFooterAlignRequired',
     },
   }, {
-    tab: 'composer',
+    tab: 'statistics',
     rank: 50,
     pref: 'billingCurrency',
     title: 'billingCurrencyTitle',
@@ -67,11 +66,12 @@ export default {
     choiceLabels: { off: 'billingCurrencyOff', CNY: 'billingCurrencyCny', USD: 'billingCurrencyUsd' },
     requires: CONVERSATION_COMPOSER_REQUIRES,
   }, {
-    tab: 'composer',
-    // Directly under the currency: both answer what a session costs, and the
-    // table's own unit is that currency.
+    tab: 'statistics',
+    // Under the currency it prices in: the table's own unit is that currency,
+    // and with billing off there is no cost for it to set.
     rank: 51,
     pref: 'billingTable',
+    parent: 'billingCurrency',
     title: 'billingTableTitle',
     desc: 'billingTableDesc',
     control: 'billing-table',

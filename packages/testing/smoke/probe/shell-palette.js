@@ -461,9 +461,10 @@
             return cards
           }
           var mark = function () {
-            var tree = treeOf(null)
-            // The general tab's theme style is its only group: the pressed card
-            // names the brand whose mark the page paints.
+            var tree = treeOf({ general: 'appearance' })
+            // The theme style opens the appearance tab, so its cards are the
+            // tab's first group: the pressed card names the brand whose mark the
+            // page paints.
             var group = null
             walk(tree, function (node) {
               var props = node.props || {}
@@ -489,9 +490,9 @@
           await sleep(120)
           return { following: following, pinned: pinned, custom: custom }
         })()
-        window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host' })
+        window.__pushForm({ modelPicker: false, mascot: 'off', sidebarSearch: false, palette: 'host', billingCurrency: 'off' })
         r.settings.parentsOff = { appearance: renderTab('appearance'), mainWindow: renderTab('main-window'), sidebar: renderTab('sidebar') }
-        window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude' })
+        window.__pushForm({ modelPicker: true, mascot: 'brand', sidebarSearch: true, palette: 'claude', billingCurrency: 'CNY' })
         // The rows that wait for another setting: the composer restyle off greys
         // the picker, its sub-rows, the permission control and the statistics'
         // figures; the footer takeover off greys the easter egg under it. Home

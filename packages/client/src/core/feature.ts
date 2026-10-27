@@ -112,13 +112,14 @@ export interface FeatureStylesheetGenerated {
 export type SettingsTabId = 'general' | 'appearance' | 'main-window' | 'sidebar' | 'motion'
 
 /**
- * The two groups the main-window tab draws, by id: the conversation side above
- * and the composer's below, each under its own label
+ * The groups the main-window tab draws, by id: the conversation side, the
+ * composer's controls, and the context and cost figures under the composer,
+ * each under its own label
  * (packages/client/src/features/settings/settings-tab-main-window.ts).
  */
-export type SettingsGroupId = 'conversation' | 'composer'
+export type SettingsGroupId = 'conversation' | 'composer' | 'statistics'
 
-/** Where a settings row stands: a tab of the strip, or one of the main window's two groups. */
+/** Where a settings row stands: a tab of the strip, or one of the main window's groups. */
 export type SettingsRowSlot = SettingsTabId | SettingsGroupId
 
 /**

@@ -220,7 +220,7 @@ export function paletteCardsRow(view: SettingsView): SettingsRow {
   }
 }
 
-/** The custom brand row, ranked ahead of every other row on the tab: the lockup the reader edits in place, with how images are inked as its sub-row. */
+/** The custom brand row, right under the theme style it customises: the lockup the reader edits in place, with how images are inked as its sub-row. */
 export function brandRows(view: SettingsView): SettingsRow[] {
   const { prefs, write } = view
   const inkOptions: SegmentOption<Prefs['brandInk']>[] = [

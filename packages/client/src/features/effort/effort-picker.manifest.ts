@@ -11,7 +11,8 @@ export default {
     // The colour speaks on the picker's own trigger, so the row stands under the
     // picker that draws it and goes with that switch (D72).
     tab: 'composer',
-    rank: 37,
+    // After the rows about the menu's own lines (35–45): this one colours the trigger.
+    rank: 46,
     pref: 'effortAccent',
     parent: 'modelPicker',
     title: 'effortAccentTitle',
