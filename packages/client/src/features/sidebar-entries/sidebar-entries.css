@@ -38,9 +38,12 @@ body[data-dsh-claude-style] .dsh-claude-sidebar-entries-separator {
 
 /* ---------- The Edit sidebar dialog ---------- */
 /* The card is the host's Modal (its title, close button, mask, focus return
-   and Esc); the body is one row per panel: checkbox, the row's icon, its name. */
+   and Esc); the body is one row per panel: checkbox, the row's icon, its name.
+   The host rounds the card to --dsw-radius-panel (28px), so the skin states the
+   popover card's own rung (docs/STYLE.md, Shapes). */
 body[data-dsh-claude-style] .dsh-claude-sidebar-entries-dialog {
   width: min(420px, 100%);
+  border-radius: 12px;
 }
 body[data-dsh-claude-style] .dsh-claude-sidebar-entries-list {
   display: flex;
@@ -48,6 +51,7 @@ body[data-dsh-claude-style] .dsh-claude-sidebar-entries-list {
   gap: 2px;
 }
 body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -57,17 +61,60 @@ body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row {
   line-height: 20px;
   cursor: pointer;
 }
-body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > input {
-  flex: none;
+/* The input is the row's state and its keyboard stop, drawn nowhere: it sits
+   where the box takes its place, and the label forwards every click to it. */
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > .dsh-claude-sidebar-entries-input {
+  position: absolute;
   width: 16px;
   height: 16px;
   margin: 0;
-  accent-color: var(--dsw-alias-brand-primary);
-  cursor: inherit;
+  opacity: 0;
+  pointer-events: none;
 }
-body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > input:focus-visible {
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsw-alias-brand-text);
+  transition:
+    background-color var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard),
+    border-color var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard);
+}
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > .dsh-claude-sidebar-entries-input:checked + .dsh-claude-sidebar-entries-box {
+  border-color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-brand-primary);
+}
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > .dsh-claude-sidebar-entries-input:focus-visible + .dsh-claude-sidebar-entries-box {
   outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
   outline-offset: 2px;
+}
+/* The tick is one path, its dash as long as the path is: the svg carries the
+   offset the path inherits, so the draw animates the element wearing the skin's
+   class and the Reduced choice reaches it (theme/chrome.css). */
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-tick {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dashoffset: 1;
+}
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-tick > path {
+  stroke-dasharray: 1;
+}
+body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > .dsh-claude-sidebar-entries-input:checked + .dsh-claude-sidebar-entries-box .dsh-claude-sidebar-entries-tick {
+  animation: dsh-claude-check-draw var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-out) forwards;
+}
+@keyframes dsh-claude-check-draw {
+  to { stroke-dashoffset: 0; }
 }
 body[data-dsh-claude-style] .dsh-claude-sidebar-entries-row > .dsh-claude-sidebar-entries-icon {
   color: var(--dsw-alias-label-secondary);

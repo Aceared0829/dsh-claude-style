@@ -40,6 +40,9 @@ const SEPARATOR_CLASS = 'dsh-claude-sidebar-entries-separator'
 const DIALOG_CLASS = 'dsh-claude-sidebar-entries-dialog'
 const LIST_CLASS = 'dsh-claude-sidebar-entries-list'
 const ROW_CLASS = 'dsh-claude-sidebar-entries-row'
+const INPUT_CLASS = 'dsh-claude-sidebar-entries-input'
+const BOX_CLASS = 'dsh-claude-sidebar-entries-box'
+const TICK_CLASS = 'dsh-claude-sidebar-entries-tick'
 const ERROR_CLASS = 'dsh-claude-sidebar-entries-error'
 
 /** A registration's label: a string, or a thunk re-read so it follows the locale; the sidebar falls back to the id. */
@@ -157,6 +160,19 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
+   * The box a checkbox row draws: the input holds the state and the keyboard,
+   * this only wears it. A native tick cannot be animated — a replaced control
+   * paints its own — so the tick is one path whose dash is the whole of it.
+   */
+  function TickBox() {
+    return React.createElement('span', { className: BOX_CLASS, 'aria-hidden': 'true' },
+      React.createElement('svg', { className: TICK_CLASS, viewBox: '0 0 16 16' },
+        React.createElement('path', { d: 'M4 8.4 6.6 11 12 4.9', pathLength: 1 }),
+      ),
+    )
+  }
+
+  /**
    * One checkbox per customizable panel. A box flips at once and the write
    * follows; a refused write puts the boxes back to what is stored and says so.
    * An id stored for a panel that is not on the page now stays stored.
@@ -186,10 +202,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       entries.map((entry, index) => React.createElement('label', { key: entry.id, className: ROW_CLASS },
         React.createElement('input', {
           type: 'checkbox',
+          className: INPUT_CLASS,
           checked: !hidden.includes(entry.id),
           onChange: (event: React.ChangeEvent<HTMLInputElement>) => { toggle(entry.id, event.currentTarget.checked) },
           'data-modal-autofocus': index === 0 ? '' : undefined,
         }),
+        React.createElement(TickBox),
         React.createElement(PanelIcon, { label: entry.label }),
         React.createElement('span', null, entry.label),
       )),

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 30,
+  "at": "2026-10-27",
+  "external": false,
+  "zh": "收紧编辑侧栏对话框的卡片圆角，并在勾选时沿路径描绘对钩",
+  "en": "Tighten the Edit sidebar dialog's card corner and draw the tick along its path when an item is checked"
+}
