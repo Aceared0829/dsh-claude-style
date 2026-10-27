@@ -445,8 +445,8 @@ function checkParts(parts) {
  * (packages/engine/src/parts.ts, D73).
  */
 function partsVocabulary() {
-  const { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, PART_ATTR } = loadModule('packages/client/src/constants.ts')
-  return { part: PART_ATTR, regions: { account: ACCOUNT_MENU_ATTR, hero: HERO_MENU_ATTR } }
+  const { ACCOUNT_MENU_ATTR, HERO_MENU_ATTR, MORE_MENU_ATTR, PART_ATTR } = loadModule('packages/client/src/constants.ts')
+  return { part: PART_ATTR, regions: { account: ACCOUNT_MENU_ATTR, hero: HERO_MENU_ATTR, more: MORE_MENU_ATTR } }
 }
 
 /** Every part name the tables define, sorted. */

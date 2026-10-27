@@ -327,26 +327,14 @@ body[data-dsh-claude-style] .dsh-claude-account-inject {
    row / hairline language as the self-built drawer (shared/popover.css).
    Only appearance is touched: the host keeps its row order, copy and click
    behaviour. The marker sits on the card itself, so every selector is scoped to
-   it and no other host menu is reached. */
+   it and no other host menu is reached. The card, its rows and its hairlines
+   are the shared repainted-menu look (shared/popover.css); this card adds its
+   width. */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] {
   width: var(--dsh-claude-account-width, 260px);
   min-width: 0;
   max-width: none;
   box-sizing: border-box;
-  padding: 6px;
-  border: 1px solid var(--dsw-alias-border-l1, #e9e9e9);
-  border-radius: 12px;
-  background: var(--dsh-claude-card);
-  box-shadow: 0 8px 24px rgba(20, 20, 19, 0.12), 0 2px 6px rgba(20, 20, 19, 0.08);
-  font-family: var(--dsw-font-family);
-}
-/* The card's visible fill is the MenuSurface material layer, not this box:
-   under the Claude palette the surface token is rebound so that layer paints
-   the same card fill, and its backdrop blur is dropped for the flat skin card.
-   Under the host's colours the host's material stands. */
-body[data-dsh-claude-style][data-dsh-claude-palette="claude"] [data-dsh-claude-account-menu] {
-  --dsw-menu-surface-fill: var(--dsh-claude-card);
-  --dsw-menu-backdrop-filter: none;
 }
 /* The entry animation is keyed on the armed marker rather than on the card
    marker (constants.ts): the armed marker is in place before the host mounts
@@ -369,53 +357,9 @@ body[data-dsh-claude-style][data-dsh-claude-account-armed] div[role="menu"][data
   animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
 }
 
-/* The host's rows. itemWrap is the shared Menu's row wrapper; the bare item
-   fragment would reach unrelated class names, so the longest stable piece is
-   used.
-   One row height, one radius and one hover plate carry both host menus the skin
-   repaints — the account area's and the home hero's, features/hero-menu — so the
-   two never drift apart. The account row's own weight is stated below. */
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
-  min-height: 32px;
-  padding: 2px 7px;
-  gap: 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--dsw-alias-label-primary, #161616);
-  transition: background-color var(--dsh-claude-timing-feedback);
-}
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:hover:not(:disabled),
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:focus-visible:not(:disabled) {
-  background: var(--dsh-claude-hover-bg, rgba(0, 0, 0, 0.08));
-}
+/* The account row's own weight, over the shared row metrics (shared/popover.css). */
 body[data-dsh-claude-style] [data-dsh-claude-account-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"] {
   font-weight: 400;
-}
-/* The rows the host hands a description or a name of their own keep their own
-   line, in the account area as on the home page. */
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-name"] {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 16px;
-}
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-desc"] {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--dsw-alias-label-tertiary, #91888a);
-}
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-icon"] {
-  width: 16px;
-  height: 16px;
-  color: var(--dsw-alias-label-secondary, #70686a);
-}
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-icon"] svg {
-  width: 16px;
-  height: 16px;
-}
-body[data-dsh-claude-style] :is([data-dsh-claude-account-menu], [data-dsh-claude-hero-menu]) [data-dsh-claude-part~="menu-item-label"] {
-  font-size: 13px;
-  line-height: 20px;
 }
 /* The selected row keeps the skin's fill rather than the host's stronger
    accent: the account menu's rows are actions, not a persistent choice. */

@@ -185,6 +185,23 @@ body[data-dsh-claude-style] button[data-dsh-claude-part~="panel-row"] svg {
   flex: none;
 }
 
+/* More is three dots in Claude's sidebar: the host's tiles-and-plus glyph gives
+   way to three round dots in the same 13px box, one per third of its width. */
+body[data-dsh-claude-style] button[data-dsh-claude-part~="panel-row"][aria-haspopup="menu"] [data-dsh-claude-part~="panel-glyph"] > svg {
+  display: none;
+}
+body[data-dsh-claude-style] button[data-dsh-claude-part~="panel-row"][aria-haspopup="menu"] [data-dsh-claude-part~="panel-glyph"]::before {
+  content: "";
+  display: block;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin: 0 3.5px;
+  background-image: radial-gradient(circle, currentColor 1.1px, transparent 1.5px);
+  background-size: calc(13px / 3) 100%;
+  background-repeat: repeat-x;
+}
+
 /* ---------- sidebar rows: the icon turns a quarter on hover ---------- */
 /* Both glyphs are four-fold symmetric, so the turn ends where it started and the
    transition turns it back when the pointer leaves. */

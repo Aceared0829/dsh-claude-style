@@ -1,13 +1,13 @@
 /**
  * What the tables are built from: the two attributes the marking pass writes,
- * and the anchors two of the host's own menus stand in. They are the skin's, so
+ * and the anchors three of the host's own menus stand in. They are the skin's, so
  * they arrive with the install (packages/engine/src/parts.ts, D73).
  */
 export interface PartsTableVocabulary {
   /** The attribute a marked node carries: the part names it stands for, space-separated. */
   part: string
   /** The anchors the skin's own menus stand in, which the menu parts are read under. */
-  regions: { account: string, hero: string }
+  regions: { account: string, hero: string, more: string }
 }
 
 /**
@@ -190,8 +190,9 @@ export const RIGHTBAR_PARTS: PartTable = {
 /**
  * The rows of a host menu card. The host portals its menus to `<body>` with no
  * marker of its own, so the region is the skin's own stamp on the card: only
- * the feature that recognises it (features/account, features/hero-menu) writes
- * one, and the rows are read the moment it lands.
+ * the feature that recognises it (features/account, features/hero-menu,
+ * features/sidebar-entries) writes one, and the rows are read the moment it
+ * lands.
  */
 export const MENU_PARTS: PartTable = {
   itemWrap: 'menu-item',
@@ -303,7 +304,7 @@ export function partRegions(vocabulary: PartsTableVocabulary): PartRegion[] {
     { within: CONVERSATION_HEADER_SLOT_SELECTOR, parts: HEADER_PARTS },
     { within: CONVERSATION_SCROLL_SELECTOR, parts: CONVERSATION_PARTS, skip: COMPOSER_OVERLAY_SELECTOR },
     { within: RIGHTBAR_COLUMN_SELECTOR, parts: RIGHTBAR_PARTS },
-    { within: `[${vocabulary.regions.account}], [${vocabulary.regions.hero}]`, parts: MENU_PARTS },
+    { within: `[${vocabulary.regions.account}], [${vocabulary.regions.hero}], [${vocabulary.regions.more}]`, parts: MENU_PARTS },
   ]
 }
 

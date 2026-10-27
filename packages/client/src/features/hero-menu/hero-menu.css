@@ -43,9 +43,9 @@ body[data-dsh-claude-style] [data-dsh-claude-hero-menu] {
   animation: dsh-claude-dropdown-in var(--dsh-claude-duration-open) var(--dsh-claude-ease-settle);
 }
 
-/* One row height, one radius and one hover plate carry both host menus the skin
-   repaints; the account area (features/account/account-footer.css) states them
-   for the two markers together. What follows is what only this menu has. */
+/* One row height, one radius and one hover plate carry every host menu the skin
+   repaints; shared/popover.css states them for the markers together. What
+   follows is what only this menu has. */
 body[data-dsh-claude-style] [data-dsh-claude-hero-menu] [data-dsh-claude-part~="menu-item"] > [role="menuitem"]:disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;

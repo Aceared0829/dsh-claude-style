@@ -412,7 +412,7 @@ export function installParts(next: PartsVocabulary, onMarked?: () => void) {
     // relations' own attributes are watched too: the node they belong to can
     // take one after it was mounted, and the mark answers what the subtree
     // holds from there on.
-    attributeFilter: ['class', next.regions.account, next.regions.hero, ...HOLD_ATTRIBUTES],
+    attributeFilter: ['class', next.regions.account, next.regions.hero, next.regions.more, ...HOLD_ATTRIBUTES],
     skipQuiet: true,
     // The marks this pass writes are what the sheet draws the frame with: the
     // prose's face and line height, the table's widths. A session switch mounts

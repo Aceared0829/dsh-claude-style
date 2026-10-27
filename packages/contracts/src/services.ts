@@ -115,6 +115,8 @@ export interface HostShortcutsService {
  */
 export interface HostSlotsService {
   entries(key: string): HostSlotRegistration[]
+  /** The entries a list slot renders: one per id, the winner of each, as its owner reads them. */
+  entriesOfSlot(key: string): HostSlotRegistration[]
   inject(key: string, callback: () => (() => void) | void): () => void
   register(options: HostSlotOptions, component: unknown): () => void
 }
@@ -132,8 +134,27 @@ export interface HostSlotOptions {
 
 /** One registered slot entry: how it was declared, and the store it hands out. */
 interface HostSlotRegistration {
-  options: { id?: string }
+  /** A label is a string or a thunk the owner re-reads on every projection, so it follows the locale. */
+  options: { id?: string, label?: string | (() => string) }
   store?: { create(): HostSlotStore }
+}
+
+/** One customizable panel, as the sidebar's More menu hands it to its rows; Plugins is never one. */
+export interface HostPanelActionEntry {
+  id: string
+  label: string
+  pinned: boolean
+  active?: boolean
+}
+
+/** The owner props of a row in the sidebar's More menu (`sidebar.panellist.actions`). */
+export interface HostPanelActionsProps {
+  /** Customizable panels in the sidebar's own order. */
+  entries: readonly HostPanelActionEntry[]
+  /** Open a panel by id; the sidebar does the selecting. */
+  onOpen(id: string): void
+  /** Close the More menu. */
+  onDismiss(): void
 }
 
 /** A slot's own store, as far as the palette presses it (the shortcut reference). */

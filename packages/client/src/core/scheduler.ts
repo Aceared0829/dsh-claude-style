@@ -38,6 +38,7 @@ export interface Handles {
   workspace: FeatureHandle
   search: FeatureHandle
   sidebarPeek: FeatureHandle
+  sidebarEntries: FeatureHandle
   turnNav: FeatureHandle
   chatFollow: FeatureHandle
   chatFold: ChatFoldHandle

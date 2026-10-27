@@ -118,6 +118,8 @@ export const SIDEBAR_PEEK_OPEN = 'open'
 export const SIDEBAR_PEEK_CLOSING = 'closing'
 export const SIDEBAR_PEEK_RAIL_PROPERTY = '--dsh-claude-sidebar-peek-rail'
 export const SIDEBAR_PEEK_WIDTH_PROPERTY = '--dsh-claude-sidebar-peek-width'
+/** A panel row the reader took off the sidebar's list (features/sidebar-entries); More still reaches it. */
+export const PANEL_HIDDEN_ATTR = 'data-dsh-claude-panel-hidden'
 
 /**
  * The waiting line's paint rides this attribute, and the stylesheets decide it
@@ -403,6 +405,13 @@ export const ACCOUNT_READY_ATTR = 'data-dsh-claude-account-ready'
  * and features/hero-menu/hero-menu.css switches on this attribute.
  */
 export const HERO_MENU_ATTR = 'data-dsh-claude-hero-menu'
+/**
+ * Stamped on the sidebar's More menu card while it is open. The card is the
+ * host's shared Menu portal like the two above; features/sidebar-entries stamps
+ * it from inside, since its own rows render in that card, and the card and its
+ * rows take the account menu's look (shared/popover.css).
+ */
+export const MORE_MENU_ATTR = 'data-dsh-claude-more-menu'
 /**
  * Present while the browser window does NOT hold focus.
  *

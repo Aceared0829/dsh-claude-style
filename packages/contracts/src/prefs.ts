@@ -219,6 +219,14 @@ export const USERNAME_MAX = 64
 export const QUICK_PROVIDERS_MAX = 64
 export const PROVIDER_ID_MAX = 128
 /**
+ * The sidebar's panel entries the reader took off the list (features/sidebar-entries):
+ * most ids kept, the longest id accepted, and the Plugins panel, which the host
+ * keeps on the list whatever is asked and so is never stored.
+ */
+export const SIDEBAR_HIDDEN_MAX = 32
+export const PANEL_ID_MAX = 128
+export const PLUGINS_PANEL_ID = 'plugins'
+/**
  * The custom price table (billing-table.ts): most rows kept, the longest model
  * name accepted, and the longest rate written as text — rates are decimal text
  * so a stored row never loses a digit to a float.
@@ -319,6 +327,10 @@ export const PREFS = {
   searchStyle: { type: 'choice', values: SEARCH_STYLES, default: SEARCH_STYLE_OVERLAY },
   /** Whether resting the pointer on the collapsed sidebar's toggle opens the sidebar over the page. */
   sidebarPeek: { type: 'boolean', default: true },
+  /** Whether the panel list carries the More menu's hidden entries and its Edit sidebar dialog. */
+  sidebarEntries: { type: 'boolean', default: true },
+  /** The panel ids that dialog took off the list; they stay reachable from More. */
+  sidebarHidden: { type: 'list', default: [], max: SIDEBAR_HIDDEN_MAX, entryMax: PANEL_ID_MAX, drop: [PLUGINS_PANEL_ID] },
   sidebarLayout: { type: 'choice', values: SIDEBAR_LAYOUTS, default: SIDEBAR_LAYOUT_RELAXED },
   ongoingIndicator: { type: 'choice', values: ONGOING_INDICATORS, default: ONGOING_INDICATOR_BREATHE },
   turnNav: { type: 'boolean', default: true },
