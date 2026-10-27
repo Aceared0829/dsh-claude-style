@@ -111,8 +111,9 @@ export function ClaudeStyleSettingsTabStrip(props: { active: SettingsTabId, onPi
  * repository at the row's right end.
  *
  * The link opens in a new tab: the desktop window hands an http(s) popup to
- * the system's browser, so the GUI page keeps its state. The mark's own
- * address and paint are the stylesheet's business (settings.css).
+ * the system's browser, so the GUI page keeps its state. Its mark is all it
+ * shows at rest; the word beside it arrives on hover and on keyboard focus,
+ * growing the link into a button to the left of the mark (settings.css).
  */
 function ClaudeStyleSettingsHeading() {
   const label = copy('repository')
@@ -120,14 +121,18 @@ function ClaudeStyleSettingsHeading() {
     'div',
     { className: 'dsh-claude-settings-title' },
     React.createElement('span', null, copy('title')),
-    React.createElement('a', {
-      className: 'dsh-claude-settings-repo',
-      href: REPOSITORY_URL,
-      target: '_blank',
-      rel: 'noopener noreferrer',
-      title: label,
-      'aria-label': label,
-    }),
+    React.createElement(
+      'a',
+      {
+        className: 'dsh-claude-settings-repo',
+        href: REPOSITORY_URL,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        title: label,
+        'aria-label': label,
+      },
+      React.createElement('span', { className: 'dsh-claude-settings-repo-label' }, copy('repositoryButton')),
+    ),
   )
 }
 

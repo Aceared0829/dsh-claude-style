@@ -2,6 +2,7 @@
   "chatWaitThinking": { "zh": "正在思考", "en": "Thinking…" },
   "chatWaitTools": { "zh": "正在调用工具", "en": "Running tools…" },
   "repository": { "zh": "在 GitHub 上打开本插件", "en": "Open the plugin on GitHub" },
+  "repositoryButton": { "zh": "GitHub", "en": "GitHub" },
   "brandTitle": { "zh": "主题风格", "en": "Theme style" },
   "brandDesc": { "zh": "品牌标识与默认配色色系。", "en": "The brand mark and its default colour family." },
   "autoPopoverTitle": { "zh": "悬停展开弹层", "en": "Open popovers on hover" },

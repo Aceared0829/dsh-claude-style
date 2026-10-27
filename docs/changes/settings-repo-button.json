@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 3,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "改善设置页标题行的仓库入口：静止时仍是原来那枚 GitHub 标记，指针悬停或键盘聚焦时以强调色展开成「标记 + GitHub」的按钮，标记在前、文字在后，文字不带下划线。",
+  "en": "Improve the repository link in the settings heading: it keeps the GitHub mark at rest, and on hover or keyboard focus it opens into an accent-filled button holding the mark and the word GitHub, mark first and word without an underline."
+}
