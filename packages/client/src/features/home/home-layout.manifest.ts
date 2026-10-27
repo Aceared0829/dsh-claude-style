@@ -9,6 +9,7 @@ export default {
   // Off leaves the host's home page as the host draws it.
   prefValues: [HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO],
   stylesheets: [
+    { file: 'home-preview.css', rank: 317 },
     { file: 'home-panel.css', rank: 320 },
     { file: 'home-overview.css', rank: 330 },
     { generated: 'heat-levels', rank: 335 },

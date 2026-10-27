@@ -126,11 +126,11 @@
         })
         return out
       }
-      // The Motion tab's tree, for the two kinds of preview card read off it.
-      var renderMotion = function () {
+      // A settings tab's tree, for the preview cards read off it.
+      var renderSettingsTab = function (tab) {
         var react = window.__react
         react.rendering = true
-        react.states = { general: 'motion' }
+        react.states = { general: tab }
         var tree = Section({})
         react.rendering = false
         react.states = null
@@ -161,7 +161,7 @@
         // two wordings' animation names, delays and places are the taking-turns.
         r.settings.paintCards = (function () {
           var out = { cards: [], previews: {} }
-          var tree = renderMotion()
+          var tree = renderSettingsTab('motion')
           walk(tree, function (node) {
             var props = node.props || {}
             if (typeof props.className === 'string' && /(^| )dsh-claude-motion-card( |$)/.test(props.className)) {
@@ -354,7 +354,7 @@
         // boxes and the session row's box is read under each stored value.
         r.settings.ongoingCards = (function () {
           var out = { cards: [] }
-          var tree = renderMotion()
+          var tree = renderSettingsTab('motion')
           walk(tree, function (node) {
             var props = node.props || {}
             if (typeof props.className !== 'string' || !/(^| )dsh-claude-ongoing-card( |$)/.test(props.className)) return

@@ -1,0 +1,8 @@
+{
+  "group": "improvements",
+  "order": 0,
+  "external": false,
+  "at": "2026-10-26",
+  "zh": "改善设置页「首页版面」的预览卡：按真实内容列展示品牌问候、输入区与上下文行，编程版还包含六项统计和七行热力图，三种版面在浅色与深色下均使用实际首页的配色与层级。",
+  "en": "Improve the Home layout previews in settings: the cards show the real content column with the brand greeting, composer and context row, and the Code layout adds six stats and the seven-row heat grid, using the real home page's colours and hierarchy in both palettes."
+}

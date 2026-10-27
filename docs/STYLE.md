@@ -826,6 +826,14 @@ composer card inside the composer stack — so only the arrangement differs.
 | workspace / preset row | the card's footer tray | hairline chips directly above the card |
 | column width | the hero's centred box | a narrower composer column, with the greeting and the panel forming one block against its left edge |
 
+The Appearance tab's cards draw these arrangements as miniature pages rather
+than placeholder bars, exaggerating the content column and type for legibility
+at that size. The studio greeting and dashboard stand slightly narrower than
+the context row and composer. The dashboard uses the real panel, stat and
+heat-cell classes, including all six stats and the seven-day-row grid; the
+classic card keeps the centred brand greeting and the composer's footer tray
+(`features/home/home-preview.css`).
+
 The studio composer is stamped `data-composer-variant="inline"` (the composer's
 pass reads the same preference), so the home card is drawn by the conversation's
 single-line stylesheet. The classic tray rules in `features/composer/card.css`
