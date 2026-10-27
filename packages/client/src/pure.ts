@@ -42,6 +42,8 @@ export { effortSteps, effortTint, isRankedEffort, orderEffortIds } from './featu
 export type { EffortLadder, EffortStep } from './features/effort/ladder'
 export { HEAT_CELL_SELECTOR, HEAT_HINT_CLASS, HEAT_HINT_SHOWN_ATTR, HEAT_HINT_SIDE_ATTR, HEAT_HINT_TEXT_CLASS, HEAT_TIP_ATTR, HEAT_TIP_GAP, hideHeatTip, placeHeatTip, showHeatTip } from './features/home/heat-tip'
 export type { HeatTipPlacement } from './features/home/heat-tip'
+export { HOME_CHART_LABEL_GAP, homeChartTicks } from './features/home/chart-axis'
+export type { HomeChartTick } from './features/home/chart-axis'
 export { default as HOME_OVERVIEW_SHEET } from './features/home/home-overview.css?raw'
 export { HOME_REFRESH_FLOOR_MS, HOME_REFRESH_MS, homeRefreshDue } from './features/home/usage-refresh'
 export type { HomeRefreshReason, HomeUsageAge } from './features/home/usage-refresh'

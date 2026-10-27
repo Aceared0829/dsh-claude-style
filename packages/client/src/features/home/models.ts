@@ -2,6 +2,8 @@ import * as React from 'react'
 import { HOME_MODEL_ROWS, formatHomeCount, homeShortDate, homeShortDateFormat } from './data'
 import type { HomeModel, HomePanel } from './data'
 import { formatCompactTokens } from '../../shared/format'
+import { inPagePixels } from '../../shared/page-zoom'
+import { homeChartTicks } from './chart-axis'
 import { copy } from './copy'
 
 /**
@@ -20,6 +22,11 @@ import { copy } from './copy'
  * a "show less" row that folds it back. The chart keeps its own
  * HOME_CHART_DAYS window while the list follows the range pills, which is the
  * same split the Overview tab's heat grid already uses.
+ *
+ * The date axis is thinned to the panel's own width (chart-axis.ts): the
+ * newest day keeps its date, labels step back from it by whole days, and a
+ * label that would collide is left out. Each column grows from the axis when
+ * its window arrives, and a refresh of the same window leaves the bars still.
  *
  * @returns `{ component }`, a React component taking `{ data }`.
  */
@@ -55,9 +62,52 @@ export function createHomeModels() {
   /** The palette's last step, for a model the ranked list does not carry. */
   const RANK_LAST = 7
 
-  function chart(columns: HomePanel['modelDays'], rankOf: Record<string, number>, skeleton: boolean) {
+  /**
+   * The chart frame. The date axis cannot know which days keep a label until
+   * it knows how much room a day has, so the plot is measured once and again
+   * on every width change, and the label's face comes from a hidden sample,
+   * so the measurement follows the stylesheet.
+   */
+  function Chart(props: { columns: HomePanel['modelDays'], rankOf: Record<string, number>, skeleton: boolean }) {
+    const list = props.columns === null ? [] : props.columns
+    const skeleton = props.skeleton
+    const plotRef = React.useRef<HTMLDivElement>(null)
+    const sampleRef = React.useRef<HTMLSpanElement>(null)
+    const [box, setBox] = React.useState<{ key: string, width: number, widths: number[] } | null>(null)
+    const format = homeShortDateFormat()
+    const labels = list.map(column => homeShortDate(format, column.date))
+    const labelsKey = labels.join('\u0000')
+    React.useLayoutEffect(() => {
+      const plot = plotRef.current
+      const sample = sampleRef.current
+      if (plot === null || sample === null) return undefined
+      let stopped = false
+      const sync = () => {
+        if (stopped) return
+        const width = plot.clientWidth
+        // The sample is a real label, so every measured word is the width the
+        // axis will paint it at: a canvas face measures the date narrower than
+        // the page sets it.
+        const widths = labels.map(text => {
+          sample.textContent = text
+          return inPagePixels(sample.getBoundingClientRect().width)
+        })
+        sample.textContent = ''
+        setBox(held => held !== null && held.key === labelsKey && held.width === width
+          && held.widths.length === widths.length
+          && held.widths.every((one, at) => one === widths[at]) ? held : { key: labelsKey, width, widths })
+      }
+      sync()
+      const watcher = new ResizeObserver(sync)
+      watcher.observe(plot)
+      // A web font landing after the first paint changes every label's width.
+      void document.fonts.ready.then(sync)
+      return () => {
+        stopped = true
+        watcher.disconnect()
+      }
+    }, [labelsKey])
     let peak = 0
-    const list = columns === null ? [] : columns
     for (let c = 0; c < list.length; c++) {
       let total = 0
       const models = list[c].models
@@ -65,30 +115,33 @@ export function createHomeModels() {
       if (total > peak) peak = total
     }
     const top = axisMax(peak)
-    const format = homeShortDateFormat()
+    const ticks = box === null || box.key !== labelsKey || skeleton || top === 0 ? [] : homeChartTicks(box.widths, box.width)
     // Four gridlines plus the baseline, Claude Code's own ladder.
-    const ticks = [1, 0.75, 0.5, 0.25, 0]
+    const gridlines = [1, 0.75, 0.5, 0.25, 0]
+    // A new window is a new column set, so the growth runs for it; the same
+    // window refreshed in place keeps its bars still.
+    const windowKey = `${list.length}:${list.length > 0 ? list[0].date : ''}`
     return React.createElement(
       'div',
       { className: 'dsh-claude-home-chart', 'data-skeleton': skeleton ? '' : undefined },
       React.createElement(
         'div',
-        { className: 'dsh-claude-home-chart-plot' },
-        ticks.map(at => React.createElement(
+        { className: 'dsh-claude-home-chart-plot', ref: plotRef },
+        gridlines.map(at => React.createElement(
           'span',
           { key: at, className: 'dsh-claude-home-chart-tick', style: { bottom: `${at * 100}%` } },
           skeleton || top === 0 ? '' : formatCompactTokens(top * at),
         )),
         React.createElement(
           'div',
-          { className: 'dsh-claude-home-chart-bars' },
+          { key: windowKey, className: 'dsh-claude-home-chart-bars' },
           list.map(column => {
             let dayTotal = 0
             const stack: { id: string, tokens: number, rank: number }[] = []
             const models = column.models
             for (const id in models) {
               dayTotal += models[id]
-              const rank = rankOf[id]
+              const rank = props.rankOf[id]
               stack.push({ id, tokens: models[id], rank: rank === undefined ? Number.MAX_VALUE : rank })
             }
             // Biggest first, so the darkest slice sits on the axis.
@@ -118,11 +171,21 @@ export function createHomeModels() {
       React.createElement(
         'div',
         { className: 'dsh-claude-home-chart-axis' },
-        list.map((column, index) => {
-          // Every third column from the first, Claude Code's own cadence.
-          const labelled = index % 3 === 0
-          return React.createElement('span', { key: column.date, className: 'dsh-claude-home-chart-label' }, labelled ? homeShortDate(format, column.date) : '')
+        // The face the dates are set in, measured but never drawn.
+        React.createElement('span', {
+          ref: sampleRef,
+          className: 'dsh-claude-home-chart-label dsh-claude-home-chart-label-sample',
+          'aria-hidden': 'true',
         }),
+        ticks.map(tick => React.createElement(
+          'span',
+          {
+            key: list[tick.index].date,
+            className: 'dsh-claude-home-chart-label',
+            style: { left: `${tick.left}px` },
+          },
+          labels[tick.index],
+        )),
       ),
     )
   }
@@ -144,7 +207,7 @@ export function createHomeModels() {
         null,
         // The frame comes first, so the chart's height is reserved from the
         // first paint and the list does not jump when the numbers land.
-        chart(null, {}, true),
+        React.createElement(Chart, { columns: null, rankOf: {}, skeleton: true }),
         React.createElement(
           'div',
           { className: 'dsh-claude-home-models', 'data-skeleton': '' },
@@ -170,7 +233,7 @@ export function createHomeModels() {
     return React.createElement(
       React.Fragment,
       null,
-      columns === null && !skeleton ? null : chart(columns, rankOf, skeleton),
+      columns === null && !skeleton ? null : React.createElement(Chart, { columns, rankOf, skeleton }),
       React.createElement(
         'div',
         { className: 'dsh-claude-home-models' },

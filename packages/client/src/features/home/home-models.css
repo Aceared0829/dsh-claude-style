@@ -46,6 +46,16 @@ body[data-dsh-claude-style] .dsh-claude-home-chart-col {
   min-width: 0;
   border-radius: 2px;
   overflow: hidden;
+  /* A bar enters by growing off the axis it is stacked from. The window's own
+     key (models.ts) remounts the bars when another range arrives, so a new set
+     grows and a refresh of the same set stays still. */
+  transform-origin: 50% 100%;
+  animation: dsh-claude-home-chart-grow var(--dsh-claude-duration-enter) var(--dsh-claude-ease-out) both;
+}
+
+@keyframes dsh-claude-home-chart-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-seg {
@@ -53,20 +63,30 @@ body[data-dsh-claude-style] .dsh-claude-home-chart-seg {
   width: 100%;
 }
 
+/* The date axis is placed by chart-axis.ts: a label's own width decides where
+   the edges stop and how many days may sit between two labels. */
 body[data-dsh-claude-style] .dsh-claude-home-chart-axis {
-  display: flex;
-  gap: 2px;
+  position: relative;
+  height: 14px;
   margin-left: var(--dsh-home-axis);
 }
 
 body[data-dsh-claude-style] .dsh-claude-home-chart-label {
-  flex: 1 1 0;
-  min-width: 0;
+  position: absolute;
+  top: 0;
   color: var(--dsw-alias-label-tertiary, #91888a);
   font-size: 11px;
   line-height: 14px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+/* The empty label chart-axis.ts measures every date on; it takes no room and
+   takes no pointer. */
+body[data-dsh-claude-style] .dsh-claude-home-chart-label-sample {
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* The ramp: the biggest spender is the darkest data blue, and the walk down fades

@@ -895,16 +895,19 @@ stands above its cell except where the cell holds more room below it.
 
 Models is Claude Code's own shape: one column per day of the chart's window,
 stacked from the axis up with each model's slice in its rank's colour (ranks past
-the ramp share its last, grey step), gridlines with their token labels, and every
-third column's date under it in the shell's language, and beneath it the ranked
-list — swatch, model name, the input/output split, and the share of the models
-shown — folding past a short list behind one "show more" row, which turns into
-"show less" once the list is open. The chart and the list write counts Claude
-Code's way: one decimal at most, no trailing ".0", a lowercase k. Each column is
-sized to its day's total against the axis top and each slice to its share of the
-day, so the column's rounding sits on the top of the stack. A range window filters
-the tiles (the peak hour included), the yardstick line and the model list; the
-heat grid and the chart keep their own windows.
+the ramp share its last, grey step), gridlines with their token labels, and
+beneath it the ranked list — swatch, model name, the input/output split, and the
+share of the models shown — folding past a short list behind one "show more" row,
+which turns into "show less" once the list is open. The dates under the chart are
+thinned to the panel's width: the newest day keeps its date, labels step back
+from it by whole days, a label that would collide is left out, and an edge label
+stays inside the plot. The chart and the list write counts Claude Code's way: one
+decimal at most, no trailing ".0", a lowercase k. Each column is sized to its
+day's total against the axis top and each slice to its share of the day, so the
+column's rounding sits on the top of the stack. A column grows from the axis when
+its window arrives; a refresh of the same window leaves the bars still. A range
+window filters the tiles (the peak hour included), the yardstick line and the
+model list; the heat grid and the chart keep their own windows.
 
 Two sources, in this order: the host half's usage route, then the session list's
 own projection block (`tokenUsage`, `modelSelection`, `sessionListMetadata`). The
