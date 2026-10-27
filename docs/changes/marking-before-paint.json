@@ -3,6 +3,6 @@
   "order": 1,
   "external": false,
   "at": "2026-10-26",
-  "zh": "修复切换会话后正文行距与表格宽度再次变化：写正文标记的那一步与挂载处在同一批次、在绘制之前完成，首帧就是主题的字体、行距与表格宽度，不再先画一帧宿主的排版。",
-  "en": "Fix the prose's line height and table widths changing again after a session switch: the marks the batch needs are written in that batch, before the frame is painted, so the first frame already carries the theme's face, line height and table widths instead of painting the host's own type first."
+  "zh": "修复切换会话后正文行距与表格宽度再次变化",
+  "en": "Fix the prose's line height and table widths changing again after a session switch"
 }

@@ -55,6 +55,7 @@ function readFragments() {
       const text = fragment[language]
       if (typeof text !== 'string' || text.trim() === '') throw new Error(`changelog: docs/changes/${name} has no "${language}" entry`)
       if (text.includes('\n')) throw new Error(`changelog: docs/changes/${name}'s "${language}" entry must be one line`)
+      if (/[：:]/.test(text)) throw new Error(`changelog: docs/changes/${name}'s "${language}" entry names the change only; take the explanatory tail off after the colon`)
     }
     fragments.push({ name, ...fragment })
   }

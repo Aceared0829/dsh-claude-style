@@ -3,6 +3,6 @@
   "order": 3,
   "external": false,
   "at": "2026-10-26",
-  "zh": "修复工作台版面上输入卡片跑到问候语下面、不再贴窗口底边：宿主挂载卡片的槽位画出盒子时，这个盒子也按列里的顺序排在统计面板之后，卡片与底部的模式行留在窗口底边。",
-  "en": "Fix the composer card landing under the greeting instead of the window's bottom edge on the dashboard home: when the slot the host mounts the card in draws a box, that box also takes its place after the usage panel, so the card and the mode row beneath it stay on the bottom edge."
+  "zh": "修复工作台版面上输入卡片跑到问候语下面、不再贴窗口底边",
+  "en": "Fix the composer card landing under the greeting instead of the window's bottom edge on the dashboard home"
 }
