@@ -84,6 +84,11 @@ export const MESSAGE_ENTER_FLIGHT = 'flight'
 export const MESSAGE_ENTER_GROW = 'grow'
 export const MESSAGE_ENTER_MODES = [MESSAGE_ENTER_FLIGHT, MESSAGE_ENTER_GROW] as const
 
+/** How an open process group lays out its rows: the host's own list, or one bordered card of single-line rows. */
+export const PROCESS_ROWS_FLAT = 'flat'
+export const PROCESS_ROWS_COLUMN = 'column'
+export const PROCESS_ROWS_LAYOUTS = [PROCESS_ROWS_FLAT, PROCESS_ROWS_COLUMN] as const
+
 /** Who paints the colours: the skin's own palette, or the host's colour tokens left to the host and other theme plugins. */
 export const PALETTE_CLAUDE = 'claude'
 export const PALETTE_HOST = 'host'
@@ -343,6 +348,7 @@ export const PREFS = {
   chatReveal: { type: 'choice', values: CHAT_REVEAL_MODES, default: CHAT_REVEAL_OFF },
   caretMotion: { type: 'choice', values: CARET_MOTIONS, default: CARET_MOTION_TYPING },
   messageEnter: { type: 'choice', values: MESSAGE_ENTER_MODES, default: MESSAGE_ENTER_FLIGHT },
+  processRows: { type: 'choice', values: PROCESS_ROWS_LAYOUTS, default: PROCESS_ROWS_FLAT },
 } as const satisfies Record<string, PrefSpec>
 
 /** One preference's key. */

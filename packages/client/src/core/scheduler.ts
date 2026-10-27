@@ -42,6 +42,7 @@ export interface Handles {
   turnNav: FeatureHandle
   chatFollow: FeatureHandle
   chatFold: ChatFoldHandle
+  processColumn: FeatureHandle
   chatWait: FeatureHandle
   chatReveal: FeatureHandle
   chatFiles: FeatureHandle

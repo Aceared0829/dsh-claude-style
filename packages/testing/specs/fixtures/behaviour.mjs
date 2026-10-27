@@ -51,6 +51,16 @@ host.attribute = (id) => {
   return only[0].attribute
 }
 
+/** The attributes a compound contract selector reads, as name and value pairs, for building that element in the page. */
+host.attributes = (id) => {
+  const root = parser().astSync(host(id))
+  if (root.nodes.length !== 1) throw new Error(`host: "${id}" is a list, not one element`)
+  return root.nodes[0].nodes.map((node) => {
+    if (node.type !== 'attribute') throw new Error(`host: "${id}" holds ${node.type} "${String(node)}", not attributes alone`)
+    return [node.attribute, node.value ?? '']
+  })
+}
+
 /**
  * Declare one spec: the stand-in page its tests load (packages/testing/smoke/page.mjs
  * names them), the viewport bands it is judged at (packages/testing/data/matrix.json,

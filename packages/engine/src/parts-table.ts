@@ -30,7 +30,7 @@ export interface PartsTableVocabulary {
  * part gate) and holds every part a stylesheet reads to the table here. A host
  * rename is one line in this file.
  */
-import { COMPOSER_OVERLAY_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { COMPOSER_OVERLAY_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_SCROLL_SELECTOR, RIGHTBAR_COLUMN_SELECTOR, ROOT_SLOT_SELECTOR, SHIMMER_DECORATION_SELECTOR, SIDEBAR_SLOT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 
 /** Host CSS-module local name → the skin's part name. */
 export type PartTable = Record<string, string>
@@ -130,6 +130,8 @@ export const CONVERSATION_PARTS: PartTable = {
   scroll: 'input-scroll',
   grow: 'input-grow',
   row: 'row',
+  // A disclosure row's icon seat, which also holds the chevron its hover shows.
+  leading: 'row-leading',
   rows: 'rows',
   tools: 'tools',
   trailing: 'trailing',
@@ -425,6 +427,15 @@ export function holdRelations(vocabulary: PartsTableVocabulary): HoldRelation[] 
     held: '[data-turn-process-hidden], [hidden]',
     scope: '[data-chat-flow]',
     attributes: ['data-turn-process-hidden', 'hidden'],
+  },
+  // features/process-column/process-column.css: a row's title steps aside only
+  // where a description follows it; the host writes the decorative separator
+  // only in front of a description that is not empty.
+  {
+    name: 'row-summary',
+    holder: part('row'),
+    held: SHIMMER_DECORATION_SELECTOR,
+    attributes: [],
   },
   ]
 }

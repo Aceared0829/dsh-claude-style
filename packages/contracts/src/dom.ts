@@ -217,6 +217,17 @@ export const DISCLOSURE_ROW_SELECTOR = '[data-disclosure-row]'
  * no wrapper and sets the body beside the row itself.
  */
 export const DISCLOSURE_HEADER_SELECTOR = '[data-disclosure-header]'
+/** A DisclosureRow that has a body to open; a row without one draws no chevron. */
+export const DISCLOSURE_EXPANDABLE_SELECTOR = '[data-expandable="true"]'
+/**
+ * The separator a DisclosureRow writes between its title and a description,
+ * only when the description is not empty; the shimmer copies skip it.
+ */
+export const SHIMMER_DECORATION_SELECTOR = '[data-shimmer-decoration]'
+/** On a thinking row whose folded line shows the thought itself beside its title. */
+export const THINK_PREVIEW_ATTRIBUTE = 'data-preview'
+/** The row of a call no named tool row draws: its title is the generic word, its description the tool and its purpose. */
+export const GENERIC_TOOL_ROW_SELECTOR = '[data-variant="others"]'
 /**
  * On a row the host lets the reader open and fold: present while it stands
  * open. A thinking row is folded when this is absent.

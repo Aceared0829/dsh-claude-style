@@ -175,6 +175,8 @@ export const ANY_COMPOSER_REQUIRES = {
 } as const
 /** The factor the conversation column draws at (features/conversation-width/); the full width writes no attribute. */
 export const CONVERSATION_WIDTH_ATTR = 'data-dsh-claude-conversation-width'
+/** Present while open process groups draw their rows as one card (features/process-column/); the flat layout writes none. */
+export const PROCESS_COLUMN_ATTR = 'data-dsh-claude-process-column'
 /**
  * Present while the effort trigger takes a colour from the rung in force
  * (features/effort/effort-picker.css): the switch-off rung keeps the resting
