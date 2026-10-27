@@ -562,10 +562,14 @@ export default {
     // one move and the direction it holds, not the sign of it.
     const travelled = boxes[boxes.length - 1].width - boxes[0].width
     const toward = travelled < 0 ? -1 : 1
+    // A sizer's subpixel measurement can move the box by 1/64px before the
+    // real travel. That is not a direction change; the total displacement and
+    // every visible step still have to go the wording's way.
+    const MEASURE_EPSILON_PX = 1 / 64
     check('the box the swap runs in never reads as empty, holds its height, and moves the clock only where the words themselves changed',
       boxes.length > 4 &&
         boxes.every((box) => box.width > 0 && box.height === boxes[0].height) &&
-        boxes.every((box, at) => at === 0 || (toward * (box.width - boxes[at - 1].width) >= 0 && toward * (box.clockLeft - boxes[at - 1].clockLeft) >= 0)) &&
+        boxes.every((box, at) => at === 0 || (toward * (box.width - boxes[at - 1].width) >= -MEASURE_EPSILON_PX && toward * (box.clockLeft - boxes[at - 1].clockLeft) >= -MEASURE_EPSILON_PX)) &&
         boxes[boxes.length - 1].clockLeft - boxes[0].clockLeft === travelled,
       JSON.stringify({ first: boxes[0], last: boxes[boxes.length - 1], widths: boxes.map((box) => box.width), heights: boxes.map((box) => box.height), clockLefts: boxes.map((box) => box.clockLeft) }))
     // The width is travelled rather than written (shared/swapping-text.ts pins
