@@ -117,7 +117,7 @@ const SWEEP_JS = `(() => {
 function assertClean(visibleText) {
   const leak = new RegExp(`${USERNAME_RE_SOURCE}|${PATH_RE_SOURCE}|${BALANCE_RE_SOURCE}`, 'i')
   const found = leak.exec(visibleText)
-  if (found !== null) throw new Error(`sensitive text still visible after sanitize: ${JSON.stringify(found[0].slice(0, 60))}`)
+  if (found !== null) throw new Error(`sensitive text still visible after sanitize: ${JSON.stringify(found[0].slice(0, 60))}\n${visibleText}`)
 }
 
 /**
@@ -129,7 +129,15 @@ function assertClean(visibleText) {
  */
 async function sanitizePage(run) {
   const swapped = await run(SANITIZE_JS)
-  const caught = await run(SWEEP_JS)
+  const caught = []
+  // The account label can arrive or be rewritten after the first sweep. Give
+  // that sync three bounded chances to settle, and never keep a leaky capture.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    caught.push(...await run(SWEEP_JS))
+    const visibleText = await run('document.body.innerText')
+    if (!new RegExp(`${USERNAME_RE_SOURCE}|${PATH_RE_SOURCE}|${BALANCE_RE_SOURCE}`, 'i').test(visibleText)) return { swapped, caught, visibleText }
+    await run('new Promise(resolve => setTimeout(resolve, 100))')
+  }
   const visibleText = await run('document.body.innerText')
   assertClean(visibleText)
   return { swapped, caught, visibleText }
