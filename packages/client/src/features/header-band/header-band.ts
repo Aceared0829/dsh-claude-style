@@ -11,7 +11,7 @@ import {
 } from '@dsh-claude-style/contracts/dom'
 import { observeMatches, observeSize } from '@dsh-claude-style/engine/bus'
 import { desktopBand } from '@dsh-claude-style/engine/desktop-band'
-import { findRightbarToggle, findWindowsMenu, hostSlots } from '@dsh-claude-style/engine/host'
+import { findRightbarToggle, findWindowsMenu, registerSlotEntries } from '@dsh-claude-style/engine/host'
 import { createStamp, setAttributeIfChanged } from '@dsh-claude-style/engine/dom'
 import { contentBox } from '../../shared/content-box'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
@@ -153,15 +153,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Register that control in the header's utilities seat, which renders it wherever it stands. */
   function registerRightbarClose() {
-    if (typeof ctx.inject !== 'function') return
-    ctx.inject(['slots'], scope => {
-      const slots = hostSlots(scope)
-      if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
-      scope.effect(() => slots.inject(UTILITIES_SLOT, () => slots.register(
-        { name: UTILITIES_SLOT, id: 'claude-style-rightbar-close', order: 90 },
-        RightbarClose,
-      )), 'dsh-claude-style: right panel control')
-    })
+    registerSlotEntries(ctx, [{
+      options: { name: UTILITIES_SLOT, id: 'claude-style-rightbar-close', order: 90 },
+      component: RightbarClose,
+    }], 'dsh-claude-style: right panel control')
   }
 
   /**

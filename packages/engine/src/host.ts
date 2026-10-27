@@ -1,5 +1,5 @@
 import { COMPOSER_CARD_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_PLACEHOLDER_SELECTOR, COMPOSER_SELECTOR, COMPOSER_STACK_SELECTOR, COMPOSER_STATS_SELECTOR, COMPOSER_STAT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_SCROLL_SELECTOR, CONVERSATION_SESSION_ATTRIBUTE, CONVERSATION_SESSION_SELECTOR, DIALOG_TRIGGER_SELECTOR, FOOT_AREA_SELECTOR, FOREGROUND_SELECTOR, MENU_ROLE_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, RIGHTBAR_TOGGLE_SELECTOR, SIDEBAR_BRAND_SELECTOR, SIDEBAR_LOGO_ROW_SELECTOR, SIDEBAR_ROOT_SELECTOR, SIDEBAR_TOGGLE_SELECTOR, WINDOWS_MENU_SELECTOR } from '@dsh-claude-style/contracts/dom'
-import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService, HostWorkspaceViewStore } from '@dsh-claude-style/contracts/services'
+import type { HostAccountService, HostAssistantStep, HostBundleListAnswer, HostChatSnapshot, HostChatTarget, HostConfigFormsService, HostConversationService, HostInventoryAnswer, HostLocaleService, HostModelDirectoriesService, HostPluginBundle, HostServiceLookup, HostOutlineTurn, HostRunningCall, HostSession, HostSessionsService, HostSessionRenameAnswer, HostShortcutsService, HostSlotOptions, HostSlotsService, HostTurn, HostUiConversationService, HostUiSessionService, HostWorkspacesService, HostWorkspaceViewStore } from '@dsh-claude-style/contracts/services'
 import { observeMatches, subscribeMutations } from './bus'
 import { closestFrom } from './dom'
 
@@ -438,6 +438,40 @@ export function hostShortcuts(lookup: HostServiceLookup | null | undefined): Hos
 export function hostSlots(lookup: HostServiceLookup): HostSlotsService | null {
   const slots = lookup.get('slots') as HostSlotsService | undefined
   return slots ?? null
+}
+
+/** One component handed to a host slot, under the declaration it is registered with. */
+export interface SlotEntry {
+  options: HostSlotOptions & { name: string }
+  component: unknown
+}
+
+/**
+ * Run `use` with the slot registry once the host serves it, in the scope that
+ * injected it (D75): the plugin's own context does not hand the registry out.
+ * Disposing the returned scope runs the effects `use` registered in it; a host
+ * without late services has no registry and gets null.
+ */
+export function withSlots(ctx: HostContext, use: (slots: HostSlotsService, scope: HostContext) => void): HostFiber | null {
+  if (typeof ctx.inject !== 'function') return null
+  return ctx.inject(['slots'], scope => {
+    const slots = hostSlots(scope)
+    if (slots === null || typeof slots.inject !== 'function') return
+    use(slots, scope)
+  })
+}
+
+/**
+ * Hand components to host slots, each as soon as its slot is declared (D42).
+ * Disposing the returned scope takes every entry back, or an entry outlives its
+ * feature and keeps rendering.
+ */
+export function registerSlotEntries(ctx: HostContext, entries: readonly SlotEntry[], label: string): HostFiber | null {
+  return withSlots(ctx, (slots, scope) => {
+    for (const entry of entries) {
+      scope.effect(() => slots.inject(entry.options.name, () => slots.register(entry.options, entry.component)), label)
+    }
+  })
 }
 
 /** The client remote: the endpoint every service behind it is reached through. */

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as primitives from '@deepseek-ai/dsh-client-ui-primitives'
 import { SESSION_DELETE_ROUTE } from '../../constants'
-import { hostSessions, hostSlots, hostWorkspaceView } from '@dsh-claude-style/engine/host'
+import { hostSessions, hostWorkspaceView, registerSlotEntries } from '@dsh-claude-style/engine/host'
 import { observeMatches, subscribeMutations } from '@dsh-claude-style/engine/bus'
 import type { MatchList } from '@dsh-claude-style/engine/bus'
 import { buildElement, closestFrom, createStamp } from '@dsh-claude-style/engine/dom'
@@ -326,17 +326,10 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Register the delete action in the host's row-action list, once its declaration is on the ledger. */
   function registerDeleteAction() {
-    if (typeof ctx.inject !== 'function') return
-    // The injected scope holds the slot registration; the teardown releases it,
-    // or the action outlives the feature and keeps rendering on every host row.
-    slotsFiber = ctx.inject(['slots'], scope => {
-      const slots = hostSlots(scope)
-      if (slots === null || typeof slots.inject !== 'function') return
-      scope.effect(() => slots.inject(SESSION_ROW_ACTION_SLOT, () => slots.register(
-        { name: SESSION_ROW_ACTION_SLOT, id: 'claude-style-delete', order: 300 },
-        DeleteArchivedSession,
-      )), 'dsh-claude-style: archived delete')
-    })
+    slotsFiber = registerSlotEntries(ctx, [{
+      options: { name: SESSION_ROW_ACTION_SLOT, id: 'claude-style-delete', order: 300 },
+      component: DeleteArchivedSession,
+    }], 'dsh-claude-style: archived delete')
   }
 
   /**
