@@ -20,6 +20,8 @@ import { copy } from './copy'
 /**
  * The home page's second layout, and the usage panel that fills it.
  *
+ * The feature runs under `classic` and `studio`; `off` takes it down, and the
+ * host's home page stands as the host draws it, its own greeting included.
  * `classic` is the hero the skin has always drawn: brand mark and greeting
  * centred, composer under them, everything vertically centred in the scroll
  * body. `studio` is the dashboard form — the greeting moves to the top left,
@@ -106,11 +108,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     markedRoot?.toggleAttribute(HOME_HERO_ATTR, layout === HOME_LAYOUT_STUDIO)
   }
 
-  /** Write the layout onto the document and start loading when it needs data. */
+  /**
+   * Write the layout onto the document and start loading when it needs data.
+   * The attribute stands while this feature draws the home in either layout,
+   * so the theme's hero rules (theme/hero.css) leave the host's own home alone
+   * once the reader turns the layout off and the feature is taken down.
+   */
   function setLayout(next: Prefs['homeLayout']) {
     layout = next
-    if (next === HOME_LAYOUT_STUDIO) document.body.setAttribute(HOME_LAYOUT_ATTR, HOME_LAYOUT_STUDIO)
-    else document.body.removeAttribute(HOME_LAYOUT_ATTR)
+    document.body.setAttribute(HOME_LAYOUT_ATTR, next)
     syncRootMark()
     lastHero = heroPhase()
     if (next === HOME_LAYOUT_STUDIO) usage.load(false)
@@ -328,6 +334,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     stopWatchingVisibility()
     unmountColdSeat()
     usage.stop()
+    greeting.restore()
     document.body.removeAttribute(HOME_LAYOUT_ATTR)
     markedRoot?.removeAttribute(HOME_HERO_ATTR)
     markedRoot = null

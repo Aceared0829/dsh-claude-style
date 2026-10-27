@@ -97,7 +97,7 @@
     r.titlebarTabs = document.querySelector('[data-dsh-titlebar-tabs]') !== null
     r.footerTakeover = document.body.hasAttribute('data-dsh-claude-footer-takeover')
     r.homeLayoutAttr = document.body.getAttribute('data-dsh-claude-home-layout')
-    r.homeLayoutExpected = window.SMOKE_CASE === 'studio' ? 'studio' : null
+    r.homeLayoutExpected = window.SMOKE_CASE === 'studio' ? 'studio' : 'classic'
     // A copy, not the live list: the teardown at the end of this run hands every
     // registration back, and what this check is about is what was registered
     // while the page was up.

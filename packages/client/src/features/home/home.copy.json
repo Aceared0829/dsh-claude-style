@@ -84,6 +84,8 @@
   "homeTopModel": { "zh": "最常用模型", "en": "Favorite model" },
   "homeHeatTipTokens": { "zh": "{date} — {tokens} Token", "en": "{date} — {tokens} tokens" },
   "homeTitle": { "zh": "首页版面", "en": "Home layout" },
-  "homeClassic": { "zh": "经典", "en": "Classic" },
-  "homeStudio": { "zh": "工作台", "en": "Studio" }
+  "homeDesc": { "zh": "新会话页的排布；「关闭」时首页保持宿主原样。", "en": "How the new-conversation page is laid out; Off leaves the host's own home page." },
+  "homeOff": { "zh": "关闭", "en": "Off" },
+  "homeClassic": { "zh": "对话", "en": "Chat" },
+  "homeStudio": { "zh": "编程", "en": "Code" }
 }

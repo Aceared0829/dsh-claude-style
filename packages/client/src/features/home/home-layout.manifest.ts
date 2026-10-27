@@ -1,10 +1,13 @@
+import { HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO } from '../../constants'
 import type { FeatureManifest } from '../../core/feature'
 
 export default {
   id: 'homeLayout',
   order: 30,
   contracts: ['composer.stack', 'shell.phase'],
-  ungated: '两种首页布局都由这个常驻功能读取并切换，功能本身在两种布局下都要在场；设置行照旧更换布局',
+  pref: 'homeLayout',
+  // Off leaves the host's home page as the host draws it.
+  prefValues: [HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO],
   stylesheets: [
     { file: 'home-panel.css', rank: 320 },
     { file: 'home-overview.css', rank: 330 },
@@ -16,7 +19,8 @@ export default {
     rank: 25,
     pref: 'homeLayout',
     title: 'homeTitle',
-    choiceLabels: { classic: 'homeClassic', studio: 'homeStudio' },
+    desc: 'homeDesc',
+    control: 'layout-preview',
   }],
   cases: ['hero', 'studio', 'late-forms', 'hdsl', 'hdsl-noskin', 'hdsl-broken']
 } satisfies FeatureManifest

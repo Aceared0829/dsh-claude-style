@@ -6,7 +6,7 @@ export default {
     check('the store stays on the defaults (the studio home) until the namespace is served',
       r.lateBefore === 'studio', JSON.stringify(r.lateBefore))
     check('a namespace served after apply still binds the form and its value (classic)',
-      r.lateAfter === null && r.homeLayoutAttr === null,
+      r.lateAfter === 'classic' && r.homeLayoutAttr === 'classic',
       JSON.stringify({ after: r.lateAfter, final: r.homeLayoutAttr }))
     commonChecks(r)
   },
@@ -15,8 +15,8 @@ export default {
     const settings = r.settings || {}
     check('the settings section registers with the settings dialog', settings.registered === true, JSON.stringify(settings.registered))
     const expected = {
-      general: ['username', 'pageZoom', 'autoPopover', 'sodium'],
-      appearance: ['brand', 'brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
+      general: ['brand', 'username', 'pageZoom', 'autoPopover', 'sodium'],
+      appearance: ['brandLockup', 'brandInk', 'palette', 'paletteCards', 'typeface', 'homeLayout', 'homeRipple', 'mascot', 'mascotScope'],
       'main-window': ['turnNav', 'conversationWidth', 'viewTabs', 'headerBand', 'composerScope', 'composerBottomGap', 'permissionsControl', 'modelPicker', 'modelDescriptions', 'quickProviders', 'peakrate', 'effortAccent', 'contextDisplay', 'contextNumbers', 'statsPosition', 'statsFooterAlign', 'billingCurrency', 'billingTable'],
       sidebar: ['collapseFooter', 'banLocale', 'sidebarSearch', 'searchStyle', 'sidebarEntries', 'workspaceView', 'sidebarPeek', 'sidebarLayout', 'dockCards'],
       motion: ['motion', 'chatAnimations', 'chatWait', 'statusDetail', 'statusMotion', 'chatReveal', 'chatSend', 'messageEnter', 'caretMotion', 'ongoingIndicator'],

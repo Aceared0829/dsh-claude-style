@@ -1,0 +1,8 @@
+{
+  "group": "new",
+  "order": 13,
+  "external": false,
+  "at": "2026-10-27",
+  "zh": "新增「首页版面」的「关闭」选项：首页保持宿主原样（宿主自己的问候语、预览标记与标题样式），水波纹字符背景随之停用；该行改为三张缩略图卡片「关闭 / 对话 / 编程」，原「经典」「工作台」更名为「对话」「编程」。",
+  "en": "Add an Off choice to Home layout that leaves the host's own home page as it is — its own greeting, preview badge and headline — and disables the ripple glyph background with it; the row becomes three thumbnail cards, Off, Chat and Code, with Classic and Studio renamed Chat and Code."
+}

@@ -24,8 +24,8 @@
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="./docs/screenshots/claude-home-light.png" alt="Claude 档工作台首页 —— 亮色" /></td>
-    <td align="center" width="50%"><img src="./docs/screenshots/claude-home-dark.png" alt="Claude 档工作台首页 —— 暗色" /></td>
+    <td align="center" width="50%"><img src="./docs/screenshots/claude-home-light.png" alt="Claude 档编程首页 —— 亮色" /></td>
+    <td align="center" width="50%"><img src="./docs/screenshots/claude-home-dark.png" alt="Claude 档编程首页 —— 暗色" /></td>
   </tr>
   <tr>
     <td align="center" width="50%"><img src="./docs/screenshots/claude-conversation-light.png" alt="Claude 档 Markdown 对话 —— 亮色" /></td>
@@ -33,14 +33,14 @@
   </tr>
 </table>
 
-> 工作台首页（上），对话界面（下）；浅色在左，深色在右。
+> 编程首页（上），对话界面（下）；浅色在左，深色在右。
 
 ### DeepSeek
 
 <table>
   <tr>
-    <td align="center" width="50%"><img src="./docs/screenshots/deepseek-home-light.png" alt="DeepSeek 档工作台首页 —— 亮色" /></td>
-    <td align="center" width="50%"><img src="./docs/screenshots/deepseek-home-dark.png" alt="DeepSeek 档工作台首页 —— 暗色" /></td>
+    <td align="center" width="50%"><img src="./docs/screenshots/deepseek-home-light.png" alt="DeepSeek 档编程首页 —— 亮色" /></td>
+    <td align="center" width="50%"><img src="./docs/screenshots/deepseek-home-dark.png" alt="DeepSeek 档编程首页 —— 暗色" /></td>
   </tr>
   <tr>
     <td align="center" width="50%"><img src="./docs/screenshots/deepseek-conversation-light.png" alt="DeepSeek 档 Markdown 对话 —— 亮色" /></td>

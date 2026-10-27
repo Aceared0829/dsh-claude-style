@@ -4,7 +4,8 @@ import { buildElement } from '@dsh-claude-style/engine/dom'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { findHeroRoot } from '@dsh-claude-style/engine/host'
 import type { FrameTask } from '@dsh-claude-style/engine/frame'
-import { motionReduced } from '../../core/prefs'
+import { HOME_LAYOUT_OFF } from '../../constants'
+import { motionReduced, readPrefs } from '../../core/prefs'
 import { pageHidden, subscribePageHidden } from '../../core/page-visibility'
 import { inPageBox, inPagePixels } from '../../shared/page-zoom'
 import { createGlyphField, readColour } from './ripple-field'
@@ -236,9 +237,13 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     mounted = null
   }
 
-  /** Each pass follows the hero root: mount on it, move with it, leave when the page does. */
+  /**
+   * Each pass follows the hero root: mount on it, move with it, leave when the
+   * page does. The field belongs to the skin's home, so a home layout turned off
+   * leaves the host's page without it.
+   */
   function sync() {
-    const root = findHeroRoot()
+    const root = readPrefs().homeLayout === HOME_LAYOUT_OFF ? null : findHeroRoot()
     if (mounted !== null && (mounted.root !== root || !mounted.canvas.isConnected)) unmount()
     if (mounted === null && root !== null) mounted = mount(root)
   }

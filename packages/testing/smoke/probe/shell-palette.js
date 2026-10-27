@@ -461,10 +461,9 @@
             return cards
           }
           var mark = function () {
-            var tree = treeOf({ general: 'appearance' })
-            // The theme style opens the appearance tab, so its cards are the
-            // tab's first group: the pressed card names the brand whose mark the
-            // page paints.
+            var tree = treeOf(null)
+            // The general tab's theme style is its only group: the pressed card
+            // names the brand whose mark the page paints.
             var group = null
             walk(tree, function (node) {
               var props = node.props || {}

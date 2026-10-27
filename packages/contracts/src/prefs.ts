@@ -167,10 +167,15 @@ export const BAN_LOCALE_ZH = 'zh'
 export const BAN_LOCALE_OFF = 'off'
 export const BAN_LOCALES = [BAN_LOCALE_EN, BAN_LOCALE_ZH, BAN_LOCALE_OFF] as const
 
-/** Home-page layouts. `classic` is the centered hero; `studio` is the dashboard form, Claude Code's own home. */
+/**
+ * Home-page layouts, in settings order. `off` leaves the host's own home page as
+ * it is; `classic` is the centered hero; `studio` is the dashboard form, Claude
+ * Code's own home.
+ */
+export const HOME_LAYOUT_OFF = 'off'
 export const HOME_LAYOUT_CLASSIC = 'classic'
 export const HOME_LAYOUT_STUDIO = 'studio'
-export const HOME_LAYOUTS = [HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO] as const
+export const HOME_LAYOUTS = [HOME_LAYOUT_OFF, HOME_LAYOUT_CLASSIC, HOME_LAYOUT_STUDIO] as const
 
 /** Composer surfaces the restyle may cover, in settings order. */
 export const COMPOSER_SCOPE_OFF = 'off'
