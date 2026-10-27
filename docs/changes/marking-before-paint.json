@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 1,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复切换会话后正文行距与表格宽度再次变化",
-  "en": "Fix the prose's line height and table widths changing again after a session switch"
-}

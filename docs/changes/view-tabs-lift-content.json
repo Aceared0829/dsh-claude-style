@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 2,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复 macOS 上标签条上抬后标题栏按钮间歇点不动",
-  "en": "Fix the titlebar buttons on macOS intermittently ignoring a press once the view-tab strip rises"
-}

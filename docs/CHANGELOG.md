@@ -2,6 +2,50 @@
 
 All notable changes to `dsh-claude-style` are documented here, newest first.
 
+## [0.19.5] - 2026-10-27
+
+[中文](#cn-0.19.5) | [English](#en-0.19.5)
+
+<h3 id="cn-0.19.5">新增功能</h3>
+
+- 新增过程行的单列风格
+- 新增侧栏「更多」菜单里的「编辑侧栏…」
+- 设置页标签栏的每个标签前新增一枚线性图标
+- 新增「首页版面」的「关闭」选项
+
+### 体验优化
+
+- 改善设置页「首页版面」的预览卡
+- 改善设置页的分组与控件
+- 改善设置页标题行的仓库入口
+
+### 问题修复
+
+- 修复窄窗口下指针停在侧栏开关上时整窗被压暗的问题
+- 修复切换会话后正文行距与表格宽度再次变化
+- 修复 macOS 上标签条上抬后标题栏按钮间歇点不动
+- 修复工作台版面上输入卡片跑到问候语下面、不再贴窗口底边
+
+<h3 id="en-0.19.5">New Features</h3>
+
+- Add a column style for process rows
+- Add Edit sidebar… to the sidebar's More menu
+- Add a line mark before each tab in the settings tab strip
+- Add an Off choice to Home layout
+
+### Improvements
+
+- Improve the Home layout previews in settings
+- Improve the settings page's grouping and controls
+- Improve the repository link in the settings heading
+
+### Bug Fixes
+
+- Fix the whole window dimming while the pointer rests on the sidebar toggle in a narrow window
+- Fix the prose's line height and table widths changing again after a session switch
+- Fix the titlebar buttons on macOS intermittently ignoring a press once the view-tab strip rises
+- Fix the composer card landing under the greeting instead of the window's bottom edge on the dashboard home
+
 ## [0.19.4] - 2026-10-26
 
 [中文](#cn-0.19.4) | [English](#en-0.19.4)

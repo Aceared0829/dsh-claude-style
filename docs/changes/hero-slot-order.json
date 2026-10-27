@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 3,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "修复工作台版面上输入卡片跑到问候语下面、不再贴窗口底边",
-  "en": "Fix the composer card landing under the greeting instead of the window's bottom edge on the dashboard home"
-}

@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 12,
-  "external": false,
-  "at": "2026-10-26",
-  "zh": "设置页标签栏的每个标签前新增一枚线性图标",
-  "en": "Add a line mark before each tab in the settings tab strip"
-}
