@@ -1,7 +1,8 @@
 import { windowsDesktop } from '@dsh-claude-style/engine/desktop-band'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
+import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { createStamp } from '@dsh-claude-style/engine/dom'
-import { VIEW_TABS_LIST_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CONVERSATION_HEADER_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_TABS_SELECTOR, VIEW_TABS_LIST_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { contentBox } from '../../shared/content-box'
 import { VIEW_SWITCH_CLASS } from '../../shared/segment-control'
 import { createSlidingPill } from '../../shared/sliding-pill'
@@ -49,7 +50,10 @@ import type manifest from './view-tabs.manifest'
  *
  * The strip itself is stamped `data-dsh-view-tabs`, and the row shape adds
  * `data-dsh-view-tabs-row`; every strip rule in view-tabs.css keys on those
- * attributes. Finding the strip is a query this pass runs once; as a stylesheet
+ * attributes. The stamps are written twice over: in the batch that mounts the
+ * strip, before the browser paints, so the first frame is already the skin's
+ * (#189), and by the pass afterwards, which keeps them on the element the page
+ * shows. Finding the strip is a query this pass runs once; as a stylesheet
  * selector (`header:has(tabs) tabs`) it would make the browser re-match the
  * whole document on every DOM change.
  *
@@ -99,6 +103,18 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     if (control !== null) control.classList.add(VIEW_SWITCH_CLASS)
   }
   const pill = createSlidingPill('[aria-selected="true"]')
+  /**
+   * The two seats a strip is found through, each resolved once per batch
+   * (engine/host.ts): a pass re-reads them, and the document is walked again
+   * only when the page's structure changed.
+   */
+  const firstStamped = cacheFirstMatch<HTMLElement>(STRIP)
+  const firstTabs = cacheFirstMatch<HTMLElement>(CONVERSATION_TABS_SELECTOR)
+  // Warm the cache's own batch watch here, before the mutation route below
+  // subscribes: the watch bumps the epoch at the head of a batch, and a seat read
+  // after that bump sees the batch's own nodes. Subscribed later than the route,
+  // it would leave the route reading the previous batch's answer (#189).
+  firstStamped()
 
   /**
    * Read the host's Windows titlebar marker; the write that publishes it
@@ -150,25 +166,35 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * The header holding the strip, and the strip with it.
+   * The strip and the header holding it.
    *
-   * The header is the FIRST `[data-dsh-claude-part~="conversation-header"]` carrying a strip in document
-   * order, so a header mounted before the one found last time takes that answer
-   * while leaving the old header connected, and a kept one would go on stamping
-   * and placing a strip the page no longer reads as the conversation's. The pair
-   * is resolved on every pass (D9) — the kept header is dropped the moment an
-   * earlier match appears, which is the answer a fresh query gives — and the
-   * boxes inside it are read once each.
+   * A strip the skin has stamped is taken as it is. One it has not is read off
+   * the host's own tablist mark: in the shape where the tablist is the strip,
+   * that mark sits on the strip itself; in the row shape it sits on the plate,
+   * whose parent is the row the host keeps for its own tab count. Answering
+   * this before the pass has stamped anything is what the mutation route below
+   * needs to mark a strip in the batch that mounted it (#189).
    *
-   * `list` is the tablist the row shape holds, null in the shape where the strip
-   * is the tablist itself.
+   * `header` is the conversation header above the strip — its part mark once the
+   * walk has run, the slot it is mounted in before that; `list` is the tablist
+   * the row shape holds, null in the shape where the strip is that tablist.
    */
-  const firstHeader = cacheFirstMatch<HTMLElement>(HEADER)
   function findStrip() {
-    const header = firstHeader()
-    if (header === null) return null
-    const strip = header.querySelector<HTMLElement>(STRIP)
-    return strip === null ? null : { header, strip, list: strip.querySelector<HTMLElement>(VIEW_TABS_LIST_SELECTOR) }
+    const header = (el: Element) => el.closest<HTMLElement>(CONVERSATION_HEADER_SELECTOR) ?? el.closest<HTMLElement>(CONVERSATION_HEADER_SLOT_SELECTOR)
+    const stamped = firstStamped()
+    if (stamped !== null) {
+      const marked = header(stamped)
+      return marked === null ? null : { header: marked, strip: stamped, list: stamped.querySelector<HTMLElement>(VIEW_TABS_LIST_SELECTOR) }
+    }
+    const tabs = firstTabs()
+    if (tabs === null) return null
+    const parent = tabs.parentElement
+    // The row shape's plate has the row beside the "more views" button; the
+    // strip of the flat shape is the tablist itself.
+    const row = parent !== null && parent.children.length > 1 ? parent : null
+    const strip = row ?? tabs
+    const marked = header(strip)
+    return marked === null ? null : { header: marked, strip, list: row === null ? null : tabs }
   }
 
   /**
@@ -273,7 +299,27 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   // the pass's read phase and written in its write phase.
   ui.viewTabs = { measure, sync, skipOnContentOnly: true }
 
+  /**
+   * Stamp a strip the batch has just mounted before the browser paints: the
+   * pass lands on the next frame (engine/frame.ts), so a strip left unmarked
+   * draws with the host's own layout for one frame and jumps when the pass
+   * reaches it (#189). The bus dispatches a small batch inside the observer's
+   * callback, before that paint (engine/bus.ts), and a mark is a write no read
+   * depends on. The pass keeps the mark in step afterwards; this only covers a
+   * strip that has none.
+   */
+  const stopMutations = subscribeMutations(document.body, { childList: true, subtree: true }, () => {
+    const marked = stripStamp.current()
+    if (marked !== null && marked.isConnected) return
+    const found = findStrip()
+    if (found === null) return
+    stripStamp.mark(found.strip)
+    rowStamp.mark(found.list === null ? null : found.strip)
+    classStamp(controlOf(found))
+  })
+
   return () => {
+    stopMutations()
     titlebar = false
     markTitlebar(null)
     // The strip the passes wrote to: the placement belongs to the element the
