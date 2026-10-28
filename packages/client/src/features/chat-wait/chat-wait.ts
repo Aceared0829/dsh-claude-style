@@ -10,7 +10,7 @@ import { motionMs } from '../../shared/motion'
 import { releaseSwappingText, setSwappingText } from '../../shared/swapping-text'
 import { activityWords, waitingWord, THINKING_KEY } from '../../shared/turn-activity'
 import { startWaitLoader, releaseWaitLoader } from './wait-loader'
-import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
+import { CHAT_RUNNING_SELECTOR, CHAT_RUNNING_HOLDING_ATTRIBUTE, CHAT_RUNNING_TEXT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { WAIT_OVERTIME_MS, openTurn, waitStart, wordForPass } from './wait-state'
 import { foreignRunningLineOwns } from './running-owner'
 import type { RowWords } from './wait-state'
@@ -203,6 +203,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
 
   /** Bring one row's line to what the host's snapshot says now. */
   function syncRow(row: HTMLElement, t: HostText, now: number, seen: Set<string>, live: Set<string>) {
+    // The host keeps the running row's slot after the turn stops, marked with
+    // `data-holding` and `aria-hidden`, until the turn's actions row replaces it
+    // (RunningStatus). That node still answers `[data-chat-running]` and still
+    // holds its content span, so a pass reading it would draw a second line
+    // beside the one the live row carries — the same dots twice. Only the live
+    // row is ours; a holding one hands its place back.
+    if (row.hasAttribute(CHAT_RUNNING_HOLDING_ATTRIBUTE)) {
+      release(row)
+      return
+    }
     const words = row.querySelector<HTMLElement>(CHAT_RUNNING_TEXT_SELECTOR)
     if (words === null || foreignRunningLineOwns(words, lines.get(row)?.line, WORDS_ATTR)) {
       release(row)

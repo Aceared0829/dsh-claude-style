@@ -474,6 +474,17 @@
       waitSession.setAttribute('data-chat-following-tail', '')
       await probe.settle()
       r.wait.pin.back = pinOf()
+      // The host keeps the running row's slot after the turn stops, marked
+      // `data-holding` and hidden, until the turn's actions row replaces it
+      // (RunningStatus). That node still matches `[data-chat-running]` and still
+      // holds its content span, so the line must not be drawn into it: two
+      // lines beside each other are the same dots drawn twice.
+      row.setAttribute('data-holding', '')
+      await probe.settle()
+      r.wait.holding = await owned(false, 'the line handing a holding row back')
+      row.removeAttribute('data-holding')
+      await probe.settle()
+      r.wait.holdingReleased = await owned(true, 'the line coming back once the row is live again')
       waitSession.remove()
       await probe.settle()
       r.wait.removed = { wordsMarked: words.hasAttribute('data-dsh-claude-wait-words') }

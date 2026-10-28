@@ -638,6 +638,10 @@ export default {
         reduced.box.clockLeft - reduced.box.labelLeft - reduced.box.width <= 10,
       JSON.stringify({ word: reduced.word, box: reduced.box }))
     const off = wait.off || {}
+    check('a holding row — the slot the host keeps after the turn stops — takes the line back, and a live row gets it again',
+      wait.holding.line === false && wait.holding.marked === false &&
+        wait.holdingReleased.line === true && wait.holdingReleased.marked === true,
+      JSON.stringify({ holding: wait.holding, released: wait.holdingReleased }))
     check('switching the chat-area animations off takes the line down and gives the host\'s words back',
       off.line === false && off.marked === false && off.wordsShown === true && off.wordsMarked === false && off.foreignShown === true,
       JSON.stringify(off))

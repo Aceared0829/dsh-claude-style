@@ -93,6 +93,13 @@ export const FOLLOW_THRESHOLD_PX = 25
  * ticking clock.
  */
 export const CHAT_RUNNING_SELECTOR = '[data-chat-running]'
+/**
+ * On the running row while it only holds its slot: the host keeps the row after
+ * the turn stops, hidden and aria-hidden, until the turn's actions row replaces
+ * it. It still matches `CHAT_RUNNING_SELECTOR` and still holds its content span,
+ * so anything drawn into it would sit beside the live row's own.
+ */
+export const CHAT_RUNNING_HOLDING_ATTRIBUTE = 'data-holding'
 /** The composer area: a pointer or key inside it is the reader typing, not taking the scroll over. */
 export const COMPOSER_SELECTOR = '[data-composer-seat]'
 /** The composer's editable surface (contenteditable); the caret motion is drawn for it. */

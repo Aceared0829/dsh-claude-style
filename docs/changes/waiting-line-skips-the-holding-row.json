@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-28",
+  "group": "fixes",
+  "order": 0,
+  "external": false,
+  "zh": "回合结束后宿主留下的占位状态行不再被画上第二条等待行，加载点不再出现两套。",
+  "en": "The slot the host keeps after a turn stops no longer gets a second waiting line drawn into it, so the loader no longer shows twice."
+}
