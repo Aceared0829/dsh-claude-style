@@ -288,9 +288,12 @@ body[data-dsh-claude-style] [data-dsh-claude-part~="project-row"] [data-dsh-clau
 body[data-dsh-claude-style] [data-dsh-claude-part~="session-row"] [data-dsh-claude-part~="row-actions"] {
   gap: 6px;
 }
+/* The host sizes the row's icon buttons 24px with -4px margins; at the compact
+   16px box that overhang would overlap neighbours, so the rule clears it. */
 body[data-dsh-claude-style] :is([data-dsh-claude-part~="project-row"], [data-dsh-claude-part~="session-row"]) [data-dsh-claude-part~="row-icon-button"] {
   width: 16px;
   height: 16px;
+  margin: 0;
 }
 
 /* ---------- the sidebar-layout choice: the compact scale ---------- */
