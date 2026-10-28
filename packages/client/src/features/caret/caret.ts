@@ -4,6 +4,7 @@ import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { readPrefs, subscribePrefs } from '../../core/prefs'
 import { caretClipToField, caretMeasurePlain, caretMeasureRich, noteFacesLoaded } from './caret-measure'
 import type { CaretBox, CaretReading } from './caret-measure'
+import { composerComposing } from '../../shared/composer-caret'
 import { inPagePixels } from '../../shared/page-zoom'
 import { COMPOSER_INPUT_SELECTOR, COMPOSER_TEXTAREA_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import type { HostContext } from '@dsh-claude-style/engine/host'
@@ -92,6 +93,12 @@ export function createCaretMotion(read: () => string) {
    * released layer.
    */
   let cancelTransitionFrame: (() => void) | null = null
+  /**
+   * The settle after an input-method composition: a commit need not fire
+   * `selectionchange`, so the caret is measured once the browser has landed the
+   * committed selection. Null when no composition just ended.
+   */
+  let cancelCompositionFrame: (() => void) | null = null
   /**
    * After dispose, nothing acts.
    *
@@ -367,6 +374,14 @@ export function createCaretMotion(read: () => string) {
       plan = { off: true, target: null, host: null, hostRect: null, reading: null }
       return
     }
+    // An input-method composition paints its own caret, candidate window and
+    // underline. Its selection may stand at a segment boundary rather than the
+    // end of the composed text, so the skin's caret stands down for its span
+    // and compositionend measures again once the commit has landed.
+    if (composerComposing(document)) {
+      plan = { off: false, target: null, host: null, hostRect: null, reading: null }
+      return
+    }
     const selection = document.getSelection()
     const active = document.activeElement
     const kind = active instanceof HTMLElement ? caretSurfaceOf(active) : null
@@ -479,7 +494,25 @@ export function createCaretMotion(read: () => string) {
   const onFieldInput = (event: Event) => {
     if (event.target instanceof Element && caretSurfaceOf(event.target) !== null) queue()
   }
+  /**
+   * A composition starts: the next frame gives the caret back to the browser.
+   * A composition ends: the browser may update the committed selection after
+   * this event without another `selectionchange`, so measure again once two
+   * frames have passed.
+   */
+  const onCompositionStart = () => queue()
+  const onCompositionEnd = () => {
+    if (cancelCompositionFrame !== null) cancelCompositionFrame()
+    cancelCompositionFrame = requestFrame({
+      write() {
+        cancelCompositionFrame = null
+        queue()
+      },
+    })
+  }
   document.addEventListener('input', onFieldInput, true)
+  document.addEventListener('compositionstart', onCompositionStart, true)
+  document.addEventListener('compositionend', onCompositionEnd, true)
   // Which side of a soft wrap is meant: whether the last move was End.
   document.addEventListener('keydown', noteKey, true)
   document.addEventListener('pointerdown', clearEndKey, true)
@@ -504,11 +537,15 @@ export function createCaretMotion(read: () => string) {
       cancelTransitionFrame = null
       if (focusSettleTimer !== null) window.clearTimeout(focusSettleTimer)
       focusSettleTimer = null
+      if (cancelCompositionFrame !== null) cancelCompositionFrame()
+      cancelCompositionFrame = null
       document.removeEventListener('selectionchange', queue)
       document.removeEventListener('focusin', syncAfterFocusChange)
       document.removeEventListener('focusout', syncAfterFocusChange)
       document.removeEventListener('beforeinput', markTyped)
       document.removeEventListener('input', onFieldInput, true)
+      document.removeEventListener('compositionstart', onCompositionStart, true)
+      document.removeEventListener('compositionend', onCompositionEnd, true)
       document.removeEventListener('keydown', noteKey, true)
       document.removeEventListener('pointerdown', clearEndKey, true)
       document.removeEventListener('scroll', followPlainScroll, true)
