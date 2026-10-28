@@ -260,6 +260,13 @@ export interface HostModelGroup {
  */
 export const OFFICIAL_MODEL_GROUP = 'deepseek-official'
 
+/**
+ * The host's group id for the signed-in account route. The API-key route's
+ * catalog is empty while no key is configured, so this group leads the picker's
+ * first level in that state (`features/model/level-one.ts`).
+ */
+export const ACCOUNT_MODEL_GROUP = 'deepseek-account'
+
 /** One model: its id, its name, its own description text, and the reasoning metadata the effort control reads. */
 export interface HostModelEntry {
   id: string

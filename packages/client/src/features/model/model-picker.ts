@@ -1,5 +1,6 @@
 import { SLOT_NODE_ATTR } from '../../constants'
 import { MODEL_OFFICIAL_GROUP } from './model-labels'
+import { modelGroupName } from './provider-name'
 import { activeLocale } from '../../core/i18n'
 import { ensureSeatBox, ensureSeatPart } from './seat-box'
 import type { SeatPart } from './seat-box'
@@ -266,7 +267,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
           const section = sections[s]
           // The official source needs no naming, and the first section needs
           // no rule: a bare line above the list would be one line too many.
-          const sectionLabel = section.id === MODEL_OFFICIAL_GROUP ? '' : (section.name || section.id)
+          const sectionLabel = section.id === MODEL_OFFICIAL_GROUP ? '' : modelGroupName(section.id, section.name)
           if (sectionLabel !== '' || s > 0) modelBody.appendChild(modelRows.buildProviderRule(sectionLabel))
           const sectionModels = section.models.slice().sort(byModelId)
           for (let m = 0; m < sectionModels.length; m++) {
@@ -288,7 +289,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       if (current !== null && !currentListed) {
         // The divider above already draws a line, so a provider that needs no
         // naming (the official source) adds nothing here.
-        const currentRuleName = current.group.id === MODEL_OFFICIAL_GROUP ? '' : (current.group.name || current.group.id)
+        const currentRuleName = current.group.id === MODEL_OFFICIAL_GROUP ? '' : modelGroupName(current.group.id, current.group.name)
         if (currentRuleName !== '') modelBody.appendChild(modelRows.buildProviderRule(currentRuleName))
         // Through the same row builder as every other row, so this one carries
         // the same brand hook, description and peak rate meter.

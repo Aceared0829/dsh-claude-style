@@ -800,6 +800,10 @@
       "every row of the first level carries a line saying what the model is while Model descriptions is on, and turning it off takes the line off that level alone": [
         0,
         3
+      ],
+      "with no API key, the signed-in account leads the first level beside the chosen provider": [
+        0,
+        1
       ]
     },
     "packages/testing/smoke/cases/peer.mjs": {

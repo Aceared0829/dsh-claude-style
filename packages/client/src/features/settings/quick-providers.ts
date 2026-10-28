@@ -1,4 +1,5 @@
-import { MODEL_OFFICIAL_GROUP } from '../model/model-labels'
+import { MODEL_ACCOUNT_GROUP, MODEL_OFFICIAL_GROUP } from '../model/model-labels'
+import { modelGroupName } from '../model/provider-name'
 import { readPrefs } from '../../core/prefs'
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { POPOVER_CHECK_SVG, buildPopoverItem, closeOtherPopovers, positionAnchoredPopover, registerPopover, setMenuPopoverOpen, unregisterPopover } from '../../shared/popover'
@@ -74,7 +75,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     const row = built.row
     if (stale) row.classList.add('dsh-claude-popover-item-stale')
     row.setAttribute('aria-checked', chosen ? 'true' : 'false')
-    built.text.textContent = provider.name
+    built.text.textContent = modelGroupName(provider.id, provider.name)
     // badge and check were both asked for above.
     built.badge!.textContent = stale ? copy('quickRemoved') : String(provider.count)
     built.check!.innerHTML = chosen ? POPOVER_CHECK_SVG : ''
@@ -98,19 +99,21 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       return
     }
     const chosen = readPrefs().quickProviders
-    // The official service always leads the first level, so it is not a
-    // choice here: it is never listed, and a stored id for it is pruned on
-    // load. A provider that vanished from the catalog still appears, marked
-    // removed, so it can be unchecked out of the stored list instead of
-    // lingering invisibly.
+    // The provider that leads the first level is not a choice here: the
+    // official route while it advertises models, and the account route when it
+    // takes that place. A stored id for either is left out; a provider that
+    // vanished from the catalog still appears, marked removed, so it can be
+    // unchecked out of the stored list instead of lingering invisibly.
+    const accountLeads = !providers.some(provider => provider.id === MODEL_OFFICIAL_GROUP)
     const known: Record<string, boolean> = {}
     for (let i = 0; i < providers.length; i++) {
       if (providers[i].id === MODEL_OFFICIAL_GROUP) continue
+      if (accountLeads && providers[i].id === MODEL_ACCOUNT_GROUP) continue
       known[providers[i].id] = true
       cardBody.appendChild(buildRow(providers[i], chosen.includes(providers[i].id), false))
     }
     for (let s = 0; s < chosen.length; s++) {
-      if (chosen[s] === MODEL_OFFICIAL_GROUP || known[chosen[s]]) continue
+      if (chosen[s] === MODEL_OFFICIAL_GROUP || (accountLeads && chosen[s] === MODEL_ACCOUNT_GROUP) || known[chosen[s]]) continue
       cardBody.appendChild(buildRow({ id: chosen[s], name: chosen[s], count: 0 }, true, true))
     }
   }

@@ -34,6 +34,9 @@
   if (CASE === 'switches-off') {
     Object.assign(formValue, { permissionsControl: false, workspaceView: false, sidebarSearch: false, viewTabs: false, chatAnimations: false, composerScope: 'off' })
   }
+  // The model-account case has a quick provider chosen, the state in which the
+  // account used to fall behind More models.
+  if (CASE === 'model-account') formValue.quickProviders = ['zai']
   var form = {
     // The deepy case stores the DeepSeek brand under the value earlier builds
     // wrote for it ("off"), which has to read as the DeepSeek brand.

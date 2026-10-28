@@ -89,4 +89,15 @@ export default {
         seat.tagBg !== null && seat.tagBg !== 'rgba(0, 0, 0, 0)' && neutral(seat.tagBg) && neutral(seat.tagColor),
       JSON.stringify(seat))
   },
+  'model-account'(r) {
+    basicChecks(r)
+    const account = r.modelAccount || {}
+    check('with no API key, the signed-in account leads the first level beside the chosen provider',
+      Array.isArray(account.levelOne) && account.levelOne[0] === 'DeepSeek V4.1 Flash' && account.levelOne[1] === 'GLM-5.3' &&
+        account.lead === 'DeepSeek Account',
+      JSON.stringify(account))
+    check('the account that leads the first level is not repeated behind More models',
+      Array.isArray(account.levelTwo) && account.levelTwo.includes('Gateway Flash') && !account.levelTwo.includes('DeepSeek V4.1 Flash'),
+      JSON.stringify(account.levelTwo))
+  },
 }

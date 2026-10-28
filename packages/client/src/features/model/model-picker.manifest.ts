@@ -24,5 +24,5 @@ export default {
     title: 'modelDescriptionsTitle',
     desc: 'modelDescriptionsDesc',
   }],
-  cases: ['brand', 'composer', 'settings', 'sync-fault', 'model-meter']
+  cases: ['brand', 'composer', 'settings', 'sync-fault', 'model-meter', 'model-account']
 } satisfies FeatureManifest

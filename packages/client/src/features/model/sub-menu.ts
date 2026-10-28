@@ -1,5 +1,6 @@
 import { buildElement } from '@dsh-claude-style/engine/dom'
 import { copy } from './copy'
+import { modelGroupName } from './provider-name'
 import { byModelId } from './rows'
 import { motionEaseAt, motionMs, motionValue } from '../../shared/motion'
 import { motionReduced } from '../../core/prefs'
@@ -157,7 +158,7 @@ export function createModelSubMenu(options: ModelSubMenuOptions) {
       const groupLabel = buildElement('div', 'dsh-claude-model-group')
       // The group label is the provider's name alone: a mark there would repeat
       // what the rows below already carry inside their lockups.
-      groupLabel.appendChild(buildElement('span', 'dsh-claude-model-group-name', group.name))
+      groupLabel.appendChild(buildElement('span', 'dsh-claude-model-group-name', modelGroupName(group.id, group.name)))
       groupRow.appendChild(groupLabel)
       section.appendChild(groupRow)
       for (let m = 0; m < found.length; m++) {

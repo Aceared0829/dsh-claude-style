@@ -1,7 +1,7 @@
 /**
- * The model directory the model-meter page reads: two provider groups, with the
- * model in force sitting in the group level 1 does not list — the case that
- * makes the picker append the seat's own row at the bottom of that level.
+ * The model directory the model pages read. The model-meter page's groups put
+ * the model in force in the group level 1 does not list — the case that makes
+ * the picker append the seat's own row at the bottom of that level.
  *
  * The ids are the ones the rate catalog's alias table knows, so one row of each
  * kind is on the page: a model a profile claims, a model no profile claims, and
@@ -15,6 +15,9 @@
  * (packages/testing/specs/behaviour/model-picker/), and each of its models
  * carries a ladder of its own, so a model pick changes the level with it.
  *
+ * The model-account page reads the other state: no API-key route at all, the
+ * signed-in account route, and one quick provider chosen.
+ *
  * The directory answers a selection the way the host's own store does: `select`
  * holds the snapshot in `selecting`, empty of groups and seat, for the whole
  * round trip, and answers with the seat it landed on. `echoDelay` is how long
@@ -23,7 +26,7 @@
  */
 (function () {
   var host = window.__dshSmokeHost
-  if (host.CASE !== 'model-meter' && host.CASE !== 'effort') return
+  if (host.CASE !== 'model-meter' && host.CASE !== 'model-account' && host.CASE !== 'effort') return
 
   var reasoning = {
     defaultEffort: 'high',
@@ -34,7 +37,13 @@
     defaultEffort: 'low',
     efforts: reasoning.efforts,
   }
-  var groups = host.CASE === 'effort' ? [
+  var groups = host.CASE === 'model-account' ? [
+    // The signed-in account route with no API key configured: the host's API-key
+    // route advertises nothing, so the account is the only DeepSeek source.
+    { id: 'deepseek-account', name: 'DeepSeek Account', models: [{ id: 'deepseek-flash', name: 'DeepSeek V4.1 Flash', description: 'The account route.' }] },
+    { id: 'zai', name: 'Z.ai', models: [{ id: 'glm-5.3', name: 'GLM-5.3', description: 'The chosen quick provider.' }] },
+    { id: 'ocg', name: 'Gateway', models: [{ id: 'deepseek-flash', name: 'Gateway Flash', description: 'The provider behind More models.' }] },
+  ] : host.CASE === 'effort' ? [
     { id: 'deepseek-official', name: 'DeepSeek', models: [{ id: 'deepseek-reasoner', name: 'DeepSeek V4 Reasoner Extended Context', description: 'The thinking one.', reasoning: reasoning }] },
     {
       id: 'zai',
@@ -65,7 +74,9 @@
   }
   var current = host.CASE === 'effort'
     ? { provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'max' }
-    : { provider: 'zai', model: 'glm-5.3' }
+    : host.CASE === 'model-account'
+      ? { provider: 'deepseek-account', model: 'deepseek-flash' }
+      : { provider: 'zai', model: 'glm-5.3' }
   var snapshot = { status: 'ready', current: current, groups: groups }
   var listeners = []
 

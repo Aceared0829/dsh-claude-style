@@ -1,5 +1,5 @@
 import { AUTO_POPOVER_ALL } from '../../constants'
-import { MODEL_OFFICIAL_GROUP } from './model-labels'
+import { levelOneSections as selectLevelOneSections } from './level-one'
 import { readPrefs } from '../../core/prefs'
 import { localized } from '../../core/i18n'
 import { buildModelLabel, modelBrand } from './brand'
@@ -182,31 +182,9 @@ export function createModelRows(options: {
     return cell
   }
 
-  /**
-   * The providers level 1 lists: the official service first, then the quick
-   * providers the settings page picked. Only when the catalog has no
-   * (non-empty) official service at all does the list fall back to the
-   * picked providers, and with none picked to every provider.
-   */
+  /** The providers level 1 lists (level-one.ts): the lead group, then the chosen quick providers. */
   function levelOneSections(groups: HostModelGroup[]) {
-    const sections: HostModelGroup[] = []
-    const chosen = readPrefs().quickProviders
-    for (let g0 = 0; g0 < groups.length; g0++) {
-      if (groups[g0].id === MODEL_OFFICIAL_GROUP && groups[g0].models.length > 0) {
-        sections.push(groups[g0])
-        break
-      }
-    }
-    for (let g2 = 0; g2 < groups.length; g2++) {
-      if (!chosen.includes(groups[g2].id) || groups[g2].id === MODEL_OFFICIAL_GROUP || groups[g2].models.length === 0) continue
-      sections.push(groups[g2])
-    }
-    if (sections.length === 0) {
-      for (let g4 = 0; g4 < groups.length; g4++) {
-        if (groups[g4].models.length > 0) sections.push(groups[g4])
-      }
-    }
-    return sections
+    return selectLevelOneSections(groups, readPrefs().quickProviders)
   }
 
   /**
