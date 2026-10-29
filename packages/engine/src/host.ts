@@ -61,7 +61,11 @@ let matchEpochWatched = false
 function openMatchEpochWatch() {
   if (matchEpochWatched) return
   matchEpochWatched = true
-  subscribeMutations(document.body, { subtree: true, childList: true }, () => {
+  // The bump runs inside the batch's own callback: a reader that writes what the
+  // frame paints asks for that timing (`beforePaint`, D40) and must see the
+  // batch's nodes rather than the previous batch's answer (#189). This callback
+  // moves a counter, so the earlier turn costs one addition.
+  subscribeMutations(document.body, { subtree: true, childList: true, beforePaint: true }, () => {
     matchEpoch += 1
   })
 }

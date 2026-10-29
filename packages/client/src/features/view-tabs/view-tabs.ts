@@ -50,12 +50,13 @@ import type manifest from './view-tabs.manifest'
  *
  * The strip itself is stamped `data-dsh-view-tabs`, and the row shape adds
  * `data-dsh-view-tabs-row`; every strip rule in view-tabs.css keys on those
- * attributes. The stamps are written twice over: in the batch that mounts the
- * strip, before the browser paints, so the first frame is already the skin's
- * (#189), and by the pass afterwards, which keeps them on the element the page
- * shows. Finding the strip is a query this pass runs once; as a stylesheet
- * selector (`header:has(tabs) tabs`) it would make the browser re-match the
- * whole document on every DOM change.
+ * attributes. The marks, the Windows titlebar marker on the header and the
+ * shift are written twice over: in the batch that mounts the strip, before the
+ * browser paints, so the first frame is already the skin's (#189), and by the
+ * pass afterwards, which keeps them on the element the page shows. Finding the
+ * strip is a query this pass runs once; as a stylesheet selector
+ * (`header:has(tabs) tabs`) it would make the browser re-match the whole
+ * document on every DOM change.
  *
  * The strip's active pill slides between tabs (packages/client/src/shared/sliding-pill.ts).
  */
@@ -71,6 +72,8 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    */
   const TITLE = '[data-dsh-claude-part~="header-crumb"], [data-dsh-claude-part~="title-cluster"]'
   const ACTIONS = '[data-dsh-claude-part~="header-actions"], [data-dsh-claude-part~="header-utilities"]'
+  /** The custom property the stylesheet turns into the strip's translate (view-tabs.css). */
+  const SHIFT = '--dsh-view-tabs-shift'
   /** The stylesheet's fallback: the strip's own row, 10px up from y=50. */
   const FALLBACK = -10
   /** The header's own top inset; the lifted strip may not enter it. */
@@ -266,13 +269,22 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // fixed there, so neither the measured shift nor the fallback applies.
     if (titlebar) return
     const boxes = reading !== null && measuredStrip === strip ? reading : takeReading(header, strip, list)
+    writeShift(strip, shiftIn(boxes))
+  }
+
+  /**
+   * The shift the boxes ask for: the measured one when the room above is real,
+   * the stylesheet's fallback otherwise, and null for a strip with no box to
+   * decide from.
+   */
+  function shiftIn(boxes: StripReading) {
     const stripBox = boxes.stripBox
-    if (stripBox === null) return
+    if (stripBox === null) return null
     const headerBox = boxes.headerBox
-    if (headerBox === null) return
+    if (headerBox === null) return null
     // The strip's own layout position, with the shift we may already have
     // applied taken back out: rect.top moves with the transform.
-    let applied = parseFloat(strip.style.getPropertyValue('--dsh-view-tabs-shift'))
+    let applied = parseFloat(boxes.strip.style.getPropertyValue(SHIFT))
     if (!isFinite(applied)) applied = FALLBACK
     const naturalTop = stripBox.top - applied
     const titleBox = boxes.titleBox
@@ -288,10 +300,16 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       const clash = [titleBox, actionsBox].some((box) => box !== null && stripBox.right > box.left - CLEARANCE && stripBox.left < box.right + CLEARANCE)
       if (!clash) shift = Math.round(want)
     }
+    return shift
+  }
+
+  /** Write the shift the strip takes; the strip already wearing it takes no write. */
+  function writeShift(strip: HTMLElement, shift: number | null) {
+    if (shift === null) return
     if (shift === last && strip === lastEl) return
     last = shift
     lastEl = strip
-    strip.style.setProperty('--dsh-view-tabs-shift', `${shift}px`)
+    strip.style.setProperty(SHIFT, `${shift}px`)
   }
 
   // The strip lives in the conversation header, outside the column a streaming
@@ -300,22 +318,41 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   ui.viewTabs = { measure, sync, skipOnContentOnly: true }
 
   /**
-   * Stamp a strip the batch has just mounted before the browser paints: the
-   * pass lands on the next frame (engine/frame.ts), so a strip left unmarked
-   * draws with the host's own layout for one frame and jumps when the pass
-   * reaches it (#189). The bus dispatches a small batch inside the observer's
-   * callback, before that paint (engine/bus.ts), and a mark is a write no read
-   * depends on. The pass keeps the mark in step afterwards; this only covers a
-   * strip that has none.
+   * Whether a strip already draws the way the frame's paint reads it: its own
+   * mark and the row mark on it, the titlebar mode on its header, and the shift
+   * this window needs — Windows titlebar mode places the strip itself, so it
+   * writes none.
    */
-  const stopMutations = subscribeMutations(document.body, { childList: true, subtree: true }, () => {
-    const marked = stripStamp.current()
-    if (marked !== null && marked.isConnected) return
+  function placedForPaint(strip: HTMLElement, header: HTMLElement) {
+    if (stripStamp.current() !== strip) return false
+    if (header.getAttribute(TITLEBAR_ATTR) !== (titlebar ? '' : null)) return false
+    return titlebar || strip.style.getPropertyValue(SHIFT) !== ''
+  }
+
+  /**
+   * Place a strip the batch has just mounted before the browser paints (#189).
+   *
+   * The pass lands on the next frame, and a batch the size of a session switch
+   * is dispatched after that frame's paint (engine/bus.ts): a strip left for
+   * either draws in the host's own layout and jumps when the pass reaches it.
+   * This subscription asks for `beforePaint`, so it runs inside every batch's
+   * callback whatever the batch weighs, and writes what that frame reads: both
+   * marks, the control's class, and the header's titlebar mark with the shift
+   * the boxes ask for. A strip already placed costs one kept lookup and a style
+   * read; the pass keeps everything in step afterwards.
+   */
+  const stopMutations = subscribeMutations(document.body, { childList: true, subtree: true, beforePaint: true }, () => {
+    syncTitlebar()
     const found = findStrip()
     if (found === null) return
-    stripStamp.mark(found.strip)
-    rowStamp.mark(found.list === null ? null : found.strip)
+    const { header, strip, list } = found
+    if (placedForPaint(strip, header)) return
+    markTitlebar(header)
+    stripStamp.mark(strip)
+    rowStamp.mark(list === null ? null : strip)
     classStamp(controlOf(found))
+    if (titlebar) return
+    writeShift(strip, shiftIn(takeReading(header, strip, list)))
   })
 
   return () => {
@@ -325,7 +362,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     // The strip the passes wrote to: the placement belongs to the element the
     // last pass held, and the page may have moved on since.
     const strip = stripStamp.current()
-    if (strip !== null) strip.style.removeProperty('--dsh-view-tabs-shift')
+    if (strip !== null) strip.style.removeProperty(SHIFT)
     pill.release()
     stripStamp.release()
     rowStamp.release()
