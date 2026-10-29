@@ -5,16 +5,30 @@ export default {
   order: 90,
   reads: ['model'],
   contracts: [],
-  pref: 'modelPicker',
+  /**
+   * The slider's own switch: turning it off hands the composer's model slot
+   * back to the host's own seat, so a third-party effort control injected there
+   * stays reachable (features/model/model-picker.ts).
+   */
+  pref: 'effortSlider',
   stylesheets: [{ file: 'effort-picker.css', rank: 270 }],
   settingsRows: [{
-    // The colour speaks on the picker's own trigger, so the row stands under the
-    // picker that draws it and goes with that switch (D72).
+    // The slider's own on/off switch; it hands the host's own seat back while off.
+    tab: 'composer',
+    // Directly under the model picker's switch: the slider sits inside that picker.
+    rank: 31,
+    pref: 'effortSlider',
+    parent: 'modelPicker',
+    title: 'effortSliderTitle',
+    desc: 'effortSliderDesc',
+  }, {
+    // The colour speaks on the slider's own trigger, so the row stands under the
+    // switch that draws it and goes with it (D72).
     tab: 'composer',
     // After the rows about the menu's own lines (35–45): this one colours the trigger.
     rank: 46,
     pref: 'effortAccent',
-    parent: 'modelPicker',
+    parent: 'effortSlider',
     title: 'effortAccentTitle',
     desc: 'effortAccentDesc',
   }],

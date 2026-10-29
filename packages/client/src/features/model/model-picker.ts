@@ -391,9 +391,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     removeStrayNodes(document, 'body > .dsh-claude-model-popover', [cards.popover(), cards.subPopover()])
     // The host's own seat root, not the nodes the skin appended beside it: a
     // swap can put React's node after ours, and the effort level and the
-    // context meter's ring stand in the same slot.
+    // context meter's ring stand in the same slot. It is hidden only while the
+    // skin draws the effort slider: with that switch off the host's own seat —
+    // and any third-party effort control mounted in this slot — stays visible
+    // and reachable (issue #183).
     const hostRoot = slot.querySelector(`:scope > :not([${SLOT_NODE_ATTR}])`)
-    if (hostRoot !== null) hostRoot.toggleAttribute('data-dsh-claude-model-host', true)
+    if (hostRoot !== null) hostRoot.toggleAttribute('data-dsh-claude-model-host', readPrefs().effortSlider === true)
     seatBox = ensureSeatBox(slot, seatBox)
     const modelPart = ensureSeatPart(seatBox, 'model')
     if (modelBtn === null || modelBtn.parentElement !== modelPart) {

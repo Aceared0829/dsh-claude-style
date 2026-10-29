@@ -287,6 +287,12 @@ export const PREFS = {
   autoPopover: { type: 'choice', values: AUTO_POPOVER_SCOPES, default: AUTO_POPOVER_ALL, legacy: { true: AUTO_POPOVER_ALL, false: AUTO_POPOVER_OFF } },
   composerScope: { type: 'choice', values: COMPOSER_SCOPES, default: COMPOSER_SCOPE_ALL },
   modelPicker: { type: 'boolean', default: true },
+  /**
+   * Whether the skin draws the reasoning-effort slider. Off hands the composer's
+   * model slot back to the host's own seat so a third-party effort control
+   * injected there stays reachable (features/model/model-picker.ts).
+   */
+  effortSlider: { type: 'boolean', default: true },
   modelDescriptions: { type: 'boolean', default: true },
   /** Whether the reasoning-effort trigger takes its colour from the rung in force (features/effort/effort-picker.css). */
   effortAccent: { type: 'boolean', default: true },
