@@ -10,13 +10,18 @@
    `sidebar.settings` slot anchor (a display:contents div), which the child
    selector alone never crossed. The host's own account row is the skin's entry
    where it exists (features/account/account-footer.ts marks it), so the row itself
-   stays and only the controls next to it — the connection pill, the update pill
-   ("Retry update") — go. The account menu and its sign-in dialog are portals and
-   the settings panel is the row's sibling, so all three still open. */
+   stays and only the connection pill beside it goes. The host's version-update
+   control stays in the row as well: it is the host's own button
+   (DesktopUpdateIndicator), carrying its label, its progress and its press, and
+   the takeover has no copy of it to stand in its place (issue #197). That control
+   is the only button in the row marked `aria-disabled`, which is what tells it
+   apart from the settings trigger and the connection pill. The account menu and
+   its sign-in dialog are portals and the settings panel is the row's sibling, so
+   all three still open. */
 body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] > [data-dsh-claude-part~="footer-actions"] :is([data-dsh-claude-part~="footer-buttons"], > button) {
   display: none;
 }
-body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] :is(button, [role="button"], a):not([data-dsh-claude-account-host-row]) {
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="foot-area"] [data-dsh-claude-part~="settings-trigger"] :is(button, [role="button"], a):not([data-dsh-claude-account-host-row]):not([aria-disabled]) {
   display: none;
 }
 /* Both containers stay mounted at zero size so the overlays they host keep
@@ -106,9 +111,31 @@ body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-pa
   align-items: center;
   pointer-events: auto;
 }
-/* The rail's row is an icon alone; the pill has no room beside it. */
+/* The rail's row is an icon alone; the pill has no room beside it. The control
+   itself still has to be reachable there: a reader with an update waiting sees
+   it above the account row and reaches it without expanding the column
+   (issue #197). The pill's words and plate go, the plugin's own mark stays. */
 body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] .dsh-claude-footer-seat-copy {
-  display: none;
+  right: 12px;
+  bottom: 44px;
+}
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] .dsh-claude-footer-seat-copy > * {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 0;
+  line-height: 0;
+}
+body[data-dsh-claude-style][data-dsh-claude-footer-takeover] [data-dsh-claude-part~="sidebar-root"][data-dsh-claude-part~="sidebar-collapsed"] .dsh-claude-footer-seat-copy > * :is(svg, img) {
+  width: 18px;
+  height: 18px;
+  margin-right: 0;
 }
 
 /* The copy keeps the plugin's words and mark and draws them as the skin's

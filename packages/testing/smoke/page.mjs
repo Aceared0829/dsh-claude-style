@@ -140,7 +140,9 @@ function page(name, tier, cases, probe = PROBE) {
             // AccountMenu), read off a live desktop instance.
             '<button id="host-account" data-signed-out="false" aria-label="Account menu" aria-haspopup="menu" aria-expanded="false">Ada</button>' +
           '</span></div></div>' +
-          '<button aria-label="Retry update">Retry update</button>' +
+          // The host's DesktopUpdateIndicator: a button beside the account row
+          // that carries `aria-disabled` on every phase (false while it waits).
+          '<button aria-label="Retry update" aria-disabled="false">Retry update</button>' +
         '</div></div></div>' +
       '</div>'
     : '<div class="_footArea_x_1">\n' +
