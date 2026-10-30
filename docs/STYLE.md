@@ -799,14 +799,16 @@ the 1px card border and the ladder's 8px radius — and each row is one line of 
 36px tall, inset 12px, with the 0.5px divider between rows and none above the
 first. No icon leads a row; a row that opens has a chevron trailing its words in
 the same ink, turning down while the row stands open, and its details open
-inside the card under it. The group's body has no maximum height or scrollbar;
-an opened thought keeps its own `min(400px, 50vh)` scrolling area. A trailing
-thought adds 6px below its line or details, leaving room above the card's bottom
-edge. A thought reads as the thought itself and a generic call as its tool and
-purpose, the kind word and its separator set aside; a named call keeps its verb
-(查找文件 · \*.md), and a row with no description keeps its title. The header
-with its counted line stays above the card, outside it. The Main window tab's
-two cards draw a small group in each layout with these same
+inside the card under it. The body keeps the host's own window: where the host
+caps a group the card stands at `min(400px, 50vh)` and scrolls the group inside
+itself, and where the host's tier lifts the cap the card grows with its rows; an
+opened thought scrolls with the group and holds no scrollbar of its own. A
+trailing thought adds 6px below its line or details, leaving room above the
+card's bottom edge. A thought reads as the thought itself and a generic call as
+its tool and purpose, the kind word and its separator set aside; a named call
+keeps its verb (查找文件 · \*.md), and a row with no description keeps its title.
+The header with its counted line stays above the card, outside it. The Main
+window tab's two cards draw a small group in each layout with these same
 rules (`features/process-column/process-column.css`).
 
 ## Home layouts · 首页版面

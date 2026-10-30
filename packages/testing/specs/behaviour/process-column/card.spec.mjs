@@ -3,11 +3,13 @@
  * card: one row a line, a separator between them, no icon leading a row and a
  * chevron trailing every row that opens. A thought reads as the thought itself;
  * a named call keeps its verb, and a row with nothing after its title keeps the
- * title. The flat layout is the host's own list, untouched.
+ * title. The card keeps the host's own window on the group: a long group
+ * scrolls inside it, and its opened thought scrolls with the group. The flat
+ * layout is the host's own list, untouched.
  *
  * @capability process-column
  * @features process-column
- * @risk The column layout leaves a group as the host's flat list, hides the only words a row has, stacks rows over each other, or leaves its card behind once the reader goes back to the flat layout.
+ * @risk The column layout leaves a group as the host's flat list, hides the only words a row has, stacks rows over each other, grows the transcript with a long group instead of scrolling it inside the card, or leaves its card behind once the reader goes back to the flat layout.
  */
 import { CONVERSATION_PARTS, PAGE_PARTS } from '@dsh-claude-style/engine/parts-table'
 import { spec, host } from '../../fixtures/behaviour.mjs'
@@ -145,30 +147,43 @@ export default spec({ page: 'composer' }, ({ test }) => {
     t.expectThat.equal(await readGroup(t), flat, 'going back to the flat layout leaves the group as the host drew it')
   })
 
-  test('the column layout leaves the group uncapped and keeps only an opened thought capped', async (t) => {
+  test('the column layout keeps the host’s window on the group body, and an opened thought scrolls with it', async (t) => {
     await mountGroup(t)
     await t.prefs({ processRows: 'column' })
-    const reading = await t.page.evaluate(([bodySelector, contentSelector, thinkSelector, headerSelector, expanded]) => {
+    const expandedMode = host('process.expanded-mode')
+    const reading = await t.page.evaluate(([bodySelector, contentSelector, thinkSelector, headerSelector, groupSelector, expanded, mode]) => {
+      const body = document.querySelector(bodySelector)
+      const group = document.querySelector(groupSelector)
       const thought = [...document.querySelector(contentSelector).querySelectorAll(thinkSelector)].at(-1)
       thought.setAttribute(expanded, '')
       const detail = document.createElement('div')
       detail.style.height = '800px'
       thought.querySelector(headerSelector).after(detail)
-      const groupStyle = getComputedStyle(document.querySelector(bodySelector))
-      const detailStyle = getComputedStyle(detail)
-      return {
-        groupMax: groupStyle.maxHeight,
-        groupOverflow: groupStyle.overflowY,
-        detailOverflow: detailStyle.overflowY,
-        bottomPadding: getComputedStyle(document.querySelector(contentSelector).lastElementChild).paddingBottom,
-        detailHeight: Math.round(detail.getBoundingClientRect().height),
-        cap: Math.round(Math.min(400, window.innerHeight / 2)),
+      const capped = getComputedStyle(body)
+      const cappedReading = {
+        max: Math.round(Number.parseFloat(capped.maxHeight)),
+        overflow: capped.overflowY,
+        gutter: capped.scrollbarGutter,
+        client: Math.round(body.clientHeight),
+        scroll: Math.round(body.scrollHeight),
+        detailOverflow: getComputedStyle(detail).overflowY,
       }
-    }, [host('process.body'), host('process.content'), host('chat.think-row'), host('fold.disclosure-header'), host('fold.expanded')])
-    t.expectThat.equal(reading.groupMax, 'none', 'the group has no maximum height')
-    t.expectThat.equal(reading.groupOverflow, 'visible', 'the group does not scroll')
-    t.expectThat.equal(reading.detailOverflow, 'auto', 'the opened thought keeps its own scrollbar')
-    t.expectThat.equal(reading.bottomPadding, '6px', 'the trailing opened thought keeps room below its details')
-    t.expectThat.equal(reading.detailHeight, reading.cap, 'the opened thought reaches its cap and no further')
+      group.setAttribute(mode, 'detailed')
+      const lifted = getComputedStyle(body)
+      return {
+        cap: Math.round(Math.min(400, window.innerHeight / 2)),
+        capped: cappedReading,
+        lifted: { max: lifted.maxHeight, overflow: lifted.overflowY, client: Math.round(body.clientHeight) },
+      }
+    }, [host('process.body'), host('process.content'), host('chat.think-row'), host('fold.disclosure-header'), host('process.group'), host('fold.expanded'), expandedMode])
+    t.expectThat.equal(reading.capped.max, reading.cap, 'the card stands at the host’s cap on a process body')
+    t.expectThat.equal(reading.capped.overflow, 'auto', 'the group scrolls inside the card the way the host scrolls it')
+    t.expectThat.equal(reading.capped.gutter, 'auto', 'a short group keeps no empty gutter beside the card’s border')
+    t.expectThat.equal(reading.capped.client, reading.cap - 2, 'a long group fills the cap and no further, inside the card’s border')
+    t.expectThat.equal(reading.capped.scroll > reading.capped.client, true, 'the group’s own text is what scrolls, not the transcript it stands in')
+    t.expectThat.equal(reading.capped.detailOverflow, 'visible', 'an opened thought adds no second scrollbar inside the card')
+    t.expectThat.equal(reading.lifted.max, 'none', 'the tier that lifts the host’s cap lifts the card with it')
+    t.expectThat.equal(reading.lifted.overflow, 'visible', 'an uncapped group draws no scroll area in the card')
+    t.expectThat.equal(reading.lifted.client > reading.cap, true, 'an uncapped group grows with its opened thought')
   })
 })

@@ -240,6 +240,17 @@ function page(name, tier, cases, probe = PROBE) {
       '<div data-step-process><div data-step-process-body><div data-step-process-content style="height:400px">capped</div></div></div>' +
       '<div data-step-process data-group-expanded-mode="detailed"><div data-step-process-body><div data-step-process-content style="height:400px">expanded</div></div></div>'
     : ''
+  // The host's window on an open process group: the min(400px, 50vh) cap, the
+  // group's own scrollbar and the gutter kept for that scrollbar where the host
+  // caps a group, and no height at all in the tier that lifts the cap. The
+  // column card keeps that window (features/process-column/process-column.css),
+  // so the case reading the card needs the host's rule standing on the page.
+  var processWindow = name === 'composer'
+    ? '<style>' +
+        '[data-step-process-body] { max-height: min(400px, 50vh); overflow-y: auto; scrollbar-gutter: stable; }' +
+        '[data-step-process][data-group-expanded-mode] [data-step-process-body] { max-height: none; overflow: visible; scrollbar-gutter: auto; }' +
+      '</style>'
+    : ''
   // The conversation header the session-title spec presses: the host's own
   // title row carrying a breadcrumb of one parent segment that opens its own
   // session and the segment of the session the header shows. The skin reads the
@@ -510,6 +521,7 @@ function page(name, tier, cases, probe = PROBE) {
 ${boot}
 ${skinOwner}
 ${motionStub}
+${processWindow}
 ${sidebarStyle}
 <div data-slot="root">
 <div data-slot="sidebar">

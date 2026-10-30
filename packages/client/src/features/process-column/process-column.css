@@ -4,18 +4,20 @@
    that shows that layout, so the card is the effect itself. The flat card is the
    host's own list redrawn small. Nothing of the host moves: the body becomes the
    card, its rows stand one under another with a separator between them, and
-   each row keeps its own disclosure. The shape takes the ladder's 8px radius and
-   the 1px card border, the separators the 0.5px divider (docs/STYLE.md). */
+   each row keeps its own disclosure. The body keeps the host's own window — the
+   min(400px, 50vh) cap and scrollbar where the host caps a group, no height
+   where its tier lifts the cap — so a long group scrolls inside the card rather
+   than growing the transcript. The shape takes the ladder's 8px radius and the
+   1px card border, the separators the 0.5px divider (docs/STYLE.md). */
 
 body[data-dsh-claude-style][data-dsh-claude-process-column] [data-step-process] > [data-step-process-body]:not([hidden]),
 body[data-dsh-claude-style] .dsh-claude-process-sample[data-layout="column"] .dsh-claude-process-sample-body {
   box-sizing: border-box;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 8px;
-  /* The group grows with all of its rows; only an opened thought keeps a cap
-     and a scrollbar of its own. */
-  max-height: none;
-  overflow: visible;
+  /* The host reserves a stable gutter for the group's scrollbar. In the framed
+     card that strip would stand inside the border as an empty column beside
+     every short group, so the gutter is reserved only while the card scrolls. */
   scrollbar-gutter: auto;
 }
 
@@ -60,15 +62,6 @@ body[data-dsh-claude-style][data-dsh-claude-process-column] [data-step-process-c
 /* An opened row's details close inside the row, above the next separator. */
 body[data-dsh-claude-style][data-dsh-claude-process-column] [data-step-process-content] :is([data-disclosure-header], [data-disclosure-row]) + * {
   padding-bottom: 10px;
-}
-
-/* The group's former cap belonged to the whole list. In the column layout it
-   stays only on an opened thought, whose text can be far longer than the other
-   rows' details. */
-body[data-dsh-claude-style][data-dsh-claude-process-column] [data-step-process-content] [data-variant="think"][data-expanded] :is([data-disclosure-header], [data-disclosure-row]) + * {
-  box-sizing: border-box;
-  max-height: min(400px, 50vh);
-  overflow-y: auto;
 }
 
 /* No icon leads a row; the chevron the icon's seat shows on hover goes with it,
