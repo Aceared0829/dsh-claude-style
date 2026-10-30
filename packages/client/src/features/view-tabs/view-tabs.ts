@@ -1,6 +1,7 @@
 import { windowsDesktop } from '@dsh-claude-style/engine/desktop-band'
 import { cacheFirstMatch } from '@dsh-claude-style/engine/host'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
+import { requestFrame } from '@dsh-claude-style/engine/frame'
 import { createStamp } from '@dsh-claude-style/engine/dom'
 import { CONVERSATION_HEADER_SELECTOR, CONVERSATION_HEADER_SLOT_SELECTOR, CONVERSATION_TABS_SELECTOR, VIEW_TABS_LIST_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { contentBox } from '../../shared/content-box'
@@ -50,10 +51,12 @@ import type manifest from './view-tabs.manifest'
  *
  * The strip itself is stamped `data-dsh-view-tabs`, and the row shape adds
  * `data-dsh-view-tabs-row`; every strip rule in view-tabs.css keys on those
- * attributes. The marks, the Windows titlebar marker on the header and the
- * shift are written twice over: in the batch that mounts the strip, before the
- * browser paints, so the first frame is already the skin's (#189), and by the
- * pass afterwards, which keeps them on the element the page shows. Finding the
+ * attributes. The marks and the Windows titlebar marker are written in the
+ * batch that mounts the strip, before the browser paints; the measured shift is
+ * taken and written in that same frame's read and write phases, so the first
+ * frame already draws the skin's placement (#189) without forcing the rest of
+ * the freshly mounted page to lay out again in the observer's callback (#196).
+ * The pass afterwards keeps them all on the element the page shows. Finding the
  * strip is a query this pass runs once; as a stylesheet selector
  * (`header:has(tabs) tabs`) it would make the browser re-match the whole
  * document on every DOM change.
@@ -219,6 +222,12 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   /** The reading this pass places from, and the strip it belongs to. */
   let reading: StripReading | null = null
   let measuredStrip: HTMLElement | null = null
+  /** The strip a batch mounted, waiting for the frame's read phase to be measured. */
+  let pendingShift: { header: HTMLElement, strip: HTMLElement, list: HTMLElement | null } | null = null
+  /** The reading the last frame took for `pendingShift`, written in its write phase. */
+  let shiftReading: StripReading | null = null
+  /** Cancels the frame a batch's placement waits on. */
+  let cancelShift: (() => void) | null = null
 
   /** Read the four boxes for one strip. */
   function takeReading(header: HTMLElement, strip: HTMLElement, list: HTMLElement | null): StripReading {
@@ -232,6 +241,38 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
       titleBox: titleBoxOf(header),
       actionsBox: rect(header.querySelector(ACTIONS)),
     }
+  }
+
+  /**
+   * Place a strip a batch has mounted, in the frame that batch paints in.
+   *
+   * The marks go on in the observer's callback, so the first frame draws the
+   * skin's own layout (#189). The boxes the shift is decided from are taken in
+   * that frame's read phase instead: a read here would force the whole freshly
+   * mounted, still-dirty conversation to lay out again inside the observer's
+   * callback, and every batch of the switch would pay it once more; the frame
+   * pipeline takes one read after the frame's writes, and a later batch before
+   * the frame joins the same read (#196).
+   */
+  function placeForPaint(header: HTMLElement, strip: HTMLElement, list: HTMLElement | null) {
+    pendingShift = { header, strip, list }
+    if (cancelShift !== null) return
+    cancelShift = requestFrame({
+      read() {
+        const target = pendingShift
+        shiftReading = target === null ? null : takeReading(target.header, target.strip, target.list)
+      },
+      write() {
+        cancelShift = null
+        const target = pendingShift
+        const boxes = shiftReading
+        pendingShift = null
+        shiftReading = null
+        if (target === null || boxes === null) return
+        if (boxes.strip !== target.strip || !target.strip.isConnected) return
+        writeShift(target.strip, shiftIn(boxes))
+      },
+    })
   }
 
   /** The control the pill travels in: the tablist of the row shape, the strip itself in the older one. */
@@ -330,16 +371,17 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   }
 
   /**
-   * Place a strip the batch has just mounted before the browser paints (#189).
+   * Put the marks a batch has just mounted before the browser paints (#189).
    *
    * The pass lands on the next frame, and a batch the size of a session switch
    * is dispatched after that frame's paint (engine/bus.ts): a strip left for
    * either draws in the host's own layout and jumps when the pass reaches it.
    * This subscription asks for `beforePaint`, so it runs inside every batch's
    * callback whatever the batch weighs, and writes what that frame reads: both
-   * marks, the control's class, and the header's titlebar mark with the shift
-   * the boxes ask for. A strip already placed costs one kept lookup and a style
-   * read; the pass keeps everything in step afterwards.
+   * marks, the control's class and the header's titlebar mark. A strip already
+   * placed costs one kept lookup and a style read; the pass keeps everything in
+   * step afterwards. The shift the boxes ask for is measured and written in the
+   * same frame's read and write phases (placeForPaint), not here.
    */
   const stopMutations = subscribeMutations(document.body, { childList: true, subtree: true, beforePaint: true }, () => {
     syncTitlebar()
@@ -352,11 +394,15 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
     rowStamp.mark(list === null ? null : strip)
     classStamp(controlOf(found))
     if (titlebar) return
-    writeShift(strip, shiftIn(takeReading(header, strip, list)))
+    placeForPaint(header, strip, list)
   })
 
   return () => {
     stopMutations()
+    if (cancelShift !== null) cancelShift()
+    cancelShift = null
+    pendingShift = null
+    shiftReading = null
     titlebar = false
     markTitlebar(null)
     // The strip the passes wrote to: the placement belongs to the element the

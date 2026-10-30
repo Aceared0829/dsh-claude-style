@@ -165,6 +165,8 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
   let slide: { column: Animation, row: Animation | null, from: number, duration: number } | null = null
   /** The column the hold mark (FOLLOW_HOLD_ATTR) is on, or null while no door holds it. */
   let heldColumn: HTMLElement | null = null
+  /** Whether the size subscription's first report for the current column has been taken as its baseline. */
+  let slideArmed = false
 
   /**
    * Whether content is arriving right now: the mark the host writes while it
@@ -283,6 +285,11 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
    * (D40), this one runs after the pin in the same frame and puts the column
    * back down before it paints; one made at install would run first, and every
    * pin would paint. The scroller is watched too, for its own height.
+   *
+   * The column's height is not read here: this runs in the batch's own
+   * callback, when the host has just mounted the whole tree, and an
+   * `offsetHeight` read forces that dirty tree to lay out again (#196). The
+   * subscription's first report is the baseline instead.
    */
   const slideSync = () => {
     // The column is kept by packages/engine/src/chat-dom.ts: asking the document
@@ -294,11 +301,10 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
     stopSlideSize = null
     stopSlide()
     slideColumn = column
-    if (column === null) return
-    // The subscription's first report is the column and the scroller as they
-    // are now, which is no growth.
-    slideHeight = column.offsetHeight
+    slideArmed = false
+    slideHeight = 0
     scrollerHeight = 0
+    if (column === null) return
     const scroller = column.closest(CONVERSATION_SCROLL_SELECTOR)
     stopSlideSize = observeSize(scroller === null ? [column] : [column, scroller], onSlideResize, { afterHost: true })
   }
@@ -338,6 +344,14 @@ export function createChatFollowGuard(options: { foldBusy: () => boolean, submis
         continue
       }
       const box = blockSize(entry)
+      // The subscription's first report for a column is its height as mounted:
+      // the baseline a later growth is measured against, never a growth itself.
+      if (!slideArmed) {
+        slideArmed = true
+        slideHeight = box
+        before = box
+        continue
+      }
       before = slideHeight
       const delta = box - slideHeight
       slideHeight = box

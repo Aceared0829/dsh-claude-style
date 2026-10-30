@@ -77,6 +77,15 @@ function switchSession(t, options) {
       }
     }
 
+    // Every box read from here on. The batch's observer callback runs as a
+    // microtask after this task, and the placement must not read the page
+    // inside it (#196): the shift is measured on the frame that paints, in its
+    // own read phase, so nothing is read between the mount and the frame.
+    let boxReads = 0
+    const originalRect = Element.prototype.getBoundingClientRect
+    // cost: D40 — the bus delivers the batch in a microtask; the frame read phase is where a box is taken.
+    Element.prototype.getBoundingClientRect = function () { boxReads += 1; return originalRect.call(this) }
+
     // The switch: the conversation flow mounts in the same task as the header it
     // brings, which is the batch the bus dispatches after the paint.
     const next = build()
@@ -89,6 +98,10 @@ function switchSession(t, options) {
       line.append(document.createElement('span'), document.createElement('span'), document.createElement('span'))
       sink.append(line)
     }
+    const atMount = boxReads
+    // Two microtask turns: the observer's callback is queued before the first.
+    await new Promise((resolve) => queueMicrotask(() => queueMicrotask(resolve)))
+    const inBatchCallback = boxReads - atMount
     strip = next
     const painted = await new Promise((resolve) => requestAnimationFrame(() => resolve(read())))
     await settle()
@@ -99,15 +112,18 @@ function switchSession(t, options) {
     hostStyle.remove()
     if (titlebar) document.documentElement.removeAttribute(windows)
     await settle()
-    return { painted, settled }
+    // cost: D40 — hands the prototype back to the page once the switch has painted.
+    Element.prototype.getBoundingClientRect = originalRect
+    return { painted, settled, inBatchCallback }
   }, [HEADER, TABS, { strip: STRIP, row: ROW, titlebar: TITLEBAR }, options.batch, WINDOWS, options.titlebar])
 }
 
 export default spec({ page: 'view-tabs-row' }, ({ test }) => {
   test('a strip a session switch mounts is centred in the first frame it paints', async (t) => {
-    const { painted, settled } = await switchSession(t, { batch: 1500, titlebar: false })
+    const { painted, settled, inBatchCallback } = await switchSession(t, { batch: 1500, titlebar: false })
     t.expectThat.equal(painted, settled, 'the frame the switch paints reads as the settled page')
     t.expectThat.equal({ strip: painted.strip, row: painted.row }, { strip: true, row: true }, 'the strip and its row wear the skin\'s marks in that frame')
+    t.expectThat.equal(inBatchCallback, 0, 'the batch\'s own callback reads no box')
   })
 
   test('under the Windows caption row the strip is in the band in the first frame it paints', async (t) => {
