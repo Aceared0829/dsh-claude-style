@@ -166,9 +166,10 @@ export interface LedgerMerge {
  * split; the ledger is the account that saw every provider, so the fold never
  * overwrites one of its days. The fold supplies every date the ledger did not
  * record — the stretch after the cost meter stopped writing, the history before
- * it was installed, and the days of sessions deleted since — which is also
- * where its hour histograms, the one dimension the ledger has no column for,
- * are worth keeping.
+ * it was installed, and the days of sessions deleted since. Its hour histogram
+ * is the one dimension the ledger has no column for, so it is taken for every
+ * date: a day the fold contributes arrives with its own, and a ledger day takes
+ * the fold's where the ledger holds none, its tokens staying the ledger's.
  *
  * @param ledgerDays - the ledger's day map, or null when there is no ledger at
  *     all: a null is what tells the caller the answer is the fold's alone, which
@@ -190,7 +191,21 @@ export function mergeLedgerFold(
   // would answer.
   let folded = false
   for (const [date, buckets] of mergeSessions(sessions)) {
-    if (days.has(date)) continue
+    const held = days.get(date)
+    if (held !== undefined) {
+      // The ledger counts its own day and keeps no hour of it; the fold's
+      // histogram fills that column alone. A day the ledger already carries one
+      // for keeps its own, as it keeps its tokens.
+      if (held.hours === undefined && buckets.hours !== undefined) {
+        const hours = new Array(24).fill(0) as number[]
+        for (let hour = 0; hour < 24; hour += 1) hours[hour] = Number(buckets.hours[hour]) || 0
+        held.hours = hours
+      }
+      continue
+    }
+    // A day the ledger did not record is the fold's whole day: its model split,
+    // the sessions that settled on it and its hour histogram, as the fold alone
+    // would answer.
     days.set(date, buckets)
     folded = true
     // The count follows the days rather than the logs: a session whose log is

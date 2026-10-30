@@ -22,7 +22,8 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   // one of its days and on today: the ledger's per-day `byProviderModel` becomes
   // the day's per-model map, one model served by two providers is one cell, and a
   // key without a provider prefix is the model itself. A day the ledger knows
-  // stays the ledger's (the log's settlement on it is not added); today, past the
+  // keeps the ledger's tokens (the log's settlement on it is not added) and takes
+  // the fold's hour histogram, the column the ledger has none of; today, past the
   // ledger's newest day, is the fold's whole day, with its model split, its
   // session and its hours.
   console.log('\nhost half — usage roll-up from the cost-meter ledger and the fold')
@@ -116,9 +117,9 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
     JSON.stringify(value.models))
   const hourOf = (hours) => (Array.isArray(hours) ? hours.indexOf(1) : null)
   const sum = (hours) => hours.reduce((total, count) => total + count, 0)
-  check('only the folded day has an hour histogram, and the whole one is its own',
-    Array.isArray(value.hours) && value.hours[15] === 1 && sum(value.hours) === 1 &&
-      days[0]?.hours === undefined && days[1]?.hours === undefined &&
+  check('every day the fold settled on carries its hour histogram, the ledger\'s days included, and the whole one sums them',
+    Array.isArray(value.hours) && value.hours[9] === 1 && value.hours[15] === 1 && sum(value.hours) === 2 &&
+      days[0]?.hours === undefined && hourOf(days[1]?.hours) === 9 && sum(days[1].hours) === 1 &&
       hourOf(days[2]?.hours) === 15 && sum(days[2].hours) === 1,
     JSON.stringify({ hours: value.hours, days: days.map((day) => [day.date, day.hours]) }))
   // A warm start is the case the size and modification time cache exists for:

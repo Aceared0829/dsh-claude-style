@@ -1,0 +1,8 @@
+{
+  "group": "fixes",
+  "order": 50,
+  "at": "2026-10-28",
+  "external": false,
+  "zh": "修复安装 dsh-cost-meter 后首页概览的高峰时段恒显示「—」的问题",
+  "en": "Fix the peak hour reading as a dash on the home overview whenever dsh-cost-meter is installed"
+}
