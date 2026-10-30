@@ -48,8 +48,9 @@ export interface UsageModel {
 export interface UsageReport {
   /**
    * Which source answered: the fold over the session logs (`local`), the cost
-   * ledger (`cost-meter`), or both when the fold covered dates the ledger does
-   * not reach (`cost-meter+local`). The two accounts are merged by date, never
+   * ledger (`cost-meter`), or both when the fold supplied a day's figures, either
+   * a date the ledger does not record or a fuller account of one it records only
+   * partly (`cost-meter+local`). The two accounts are merged by date, never
    * summed
    */
   source: string

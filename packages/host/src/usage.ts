@@ -16,13 +16,12 @@
  *     log, so a deleted session keeps its days.
  *   - `usage-summary.ts` merges the two accounts by date, and shapes the payload.
  *
- * The two accounts are combined, never added: both describe the same days, so a
- * day the ledger recorded stays the ledger's and the fold answers for every day
- * it left out. The ledger keeps no hour of a day, so that histogram is the
- * fold's on every one. A ledger that answers is published before the fold starts,
- * so a ledger the cost meter stopped updating still shows its days at once.
- * `totals.sessions` can count a session twice when it spans a ledger day and a
- * folded one: the two sources name sessions in different shapes.
+ * The two accounts are combined, never added: both describe the same days, so
+ * each day keeps the account that recorded more of it and the fold answers for
+ * every day the ledger left out. The ledger keeps no hour of a day, so that
+ * histogram is the fold's on every one. A ledger that answers is published before
+ * the fold starts, so a ledger the cost meter stopped updating still shows its
+ * days at once.
  *
  * A host that publishes cross-session usage totals, or keeps the usage of deleted
  * sessions, retires the matching path here.

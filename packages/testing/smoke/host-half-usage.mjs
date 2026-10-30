@@ -21,11 +21,11 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
   // A ledger that stopped writing yesterday, and one stored log that settled on
   // one of its days and on today: the ledger's per-day `byProviderModel` becomes
   // the day's per-model map, one model served by two providers is one cell, and a
-  // key without a provider prefix is the model itself. A day the ledger knows
-  // keeps the ledger's tokens (the log's settlement on it is not added) and takes
-  // the fold's hour histogram, the column the ledger has none of; today, past the
-  // ledger's newest day, is the fold's whole day, with its model split, its
-  // session and its hours.
+  // key without a provider prefix is the model itself. A day the ledger recorded
+  // more of keeps the ledger's tokens (the log's settlement on it is not added)
+  // and takes the fold's hour histogram, the column the ledger has none of;
+  // today, past the ledger's newest day, is the fold's whole day, with its model
+  // split, its session and its hours.
   console.log('\nhost half — usage roll-up from the cost-meter ledger and the fold')
   const USAGE = '/dsh-claude-style/usage'
   const now = new Date()
@@ -185,6 +185,61 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
       JSON.stringify(keptDay?.h) === JSON.stringify({ '15': 1 }),
     JSON.stringify({ version: keptRecord.version, s1: keptRecord.sessions?.s1 }))
   fs.rmSync(scratchHome, { recursive: true, force: true })
+
+  // A ledger day can be only part of that day: a history reset or a cleared
+  // file starts it mid-day. The fold's fuller figure is what the panel shows,
+  // and the ledger's logical session ids join the record's stored names, so a
+  // session behind both accounts counts once (#194).
+  console.log('\nhost half — a partly recorded ledger day keeps the fold\'s fuller figure')
+  {
+    const home = path.join(ROOT, '.debug', 'smoke-home-usage-partial')
+    fs.rmSync(home, { recursive: true, force: true })
+    const cwd = path.join(home, 'sessions', '--D-smoke--')
+    fs.mkdirSync(path.join(home, 'storages', 'cost-meter'), { recursive: true })
+    const partly = localDay(at(-1, 9))
+    const ledgerDay = localDay(at(-2, 9))
+    fs.writeFileSync(path.join(home, 'storages', 'cost-meter', 'ledger.json'), JSON.stringify({
+      version: 1,
+      days: {
+        [partly]: {
+          input: 5, output: 0, cacheRead: 0, cacheWrite: 0, calls: 1,
+          sessions: [{ id: 'plugin:one' }],
+          byProviderModel: { 'alpha:model-a': cell(5, 0) },
+        },
+        [ledgerDay]: {
+          input: 100, output: 0, cacheRead: 0, cacheWrite: 0, calls: 1,
+          sessions: [{ id: 'plugin:two' }],
+          byProviderModel: { 'alpha:model-b': cell(100, 0) },
+        },
+      },
+    }))
+    // The first session's logical id is the ledger's own spelling, which the
+    // storage escapes into a directory name; the second is only in the ledger.
+    const shared = 'plugin~003Aone'
+    fs.mkdirSync(path.join(cwd, shared), { recursive: true })
+    fs.writeFileSync(path.join(cwd, shared, 'session.v4.jsonl.zstd'), 'x')
+    fs.mkdirSync(path.join(cwd, 's2'), { recursive: true })
+    fs.writeFileSync(path.join(cwd, 's2', 'session.v4.jsonl.zstd'), 'x')
+    const host = fakeHost(mod, {
+      fenced: true,
+      home,
+      events: { 'plugin:one': [settlement(at(-1, 9), 1)], s2: [settlement(at(-2, 9), 1)] },
+    })
+    const answer = (await settledUsage(host)).value ?? {}
+    const byDate = Object.fromEntries((Array.isArray(answer.days) ? answer.days : []).map((day) => [day.date, day]))
+    check('a partly recorded ledger day keeps the fold\'s fuller figure and its model split',
+      byDate[partly]?.input === 10 && JSON.stringify(byDate[partly]?.models) === JSON.stringify({ 'model-b': 11 }),
+      JSON.stringify(byDate[partly]))
+    check('a ledger day the fold recorded less of keeps the ledger\'s figures and adds the fold\'s session',
+      byDate[ledgerDay]?.input === 100 &&
+        JSON.stringify(byDate[ledgerDay]?.sessionIds) === JSON.stringify(['plugin~003Atwo', 's2']) &&
+        byDate[ledgerDay]?.sessions === 2,
+      JSON.stringify(byDate[ledgerDay]))
+    check('the ledger\'s logical session id and the stored directory name are one session in the count',
+      answer.totals?.sessions === 3 && answer.totals?.input === 110 && answer.source === 'cost-meter+local',
+      JSON.stringify({ source: answer.source, totals: answer.totals, days: byDate }))
+    fs.rmSync(home, { recursive: true, force: true })
+  }
 
   // The fold cache this record replaced is migrated where the record does not
   // exist yet, so the days of the sessions deleted before it come across
@@ -436,9 +491,18 @@ async function hostUsage({ mod, fakeHost, request, browser, scratchHome, scratch
     check('a day the ledger never recorded survives before the ledger\'s newest day',
       merged.days.get('2026-01-01')?.input === 1 && merged.days.get('2026-01-03')?.input === 3,
       JSON.stringify([...merged.days.entries()].map(([date, day]) => [date, day.input])))
-    check('a day both accounts carry stays the ledger\'s',
-      merged.days.get('2026-01-02')?.sessionIds?.[0] === 'ledger-session',
-      JSON.stringify(merged.days.get('2026-01-02')))
+    const both = merged.days.get('2026-01-02')
+    check('a day both accounts carry keeps the fuller account\'s figures and both sessions',
+      both?.input === 20 && both.sessions === 2 &&
+        JSON.stringify(both.sessionIds) === JSON.stringify(['ledger-session', 'stored-a']),
+      JSON.stringify(both))
+    const partial = new Map([['2026-01-04', buckets(5, 'ledger-session')]])
+    const fuller = new Map([['stored-b', { days: new Map([['2026-01-04', buckets(9, 'stored-b')]]) }]])
+    const picked = summary.mergeLedgerFold(partial, fuller).days.get('2026-01-04')
+    check('a partly recorded ledger day keeps the fold\'s fuller figure and both sessions',
+      picked?.input === 9 && picked.sessions === 2 &&
+        JSON.stringify(picked.sessionIds) === JSON.stringify(['ledger-session', 'stored-b']),
+      JSON.stringify(picked))
   }
 }
 

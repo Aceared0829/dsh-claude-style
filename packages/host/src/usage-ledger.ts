@@ -3,11 +3,12 @@
  *
  * `$DSH_HOME/storages/cost-meter/ledger.json` is another plugin's document and is
  * read ONLY. Its `days` map is already a per-day token roll-up, and each day's
- * `byProviderModel` splits it by `<provider>:<model>` — so when it exists and
- * covers the newest session activity there is nothing left to compute. It also
- * outlives the logs: a deleted session's tokens stay in it. It has no hour
- * dimension, so the fold still runs behind a ledger answer for the hour
- * histograms alone. The file is never written: its owner rebuilds the whole
+ * `byProviderModel` splits it by `<provider>:<model>`. It also outlives the
+ * logs: a deleted session's tokens stay in it. A day it records can be only
+ * part of that day — a history reset or a cleared file starts it mid-day — and
+ * it has no hour dimension, so the fold still runs behind a ledger answer: it
+ * supplies the day's hours and sessions, and the fuller figure of a day the
+ * ledger recorded less of. The file is never written: its owner rebuilds the whole
  * document from a fixed field list and rewrites it under a cross-process lock, so
  * a foreign key would be dropped by their next flush, a write outside their lock
  * could lose theirs, and a version they do not recognise makes them quarantine
@@ -20,6 +21,7 @@
 import { PACKAGE_NAME } from '@dsh-claude-style/contracts/package'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { sessionDirectoryName } from './session-name.js'
 
 /** The ledger's document version this reader understands; anything else is ignored. */
 const LEDGER_VERSION = 1
@@ -129,10 +131,13 @@ export function readLedger(home: string, logger?: { warn?(message: string): void
       calls: bucket.calls,
     }, 1)
     // The ledger keeps one record per session per day; the ids are what make
-    // the total session count a union rather than a sum.
+    // the total session count a union rather than a sum. Its id is the host's
+    // logical session id while the record keys a session by the directory name
+    // it is stored under, so it is spelled that way here: one session is one id
+    // in both accounts.
     clean.sessionIds = Array.isArray(bucket.sessions)
       ? (bucket.sessions as unknown[])
-        .map((entry) => (entry !== null && typeof entry === 'object' && typeof (entry as { id?: unknown }).id === 'string' ? (entry as { id: string }).id : null))
+        .map((entry) => (entry !== null && typeof entry === 'object' && typeof (entry as { id?: unknown }).id === 'string' ? sessionDirectoryName((entry as { id: string }).id) : null))
         .filter((id): id is string => id !== null)
       : []
     clean.sessions = clean.sessionIds.length
