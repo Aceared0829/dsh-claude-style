@@ -587,6 +587,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
   return () => {
     profile.stop()
     unregisterPopover('account')
+    mirror.stop()
     dropAccountFooter(findFootArea())
   }
 }
