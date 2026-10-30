@@ -147,7 +147,12 @@ export function createFooterMirror(options: {
       const nodes = entryNodes(entry)
       for (let i = 0; i < nodes.length; i++) {
         const el = nodes[i]
-        if (!el.hasAttribute('data-dsh-claude-footer-overlay') && !isOverlay(el) && isFixedPanel(el)) fixed.add(el)
+        // A node already carrying the overlay mark is read like any other: the
+        // mark is this function's own earlier answer, and skipping it leaves
+        // `sync` with no reading for a panel it had marked. The node then falls
+        // back to the entry's first control, which takes the panel's box away
+        // with `display: contents` (the Remote page's own backdrop is the case).
+        if (!isOverlay(el) && isFixedPanel(el)) fixed.add(el)
       }
     }
     fixedRead = { footArea, fixed }
