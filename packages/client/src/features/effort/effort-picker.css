@@ -215,12 +215,12 @@ body[data-dsh-claude-style] .dsh-claude-effort[data-apex] .dsh-claude-effort-mat
    the cascade and freeze the cell at 0. fill-mode both covers the pre-delay
    (from) and the rest (to), so the keyframes own the whole life cycle. */
 body[data-dsh-claude-style] .dsh-claude-effort-matrix-cell {
-  animation: dsh-claude-fade-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard) both !important;
+  animation: dsh-claude-fade-in var(--dsh-claude-duration-surface) var(--dsh-claude-ease-standard) both;
 }
 body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: 1px !important;
+  width: 100%;
+  height: 100%;
+  border-radius: 1px;
   /* NOT !important: the flash animates background-color, and no animation can
      outrank an !important declaration — the same cascade trap the cell's
      opacity fell into. Nothing in the host targets these private classes. */
@@ -230,7 +230,7 @@ body[data-dsh-claude-style] .dsh-claude-effort-matrix-sq {
      short window, and eases back over the rest of the period. var() in keyframes
      resolves against the animated block, so one keyframes rule serves every
      block's own peak colour. */
-  animation: dshClaudeEffortFlash var(--dsh-claude-period-flash) infinite var(--dsh-claude-ease-in-out) !important;
+  animation: dshClaudeEffortFlash var(--dsh-claude-period-flash) infinite var(--dsh-claude-ease-in-out);
 }
 /* The block's flash peak lives HERE, never inline: the override only picks the
    share of apex the peak mixes (--dsh-flash-mix), so a stylesheet swap always
