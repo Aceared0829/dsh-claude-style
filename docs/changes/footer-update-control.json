@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 40,
-  "at": "2026-10-29",
-  "external": false,
-  "zh": "修复开启页脚接管后宿主的版本更新入口被隐藏的问题",
-  "en": "Fix the host's version-update control disappearing once the footer takeover is on"
-}

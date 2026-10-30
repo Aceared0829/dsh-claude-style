@@ -1,8 +1,0 @@
-{
-  "group": "new",
-  "order": 20,
-  "at": "2026-10-28",
-  "external": false,
-  "zh": "新增独立的「推理等级滑块」开关，关闭后把推理等级的座位交还宿主，让第三方推理强度插件注入到模型座位的滑块重新可见",
-  "en": "Add a separate Reasoning effort slider switch that hands the reasoning-effort seat back to the host when off, so a third-party effort slider injected into the model seat shows again"
-}

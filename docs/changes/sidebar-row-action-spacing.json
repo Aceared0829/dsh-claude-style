@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 10,
-  "at": "2026-10-27",
-  "external": false,
-  "zh": "修复侧栏会话行的操作按钮在 DSH 新版下相互重叠的问题",
-  "en": "Fix the sidebar session row action buttons overlapping under the new DSH release"
-}

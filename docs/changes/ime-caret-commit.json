@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 10,
-  "at": "2026-10-27",
-  "external": false,
-  "zh": "修复中文输入法上屏后皮肤光标停在第一个分词结果后面的问题",
-  "en": "Fix the skin's caret stopping after the first segment when a Chinese input method commits English letters"
-}

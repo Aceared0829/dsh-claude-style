@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 40,
-  "at": "2026-10-28",
-  "external": false,
-  "zh": "修复过程行的单列布局去掉宿主限高、过程越多卡片越高的问题",
-  "en": "Fix the column process rows growing the group card with every step instead of scrolling it inside the card"
-}

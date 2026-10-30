@@ -1,8 +1,0 @@
-{
-  "group": "improvements",
-  "order": 20,
-  "at": "2026-10-27",
-  "external": false,
-  "zh": "改善模型用量图表的柱子与日期轴，使柱子自基线生长，日期标签按可用宽度抽稀并保留最新一天",
-  "en": "Improve the model usage chart's columns and date axis so the columns grow from the baseline and the labels thin to the width available while keeping the newest day"
-}

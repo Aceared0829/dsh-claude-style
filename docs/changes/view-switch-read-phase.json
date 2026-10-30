@@ -1,8 +1,0 @@
-{
-  "group": "fixes",
-  "order": 60,
-  "at": "2026-10-29",
-  "external": false,
-  "zh": "修复切换对话与轨迹视图时观察者在换树过程中反复强制样式重算造成的卡顿",
-  "en": "Fix the repeated forced style recalculation by observers during a conversation-trajectory view switch"
-}

@@ -2,6 +2,52 @@
 
 All notable changes to `dsh-claude-style` are documented here, newest first.
 
+## [0.19.6] - 2026-10-30
+
+[中文](#cn-0.19.6) | [English](#en-0.19.6)
+
+<h3 id="cn-0.19.6">新增功能</h3>
+
+- 新增独立的「推理等级滑块」开关，关闭后把推理等级的座位交还宿主，让第三方推理强度插件注入到模型座位的滑块重新可见
+
+### 体验优化
+
+- 改善模型用量图表的柱子与日期轴，使柱子自基线生长，日期标签按可用宽度抽稀并保留最新一天
+- 收紧编辑侧栏对话框的卡片圆角，并在勾选时沿路径描绘对钩
+
+### 问题修复
+
+- 回合结束后宿主留下的占位状态行不再被画上第二条等待行，加载点不再出现两套。
+- 修复中文输入法上屏后皮肤光标停在第一个分词结果后面的问题
+- 修复未配置 API Key 时 DeepSeek 账号的模型不出现在模型选择器一级列表的问题
+- 修复侧栏会话行的操作按钮在 DSH 新版下相互重叠的问题
+- 修复切换会话时视图标签条先画在宿主自己的位置上、随后跳回皮肤位置的一帧闪动
+- 修复开启页脚接管后宿主的版本更新入口被隐藏的问题
+- 修复过程行的单列布局去掉宿主限高、过程越多卡片越高的问题
+- 修复安装 dsh-cost-meter 后首页概览的高峰时段恒显示「—」的问题
+- 修复切换对话与轨迹视图时观察者在换树过程中反复强制样式重算造成的卡顿
+
+<h3 id="en-0.19.6">New Features</h3>
+
+- Add a separate Reasoning effort slider switch that hands the reasoning-effort seat back to the host when off, so a third-party effort slider injected into the model seat shows again
+
+### Improvements
+
+- Improve the model usage chart's columns and date axis so the columns grow from the baseline and the labels thin to the width available while keeping the newest day
+- Tighten the Edit sidebar dialog's card corner and draw the tick along its path when an item is checked
+
+### Bug Fixes
+
+- The slot the host keeps after a turn stops no longer gets a second waiting line drawn into it, so the loader no longer shows twice.
+- Fix the skin's caret stopping after the first segment when a Chinese input method commits English letters
+- Fix the DeepSeek Account models missing from the model picker's first level when no API key is configured
+- Fix the sidebar session row action buttons overlapping under the new DSH release
+- Fix the view tab strip drawing at the host's own place for a frame after a session switch, then jumping to where the skin keeps it
+- Fix the host's version-update control disappearing once the footer takeover is on
+- Fix the column process rows growing the group card with every step instead of scrolling it inside the card
+- Fix the peak hour reading as a dash on the home overview whenever dsh-cost-meter is installed
+- Fix the repeated forced style recalculation by observers during a conversation-trajectory view switch
+
 ## [0.19.5] - 2026-10-27
 
 [中文](#cn-0.19.5) | [English](#en-0.19.5)
